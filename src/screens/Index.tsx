@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,17 +7,40 @@ import { BookOpen, Target, Timer, TrendingUp } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Check if user is already logged in
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/dashboard");
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          navigate("/dashboard");
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
+      } finally {
+        setLoading(false);
       }
     };
     checkUser();
   }, [navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-background flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="p-4 bg-gradient-primary rounded-3xl shadow-glow animate-pulse">
+            <BookOpen className="h-12 w-12 text-white" />
+          </div>
+          <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Loading...
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   const handleGetStarted = () => {
     navigate("/auth");

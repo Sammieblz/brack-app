@@ -43,30 +43,19 @@ const Questionnaire = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // TODO: Replace with actual Supabase call once types are synced
-      // const { error } = await supabase
-      //   .from('reading_habits')
-      //   .insert({
-      //     user_id: user.id,
-      //     avg_time_per_book: parseInt(avgTimePerBook) || null,
-      //     genres: selectedGenres,
-      //     avg_length: parseInt(avgLength) || null,
-      //     books_6mo: parseInt(books6mo) || null,
-      //     books_1yr: parseInt(books1yr) || null,
-      //     longest_genre: longestGenre || null,
-      //   });
+      const { error } = await supabase
+        .from('reading_habits')
+        .insert({
+          user_id: user.id,
+          avg_time_per_book: parseInt(avgTimePerBook) || null,
+          genres: selectedGenres,
+          avg_length: parseInt(avgLength) || null,
+          books_6mo: parseInt(books6mo) || null,
+          books_1yr: parseInt(books1yr) || null,
+          longest_genre: longestGenre || null,
+        });
 
-      // if (error) throw error;
-      
-      // For now, just store in localStorage
-      localStorage.setItem('reading_habits', JSON.stringify({
-        avg_time_per_book: parseInt(avgTimePerBook) || null,
-        genres: selectedGenres,
-        avg_length: parseInt(avgLength) || null,
-        books_6mo: parseInt(books6mo) || null,
-        books_1yr: parseInt(books1yr) || null,
-        longest_genre: longestGenre || null,
-      }));
+      if (error) throw error;
 
       toast({
         title: "Reading habits saved!",

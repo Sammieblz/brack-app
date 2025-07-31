@@ -10,6 +10,7 @@ import { BookCard } from "@/components/BookCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
 import { toast } from "sonner";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import type { Goal } from "@/types";
 
 const Dashboard = () => {
@@ -68,10 +69,7 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading your reading journey...</p>
-        </div>
+        <LoadingSpinner size="lg" text="Loading your reading journey..." />
       </div>
     );
   }
