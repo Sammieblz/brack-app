@@ -39,27 +39,11 @@ const Auth = () => {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (session && event === 'SIGNED_IN') {
-          // Check if user has completed onboarding
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', session.user.id)
-            .maybeSingle();
-          
-          const { data: habits } = await supabase
-            .from('reading_habits')
-            .select('id')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          // Redirect based on onboarding status
-          if (!habits) {
-            navigate("/welcome");
-          } else {
-            navigate("/dashboard");
-          }
+          // For existing users, go directly to dashboard
+          // New users will be handled by the signup flow
+          navigate("/dashboard");
         }
       }
     );
