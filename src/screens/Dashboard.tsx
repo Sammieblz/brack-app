@@ -2,20 +2,18 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, Plus, Timer, LogOut, User, Target, Clock } from "lucide-react";
+import { BookOpen, Plus, Timer, Target, Clock, BarChart3, ArrowRight, Library } from "lucide-react";
 import { BookCard } from "@/components/BookCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
 import { useRecentActivity } from "@/hooks/useRecentActivity";
 import { useChartData } from "@/hooks/useChartData";
-import { ReadingProgressChart } from "@/components/charts/ReadingProgressChart";
-import { GenreDistributionChart } from "@/components/charts/GenreDistributionChart";
 import { WeeklyReadingChart } from "@/components/charts/WeeklyReadingChart";
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { Navbar } from "@/components/Navbar";
 import type { Goal } from "@/types";
 
 const Dashboard = () => {
@@ -58,15 +56,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast.success("Signed out successfully");
-      navigate("/");
-    } catch (error: any) {
-      toast.error("Error signing out");
-    }
-  };
 
   const handleBookClick = (bookId: string) => {
     navigate(`/book/${bookId}`);
@@ -77,8 +66,11 @@ const Dashboard = () => {
 
   if (authLoading || booksLoading) {
     return (
-      <div className="min-h-screen bg-gradient-background flex items-center justify-center">
-        <LoadingSpinner size="lg" text="Loading your reading journey..." />
+      <div className="min-h-screen bg-gradient-background">
+        <Navbar />
+        <div className="flex items-center justify-center h-96">
+          <LoadingSpinner size="lg" text="Loading your reading journey..." />
+        </div>
       </div>
     );
   }
@@ -89,27 +81,14 @@ const Dashboard = () => {
                       'Reader';
 
   return (
-    <div className="min-h-screen bg-gradient-background p-4">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <BookOpen className="h-8 w-8 text-primary" />
-            <div>
-              <h1 className="text-2xl font-bold">Hello, {displayName}! 👋</h1>
-              <p className="text-muted-foreground">Welcome back to your reading journey</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" onClick={() => navigate("/profile")}>
-              <User className="h-4 w-4 mr-2" />
-              Profile
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
+    <div className="min-h-screen bg-gradient-background">
+      <Navbar />
+      
+      <div className="max-w-6xl mx-auto p-6 space-y-6">
+        {/* Welcome Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold">Welcome back, {displayName}! 👋</h1>
+          <p className="text-muted-foreground">Here's what's happening with your reading journey</p>
         </div>
 
         {/* Progress Overview */}
@@ -164,38 +143,38 @@ const Dashboard = () => {
           </Button>
         </div>
 
-        {/* Charts Section */}
-        {!chartLoading && (readingProgress.length > 0 || genreData.length > 0 || weeklyReading.length > 0) && (
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold">Reading Analytics</h2>
-            
-            {/* Reading Progress Chart */}
-            {readingProgress.length > 0 && (
-              <ReadingProgressChart data={readingProgress} />
-            )}
-            
-            {/* Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {genreData.length > 0 && (
-                <GenreDistributionChart data={genreData} />
-              )}
-              {weeklyReading.length > 0 && (
-                <WeeklyReadingChart data={weeklyReading} />
-              )}
-            </div>
-          </div>
+        {/* Analytics Snippet */}
+        {!chartLoading && weeklyReading.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center">
+                  <BarChart3 className="h-5 w-5 mr-2" />
+                  This Week's Reading
+                </span>
+                <Button variant="outline" size="sm" onClick={() => navigate("/analytics")}>
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                  View Analytics
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <WeeklyReadingChart data={weeklyReading} />
+            </CardContent>
+          </Card>
         )}
 
-        {/* My Books */}
+        {/* My Books Snippet */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center">
-                <BookOpen className="h-5 w-5 mr-2" />
+                <Library className="h-5 w-5 mr-2" />
                 My Books
               </span>
               <Button variant="outline" size="sm" onClick={() => navigate("/books")}>
-                View All
+                <ArrowRight className="h-4 w-4 ml-1" />
+                View All Books
               </Button>
             </CardTitle>
           </CardHeader>
@@ -211,13 +190,20 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {books.slice(0, 6).map((book) => (
+                {books.slice(0, 3).map((book) => (
                   <BookCard 
                     key={book.id} 
                     book={book} 
                     onClick={() => handleBookClick(book.id)}
                   />
                 ))}
+                {books.length > 3 && (
+                  <div className="text-center pt-4">
+                    <Button variant="outline" onClick={() => navigate("/books")}>
+                      See {books.length - 3} more books
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>

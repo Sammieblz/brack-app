@@ -9,6 +9,8 @@ import Welcome from "./screens/Welcome";
 import Questionnaire from "./screens/Questionnaire";
 import Goals from "./screens/Goals";
 import Dashboard from "./screens/Dashboard";
+import MyBooks from "./screens/MyBooks";
+import Analytics from "./screens/Analytics";
 import AddBook from "./screens/AddBook";
 import BookDetail from "./screens/BookDetail";
 import Timer from "./screens/Timer";
@@ -31,6 +33,8 @@ const App = () => (
           <Route path="/questionnaire" element={<Questionnaire />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/books" element={<MyBooks />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="/add-book" element={<AddBook />} />
           <Route path="/book/:id" element={<BookDetail />} />
           <Route path="/timer" element={<Timer />} />
