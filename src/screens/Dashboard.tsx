@@ -9,6 +9,7 @@ import { BookOpen, Plus, Timer, LogOut, User, Target, Clock } from "lucide-react
 import { BookCard } from "@/components/BookCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
+import { useRecentActivity } from "@/hooks/useRecentActivity";
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import type { Goal } from "@/types";
@@ -16,6 +17,7 @@ import type { Goal } from "@/types";
 const Dashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { books, loading: booksLoading, refetchBooks } = useBooks(user?.id);
+  const { activities, loading: activitiesLoading, formatTimeAgo } = useRecentActivity(user?.id);
   const [goal, setGoal] = useState<Goal | null>(null);
   const navigate = useNavigate();
 
@@ -203,23 +205,28 @@ const Dashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3 text-sm">
-                <div className="w-2 h-2 bg-primary rounded-full"></div>
-                <span className="text-muted-foreground">Completed reading "Atomic Habits"</span>
-                <span className="text-xs text-muted-foreground">2 days ago</span>
+            {activitiesLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <LoadingSpinner size="sm" text="Loading activities..." />
               </div>
-              <div className="flex items-center space-x-3 text-sm">
-                <div className="w-2 h-2 bg-primary rounded-full"></div>
-                <span className="text-muted-foreground">Started reading "The Alchemist"</span>
-                <span className="text-xs text-muted-foreground">1 week ago</span>
+            ) : activities.length === 0 ? (
+              <div className="text-center py-8">
+                <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No recent activity. Start reading to see your progress here!</p>
               </div>
-              <div className="flex items-center space-x-3 text-sm">
-                <div className="w-2 h-2 bg-primary rounded-full"></div>
-                <span className="text-muted-foreground">Set reading goal: 12 books this year</span>
-                <span className="text-xs text-muted-foreground">2 weeks ago</span>
+            ) : (
+              <div className="space-y-3">
+                {activities.slice(0, 5).map((activity) => (
+                  <div key={activity.id} className="flex items-center space-x-3 text-sm">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <span className="text-muted-foreground flex-1">{activity.description}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatTimeAgo(activity.timestamp)}
+                    </span>
+                  </div>
+                ))}
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
