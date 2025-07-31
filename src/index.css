@@ -9,49 +9,53 @@ All colors MUST be HSL.
 @layer base {
   :root {
     --background: 45 100% 98%;
-    --foreground: 25 95% 8%;
+    --foreground: 25 5% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 25 95% 8%;
+    --card-foreground: 25 5% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 25 95% 8%;
+    --popover-foreground: 25 5% 15%;
 
-    --primary: 25 95% 53%;
-    --primary-foreground: 45 100% 98%;
+    --primary: 20 90% 58%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 25 100% 70%;
 
-    --secondary: 45 100% 96%;
-    --secondary-foreground: 25 95% 8%;
+    --secondary: 45 20% 95%;
+    --secondary-foreground: 25 5% 15%;
 
-    --muted: 45 50% 94%;
-    --muted-foreground: 25 20% 45%;
+    --muted: 45 20% 96%;
+    --muted-foreground: 25 8% 45%;
 
-    --accent: 35 100% 88%;
-    --accent-foreground: 25 95% 8%;
+    --accent: 35 100% 92%;
+    --accent-foreground: 25 5% 15%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 45 100% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 45 30% 88%;
-    --input: 45 30% 88%;
-    --ring: 25 95% 53%;
+    --border: 45 20% 90%;
+    --input: 45 20% 94%;
+    --ring: 20 90% 58%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(20 90% 58%), hsl(25 100% 70%));
+    --gradient-background: linear-gradient(180deg, hsl(45 100% 98%), hsl(35 50% 96%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(45 30% 98%));
+    
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -4px hsl(20 90% 58% / 0.15);
+    --shadow-medium: 0 8px 30px -8px hsl(20 90% 58% / 0.25);
+    --shadow-glow: 0 0 40px hsl(25 100% 70% / 0.3);
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 

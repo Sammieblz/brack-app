@@ -100,94 +100,120 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="flex items-center space-x-2">
-              <BookOpen className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold text-primary">BRACK</span>
+    <div className="min-h-screen bg-gradient-background flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary-glow/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+      </div>
+      
+      <div className="w-full max-w-sm relative z-10 animate-fade-in">
+        {/* Logo Section */}
+        <div className="text-center mb-8 animate-slide-up">
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <div className="p-3 bg-gradient-primary rounded-2xl shadow-glow animate-glow-pulse">
+              <BookOpen className="h-8 w-8 text-white" />
             </div>
+            <span className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              BRACK
+            </span>
           </div>
-          <CardTitle>{isSignUp ? "Create Account" : "Welcome Back"}</CardTitle>
-          <CardDescription>
-            {isSignUp 
-              ? "Start tracking your reading journey" 
-              : "Continue your reading journey"
-            }
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent className="space-y-4">
-          <Button 
-            onClick={handleGoogleAuth}
-            disabled={loading}
-            variant="outline" 
-            className="w-full"
-          >
-            <Mail className="mr-2 h-4 w-4" />
-            Continue with Google
-          </Button>
-          
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with email
-              </span>
-            </div>
-          </div>
-          
-          <form onSubmit={handleEmailAuth} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={loading}
-            >
-              {loading ? "Loading..." : (isSignUp ? "Sign Up" : "Sign In")}
-            </Button>
-          </form>
-          
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-muted-foreground hover:text-primary"
-            >
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-foreground">
+              {isSignUp ? "Join BRACK" : "Welcome Back"}
+            </h1>
+            <p className="text-muted-foreground text-sm">
               {isSignUp 
-                ? "Already have an account? Sign in" 
-                : "Don't have an account? Sign up"
+                ? "Start your reading journey today" 
+                : "Continue your reading adventure"
               }
-            </button>
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Auth Card */}
+        <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in" style={{ animationDelay: '0.2s' }}>
+          <CardContent className="p-6 space-y-6">
+            <Button 
+              onClick={handleGoogleAuth}
+              disabled={loading}
+              variant="outline" 
+              className="w-full h-12 text-sm font-medium border-border/50 hover:shadow-soft transition-all duration-300"
+            >
+              <Mail className="mr-2 h-4 w-4" />
+              Continue with Google
+            </Button>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border/30" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-3 text-muted-foreground font-medium">
+                  Or continue with email
+                </span>
+              </div>
+            </div>
+            
+            <form onSubmit={handleEmailAuth} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-12 border-border/50 focus:border-primary transition-colors"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="h-12 border-border/50 focus:border-primary transition-colors"
+                  required
+                />
+              </div>
+              
+              <Button 
+                type="submit" 
+                className="w-full h-12 bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium" 
+                disabled={loading}
+              >
+                {loading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Loading...</span>
+                  </div>
+                ) : (
+                  isSignUp ? "Create Account" : "Sign In"
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+        
+        {/* Switch Mode */}
+        <div className="text-center mt-6 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+          <button
+            type="button"
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-sm text-muted-foreground hover:text-primary transition-colors duration-300 font-medium"
+          >
+            {isSignUp 
+              ? "Already have an account? Sign in" 
+              : "Don't have an account? Sign up"
+            }
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
