@@ -30,26 +30,17 @@ const Goals = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // TODO: Replace with actual Supabase call once types are synced
-      // const { error } = await supabase
-      //   .from('goals')
-      //   .insert({
-      //     user_id: user.id,
-      //     target_books: parseInt(targetBooks) || null,
-      //     start_date: startDate?.toISOString().split('T')[0] || null,
-      //     end_date: endDate?.toISOString().split('T')[0] || null,
-      //     reminder_time: reminderEnabled ? reminderTime : null,
-      //   });
+      const { error } = await supabase
+        .from('goals')
+        .insert({
+          user_id: user.id,
+          target_books: parseInt(targetBooks) || null,
+          start_date: startDate?.toISOString().split('T')[0] || null,
+          end_date: endDate?.toISOString().split('T')[0] || null,
+          reminder_time: reminderEnabled ? reminderTime : null,
+        });
 
-      // if (error) throw error;
-      
-      // For now, just store in localStorage
-      localStorage.setItem('reading_goal', JSON.stringify({
-        target_books: parseInt(targetBooks) || null,
-        start_date: startDate?.toISOString().split('T')[0] || null,
-        end_date: endDate?.toISOString().split('T')[0] || null,
-        reminder_time: reminderEnabled ? reminderTime : null,
-      }));
+      if (error) throw error;
 
       toast({
         title: "Reading goal set!",
