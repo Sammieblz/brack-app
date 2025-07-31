@@ -12,6 +12,10 @@ export interface Profile {
   display_name: string | null;
   avatar_url: string | null;
   bio: string | null;
+  phone_number: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  date_of_birth: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

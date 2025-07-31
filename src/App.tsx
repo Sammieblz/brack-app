@@ -13,6 +13,7 @@ import AddBook from "./screens/AddBook";
 import BookDetail from "./screens/BookDetail";
 import Timer from "./screens/Timer";
 import ScanBarcode from "./screens/ScanBarcode";
+import Profile from "./screens/Profile";
 import NotFound from "./screens/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/book/:id" element={<BookDetail />} />
           <Route path="/timer" element={<Timer />} />
           <Route path="/scan" element={<ScanBarcode />} />
+          <Route path="/profile" element={<Profile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

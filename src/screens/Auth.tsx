@@ -13,6 +13,8 @@ const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const navigate = useNavigate();
@@ -37,9 +39,27 @@ const Auth = () => {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (session) {
-          navigate("/dashboard");
+      async (event, session) => {
+        if (session && event === 'SIGNED_IN') {
+          // Check if user has completed onboarding
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', session.user.id)
+            .maybeSingle();
+          
+          const { data: habits } = await supabase
+            .from('reading_habits')
+            .select('id')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          
+          // Redirect based on onboarding status
+          if (!habits) {
+            navigate("/welcome");
+          } else {
+            navigate("/dashboard");
+          }
         }
       }
     );
@@ -65,7 +85,12 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`
+            emailRedirectTo: `${window.location.origin}/welcome`,
+            data: {
+              first_name: firstName,
+              last_name: lastName,
+              full_name: `${firstName} ${lastName}`.trim(),
+            }
           }
         });
         
@@ -101,7 +126,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}/welcome`
         }
       });
       
@@ -178,6 +203,35 @@ const Auth = () => {
             </div>
             
             <form onSubmit={handleEmailAuth} className="space-y-4">
+              {isSignUp && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
+                    <Input
+                      id="firstName"
+                      type="text"
+                      placeholder="First name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="h-12 border-border/50 focus:border-primary transition-colors"
+                      required={isSignUp}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="text-sm font-medium">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      type="text"
+                      placeholder="Last name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="h-12 border-border/50 focus:border-primary transition-colors"
+                      required={isSignUp}
+                    />
+                  </div>
+                </div>
+              )}
+              
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">Email</Label>
                 <Input
