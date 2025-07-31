@@ -5,101 +5,61 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { BookOpen, Plus, Timer, LogOut, User, Target, Clock } from "lucide-react";
-
-interface Goal {
-  id: string;
-  target_books: number;
-  start_date: string;
-  end_date: string;
-  is_completed: boolean;
-}
-
-interface Book {
-  id: string;
-  title: string;
-  author: string;
-  status: string;
-  pages: number;
-  genre: string;
-  cover_url?: string;
-}
+import { BookCard } from "@/components/BookCard";
+import { useAuth } from "@/hooks/useAuth";
+import { useBooks } from "@/hooks/useBooks";
+import { toast } from "sonner";
+import type { Goal } from "@/types";
 
 const Dashboard = () => {
-  const [user, setUser] = useState<any>(null);
+  const { user, signOut } = useAuth();
+  const { books, loading, refetchBooks } = useBooks(user?.id);
   const [goal, setGoal] = useState<Goal | null>(null);
-  const [books, setBooks] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-      setUser(user);
-      await loadUserData(user.id);
-    };
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    loadGoalData();
+  }, [user, navigate]);
 
-    checkAuth();
-  }, [navigate]);
-
-  const loadUserData = async (userId: string) => {
+  const loadGoalData = async () => {
+    if (!user) return;
+    
     try {
-      // For now, we'll use mock data since the types aren't synced yet
-      // This will be replaced with actual Supabase queries once types are available
-      setGoal({
-        id: "1",
-        target_books: 12,
-        start_date: "2024-01-01",
-        end_date: "2024-12-31",
-        is_completed: false
-      });
+      const { data, error } = await supabase
+        .from('goals')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .maybeSingle();
 
-      setBooks([
-        {
-          id: "1",
-          title: "The Alchemist",
-          author: "Paulo Coelho",
-          status: "reading",
-          pages: 210,
-          genre: "Fiction"
-        },
-        {
-          id: "2",
-          title: "Atomic Habits",
-          author: "James Clear",
-          status: "completed",
-          pages: 320,
-          genre: "Self-Help"
-        }
-      ]);
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+      
+      setGoal(data);
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error loading data",
-        description: error.message,
-      });
-    } finally {
-      setLoading(false);
+      console.error('Error loading goal:', error);
+      toast.error("Failed to load goal data");
     }
   };
 
   const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error signing out",
-        description: error.message,
-      });
-    } else {
-      navigate("/auth");
+    try {
+      await signOut();
+      toast.success("Signed out successfully");
+      navigate("/");
+    } catch (error: any) {
+      toast.error("Error signing out");
     }
+  };
+
+  const handleBookClick = (bookId: string) => {
+    navigate(`/book/${bookId}`);
   };
 
   const completedBooks = books.filter(book => book.status === "completed").length;
@@ -107,9 +67,9 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen bg-gradient-background flex items-center justify-center">
         <div className="text-center">
-          <BookOpen className="h-8 w-8 text-primary mx-auto mb-4 animate-pulse" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading your reading journey...</p>
         </div>
       </div>
@@ -122,7 +82,7 @@ const Dashboard = () => {
                       'Reader';
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-gradient-background p-4">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -221,28 +181,13 @@ const Dashboard = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-3">
                 {books.slice(0, 6).map((book) => (
-                  <Card key={book.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-semibold text-sm line-clamp-2">{book.title}</h3>
-                          <Badge 
-                            variant={book.status === "completed" ? "default" : "secondary"}
-                            className="text-xs"
-                          >
-                            {book.status}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground">{book.author}</p>
-                        <div className="flex justify-between items-center text-xs text-muted-foreground">
-                          <span>{book.genre}</span>
-                          <span>{book.pages} pages</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <BookCard 
+                    key={book.id} 
+                    book={book} 
+                    onClick={() => handleBookClick(book.id)}
+                  />
                 ))}
               </div>
             )}

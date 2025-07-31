@@ -1,6 +1,6 @@
 export interface User {
   id: string;
-  email: string;
+  email?: string;
   user_metadata?: {
     full_name?: string;
     name?: string;
@@ -26,9 +26,9 @@ export interface Book {
   genre: string | null;
   pages: number | null;
   cover_url: string | null;
-  status: 'reading' | 'completed' | 'to_read';
+  status: string;
   tags: string[] | null;
-  metadata: Record<string, any>;
+  metadata: any;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
