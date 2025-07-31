@@ -10,6 +10,10 @@ import { BookCard } from "@/components/BookCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
 import { useRecentActivity } from "@/hooks/useRecentActivity";
+import { useChartData } from "@/hooks/useChartData";
+import { ReadingProgressChart } from "@/components/charts/ReadingProgressChart";
+import { GenreDistributionChart } from "@/components/charts/GenreDistributionChart";
+import { WeeklyReadingChart } from "@/components/charts/WeeklyReadingChart";
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import type { Goal } from "@/types";
@@ -18,6 +22,7 @@ const Dashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { books, loading: booksLoading, refetchBooks } = useBooks(user?.id);
   const { activities, loading: activitiesLoading, formatTimeAgo } = useRecentActivity(user?.id);
+  const { readingProgress, genreData, weeklyReading, loading: chartLoading } = useChartData(user?.id);
   const [goal, setGoal] = useState<Goal | null>(null);
   const navigate = useNavigate();
 
@@ -158,6 +163,28 @@ const Dashboard = () => {
             Start Reading Timer
           </Button>
         </div>
+
+        {/* Charts Section */}
+        {!chartLoading && (readingProgress.length > 0 || genreData.length > 0 || weeklyReading.length > 0) && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold">Reading Analytics</h2>
+            
+            {/* Reading Progress Chart */}
+            {readingProgress.length > 0 && (
+              <ReadingProgressChart data={readingProgress} />
+            )}
+            
+            {/* Charts Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {genreData.length > 0 && (
+                <GenreDistributionChart data={genreData} />
+              )}
+              {weeklyReading.length > 0 && (
+                <WeeklyReadingChart data={weeklyReading} />
+              )}
+            </div>
+          </div>
+        )}
 
         {/* My Books */}
         <Card>
