@@ -14,18 +14,20 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import type { Goal } from "@/types";
 
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
-  const { books, loading, refetchBooks } = useBooks(user?.id);
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { books, loading: booksLoading, refetchBooks } = useBooks(user?.id);
   const [goal, setGoal] = useState<Goal | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       navigate("/auth");
       return;
     }
-    loadGoalData();
-  }, [user, navigate]);
+    if (user) {
+      loadGoalData();
+    }
+  }, [user, authLoading, navigate]);
 
   const loadGoalData = async () => {
     if (!user) return;
@@ -66,7 +68,7 @@ const Dashboard = () => {
   const completedBooks = books.filter(book => book.status === "completed").length;
   const progressPercentage = goal ? Math.round((completedBooks / goal.target_books) * 100) : 0;
 
-  if (loading) {
+  if (authLoading || booksLoading) {
     return (
       <div className="min-h-screen bg-gradient-background flex items-center justify-center">
         <LoadingSpinner size="lg" text="Loading your reading journey..." />
