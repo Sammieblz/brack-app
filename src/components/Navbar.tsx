@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,11 +11,31 @@ import {
 import { BookOpen, BarChart3, Library, User, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from("profiles")
+        .select("avatar_url")
+        .eq("id", user.id)
+        .maybeSingle();
+      
+      if (data?.avatar_url) {
+        setAvatarUrl(data.avatar_url);
+      }
+    };
+
+    loadProfile();
+  }, [user]);
 
   const handleSignOut = async () => {
     try {
@@ -73,7 +93,7 @@ export const Navbar = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar className="h-10 w-10 border-2 border-primary/20">
-                    <AvatarImage src="" alt={displayName} />
+                    <AvatarImage src={avatarUrl || undefined} alt={displayName} />
                     <AvatarFallback className="bg-primary/10 text-primary">
                       {displayName.charAt(0).toUpperCase()}
                     </AvatarFallback>
