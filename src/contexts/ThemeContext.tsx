@@ -36,6 +36,16 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   // Load user's saved theme preference
   useEffect(() => {
     const loadTheme = async () => {
+      // First, try to load from localStorage for instant application
+      const cachedTheme = localStorage.getItem('color_theme');
+      if (cachedTheme) {
+        const theme = getTheme(cachedTheme);
+        const isDark = document.documentElement.classList.contains('dark');
+        const colors = isDark ? theme.colors.dark : theme.colors.light;
+        applyThemeColors(colors);
+        setCurrentTheme(cachedTheme);
+      }
+
       if (!user) {
         setIsLoading(false);
         return;
@@ -56,6 +66,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           const colors = isDark ? theme.colors.dark : theme.colors.light;
           applyThemeColors(colors);
           setCurrentTheme(data.color_theme);
+          localStorage.setItem('color_theme', data.color_theme);
         }
       } catch (error) {
         console.error('Error loading theme:', error);
@@ -94,6 +105,9 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       const colors = isDark ? theme.colors.dark : theme.colors.light;
       applyThemeColors(colors);
       setCurrentTheme(themeId);
+      
+      // Cache in localStorage for instant load on next visit
+      localStorage.setItem('color_theme', themeId);
 
       // Save to database
       const { error } = await supabase
