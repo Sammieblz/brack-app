@@ -16,6 +16,7 @@ export interface Profile {
   first_name: string | null;
   last_name: string | null;
   date_of_birth: string | null;
+  color_theme: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

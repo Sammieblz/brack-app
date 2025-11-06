@@ -9,8 +9,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, Save, User, Upload } from "lucide-react";
+import { ArrowLeft, Save, User, Upload, Palette } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { ThemeSelector } from "@/components/ThemeSelector";
 import type { Profile } from "@/types";
 
 const ProfilePage = () => {
@@ -311,6 +312,22 @@ const ProfilePage = () => {
                 className="hidden"
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Appearance Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Palette className="h-5 w-5 mr-2" />
+              Appearance
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Choose your preferred color palette. Changes are applied instantly.
+            </p>
+            <ThemeSelector />
           </CardContent>
         </Card>
 
