@@ -34,7 +34,7 @@ const MyBooks = () => {
     total: books.length,
     reading: books.filter(book => book.status === "reading").length,
     completed: books.filter(book => book.status === "completed").length,
-    toRead: books.filter(book => book.status === "to-read").length,
+    toRead: books.filter(book => book.status === "to_read").length,
   };
 
   if (loading) {
@@ -128,7 +128,7 @@ const MyBooks = () => {
                     <SelectItem value="all">All Books</SelectItem>
                     <SelectItem value="reading">Currently Reading</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="to-read">To Read</SelectItem>
+                    <SelectItem value="to_read">To Read</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

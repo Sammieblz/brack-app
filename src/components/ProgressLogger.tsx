@@ -5,6 +5,7 @@ import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { updateBookStatusIfNeeded } from "@/utils/bookStatus";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
@@ -62,6 +63,9 @@ export const ProgressLogger = ({
         title: "Progress logged!",
         description: `Updated to page ${pageNumber}${data.progress.status === 'completed' ? ' - Book completed!' : ''}`,
       });
+
+      // Update book status if needed
+      await updateBookStatusIfNeeded(bookId);
 
       // Reset form
       setPageNumber(currentPage || 0);

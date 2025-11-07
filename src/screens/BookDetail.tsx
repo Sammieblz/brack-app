@@ -76,14 +76,29 @@ const BookDetail = () => {
     if (!book) return;
 
     try {
+      const updateData: any = { 
+        status: newStatus, 
+        updated_at: new Date().toISOString() 
+      };
+
+      // Set date_finished when marking as completed
+      if (newStatus === 'completed' && !book.date_finished) {
+        updateData.date_finished = new Date().toISOString();
+      }
+
+      // Set date_started when starting to read
+      if (newStatus === 'reading' && !book.date_started) {
+        updateData.date_started = new Date().toISOString();
+      }
+
       const { error } = await supabase
         .from('books')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .update(updateData)
         .eq('id', book.id);
 
       if (error) throw error;
 
-      setBook({ ...book, status: newStatus });
+      setBook({ ...book, ...updateData, status: newStatus });
       toast.success(`Book marked as ${newStatus.replace('_', ' ')}`);
     } catch (error: any) {
       console.error('Error updating book status:', error);

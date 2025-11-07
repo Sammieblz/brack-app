@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { updateBookStatusIfNeeded } from "@/utils/bookStatus";
 
 interface TimerState {
   time: number;
@@ -149,6 +150,9 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       const hours = Math.floor(durationMinutes / 60);
       const minutes = durationMinutes % 60;
       toast.success(`Reading session saved: ${hours}h ${minutes}m`);
+
+      // Update book status if needed
+      await updateBookStatusIfNeeded(state.bookId);
 
       // Reset state
       setState({

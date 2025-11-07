@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { updateBookStatusIfNeeded } from "@/utils/bookStatus";
 
 export interface JournalEntry {
   id: string;
@@ -62,6 +63,7 @@ export const useJournalEntries = (bookId: string) => {
         description: "Journal entry added",
       });
       
+      await updateBookStatusIfNeeded(bookId);
       await fetchEntries();
     } catch (error) {
       console.error('Error adding journal entry:', error);
