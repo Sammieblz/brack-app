@@ -43,12 +43,17 @@ export type Database = {
           author: string | null
           cover_url: string | null
           created_at: string | null
+          current_page: number | null
+          date_finished: string | null
+          date_started: string | null
           deleted_at: string | null
           genre: string | null
           id: string
           isbn: string | null
           metadata: Json | null
+          notes: string | null
           pages: number | null
+          rating: number | null
           status: string | null
           tags: string[] | null
           title: string
@@ -59,12 +64,17 @@ export type Database = {
           author?: string | null
           cover_url?: string | null
           created_at?: string | null
+          current_page?: number | null
+          date_finished?: string | null
+          date_started?: string | null
           deleted_at?: string | null
           genre?: string | null
           id?: string
           isbn?: string | null
           metadata?: Json | null
+          notes?: string | null
           pages?: number | null
+          rating?: number | null
           status?: string | null
           tags?: string[] | null
           title: string
@@ -75,12 +85,17 @@ export type Database = {
           author?: string | null
           cover_url?: string | null
           created_at?: string | null
+          current_page?: number | null
+          date_finished?: string | null
+          date_started?: string | null
           deleted_at?: string | null
           genre?: string | null
           id?: string
           isbn?: string | null
           metadata?: Json | null
+          notes?: string | null
           pages?: number | null
+          rating?: number | null
           status?: string | null
           tags?: string[] | null
           title?: string

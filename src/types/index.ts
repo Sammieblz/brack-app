@@ -35,6 +35,11 @@ export interface Book {
   status: string;
   tags: string[] | null;
   metadata: any;
+  current_page: number | null;
+  date_started: string | null;
+  date_finished: string | null;
+  rating: number | null;
+  notes: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;

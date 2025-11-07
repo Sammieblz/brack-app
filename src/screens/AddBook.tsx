@@ -52,7 +52,12 @@ const AddBook = () => {
         status: 'to_read',
         cover_url: null,
         tags: null,
-        metadata: {}
+        metadata: {},
+        current_page: 0,
+        date_started: null,
+        date_finished: null,
+        rating: null,
+        notes: null
       };
 
       const { error } = await supabase

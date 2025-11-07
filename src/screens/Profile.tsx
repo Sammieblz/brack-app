@@ -9,14 +9,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, Save, User, Upload, Palette } from "lucide-react";
+import { useBadges } from "@/hooks/useBadges";
+import { ArrowLeft, Save, User, Upload, Palette, Award } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
+import { BadgeDisplay } from "@/components/BadgeDisplay";
 import type { Profile } from "@/types";
 
 const ProfilePage = () => {
   const { user, loading: authLoading } = useAuth();
+  const { badges, earnedBadges, loading: badgesLoading } = useBadges(user?.id);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -440,6 +443,32 @@ const ProfilePage = () => {
                 className="bg-muted"
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Badges Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Award className="h-5 w-5 mr-2" />
+              Achievements & Badges
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {badgesLoading ? (
+              <div className="flex justify-center py-8">
+                <LoadingSpinner size="md" />
+              </div>
+            ) : badges.length > 0 ? (
+              <>
+                <p className="text-sm text-muted-foreground mb-4">
+                  You've earned {earnedBadges.length} out of {badges.length} badges
+                </p>
+                <BadgeDisplay badges={badges} earnedBadges={earnedBadges} />
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">No badges available yet</p>
+            )}
           </CardContent>
         </Card>
 

@@ -8,17 +8,19 @@ import { BookOpen, Plus, Timer, Target, Clock, BarChart3, ArrowRight, Library } 
 import { BookCard } from "@/components/BookCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
+import { useBadges } from "@/hooks/useBadges";
 import { useRecentActivity } from "@/hooks/useRecentActivity";
 import { useChartData } from "@/hooks/useChartData";
 import { WeeklyReadingChart } from "@/components/charts/WeeklyReadingChart";
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Navbar } from "@/components/Navbar";
-import type { Goal } from "@/types";
+import type { Goal, ReadingSession } from "@/types";
 
 const Dashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { books, loading: booksLoading, refetchBooks } = useBooks(user?.id);
+  const { checkAndAwardBadges } = useBadges(user?.id);
   const { activities, loading: activitiesLoading, formatTimeAgo } = useRecentActivity(user?.id);
   const { readingProgress, genreData, weeklyReading, loading: chartLoading } = useChartData(user?.id);
   const [goal, setGoal] = useState<Goal | null>(null);
@@ -33,6 +35,28 @@ const Dashboard = () => {
       loadGoalData();
     }
   }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    // Check and award badges when books are loaded
+    if (user && books.length > 0) {
+      checkBadges();
+    }
+  }, [books, user]);
+
+  const checkBadges = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: sessions } = await supabase
+        .from('reading_sessions')
+        .select('*')
+        .eq('user_id', user.id);
+
+      await checkAndAwardBadges(books, sessions || []);
+    } catch (error) {
+      console.error('Error checking badges:', error);
+    }
+  };
 
   const loadGoalData = async () => {
     if (!user) return;

@@ -3,8 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Clock, CheckCircle, Edit, Trash2, Play } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle, Edit, Trash2, Play, Star } from "lucide-react";
 import { toast } from "sonner";
 import { formatDuration } from "@/utils";
 import type { Book, ReadingSession } from "@/types";
@@ -157,9 +158,37 @@ const BookDetail = () => {
             </div>
             
             {book.pages && (
+              <>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Pages:</span>
+                  <span className="font-medium">{book.pages}</span>
+                </div>
+                
+                {book.current_page !== null && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Progress:</span>
+                      <span className="font-medium">
+                        {book.current_page} / {book.pages} ({Math.round((book.current_page / book.pages) * 100)}%)
+                      </span>
+                    </div>
+                    <Progress value={(book.current_page / book.pages) * 100} />
+                  </div>
+                )}
+              </>
+            )}
+
+            {book.rating && (
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Pages:</span>
-                <span className="font-medium">{book.pages}</span>
+                <span className="text-sm text-muted-foreground">Rating:</span>
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-4 w-4 ${i < book.rating! ? 'fill-primary text-primary' : 'text-muted'}`}
+                    />
+                  ))}
+                </div>
               </div>
             )}
 
@@ -173,6 +202,20 @@ const BookDetail = () => {
               </Badge>
             </div>
 
+            {book.date_started && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Started:</span>
+                <span className="font-medium">{new Date(book.date_started).toLocaleDateString()}</span>
+              </div>
+            )}
+
+            {book.date_finished && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Finished:</span>
+                <span className="font-medium">{new Date(book.date_finished).toLocaleDateString()}</span>
+              </div>
+            )}
+
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Sessions:</span>
               <span className="font-medium">{sessions.length}</span>
@@ -182,6 +225,13 @@ const BookDetail = () => {
               <span className="text-sm text-muted-foreground">Total Time:</span>
               <span className="font-medium">{formatDuration(totalReadingTime)}</span>
             </div>
+
+            {book.notes && (
+              <div className="pt-2 border-t space-y-2">
+                <span className="text-sm text-muted-foreground block">Notes:</span>
+                <p className="text-sm whitespace-pre-wrap">{book.notes}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

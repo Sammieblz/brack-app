@@ -14,6 +14,7 @@ import MyBooks from "./screens/MyBooks";
 import Analytics from "./screens/Analytics";
 import AddBook from "./screens/AddBook";
 import BookDetail from "./screens/BookDetail";
+import EditBook from "./screens/EditBook";
 import Timer from "./screens/Timer";
 import ScanBarcode from "./screens/ScanBarcode";
 import Profile from "./screens/Profile";
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/add-book" element={<AddBook />} />
           <Route path="/book/:id" element={<BookDetail />} />
+          <Route path="/edit-book/:id" element={<EditBook />} />
           <Route path="/timer" element={<Timer />} />
           <Route path="/scan" element={<ScanBarcode />} />
           <Route path="/profile" element={<Profile />} />
