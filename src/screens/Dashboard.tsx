@@ -162,12 +162,12 @@ const Dashboard = () => {
             Add New Book
           </Button>
           <Button 
-            onClick={() => navigate("/timer")}
+            onClick={() => navigate("/books")}
             variant="outline"
             className="h-20 text-lg"
           >
-            <Timer className="mr-2 h-6 w-6" />
-            Start Reading Timer
+            <Library className="mr-2 h-6 w-6" />
+            View My Books
           </Button>
         </div>
 

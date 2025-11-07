@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTimer } from "@/contexts/TimerContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ const BookDetail = () => {
   const [sessions, setSessions] = useState<ReadingSession[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { startTimer } = useTimer();
 
   useEffect(() => {
     if (!id) return;
@@ -284,7 +286,7 @@ const BookDetail = () => {
         <div className="space-y-3 mb-6">
           <div className="grid grid-cols-2 gap-3">
             <Button
-              onClick={() => navigate("/timer", { state: { bookId: book.id, bookTitle: book.title } })}
+              onClick={() => startTimer(book.id, book.title)}
               className="bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium"
             >
               <Play className="mr-2 h-4 w-4" />
