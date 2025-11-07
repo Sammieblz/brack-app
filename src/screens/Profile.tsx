@@ -10,16 +10,20 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useBadges } from "@/hooks/useBadges";
-import { ArrowLeft, Save, User, Upload, Palette, Award } from "lucide-react";
+import { useStreaks } from "@/hooks/useStreaks";
+import { ArrowLeft, Save, User, Upload, Palette, Award, Flame } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { BadgeDisplay } from "@/components/BadgeDisplay";
+import { StreakDisplay } from "@/components/StreakDisplay";
+import { StreakCalendar } from "@/components/StreakCalendar";
 import type { Profile } from "@/types";
 
 const ProfilePage = () => {
   const { user, loading: authLoading } = useAuth();
   const { badges, earnedBadges, loading: badgesLoading } = useBadges(user?.id);
+  const { streakData, activityCalendar, loading: streaksLoading, useStreakFreeze } = useStreaks(user?.id);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -442,6 +446,25 @@ const ProfilePage = () => {
                 disabled
                 className="bg-muted"
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Reading Streak Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Flame className="h-5 w-5 mr-2 text-orange-500" />
+              Reading Streak
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <StreakDisplay 
+                streakData={streakData}
+                onUseFreeze={useStreakFreeze}
+              />
+              <StreakCalendar activityCalendar={activityCalendar} />
             </div>
           </CardContent>
         </Card>

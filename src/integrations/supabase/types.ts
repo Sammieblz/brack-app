@@ -159,13 +159,17 @@ export type Database = {
           bio: string | null
           color_theme: string | null
           created_at: string | null
+          current_streak: number | null
           date_of_birth: string | null
           display_name: string | null
           first_name: string | null
           id: string
           is_active: boolean | null
           last_name: string | null
+          last_reading_date: string | null
+          longest_streak: number | null
           phone_number: string | null
+          streak_freeze_used_at: string | null
           theme_mode: string | null
           updated_at: string | null
         }
@@ -174,13 +178,17 @@ export type Database = {
           bio?: string | null
           color_theme?: string | null
           created_at?: string | null
+          current_streak?: number | null
           date_of_birth?: string | null
           display_name?: string | null
           first_name?: string | null
           id: string
           is_active?: boolean | null
           last_name?: string | null
+          last_reading_date?: string | null
+          longest_streak?: number | null
           phone_number?: string | null
+          streak_freeze_used_at?: string | null
           theme_mode?: string | null
           updated_at?: string | null
         }
@@ -189,13 +197,17 @@ export type Database = {
           bio?: string | null
           color_theme?: string | null
           created_at?: string | null
+          current_streak?: number | null
           date_of_birth?: string | null
           display_name?: string | null
           first_name?: string | null
           id?: string
           is_active?: boolean | null
           last_name?: string | null
+          last_reading_date?: string | null
+          longest_streak?: number | null
           phone_number?: string | null
+          streak_freeze_used_at?: string | null
           theme_mode?: string | null
           updated_at?: string | null
         }
@@ -289,6 +301,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      reading_streak_history: {
+        Row: {
+          achieved_at: string
+          created_at: string | null
+          id: string
+          streak_count: number
+          user_id: string
+        }
+        Insert: {
+          achieved_at?: string
+          created_at?: string | null
+          id?: string
+          streak_count: number
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string
+          created_at?: string | null
+          id?: string
+          streak_count?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       user_badges: {
         Row: {

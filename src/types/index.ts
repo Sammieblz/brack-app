@@ -19,6 +19,10 @@ export interface Profile {
   color_theme: string | null;
   theme_mode: string | null;
   is_active: boolean;
+  current_streak: number;
+  longest_streak: number;
+  last_reading_date: string | null;
+  streak_freeze_used_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -100,4 +104,12 @@ export interface TimerState {
   startTime: Date | null;
   duration: number; // in seconds
   bookId: string | null;
+}
+
+export interface ReadingStreakHistory {
+  id: string;
+  user_id: string;
+  streak_count: number;
+  achieved_at: string;
+  created_at: string;
 }

@@ -6,9 +6,12 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { BookOpen, Plus, Timer, Target, Clock, BarChart3, ArrowRight, Library } from "lucide-react";
 import { BookCard } from "@/components/BookCard";
+import { StreakDisplay } from "@/components/StreakDisplay";
+import { StreakCalendar } from "@/components/StreakCalendar";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
 import { useBadges } from "@/hooks/useBadges";
+import { useStreaks } from "@/hooks/useStreaks";
 import { useRecentActivity } from "@/hooks/useRecentActivity";
 import { useChartData } from "@/hooks/useChartData";
 import { WeeklyReadingChart } from "@/components/charts/WeeklyReadingChart";
@@ -21,6 +24,7 @@ const Dashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const { books, loading: booksLoading, refetchBooks } = useBooks(user?.id);
   const { checkAndAwardBadges } = useBadges(user?.id);
+  const { streakData, activityCalendar, loading: streaksLoading, refetchStreaks, useStreakFreeze } = useStreaks(user?.id);
   const { activities, loading: activitiesLoading, formatTimeAgo } = useRecentActivity(user?.id);
   const { readingProgress, genreData, weeklyReading, loading: chartLoading } = useChartData(user?.id);
   const [goal, setGoal] = useState<Goal | null>(null);
@@ -165,6 +169,15 @@ const Dashboard = () => {
             <Timer className="mr-2 h-6 w-6" />
             Start Reading Timer
           </Button>
+        </div>
+
+        {/* Reading Streaks Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <StreakDisplay 
+            streakData={streakData} 
+            onUseFreeze={useStreakFreeze}
+          />
+          <StreakCalendar activityCalendar={activityCalendar} />
         </div>
 
         {/* Analytics Snippet */}
