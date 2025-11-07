@@ -1,1 +1,4 @@
 project_id = "waftnaqgkcgufzapcihe"
+
+[functions.search-books]
+verify_jwt = false

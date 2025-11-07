@@ -5,21 +5,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookSearch } from "@/components/BookSearch";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, BookOpen, Camera } from "lucide-react";
+import { ArrowLeft, BookOpen, Camera, Search, PenTool } from "lucide-react";
 import { toast } from "sonner";
 import { GENRES } from "@/constants";
 import type { Book } from "@/types";
+import type { GoogleBookResult } from "@/types/googleBooks";
 
 const AddBook = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("search");
   const [formData, setFormData] = useState({
     title: "",
     author: "",
     isbn: "",
     genre: "",
-    pages: ""
+    pages: "",
+    cover_url: "",
   });
   const navigate = useNavigate();
 
@@ -50,7 +55,7 @@ const AddBook = () => {
         genre: formData.genre || null,
         pages: formData.pages ? parseInt(formData.pages) : null,
         status: 'to_read',
-        cover_url: null,
+        cover_url: formData.cover_url || null,
         tags: null,
         metadata: {},
         current_page: 0,
@@ -74,6 +79,49 @@ const AddBook = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSelectBook = (book: GoogleBookResult) => {
+    setFormData({
+      title: book.title,
+      author: book.author || "",
+      isbn: book.isbn || "",
+      genre: book.genre || "",
+      pages: book.pages?.toString() || "",
+      cover_url: book.cover_url || "",
+    });
+    setActiveTab("manual");
+    toast.success("Book details loaded! Review and save.");
+  };
+
+  const handleQuickAdd = async (book: GoogleBookResult) => {
+    if (!user) return;
+    
+    const bookData: Omit<Book, 'id' | 'created_at' | 'updated_at' | 'deleted_at'> = {
+      user_id: user.id,
+      title: book.title,
+      author: book.author,
+      isbn: book.isbn,
+      genre: book.genre,
+      pages: book.pages,
+      status: 'to_read',
+      cover_url: book.cover_url,
+      tags: null,
+      metadata: {},
+      current_page: 0,
+      date_started: null,
+      date_finished: null,
+      rating: null,
+      notes: null
+    };
+
+    const { error } = await supabase
+      .from('books')
+      .insert(bookData);
+
+    if (error) throw error;
+
+    navigate("/dashboard");
   };
 
   const handleScanISBN = () => {
@@ -107,87 +155,111 @@ const AddBook = () => {
               Add a New Book 📚
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Enter book title"
-                  required
-                />
-              </div>
+          <CardContent>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="search" className="flex items-center gap-2">
+                  <Search className="h-4 w-4" />
+                  Search Books
+                </TabsTrigger>
+                <TabsTrigger value="manual" className="flex items-center gap-2">
+                  <PenTool className="h-4 w-4" />
+                  Manual Entry
+                </TabsTrigger>
+              </TabsList>
 
-              <div className="space-y-2">
-                <Label htmlFor="author">Author</Label>
-                <Input
-                  id="author"
-                  value={formData.author}
-                  onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                  placeholder="Enter author name"
+              {/* Search Tab */}
+              <TabsContent value="search" className="space-y-4">
+                <BookSearch 
+                  onSelectBook={handleSelectBook}
+                  onQuickAdd={handleQuickAdd}
                 />
-              </div>
+              </TabsContent>
 
-              <div className="space-y-2">
-                <Label htmlFor="isbn">ISBN</Label>
-                <div className="flex space-x-2">
-                  <Input
-                    id="isbn"
-                    value={formData.isbn}
-                    onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
-                    placeholder="Enter ISBN"
-                    className="flex-1"
-                  />
+              {/* Manual Entry Tab */}
+              <TabsContent value="manual">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="Enter book title"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="author">Author</Label>
+                    <Input
+                      id="author"
+                      value={formData.author}
+                      onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                      placeholder="Enter author name"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="isbn">ISBN</Label>
+                    <div className="flex space-x-2">
+                      <Input
+                        id="isbn"
+                        value={formData.isbn}
+                        onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
+                        placeholder="Enter ISBN"
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleScanISBN}
+                        className="border-border/50 hover:shadow-soft transition-all duration-300 px-3"
+                      >
+                        <Camera className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="genre">Genre</Label>
+                    <Select value={formData.genre} onValueChange={(value) => setFormData({ ...formData, genre: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a genre" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {GENRES.map((genre) => (
+                          <SelectItem key={genre} value={genre}>
+                            {genre}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="pages">Page Count</Label>
+                    <Input
+                      id="pages"
+                      type="number"
+                      value={formData.pages}
+                      onChange={(e) => setFormData({ ...formData, pages: e.target.value })}
+                      placeholder="Enter page count"
+                      min="1"
+                    />
+                  </div>
+
                   <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleScanISBN}
-                    className="border-border/50 hover:shadow-soft transition-all duration-300 px-3"
+                    type="submit"
+                    className="w-full h-12 bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium"
+                    disabled={loading}
                   >
-                    <Camera className="h-4 w-4" />
+                    {loading ? "Adding Book..." : "Save Book"}
                   </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="genre">Genre</Label>
-                <Select value={formData.genre} onValueChange={(value) => setFormData({ ...formData, genre: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a genre" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {GENRES.map((genre) => (
-                      <SelectItem key={genre} value={genre}>
-                        {genre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="pages">Page Count</Label>
-                <Input
-                  id="pages"
-                  type="number"
-                  value={formData.pages}
-                  onChange={(e) => setFormData({ ...formData, pages: e.target.value })}
-                  placeholder="Enter page count"
-                  min="1"
-                />
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full h-12 bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium"
-                disabled={loading}
-              >
-                {loading ? "Adding Book..." : "Save Book"}
-              </Button>
-            </form>
+                </form>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>
