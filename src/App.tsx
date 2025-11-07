@@ -20,6 +20,7 @@ import EditBook from "./screens/EditBook";
 import ScanBarcode from "./screens/ScanBarcode";
 import Profile from "./screens/Profile";
 import ProgressTracking from "./screens/ProgressTracking";
+import ReadingHistory from "./screens/ReadingHistory";
 import NotFound from "./screens/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
               <Route path="/book/:id/progress" element={<ProgressTracking />} />
               <Route path="/edit-book/:id" element={<EditBook />} />
               <Route path="/scan" element={<ScanBarcode />} />
+              <Route path="/history" element={<ReadingHistory />} />
               <Route path="/profile" element={<Profile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

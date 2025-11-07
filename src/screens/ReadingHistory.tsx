@@ -69,7 +69,7 @@ export default function ReadingHistory() {
         .from('progress_logs')
         .select(`
           *,
-          books (
+          books!progress_logs_book_id_fkey (
             title,
             author,
             cover_url
@@ -85,7 +85,7 @@ export default function ReadingHistory() {
         .from('journal_entries')
         .select(`
           *,
-          books (
+          books!journal_entries_book_id_fkey (
             title,
             author,
             cover_url
@@ -96,8 +96,8 @@ export default function ReadingHistory() {
 
       if (journalError) throw journalError;
 
-      setProgressLogs((logsData as ProgressLog[]) || []);
-      setJournalEntries((journalData as JournalEntry[]) || []);
+      setProgressLogs((logsData as any) || []);
+      setJournalEntries((journalData as any) || []);
     } catch (error) {
       console.error('Error fetching history:', error);
     } finally {
