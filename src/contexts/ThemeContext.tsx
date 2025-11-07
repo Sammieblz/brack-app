@@ -27,8 +27,11 @@ const applyThemeColors = (colors: ThemeColors) => {
   const root = document.documentElement;
   
   Object.entries(colors).forEach(([key, value]) => {
-    const cssVar = `--${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
-    root.style.setProperty(cssVar, value);
+    // Convert camelCase to kebab-case, handling special cases like chart1 -> chart-1
+    let cssVar = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+    // Handle chartN pattern (chart1 -> chart-1, chart2 -> chart-2, etc.)
+    cssVar = cssVar.replace(/chart(\d+)/g, 'chart-$1');
+    root.style.setProperty(`--${cssVar}`, value);
   });
 };
 
