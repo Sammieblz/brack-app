@@ -1,17 +1,20 @@
-import { BookOpen } from "lucide-react";
+import { BookOpen, ListPlus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { getProgressPercentage } from "@/utils/bookProgress";
+import { AddToListDialog } from "@/components/AddToListDialog";
 import type { Book } from "@/types";
 
 interface BookCardProps {
   book: Book;
   onClick?: () => void;
   onStatusChange?: (bookId: string, status: string) => void;
+  userId?: string;
 }
 
-export const BookCard = ({ book, onClick, onStatusChange }: BookCardProps) => {
+export const BookCard = ({ book, onClick, onStatusChange, userId }: BookCardProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -27,11 +30,11 @@ export const BookCard = ({ book, onClick, onStatusChange }: BookCardProps) => {
 
   return (
     <Card 
-      className="bg-gradient-card shadow-soft border-0 hover:shadow-medium transition-all duration-300 cursor-pointer group"
-      onClick={onClick}
+      className="bg-gradient-card shadow-soft border-0 hover:shadow-medium transition-all duration-300 group"
     >
       <CardContent className="p-4">
         <div className="flex items-start space-x-3">
+          <div onClick={onClick} className="cursor-pointer flex-1 flex items-start space-x-3">
           <div className="flex-shrink-0">
             {book.cover_url ? (
               <img
@@ -104,6 +107,21 @@ export const BookCard = ({ book, onClick, onStatusChange }: BookCardProps) => {
               </div>
             )}
           </div>
+        </div>
+          
+          {userId && (
+            <div className="flex-shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
+              <AddToListDialog 
+                bookId={book.id} 
+                userId={userId}
+                trigger={
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <ListPlus className="h-4 w-4" />
+                  </Button>
+                }
+              />
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -169,6 +169,7 @@ const MyBooks = () => {
                 key={book.id} 
                 book={book} 
                 onClick={() => handleBookClick(book.id)}
+                userId={user?.id}
               />
             ))}
           </div>
