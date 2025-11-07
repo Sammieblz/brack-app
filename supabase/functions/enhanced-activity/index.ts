@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
 
     sessions?.forEach(session => {
       const book = (session as any).books;
-      const duration = Math.round((session.duration || 0) / 60);
+      const duration = session.duration || 0;
       activities.push({
         id: `session-${session.id}`,
         type: 'reading_session',
