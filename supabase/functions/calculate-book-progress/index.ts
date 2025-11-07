@@ -29,8 +29,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const url = new URL(req.url);
-    const book_id = url.searchParams.get('book_id');
+    const { book_id } = await req.json();
 
     if (!book_id) {
       return new Response(JSON.stringify({ error: 'Missing book_id' }), {
