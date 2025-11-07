@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Clock, CheckCircle, Edit, Trash2, Play, Star, TrendingUp, Calendar, BookOpen, FileText } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle, Edit, Trash2, Play, Star, TrendingUp, Calendar, BookOpen, FileText, BookMarked } from "lucide-react";
 import { toast } from "sonner";
 import { formatDuration } from "@/utils";
 import { QuickProgressWidget } from "@/components/QuickProgressWidget";
@@ -15,6 +15,7 @@ import { ProgressLogger } from "@/components/ProgressLogger";
 import { ProgressLogItem } from "@/components/ProgressLogItem";
 import { useProgressLogs } from "@/hooks/useProgressLogs";
 import { useBookProgress } from "@/hooks/useBookProgress";
+import { JournalEntriesList } from "@/components/JournalEntriesList";
 import type { Book, ReadingSession } from "@/types";
 
 const BookDetail = () => {
@@ -157,10 +158,11 @@ const BookDetail = () => {
         {/* Book Details Tabs */}
         <Card className="bg-gradient-card shadow-medium border-0 mb-6 animate-scale-in">
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="progress">Progress</TabsTrigger>
-              <TabsTrigger value="logs">Logs ({logs.length})</TabsTrigger>
+              <TabsTrigger value="journal">Journal</TabsTrigger>
+              <TabsTrigger value="logs">Logs</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="p-6 space-y-4">
@@ -345,6 +347,10 @@ const BookDetail = () => {
                   <p className="text-sm">Start logging your progress to see statistics</p>
                 </div>
               )}
+            </TabsContent>
+
+            <TabsContent value="journal" className="p-6">
+              <JournalEntriesList bookId={book.id} />
             </TabsContent>
 
             <TabsContent value="logs" className="p-6">

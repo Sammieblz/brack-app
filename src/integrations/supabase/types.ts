@@ -156,6 +156,45 @@ export type Database = {
           },
         ]
       }
+      journal_entries: {
+        Row: {
+          book_id: string
+          content: string
+          created_at: string
+          entry_type: string
+          id: string
+          page_reference: number | null
+          tags: string[] | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          content: string
+          created_at?: string
+          entry_type: string
+          id?: string
+          page_reference?: number | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          content?: string
+          created_at?: string
+          entry_type?: string
+          id?: string
+          page_reference?: number | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
