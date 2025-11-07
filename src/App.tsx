@@ -21,6 +21,8 @@ import ScanBarcode from "./screens/ScanBarcode";
 import Profile from "./screens/Profile";
 import ProgressTracking from "./screens/ProgressTracking";
 import ReadingHistory from "./screens/ReadingHistory";
+import BookLists from "./screens/BookLists";
+import GoalsManagement from "./screens/GoalsManagement";
 import NotFound from "./screens/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +51,8 @@ const App = () => (
               <Route path="/scan" element={<ScanBarcode />} />
               <Route path="/history" element={<ReadingHistory />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/lists" element={<BookLists />} />
+              <Route path="/goals-management" element={<GoalsManagement />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

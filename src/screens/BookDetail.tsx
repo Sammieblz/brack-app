@@ -16,6 +16,8 @@ import { ProgressLogItem } from "@/components/ProgressLogItem";
 import { useProgressLogs } from "@/hooks/useProgressLogs";
 import { useBookProgress } from "@/hooks/useBookProgress";
 import { JournalEntriesList } from "@/components/JournalEntriesList";
+import { AddToListDialog } from "@/components/AddToListDialog";
+import { useAuth } from "@/hooks/useAuth";
 import type { Book, ReadingSession } from "@/types";
 
 const BookDetail = () => {
@@ -28,6 +30,7 @@ const BookDetail = () => {
   const { startTimer } = useTimer();
   const { logs, refetchLogs } = useProgressLogs(id);
   const { progress, refetchProgress } = useBookProgress(id);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!id) return;
@@ -435,6 +438,10 @@ const BookDetail = () => {
               Edit
             </Button>
           </div>
+
+          {user && (
+            <AddToListDialog bookId={book.id} userId={user.id} />
+          )}
 
           <Button
             onClick={handleDeleteBook}

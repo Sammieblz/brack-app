@@ -38,6 +38,75 @@ export type Database = {
         }
         Relationships: []
       }
+      book_list_items: {
+        Row: {
+          added_at: string
+          book_id: string
+          id: string
+          list_id: string
+          position: number
+        }
+        Insert: {
+          added_at?: string
+          book_id: string
+          id?: string
+          list_id: string
+          position?: number
+        }
+        Update: {
+          added_at?: string
+          book_id?: string
+          id?: string
+          list_id?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_list_items_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_list_items_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "book_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_lists: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       books: {
         Row: {
           author: string | null
@@ -120,33 +189,54 @@ export type Database = {
       }
       goals: {
         Row: {
+          completed_at: string | null
           created_at: string | null
           end_date: string | null
+          goal_type: string | null
           id: string
+          is_active: boolean | null
           is_completed: boolean | null
+          period_type: string | null
           reminder_time: string | null
           start_date: string | null
           target_books: number | null
+          target_minutes: number | null
+          target_pages: number | null
+          updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          completed_at?: string | null
           created_at?: string | null
           end_date?: string | null
+          goal_type?: string | null
           id?: string
+          is_active?: boolean | null
           is_completed?: boolean | null
+          period_type?: string | null
           reminder_time?: string | null
           start_date?: string | null
           target_books?: number | null
+          target_minutes?: number | null
+          target_pages?: number | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          completed_at?: string | null
           created_at?: string | null
           end_date?: string | null
+          goal_type?: string | null
           id?: string
+          is_active?: boolean | null
           is_completed?: boolean | null
+          period_type?: string | null
           reminder_time?: string | null
           start_date?: string | null
           target_books?: number | null
+          target_minutes?: number | null
+          target_pages?: number | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Relationships: [

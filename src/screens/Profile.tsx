@@ -18,6 +18,7 @@ import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { BadgeDisplay } from "@/components/BadgeDisplay";
 import { StreakDisplay } from "@/components/StreakDisplay";
 import { StreakCalendar } from "@/components/StreakCalendar";
+import { ReadingHabitsSection } from "@/components/ReadingHabitsSection";
 import type { Profile } from "@/types";
 
 const ProfilePage = () => {
@@ -468,6 +469,9 @@ const ProfilePage = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Reading Habits Section */}
+        {user && <ReadingHabitsSection userId={user.id} />}
 
         {/* Badges Section */}
         <Card>
