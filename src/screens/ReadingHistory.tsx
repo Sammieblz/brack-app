@@ -61,6 +61,11 @@ export default function ReadingHistory() {
   }, [user, navigate]);
 
   const fetchData = async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -68,33 +73,52 @@ export default function ReadingHistory() {
       const { data: logsData, error: logsError } = await supabase
         .from('progress_logs')
         .select(`
-          *,
-          books!progress_logs_book_id_fkey (
+          id,
+          book_id,
+          page_number,
+          chapter_number,
+          paragraph_number,
+          notes,
+          logged_at,
+          log_type,
+          time_spent_minutes,
+          books (
             title,
             author,
             cover_url
           )
         `)
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .order('logged_at', { ascending: false });
 
-      if (logsError) throw logsError;
+      if (logsError) {
+        console.error('Error fetching logs:', logsError);
+      }
 
       // Fetch journal entries with book details
       const { data: journalData, error: journalError } = await supabase
         .from('journal_entries')
         .select(`
-          *,
-          books!journal_entries_book_id_fkey (
+          id,
+          book_id,
+          entry_type,
+          title,
+          content,
+          page_reference,
+          tags,
+          created_at,
+          books (
             title,
             author,
             cover_url
           )
         `)
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (journalError) throw journalError;
+      if (journalError) {
+        console.error('Error fetching journals:', journalError);
+      }
 
       setProgressLogs((logsData as any) || []);
       setJournalEntries((journalData as any) || []);
@@ -105,17 +129,25 @@ export default function ReadingHistory() {
     }
   };
 
-  const filteredLogs = progressLogs.filter(log => 
-    log.books.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    log.notes?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredLogs = progressLogs.filter(log => {
+    if (!log.books) return false;
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      log.books.title?.toLowerCase().includes(searchLower) ||
+      log.notes?.toLowerCase().includes(searchLower)
+    );
+  });
 
-  const filteredJournals = journalEntries.filter(entry =>
-    entry.books.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    entry.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    entry.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    entry.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredJournals = journalEntries.filter(entry => {
+    if (!entry.books) return false;
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      entry.books.title?.toLowerCase().includes(searchLower) ||
+      entry.title?.toLowerCase().includes(searchLower) ||
+      entry.content?.toLowerCase().includes(searchLower) ||
+      entry.tags?.some(tag => tag.toLowerCase().includes(searchLower))
+    );
+  });
 
   if (loading) {
     return (
