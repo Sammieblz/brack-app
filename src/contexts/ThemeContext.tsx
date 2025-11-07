@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { useTheme as useNextTheme } from 'next-themes';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { getTheme, type ThemeColors } from '@/lib/themes';
@@ -6,6 +7,9 @@ import { getTheme, type ThemeColors } from '@/lib/themes';
 interface ThemeContextType {
   currentTheme: string;
   setTheme: (themeId: string) => Promise<void>;
+  themeMode: string | undefined;
+  setThemeMode: (mode: 'light' | 'dark' | 'system') => Promise<void>;
+  resolvedTheme: string | undefined;
   isLoading: boolean;
 }
 
@@ -30,6 +34,7 @@ const applyThemeColors = (colors: ThemeColors) => {
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
+  const { theme: themeMode, setTheme: setNextTheme, resolvedTheme } = useNextTheme();
   const [currentTheme, setCurrentTheme] = useState('default');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -54,7 +59,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('color_theme')
+          .select('color_theme, theme_mode')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -67,6 +72,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           applyThemeColors(colors);
           setCurrentTheme(data.color_theme);
           localStorage.setItem('color_theme', data.color_theme);
+        }
+
+        if (data?.theme_mode) {
+          setNextTheme(data.theme_mode);
         }
       } catch (error) {
         console.error('Error loading theme:', error);
@@ -121,8 +130,25 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const setThemeMode = async (mode: 'light' | 'dark' | 'system') => {
+    setNextTheme(mode);
+    
+    if (user) {
+      try {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ theme_mode: mode })
+          .eq('id', user.id);
+
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error saving theme mode:', error);
+      }
+    }
+  };
+
   return (
-    <ThemeContext.Provider value={{ currentTheme, setTheme, isLoading }}>
+    <ThemeContext.Provider value={{ currentTheme, setTheme, themeMode, setThemeMode, resolvedTheme, isLoading }}>
       {children}
     </ThemeContext.Provider>
   );

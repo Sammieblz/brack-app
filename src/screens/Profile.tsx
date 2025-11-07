@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ArrowLeft, Save, User, Upload, Palette } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ThemeSelector } from "@/components/ThemeSelector";
+import { DarkModeToggle } from "@/components/DarkModeToggle";
 import type { Profile } from "@/types";
 
 const ProfilePage = () => {
@@ -323,11 +324,22 @@ const ProfilePage = () => {
               Appearance
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              Choose your preferred color palette. Changes are applied instantly.
-            </p>
-            <ThemeSelector />
+          <CardContent className="space-y-6">
+            <div>
+              <Label className="text-sm font-medium mb-2 block">Theme Mode</Label>
+              <p className="text-sm text-muted-foreground mb-3">
+                Choose between light mode, dark mode, or follow your system preference.
+              </p>
+              <DarkModeToggle />
+            </div>
+            
+            <div>
+              <Label className="text-sm font-medium mb-2 block">Color Palette</Label>
+              <p className="text-sm text-muted-foreground mb-4">
+                Choose your preferred color palette. Changes are applied instantly.
+              </p>
+              <ThemeSelector />
+            </div>
           </CardContent>
         </Card>
 
