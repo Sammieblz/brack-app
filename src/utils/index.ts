@@ -38,3 +38,6 @@ export const getDaysUntilGoal = (endDate: string): number => {
   const diffTime = goal.getTime() - today.getTime();
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
+
+// Re-export book progress utilities
+export { calculateReadingVelocity, calculateEstimatedCompletion, getProgressPercentage } from './bookProgress';

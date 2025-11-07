@@ -10,15 +10,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Navbar } from "@/components/Navbar";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { TagManager } from "@/components/TagManager";
+import { ArrowLeft, Save, Upload } from "lucide-react";
 import type { Book } from "@/types";
 
 export default function EditBook() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [book, setBook] = useState<Book | null>(null);
 
   useEffect(() => {
@@ -89,6 +93,42 @@ export default function EditBook() {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('book-covers')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('book-covers')
+        .getPublicUrl(fileName);
+
+      setBook({ ...book!, cover_url: publicUrl });
+      
+      toast({
+        title: "Success",
+        description: "Cover image uploaded successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -243,12 +283,48 @@ export default function EditBook() {
               </div>
 
               <div>
-                <Label htmlFor="cover_url">Cover Image URL</Label>
-                <Input
-                  id="cover_url"
-                  value={book.cover_url || ''}
-                  onChange={(e) => setBook({ ...book, cover_url: e.target.value })}
-                  placeholder="https://example.com/book-cover.jpg"
+                <Label>Cover Image</Label>
+                <div className="space-y-3">
+                  {book.cover_url && (
+                    <img 
+                      src={book.cover_url} 
+                      alt="Book cover" 
+                      className="w-32 h-40 object-cover rounded border"
+                    />
+                  )}
+                  <div className="flex gap-2">
+                    <Input
+                      id="cover_url"
+                      value={book.cover_url || ''}
+                      onChange={(e) => setBook({ ...book, cover_url: e.target.value })}
+                      placeholder="Or paste image URL..."
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('cover-upload')?.click()}
+                      disabled={uploading}
+                    >
+                      <Upload className="mr-2 h-4 w-4" />
+                      {uploading ? 'Uploading...' : 'Upload'}
+                    </Button>
+                    <input
+                      id="cover-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="tags">Tags</Label>
+                <TagManager 
+                  tags={book.tags || []}
+                  onChange={(newTags) => setBook({ ...book, tags: newTags })}
                 />
               </div>
 

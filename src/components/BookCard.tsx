@@ -1,7 +1,8 @@
 import { BookOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { getProgressPercentage } from "@/utils/bookProgress";
 import type { Book } from "@/types";
 
 interface BookCardProps {
@@ -74,6 +75,33 @@ export const BookCard = ({ book, onClick, onStatusChange }: BookCardProps) => {
               <p className="text-xs text-muted-foreground mt-1">
                 {book.genre}
               </p>
+            )}
+
+            {book.tags && book.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {book.tags.slice(0, 3).map((tag) => (
+                  <span 
+                    key={tag} 
+                    className="text-xs bg-muted px-2 py-0.5 rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+                {book.tags.length > 3 && (
+                  <span className="text-xs text-muted-foreground">
+                    +{book.tags.length - 3}
+                  </span>
+                )}
+              </div>
+            )}
+            
+            {book.status === 'reading' && book.pages && (
+              <div className="mt-2 space-y-1">
+                <Progress value={getProgressPercentage(book)} className="h-1.5" />
+                <p className="text-xs text-muted-foreground">
+                  {book.current_page || 0} / {book.pages} pages ({Math.round(getProgressPercentage(book))}%)
+                </p>
+              </div>
             )}
           </div>
         </div>

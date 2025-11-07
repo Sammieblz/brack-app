@@ -5,9 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Clock, CheckCircle, Edit, Trash2, Play, Star } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle, Edit, Trash2, Play, Star, TrendingUp, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { formatDuration } from "@/utils";
+import { calculateReadingVelocity, calculateEstimatedCompletion } from "@/utils/bookProgress";
+import { QuickProgressWidget } from "@/components/QuickProgressWidget";
 import type { Book, ReadingSession } from "@/types";
 
 const BookDetail = () => {
@@ -103,6 +105,9 @@ const BookDetail = () => {
   const totalReadingTime = sessions.reduce((total, session) => {
     return total + (session.duration || 0);
   }, 0);
+
+  const readingVelocity = calculateReadingVelocity(book || {} as Book, sessions);
+  const estimatedCompletion = calculateEstimatedCompletion(book || {} as Book, sessions);
 
   if (loading) {
     return (
@@ -226,6 +231,39 @@ const BookDetail = () => {
               <span className="font-medium">{formatDuration(totalReadingTime)}</span>
             </div>
 
+            {readingVelocity && book.status === 'reading' && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <TrendingUp className="h-4 w-4" />
+                  Reading Velocity:
+                </span>
+                <span className="font-medium">{readingVelocity.toFixed(1)} pages/hr</span>
+              </div>
+            )}
+
+            {estimatedCompletion && book.status === 'reading' && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  Est. Completion:
+                </span>
+                <span className="font-medium">{estimatedCompletion.toLocaleDateString()}</span>
+              </div>
+            )}
+
+            {book.tags && book.tags.length > 0 && (
+              <div className="pt-2 border-t space-y-2">
+                <span className="text-sm text-muted-foreground block">Tags:</span>
+                <div className="flex flex-wrap gap-2">
+                  {book.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="text-xs">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {book.notes && (
               <div className="pt-2 border-t space-y-2">
                 <span className="text-sm text-muted-foreground block">Notes:</span>
@@ -234,6 +272,13 @@ const BookDetail = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Quick Progress Widget */}
+        {book.status === 'reading' && (
+          <div className="mb-6">
+            <QuickProgressWidget book={book} onUpdate={loadBookData} />
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="space-y-3 mb-6">
