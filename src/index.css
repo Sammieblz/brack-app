@@ -39,6 +39,13 @@ All colors MUST be HSL.
 
     --radius: 1rem;
 
+    /* Chart colors - defaults */
+    --chart-1: 200 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 55%;
+    --chart-5: 340 75% 55%;
+
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(20 90% 58%), hsl(25 100% 70%));
     --gradient-background: linear-gradient(180deg, hsl(45 100% 98%), hsl(35 50% 96%));
