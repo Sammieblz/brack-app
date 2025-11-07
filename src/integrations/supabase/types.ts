@@ -47,6 +47,7 @@ export type Database = {
           date_finished: string | null
           date_started: string | null
           deleted_at: string | null
+          description: string | null
           genre: string | null
           id: string
           isbn: string | null
@@ -68,6 +69,7 @@ export type Database = {
           date_finished?: string | null
           date_started?: string | null
           deleted_at?: string | null
+          description?: string | null
           genre?: string | null
           id?: string
           isbn?: string | null
@@ -89,6 +91,7 @@ export type Database = {
           date_finished?: string | null
           date_started?: string | null
           deleted_at?: string | null
+          description?: string | null
           genre?: string | null
           id?: string
           isbn?: string | null
@@ -212,6 +215,63 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      progress_logs: {
+        Row: {
+          book_id: string
+          created_at: string
+          id: string
+          log_type: string
+          logged_at: string
+          notes: string | null
+          page_number: number
+          paragraph_number: number | null
+          session_id: string | null
+          time_spent_minutes: number | null
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          id?: string
+          log_type: string
+          logged_at?: string
+          notes?: string | null
+          page_number: number
+          paragraph_number?: number | null
+          session_id?: string | null
+          time_spent_minutes?: number | null
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          id?: string
+          log_type?: string
+          logged_at?: string
+          notes?: string | null
+          page_number?: number
+          paragraph_number?: number | null
+          session_id?: string | null
+          time_spent_minutes?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progress_logs_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progress_logs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "reading_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reading_habits: {
         Row: {

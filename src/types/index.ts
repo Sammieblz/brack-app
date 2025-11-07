@@ -36,6 +36,7 @@ export interface Book {
   genre: string | null;
   pages: number | null;
   cover_url: string | null;
+  description: string | null;
   status: string;
   tags: string[] | null;
   metadata: any;
