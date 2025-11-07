@@ -18,7 +18,7 @@ import { WeeklyReadingChart } from "@/components/charts/WeeklyReadingChart";
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Navbar } from "@/components/Navbar";
-import type { Goal, ReadingSession } from "@/types";
+import type { Goal, ReadingSession, Profile } from "@/types";
 
 const Dashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -28,6 +28,8 @@ const Dashboard = () => {
   const { activities, loading: activitiesLoading, formatTimeAgo } = useRecentActivity(user?.id);
   const { readingProgress, genreData, weeklyReading, loading: chartLoading } = useChartData(user?.id);
   const [goal, setGoal] = useState<Goal | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [showWelcome, setShowWelcome] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,8 +39,18 @@ const Dashboard = () => {
     }
     if (user) {
       loadGoalData();
+      loadProfile();
     }
   }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    // Hide welcome message after 5 seconds
+    const timer = setTimeout(() => {
+      setShowWelcome(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     // Check and award badges when books are loaded
@@ -84,6 +96,26 @@ const Dashboard = () => {
     }
   };
 
+  const loadProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+      
+      setProfile(data);
+    } catch (error: any) {
+      console.error('Error loading profile:', error);
+    }
+  };
+
 
   const handleBookClick = (bookId: string) => {
     navigate(`/book/${bookId}`);
@@ -103,7 +135,8 @@ const Dashboard = () => {
     );
   }
 
-  const displayName = user?.user_metadata?.full_name || 
+  const displayName = profile?.display_name || 
+                      user?.user_metadata?.full_name || 
                       user?.user_metadata?.name || 
                       user?.email?.split('@')[0] || 
                       'Reader';
@@ -114,10 +147,12 @@ const Dashboard = () => {
       
       <div className="max-w-6xl mx-auto p-6 space-y-6">
         {/* Welcome Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">Welcome back, {displayName}! 👋</h1>
-          <p className="text-muted-foreground">Here's what's happening with your reading journey</p>
-        </div>
+        {showWelcome && (
+          <div className="text-center space-y-2 animate-in fade-in duration-500">
+            <h1 className="text-3xl font-bold">Welcome back, {displayName}! 👋</h1>
+            <p className="text-muted-foreground">Here&apos;s what&apos;s happening with your reading journey</p>
+          </div>
+        )}
 
         {/* Progress Overview */}
         {goal && (
