@@ -45,7 +45,7 @@ interface JournalEntry {
 }
 
 export default function ReadingHistory() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [progressLogs, setProgressLogs] = useState<ProgressLog[]>([]);
@@ -53,12 +53,14 @@ export default function ReadingHistory() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
+    if (authLoading) return;
+    
     if (!user) {
       navigate("/auth");
       return;
     }
     fetchData();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const fetchData = async () => {
     if (!user?.id) {
