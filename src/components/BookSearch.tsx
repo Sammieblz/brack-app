@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, BookOpen, Loader2 } from "lucide-react";
+import { Search, Plus, BookOpen, Loader2, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { GoogleBookResult } from "@/types/googleBooks";
@@ -148,6 +148,13 @@ export const BookSearch = ({ onSelectBook, onQuickAdd }: BookSearchProps) => {
                       )}
 
                       <div className="flex flex-wrap gap-2 mt-2">
+                        {book.average_rating && (
+                          <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-current" />
+                            {book.average_rating.toFixed(1)}
+                            {book.ratings_count && ` (${book.ratings_count})`}
+                          </Badge>
+                        )}
                         {book.genre && (
                           <Badge variant="secondary" className="text-xs">
                             {book.genre}

@@ -10,4 +10,6 @@ export interface GoogleBookResult {
   description: string | null;
   publisher: string | null;
   published_date: string | null;
+  average_rating: number | null;
+  ratings_count: number | null;
 }

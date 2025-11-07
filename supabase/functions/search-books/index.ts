@@ -19,6 +19,8 @@ interface GoogleBooksVolume {
     }>;
     pageCount?: number;
     categories?: string[];
+    averageRating?: number;
+    ratingsCount?: number;
     imageLinks?: {
       thumbnail?: string;
       smallThumbnail?: string;
@@ -87,6 +89,8 @@ serve(async (req) => {
         description: volumeInfo.description || null,
         publisher: volumeInfo.publisher || null,
         published_date: volumeInfo.publishedDate || null,
+        average_rating: volumeInfo.averageRating || null,
+        ratings_count: volumeInfo.ratingsCount || null,
       };
     });
 
