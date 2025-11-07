@@ -5,6 +5,7 @@ export interface GoogleBookResult {
   isbn: string | null;
   genre: string | null;
   pages: number | null;
+  chapters: number | null;
   cover_url: string | null;
   description: string | null;
   publisher: string | null;

@@ -41,6 +41,7 @@ export type Database = {
       books: {
         Row: {
           author: string | null
+          chapters: number | null
           cover_url: string | null
           created_at: string | null
           current_page: number | null
@@ -63,6 +64,7 @@ export type Database = {
         }
         Insert: {
           author?: string | null
+          chapters?: number | null
           cover_url?: string | null
           created_at?: string | null
           current_page?: number | null
@@ -85,6 +87,7 @@ export type Database = {
         }
         Update: {
           author?: string | null
+          chapters?: number | null
           cover_url?: string | null
           created_at?: string | null
           current_page?: number | null
@@ -258,6 +261,7 @@ export type Database = {
       progress_logs: {
         Row: {
           book_id: string
+          chapter_number: number | null
           created_at: string
           id: string
           log_type: string
@@ -271,6 +275,7 @@ export type Database = {
         }
         Insert: {
           book_id: string
+          chapter_number?: number | null
           created_at?: string
           id?: string
           log_type: string
@@ -284,6 +289,7 @@ export type Database = {
         }
         Update: {
           book_id?: string
+          chapter_number?: number | null
           created_at?: string
           id?: string
           log_type?: string

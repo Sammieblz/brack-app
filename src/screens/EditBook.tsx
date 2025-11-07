@@ -67,6 +67,7 @@ export default function EditBook() {
           genre: book.genre,
           isbn: book.isbn,
           pages: book.pages,
+          chapters: book.chapters,
           current_page: book.current_page,
           status: book.status,
           rating: book.rating,
@@ -212,6 +213,18 @@ export default function EditBook() {
                   />
                 </div>
 
+                <div>
+                  <Label htmlFor="chapters">Total Chapters</Label>
+                  <Input
+                    id="chapters"
+                    type="number"
+                    value={book.chapters || ''}
+                    onChange={(e) => setBook({ ...book, chapters: parseInt(e.target.value) || null })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="current_page">Current Page</Label>
                   <Input

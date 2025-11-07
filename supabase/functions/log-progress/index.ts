@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { book_id, page_number, paragraph_number, notes, log_type, time_spent_minutes } = await req.json();
+    const { book_id, page_number, chapter_number, paragraph_number, notes, log_type, time_spent_minutes } = await req.json();
 
     if (!book_id || !page_number || !log_type) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -52,6 +52,7 @@ Deno.serve(async (req) => {
         user_id: user.id,
         book_id,
         page_number,
+        chapter_number,
         paragraph_number,
         notes,
         log_type,

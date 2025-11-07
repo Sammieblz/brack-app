@@ -24,6 +24,7 @@ const AddBook = () => {
     isbn: "",
     genre: "",
     pages: "",
+    chapters: "",
     cover_url: "",
   });
   const navigate = useNavigate();
@@ -54,6 +55,7 @@ const AddBook = () => {
         isbn: formData.isbn || null,
         genre: formData.genre || null,
         pages: formData.pages ? parseInt(formData.pages) : null,
+        chapters: formData.chapters ? parseInt(formData.chapters) : null,
         status: 'to_read',
         cover_url: formData.cover_url || null,
         description: null,
@@ -89,6 +91,7 @@ const AddBook = () => {
       isbn: book.isbn || "",
       genre: book.genre || "",
       pages: book.pages?.toString() || "",
+      chapters: book.chapters?.toString() || "",
       cover_url: book.cover_url || "",
     });
     setActiveTab("manual");
@@ -105,6 +108,7 @@ const AddBook = () => {
       isbn: book.isbn,
       genre: book.genre,
       pages: book.pages,
+      chapters: book.chapters,
       status: 'to_read',
       cover_url: book.cover_url,
       description: book.description,
@@ -248,6 +252,18 @@ const AddBook = () => {
                       value={formData.pages}
                       onChange={(e) => setFormData({ ...formData, pages: e.target.value })}
                       placeholder="Enter page count"
+                      min="1"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="chapters">Chapter Count</Label>
+                    <Input
+                      id="chapters"
+                      type="number"
+                      value={formData.chapters}
+                      onChange={(e) => setFormData({ ...formData, chapters: e.target.value })}
+                      placeholder="Enter chapter count"
                       min="1"
                     />
                   </div>

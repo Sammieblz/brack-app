@@ -158,6 +158,11 @@ export const BookSearch = ({ onSelectBook, onQuickAdd }: BookSearchProps) => {
                             {book.pages} pages
                           </Badge>
                         )}
+                        {book.chapters && (
+                          <Badge variant="outline" className="text-xs">
+                            {book.chapters} chapters
+                          </Badge>
+                        )}
                         {book.published_date && (
                           <Badge variant="outline" className="text-xs">
                             {book.published_date.split("-")[0]}

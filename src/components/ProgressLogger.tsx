@@ -27,6 +27,7 @@ export const ProgressLogger = ({
   onSuccess 
 }: ProgressLoggerProps) => {
   const [pageNumber, setPageNumber] = useState(currentPage || 0);
+  const [chapterNumber, setChapterNumber] = useState<number | undefined>();
   const [paragraphNumber, setParagraphNumber] = useState<number | undefined>();
   const [timeSpent, setTimeSpent] = useState<number | undefined>();
   const [notes, setNotes] = useState("");
@@ -50,6 +51,7 @@ export const ProgressLogger = ({
         body: {
           book_id: bookId,
           page_number: pageNumber,
+          chapter_number: chapterNumber || null,
           paragraph_number: paragraphNumber || null,
           notes: notes || null,
           log_type: 'manual',
@@ -69,6 +71,7 @@ export const ProgressLogger = ({
 
       // Reset form
       setPageNumber(currentPage || 0);
+      setChapterNumber(undefined);
       setParagraphNumber(undefined);
       setTimeSpent(undefined);
       setNotes("");
@@ -108,6 +111,18 @@ export const ProgressLogger = ({
               onChange={(e) => setPageNumber(parseInt(e.target.value))}
               placeholder="Current page"
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="chapter">Chapter (optional)</Label>
+            <Input
+              id="chapter"
+              type="number"
+              min="1"
+              value={chapterNumber || ''}
+              onChange={(e) => setChapterNumber(e.target.value ? parseInt(e.target.value) : undefined)}
+              placeholder="Chapter number"
             />
           </div>
 

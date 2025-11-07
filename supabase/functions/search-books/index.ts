@@ -80,6 +80,7 @@ serve(async (req) => {
         isbn: isbn13 || isbn10 || null,
         genre: volumeInfo.categories?.[0] || null,
         pages: volumeInfo.pageCount || null,
+        chapters: null, // Google Books API doesn't provide chapter count
         cover_url: volumeInfo.imageLinks?.thumbnail?.replace("http://", "https://") || 
                    volumeInfo.imageLinks?.smallThumbnail?.replace("http://", "https://") || 
                    null,
