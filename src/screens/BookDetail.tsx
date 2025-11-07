@@ -329,6 +329,14 @@ const BookDetail = () => {
                       </div>
                     </div>
                   </div>
+
+                  <Button
+                    onClick={() => navigate(`/book/${book.id}/progress`)}
+                    className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium mt-4"
+                  >
+                    <TrendingUp className="mr-2 h-4 w-4" />
+                    View Detailed Analytics
+                  </Button>
                 </>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
