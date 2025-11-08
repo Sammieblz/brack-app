@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useBadges } from "@/hooks/useBadges";
 import { useStreaks } from "@/hooks/useStreaks";
-import { ArrowLeft, Save, User, Upload, Palette, Award, Flame } from "lucide-react";
+import { ArrowLeft, Save, User, Upload, Palette, Award, Flame, MapPin } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
@@ -40,6 +40,10 @@ const ProfilePage = () => {
     bio: "",
     phone_number: "",
     date_of_birth: "",
+    city: "",
+    country: "",
+    latitude: "",
+    longitude: "",
   });
 
   useEffect(() => {
@@ -75,6 +79,10 @@ const ProfilePage = () => {
           bio: data.bio || "",
           phone_number: data.phone_number || "",
           date_of_birth: data.date_of_birth || "",
+          city: data.city || "",
+          country: data.country || "",
+          latitude: data.latitude?.toString() || "",
+          longitude: data.longitude?.toString() || "",
         });
       }
     } catch (error: any) {
@@ -208,6 +216,43 @@ const ProfilePage = () => {
     }
   };
 
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast({
+        variant: "destructive",
+        title: "Geolocation not supported",
+        description: "Your browser doesn't support geolocation",
+      });
+      return;
+    }
+
+    toast({
+      title: "Getting location...",
+      description: "Please allow location access in your browser",
+    });
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setFormData(prev => ({
+          ...prev,
+          latitude: position.coords.latitude.toFixed(6),
+          longitude: position.coords.longitude.toFixed(6),
+        }));
+        toast({
+          title: "Location retrieved",
+          description: "Your coordinates have been updated",
+        });
+      },
+      (error) => {
+        toast({
+          variant: "destructive",
+          title: "Location error",
+          description: error.message,
+        });
+      }
+    );
+  };
+
   const handleSave = async () => {
     if (!user) return;
     
@@ -216,6 +261,10 @@ const ProfilePage = () => {
       const updateData = {
         ...formData,
         display_name: formData.display_name || `${formData.first_name} ${formData.last_name}`.trim(),
+        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+        city: formData.city || null,
+        country: formData.country || null,
         updated_at: new Date().toISOString(),
       };
 
@@ -418,6 +467,91 @@ const ProfilePage = () => {
                 placeholder="Tell us a bit about yourself and your reading interests..."
                 rows={4}
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Location Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <MapPin className="h-5 w-5 mr-2" />
+              Location Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Add your location to discover readers near you and connect with your local reading community.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                <Input
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => handleInputChange('city', e.target.value)}
+                  placeholder="e.g., New York"
+                  maxLength={100}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="country">Country</Label>
+                <Input
+                  id="country"
+                  value={formData.country}
+                  onChange={(e) => handleInputChange('country', e.target.value)}
+                  placeholder="e.g., United States"
+                  maxLength={100}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="latitude">Latitude</Label>
+                <Input
+                  id="latitude"
+                  type="number"
+                  step="any"
+                  value={formData.latitude}
+                  onChange={(e) => handleInputChange('latitude', e.target.value)}
+                  placeholder="e.g., 40.7128"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="longitude">Longitude</Label>
+                <Input
+                  id="longitude"
+                  type="number"
+                  step="any"
+                  value={formData.longitude}
+                  onChange={(e) => handleInputChange('longitude', e.target.value)}
+                  placeholder="e.g., -74.0060"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGetCurrentLocation}
+                className="flex items-center gap-2"
+              >
+                <MapPin className="h-4 w-4" />
+                Use Current Location
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Click to automatically detect your coordinates
+              </p>
+            </div>
+
+            <div className="bg-muted/50 p-3 rounded-lg">
+              <p className="text-xs text-muted-foreground">
+                <strong>Privacy Note:</strong> Your location data is used only for reader discovery features. 
+                You can change your profile visibility settings to control who can see your location.
+              </p>
             </div>
           </CardContent>
         </Card>
