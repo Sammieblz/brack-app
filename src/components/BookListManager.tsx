@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ interface BookListManagerProps {
 }
 
 export const BookListManager = ({ userId }: BookListManagerProps) => {
+  const navigate = useNavigate();
   const { lists, loading, createList, updateList, deleteList } = useBookLists(userId);
   const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -110,7 +112,11 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {lists.map((list) => (
-          <Card key={list.id}>
+          <Card 
+            key={list.id}
+            className="cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate(`/lists/${list.id}`)}
+          >
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
@@ -124,7 +130,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
               )}
             </CardHeader>
             <CardContent>
-              <div className="flex gap-2">
+              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                 <Dialog open={editingList === list.id} onOpenChange={(open) => {
                   if (!open) {
                     setEditingList(null);

@@ -22,6 +22,7 @@ import Profile from "./screens/Profile";
 import ProgressTracking from "./screens/ProgressTracking";
 import ReadingHistory from "./screens/ReadingHistory";
 import BookLists from "./screens/BookLists";
+import BookListDetail from "./screens/BookListDetail";
 import GoalsManagement from "./screens/GoalsManagement";
 import NotFound from "./screens/NotFound";
 
@@ -51,8 +52,9 @@ const App = () => (
               <Route path="/scan" element={<ScanBarcode />} />
               <Route path="/history" element={<ReadingHistory />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/lists" element={<BookLists />} />
-              <Route path="/goals-management" element={<GoalsManagement />} />
+        <Route path="/lists" element={<BookLists />} />
+        <Route path="/lists/:listId" element={<BookListDetail />} />
+        <Route path="/goals-management" element={<GoalsManagement />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
