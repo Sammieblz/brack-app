@@ -298,6 +298,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          allow_friend_requests: boolean | null
           avatar_url: string | null
           bio: string | null
           color_theme: string | null
@@ -312,11 +313,15 @@ export type Database = {
           last_reading_date: string | null
           longest_streak: number | null
           phone_number: string | null
+          profile_visibility: string | null
+          show_currently_reading: boolean | null
+          show_reading_activity: boolean | null
           streak_freeze_used_at: string | null
           theme_mode: string | null
           updated_at: string | null
         }
         Insert: {
+          allow_friend_requests?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           color_theme?: string | null
@@ -331,11 +336,15 @@ export type Database = {
           last_reading_date?: string | null
           longest_streak?: number | null
           phone_number?: string | null
+          profile_visibility?: string | null
+          show_currently_reading?: boolean | null
+          show_reading_activity?: boolean | null
           streak_freeze_used_at?: string | null
           theme_mode?: string | null
           updated_at?: string | null
         }
         Update: {
+          allow_friend_requests?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           color_theme?: string | null
@@ -350,6 +359,9 @@ export type Database = {
           last_reading_date?: string | null
           longest_streak?: number | null
           phone_number?: string | null
+          profile_visibility?: string | null
+          show_currently_reading?: boolean | null
+          show_reading_activity?: boolean | null
           streak_freeze_used_at?: string | null
           theme_mode?: string | null
           updated_at?: string | null
@@ -559,6 +571,42 @@ export type Database = {
           {
             foreignKeyName: "user_badges_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_follows_following_id_fkey"
+            columns: ["following_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

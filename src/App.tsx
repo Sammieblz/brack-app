@@ -24,6 +24,7 @@ import ReadingHistory from "./screens/ReadingHistory";
 import BookLists from "./screens/BookLists";
 import BookListDetail from "./screens/BookListDetail";
 import GoalsManagement from "./screens/GoalsManagement";
+import UserProfile from "./screens/UserProfile";
 import NotFound from "./screens/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,9 +53,10 @@ const App = () => (
               <Route path="/scan" element={<ScanBarcode />} />
               <Route path="/history" element={<ReadingHistory />} />
               <Route path="/profile" element={<Profile />} />
-        <Route path="/lists" element={<BookLists />} />
+              <Route path="/lists" element={<BookLists />} />
         <Route path="/lists/:listId" element={<BookListDetail />} />
         <Route path="/goals-management" element={<GoalsManagement />} />
+              <Route path="/users/:userId" element={<UserProfile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
