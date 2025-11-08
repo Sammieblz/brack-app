@@ -26,6 +26,7 @@ import BookListDetail from "./screens/BookListDetail";
 import GoalsManagement from "./screens/GoalsManagement";
 import UserProfile from "./screens/UserProfile";
 import Reviews from "./screens/Reviews";
+import Feed from "./screens/Feed";
 import NotFound from "./screens/NotFound";
 
 const queryClient = new QueryClient();
@@ -59,6 +60,7 @@ const App = () => (
         <Route path="/goals-management" element={<GoalsManagement />} />
               <Route path="/users/:userId" element={<UserProfile />} />
               <Route path="/reviews" element={<Reviews />} />
+              <Route path="/feed" element={<Feed />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
