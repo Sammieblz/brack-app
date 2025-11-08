@@ -76,7 +76,12 @@ const CommentItem = ({
               </button>
             )}
             <span className="text-xs text-muted-foreground">
-              {new Date(comment.created_at).toLocaleDateString()}
+              {new Date(comment.created_at).toLocaleDateString([], {
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+              })}
             </span>
           </div>
 
@@ -167,16 +172,45 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
     }
   };
 
+  const formatTimestamp = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    
+    const timeStr = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    
+    // If today, show just the time
+    if (diffInHours < 24 && date.getDate() === now.getDate()) {
+      return timeStr;
+    }
+    
+    // If yesterday
+    if (diffInHours < 48 && date.getDate() === now.getDate() - 1) {
+      return `Yesterday ${timeStr}`;
+    }
+    
+    // If within the last week, show day name
+    if (diffInHours < 168) {
+      const dayName = date.toLocaleDateString([], { weekday: "short" });
+      return `${dayName} ${timeStr}`;
+    }
+    
+    // Otherwise show full date
+    return date.toLocaleDateString([], { 
+      month: "short", 
+      day: "numeric",
+      year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined 
+    }) + " " + timeStr;
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
 
-    if (diffInHours < 24) {
-      if (diffInHours < 1) return "Just now";
-      return `${diffInHours}h ago`;
-    }
-    return date.toLocaleDateString();
+    if (diffInHours < 1) return "Just now";
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    return formatTimestamp(dateString);
   };
 
   return (
