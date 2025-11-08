@@ -38,6 +38,122 @@ export type Database = {
         }
         Relationships: []
       }
+      book_club_discussions: {
+        Row: {
+          club_id: string
+          content: string
+          created_at: string
+          id: string
+          parent_id: string | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          club_id: string
+          content: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          club_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_club_discussions_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "book_clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_club_discussions_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "book_club_discussions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_club_members: {
+        Row: {
+          club_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          club_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          club_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_club_members_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "book_clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_clubs: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          created_by: string
+          current_book_id: string | null
+          description: string | null
+          id: string
+          is_private: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          created_by: string
+          current_book_id?: string | null
+          description?: string | null
+          id?: string
+          is_private?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string
+          current_book_id?: string | null
+          description?: string | null
+          id?: string
+          is_private?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       book_list_items: {
         Row: {
           added_at: string
@@ -679,6 +795,81 @@ export type Database = {
           },
         ]
       }
+      social_activities: {
+        Row: {
+          activity_type: string
+          badge_id: string | null
+          book_id: string | null
+          created_at: string
+          id: string
+          list_id: string | null
+          metadata: Json | null
+          review_id: string | null
+          user_id: string
+          visibility: string | null
+        }
+        Insert: {
+          activity_type: string
+          badge_id?: string | null
+          book_id?: string | null
+          created_at?: string
+          id?: string
+          list_id?: string | null
+          metadata?: Json | null
+          review_id?: string | null
+          user_id: string
+          visibility?: string | null
+        }
+        Update: {
+          activity_type?: string
+          badge_id?: string | null
+          book_id?: string | null
+          created_at?: string
+          id?: string
+          list_id?: string | null
+          metadata?: Json | null
+          review_id?: string | null
+          user_id?: string
+          visibility?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_activities_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_activities_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_activities_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "book_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_activities_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "book_reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_activities_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_badges: {
         Row: {
           badge_id: string | null
@@ -756,7 +947,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_club_admin: {
+        Args: { club_id: string; user_id: string }
+        Returns: boolean
+      }
+      is_club_member: {
+        Args: { club_id: string; user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

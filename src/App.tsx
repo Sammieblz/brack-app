@@ -27,6 +27,8 @@ import GoalsManagement from "./screens/GoalsManagement";
 import UserProfile from "./screens/UserProfile";
 import Reviews from "./screens/Reviews";
 import Feed from "./screens/Feed";
+import BookClubs from "./screens/BookClubs";
+import BookClubDetail from "./screens/BookClubDetail";
 import NotFound from "./screens/NotFound";
 
 const queryClient = new QueryClient();
@@ -61,6 +63,8 @@ const App = () => (
               <Route path="/users/:userId" element={<UserProfile />} />
               <Route path="/reviews" element={<Reviews />} />
               <Route path="/feed" element={<Feed />} />
+              <Route path="/clubs" element={<BookClubs />} />
+              <Route path="/clubs/:clubId" element={<BookClubDetail />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
