@@ -1,11 +1,11 @@
-import { Header } from "@/components/Header";
+import { Navbar } from "@/components/Navbar";
 import { ActivityFeed } from "@/components/social/ActivityFeed";
 import { Activity, TrendingUp, Users } from "lucide-react";
 
 const Feed = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Header title="Activity Feed" />
+      <Navbar />
       <main className="container max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8 animate-fade-in">
           <div className="flex items-center gap-3 mb-4">
