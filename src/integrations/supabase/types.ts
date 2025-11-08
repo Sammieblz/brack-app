@@ -477,7 +477,9 @@ export type Database = {
           allow_friend_requests: boolean | null
           avatar_url: string | null
           bio: string | null
+          city: string | null
           color_theme: string | null
+          country: string | null
           created_at: string | null
           current_streak: number | null
           date_of_birth: string | null
@@ -487,7 +489,9 @@ export type Database = {
           is_active: boolean | null
           last_name: string | null
           last_reading_date: string | null
+          latitude: number | null
           longest_streak: number | null
+          longitude: number | null
           phone_number: string | null
           profile_visibility: string | null
           show_currently_reading: boolean | null
@@ -500,7 +504,9 @@ export type Database = {
           allow_friend_requests?: boolean | null
           avatar_url?: string | null
           bio?: string | null
+          city?: string | null
           color_theme?: string | null
+          country?: string | null
           created_at?: string | null
           current_streak?: number | null
           date_of_birth?: string | null
@@ -510,7 +516,9 @@ export type Database = {
           is_active?: boolean | null
           last_name?: string | null
           last_reading_date?: string | null
+          latitude?: number | null
           longest_streak?: number | null
+          longitude?: number | null
           phone_number?: string | null
           profile_visibility?: string | null
           show_currently_reading?: boolean | null
@@ -523,7 +531,9 @@ export type Database = {
           allow_friend_requests?: boolean | null
           avatar_url?: string | null
           bio?: string | null
+          city?: string | null
           color_theme?: string | null
+          country?: string | null
           created_at?: string | null
           current_streak?: number | null
           date_of_birth?: string | null
@@ -533,7 +543,9 @@ export type Database = {
           is_active?: boolean | null
           last_name?: string | null
           last_reading_date?: string | null
+          latitude?: number | null
           longest_streak?: number | null
+          longitude?: number | null
           phone_number?: string | null
           profile_visibility?: string | null
           show_currently_reading?: boolean | null
@@ -947,6 +959,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_distance: {
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
+        Returns: number
+      }
       is_club_admin: {
         Args: { club_id: string; user_id: string }
         Returns: boolean
