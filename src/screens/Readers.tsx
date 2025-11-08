@@ -30,7 +30,7 @@ export default function Readers() {
     <Card
       key={user.id}
       className="hover:shadow-md transition-shadow cursor-pointer"
-      onClick={() => navigate(`/profile/${user.id}`)}
+      onClick={() => navigate(`/users/${user.id}`)}
     >
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
