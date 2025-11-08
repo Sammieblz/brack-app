@@ -8,7 +8,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { BookOpen, BarChart3, Library, User, LogOut, Menu, X, BookMarked, Target, ListChecks, Activity, Users, UserSearch } from "lucide-react";
+import { BookOpen, BarChart3, Library, User, LogOut, Menu, X, BookMarked, Target, ListChecks, Activity, Users, UserSearch, MessageCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,6 +61,7 @@ export const Navbar = () => {
     { to: "/clubs", label: "Clubs", icon: Users },
     { to: "/readers", label: "Readers", icon: UserSearch },
     { to: "/feed", label: "Feed", icon: Activity },
+    { to: "/messages", label: "Messages", icon: MessageCircle },
     { to: "/history", label: "History", icon: BookMarked },
   ];
 

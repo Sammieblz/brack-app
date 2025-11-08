@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useFollowing } from "@/hooks/useFollowing";
@@ -8,8 +9,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { FollowButton } from "@/components/social/FollowButton";
+import { PostCard } from "@/components/social/PostCard";
+import { supabase } from "@/integrations/supabase/client";
 import {
   BookOpen,
   BookMarked,
@@ -19,6 +23,8 @@ import {
   Users,
   Settings,
   ArrowLeft,
+  MessageCircle,
+  BookUser,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -28,8 +34,77 @@ const UserProfile = () => {
   const { user: currentUser } = useAuth();
   const { profile, stats, loading, error } = useUserProfile(userId || null);
   const { followersCount, followingCount } = useFollowing(userId || null);
+  const [userBooks, setUserBooks] = useState<any[]>([]);
+  const [userPosts, setUserPosts] = useState<any[]>([]);
+  const [userClubs, setUserClubs] = useState<any[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
 
   const isOwnProfile = currentUser?.id === userId;
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!userId) return;
+
+      try {
+        setDataLoading(true);
+
+        // Fetch user's books
+        const { data: books } = await supabase
+          .from("books")
+          .select("*")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(10);
+
+        setUserBooks(books || []);
+
+        // Fetch user's posts
+        const { data: posts } = await supabase
+          .from("posts")
+          .select(`
+            *,
+            profiles:user_id (
+              id,
+              display_name,
+              avatar_url
+            ),
+            books:book_id (
+              id,
+              title,
+              author,
+              cover_url
+            )
+          `)
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(10);
+
+        setUserPosts(posts || []);
+
+        // Fetch user's book clubs
+        const { data: clubs } = await supabase
+          .from("book_club_members")
+          .select(`
+            book_clubs (
+              id,
+              name,
+              description,
+              cover_image_url,
+              is_private
+            )
+          `)
+          .eq("user_id", userId);
+
+        setUserClubs(clubs?.map(c => c.book_clubs).filter(Boolean) || []);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setDataLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [userId]);
 
   if (loading) {
     return (
@@ -118,7 +193,16 @@ const UserProfile = () => {
                         Edit Profile
                       </Button>
                     ) : (
-                      <FollowButton userId={userId!} />
+                      <>
+                        <FollowButton userId={userId!} />
+                        <Button
+                          variant="outline"
+                          onClick={() => navigate("/messages", { state: { startConversationWith: userId } })}
+                        >
+                          <MessageCircle className="mr-2 h-4 w-4" />
+                          Message
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -209,28 +293,139 @@ const UserProfile = () => {
           </Card>
         </div>
 
-        {/* Additional Stats */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Reading Statistics</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Currently Reading</span>
-              <span className="font-semibold">{stats.currentlyReading} books</span>
-            </div>
-            <Separator />
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Longest Streak</span>
-              <span className="font-semibold">{profile.longest_streak} days</span>
-            </div>
-            <Separator />
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Total Badges</span>
-              <span className="font-semibold">{stats.badges}</span>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Tabs for detailed content */}
+        <Tabs defaultValue="books" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="books">
+              <BookOpen className="h-4 w-4 mr-2" />
+              Books ({userBooks.length})
+            </TabsTrigger>
+            <TabsTrigger value="posts">
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Posts ({userPosts.length})
+            </TabsTrigger>
+            <TabsTrigger value="clubs">
+              <BookUser className="h-4 w-4 mr-2" />
+              Book Clubs ({userClubs.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="books" className="space-y-4 mt-6">
+            {dataLoading ? (
+              <LoadingSpinner />
+            ) : userBooks.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  No books yet
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {userBooks.map((book) => (
+                  <Card
+                    key={book.id}
+                    className="cursor-pointer hover-scale"
+                    onClick={() => navigate(`/book/${book.id}`)}
+                  >
+                    <CardContent className="p-3">
+                      {book.cover_url && (
+                        <img
+                          src={book.cover_url}
+                          alt={book.title}
+                          className="w-full h-48 object-cover rounded-md mb-2"
+                        />
+                      )}
+                      <p className="font-semibold text-sm truncate">{book.title}</p>
+                      {book.author && (
+                        <p className="text-xs text-muted-foreground truncate">{book.author}</p>
+                      )}
+                      <Badge variant="secondary" className="mt-2 text-xs">
+                        {book.status}
+                      </Badge>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="posts" className="space-y-4 mt-6">
+            {dataLoading ? (
+              <LoadingSpinner />
+            ) : userPosts.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  No posts yet
+                </CardContent>
+              </Card>
+            ) : (
+              userPosts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={{
+                    ...post,
+                    user: post.profiles ? {
+                      id: post.profiles.id,
+                      display_name: post.profiles.display_name,
+                      avatar_url: post.profiles.avatar_url,
+                    } : undefined,
+                    book: post.books ? {
+                      id: post.books.id,
+                      title: post.books.title,
+                      author: post.books.author,
+                      cover_url: post.books.cover_url,
+                    } : undefined,
+                    user_has_liked: false,
+                  }}
+                  onLike={() => {}}
+                />
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="clubs" className="space-y-4 mt-6">
+            {dataLoading ? (
+              <LoadingSpinner />
+            ) : userClubs.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  Not a member of any book clubs yet
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {userClubs.map((club: any) => (
+                  <Card
+                    key={club.id}
+                    className="cursor-pointer hover-scale"
+                    onClick={() => navigate(`/book-clubs/${club.id}`)}
+                  >
+                    <CardContent className="p-4">
+                      {club.cover_image_url && (
+                        <img
+                          src={club.cover_image_url}
+                          alt={club.name}
+                          className="w-full h-32 object-cover rounded-md mb-3"
+                        />
+                      )}
+                      <h3 className="font-bold text-lg mb-2">{club.name}</h3>
+                      {club.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {club.description}
+                        </p>
+                      )}
+                      <div className="flex gap-2 mt-3">
+                        <Badge variant={club.is_private ? "secondary" : "default"}>
+                          {club.is_private ? "Private" : "Public"}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
