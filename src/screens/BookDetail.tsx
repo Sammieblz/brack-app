@@ -18,6 +18,9 @@ import { useBookProgress } from "@/hooks/useBookProgress";
 import { JournalEntriesList } from "@/components/JournalEntriesList";
 import { AddToListDialog } from "@/components/AddToListDialog";
 import { useAuth } from "@/hooks/useAuth";
+import { ReviewCard } from "@/components/social/ReviewCard";
+import { ReviewForm } from "@/components/social/ReviewForm";
+import { useReviews } from "@/hooks/useReviews";
 import type { Book, ReadingSession } from "@/types";
 
 const BookDetail = () => {
@@ -31,6 +34,8 @@ const BookDetail = () => {
   const { logs, refetchLogs } = useProgressLogs(id);
   const { progress, refetchProgress } = useBookProgress(id);
   const { user } = useAuth();
+  const { reviews, averageRating, userHasReviewed, refetch: refetchReviews } = useReviews(id);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -176,9 +181,10 @@ const BookDetail = () => {
         {/* Book Details Tabs */}
         <Card className="bg-gradient-card shadow-medium border-0 mb-6 animate-scale-in">
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="progress">Progress</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews</TabsTrigger>
               <TabsTrigger value="journal">Journal</TabsTrigger>
               <TabsTrigger value="logs">Logs</TabsTrigger>
             </TabsList>
@@ -367,6 +373,61 @@ const BookDetail = () => {
               )}
             </TabsContent>
 
+            <TabsContent value="reviews" className="p-6">
+              <div className="space-y-4">
+                {/* Review Summary */}
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-semibold">Community Reviews</h3>
+                    {averageRating && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-4 w-4 ${
+                                i < Math.round(averageRating)
+                                  ? "fill-primary text-primary"
+                                  : "text-muted-foreground"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {averageRating.toFixed(1)} ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  {!userHasReviewed && user && (
+                    <Button onClick={() => setShowReviewForm(true)}>
+                      <Star className="mr-2 h-4 w-4" />
+                      Write Review
+                    </Button>
+                  )}
+                </div>
+
+                {/* Reviews List */}
+                {reviews.length > 0 ? (
+                  <div className="space-y-4">
+                    {reviews.map((review) => (
+                      <ReviewCard key={review.id} review={review} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Star className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <p className="text-muted-foreground mb-4">No reviews yet</p>
+                    {!userHasReviewed && user && (
+                      <Button onClick={() => setShowReviewForm(true)}>
+                        Be the first to review
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
             <TabsContent value="journal" className="p-6">
               <JournalEntriesList bookId={book.id} />
             </TabsContent>
@@ -462,6 +523,18 @@ const BookDetail = () => {
           onOpenChange={setShowProgressLogger}
           onSuccess={handleProgressLogged}
         />
+
+        {/* Review Form Dialog */}
+        {id && (
+          <ReviewForm
+            bookId={id}
+            open={showReviewForm}
+            onOpenChange={(open) => {
+              setShowReviewForm(open);
+              if (!open) refetchReviews();
+            }}
+          />
+        )}
 
         {/* Recent Sessions */}
         {sessions.length > 0 && (
