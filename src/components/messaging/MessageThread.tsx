@@ -5,11 +5,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Message } from "@/hooks/useMessages";
 import { Send } from "lucide-react";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 
 interface MessageThreadProps {
   messages: Message[];
   onSendMessage: (content: string) => Promise<boolean>;
   currentUserId?: string;
+  conversationId: string | null;
   otherUser?: {
     id: string;
     display_name: string;
@@ -21,11 +23,14 @@ export const MessageThread = ({
   messages,
   onSendMessage,
   currentUserId,
+  conversationId,
   otherUser,
 }: MessageThreadProps) => {
   const [messageContent, setMessageContent] = useState("");
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { otherUserTyping, setTyping } = useTypingIndicator(conversationId, currentUserId);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -35,10 +40,31 @@ export const MessageThread = ({
     scrollToBottom();
   }, [messages]);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessageContent(e.target.value);
+    
+    // Notify that user is typing
+    setTyping(true);
+    
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    // Set typing to false after 2 seconds of no typing
+    typingTimeoutRef.current = setTimeout(() => {
+      setTyping(false);
+    }, 2000);
+  };
+
   const handleSend = async () => {
     if (!messageContent.trim() || sending) return;
 
     setSending(true);
+    setTyping(false); // Stop typing indicator
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
     const success = await onSendMessage(messageContent);
     if (success) {
       setMessageContent("");
@@ -118,6 +144,26 @@ export const MessageThread = ({
             );
           })
         )}
+        
+        {/* Typing Indicator */}
+        {otherUserTyping && (
+          <div className="flex gap-2">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={otherUser?.avatar_url} />
+              <AvatarFallback className="text-xs">
+                {getInitials(otherUser?.display_name)}
+              </AvatarFallback>
+            </Avatar>
+            <Card className="bg-muted p-3 flex items-center gap-1">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+            </Card>
+          </div>
+        )}
+        
         <div ref={messagesEndRef} />
       </div>
 
@@ -127,7 +173,7 @@ export const MessageThread = ({
           <Textarea
             placeholder="Type a message..."
             value={messageContent}
-            onChange={(e) => setMessageContent(e.target.value)}
+            onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             rows={2}
             className="resize-none"

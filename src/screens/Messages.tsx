@@ -81,6 +81,7 @@ const Messages = () => {
                   messages={messages}
                   onSendMessage={sendMessage}
                   currentUserId={user?.id}
+                  conversationId={selectedConversationId}
                   otherUser={selectedConversation?.other_user}
                 />
               )
