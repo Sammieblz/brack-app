@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export interface FeedActivity {
   id: string;
   user_id: string;
-  activity_type: 'book_started' | 'book_completed' | 'book_reviewed' | 'followed_user' | 'created_list' | 'earned_badge';
+  activity_type: 'book_started' | 'book_completed' | 'book_reviewed' | 'followed_user' | 'created_list' | 'earned_badge' | 'post';
   book_id?: string;
   review_id?: string;
   list_id?: string;

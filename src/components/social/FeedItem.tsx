@@ -27,6 +27,8 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
         return <List className="h-5 w-5 text-secondary" />;
       case 'earned_badge':
         return <Award className="h-5 w-5 text-accent" />;
+      case 'post':
+        return <BookOpen className="h-5 w-5 text-primary" />;
       default:
         return <Book className="h-5 w-5" />;
     }
@@ -104,6 +106,12 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
             <span className="font-semibold">{activity.metadata?.badge_title}</span>
           </>
         );
+      case 'post':
+        return (
+          <>
+            <span className="font-semibold">{userName}</span> shared an update
+          </>
+        );
       default:
         return <span className="font-semibold">{userName}</span>;
     }
@@ -145,6 +153,12 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
                 {getActivityMessage()}
               </p>
             </div>
+
+            {activity.activity_type === 'post' && activity.metadata?.content && (
+              <div className="mt-3 p-3 bg-muted/50 rounded-lg">
+                <p className="text-sm">{activity.metadata.content}</p>
+              </div>
+            )}
 
             {activity.book?.cover_url && (
               <div 
