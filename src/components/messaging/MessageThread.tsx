@@ -84,9 +84,35 @@ export const MessageThread = ({
     return name.split(" ").map(n => n[0]).join("").toUpperCase();
   };
 
-  const formatTime = (dateString: string) => {
+  const formatTimestamp = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    
+    const timeStr = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    
+    // If today, show just the time
+    if (diffInHours < 24 && date.getDate() === now.getDate()) {
+      return timeStr;
+    }
+    
+    // If yesterday
+    if (diffInHours < 48 && date.getDate() === now.getDate() - 1) {
+      return `Yesterday ${timeStr}`;
+    }
+    
+    // If within the last week, show day name
+    if (diffInHours < 168) {
+      const dayName = date.toLocaleDateString([], { weekday: "short" });
+      return `${dayName} ${timeStr}`;
+    }
+    
+    // Otherwise show full date
+    return date.toLocaleDateString([], { 
+      month: "short", 
+      day: "numeric",
+      year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined 
+    }) + " " + timeStr;
   };
 
   return (
@@ -135,8 +161,8 @@ export const MessageThread = ({
                     >
                       <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
                     </Card>
-                    <p className={`text-xs text-muted-foreground mt-1 ${isOwnMessage ? "text-right" : ""}`}>
-                      {formatTime(message.created_at)}
+                    <p className={`text-xs text-muted-foreground/80 mt-1.5 font-medium ${isOwnMessage ? "text-right" : ""}`}>
+                      {formatTimestamp(message.created_at)}
                     </p>
                   </div>
                 </div>
