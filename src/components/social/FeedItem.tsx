@@ -134,7 +134,7 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
             <div className="relative">
               <Avatar 
                 className="cursor-pointer hover:scale-110 transition-all duration-300 border-2 border-primary/20 group-hover:border-primary/40"
-                onClick={() => navigate(`/profile/${activity.user_id}`)}
+                onClick={() => navigate(`/users/${activity.user_id}`)}
               >
                 <AvatarImage src={activity.user?.avatar_url} />
                 <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10">
