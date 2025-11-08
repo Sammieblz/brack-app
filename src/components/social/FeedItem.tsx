@@ -119,45 +119,55 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
+    <Card className="group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/30 bg-gradient-to-br from-card to-card/50 overflow-hidden">
+      <CardContent className="p-5">
         <div className="flex gap-4">
           <div className="flex-shrink-0">
-            <Avatar 
-              className="cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => navigate(`/profile/${activity.user_id}`)}
-            >
-              <AvatarImage src={activity.user?.avatar_url} />
-              <AvatarFallback>
-                {activity.user?.display_name ? getInitials(activity.user.display_name) : 'U'}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar 
+                className="cursor-pointer hover:scale-110 transition-all duration-300 border-2 border-primary/20 group-hover:border-primary/40"
+                onClick={() => navigate(`/profile/${activity.user_id}`)}
+              >
+                <AvatarImage src={activity.user?.avatar_url} />
+                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10">
+                  {activity.user?.display_name ? getInitials(activity.user.display_name) : 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute -bottom-1 -right-1 p-1 bg-background rounded-full border border-border/50">
+                {getActivityIcon()}
+              </div>
+            </div>
           </div>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-2 mb-2">
-              {getActivityIcon()}
-              <p className="text-sm text-foreground flex-1">
+              <p className="text-sm text-foreground flex-1 leading-relaxed">
                 {getActivityMessage()}
               </p>
             </div>
 
             {activity.book?.cover_url && (
               <div 
-                className="mt-3 cursor-pointer hover:opacity-80 transition-opacity"
+                className="mt-4 cursor-pointer group/book hover-scale inline-block"
                 onClick={() => navigate(`/book/${activity.book_id}`)}
               >
-                <img
-                  src={activity.book.cover_url}
-                  alt={activity.book.title}
-                  className="w-20 h-28 object-cover rounded shadow-sm"
-                />
+                <div className="relative overflow-hidden rounded-lg shadow-md group-hover/book:shadow-xl transition-all duration-300">
+                  <img
+                    src={activity.book.cover_url}
+                    alt={activity.book.title}
+                    className="w-24 h-32 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover/book:opacity-100 transition-opacity duration-300" />
+                </div>
               </div>
             )}
 
-            <p className="text-xs text-muted-foreground mt-2">
-              {formatTimeAgo(activity.created_at)}
-            </p>
+            <div className="flex items-center gap-2 mt-3">
+              <div className="h-1 w-1 rounded-full bg-muted-foreground/40" />
+              <p className="text-xs text-muted-foreground">
+                {formatTimeAgo(activity.created_at)}
+              </p>
+            </div>
           </div>
         </div>
       </CardContent>
