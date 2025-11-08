@@ -1,11 +1,16 @@
 import { Navbar } from "@/components/Navbar";
 import { ActivityFeed } from "@/components/social/ActivityFeed";
 import { CreatePostDialog } from "@/components/social/CreatePostDialog";
+import { PostCard } from "@/components/social/PostCard";
 import { useSocialFeed } from "@/hooks/useSocialFeed";
-import { Activity, TrendingUp, Users } from "lucide-react";
+import { usePosts } from "@/hooks/usePosts";
+import { Activity, TrendingUp, Users, BookOpen } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const Feed = () => {
   const { refetchFeed } = useSocialFeed();
+  const { posts, loading: postsLoading, refetchPosts, toggleLike } = usePosts();
 
   return (
     <div className="min-h-screen bg-background">
@@ -27,7 +32,10 @@ const Feed = () => {
                 </p>
               </div>
             </div>
-            <CreatePostDialog onPostCreated={refetchFeed} />
+            <CreatePostDialog onPostCreated={() => {
+              refetchFeed();
+              refetchPosts();
+            }} />
           </div>
           
           <div className="flex gap-3 mt-6">
@@ -48,7 +56,41 @@ const Feed = () => {
           </div>
         </div>
         
-        <ActivityFeed />
+        <Tabs defaultValue="posts" className="w-full">
+          <TabsList className="w-full grid grid-cols-2">
+            <TabsTrigger value="posts" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Posts
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              Activity
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="posts" className="space-y-4 mt-6">
+            {postsLoading ? (
+              <LoadingSpinner />
+            ) : posts.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No posts yet. Be the first to share!</p>
+              </div>
+            ) : (
+              posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  onLike={toggleLike}
+                  onDelete={refetchPosts}
+                />
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="activity" className="mt-6">
+            <ActivityFeed />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
