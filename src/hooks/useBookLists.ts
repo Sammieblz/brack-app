@@ -158,6 +158,65 @@ export const useBookLists = (userId?: string) => {
     }
   };
 
+  const duplicateList = async (listId: string) => {
+    if (!userId) return null;
+    
+    try {
+      // Get the original list
+      const { data: originalList, error: listError } = await supabase
+        .from('book_lists')
+        .select('*')
+        .eq('id', listId)
+        .single();
+      
+      if (listError) throw listError;
+      
+      // Create new list with "(Copy)" suffix
+      const { data: newList, error: createError } = await supabase
+        .from('book_lists')
+        .insert({
+          user_id: userId,
+          name: `${originalList.name} (Copy)`,
+          description: originalList.description,
+          is_public: originalList.is_public
+        })
+        .select()
+        .single();
+      
+      if (createError) throw createError;
+      
+      // Get all books from the original list
+      const { data: books, error: booksError } = await supabase
+        .from('book_list_items')
+        .select('book_id, position')
+        .eq('list_id', listId)
+        .order('position', { ascending: true });
+      
+      if (booksError) throw booksError;
+      
+      // Copy books to the new list
+      if (books && books.length > 0) {
+        const bookItems = books.map(book => ({
+          list_id: newList.id,
+          book_id: book.book_id,
+          position: book.position
+        }));
+        
+        const { error: insertError } = await supabase
+          .from('book_list_items')
+          .insert(bookItems);
+        
+        if (insertError) throw insertError;
+      }
+      
+      await fetchLists();
+      return newList;
+    } catch (err: any) {
+      setError(err.message);
+      return null;
+    }
+  };
+
   return {
     lists,
     loading,
@@ -168,6 +227,7 @@ export const useBookLists = (userId?: string) => {
     addBookToList,
     removeBookFromList,
     reorderBooks,
+    duplicateList,
     refetch: fetchLists
   };
 };

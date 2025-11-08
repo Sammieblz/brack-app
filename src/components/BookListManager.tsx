@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useBookLists } from "@/hooks/useBookLists";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, BookMarked, Trash2, Edit2 } from "lucide-react";
+import { Plus, BookMarked, Trash2, Edit2, Copy } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface BookListManagerProps {
@@ -18,7 +18,7 @@ interface BookListManagerProps {
 
 export const BookListManager = ({ userId }: BookListManagerProps) => {
   const navigate = useNavigate();
-  const { lists, loading, createList, updateList, deleteList } = useBookLists(userId);
+  const { lists, loading, createList, updateList, deleteList, duplicateList } = useBookLists(userId);
   const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingList, setEditingList] = useState<string | null>(null);
@@ -66,6 +66,22 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
     setEditingList(null);
     setNewListName("");
     setNewListDescription("");
+  };
+
+  const handleDuplicate = async (listId: string, listName: string) => {
+    const newList = await duplicateList(listId);
+    if (newList) {
+      toast({
+        title: "List duplicated",
+        description: `"${listName}" has been copied to "${newList.name}"`,
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to duplicate the list",
+      });
+    }
   };
 
   if (loading) return <div>Loading lists...</div>;
@@ -180,6 +196,15 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
                     </div>
                   </DialogContent>
                 </Dialog>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDuplicate(list.id, list.name)}
+                  title="Duplicate list"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
