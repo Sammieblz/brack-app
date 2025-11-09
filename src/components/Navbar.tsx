@@ -12,10 +12,12 @@ import { BookOpen, BarChart3, Library, User, LogOut, Menu, X, BookMarked, Target
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { triggerHaptic } = useHapticFeedback();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
@@ -39,10 +41,13 @@ export const Navbar = () => {
 
   const handleSignOut = async () => {
     try {
+      triggerHaptic('medium');
       await signOut();
+      triggerHaptic('success');
       toast.success("Signed out successfully");
       navigate("/");
     } catch (error: any) {
+      triggerHaptic('error');
       toast.error("Error signing out");
     }
   };
@@ -86,12 +91,17 @@ export const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            {navItems.map((item) => (
-              <NavLink key={item.to} to={item.to} className={getNavLinkClass}>
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </NavLink>
-            ))}
+              {navItems.map((item) => (
+                <NavLink 
+                  key={item.to} 
+                  to={item.to} 
+                  className={getNavLinkClass}
+                  onClick={() => triggerHaptic('selection')}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
           </div>
 
           {/* User Menu */}
@@ -153,7 +163,10 @@ export const Navbar = () => {
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     }`
                   }
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    triggerHaptic('selection');
+                    setIsMobileMenuOpen(false);
+                  }}
                 >
                   <item.icon className="h-5 w-5 flex-shrink-0" />
                   <span>{item.label}</span>

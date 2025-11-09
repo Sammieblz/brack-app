@@ -13,6 +13,7 @@ import { Plus, BookMarked, Trash2, Edit2, Copy, Loader2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { BookListCardSkeleton } from "./skeletons/BookListCardSkeleton";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface BookListManagerProps {
   userId: string;
@@ -22,6 +23,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
   const navigate = useNavigate();
   const { lists, loading, loadingMore, hasMore, loadMore, createList, updateList, deleteList, duplicateList } = useBookLists(userId);
   const { toast } = useToast();
+  const { triggerHaptic } = useHapticFeedback();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingList, setEditingList] = useState<string | null>(null);
   const [newListName, setNewListName] = useState("");
@@ -35,6 +37,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
 
   const handleCreate = async () => {
     if (!newListName.trim()) {
+      triggerHaptic('error');
       toast({
         variant: "destructive",
         title: "Name required",
@@ -45,6 +48,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
 
     const result = await createList(newListName, newListDescription);
     if (result) {
+      triggerHaptic('success');
       toast({
         title: "List created",
         description: `"${newListName}" has been created successfully`,
@@ -56,7 +60,9 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
   };
 
   const handleDelete = async (listId: string, listName: string) => {
+    triggerHaptic('medium');
     await deleteList(listId);
+    triggerHaptic('success');
     toast({
       title: "List deleted",
       description: `"${listName}" has been deleted`,
@@ -67,6 +73,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
     if (!newListName.trim()) return;
     
     await updateList(listId, { name: newListName, description: newListDescription });
+    triggerHaptic('success');
     toast({
       title: "List updated",
       description: "Your list has been updated successfully",
@@ -79,11 +86,13 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
   const handleDuplicate = async (listId: string, listName: string) => {
     const newList = await duplicateList(listId);
     if (newList) {
+      triggerHaptic('success');
       toast({
         title: "List duplicated",
         description: `"${listName}" has been copied to "${newList.name}"`,
       });
     } else {
+      triggerHaptic('error');
       toast({
         variant: "destructive",
         title: "Error",

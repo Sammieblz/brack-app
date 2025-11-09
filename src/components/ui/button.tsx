@@ -3,6 +3,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { useHapticFeedback } from "@/hooks/useHapticFeedback"
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
@@ -37,15 +38,33 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
+  disableHaptic?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, disableHaptic = false, onClick, ...props }, ref) => {
+    const { triggerHaptic } = useHapticFeedback()
     const Comp = asChild ? Slot : "button"
+    
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (!disableHaptic && !props.disabled) {
+        // Different haptic patterns based on variant
+        if (variant === 'destructive') {
+          triggerHaptic('medium')
+        } else if (variant === 'default') {
+          triggerHaptic('light')
+        } else {
+          triggerHaptic('selection')
+        }
+      }
+      onClick?.(e)
+    }
+    
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        onClick={handleClick}
         {...props}
       />
     )

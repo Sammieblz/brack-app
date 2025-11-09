@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PenSquare } from "lucide-react";
 import { GENRES } from "@/constants";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface CreatePostDialogProps {
   onPostCreated?: () => void;
@@ -27,9 +28,11 @@ export const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
   const [content, setContent] = useState("");
   const [genre, setGenre] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const { triggerHaptic } = useHapticFeedback();
 
   const handleSubmit = async () => {
     if (!title.trim() || !content.trim()) {
+      triggerHaptic('error');
       toast.error("Please fill in all required fields");
       return;
     }
@@ -48,6 +51,7 @@ export const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
 
       if (error) throw error;
 
+      triggerHaptic('success');
       toast.success("Post created successfully!");
       setTitle("");
       setContent("");
@@ -56,6 +60,7 @@ export const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
       onPostCreated?.();
     } catch (error: any) {
       console.error("Error creating post:", error);
+      triggerHaptic('error');
       toast.error("Failed to create post");
     } finally {
       setLoading(false);

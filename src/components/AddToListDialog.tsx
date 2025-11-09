@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useBookLists } from "@/hooks/useBookLists";
 import { useToast } from "@/hooks/use-toast";
 import { ListPlus } from "lucide-react";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface AddToListDialogProps {
   bookId: string;
@@ -15,6 +16,7 @@ interface AddToListDialogProps {
 export const AddToListDialog = ({ bookId, userId, trigger }: AddToListDialogProps) => {
   const { lists, addBookToList, removeBookFromList } = useBookLists(userId);
   const { toast } = useToast();
+  const { triggerHaptic } = useHapticFeedback();
   const [open, setOpen] = useState(false);
   const [bookLists, setBookLists] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
@@ -50,6 +52,7 @@ export const AddToListDialog = ({ bookId, userId, trigger }: AddToListDialogProp
       if (isChecked) {
         await addBookToList(listId, bookId);
         setBookLists(prev => new Set(prev).add(listId));
+        triggerHaptic('success');
         toast({
           title: "Added to list",
           description: "Book has been added to the list",
@@ -61,12 +64,14 @@ export const AddToListDialog = ({ bookId, userId, trigger }: AddToListDialogProp
           newSet.delete(listId);
           return newSet;
         });
+        triggerHaptic('medium');
         toast({
           title: "Removed from list",
           description: "Book has been removed from the list",
         });
       }
     } catch (error: any) {
+      triggerHaptic('error');
       toast({
         variant: "destructive",
         title: "Error",
