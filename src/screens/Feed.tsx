@@ -1,16 +1,19 @@
-import { Navbar } from "@/components/Navbar";
-import { ActivityFeed } from "@/components/social/ActivityFeed";
 import { CreatePostDialog } from "@/components/social/CreatePostDialog";
+import { ActivityFeed } from "@/components/social/ActivityFeed";
 import { PostCard } from "@/components/social/PostCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
+import { TrendingUp, Users } from "lucide-react";
 import { useSocialFeed } from "@/hooks/useSocialFeed";
 import { usePosts } from "@/hooks/usePosts";
-import { Activity, TrendingUp, Users, BookOpen } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import LoadingSpinner from "@/components/LoadingSpinner";
 import { PostCardSkeleton } from "@/components/skeletons/PostCardSkeleton";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { MobileLayout } from "@/components/MobileLayout";
+import { MobileHeader } from "@/components/MobileHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Feed = () => {
+  const isMobile = useIsMobile();
   const { refetchFeed } = useSocialFeed();
   const { posts, loading: postsLoading, refetchPosts, toggleLike } = usePosts();
 
@@ -22,95 +25,91 @@ const Feed = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
-        <main className="container max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <div className="mb-6 sm:mb-8 animate-fade-in">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
-                <Activity className="h-5 w-5 sm:h-7 sm:w-7 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-xl sm:text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  Activity Feed
-                </h1>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 flex items-center gap-2">
-                  <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                  See what your reading community is up to
-                </p>
-              </div>
-            </div>
-            <CreatePostDialog onPostCreated={() => {
+        {isMobile && (
+          <MobileHeader 
+            title="Social" 
+            action={<CreatePostDialog onPostCreated={() => {
               refetchFeed();
               refetchPosts();
-            }} />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 mt-4 sm:mt-6">
-            <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover-scale">
-              <div className="flex items-center gap-1.5 sm:gap-2 text-primary mb-0.5 sm:mb-1">
-                <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                <span className="text-xs sm:text-sm font-semibold">Trending</span>
-              </div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Most active readers today</p>
-            </div>
-            <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/20 hover-scale">
-              <div className="flex items-center gap-1.5 sm:gap-2 text-secondary mb-0.5 sm:mb-1">
-                <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                <span className="text-xs sm:text-sm font-semibold">Following</span>
-              </div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Updates from your network</p>
-            </div>
-          </div>
-        </div>
+            }} />}
+          />
+        )}
         
-        <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="w-full grid grid-cols-2 h-11">
-            <TabsTrigger value="posts" className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base touch-manipulation">
-              <BookOpen className="h-4 w-4" />
-              <span className="hidden sm:inline">Posts</span>
-              <span className="sm:hidden">Posts</span>
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base touch-manipulation">
-              <Activity className="h-4 w-4" />
-              <span className="hidden sm:inline">Activity</span>
-              <span className="sm:hidden">Activity</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="posts" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
-            {postsLoading ? (
-              <>
-                <PostCardSkeleton />
-                <PostCardSkeleton />
-                <PostCardSkeleton />
-                <PostCardSkeleton />
-              </>
-            ) : posts.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">No posts yet. Be the first to share!</p>
+        <main className="container max-w-4xl mx-auto px-4 py-4 md:py-8">
+          {!isMobile && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h1 className="text-3xl font-bold">Activity Feed</h1>
+                  <p className="text-muted-foreground flex items-center gap-2 mt-1">
+                    <Users className="h-4 w-4" />
+                    See what your reading community is up to
+                  </p>
+                </div>
+                <CreatePostDialog onPostCreated={() => {
+                  refetchFeed();
+                  refetchPosts();
+                }} />
               </div>
-            ) : (
-              posts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  onLike={toggleLike}
-                  onDelete={refetchPosts}
-                />
-              ))
-            )}
-          </TabsContent>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                  <div className="flex items-center gap-2 text-primary mb-1">
+                    <TrendingUp className="h-4 w-4" />
+                    <span className="text-sm font-semibold">Trending</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Most active readers today</p>
+                </Card>
+                <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                  <div className="flex items-center gap-2 text-secondary mb-1">
+                    <Users className="h-4 w-4" />
+                    <span className="text-sm font-semibold">Following</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Updates from your network</p>
+                </Card>
+              </div>
+            </div>
+          )}
+          
+          <Tabs defaultValue="posts" className="w-full">
+            <TabsList className="w-full grid grid-cols-2">
+              <TabsTrigger value="posts">Posts</TabsTrigger>
+              <TabsTrigger value="activity">Activity</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="activity" className="mt-4 sm:mt-6">
-            <ActivityFeed />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="posts" className="space-y-4 mt-4 md:mt-6">
+              {postsLoading ? (
+                <>
+                  <PostCardSkeleton />
+                  <PostCardSkeleton />
+                  <PostCardSkeleton />
+                </>
+              ) : posts.length === 0 ? (
+                <Card className="p-12 text-center">
+                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No posts yet. Be the first to share!</p>
+                </Card>
+              ) : (
+                posts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onLike={toggleLike}
+                    onDelete={refetchPosts}
+                  />
+                ))
+              )}
+            </TabsContent>
+
+            <TabsContent value="activity" className="mt-4 md:mt-6">
+              <ActivityFeed />
+            </TabsContent>
+          </Tabs>
         </main>
       </PullToRefresh>
-    </div>
+    </MobileLayout>
   );
 };
 
