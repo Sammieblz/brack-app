@@ -4,12 +4,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MessageCircle, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Trash2, Edit, Flag, Share2 } from "lucide-react";
 import { Post } from "@/hooks/usePosts";
 import { usePostComments, PostComment } from "@/hooks/usePostComments";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { ContextMenuNative } from "@/components/ui/context-menu-native";
 
 interface PostCardProps {
   post: Post;
@@ -138,23 +139,6 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
   const { comments, addComment, deleteComment } = usePostComments(post.id);
   const { user } = useAuth();
 
-  const getInitials = (name?: string) => {
-    if (!name) return "U";
-    return name.split(" ").map(n => n[0]).join("").toUpperCase();
-  };
-
-  const handleAddComment = async () => {
-    if (!commentContent.trim()) return;
-    const success = await addComment(commentContent);
-    if (success) {
-      setCommentContent("");
-    }
-  };
-
-  const handleReply = async (parentId: string, content: string) => {
-    await addComment(content, parentId);
-  };
-
   const handleDeletePost = async () => {
     try {
       const { error } = await supabase
@@ -170,6 +154,72 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
       console.error("Error deleting post:", error);
       toast.error("Failed to delete post");
     }
+  };
+
+  const contextActions = user?.id === post.user_id ? [
+    {
+      label: "Edit Post",
+      icon: <Edit className="h-5 w-5" />,
+      onClick: () => {
+        toast.info("Edit feature coming soon");
+      },
+    },
+    {
+      label: "Share",
+      icon: <Share2 className="h-5 w-5" />,
+      onClick: () => {
+        if (navigator.share) {
+          navigator.share({
+            title: post.title,
+            text: post.content,
+          });
+        }
+      },
+    },
+    {
+      label: "Delete Post",
+      icon: <Trash2 className="h-5 w-5" />,
+      variant: 'destructive' as const,
+      onClick: handleDeletePost,
+    },
+  ] : [
+    {
+      label: "Share",
+      icon: <Share2 className="h-5 w-5" />,
+      onClick: () => {
+        if (navigator.share) {
+          navigator.share({
+            title: post.title,
+            text: post.content,
+          });
+        }
+      },
+    },
+    {
+      label: "Report",
+      icon: <Flag className="h-5 w-5" />,
+      variant: 'destructive' as const,
+      onClick: () => {
+        toast.success("Post reported. Thank you for keeping our community safe.");
+      },
+    },
+  ];
+
+  const getInitials = (name?: string) => {
+    if (!name) return "U";
+    return name.split(" ").map(n => n[0]).join("").toUpperCase();
+  };
+
+  const handleAddComment = async () => {
+    if (!commentContent.trim()) return;
+    const success = await addComment(commentContent);
+    if (success) {
+      setCommentContent("");
+    }
+  };
+
+  const handleReply = async (parentId: string, content: string) => {
+    await addComment(content, parentId);
   };
 
   const formatTimestamp = (dateString: string) => {
@@ -214,7 +264,12 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
   };
 
   return (
-    <Card className="p-6 hover-scale">
+    <ContextMenuNative
+      actions={contextActions}
+      title="Post Options"
+      description="Choose an action"
+    >
+      <Card className="p-6 hover-scale active:scale-[0.98] transition-all duration-200">
       <div className="flex gap-4">
         <Avatar className="h-12 w-12">
           <AvatarImage src={post.user?.avatar_url} />
@@ -319,5 +374,6 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
         </div>
       </div>
     </Card>
+    </ContextMenuNative>
   );
 };

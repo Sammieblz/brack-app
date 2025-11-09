@@ -28,6 +28,8 @@ import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { GoalsSheet } from "@/components/GoalsSheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SwipeableBookListsCarousel } from "@/components/SwipeableBookListsCarousel";
+import { NativeHeader } from "@/components/NativeHeader";
+import { NativeScrollView } from "@/components/NativeScrollView";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -150,14 +152,21 @@ const Dashboard = () => {
   return (
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
-        {isMobile && (
+        {isMobile ? (
           <MobileHeader 
             title="Home" 
             action={<GoalsSheet />}
           />
+        ) : (
+          <NativeHeader 
+            title="Welcome back!" 
+            subtitle="Here's what's happening with your reading journey"
+            action={<GoalsSheet />}
+            scrollContainerId="dashboard-scroll"
+          />
         )}
         
-        <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+        <NativeScrollView id="dashboard-scroll" className="max-w-6xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
           {/* Desktop Header */}
           {!isMobile && (
             <div className="text-center space-y-2">
@@ -346,7 +355,7 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
-        </div>
+        </NativeScrollView>
       </PullToRefresh>
       
       {/* Mobile FAB */}

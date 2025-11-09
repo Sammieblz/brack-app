@@ -147,10 +147,18 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
-  /* Touch-friendly utility class */
+  /* Touch-friendly utility classes */
   .touch-manipulation {
     touch-action: manipulation;
     -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .touch-action-none {
+    touch-action: none;
+  }
+
+  .user-select-none {
     user-select: none;
   }
 
@@ -160,5 +168,41 @@ All colors MUST be HSL.
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  /* Native-style interactions */
+  .hover-scale {
+    @apply transition-transform duration-200;
+  }
+
+  .hover-scale:hover {
+    @apply scale-105;
+  }
+
+  .active-press {
+    @apply active:scale-[0.98] transition-transform duration-100;
+  }
+
+  /* Native scroll styles */
+  .native-scroll {
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* iOS-style rubber band effect */
+  @supports (-webkit-overflow-scrolling: touch) {
+    .native-scroll {
+      overscroll-behavior-y: auto;
+    }
+  }
+
+  /* Material ripple effect placeholder */
+  @keyframes ripple {
+    to {
+      transform: scale(4);
+      opacity: 0;
+    }
   }
 }

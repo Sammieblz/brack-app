@@ -1,20 +1,56 @@
-import { BookOpen, ListPlus } from "lucide-react";
+import { BookOpen, ListPlus, Edit, Trash2, Share2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { getProgressPercentage } from "@/utils/bookProgress";
 import { AddToListDialog } from "@/components/AddToListDialog";
+import { ContextMenuNative } from "@/components/ui/context-menu-native";
 import type { Book } from "@/types";
+import { useNavigate } from "react-router-dom";
 
 interface BookCardProps {
   book: Book;
   onClick?: () => void;
   onStatusChange?: (bookId: string, status: string) => void;
+  onDelete?: (bookId: string) => void;
   userId?: string;
 }
 
-export const BookCard = ({ book, onClick, onStatusChange, userId }: BookCardProps) => {
+export const BookCard = ({ book, onClick, onStatusChange, onDelete, userId }: BookCardProps) => {
+  const navigate = useNavigate();
+
+  const contextActions = [
+    {
+      label: "View Details",
+      icon: <BookOpen className="h-5 w-5" />,
+      onClick: () => onClick?.(),
+    },
+    {
+      label: "Edit",
+      icon: <Edit className="h-5 w-5" />,
+      onClick: () => navigate(`/edit-book/${book.id}`),
+    },
+    {
+      label: "Share",
+      icon: <Share2 className="h-5 w-5" />,
+      onClick: () => {
+        if (navigator.share) {
+          navigator.share({
+            title: book.title,
+            text: `Check out "${book.title}" by ${book.author || 'Unknown Author'}`,
+          });
+        }
+      },
+    },
+    {
+      label: "Delete",
+      icon: <Trash2 className="h-5 w-5" />,
+      variant: 'destructive' as const,
+      onClick: () => onDelete?.(book.id),
+    },
+  ];
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -29,9 +65,14 @@ export const BookCard = ({ book, onClick, onStatusChange, userId }: BookCardProp
   };
 
   return (
-    <Card 
-      className="bg-gradient-card shadow-soft border-0 hover:shadow-medium transition-all duration-300 group touch-manipulation"
+    <ContextMenuNative
+      actions={contextActions}
+      title={book.title}
+      description="Choose an action"
     >
+      <Card 
+        className="bg-gradient-card shadow-soft border-0 hover:shadow-medium active:scale-[0.98] transition-all duration-200 group touch-manipulation"
+      >
       <CardContent className="p-3 sm:p-4">
         <div className="flex items-start space-x-3 sm:space-x-4">
           <div onClick={onClick} className="cursor-pointer flex-1 flex items-start space-x-3 sm:space-x-4">
@@ -125,5 +166,6 @@ export const BookCard = ({ book, onClick, onStatusChange, userId }: BookCardProp
         </div>
       </CardContent>
     </Card>
+    </ContextMenuNative>
   );
 };

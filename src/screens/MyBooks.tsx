@@ -17,6 +17,8 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { NativeHeader } from "@/components/NativeHeader";
+import { NativeScrollView } from "@/components/NativeScrollView";
 
 const MyBooks = () => {
   const { user } = useAuth();
@@ -58,7 +60,7 @@ const MyBooks = () => {
   return (
     <MobileLayout>
       <PullToRefresh onRefresh={async () => await refetchBooks()}>
-        {isMobile && (
+        {isMobile ? (
           <MobileHeader 
             title="Library" 
             action={
@@ -71,9 +73,34 @@ const MyBooks = () => {
               </Button>
             }
           />
+        ) : (
+          <NativeHeader 
+            title="My Library" 
+            subtitle="Manage your personal collection"
+            action={
+              <div className="flex gap-3">
+                <Button 
+                  onClick={() => navigate("/book-lists")}
+                  variant="outline"
+                  size="sm"
+                >
+                  Book Lists
+                </Button>
+                <Button 
+                  onClick={() => navigate("/analytics")}
+                  variant="outline"
+                  size="sm"
+                >
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Analytics
+                </Button>
+              </div>
+            }
+            scrollContainerId="library-scroll"
+          />
         )}
         
-        <div className="max-w-6xl mx-auto px-4 py-4 md:p-6 space-y-4 md:space-y-6">
+        <NativeScrollView id="library-scroll" className="max-w-6xl mx-auto px-4 py-4 md:p-6 space-y-4 md:space-y-6">
           {/* Desktop Header */}
           {!isMobile && (
             <div className="flex justify-between items-center">
@@ -244,7 +271,7 @@ const MyBooks = () => {
               )}
             </div>
           )}
-        </div>
+        </NativeScrollView>
       </PullToRefresh>
       
       {/* Mobile FAB */}
