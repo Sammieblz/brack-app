@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BookOpen, Plus, Search, Filter, Timer } from "lucide-react";
+import { BookOpen, Plus, Search, Filter, Timer, Loader2 } from "lucide-react";
 import { BookCard } from "@/components/BookCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
@@ -12,13 +12,20 @@ import { Navbar } from "@/components/Navbar";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
 import { StatCardSkeleton } from "@/components/skeletons/StatCardSkeleton";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 const MyBooks = () => {
   const { user } = useAuth();
-  const { books, loading } = useBooks(user?.id);
+  const { books, loading, loadingMore, hasMore, loadMore } = useBooks(user?.id);
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  const loadMoreRef = useInfiniteScroll({
+    hasMore,
+    loading: loadingMore,
+    onLoadMore: loadMore,
+  });
 
   const handleBookClick = (bookId: string) => {
     navigate(`/book/${bookId}`);
@@ -183,6 +190,17 @@ const MyBooks = () => {
                 userId={user?.id}
               />
             ))}
+            
+            {hasMore && (
+              <div ref={loadMoreRef} className="py-8 flex justify-center">
+                {loadingMore && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Loading more books...</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

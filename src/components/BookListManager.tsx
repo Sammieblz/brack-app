@@ -9,9 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useBookLists } from "@/hooks/useBookLists";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, BookMarked, Trash2, Edit2, Copy } from "lucide-react";
+import { Plus, BookMarked, Trash2, Edit2, Copy, Loader2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { BookListCardSkeleton } from "./skeletons/BookListCardSkeleton";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 interface BookListManagerProps {
   userId: string;
@@ -19,12 +20,18 @@ interface BookListManagerProps {
 
 export const BookListManager = ({ userId }: BookListManagerProps) => {
   const navigate = useNavigate();
-  const { lists, loading, createList, updateList, deleteList, duplicateList } = useBookLists(userId);
+  const { lists, loading, loadingMore, hasMore, loadMore, createList, updateList, deleteList, duplicateList } = useBookLists(userId);
   const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingList, setEditingList] = useState<string | null>(null);
   const [newListName, setNewListName] = useState("");
   const [newListDescription, setNewListDescription] = useState("");
+
+  const loadMoreRef = useInfiniteScroll({
+    hasMore,
+    loading: loadingMore,
+    onLoadMore: loadMore,
+  });
 
   const handleCreate = async () => {
     if (!newListName.trim()) {
@@ -246,6 +253,17 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
           </Card>
         ))}
       </div>
+
+      {hasMore && lists.length > 0 && (
+        <div ref={loadMoreRef} className="py-8 flex justify-center">
+          {loadingMore && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span>Loading more lists...</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {lists.length === 0 && (
         <Card>

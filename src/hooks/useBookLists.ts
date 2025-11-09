@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+
+const PAGE_SIZE = 15;
 
 export interface BookList {
   id: string;
@@ -23,13 +25,24 @@ export interface BookListItem {
 export const useBookLists = (userId?: string) => {
   const [lists, setLists] = useState<BookList[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [offset, setOffset] = useState(0);
 
-  const fetchLists = async () => {
+  const fetchLists = async (isInitial = true) => {
     if (!userId) return;
     
     try {
-      setLoading(true);
+      if (isInitial) {
+        setLoading(true);
+        setOffset(0);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const currentOffset = isInitial ? 0 : offset;
+      
       const { data, error } = await supabase
         .from('book_lists')
         .select(`
@@ -37,7 +50,8 @@ export const useBookLists = (userId?: string) => {
           book_list_items(count)
         `)
         .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(currentOffset, currentOffset + PAGE_SIZE - 1);
       
       if (error) throw error;
       
@@ -46,17 +60,32 @@ export const useBookLists = (userId?: string) => {
         book_count: list.book_list_items?.[0]?.count || 0
       })) || [];
       
-      setLists(listsWithCount);
+      setHasMore(listsWithCount.length === PAGE_SIZE);
+      
+      if (isInitial) {
+        setLists(listsWithCount);
+        setOffset(PAGE_SIZE);
+      } else {
+        setLists(prev => [...prev, ...listsWithCount]);
+        setOffset(prev => prev + PAGE_SIZE);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    fetchLists();
+    fetchLists(true);
   }, [userId]);
+
+  const loadMore = useCallback(() => {
+    if (!loadingMore && hasMore) {
+      fetchLists(false);
+    }
+  }, [loadingMore, hasMore, offset]);
 
   const createList = async (name: string, description?: string) => {
     if (!userId) return null;
@@ -69,7 +98,7 @@ export const useBookLists = (userId?: string) => {
         .single();
       
       if (error) throw error;
-      await fetchLists();
+      await fetchLists(true);
       return data;
     } catch (err: any) {
       setError(err.message);
@@ -85,7 +114,7 @@ export const useBookLists = (userId?: string) => {
         .eq('id', listId);
       
       if (error) throw error;
-      await fetchLists();
+      await fetchLists(true);
     } catch (err: any) {
       setError(err.message);
     }
@@ -99,7 +128,7 @@ export const useBookLists = (userId?: string) => {
         .eq('id', listId);
       
       if (error) throw error;
-      await fetchLists();
+      await fetchLists(true);
     } catch (err: any) {
       setError(err.message);
     }
@@ -122,7 +151,7 @@ export const useBookLists = (userId?: string) => {
         .insert({ list_id: listId, book_id: bookId, position: maxPosition + 1 });
       
       if (error) throw error;
-      await fetchLists();
+      await fetchLists(true);
     } catch (err: any) {
       setError(err.message);
     }
@@ -137,7 +166,7 @@ export const useBookLists = (userId?: string) => {
         .eq('book_id', bookId);
       
       if (error) throw error;
-      await fetchLists();
+      await fetchLists(true);
     } catch (err: any) {
       setError(err.message);
     }
@@ -152,7 +181,7 @@ export const useBookLists = (userId?: string) => {
           .eq('list_id', listId)
           .eq('book_id', item.book_id);
       }
-      await fetchLists();
+      await fetchLists(true);
     } catch (err: any) {
       setError(err.message);
     }
@@ -209,7 +238,7 @@ export const useBookLists = (userId?: string) => {
         if (insertError) throw insertError;
       }
       
-      await fetchLists();
+      await fetchLists(true);
       return newList;
     } catch (err: any) {
       setError(err.message);
@@ -220,7 +249,10 @@ export const useBookLists = (userId?: string) => {
   return {
     lists,
     loading,
+    loadingMore,
     error,
+    hasMore,
+    loadMore,
     createList,
     updateList,
     deleteList,
@@ -228,6 +260,6 @@ export const useBookLists = (userId?: string) => {
     removeBookFromList,
     reorderBooks,
     duplicateList,
-    refetch: fetchLists
+    refetch: () => fetchLists(true)
   };
 };
