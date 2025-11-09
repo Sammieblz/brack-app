@@ -21,6 +21,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { ReviewCard } from "@/components/social/ReviewCard";
 import { ReviewForm } from "@/components/social/ReviewForm";
 import { useReviews } from "@/hooks/useReviews";
+import { MobileLayout } from "@/components/MobileLayout";
+import { MobileHeader } from "@/components/MobileHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { Book, ReadingSession } from "@/types";
 
 const BookDetail = () => {
@@ -36,6 +39,7 @@ const BookDetail = () => {
   const { user } = useAuth();
   const { reviews, averageRating, userHasReviewed, refetch: refetchReviews } = useReviews(id);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!id) return;
@@ -163,20 +167,9 @@ const BookDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-background p-4">
-      <div className="max-w-md mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate("/dashboard")}
-            className="border-border/50 hover:shadow-soft transition-all duration-300"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-        </div>
+    <MobileLayout>
+      {isMobile && <MobileHeader title={book.title} showBack />}
+      <div className="container max-w-4xl mx-auto p-4">
 
         {/* Book Details Tabs */}
         <Card className="bg-gradient-card shadow-medium border-0 mb-6 animate-scale-in">
@@ -562,7 +555,7 @@ const BookDetail = () => {
           </Card>
         )}
       </div>
-    </div>
+    </MobileLayout>
   );
 };
 

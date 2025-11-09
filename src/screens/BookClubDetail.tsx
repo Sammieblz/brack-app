@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
+import { MobileLayout } from "@/components/MobileLayout";
+import { MobileHeader } from "@/components/MobileHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +28,7 @@ const BookClubDetail = () => {
   const [newDiscussionTitle, setNewDiscussionTitle] = useState("");
   const [newDiscussionContent, setNewDiscussionContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const isMobile = useIsMobile();
 
   const { discussions, loading: discussionsLoading, createDiscussion, deleteDiscussion } = useClubDiscussions(clubId!);
 
@@ -142,25 +145,25 @@ const BookClubDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
+      <MobileLayout>
+        {isMobile && <MobileHeader title="Book Club" showBack />}
         <div className="flex justify-center items-center py-20">
           <LoadingSpinner />
         </div>
-      </div>
+      </MobileLayout>
     );
   }
 
   if (!club) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
+      <MobileLayout>
+        {isMobile && <MobileHeader title="Book Club" showBack />}
         <div className="container max-w-4xl mx-auto px-4 py-8">
           <div className="text-center">
             <p className="text-muted-foreground">Club not found</p>
           </div>
         </div>
-      </div>
+      </MobileLayout>
     );
   }
 
@@ -168,18 +171,20 @@ const BookClubDetail = () => {
   const isAdmin = userMember?.role === 'admin';
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="container max-w-6xl mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/clubs')}
-          className="mb-6 hover-scale"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Clubs
-        </Button>
+    <MobileLayout>
+      {isMobile && <MobileHeader title={club.name} showBack />}
+      <main className="container max-w-6xl mx-auto px-4 py-4 md:py-8">
+        {!isMobile && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/clubs')}
+            className="mb-6 hover-scale"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Clubs
+          </Button>
+        )}
 
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <div className="md:col-span-2">
@@ -331,7 +336,7 @@ const BookClubDetail = () => {
           </TabsContent>
         </Tabs>
       </main>
-    </div>
+    </MobileLayout>
   );
 };
 

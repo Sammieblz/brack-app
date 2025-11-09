@@ -1,6 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useChartData } from "@/hooks/useChartData";
-import { Navbar } from "@/components/Navbar";
 import { ReadingProgressChart } from "@/components/charts/ReadingProgressChart";
 import { GenreDistributionChart } from "@/components/charts/GenreDistributionChart";
 import { WeeklyReadingChart } from "@/components/charts/WeeklyReadingChart";
@@ -8,11 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, TrendingUp, BookOpen, Clock } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useBooks } from "@/hooks/useBooks";
+import { MobileLayout } from "@/components/MobileLayout";
+import { MobileHeader } from "@/components/MobileHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Analytics = () => {
   const { user } = useAuth();
   const { books } = useBooks(user?.id);
   const { readingProgress, genreData, weeklyReading, loading } = useChartData(user?.id);
+  const isMobile = useIsMobile();
 
   // Calculate analytics stats
   const totalMinutes = readingProgress.reduce((sum, day) => sum + day.minutes, 0);
@@ -22,33 +25,35 @@ const Analytics = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-background">
-        <Navbar />
+      <MobileLayout>
+        {isMobile && <MobileHeader title="Analytics" showBack />}
         <div className="flex items-center justify-center h-96">
           <LoadingSpinner size="lg" text="Loading analytics..." />
         </div>
-      </div>
+      </MobileLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-background">
-      <Navbar />
+    <MobileLayout>
+      {isMobile && <MobileHeader title="Analytics" showBack />}
       
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center space-x-3">
-          <BarChart3 className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-            <p className="text-muted-foreground">
-              Insights into your reading journey
-            </p>
+      <div className="container max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+        {/* Header - Desktop only */}
+        {!isMobile && (
+          <div className="flex items-center space-x-3">
+            <BarChart3 className="h-8 w-8 text-primary" />
+            <div>
+              <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+              <p className="text-muted-foreground">
+                Insights into your reading journey
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Books Completed</CardTitle>
@@ -135,7 +140,7 @@ const Analytics = () => {
           </Card>
         )}
       </div>
-    </div>
+    </MobileLayout>
   );
 };
 

@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Navbar } from "@/components/Navbar";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { MobileLayout } from "@/components/MobileLayout";
+import { MobileHeader } from "@/components/MobileHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -51,6 +53,7 @@ export default function ReadingHistory() {
   const [progressLogs, setProgressLogs] = useState<ProgressLog[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (authLoading) return;
@@ -153,21 +156,23 @@ export default function ReadingHistory() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
+      <MobileLayout>
+        {isMobile && <MobileHeader title="Reading History" showBack />}
         <LoadingSpinner />
-      </div>
+      </MobileLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Reading History</h1>
-          <p className="text-muted-foreground">View all your progress logs and journal entries</p>
-        </div>
+    <MobileLayout>
+      {isMobile && <MobileHeader title="Reading History" showBack />}
+      <div className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
+        {!isMobile && (
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold mb-2">Reading History</h1>
+            <p className="text-muted-foreground">View all your progress logs and journal entries</p>
+          </div>
+        )}
 
         {/* Search */}
         <div className="mb-6">
@@ -357,6 +362,6 @@ export default function ReadingHistory() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </MobileLayout>
   );
 }

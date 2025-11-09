@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useBadges } from "@/hooks/useBadges";
 import { useStreaks } from "@/hooks/useStreaks";
-import { ArrowLeft, Save, User, Upload, Palette, Award, Flame, MapPin } from "lucide-react";
+import { Save, User, Upload, Palette, Award, Flame, MapPin } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
@@ -19,6 +19,8 @@ import { BadgeDisplay } from "@/components/BadgeDisplay";
 import { StreakDisplay } from "@/components/StreakDisplay";
 import { StreakCalendar } from "@/components/StreakCalendar";
 import { ReadingHabitsSection } from "@/components/ReadingHabitsSection";
+import { MobileLayout } from "@/components/MobileLayout";
+import { MobileHeader } from "@/components/MobileHeader";
 import type { Profile } from "@/types";
 
 const ProfilePage = () => {
@@ -312,19 +314,9 @@ const ProfilePage = () => {
   const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
-    <div className="min-h-screen bg-gradient-background p-4">
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" size="sm" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Profile Settings</h1>
-            <p className="text-muted-foreground">Manage your account information</p>
-          </div>
-        </div>
+    <MobileLayout>
+      <MobileHeader title="Profile Settings" showBack />
+      <div className="container max-w-2xl mx-auto p-4 space-y-6">
 
         {/* Profile Avatar Section */}
         <Card>
@@ -654,7 +646,7 @@ const ProfilePage = () => {
           </Button>
         </div>
       </div>
-    </div>
+    </MobileLayout>
   );
 };
 
