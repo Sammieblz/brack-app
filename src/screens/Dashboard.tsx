@@ -240,23 +240,19 @@ const Dashboard = () => {
 
           {/* Analytics Snippet */}
           {!chartLoading && weeklyReading.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-base md:text-lg">
-                  <span className="flex items-center">
-                    <BarChart3 className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-                    This Week's Reading
-                  </span>
-                  <Button variant="outline" size="sm" onClick={() => navigate("/analytics")}>
-                    View All
-                    <ArrowRight className="h-4 w-4 ml-1" />
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <WeeklyReadingChart data={weeklyReading} />
-              </CardContent>
-            </Card>
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base md:text-lg font-semibold flex items-center">
+                  <BarChart3 className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                  This Week's Reading
+                </h3>
+                <Button variant="outline" size="sm" onClick={() => navigate("/analytics")}>
+                  View All
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+              <WeeklyReadingChart data={weeklyReading} />
+            </div>
           )}
 
           {/* My Books Snippet */}

@@ -326,20 +326,21 @@ const ProfilePage = () => {
               Profile Picture
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex items-center space-x-6">
-            <Avatar className="h-20 w-20">
+          <CardContent className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+            <Avatar className="h-20 w-20 shrink-0">
               <AvatarImage src={previewUrl || profile?.avatar_url || (user?.user_metadata as any)?.avatar_url} />
               <AvatarFallback className="text-lg">{initials}</AvatarFallback>
             </Avatar>
-            <div className="flex-1">
-              <p className="text-sm text-muted-foreground mb-3">
+            <div className="flex-1 w-full">
+              <p className="text-sm text-muted-foreground mb-3 text-center sm:text-left">
                 Update your profile picture to personalize your account
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button 
                   variant="outline" 
                   disabled={uploading}
                   onClick={() => document.getElementById('avatar-upload')?.click()}
+                  className="w-full sm:w-auto"
                 >
                   <Upload className="h-4 w-4 mr-2" />
                   {uploading ? "Uploading..." : "Upload Photo"}
@@ -349,6 +350,7 @@ const ProfilePage = () => {
                     variant="outline" 
                     disabled={uploading}
                     onClick={handleRemoveAvatar}
+                    className="w-full sm:w-auto"
                   >
                     Remove
                   </Button>
