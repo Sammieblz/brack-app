@@ -1,7 +1,10 @@
 import { ReactNode } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MessageCircle, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useConversations } from "@/hooks/useConversations";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { cn } from "@/lib/utils";
 
 interface MobileHeaderProps {
@@ -9,15 +12,31 @@ interface MobileHeaderProps {
   showBack?: boolean;
   action?: ReactNode;
   className?: string;
+  hideMessaging?: boolean;
 }
 
 export const MobileHeader = ({ 
   title, 
   showBack = false, 
   action,
-  className 
+  className,
+  hideMessaging = false
 }: MobileHeaderProps) => {
   const navigate = useNavigate();
+  const { conversations } = useConversations();
+  const { triggerHaptic } = useHapticFeedback();
+  
+  const unreadCount = conversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
+
+  const handleMessagesClick = () => {
+    triggerHaptic("selection");
+    navigate("/messages");
+  };
+
+  const handleFeedClick = () => {
+    triggerHaptic("selection");
+    navigate("/feed");
+  };
 
   return (
     <header className={cn(
@@ -38,7 +57,37 @@ export const MobileHeader = ({
           )}
           <h1 className="text-lg font-semibold truncate">{title}</h1>
         </div>
-        {action && <div className="shrink-0 ml-2">{action}</div>}
+        <div className="flex items-center gap-1 shrink-0 ml-2">
+          {!hideMessaging && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleFeedClick}
+                className="relative"
+              >
+                <Users className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleMessagesClick}
+                className="relative"
+              >
+                <MessageCircle className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-[10px]"
+                  >
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Badge>
+                )}
+              </Button>
+            </>
+          )}
+          {action}
+        </div>
       </div>
     </header>
   );

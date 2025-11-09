@@ -52,6 +52,7 @@ const Messages = () => {
         <MobileHeader 
           title={selectedConversation?.other_user?.display_name || "Message"}
           showBack={true}
+          hideMessaging={true}
         />
         <div className="h-[calc(100vh-3.5rem)]">
           {messagesLoading ? (
@@ -76,7 +77,7 @@ const Messages = () => {
       {!isMobile && <Navbar />}
       
       {isMobile && (
-        <MobileHeader title="Messages" />
+        <MobileHeader title="Messages" hideMessaging={true} />
       )}
       
       <main className={`${isMobile ? '' : 'container max-w-7xl mx-auto px-4 py-8'}`}>
