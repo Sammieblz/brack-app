@@ -126,16 +126,16 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-background flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-background flex items-center justify-center px-4 py-8 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-float"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary-glow/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
       </div>
       
-      <div className="w-full max-w-sm relative z-10 animate-fade-in">
+      <div className="w-full max-w-sm relative z-10 animate-fade-in safe-top">
         {/* Logo Section */}
-        <div className="text-center mb-8 animate-slide-up">
+        <div className="text-center mb-6 md:mb-8 animate-slide-up">
           <div className="flex items-center justify-center space-x-3 mb-4">
             <div className="p-3 bg-gradient-primary rounded-2xl shadow-glow animate-glow-pulse">
               <BookOpen className="h-8 w-8 text-white" />
@@ -159,7 +159,7 @@ const Auth = () => {
 
         {/* Auth Card */}
         <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in" style={{ animationDelay: '0.2s' }}>
-          <CardContent className="p-6 space-y-6">
+          <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
             <Button 
               onClick={handleGoogleAuth}
               disabled={loading}

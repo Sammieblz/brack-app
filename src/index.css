@@ -135,6 +135,14 @@ All colors MUST be HSL.
     .pb-safe {
       padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
     }
+    
+    .safe-top {
+      padding-top: env(safe-area-inset-top);
+    }
+    
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
   }
 }
 

@@ -37,7 +37,7 @@ const Welcome = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-background flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-background flex items-center justify-center px-4 py-8 relative overflow-hidden safe-top safe-bottom">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-float"></div>
