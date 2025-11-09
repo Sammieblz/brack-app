@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, BookPlus, Camera, Search, Timer } from "lucide-react";
+import { Plus, BookPlus, Camera, Search, Timer, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { FloatingQuickStatsWidget } from "./FloatingQuickStatsWidget";
 
 interface FABAction {
   icon: React.ElementType;
@@ -25,6 +26,7 @@ interface FABAction {
 export const FloatingActionButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showTimerSheet, setShowTimerSheet] = useState(false);
+  const [showQuickStats, setShowQuickStats] = useState(false);
   const navigate = useNavigate();
   const { triggerHaptic } = useHapticFeedback();
   const { startTimer } = useTimer();
@@ -34,6 +36,15 @@ export const FloatingActionButton = () => {
   const readingBooks = books.filter(book => book.status === 'reading');
 
   const actions: FABAction[] = [
+    {
+      icon: TrendingUp,
+      label: "Quick Stats",
+      onClick: () => {
+        triggerHaptic("light");
+        setShowQuickStats(true);
+        setIsOpen(false);
+      },
+    },
     {
       icon: Timer,
       label: "Start Reading Time",
@@ -179,6 +190,12 @@ export const FloatingActionButton = () => {
           </ScrollArea>
         </SheetContent>
       </Sheet>
+
+      {/* Quick Stats Widget */}
+      <FloatingQuickStatsWidget 
+        isVisible={showQuickStats} 
+        onClose={() => setShowQuickStats(false)} 
+      />
     </div>
   );
 };

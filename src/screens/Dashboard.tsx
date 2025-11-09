@@ -27,6 +27,7 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { GoalsSheet } from "@/components/GoalsSheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { SwipeableBookListsCarousel } from "@/components/SwipeableBookListsCarousel";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -254,6 +255,9 @@ const Dashboard = () => {
               <WeeklyReadingChart data={weeklyReading} />
             </div>
           )}
+
+          {/* Book Lists Carousel */}
+          <SwipeableBookListsCarousel />
 
           {/* My Books Snippet */}
           <Card>
