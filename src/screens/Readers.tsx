@@ -5,19 +5,27 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserSearch, type UserSearchResult } from "@/hooks/useUserSearch";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Search, BookOpen, Flame, MapPin, Users, Sparkles, TrendingUp } from "lucide-react";
+import { Search, BookOpen, Flame, MapPin, Users, Sparkles, TrendingUp, BookMarked } from "lucide-react";
 import { FollowButton } from "@/components/social/FollowButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useBookClubs } from "@/hooks/useBookClubs";
+import { BookClubCard } from "@/components/clubs/BookClubCard";
+import { CreateClubDialog } from "@/components/clubs/CreateClubDialog";
 
 export default function Readers() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("readers");
   const { results, loading } = useUserSearch(searchQuery);
+  const { clubs, loading: clubsLoading, createClub, joinClub, leaveClub } = useBookClubs();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+
+  const myClubs = clubs.filter(club => club.user_role);
+  const publicClubs = clubs.filter(club => !club.is_private && !club.user_role);
 
   const getInitials = (name: string | null) => {
     if (!name) return "?";
@@ -95,27 +103,41 @@ export default function Readers() {
       <main className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
         {!isMobile && (
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Discover Readers</h1>
+            <h1 className="text-3xl font-bold mb-2">Discover</h1>
             <p className="text-muted-foreground">
-              Connect with book lovers based on location, reading taste, and social connections
+              Connect with book lovers and join reading communities
             </p>
           </div>
         )}
 
-        <div className="relative mb-4 md:mb-6">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search readers by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+        {/* Main Tabs: Readers vs Book Clubs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-4">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="readers" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Readers
+            </TabsTrigger>
+            <TabsTrigger value="clubs" className="flex items-center gap-2">
+              <BookMarked className="h-4 w-4" />
+              Book Clubs
+            </TabsTrigger>
+          </TabsList>
 
-        {loading ? (
-          <LoadingSpinner />
-        ) : (
-          <Tabs defaultValue="all" className="w-full">
+          <TabsContent value="readers" className="space-y-4 mt-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search readers by name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {loading ? (
+              <LoadingSpinner />
+            ) : (
+              <Tabs defaultValue="all" className="w-full">
             <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3' : 'grid-cols-5'}`}>
               <TabsTrigger value="all" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
                 <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
@@ -221,8 +243,88 @@ export default function Readers() {
                 results.activeReaders.map(renderUserCard)
               )}
             </TabsContent>
-          </Tabs>
-        )}
+              </Tabs>
+            )}
+          </TabsContent>
+
+          <TabsContent value="clubs" className="space-y-4 mt-4">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-muted-foreground">
+                {isMobile ? 'Join reading communities' : 'Join reading communities and discuss books together'}
+              </p>
+              <CreateClubDialog onCreateClub={createClub} />
+            </div>
+
+            {clubsLoading ? (
+              <LoadingSpinner />
+            ) : (
+              <Tabs defaultValue="my-clubs" className="w-full">
+                <TabsList className="grid w-full max-w-md grid-cols-2">
+                  <TabsTrigger value="my-clubs" className="flex items-center gap-2 text-xs sm:text-sm">
+                    <BookMarked className="h-3 w-3 sm:h-4 sm:w-4" />
+                    My Clubs ({myClubs.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="discover" className="flex items-center gap-2 text-xs sm:text-sm">
+                    <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                    Discover ({publicClubs.length})
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="my-clubs" className="space-y-3 sm:space-y-4 mt-4">
+                  {myClubs.length === 0 ? (
+                    <Card>
+                      <CardContent className="py-8 text-center">
+                        <div className="p-4 rounded-full bg-primary/20 w-fit mx-auto mb-4">
+                          <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                        </div>
+                        <h3 className="font-semibold mb-2">No clubs yet</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Create your first book club or join existing ones!
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {myClubs.map((club) => (
+                        <BookClubCard
+                          key={club.id}
+                          club={club}
+                          onLeave={leaveClub}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="discover" className="space-y-3 sm:space-y-4 mt-4">
+                  {publicClubs.length === 0 ? (
+                    <Card>
+                      <CardContent className="py-8 text-center">
+                        <div className="p-4 rounded-full bg-secondary/20 w-fit mx-auto mb-4">
+                          <Users className="h-6 w-6 sm:h-8 sm:w-8 text-secondary" />
+                        </div>
+                        <h3 className="font-semibold mb-2">No public clubs</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Be the first to create a public book club!
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {publicClubs.map((club) => (
+                        <BookClubCard
+                          key={club.id}
+                          club={club}
+                          onJoin={joinClub}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            )}
+          </TabsContent>
+        </Tabs>
       </main>
     </MobileLayout>
   );
