@@ -319,38 +319,44 @@ const ProfilePage = () => {
       <div className="container max-w-2xl mx-auto p-4 space-y-6">
 
         {/* Quick Access Navigation Cards */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-3 animate-fade-in">
           <Card 
-            className="cursor-pointer hover:bg-accent transition-colors active:scale-95"
-            onClick={() => navigate('/goals')}
+            className="cursor-pointer hover:bg-accent transition-all active:scale-95 touch-manipulation"
+            onClick={() => {
+              navigate('/goals');
+            }}
           >
-            <CardContent className="p-4 flex flex-col items-center gap-2 text-center">
+            <CardContent className="p-3 sm:p-4 flex flex-col items-center gap-2 text-center">
               <div className="p-2 rounded-full bg-primary/10">
-                <Target className="h-5 w-5 text-primary" />
+                <Target className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <span className="text-xs font-medium">Goals</span>
             </CardContent>
           </Card>
 
           <Card 
-            className="cursor-pointer hover:bg-accent transition-colors active:scale-95"
-            onClick={() => navigate('/analytics')}
+            className="cursor-pointer hover:bg-accent transition-all active:scale-95 touch-manipulation"
+            onClick={() => {
+              navigate('/analytics');
+            }}
           >
-            <CardContent className="p-4 flex flex-col items-center gap-2 text-center">
+            <CardContent className="p-3 sm:p-4 flex flex-col items-center gap-2 text-center">
               <div className="p-2 rounded-full bg-primary/10">
-                <BarChart3 className="h-5 w-5 text-primary" />
+                <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <span className="text-xs font-medium">Analytics</span>
             </CardContent>
           </Card>
 
           <Card 
-            className="cursor-pointer hover:bg-accent transition-colors active:scale-95"
-            onClick={() => navigate('/book-lists')}
+            className="cursor-pointer hover:bg-accent transition-all active:scale-95 touch-manipulation"
+            onClick={() => {
+              navigate('/book-lists');
+            }}
           >
-            <CardContent className="p-4 flex flex-col items-center gap-2 text-center">
+            <CardContent className="p-3 sm:p-4 flex flex-col items-center gap-2 text-center">
               <div className="p-2 rounded-full bg-primary/10">
-                <BookMarked className="h-5 w-5 text-primary" />
+                <BookMarked className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <span className="text-xs font-medium">Lists</span>
             </CardContent>

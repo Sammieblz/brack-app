@@ -55,35 +55,37 @@ export const useUserProfile = (userId: string | null) => {
         setProfile(profileData);
 
         // Fetch user stats if profile is visible
-        if (profileData.profile_visibility === "public" || profileData.id === (await supabase.auth.getUser()).data.user?.id) {
-          // Total books
-          const { count: totalBooks } = await supabase
-            .from("books")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", userId)
-            .is("deleted_at", null);
-
-          // Books read
-          const { count: booksRead } = await supabase
-            .from("books")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", userId)
-            .eq("status", "completed")
-            .is("deleted_at", null);
-
-          // Currently reading
-          const { count: currentlyReading } = await supabase
-            .from("books")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", userId)
-            .eq("status", "reading")
-            .is("deleted_at", null);
-
-          // Badges
-          const { count: badges } = await supabase
-            .from("user_badges")
-            .select("*", { count: "exact", head: true })
-            .eq("user_id", userId);
+        const currentUser = (await supabase.auth.getUser()).data.user;
+        if (profileData.profile_visibility === "public" || profileData.id === currentUser?.id) {
+          // Run all count queries in parallel for better performance
+          const [
+            { count: totalBooks },
+            { count: booksRead },
+            { count: currentlyReading },
+            { count: badges }
+          ] = await Promise.all([
+            supabase
+              .from("books")
+              .select("*", { count: "exact", head: true })
+              .eq("user_id", userId)
+              .is("deleted_at", null),
+            supabase
+              .from("books")
+              .select("*", { count: "exact", head: true })
+              .eq("user_id", userId)
+              .eq("status", "completed")
+              .is("deleted_at", null),
+            supabase
+              .from("books")
+              .select("*", { count: "exact", head: true })
+              .eq("user_id", userId)
+              .eq("status", "reading")
+              .is("deleted_at", null),
+            supabase
+              .from("user_badges")
+              .select("*", { count: "exact", head: true })
+              .eq("user_id", userId)
+          ]);
 
           setStats({
             totalBooks: totalBooks || 0,
