@@ -2,13 +2,13 @@ import { useState } from "react";
 import { Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+  DismissableSheet,
+  DismissableSheetContent,
+  DismissableSheetDescription,
+  DismissableSheetHeader,
+  DismissableSheetTitle,
+  DismissableSheetTrigger,
+} from "@/components/ui/dismissable-sheet";
 import {
   Dialog,
   DialogContent,
@@ -36,23 +36,23 @@ export const GoalsSheet = () => {
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerTrigger asChild>
+      <DismissableSheet open={open} onOpenChange={setOpen}>
+        <DismissableSheetTrigger asChild>
           <Button variant="outline" size="sm" className="gap-2">
             <Target className="h-4 w-4" />
             Goals
           </Button>
-        </DrawerTrigger>
-        <DrawerContent className="max-h-[85vh]">
-          <DrawerHeader>
-            <DrawerTitle>Reading Goals</DrawerTitle>
-            <DrawerDescription>
+        </DismissableSheetTrigger>
+        <DismissableSheetContent className="max-h-[85vh]">
+          <DismissableSheetHeader>
+            <DismissableSheetTitle>Reading Goals</DismissableSheetTitle>
+            <DismissableSheetDescription>
               Set and track your reading goals
-            </DrawerDescription>
-          </DrawerHeader>
+            </DismissableSheetDescription>
+          </DismissableSheetHeader>
           <div className="overflow-y-auto">{content}</div>
-        </DrawerContent>
-      </Drawer>
+        </DismissableSheetContent>
+      </DismissableSheet>
     );
   }
 
