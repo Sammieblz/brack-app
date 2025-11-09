@@ -23,6 +23,7 @@ import { DashboardCardSkeleton } from "@/components/skeletons/DashboardCardSkele
 import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
 import { ActivityItemSkeleton } from "@/components/skeletons/ActivityItemSkeleton";
 import { StatCardSkeleton } from "@/components/skeletons/StatCardSkeleton";
+import { PullToRefresh } from "@/components/PullToRefresh";
 
 const Dashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -125,6 +126,15 @@ const Dashboard = () => {
     navigate(`/book/${bookId}`);
   };
 
+  const handleRefresh = async () => {
+    await Promise.all([
+      refetchBooks(),
+      refetchStreaks(),
+      loadGoalData(),
+      loadProfile(),
+    ]);
+  };
+
   const completedBooks = books.filter(book => book.status === "completed").length;
   const progressPercentage = goal ? Math.round((completedBooks / goal.target_books) * 100) : 0;
 
@@ -149,7 +159,8 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-background">
       <Navbar />
       
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div className="max-w-6xl mx-auto p-6 space-y-6">
         {/* Welcome Header */}
         {showWelcome && (
           <div className="text-center space-y-2 animate-in fade-in duration-500">
@@ -330,7 +341,8 @@ const Dashboard = () => {
             )}
           </CardContent>
         </Card>
-      </div>
+        </div>
+      </PullToRefresh>
     </div>
   );
 };

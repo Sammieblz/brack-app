@@ -13,10 +13,11 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
 import { StatCardSkeleton } from "@/components/skeletons/StatCardSkeleton";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { PullToRefresh } from "@/components/PullToRefresh";
 
 const MyBooks = () => {
   const { user } = useAuth();
-  const { books, loading, loadingMore, hasMore, loadMore } = useBooks(user?.id);
+  const { books, loading, loadingMore, hasMore, loadMore, refetchBooks } = useBooks(user?.id);
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -51,7 +52,8 @@ const MyBooks = () => {
     <div className="min-h-screen bg-gradient-background">
       <Navbar />
       
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+      <PullToRefresh onRefresh={async () => await refetchBooks()}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
           <div>
@@ -213,7 +215,8 @@ const MyBooks = () => {
             )}
           </div>
         )}
-      </div>
+        </div>
+      </PullToRefresh>
     </div>
   );
 };

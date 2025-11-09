@@ -8,15 +8,24 @@ import { Activity, TrendingUp, Users, BookOpen } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { PostCardSkeleton } from "@/components/skeletons/PostCardSkeleton";
+import { PullToRefresh } from "@/components/PullToRefresh";
 
 const Feed = () => {
   const { refetchFeed } = useSocialFeed();
   const { posts, loading: postsLoading, refetchPosts, toggleLike } = usePosts();
 
+  const handleRefresh = async () => {
+    await Promise.all([
+      refetchFeed(),
+      refetchPosts(),
+    ]);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+      <PullToRefresh onRefresh={handleRefresh}>
+        <main className="container max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <div className="mb-6 sm:mb-8 animate-fade-in">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
             <div className="flex items-center gap-2 sm:gap-3">
@@ -99,7 +108,8 @@ const Feed = () => {
             <ActivityFeed />
           </TabsContent>
         </Tabs>
-      </main>
+        </main>
+      </PullToRefresh>
     </div>
   );
 };
