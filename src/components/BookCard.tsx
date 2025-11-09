@@ -30,52 +30,52 @@ export const BookCard = ({ book, onClick, onStatusChange, userId }: BookCardProp
 
   return (
     <Card 
-      className="bg-gradient-card shadow-soft border-0 hover:shadow-medium transition-all duration-300 group"
+      className="bg-gradient-card shadow-soft border-0 hover:shadow-medium transition-all duration-300 group touch-manipulation"
     >
-      <CardContent className="p-4">
-        <div className="flex items-start space-x-3">
-          <div onClick={onClick} className="cursor-pointer flex-1 flex items-start space-x-3">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex items-start space-x-3 sm:space-x-4">
+          <div onClick={onClick} className="cursor-pointer flex-1 flex items-start space-x-3 sm:space-x-4">
           <div className="flex-shrink-0">
             {book.cover_url ? (
               <img
                 src={book.cover_url}
                 alt={book.title}
-                className="w-12 h-16 object-cover rounded shadow-sm"
+                className="w-14 h-20 sm:w-16 sm:h-24 object-cover rounded shadow-sm"
               />
             ) : (
-              <div className="w-12 h-16 bg-gradient-primary rounded flex items-center justify-center">
-                <BookOpen className="h-6 w-6 text-white" />
+              <div className="w-14 h-20 sm:w-16 sm:h-24 bg-gradient-primary rounded flex items-center justify-center">
+                <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
               </div>
             )}
           </div>
           
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+            <h3 className="font-semibold text-sm sm:text-base text-foreground line-clamp-2 group-hover:text-primary transition-colors">
               {book.title}
             </h3>
             {book.author && (
-              <p className="text-sm text-muted-foreground truncate">
+              <p className="text-xs sm:text-sm text-muted-foreground truncate mt-0.5">
                 by {book.author}
               </p>
             )}
             
-            <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center justify-between mt-1.5 sm:mt-2">
               <Badge 
                 variant="secondary" 
-                className={`text-xs ${getStatusColor(book.status)}`}
+                className={`text-[10px] sm:text-xs px-2 py-0.5 ${getStatusColor(book.status)}`}
               >
                 {book.status.replace('_', ' ')}
               </Badge>
               
               {book.pages && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-[10px] sm:text-xs text-muted-foreground">
                   {book.pages} pages
                 </span>
               )}
             </div>
             
             {book.genre && (
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                 {book.genre}
               </p>
             )}
@@ -110,13 +110,13 @@ export const BookCard = ({ book, onClick, onStatusChange, userId }: BookCardProp
         </div>
           
           {userId && (
-            <div className="flex-shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
+            <div className="flex-shrink-0 ml-1 sm:ml-2" onClick={(e) => e.stopPropagation()}>
               <AddToListDialog 
                 bookId={book.id} 
                 userId={userId}
                 trigger={
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <ListPlus className="h-4 w-4" />
+                  <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-10 sm:w-10 touch-manipulation">
+                    <ListPlus className="h-4 w-4 sm:h-5 sm:w-5" />
                   </Button>
                 }
               />

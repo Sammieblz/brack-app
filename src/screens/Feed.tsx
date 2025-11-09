@@ -16,19 +16,19 @@ const Feed = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="container max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-8 animate-fade-in">
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
-                <Activity className="h-7 w-7 text-primary" />
+      <main className="container max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+        <div className="mb-6 sm:mb-8 animate-fade-in">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
+                <Activity className="h-5 w-5 sm:h-7 sm:w-7 text-primary" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                <h1 className="text-xl sm:text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                   Activity Feed
                 </h1>
-                <p className="text-muted-foreground mt-1 flex items-center gap-2">
-                  <Users className="h-4 w-4" />
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 flex items-center gap-2">
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                   See what your reading community is up to
                 </p>
               </div>
@@ -39,37 +39,39 @@ const Feed = () => {
             }} />
           </div>
           
-          <div className="flex gap-3 mt-6">
-            <div className="flex-1 p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover-scale">
-              <div className="flex items-center gap-2 text-primary mb-1">
-                <TrendingUp className="h-4 w-4" />
-                <span className="text-sm font-semibold">Trending</span>
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 mt-4 sm:mt-6">
+            <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 hover-scale">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-primary mb-0.5 sm:mb-1">
+                <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-semibold">Trending</span>
               </div>
-              <p className="text-xs text-muted-foreground">Most active readers today</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Most active readers today</p>
             </div>
-            <div className="flex-1 p-4 rounded-lg bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/20 hover-scale">
-              <div className="flex items-center gap-2 text-secondary mb-1">
-                <Users className="h-4 w-4" />
-                <span className="text-sm font-semibold">Following</span>
+            <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/20 hover-scale">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-secondary mb-0.5 sm:mb-1">
+                <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-semibold">Following</span>
               </div>
-              <p className="text-xs text-muted-foreground">Updates from your network</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Updates from your network</p>
             </div>
           </div>
         </div>
         
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="w-full grid grid-cols-2">
-            <TabsTrigger value="posts" className="flex items-center gap-2">
+          <TabsList className="w-full grid grid-cols-2 h-11">
+            <TabsTrigger value="posts" className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base touch-manipulation">
               <BookOpen className="h-4 w-4" />
-              Posts
+              <span className="hidden sm:inline">Posts</span>
+              <span className="sm:hidden">Posts</span>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-2">
+            <TabsTrigger value="activity" className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base touch-manipulation">
               <Activity className="h-4 w-4" />
-              Activity
+              <span className="hidden sm:inline">Activity</span>
+              <span className="sm:hidden">Activity</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="posts" className="space-y-4 mt-6">
+          <TabsContent value="posts" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
             {postsLoading ? (
               <>
                 <PostCardSkeleton />
@@ -93,7 +95,7 @@ const Feed = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="activity" className="mt-6">
+          <TabsContent value="activity" className="mt-4 sm:mt-6">
             <ActivityFeed />
           </TabsContent>
         </Tabs>

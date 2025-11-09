@@ -74,12 +74,12 @@ export const Navbar = () => {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <BookOpen className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <span className="text-base sm:text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               BookTracker
             </span>
           </div>
@@ -95,11 +95,11 @@ export const Navbar = () => {
           </div>
 
           {/* User Menu */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                  <Avatar className="h-10 w-10 border-2 border-primary/20">
+                <Button variant="ghost" className="relative h-11 w-11 rounded-full touch-manipulation">
+                  <Avatar className="h-9 w-9 sm:h-10 sm:w-10 border-2 border-primary/20">
                     <AvatarImage src={avatarUrl || undefined} alt={displayName} />
                     <AvatarFallback className="bg-primary/10 text-primary">
                       {displayName.charAt(0).toUpperCase()}
@@ -125,14 +125,14 @@ export const Navbar = () => {
             {/* Mobile Menu Button */}
             <Button
               variant="ghost"
-              size="sm"
-              className="md:hidden"
+              size="icon"
+              className="md:hidden h-11 w-11 touch-manipulation"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? (
-                <X className="h-5 w-5" />
+                <X className="h-6 w-6" />
               ) : (
-                <Menu className="h-5 w-5" />
+                <Menu className="h-6 w-6" />
               )}
             </Button>
           </div>
@@ -141,13 +141,13 @@ export const Navbar = () => {
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-sm">
-            <div className="px-2 pt-2 pb-3 space-y-1">
+            <div className="px-2 pt-2 pb-safe space-y-1">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                    `flex items-center space-x-3 px-4 py-3.5 rounded-lg text-base font-medium transition-colors touch-manipulation ${
                       isActive
                         ? "bg-primary/20 text-primary"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -155,7 +155,7 @@ export const Navbar = () => {
                   }
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <item.icon className="h-5 w-5" />
+                  <item.icon className="h-5 w-5 flex-shrink-0" />
                   <span>{item.label}</span>
                 </NavLink>
               ))}

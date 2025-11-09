@@ -109,11 +109,11 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">My Book Lists</h2>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+        <h2 className="text-xl sm:text-2xl font-bold">My Book Lists</h2>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="h-11 w-full sm:w-auto touch-manipulation">
               <Plus className="mr-2 h-4 w-4" />
               Create List
             </Button>
@@ -147,27 +147,27 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
         </Dialog>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {lists.map((list) => (
           <Card 
             key={list.id}
-            className="cursor-pointer hover:shadow-lg transition-shadow"
+            className="cursor-pointer hover:shadow-lg transition-shadow touch-manipulation"
             onClick={() => navigate(`/lists/${list.id}`)}
           >
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <BookMarked className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-lg">{list.name}</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <BookMarked className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                  <CardTitle className="text-base sm:text-lg line-clamp-2">{list.name}</CardTitle>
                 </div>
-                <Badge variant="secondary">{list.book_count || 0} books</Badge>
+                <Badge variant="secondary" className="text-xs whitespace-nowrap">{list.book_count || 0} books</Badge>
               </div>
               {list.description && (
-                <CardDescription>{list.description}</CardDescription>
+                <CardDescription className="text-xs sm:text-sm line-clamp-2">{list.description}</CardDescription>
               )}
             </CardHeader>
-            <CardContent>
-              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+            <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
+              <div className="flex flex-col sm:flex-row gap-2" onClick={(e) => e.stopPropagation()}>
                 <Dialog open={editingList === list.id} onOpenChange={(open) => {
                   if (!open) {
                     setEditingList(null);
@@ -179,15 +179,15 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1"
+                      className="flex-1 h-10 touch-manipulation"
                       onClick={() => {
                         setEditingList(list.id);
                         setNewListName(list.name);
                         setNewListDescription(list.description || "");
                       }}
                     >
-                      <Edit2 className="mr-2 h-4 w-4" />
-                      Edit
+                      <Edit2 className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span className="text-xs sm:text-sm">Edit</span>
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
@@ -221,16 +221,18 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="h-10 px-3 sm:px-4 touch-manipulation"
                   onClick={() => handleDuplicate(list.id, list.name)}
                   title="Duplicate list"
                 >
-                  <Copy className="h-4 w-4" />
+                  <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span className="ml-2 text-xs sm:text-sm hidden sm:inline">Copy</span>
                 </Button>
 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Trash2 className="h-4 w-4" />
+                    <Button variant="outline" size="sm" className="h-10 px-3 touch-manipulation">
+                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -267,12 +269,15 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
 
       {lists.length === 0 && (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <BookMarked className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground text-center mb-4">
+          <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
+            <BookMarked className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mb-4" />
+            <p className="text-sm sm:text-base text-muted-foreground text-center mb-4">
               You haven't created any lists yet
             </p>
-            <Button onClick={() => setIsCreateOpen(true)}>
+            <Button 
+              onClick={() => setIsCreateOpen(true)}
+              className="h-11 touch-manipulation"
+            >
               <Plus className="mr-2 h-4 w-4" />
               Create Your First List
             </Button>
