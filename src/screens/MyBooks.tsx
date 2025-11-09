@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
 import { Navbar } from "@/components/Navbar";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
+import { StatCardSkeleton } from "@/components/skeletons/StatCardSkeleton";
 
 const MyBooks = () => {
   const { user } = useAuth();
@@ -37,16 +39,6 @@ const MyBooks = () => {
     toRead: books.filter(book => book.status === "to_read").length,
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-background">
-        <Navbar />
-        <div className="flex items-center justify-center h-96">
-          <LoadingSpinner size="lg" text="Loading your books..." />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-background">
@@ -79,30 +71,41 @@ const MyBooks = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-primary">{bookStats.total}</div>
-              <div className="text-sm text-muted-foreground">Total Books</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-blue-500">{bookStats.reading}</div>
-              <div className="text-sm text-muted-foreground">Currently Reading</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-green-500">{bookStats.completed}</div>
-              <div className="text-sm text-muted-foreground">Completed</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-orange-500">{bookStats.toRead}</div>
-              <div className="text-sm text-muted-foreground">To Read</div>
-            </CardContent>
-          </Card>
+          {loading ? (
+            <>
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </>
+          ) : (
+            <>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-primary">{bookStats.total}</div>
+                  <div className="text-sm text-muted-foreground">Total Books</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-500">{bookStats.reading}</div>
+                  <div className="text-sm text-muted-foreground">Currently Reading</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-green-500">{bookStats.completed}</div>
+                  <div className="text-sm text-muted-foreground">Completed</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-orange-500">{bookStats.toRead}</div>
+                  <div className="text-sm text-muted-foreground">To Read</div>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
 
         {/* Search and Filter */}
@@ -137,7 +140,15 @@ const MyBooks = () => {
         </Card>
 
         {/* Books Grid */}
-        {filteredBooks.length === 0 ? (
+        {loading ? (
+          <div className="space-y-3">
+            <BookCardSkeleton />
+            <BookCardSkeleton />
+            <BookCardSkeleton />
+            <BookCardSkeleton />
+            <BookCardSkeleton />
+          </div>
+        ) : filteredBooks.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
               <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />

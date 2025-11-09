@@ -11,6 +11,7 @@ import { useBookLists } from "@/hooks/useBookLists";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, BookMarked, Trash2, Edit2, Copy } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { BookListCardSkeleton } from "./skeletons/BookListCardSkeleton";
 
 interface BookListManagerProps {
   userId: string;
@@ -84,7 +85,20 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
     }
   };
 
-  if (loading) return <div>Loading lists...</div>;
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">My Book Lists</h2>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <BookListCardSkeleton />
+          <BookListCardSkeleton />
+          <BookListCardSkeleton />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

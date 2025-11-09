@@ -19,6 +19,10 @@ import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Navbar } from "@/components/Navbar";
 import type { Goal, ReadingSession, Profile } from "@/types";
+import { DashboardCardSkeleton } from "@/components/skeletons/DashboardCardSkeleton";
+import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
+import { ActivityItemSkeleton } from "@/components/skeletons/ActivityItemSkeleton";
+import { StatCardSkeleton } from "@/components/skeletons/StatCardSkeleton";
 
 const Dashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -124,7 +128,7 @@ const Dashboard = () => {
   const completedBooks = books.filter(book => book.status === "completed").length;
   const progressPercentage = goal ? Math.round((completedBooks / goal.target_books) * 100) : 0;
 
-  if (authLoading || booksLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-background">
         <Navbar />
@@ -155,7 +159,9 @@ const Dashboard = () => {
         )}
 
         {/* Progress Overview */}
-        {goal && (
+        {booksLoading ? (
+          <DashboardCardSkeleton />
+        ) : goal ? (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -185,7 +191,7 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-        )}
+        ) : null}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -251,7 +257,13 @@ const Dashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {books.length === 0 ? (
+            {booksLoading ? (
+              <div className="space-y-3">
+                <BookCardSkeleton />
+                <BookCardSkeleton />
+                <BookCardSkeleton />
+              </div>
+            ) : books.length === 0 ? (
               <div className="text-center py-8">
                 <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground mb-4">No books yet. Add your first book to get started!</p>
@@ -291,8 +303,12 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             {activitiesLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <LoadingSpinner size="sm" text="Loading activities..." />
+              <div className="space-y-3">
+                <ActivityItemSkeleton />
+                <ActivityItemSkeleton />
+                <ActivityItemSkeleton />
+                <ActivityItemSkeleton />
+                <ActivityItemSkeleton />
               </div>
             ) : activities.length === 0 ? (
               <div className="text-center py-8">

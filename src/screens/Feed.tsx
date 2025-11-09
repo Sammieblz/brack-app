@@ -7,6 +7,7 @@ import { usePosts } from "@/hooks/usePosts";
 import { Activity, TrendingUp, Users, BookOpen } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { PostCardSkeleton } from "@/components/skeletons/PostCardSkeleton";
 
 const Feed = () => {
   const { refetchFeed } = useSocialFeed();
@@ -70,7 +71,12 @@ const Feed = () => {
 
           <TabsContent value="posts" className="space-y-4 mt-6">
             {postsLoading ? (
-              <LoadingSpinner />
+              <>
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+                <PostCardSkeleton />
+              </>
             ) : posts.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">No posts yet. Be the first to share!</p>
