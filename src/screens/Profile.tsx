@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useBadges } from "@/hooks/useBadges";
 import { useStreaks } from "@/hooks/useStreaks";
-import { Save, User, Upload, Palette, Award, Flame, MapPin } from "lucide-react";
+import { Save, User, Upload, Palette, Award, Flame, MapPin, Target, BarChart3, BookMarked, ArrowRight } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
@@ -317,6 +317,45 @@ const ProfilePage = () => {
     <MobileLayout>
       <MobileHeader title="Profile Settings" showBack />
       <div className="container max-w-2xl mx-auto p-4 space-y-6">
+
+        {/* Quick Access Navigation Cards */}
+        <div className="grid grid-cols-3 gap-3">
+          <Card 
+            className="cursor-pointer hover:bg-accent transition-colors active:scale-95"
+            onClick={() => navigate('/goals')}
+          >
+            <CardContent className="p-4 flex flex-col items-center gap-2 text-center">
+              <div className="p-2 rounded-full bg-primary/10">
+                <Target className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xs font-medium">Goals</span>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer hover:bg-accent transition-colors active:scale-95"
+            onClick={() => navigate('/analytics')}
+          >
+            <CardContent className="p-4 flex flex-col items-center gap-2 text-center">
+              <div className="p-2 rounded-full bg-primary/10">
+                <BarChart3 className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xs font-medium">Analytics</span>
+            </CardContent>
+          </Card>
+
+          <Card 
+            className="cursor-pointer hover:bg-accent transition-colors active:scale-95"
+            onClick={() => navigate('/book-lists')}
+          >
+            <CardContent className="p-4 flex flex-col items-center gap-2 text-center">
+              <div className="p-2 rounded-full bg-primary/10">
+                <BookMarked className="h-5 w-5 text-primary" />
+              </div>
+              <span className="text-xs font-medium">Lists</span>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Profile Avatar Section */}
         <Card>

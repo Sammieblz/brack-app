@@ -1,8 +1,10 @@
+import { useState, useRef } from "react";
 import { useTimer } from "@/contexts/TimerContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Play, Pause, Square, Minimize2, Maximize2, X } from "lucide-react";
 import { formatTime } from "@/utils";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 export const FloatingTimerWidget = () => {
   const {
@@ -18,11 +20,65 @@ export const FloatingTimerWidget = () => {
     toggleMinimized,
   } = useTimer();
 
+  const { triggerHaptic } = useHapticFeedback();
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const dragRef = useRef<HTMLDivElement>(null);
+
   if (!isVisible) return null;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true);
+    setStartPos({
+      x: e.touches[0].clientX - position.x,
+      y: e.touches[0].clientY - position.y,
+    });
+    triggerHaptic('light');
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    const newX = e.touches[0].clientX - startPos.x;
+    const newY = e.touches[0].clientY - startPos.y;
+    setPosition({ x: newX, y: newY });
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setIsDragging(false);
+    
+    // Swipe to dismiss - if swiped down significantly
+    const swipeDistance = position.y;
+    if (swipeDistance > 100) {
+      triggerHaptic('medium');
+      cancelTimer();
+      return;
+    }
+    
+    // Swipe right to dismiss
+    if (position.x > 150) {
+      triggerHaptic('medium');
+      cancelTimer();
+      return;
+    }
+    
+    // Snap back to original position if not dismissed
+    setPosition({ x: 0, y: 0 });
+  };
 
   if (isMinimized) {
     return (
-      <div className="fixed bottom-6 right-6 z-[9999] animate-scale-in">
+      <div 
+        ref={dragRef}
+        className="fixed bottom-6 right-6 z-[9999] animate-scale-in cursor-move touch-none"
+        style={{
+          transform: `translate(${position.x}px, ${position.y}px)`,
+          transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <Card className="bg-gradient-card shadow-glow border-0 backdrop-blur-sm">
           <CardContent className="p-3 flex items-center gap-3">
             <span className="text-lg">📚</span>
@@ -56,7 +112,18 @@ export const FloatingTimerWidget = () => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] animate-scale-in">
+    <div 
+      ref={dragRef}
+      className="fixed bottom-6 right-6 z-[9999] animate-scale-in cursor-move touch-none"
+      style={{
+        transform: `translate(${position.x}px, ${position.y}px)`,
+        transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+        opacity: isDragging && (position.y > 50 || position.x > 100) ? 0.7 : 1,
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       <Card className="bg-gradient-card shadow-glow border-0 backdrop-blur-sm w-[340px]">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
