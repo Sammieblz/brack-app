@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TimerProvider } from "@/contexts/TimerContext";
 import { FloatingTimerWidget } from "@/components/FloatingTimerWidget";
+import { SwipeBackHandler } from "@/components/SwipeBackHandler";
 import Index from "./screens/Index";
 import Auth from "./screens/Auth";
 import Welcome from "./screens/Welcome";
@@ -43,39 +44,41 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/welcome" element={<Welcome />} />
-              <Route path="/questionnaire" element={<Questionnaire />} />
-              <Route path="/goals" element={<Goals />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/my-books" element={<MyBooks />} />
-              <Route path="/books" element={<MyBooks />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/add-book" element={<AddBook />} />
-              <Route path="/book/:id" element={<BookDetail />} />
-              <Route path="/book/:id/progress" element={<ProgressTracking />} />
-              <Route path="/edit-book/:id" element={<EditBook />} />
-              <Route path="/scan-barcode" element={<ScanBarcode />} />
-              <Route path="/scan" element={<ScanBarcode />} />
-              <Route path="/history" element={<ReadingHistory />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/book-lists" element={<BookLists />} />
-              <Route path="/lists" element={<BookLists />} />
-              <Route path="/lists/:listId" element={<BookListDetail />} />
-              <Route path="/goals-management" element={<GoalsManagement />} />
-              <Route path="/users/:userId" element={<UserProfile />} />
-              <Route path="/reviews" element={<Reviews />} />
-              <Route path="/feed" element={<Feed />} />
-              <Route path="/clubs" element={<BookClubs />} />
-              <Route path="/clubs/:clubId" element={<BookClubDetail />} />
-              <Route path="/readers" element={<Readers />} />
-              <Route path="/messages" element={<Messages />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <FloatingTimerWidget />
+            <SwipeBackHandler>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/welcome" element={<Welcome />} />
+                <Route path="/questionnaire" element={<Questionnaire />} />
+                <Route path="/goals" element={<Goals />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/my-books" element={<MyBooks />} />
+                <Route path="/books" element={<MyBooks />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/add-book" element={<AddBook />} />
+                <Route path="/book/:id" element={<BookDetail />} />
+                <Route path="/book/:id/progress" element={<ProgressTracking />} />
+                <Route path="/edit-book/:id" element={<EditBook />} />
+                <Route path="/scan-barcode" element={<ScanBarcode />} />
+                <Route path="/scan" element={<ScanBarcode />} />
+                <Route path="/history" element={<ReadingHistory />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/book-lists" element={<BookLists />} />
+                <Route path="/lists" element={<BookLists />} />
+                <Route path="/lists/:listId" element={<BookListDetail />} />
+                <Route path="/goals-management" element={<GoalsManagement />} />
+                <Route path="/users/:userId" element={<UserProfile />} />
+                <Route path="/reviews" element={<Reviews />} />
+                <Route path="/feed" element={<Feed />} />
+                <Route path="/clubs" element={<BookClubs />} />
+                <Route path="/clubs/:clubId" element={<BookClubDetail />} />
+                <Route path="/readers" element={<Readers />} />
+                <Route path="/messages" element={<Messages />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <FloatingTimerWidget />
+            </SwipeBackHandler>
           </BrowserRouter>
         </TooltipProvider>
       </TimerProvider>
