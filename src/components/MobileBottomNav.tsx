@@ -1,4 +1,4 @@
-import { Home, BookOpen, Users, Compass, User } from "lucide-react";
+import { Home, BookOpen, Users, Compass, User, MessageCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
@@ -7,7 +7,7 @@ const tabs = [
   { name: "Home", path: "/", icon: Home },
   { name: "Library", path: "/my-books", icon: BookOpen },
   { name: "Social", path: "/feed", icon: Users },
-  { name: "Discover", path: "/readers", icon: Compass },
+  { name: "Messages", path: "/messages", icon: MessageCircle },
   { name: "Profile", path: "/profile", icon: User },
 ];
 
