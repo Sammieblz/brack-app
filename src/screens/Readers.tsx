@@ -15,6 +15,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useBookClubs } from "@/hooks/useBookClubs";
 import { BookClubCard } from "@/components/clubs/BookClubCard";
 import { CreateClubDialog } from "@/components/clubs/CreateClubDialog";
+import { useSwipeable } from "react-swipeable";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 export default function Readers() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,6 +25,24 @@ export default function Readers() {
   const { clubs, loading: clubsLoading, createClub, joinClub, leaveClub } = useBookClubs();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { triggerHaptic } = useHapticFeedback();
+
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => {
+      if (activeTab === "readers") {
+        setActiveTab("clubs");
+        triggerHaptic("selection");
+      }
+    },
+    onSwipedRight: () => {
+      if (activeTab === "clubs") {
+        setActiveTab("readers");
+        triggerHaptic("selection");
+      }
+    },
+    trackMouse: false,
+    preventScrollOnSwipe: false,
+  });
 
   const myClubs = clubs.filter(club => club.user_role);
   const publicClubs = clubs.filter(club => !club.is_private && !club.user_role);
@@ -112,7 +132,7 @@ export default function Readers() {
 
         {/* Main Tabs: Readers vs Book Clubs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-4">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-md grid-cols-2" onClick={() => triggerHaptic("selection")}>
             <TabsTrigger value="readers" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Readers
@@ -123,7 +143,7 @@ export default function Readers() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="readers" className="space-y-4 mt-4">
+          <TabsContent value="readers" className="space-y-4 mt-4" {...swipeHandlers}>
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -247,7 +267,7 @@ export default function Readers() {
             )}
           </TabsContent>
 
-          <TabsContent value="clubs" className="space-y-4 mt-4">
+          <TabsContent value="clubs" className="space-y-4 mt-4" {...swipeHandlers}>
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm text-muted-foreground">
                 {isMobile ? 'Join reading communities' : 'Join reading communities and discuss books together'}
