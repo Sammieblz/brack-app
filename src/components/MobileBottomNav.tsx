@@ -2,7 +2,6 @@ import { Home, BookOpen, Users, User, List } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { useScrollDirection } from "@/hooks/useScrollDirection";
 
 const tabs = [
   { name: "Home", path: "/", icon: Home },
@@ -15,7 +14,6 @@ const tabs = [
 export const MobileBottomNav = () => {
   const location = useLocation();
   const { triggerHaptic } = useHapticFeedback();
-  const scrollDirection = useScrollDirection();
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -23,10 +21,7 @@ export const MobileBottomNav = () => {
   };
 
   return (
-    <nav className={cn(
-      "md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-bottom transition-transform duration-300 ease-out",
-      scrollDirection === "down" && "translate-y-full"
-    )}>
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-bottom">
       <div className="flex items-center justify-around h-16">
         {tabs.map((tab) => {
           const Icon = tab.icon;

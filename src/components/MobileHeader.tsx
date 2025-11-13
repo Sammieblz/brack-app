@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useConversations } from "@/hooks/useConversations";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { cn } from "@/lib/utils";
 
 interface MobileHeaderProps {
@@ -26,7 +25,6 @@ export const MobileHeader = ({
   const navigate = useNavigate();
   const { conversations } = useConversations();
   const { triggerHaptic } = useHapticFeedback();
-  const scrollDirection = useScrollDirection();
   
   const unreadCount = conversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
 
@@ -42,8 +40,7 @@ export const MobileHeader = ({
 
   return (
     <header className={cn(
-      "sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border transition-transform duration-300 ease-out",
-      scrollDirection === "down" && "-translate-y-full",
+      "sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border",
       className
     )}>
       <div className="flex items-center justify-between h-14 px-4">
