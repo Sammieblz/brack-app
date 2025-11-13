@@ -118,11 +118,18 @@ All colors MUST be HSL.
     transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
   }
 
+  html, body, #root {
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-size: 16px; /* Prevent iOS text zoom */
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+    position: relative;
   }
 
   /* Improve touch scrolling on mobile */
