@@ -16,21 +16,27 @@ export const MobileLayout = ({
 }: MobileLayoutProps) => {
   const isMobile = useIsMobile();
 
+  if (isMobile) {
+    return (
+      <div className="h-screen flex flex-col bg-background overflow-hidden">
+        {/* Main Content - Scrollable */}
+        <main className="flex-1 overflow-auto">
+          {children}
+        </main>
+        
+        {/* Mobile Bottom Navigation */}
+        {showBottomNav && <MobileBottomNav />}
+      </div>
+    );
+  }
+
+  // Desktop layout
   return (
     <div className="min-h-screen bg-background">
-      {/* Desktop Navigation */}
-      {!isMobile && showTopNav && <Navbar />}
-      
-      {/* Main Content */}
-      <main className={cn(
-        "w-full",
-        isMobile && showBottomNav && "pb-16"
-      )}>
+      {showTopNav && <Navbar />}
+      <main className="w-full">
         {children}
       </main>
-      
-      {/* Mobile Bottom Navigation */}
-      {isMobile && showBottomNav && <MobileBottomNav />}
     </div>
   );
 };
