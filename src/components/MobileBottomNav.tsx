@@ -22,13 +22,7 @@ export const MobileBottomNav = () => {
 
   return (
     <nav 
-      className="md:hidden fixed bottom-0 left-0 right-0 z-[9999] bg-background/95 backdrop-blur-lg border-t border-border safe-bottom supports-[backdrop-filter]:bg-background/80"
-      style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-      }}
+      className="shrink-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border safe-bottom supports-[backdrop-filter]:bg-background/80"
     >
       <div className="flex items-center justify-around h-16">
         {tabs.map((tab) => {

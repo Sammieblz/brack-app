@@ -40,7 +40,7 @@ export const MobileHeader = ({
 
   return (
     <header className={cn(
-      "sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border",
+      "md:sticky md:top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border shrink-0",
       className
     )}>
       <div className="flex items-center justify-between h-14 px-4">
