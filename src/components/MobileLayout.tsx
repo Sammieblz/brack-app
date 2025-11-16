@@ -20,7 +20,7 @@ export const MobileLayout = ({
     return (
       <div className="h-screen flex flex-col bg-background overflow-hidden">
         {/* Main Content - Scrollable */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch]">
           {children}
         </main>
         
