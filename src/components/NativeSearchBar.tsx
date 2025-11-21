@@ -3,6 +3,7 @@ import { Search, X, Clock, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePlatform } from '@/hooks/usePlatform';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { Button } from '@/components/ui/button';
 
 interface NativeSearchBarProps {
@@ -26,6 +27,7 @@ export const NativeSearchBar = ({
   const [showRecent, setShowRecent] = useState(false);
   const { platform, isIOS, isAndroid } = usePlatform();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
+  const { triggerHaptic } = useHapticFeedback();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -35,6 +37,7 @@ export const NativeSearchBar = ({
   }, [autoFocus]);
 
   const handleFocus = () => {
+    triggerHaptic('selection');
     setIsFocused(true);
     setShowRecent(true);
   };
@@ -50,6 +53,7 @@ export const NativeSearchBar = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (value.trim()) {
+      triggerHaptic('light');
       addSearch(value);
       onSearch?.(value);
       inputRef.current?.blur();
@@ -57,11 +61,13 @@ export const NativeSearchBar = ({
   };
 
   const handleCancel = () => {
+    triggerHaptic('light');
     onChange('');
     inputRef.current?.blur();
   };
 
   const handleRecentClick = (query: string) => {
+    triggerHaptic('selection');
     onChange(query);
     onSearch?.(query);
     setShowRecent(false);
@@ -103,20 +109,21 @@ export const NativeSearchBar = ({
           {/* Input */}
           <input
             ref={inputRef}
-            type="text"
+            type="search"
             value={value}
             onChange={(e) => onChange(e.target.value)}
             onFocus={handleFocus}
             onBlur={handleBlur}
             placeholder={placeholder}
             className={cn(
-              'w-full h-10 bg-secondary/50 text-foreground placeholder:text-muted-foreground',
+              'w-full h-10 bg-secondary text-foreground placeholder:text-muted-foreground',
               'border border-border focus:border-primary focus:bg-background',
-              'transition-all duration-300 outline-none',
-              isIOS && 'rounded-[10px] pl-10 pr-10',
-              isIOS && isFocused && 'pl-16',
+              'transition-all duration-300 ease-out outline-none',
+              'focus:ring-2 focus:ring-primary/20',
+              isIOS && 'rounded-[10px] pl-10 pr-10 transition-[padding,background-color,border-color] duration-300',
+              isIOS && isFocused && 'pl-16 bg-background',
               isAndroid && 'rounded-full pl-10 pr-10',
-              isAndroid && isFocused && 'shadow-md',
+              isAndroid && isFocused && 'shadow-lg ring-2 ring-primary/10',
               !isIOS && !isAndroid && 'rounded-lg pl-10 pr-10'
             )}
           />
@@ -125,10 +132,14 @@ export const NativeSearchBar = ({
           {value && (
             <button
               type="button"
-              onClick={() => onChange('')}
+              onClick={() => {
+                triggerHaptic('light');
+                onChange('');
+              }}
               className={cn(
-                'absolute right-3 p-1 rounded-full bg-muted hover:bg-muted/80',
-                'transition-all duration-200 active:scale-95'
+                'absolute right-3 p-1 rounded-full bg-muted/80 hover:bg-muted',
+                'transition-all duration-200 active:scale-90',
+                'animate-in fade-in-0 zoom-in-50 duration-200'
               )}
             >
               <X className="h-3 w-3 text-muted-foreground" />
@@ -142,7 +153,8 @@ export const NativeSearchBar = ({
             type="button"
             variant="ghost"
             onClick={handleCancel}
-            className="animate-in slide-in-from-right-5 duration-300 text-primary"
+            className="animate-in slide-in-from-right-5 duration-300 text-primary hover:text-primary/80 px-3"
+            disableHaptic
           >
             Cancel
           </Button>
@@ -155,17 +167,20 @@ export const NativeSearchBar = ({
           className={cn(
             'absolute top-full left-0 right-0 mt-2 bg-background border border-border',
             'overflow-hidden animate-in fade-in-0 slide-in-from-top-2 duration-200 z-50',
-            isIOS && 'rounded-[12px] shadow-lg',
-            isAndroid && 'rounded-2xl shadow-xl',
+            isIOS && 'rounded-[12px] shadow-lg backdrop-blur-xl bg-background/95',
+            isAndroid && 'rounded-2xl shadow-xl elevation-8',
             !isIOS && !isAndroid && 'rounded-lg shadow-md'
           )}
         >
-          <div className="flex items-center justify-between px-4 py-2 border-b border-border">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-secondary/30">
             <span className="text-sm font-medium text-muted-foreground">Recent</span>
             <button
               type="button"
-              onClick={clearAll}
-              className="text-xs text-primary hover:underline"
+              onClick={() => {
+                triggerHaptic('light');
+                clearAll();
+              }}
+              className="text-xs text-primary hover:text-primary/80 transition-colors active:scale-95"
             >
               Clear all
             </button>
@@ -189,9 +204,10 @@ export const NativeSearchBar = ({
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
+                    triggerHaptic('light');
                     removeSearch(query);
                   }}
-                  className="p-1 hover:bg-muted rounded-full transition-colors"
+                  className="p-1 hover:bg-muted rounded-full transition-all active:scale-90"
                 >
                   <X className="h-3 w-3 text-muted-foreground" />
                 </button>
