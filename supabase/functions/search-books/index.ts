@@ -1,9 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "../_shared/cors.ts";
+import { rateLimit } from "../_shared/rateLimit.ts";
+import { parseJsonBody, requireFields } from "../_shared/validation.ts";
 
 interface GoogleBooksVolume {
   id: string;
@@ -28,26 +26,41 @@ interface GoogleBooksVolume {
   };
 }
 
+const limiterConfig = {
+  name: "search-books",
+  limit: 30, // requests
+  windowMs: 60_000, // per minute
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const { query, maxResults = 10 } = await req.json();
+  const limited = rateLimit(req, limiterConfig);
+  if (limited) return limited;
 
-    if (!query || query.trim().length === 0) {
-      return new Response(
-        JSON.stringify({ error: "Search query is required" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+  try {
+    const parsed = await parseJsonBody<{ query?: string; maxResults?: number }>(
+      req,
+    );
+    if (parsed.error) return parsed.error;
+
+    const requiredError = requireFields(parsed.data, ["query"]);
+    if (requiredError) return requiredError;
+
+    const { query, maxResults = 10 } = parsed.data;
+
+    const trimmedQuery = query?.trim() ?? "";
+    if (trimmedQuery.length === 0) {
+      return new Response(JSON.stringify({ error: "Search query is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Build Google Books API URL
-    const encodedQuery = encodeURIComponent(query.trim());
+    const encodedQuery = encodeURIComponent(trimmedQuery);
     const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=${maxResults}&printType=books`;
 
     const response = await fetch(apiUrl);

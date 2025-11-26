@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +17,7 @@ import { useChartData } from "@/hooks/useChartData";
 import { WeeklyReadingChart } from "@/components/charts/WeeklyReadingChart";
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import type { Goal, Profile } from "@/types";
+import type { Goal } from "@/types";
 import { DashboardCardSkeleton } from "@/components/skeletons/DashboardCardSkeleton";
 import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
 import { ActivityItemSkeleton } from "@/components/skeletons/ActivityItemSkeleton";
@@ -30,6 +30,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { SwipeableBookListsCarousel } from "@/components/SwipeableBookListsCarousel";
 import { NativeHeader } from "@/components/NativeHeader";
 import { NativeScrollView } from "@/components/NativeScrollView";
+import { useProfileContext } from "@/contexts/ProfileContext";
+import { useSupabaseRequest } from "@/hooks/useSupabaseRequest";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -39,8 +41,9 @@ const Dashboard = () => {
   const { streakData, activityCalendar, refetchStreaks, useStreakFreeze } = useStreaks(user?.id);
   const { activities, loading: activitiesLoading, formatTimeAgo } = useRecentActivity(user?.id);
   const { weeklyReading, loading: chartLoading } = useChartData(user?.id);
+  const { profile } = useProfileContext();
+  const { withRetry } = useSupabaseRequest();
   const [goal, setGoal] = useState<Goal | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -50,7 +53,6 @@ const Dashboard = () => {
     }
     if (user) {
       loadGoalData();
-      loadProfile();
     }
   }, [user, authLoading, navigate]);
 
@@ -64,10 +66,13 @@ const Dashboard = () => {
     if (!user) return;
     
     try {
-      const { data: sessions } = await supabase
-        .from('reading_sessions')
-        .select('*')
-        .eq('user_id', user.id);
+      const { data: sessions } = await withRetry(
+        () => supabase
+          .from('reading_sessions')
+          .select('*')
+          .eq('user_id', user.id),
+        { toastOnError: true, toastMessage: "Unable to load reading sessions" }
+      );
 
       await checkAndAwardBadges(books, sessions || []);
     } catch (error) {
@@ -79,41 +84,24 @@ const Dashboard = () => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
-        .from('goals')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .maybeSingle();
+      const { data, error } = await withRetry(
+        () => supabase
+          .from('goals')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .maybeSingle(),
+        { toastOnError: true, toastMessage: "Failed to load goal data" }
+      );
 
       if (error && error.code !== 'PGRST116') {
         throw error;
       }
-      
+
       setGoal(data);
     } catch (error: any) {
       console.error('Error loading goal:', error);
       toast.error("Failed to load goal data");
-    }
-  };
-
-  const loadProfile = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-      
-      setProfile(data);
-    } catch (error: any) {
-      console.error('Error loading profile:', error);
     }
   };
 
@@ -126,12 +114,18 @@ const Dashboard = () => {
       refetchBooks(),
       refetchStreaks(),
       loadGoalData(),
-      loadProfile(),
     ]);
   };
 
-  const completedBooks = books.filter(book => book.status === "completed").length;
-  const progressPercentage = goal ? Math.round((completedBooks / goal.target_books) * 100) : 0;
+  const completedBooksCount = useMemo(
+    () => books.filter(book => book.status === "completed").length,
+    [books]
+  );
+
+  const progressPercentage = useMemo(
+    () => (goal ? Math.round((completedBooksCount / goal.target_books) * 100) : 0),
+    [completedBooksCount, goal]
+  );
 
   if (authLoading) {
     return (
@@ -170,7 +164,7 @@ const Dashboard = () => {
           {/* Desktop Header */}
           {!isMobile && (
             <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold">Welcome back, {displayName}! 👋</h1>
+              <h1 className="text-3xl font-bold">Welcome back, {displayName}!</h1>
               <p className="text-muted-foreground">Here's what's happening with your reading journey</p>
             </div>
           )}
@@ -178,7 +172,7 @@ const Dashboard = () => {
           {/* Mobile Welcome */}
           {isMobile && (
             <div>
-              <h2 className="text-xl font-bold">Welcome back{profile?.display_name ? `, ${profile.display_name}` : ''}! 👋</h2>
+              <h2 className="text-xl font-bold">Welcome back{profile?.display_name ? `, ${profile.display_name}` : ''}!</h2>
               <p className="text-sm text-muted-foreground">Here's your reading journey</p>
             </div>
           )}
@@ -196,13 +190,13 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="space-y-3 md:space-y-4">
                 <div className="flex justify-between text-xs md:text-sm">
-                  <span>Books Read: {completedBooks} / {goal.target_books}</span>
+                  <span>Books Read: {completedBooksCount} / {goal.target_books}</span>
                   <span>{progressPercentage}% Complete</span>
                 </div>
                 <Progress value={progressPercentage} className="w-full" />
                 <div className="grid grid-cols-3 gap-3 md:gap-4 text-center">
                   <div className="space-y-0.5 md:space-y-1">
-                    <div className="text-xl md:text-2xl font-bold text-primary">{completedBooks}</div>
+                    <div className="text-xl md:text-2xl font-bold text-primary">{completedBooksCount}</div>
                     <div className="text-xs md:text-sm text-muted-foreground">Completed</div>
                   </div>
                   <div className="space-y-0.5 md:space-y-1">

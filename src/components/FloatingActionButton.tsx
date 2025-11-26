@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, BookPlus, Camera, Search, Timer, TrendingUp } from "lucide-react";
+import { Plus, BookPlus, Camera, Search, Timer, TrendingUp, Clock, ListPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -81,6 +81,15 @@ export const FloatingActionButton = () => {
         setIsOpen(false);
       },
     },
+    {
+      icon: Clock,
+      label: "Reading History",
+      onClick: () => {
+        triggerHaptic("light");
+        navigate("/history");
+        setIsOpen(false);
+      },
+    },
   ];
 
   const handleStartTimer = (bookId: string, bookTitle: string) => {
@@ -94,47 +103,58 @@ export const FloatingActionButton = () => {
     setIsOpen(!isOpen);
   };
 
-  return (
-    <div className="md:hidden fixed bottom-20 right-4 z-40">
-      {/* Speed Dial Actions */}
-      <div className={cn(
-        "flex flex-col-reverse gap-3 mb-3 transition-all duration-200",
-        isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
-      )}>
-        {actions.map((action, index) => {
-          const Icon = action.icon;
-          return (
-            <div
-              key={index}
-              className="flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <span className="bg-popover text-popover-foreground px-3 py-1.5 rounded-lg text-sm font-medium shadow-lg border border-border whitespace-nowrap">
-                {action.label}
-              </span>
-              <Button
-                size="icon"
-                onClick={action.onClick}
-                className="h-12 w-12 rounded-full shadow-lg"
-              >
-                <Icon className="h-5 w-5" />
-              </Button>
-            </div>
-          );
-        })}
-      </div>
+  const dockOffset = "calc(max(env(safe-area-inset-bottom), 24px) + 92px)";
 
-      {/* Main FAB */}
-      <Button
-        size="icon"
-        onClick={handleToggle}
-        className={cn(
-          "h-14 w-14 rounded-full shadow-lg transition-transform",
-          isOpen && "rotate-45"
-        )}
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
+  return (
+    <div
+      className="md:hidden fixed inset-x-0 z-[60] pointer-events-none flex justify-center"
+      style={{ bottom: dockOffset }}
+    >
+      {/* Speed Dial Actions */}
+      <div className="flex flex-col items-center">
+        <div
+          className={cn(
+            "flex flex-col items-end gap-3 mb-4 transition-all duration-200 pointer-events-auto",
+            isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+          )}
+        >
+          {actions.map((action, index) => {
+            const Icon = action.icon;
+            return (
+              <div
+                key={index}
+                className="flex items-center gap-3 justify-end animate-in fade-in slide-in-from-bottom-2"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <span className="bg-popover/95 text-popover-foreground px-3.5 py-2 rounded-xl text-sm font-semibold shadow-[0_14px_32px_rgba(0,0,0,0.35)] border border-border/80 whitespace-nowrap supports-[backdrop-filter]:backdrop-blur-md">
+                  {action.label}
+                </span>
+                <Button
+                  size="icon"
+                  onClick={action.onClick}
+                  className="h-12 w-12 rounded-full shadow-[0_18px_38px_rgba(0,0,0,0.45)] bg-primary text-primary-foreground hover:bg-primary/90 border border-white/12"
+                >
+                  <Icon className="h-5 w-5" />
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Main FAB */}
+        <div className="pointer-events-auto">
+          <Button
+            size="icon"
+            onClick={handleToggle}
+            className={cn(
+              "h-16 w-16 rounded-full shadow-[0_22px_50px_rgba(0,0,0,0.48)] bg-primary text-primary-foreground transition-transform supports-[backdrop-filter]:backdrop-blur-xl border border-white/12",
+              isOpen && "rotate-45"
+            )}
+          >
+            <Plus className="h-7 w-7" />
+          </Button>
+        </div>
+      </div>
 
       {/* Timer Book Selection Sheet */}
       <Sheet open={showTimerSheet} onOpenChange={setShowTimerSheet}>

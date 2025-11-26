@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { getProgressPercentage } from "@/utils/bookProgress";
 import { AddToListDialog } from "@/components/AddToListDialog";
 import { ContextMenuNative } from "@/components/ui/context-menu-native";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import type { Book } from "@/types";
 import { useNavigate } from "react-router-dom";
 
@@ -78,7 +79,7 @@ export const BookCard = ({ book, onClick, onStatusChange, onDelete, userId }: Bo
           <div onClick={onClick} className="cursor-pointer flex-1 flex items-start space-x-3 sm:space-x-4">
           <div className="flex-shrink-0">
             {book.cover_url ? (
-              <img
+              <OptimizedImage
                 src={book.cover_url}
                 alt={book.title}
                 className="w-14 h-20 sm:w-16 sm:h-24 object-cover rounded shadow-sm"

@@ -361,6 +361,20 @@ const ProfilePage = () => {
               <span className="text-xs font-medium">Lists</span>
             </CardContent>
           </Card>
+
+          <Card 
+            className="cursor-pointer hover:bg-accent transition-all active:scale-95 touch-manipulation"
+            onClick={() => {
+              navigate('/history');
+            }}
+          >
+            <CardContent className="p-3 sm:p-4 flex flex-col items-center gap-2 text-center">
+              <div className="p-2 rounded-full bg-primary/10">
+                <BookMarked className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              </div>
+              <span className="text-xs font-medium">History</span>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Profile Avatar Section */}

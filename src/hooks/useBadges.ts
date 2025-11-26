@@ -183,8 +183,8 @@ export const useBadges = (userId?: string) => {
       
       for (const badge of newBadges) {
         toast({
-          title: "🎉 New Badge Earned!",
-          description: `${badge.icon_url} ${badge.title}: ${badge.description}`,
+          title: "New Badge Earned!",
+          description: `${badge.icon_url ?? ""} ${badge.title}: ${badge.description ?? ""}`.trim(),
         });
       }
     }

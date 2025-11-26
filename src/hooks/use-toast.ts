@@ -5,8 +5,10 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_LIMIT = 2
+const TOAST_REMOVE_DELAY = 2500
+const TOAST_FAILSAFE_BUFFER = 300
+const TOAST_CLOSE_ANIMATION = 250
 
 type ToasterToast = ToastProps & {
   id: string
@@ -66,7 +68,7 @@ const addToRemoveQueue = (toastId: string) => {
       type: "REMOVE_TOAST",
       toastId: toastId,
     })
-  }, TOAST_REMOVE_DELAY)
+  }, TOAST_CLOSE_ANIMATION)
 
   toastTimeouts.set(toastId, timeout)
 }
@@ -150,16 +152,22 @@ function toast({ ...props }: Toast) {
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
   dispatch({
-    type: "ADD_TOAST",
-    toast: {
-      ...props,
-      id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss()
+      type: "ADD_TOAST",
+      toast: {
+        ...props,
+        id,
+        open: true,
+        duration: TOAST_REMOVE_DELAY,
+        onOpenChange: (open) => {
+          if (!open) dismiss()
+        },
+        // Enable swipe-to-dismiss when supported by the UI layer
+        onSwipeStart: () => dismiss(),
       },
-    },
-  })
+    })
+
+  // Fail-safe auto-dismiss in case the browser blocks the built-in timer
+  setTimeout(() => dismiss(), TOAST_REMOVE_DELAY + TOAST_FAILSAFE_BUFFER)
 
   return {
     id: id,

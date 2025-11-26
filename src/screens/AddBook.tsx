@@ -158,7 +158,7 @@ const AddBook = () => {
         <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-xl font-bold text-foreground">
-              Add a New Book 📚
+              Add a New Book
             </CardTitle>
           </CardHeader>
           <CardContent>

@@ -51,6 +51,7 @@ export const MobileHeader = ({
               size="icon"
               onClick={() => navigate(-1)}
               className="shrink-0"
+              aria-label="Go back"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -65,6 +66,7 @@ export const MobileHeader = ({
                 size="icon"
                 onClick={handleFeedClick}
                 className="relative"
+                aria-label="Open social feed"
               >
                 <Users className="h-5 w-5" />
               </Button>
@@ -73,6 +75,7 @@ export const MobileHeader = ({
                 size="icon"
                 onClick={handleMessagesClick}
                 className="relative"
+                aria-label="Open messages"
               >
                 <MessageCircle className="h-5 w-5" />
                 {unreadCount > 0 && (

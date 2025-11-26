@@ -12,6 +12,8 @@ import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useSwipeable } from "react-swipeable";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 const Messages = () => {
   const location = useLocation();
@@ -20,6 +22,18 @@ const Messages = () => {
   const isMobile = useIsMobile();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const { messages, loading: messagesLoading, sendMessage } = useMessages(selectedConversationId);
+  const { triggerHaptic } = useHapticFeedback();
+
+  const swipeHandlers = useSwipeable({
+    onSwipedRight: () => {
+      if (selectedConversationId && isMobile) {
+        triggerHaptic("selection");
+        setSelectedConversationId(null);
+      }
+    },
+    trackMouse: false,
+    preventScrollOnSwipe: false,
+  });
 
   // Handle starting a conversation from another page
   useEffect(() => {
@@ -54,7 +68,7 @@ const Messages = () => {
           showBack={true}
           hideMessaging={true}
         />
-        <div className="h-[calc(100vh-3.5rem)]">
+        <div className="h-[calc(100vh-3.5rem)] native-scroll" {...swipeHandlers}>
           {messagesLoading ? (
             <LoadingSpinner />
           ) : (

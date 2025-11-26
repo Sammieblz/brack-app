@@ -47,7 +47,7 @@ const ScanBarcode = () => {
         <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in">
           <CardHeader className="text-center">
             <CardTitle className="text-xl font-bold text-foreground">
-              Scan Book ISBN 📷
+              Scan Book ISBN
             </CardTitle>
             <p className="text-muted-foreground text-sm">
               Point your camera at the book's barcode

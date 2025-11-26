@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef, ReactNode } fro
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { updateBookStatusIfNeeded } from "@/utils/bookStatus";
+import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
 
 interface TimerState {
   time: number;
@@ -28,6 +29,7 @@ const TimerContext = createContext<TimerContextType | undefined>(undefined);
 const STORAGE_KEY = 'readingTimer';
 
 export const TimerProvider = ({ children }: { children: ReactNode }) => {
+  const confirmDialog = useConfirmDialog();
   const [state, setState] = useState<TimerState>({
     time: 0,
     isRunning: false,
@@ -87,23 +89,30 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   }, [state.isRunning]);
 
   const startTimer = (bookId: string, bookTitle: string) => {
-    if (state.isVisible && state.bookId) {
-      const confirmStart = window.confirm(
-        "A timer is already running. Do you want to cancel it and start a new one?"
-      );
-      if (!confirmStart) return;
-    }
+    const handleStart = async () => {
+      if (state.isVisible && state.bookId) {
+        const confirmed = await confirmDialog({
+          title: "Replace running timer?",
+          description: "A timer is already running. Cancel it and start a new one?",
+          confirmText: "Start new",
+          cancelText: "Keep current",
+        });
+        if (!confirmed) return;
+      }
 
-    setState({
-      time: 0,
-      isRunning: true,
-      startTime: new Date(),
-      bookId,
-      bookTitle,
-      isVisible: true,
-      isMinimized: true,
-    });
-    toast.success(`Timer started for "${bookTitle}"`);
+      setState({
+        time: 0,
+        isRunning: true,
+        startTime: new Date(),
+        bookId,
+        bookTitle,
+        isVisible: true,
+        isMinimized: true,
+      });
+      toast.success(`Timer started for "${bookTitle}"`);
+    };
+
+    void handleStart();
   };
 
   const pauseTimer = () => {
@@ -171,23 +180,30 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const cancelTimer = () => {
-    if (state.isRunning || state.time > 0) {
-      const confirmCancel = window.confirm(
-        "Are you sure you want to cancel this session? All progress will be lost."
-      );
-      if (!confirmCancel) return;
-    }
+    const handleCancel = async () => {
+      if (state.isRunning || state.time > 0) {
+        const confirmed = await confirmDialog({
+          title: "Cancel this session?",
+          description: "All progress for this timer will be lost.",
+          confirmText: "Cancel session",
+          cancelText: "Keep timer",
+        });
+        if (!confirmed) return;
+      }
 
-    setState({
-      time: 0,
-      isRunning: false,
-      startTime: null,
-      bookId: null,
-      bookTitle: null,
-      isVisible: false,
-      isMinimized: true,
-    });
-    toast.info("Timer cancelled");
+      setState({
+        time: 0,
+        isRunning: false,
+        startTime: null,
+        bookId: null,
+        bookTitle: null,
+        isVisible: false,
+        isMinimized: true,
+      });
+      toast.info("Timer cancelled");
+    };
+
+    void handleCancel();
   };
 
   const toggleMinimized = () => {

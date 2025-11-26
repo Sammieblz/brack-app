@@ -1,0 +1,23 @@
+{
+  "name": "Brack",
+  "short_name": "Brack",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#6366f1",
+  "background_color": "#0b1021",
+  "icons": [
+    {
+      "src": "/brack-favicon/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/brack-favicon/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

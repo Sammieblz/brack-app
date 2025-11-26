@@ -13,17 +13,11 @@ const NativeToastViewport = React.forwardRef<
     platform?: 'ios' | 'android' | 'web'
   }
 >(({ className, platform = 'web', ...props }, ref) => {
-  const isIOS = platform === 'ios'
-  const isAndroid = platform === 'android'
-  
   return (
     <ToastPrimitives.Viewport
       ref={ref}
       className={cn(
-        "fixed z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:flex-col md:max-w-[420px]",
-        isIOS && "top-0 left-1/2 -translate-x-1/2 sm:top-4",
-        isAndroid && "bottom-0 left-1/2 -translate-x-1/2 sm:bottom-4",
-        !isIOS && !isAndroid && "bottom-0 sm:bottom-0 sm:right-0 sm:top-auto sm:left-auto sm:translate-x-0",
+        "fixed z-[100] flex max-h-screen w-full flex-col p-4 md:max-w-[420px] top-0 left-1/2 -translate-x-1/2 sm:left-auto sm:right-4 sm:translate-x-0",
         className
       )}
       {...props}
@@ -44,8 +38,8 @@ const nativeToastVariants = cva(
       },
       platform: {
         ios: "data-[state=closed]:slide-out-to-top-full data-[state=open]:slide-in-from-top-full backdrop-blur-xl bg-background/80 border-border/50 shadow-lg",
-        android: "data-[state=closed]:slide-out-to-bottom-full data-[state=open]:slide-in-from-bottom-full shadow-2xl border-0 rounded-lg",
-        web: "data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-right-full shadow-lg border",
+        android: "data-[state=closed]:slide-out-to-top-full data-[state=open]:slide-in-from-top-full shadow-2xl border-0 rounded-lg",
+        web: "data-[state=closed]:slide-out-to-top-full data-[state=open]:slide-in-from-top-full shadow-lg border",
       },
     },
     defaultVariants: {

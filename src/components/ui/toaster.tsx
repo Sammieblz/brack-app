@@ -15,7 +15,7 @@ export function Toaster() {
   const { platform } = usePlatform()
 
   return (
-    <NativeToastProvider>
+    <NativeToastProvider duration={2500} swipeDirection="right">
       {toasts.map(function ({ id, title, description, action, ...props }) {
         const variant = props.variant as string | undefined
         

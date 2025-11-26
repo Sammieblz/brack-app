@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BookOpen, Search, Filter, Loader2, BarChart3 } from "lucide-react";
 import { BookCard } from "@/components/BookCard";
+import { SwipeableBookCard } from "@/components/SwipeableBookCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
 import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
@@ -19,15 +20,36 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NativeHeader } from "@/components/NativeHeader";
 import { NativeScrollView } from "@/components/NativeScrollView";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useSwipeable } from "react-swipeable";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
 
 const MyBooks = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { books, loading, loadingMore, hasMore, loadMore, refetchBooks } = useBooks(user?.id);
   const navigate = useNavigate();
+  const confirmDialog = useConfirmDialog();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("all");
+  const listParentRef = useRef<HTMLDivElement>(null);
+  const tabOrder = ["all", "reading", "completed", "to_read"];
+
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => {
+      const idx = tabOrder.indexOf(activeTab);
+      if (idx < tabOrder.length - 1) setActiveTab(tabOrder[idx + 1]);
+    },
+    onSwipedRight: () => {
+      const idx = tabOrder.indexOf(activeTab);
+      if (idx > 0) setActiveTab(tabOrder[idx - 1]);
+    },
+    trackMouse: false,
+    preventScrollOnSwipe: false,
+  });
 
   const loadMoreRef = useInfiniteScroll({
     hasMore,
@@ -42,20 +64,66 @@ const MyBooks = () => {
   // Use activeTab on mobile, statusFilter on desktop
   const effectiveFilter = isMobile ? activeTab : statusFilter;
 
-  const filteredBooks = books.filter((book) => {
-    const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         book.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         book.genre?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = effectiveFilter === "all" || book.status === effectiveFilter;
-    return matchesSearch && matchesStatus;
+  const searchValue = searchQuery.toLowerCase();
+
+  const filteredBooks = useMemo(() => {
+    return books.filter((book) => {
+      const matchesSearch =
+        book.title.toLowerCase().includes(searchValue) ||
+        (book.author?.toLowerCase().includes(searchValue) ?? false) ||
+        (book.genre?.toLowerCase().includes(searchValue) ?? false);
+      const matchesStatus = effectiveFilter === "all" || book.status === effectiveFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [books, effectiveFilter, searchValue]);
+
+  const bookStats = useMemo(() => {
+    return books.reduce(
+      (acc, book) => {
+        acc.total += 1;
+        if (book.status === "reading") acc.reading += 1;
+        if (book.status === "completed") acc.completed += 1;
+        if (book.status === "to_read") acc.toRead += 1;
+        return acc;
+      },
+      { total: 0, reading: 0, completed: 0, toRead: 0 }
+    );
+  }, [books]);
+
+  const shouldVirtualize = filteredBooks.length > 100 && !hasMore;
+
+  const virtualizer = useVirtualizer({
+    count: shouldVirtualize ? filteredBooks.length : 0,
+    getScrollElement: () => listParentRef.current,
+    estimateSize: () => 148,
+    overscan: 8,
   });
 
-  const bookStats = {
-    total: books.length,
-    reading: books.filter(book => book.status === "reading").length,
-    completed: books.filter(book => book.status === "completed").length,
-    toRead: books.filter(book => book.status === "to_read").length,
+  const handleDeleteBook = async (bookId: string) => {
+    try {
+      const confirmed = await confirmDialog({
+        title: "Delete this book?",
+        description: "This will remove it from your library. You can re-add it later.",
+        confirmText: "Delete",
+        cancelText: "Keep book",
+      });
+      if (!confirmed) return;
+
+      const { error } = await supabase
+        .from("books")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", bookId);
+
+      if (error) throw error;
+      toast.success("Book removed");
+      refetchBooks();
+    } catch (err: any) {
+      console.error("Error deleting book:", err);
+      toast.error(err.message || "Failed to delete book");
+    }
   };
+
+  const handleEditBook = (bookId: string) => navigate(`/edit-book/${bookId}`);
 
   return (
     <MobileLayout>
@@ -177,10 +245,10 @@ const MyBooks = () => {
           {isMobile && (
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="w-full grid grid-cols-4">
-                <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-                <TabsTrigger value="reading" className="text-xs">Reading</TabsTrigger>
-                <TabsTrigger value="completed" className="text-xs">Done</TabsTrigger>
-                <TabsTrigger value="to_read" className="text-xs">To Read</TabsTrigger>
+                <TabsTrigger value="all" className="text-xs md:text-sm">All</TabsTrigger>
+                <TabsTrigger value="reading" className="text-xs md:text-sm">Reading</TabsTrigger>
+                <TabsTrigger value="completed" className="text-xs md:text-sm">Done</TabsTrigger>
+                <TabsTrigger value="to_read" className="text-xs md:text-sm">To Read</TabsTrigger>
               </TabsList>
             </Tabs>
           )}
@@ -215,62 +283,109 @@ const MyBooks = () => {
           )}
 
           {/* Books Grid */}
-          {loading ? (
-            <div className="space-y-3">
-              <BookCardSkeleton />
-              <BookCardSkeleton />
-              <BookCardSkeleton />
-            </div>
-          ) : filteredBooks.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                {books.length === 0 ? (
-                  <>
-                    <h3 className="font-semibold mb-2">No books yet</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Start building your digital library
-                    </p>
-                    {!isMobile && (
-                      <Button onClick={() => navigate("/add-book")}>
-                        <BookOpen className="mr-2 h-4 w-4" />
-                        Add Your First Book
-                      </Button>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <h3 className="font-semibold mb-2">No books found</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Try adjusting your search or filter
-                    </p>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {filteredBooks.map((book) => (
-                <BookCard 
-                  key={book.id} 
-                  book={book} 
-                  onClick={() => handleBookClick(book.id)}
-                  userId={user?.id}
-                />
-              ))}
-              
-              {hasMore && (
-                <div ref={loadMoreRef} className="py-8 flex justify-center">
-                  {loadingMore && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>Loading more...</span>
-                    </div>
+          <div {...(isMobile ? swipeHandlers : {})}>
+            {loading ? (
+              <div className="space-y-3">
+                <BookCardSkeleton />
+                <BookCardSkeleton />
+                <BookCardSkeleton />
+              </div>
+            ) : filteredBooks.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  {books.length === 0 ? (
+                    <>
+                      <h3 className="font-semibold mb-2">No books yet</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Start building your digital library
+                      </p>
+                      {!isMobile && (
+                        <Button onClick={() => navigate("/add-book")}>
+                          <BookOpen className="mr-2 h-4 w-4" />
+                          Add Your First Book
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="font-semibold mb-2">No books found</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Try adjusting your search or filter
+                      </p>
+                    </>
                   )}
-                </div>
-              )}
-            </div>
-          )}
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {shouldVirtualize ? (
+                  <div
+                    ref={listParentRef}
+                    className="relative max-h-[70vh] overflow-auto rounded-lg border border-border/40 native-scroll"
+                  >
+                    <div
+                      style={{ height: virtualizer.getTotalSize() }}
+                      className="relative"
+                    >
+                      {virtualizer.getVirtualItems().map((virtualRow) => {
+                        const book = filteredBooks[virtualRow.index];
+                        return (
+                          <div
+                            key={book.id}
+                            className="absolute left-0 right-0 pb-3"
+                            style={{ transform: `translateY(${virtualRow.start}px)` }}
+                          >
+                            <BookCard
+                              book={book}
+                              onClick={() => handleBookClick(book.id)}
+                              userId={user?.id}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  filteredBooks.map((book) => {
+                    const card = (
+                      <BookCard 
+                        key={book.id} 
+                        book={book} 
+                        onClick={() => handleBookClick(book.id)}
+                        userId={user?.id}
+                      />
+                    );
+                    if (isMobile) {
+                      return (
+                        <SwipeableBookCard
+                          key={book.id}
+                          book={book}
+                          onView={handleBookClick}
+                          onEdit={handleEditBook}
+                          onDelete={handleDeleteBook}
+                        >
+                          {card}
+                        </SwipeableBookCard>
+                      );
+                    }
+                    return card;
+                  })
+                )}
+                
+                {hasMore && (
+                  <div ref={loadMoreRef} className="py-8 flex justify-center">
+                    {loadingMore && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span>Loading more...</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </NativeScrollView>
       </PullToRefresh>
       
