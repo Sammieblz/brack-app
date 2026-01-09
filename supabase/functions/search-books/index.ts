@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "../_shared/cors.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { rateLimit } from "../_shared/rateLimit.ts";
 import { parseJsonBody, requireFields } from "../_shared/validation.ts";
 
@@ -33,6 +33,9 @@ const limiterConfig = {
 };
 
 serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -59,11 +62,29 @@ serve(async (req) => {
       });
     }
 
+    // Validate search query length
+    if (trimmedQuery.length > 200) {
+      return new Response(JSON.stringify({ error: "Search query too long (max 200 characters)" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Cap maxResults to prevent excessive API calls
+    const maxResultsLimit = Math.min(Math.max(1, maxResults), 40);
+
     // Build Google Books API URL
     const encodedQuery = encodeURIComponent(trimmedQuery);
-    const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=${maxResults}&printType=books`;
+    const apiKey = Deno.env.get('GOOGLE_BOOKS_API_KEY');
+    const apiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=${maxResultsLimit}&printType=books${apiKey ? `&key=${apiKey}` : ''}`;
 
-    const response = await fetch(apiUrl);
+    // Add timeout to prevent hanging requests
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+    try {
+      const response = await fetch(apiUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
 
     if (!response.ok) {
       console.error("Google Books API error:", response.status, await response.text());
@@ -107,17 +128,20 @@ serve(async (req) => {
       };
     });
 
-    return new Response(JSON.stringify({ books }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("Error in search-books function:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      {
-        status: 500,
+      return new Response(JSON.stringify({ books }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError.name === 'AbortError') {
+        throw new Error('Request timeout - Google Books API took too long to respond');
       }
-    );
+      throw fetchError;
+    }
+  } catch (error) {
+    const { createErrorResponse } = await import("../_shared/errorHandler.ts");
+    return createErrorResponse(error, 500, req.headers.get('origin'), {
+      function: "search-books",
+    });
   }
 });

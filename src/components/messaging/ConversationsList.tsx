@@ -8,6 +8,7 @@ import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { hapticToast } from "@/utils/hapticToast";
+import { sanitizeText } from "@/utils/sanitize";
 
 interface ConversationsListProps {
   conversations: Conversation[];
@@ -138,7 +139,7 @@ export const ConversationsList = ({
                   {conv.last_message && (
                     <p className="text-sm text-muted-foreground truncate">
                       {conv.last_message.sender_id === currentUserId && "You: "}
-                      {conv.last_message.content}
+                      {sanitizeText(conv.last_message.content)}
                     </p>
                   )}
                 </div>

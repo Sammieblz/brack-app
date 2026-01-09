@@ -35,6 +35,10 @@ import Readers from "./screens/Readers";
 import NotFound from "./screens/NotFound";
 import { useNetworkStatus } from "./hooks/useNetworkStatus";
 import { ConfirmDialogProvider } from "./contexts/ConfirmDialogContext";
+import { initSentry } from "./lib/sentry";
+
+// Initialize Sentry error tracking
+initSentry();
 
 const Analytics = lazy(() => import("./screens/Analytics"));
 const BookClubs = lazy(() => import("./screens/BookClubs"));

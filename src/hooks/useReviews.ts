@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sanitizeInput } from "@/utils/sanitize";
 
 interface Review {
   id: string;
@@ -314,10 +315,12 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
       const currentUser = (await supabase.auth.getUser()).data.user;
       if (!currentUser) throw new Error("Not authenticated");
 
+      const sanitizedContent = sanitizeInput(content);
+
       const { error } = await supabase.from("review_comments").insert({
         review_id: reviewId,
         user_id: currentUser.id,
-        content,
+        content: sanitizedContent,
       });
 
       if (error) throw error;

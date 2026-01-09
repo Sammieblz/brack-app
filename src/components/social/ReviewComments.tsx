@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { Trash2 } from "lucide-react";
+import { sanitizeText, sanitizeInput } from "@/utils/sanitize";
 
 interface ReviewCommentsProps {
   reviewId: string;
@@ -39,7 +40,8 @@ export const ReviewComments = ({
     if (!newComment.trim()) return;
 
     setSubmitting(true);
-    await onAddComment(newComment);
+    const sanitized = sanitizeInput(newComment);
+    await onAddComment(sanitized);
     setNewComment("");
     setSubmitting(false);
   };
@@ -127,7 +129,7 @@ export const ReviewComments = ({
                       </Button>
                     )}
                   </div>
-                  <p className="text-sm">{comment.content}</p>
+                  <p className="text-sm">{sanitizeText(comment.content)}</p>
                 </div>
               </div>
             ))

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sanitizeInput } from "@/utils/sanitize";
 
 export interface PostComment {
   id: string;
@@ -120,13 +121,16 @@ export const usePostComments = (postId: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const { sanitizeInput } = await import("@/utils/sanitize");
+      const sanitizedContent = sanitizeInput(content);
+
       const { error } = await supabase
         .from("post_comments")
         .insert({
           post_id: postId,
           user_id: user.id,
           parent_id: parentId,
-          content,
+          content: sanitizedContent,
         });
 
       if (error) throw error;

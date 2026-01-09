@@ -51,7 +51,16 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/waftnaqgkcgufzapcihe\.supabase\.co\/storage\/v1\/object\/public\//,
+            // Use environment variable or fallback pattern
+            // Note: Replace hardcoded URL with VITE_SUPABASE_URL in production
+            urlPattern: ({ url }) => {
+              const supabaseUrl = process.env.VITE_SUPABASE_URL;
+              if (supabaseUrl) {
+                return url.href.startsWith(`${supabaseUrl}/storage/v1/object/public/`);
+              }
+              // Fallback to pattern matching any supabase storage URL
+              return /^https:\/\/.*\.supabase\.co\/storage\/v1\/object\/public\//.test(url.href);
+            },
             handler: "CacheFirst",
             options: {
               cacheName: "supabase-public-assets",

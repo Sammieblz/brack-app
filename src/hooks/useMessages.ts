@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sanitizeInput } from "@/utils/sanitize";
 
 export interface Message {
   id: string;
@@ -85,10 +86,12 @@ export const useMessages = (conversationId: string | null) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      const sanitizedContent = sanitizeInput(content);
+
       const { error } = await supabase.from("messages").insert({
         conversation_id: conversationId,
         sender_id: user.id,
-        content,
+        content: sanitizedContent,
       });
 
       if (error) throw error;

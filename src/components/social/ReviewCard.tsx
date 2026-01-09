@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { sanitizeText } from "@/utils/sanitize";
 
 interface ReviewCardProps {
   review: {
@@ -146,7 +147,7 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {review.title && <h3 className="font-semibold text-lg">{review.title}</h3>}
+        {review.title && <h3 className="font-semibold text-lg">{sanitizeText(review.title)}</h3>}
 
         {review.is_spoiler && !showSpoiler ? (
           <div className="bg-muted p-4 rounded-lg text-center">
@@ -162,7 +163,7 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
           </div>
         ) : (
           <div className="space-y-2">
-            <p className="text-foreground whitespace-pre-wrap">{review.content}</p>
+            <p className="text-foreground whitespace-pre-wrap">{sanitizeText(review.content)}</p>
             {review.is_spoiler && showSpoiler && (
               <Button
                 variant="ghost"

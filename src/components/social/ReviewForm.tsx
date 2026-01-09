@@ -24,11 +24,12 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useReviews } from "@/hooks/useReviews";
 import { Star } from "lucide-react";
+import { sanitizeInput } from "@/utils/sanitize";
 
 const reviewSchema = z.object({
   rating: z.number().min(1).max(5),
-  title: z.string().optional(),
-  content: z.string().min(10, "Review must be at least 10 characters"),
+  title: z.string().max(200, "Title must be less than 200 characters").optional(),
+  content: z.string().min(10, "Review must be at least 10 characters").max(5000, "Review must be less than 5000 characters"),
   is_spoiler: z.boolean().default(false),
   is_public: z.boolean().default(true),
 });
@@ -62,8 +63,8 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
     const result = await createReview({
       book_id: bookId,
       rating: data.rating,
-      title: data.title,
-      content: data.content,
+      title: data.title ? sanitizeInput(data.title) : undefined,
+      content: sanitizeInput(data.content),
       is_spoiler: data.is_spoiler,
       is_public: data.is_public,
     });

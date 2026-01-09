@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { ContextMenuNative } from "@/components/ui/context-menu-native";
+import { sanitizeText } from "@/utils/sanitize";
 
 interface PostCardProps {
   post: Post;
@@ -58,7 +59,7 @@ const CommentItem = ({
         <div className="flex-1">
           <div className="bg-muted rounded-lg px-3 py-2">
             <p className="font-semibold text-sm">{comment.user?.display_name || "Unknown User"}</p>
-            <p className="text-sm mt-1">{comment.content}</p>
+            <p className="text-sm mt-1">{sanitizeText(comment.content)}</p>
           </div>
           <div className="flex items-center gap-3 mt-1 ml-3">
             <button
@@ -212,14 +213,16 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
 
   const handleAddComment = async () => {
     if (!commentContent.trim()) return;
-    const success = await addComment(commentContent);
+    const sanitized = sanitizeInput(commentContent);
+    const success = await addComment(sanitized);
     if (success) {
       setCommentContent("");
     }
   };
 
   const handleReply = async (parentId: string, content: string) => {
-    await addComment(content, parentId);
+    const sanitized = sanitizeInput(content);
+    await addComment(sanitized, parentId);
   };
 
   const formatTimestamp = (dateString: string) => {
@@ -293,7 +296,7 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
             )}
           </div>
 
-          <h3 className="text-xl font-bold mb-2">{post.title}</h3>
+          <h3 className="text-xl font-bold mb-2">{sanitizeText(post.title)}</h3>
           
           {post.genre && (
             <Badge variant="secondary" className="mb-3">
@@ -301,7 +304,7 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
             </Badge>
           )}
 
-          <p className="text-foreground whitespace-pre-wrap mb-4">{post.content}</p>
+          <p className="text-foreground whitespace-pre-wrap mb-4">{sanitizeText(post.content)}</p>
 
           {post.book && (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted mb-4">

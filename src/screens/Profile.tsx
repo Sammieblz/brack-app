@@ -58,6 +58,15 @@ const ProfilePage = () => {
     }
   }, [user, authLoading, navigate]);
 
+  // Cleanup object URL to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
   const loadProfile = async () => {
     if (!user) return;
     
@@ -128,8 +137,48 @@ const ProfilePage = () => {
       return;
     }
 
+    // Validate file extension matches MIME type
+    const validExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+    const fileExt = file.name.split(".").pop()?.toLowerCase();
+    if (!fileExt || !validExtensions.includes(fileExt)) {
+      toast({
+        title: "Invalid file extension",
+        description: "File extension does not match file type",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Map MIME types to valid extensions
+    const mimeToExt: Record<string, string[]> = {
+      'image/jpeg': ['jpg', 'jpeg'],
+      'image/jpg': ['jpg', 'jpeg'],
+      'image/png': ['png'],
+      'image/webp': ['webp'],
+    };
+    const validExts = mimeToExt[file.type] || [];
+    if (!validExts.includes(fileExt)) {
+      toast({
+        title: "File type mismatch",
+        description: "File extension does not match the file's MIME type",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Sanitize filename to prevent path traversal
+    const sanitizeFileName = (fileName: string): string => {
+      return fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    };
+    const sanitizedExt = sanitizeFileName(fileExt);
+
     setUploading(true);
     try {
+      // Revoke previous preview URL if exists
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
       // Create preview
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl(objectUrl);
@@ -141,8 +190,7 @@ const ProfilePage = () => {
       }
 
       // Upload new avatar
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Date.now()}-avatar.${fileExt}`;
+      const fileName = `${Date.now()}-avatar.${sanitizedExt}`;
       const filePath = `${user.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
