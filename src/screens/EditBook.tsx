@@ -101,10 +101,65 @@ export default function EditBook() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
+    // Validate file type
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a JPG, PNG, or WEBP image",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (5MB max for book covers)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file extension matches MIME type
+    const validExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    if (!fileExt || !validExtensions.includes(fileExt)) {
+      toast({
+        title: "Invalid file extension",
+        description: "File extension does not match file type",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Map MIME types to valid extensions
+    const mimeToExt: Record<string, string[]> = {
+      'image/jpeg': ['jpg', 'jpeg'],
+      'image/jpg': ['jpg', 'jpeg'],
+      'image/png': ['png'],
+      'image/webp': ['webp'],
+    };
+    const validExts = mimeToExt[file.type] || [];
+    if (!validExts.includes(fileExt)) {
+      toast({
+        title: "File type mismatch",
+        description: "File extension does not match the file's MIME type",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Sanitize filename to prevent path traversal
+    const sanitizeFileName = (fileName: string): string => {
+      return fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    };
+    const sanitizedExt = sanitizeFileName(fileExt);
+
     setUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}/${Date.now()}.${sanitizedExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('book-covers')

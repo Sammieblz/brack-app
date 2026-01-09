@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { PenSquare } from "lucide-react";
 import { GENRES } from "@/constants";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { sanitizeInput } from "@/utils/sanitize";
 
 interface CreatePostDialogProps {
   onPostCreated?: () => void;
@@ -37,6 +38,19 @@ export const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
       return;
     }
 
+    // Validate input lengths
+    if (title.length > 200) {
+      triggerHaptic('error');
+      toast.error("Title must be less than 200 characters");
+      return;
+    }
+
+    if (content.length > 10000) {
+      triggerHaptic('error');
+      toast.error("Content must be less than 10000 characters");
+      return;
+    }
+
     try {
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
@@ -44,8 +58,8 @@ export const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
 
       const { error } = await supabase.from("posts").insert({
         user_id: user.id,
-        title,
-        content,
+        title: sanitizeInput(title),
+        content: sanitizeInput(content),
         genre: genre || null,
       });
 

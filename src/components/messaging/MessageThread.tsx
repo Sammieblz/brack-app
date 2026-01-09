@@ -8,6 +8,8 @@ import { Send } from "lucide-react";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { sanitizeText, sanitizeInput } from "@/utils/sanitize";
+import { toast } from "sonner";
 
 interface MessageThreadProps {
   messages: Message[];
@@ -66,13 +68,21 @@ export const MessageThread = ({
   const handleSend = async () => {
     if (!messageContent.trim() || sending) return;
 
+    // Validate message length
+    if (messageContent.length > 5000) {
+      triggerHaptic('error');
+      toast.error("Message must be less than 5000 characters");
+      return;
+    }
+
     triggerHaptic('light');
     setSending(true);
     setTyping(false); // Stop typing indicator
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
-    const success = await onSendMessage(messageContent);
+    const sanitized = sanitizeInput(messageContent);
+    const success = await onSendMessage(sanitized);
     if (success) {
       setMessageContent("");
       triggerHaptic('success');
@@ -169,7 +179,7 @@ export const MessageThread = ({
                           : "bg-muted"
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                      <p className="text-sm whitespace-pre-wrap break-words">{sanitizeText(message.content)}</p>
                     </Card>
                     <p className={`text-xs text-muted-foreground/80 mt-1.5 font-medium ${isOwnMessage ? "text-right" : ""}`}>
                       {formatTimestamp(message.created_at)}

@@ -1,4 +1,4 @@
-import { corsHeaders } from "./cors.ts";
+import { getCorsHeaders } from "./cors.ts";
 
 type RateLimitOptions = {
   /** Max requests allowed within the window. */
@@ -16,6 +16,21 @@ type Bucket = {
   resetAt: number;
 };
 
+/**
+ * Rate limiting implementation
+ * 
+ * NOTE: This uses in-memory storage which has limitations:
+ * - Only works within a single edge function instance
+ * - Rate limits reset when the instance restarts
+ * - Multiple instances don't share rate limit state
+ * 
+ * For production use, consider:
+ * - Using Supabase's built-in rate limiting (if available)
+ * - Implementing distributed rate limiting with Supabase Storage or external Redis
+ * - Using a third-party rate limiting service
+ * 
+ * TODO: Implement distributed rate limiting for production
+ */
 // Simple in-memory store scoped to the function instance.
 const buckets = new Map<string, Bucket>();
 
@@ -54,6 +69,8 @@ export const rateLimit = (
 
   if (existing.count >= limit) {
     const retryAfter = Math.ceil((existing.resetAt - now) / 1000);
+    const origin = req.headers.get('origin');
+    const corsHeaders = getCorsHeaders(origin);
 
     return new Response(
       JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),

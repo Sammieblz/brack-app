@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
-import { corsHeaders } from '../_shared/cors.ts';
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 interface ReaderRecommendation {
   id: string;
@@ -17,6 +17,9 @@ interface ReaderRecommendation {
 }
 
 Deno.serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -78,6 +81,16 @@ Deno.serve(async (req) => {
       .neq('id', user.id);
 
     if (searchQuery) {
+      // Validate search query length
+      if (searchQuery.length > 200) {
+        const { createErrorResponse } = await import("../_shared/errorHandler.ts");
+        return createErrorResponse(
+          new Error("Search query too long (max 200 characters)"),
+          400,
+          req.headers.get('origin'),
+          { function: "discover-readers" }
+        );
+      }
       query = query.ilike('display_name', `%${searchQuery}%`);
     }
 
@@ -87,116 +100,196 @@ Deno.serve(async (req) => {
       throw profilesError;
     }
 
-    // Calculate recommendations for each user
-    const recommendations: ReaderRecommendation[] = await Promise.all(
-      profiles.map(async (profile) => {
-        let score = 0;
-        let reason = '';
-        const reasons: string[] = [];
+    if (!profiles || profiles.length === 0) {
+      return new Response(
+        JSON.stringify({
+          all: [],
+          nearby: [],
+          socialConnections: [],
+          similarTaste: [],
+          activeReaders: [],
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    }
 
-        // 1. Geographic proximity (if both users have location)
-        let distance_km: number | undefined;
-        if (
-          currentProfile?.latitude &&
-          currentProfile?.longitude &&
-          profile.latitude &&
+    const profileIds = profiles.map(p => p.id);
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Batch fetch all data in parallel
+    const [
+      { data: allBooks },
+      { data: allMutualFollows },
+      { data: allSessions },
+      { data: allCompletedBooks },
+    ] = await Promise.all([
+      // Fetch all books with genres for all profiles
+      supabaseClient
+        .from('books')
+        .select('user_id, genre')
+        .in('user_id', profileIds)
+        .not('genre', 'is', null),
+      
+      // Fetch all mutual follows in one query
+      supabaseClient
+        .from('user_follows')
+        .select('follower_id, following_id')
+        .in('follower_id', profileIds)
+        .in('following_id', Array.from(followingIds)),
+      
+      // Fetch all recent reading sessions
+      supabaseClient
+        .from('reading_sessions')
+        .select('user_id, created_at')
+        .in('user_id', profileIds)
+        .gte('created_at', thirtyDaysAgo.toISOString()),
+      
+      // Fetch all completed book counts
+      supabaseClient
+        .from('books')
+        .select('user_id')
+        .in('user_id', profileIds)
+        .eq('status', 'completed')
+        .is('deleted_at', null),
+    ]);
+
+    // Create lookup maps for efficient access
+    const booksByUser = new Map<string, Set<string>>();
+    allBooks?.forEach(book => {
+      if (book.genre && book.user_id) {
+        if (!booksByUser.has(book.user_id)) {
+          booksByUser.set(book.user_id, new Set());
+        }
+        booksByUser.get(book.user_id)!.add(book.genre);
+      }
+    });
+
+    const mutualFollowsByUser = new Map<string, number>();
+    allMutualFollows?.forEach(follow => {
+      if (follow.follower_id) {
+        mutualFollowsByUser.set(
+          follow.follower_id,
+          (mutualFollowsByUser.get(follow.follower_id) || 0) + 1
+        );
+      }
+    });
+
+    const sessionsByUser = new Map<string, number>();
+    allSessions?.forEach(session => {
+      if (session.user_id) {
+        sessionsByUser.set(
+          session.user_id,
+          (sessionsByUser.get(session.user_id) || 0) + 1
+        );
+      }
+    });
+
+    const completedBooksByUser = new Map<string, number>();
+    allCompletedBooks?.forEach(book => {
+      if (book.user_id) {
+        completedBooksByUser.set(
+          book.user_id,
+          (completedBooksByUser.get(book.user_id) || 0) + 1
+        );
+      }
+    });
+
+    // Helper function to calculate distance (Haversine formula)
+    const calculateDistance = (
+      lat1: number, lon1: number, lat2: number, lon2: number
+    ): number => {
+      const R = 6371; // Earth's radius in km
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = 
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    };
+
+    // Calculate recommendations for each user (now using pre-fetched data)
+    const recommendations: ReaderRecommendation[] = profiles.map((profile) => {
+      let score = 0;
+      const reasons: string[] = [];
+
+      // 1. Geographic proximity (calculate in memory)
+      let distance_km: number | undefined;
+      if (
+        currentProfile?.latitude &&
+        currentProfile?.longitude &&
+        profile.latitude &&
+        profile.longitude
+      ) {
+        distance_km = calculateDistance(
+          currentProfile.latitude,
+          currentProfile.longitude,
+          profile.latitude,
           profile.longitude
-        ) {
-          const { data: distanceData } = await supabaseClient.rpc('calculate_distance', {
-            lat1: currentProfile.latitude,
-            lon1: currentProfile.longitude,
-            lat2: profile.latitude,
-            lon2: profile.longitude,
-          });
+        );
 
-          distance_km = distanceData;
-
-          if (distance_km !== null && distance_km < (maxDistance || 50)) {
-            const proximityScore = Math.max(0, 50 - distance_km);
-            score += proximityScore;
-            reasons.push(`${Math.round(distance_km)}km away`);
-          }
+        if (distance_km < (maxDistance || 50)) {
+          const proximityScore = Math.max(0, 50 - distance_km);
+          score += proximityScore;
+          reasons.push(`${Math.round(distance_km)}km away`);
         }
+      }
 
-        // 2. Social graph - mutual follows (followers of people you follow)
-        const { data: mutualData, count: mutualCount } = await supabaseClient
-          .from('user_follows')
-          .select('*', { count: 'exact', head: true })
-          .eq('follower_id', profile.id)
-          .in('following_id', Array.from(followingIds));
+      // 2. Social graph - mutual follows (from pre-fetched data)
+      const mutual_follows = mutualFollowsByUser.get(profile.id) || 0;
+      if (mutual_follows > 0) {
+        score += mutual_follows * 30;
+        reasons.push(`${mutual_follows} mutual connection${mutual_follows > 1 ? 's' : ''}`);
+      }
 
-        const mutual_follows = mutualCount || 0;
-        if (mutual_follows > 0) {
-          score += mutual_follows * 30;
-          reasons.push(`${mutual_follows} mutual connection${mutual_follows > 1 ? 's' : ''}`);
-        }
+      // 3. Reading taste similarity (from pre-fetched data)
+      const theirGenres = booksByUser.get(profile.id) || new Set<string>();
+      const commonGenres = [...userGenres].filter(g => theirGenres.has(g));
+      const genre_overlap = commonGenres.length;
 
-        // 3. Reading taste similarity (genre overlap)
-        const { data: theirBooks } = await supabaseClient
-          .from('books')
-          .select('genre')
-          .eq('user_id', profile.id)
-          .not('genre', 'is', null);
+      if (genre_overlap > 0) {
+        score += genre_overlap * 20;
+        reasons.push(`${genre_overlap} similar genre${genre_overlap > 1 ? 's' : ''}`);
+      }
 
-        const theirGenres = new Set(theirBooks?.map(b => b.genre) || []);
-        const commonGenres = [...userGenres].filter(g => theirGenres.has(g));
-        const genre_overlap = commonGenres.length;
+      // 4. Activity level (from pre-fetched data)
+      const recent_activity = sessionsByUser.get(profile.id) || 0;
+      if (recent_activity > 5) {
+        score += Math.min(recent_activity * 2, 30);
+        reasons.push('active reader');
+      }
 
-        if (genre_overlap > 0) {
-          score += genre_overlap * 20;
-          reasons.push(`${genre_overlap} similar genre${genre_overlap > 1 ? 's' : ''}`);
-        }
+      // 5. Current streak bonus
+      if (profile.current_streak > 7) {
+        score += Math.min(profile.current_streak, 20);
+        reasons.push(`${profile.current_streak} day streak`);
+      }
 
-        // 4. Activity level (recent reading sessions)
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      // Books read count (from pre-fetched data)
+      const books_read_count = completedBooksByUser.get(profile.id) || 0;
 
-        const { count: sessionCount } = await supabaseClient
-          .from('reading_sessions')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', profile.id)
-          .gte('created_at', thirtyDaysAgo.toISOString());
+      const reason = reasons.length > 0 ? reasons.join(', ') : 'New reader';
 
-        const recent_activity = sessionCount || 0;
-        if (recent_activity > 5) {
-          score += Math.min(recent_activity * 2, 30);
-          reasons.push('active reader');
-        }
-
-        // 5. Current streak bonus
-        if (profile.current_streak > 7) {
-          score += Math.min(profile.current_streak, 20);
-          reasons.push(`${profile.current_streak} day streak`);
-        }
-
-        // Get books read count
-        const { count: booksCount } = await supabaseClient
-          .from('books')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', profile.id)
-          .eq('status', 'completed')
-          .is('deleted_at', null);
-
-        const books_read_count = booksCount || 0;
-
-        reason = reasons.length > 0 ? reasons.join(', ') : 'New reader';
-
-        return {
-          id: profile.id,
-          display_name: profile.display_name,
-          avatar_url: profile.avatar_url,
-          bio: profile.bio,
-          current_streak: profile.current_streak,
-          books_read_count,
-          distance_km,
-          mutual_follows,
-          genre_overlap,
-          recent_activity,
-          recommendation_reason: reason,
-          recommendation_score: score,
-        };
-      })
-    );
+      return {
+        id: profile.id,
+        display_name: profile.display_name,
+        avatar_url: profile.avatar_url,
+        bio: profile.bio,
+        current_streak: profile.current_streak,
+        books_read_count,
+        distance_km,
+        mutual_follows,
+        genre_overlap,
+        recent_activity,
+        recommendation_reason: reason,
+        recommendation_score: score,
+      };
+    });
 
     // Sort by recommendation score (highest first)
     recommendations.sort((a, b) => b.recommendation_score - a.recommendation_score);
@@ -221,13 +314,9 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error in discover-readers:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      }
-    );
+    const { createErrorResponse } = await import("../_shared/errorHandler.ts");
+    return createErrorResponse(error, 500, req.headers.get('origin'), {
+      function: "discover-readers",
+    });
   }
 });
