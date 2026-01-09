@@ -1,30 +1,49 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Camera, X } from "lucide-react";
+import { ArrowLeft, Camera, X, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
+import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 const ScanBarcode = () => {
-  const [isScanning, setIsScanning] = useState(false);
   const navigate = useNavigate();
+  const { isScanning, scannedCode, error, startScan, stopScan, resetScan } = useBarcodeScanner();
+  const { triggerHaptic } = useHapticFeedback();
 
-  const handleStartScan = () => {
-    setIsScanning(true);
-    // In a real implementation, you would integrate with a camera/barcode scanning library
-    // For now, we'll simulate the scanning process
-    toast.info("Camera scanning not implemented yet. Please enter ISBN manually.");
-    setTimeout(() => {
-      setIsScanning(false);
-    }, 2000);
+  useEffect(() => {
+    if (scannedCode) {
+      // Validate ISBN format (ISBN-10 or ISBN-13)
+      const isbn = scannedCode.replace(/[^0-9X]/g, '');
+      if (isbn.length === 10 || isbn.length === 13) {
+        triggerHaptic('success');
+        toast.success(`ISBN scanned: ${isbn}`);
+        // Navigate to add book with ISBN pre-filled
+        navigate(`/add-book?isbn=${isbn}`);
+      } else {
+        toast.error('Invalid ISBN format. Please try again.');
+        resetScan();
+      }
+    }
+  }, [scannedCode, navigate, resetScan, triggerHaptic]);
+
+  const handleStartScan = async () => {
+    triggerHaptic('light');
+    const code = await startScan();
+    if (code) {
+      // Navigation handled in useEffect
+    }
   };
 
   const handleCancelScan = () => {
-    setIsScanning(false);
+    stopScan();
+    triggerHaptic('light');
   };
 
   const handleManualEntry = () => {
     navigate("/add-book");
+    triggerHaptic('light');
   };
 
   return (
@@ -54,22 +73,36 @@ const ScanBarcode = () => {
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Camera Viewfinder Placeholder */}
+            {/* Camera Viewfinder */}
             <div className="relative">
-              <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center border-2 border-dashed border-border/50">
+              <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center border-2 border-dashed border-border/50 overflow-hidden">
                 {isScanning ? (
-                  <div className="text-center">
+                  <div className="text-center w-full h-full flex flex-col items-center justify-center">
                     <div className="animate-pulse">
                       <Camera className="h-16 w-16 text-primary mx-auto mb-4" />
-                      <p className="text-muted-foreground">Scanning...</p>
+                      <p className="text-muted-foreground font-medium">Scanning barcode...</p>
+                      <p className="text-xs text-muted-foreground mt-2">Point camera at ISBN barcode</p>
                     </div>
                     {/* Scanning overlay */}
-                    <div className="absolute inset-4 border-2 border-primary rounded-lg animate-pulse"></div>
+                    <div className="absolute inset-4 border-2 border-primary rounded-lg animate-pulse pointer-events-none"></div>
+                  </div>
+                ) : scannedCode ? (
+                  <div className="text-center">
+                    <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                    <p className="text-green-500 font-medium">Barcode scanned!</p>
+                    <p className="text-xs text-muted-foreground mt-2">{scannedCode}</p>
+                  </div>
+                ) : error ? (
+                  <div className="text-center p-4">
+                    <Camera className="h-16 w-16 text-destructive/50 mx-auto mb-4" />
+                    <p className="text-destructive text-sm font-medium">Scan failed</p>
+                    <p className="text-xs text-muted-foreground mt-2">{error}</p>
                   </div>
                 ) : (
                   <div className="text-center">
                     <Camera className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-                    <p className="text-muted-foreground">Camera Preview</p>
+                    <p className="text-muted-foreground">Ready to scan</p>
+                    <p className="text-xs text-muted-foreground mt-2">Tap "Start Scanning" to begin</p>
                   </div>
                 )}
               </div>
@@ -77,22 +110,33 @@ const ScanBarcode = () => {
 
             {/* Control Buttons */}
             <div className="space-y-3">
-              {!isScanning ? (
+              {!isScanning && !scannedCode ? (
                 <Button
                   onClick={handleStartScan}
                   className="w-full h-12 bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium"
+                  disabled={isScanning}
                 >
                   <Camera className="mr-2 h-5 w-5" />
                   Start Scanning
                 </Button>
-              ) : (
+              ) : isScanning ? (
                 <Button
                   onClick={handleCancelScan}
                   variant="outline"
                   className="w-full h-12 border-destructive/50 text-destructive hover:bg-destructive/10 transition-all duration-300"
                 >
                   <X className="mr-2 h-5 w-5" />
-                  Stop Scanning
+                  Cancel Scanning
+                </Button>
+              ) : null}
+
+              {scannedCode && (
+                <Button
+                  onClick={resetScan}
+                  variant="outline"
+                  className="w-full h-12 border-border/50 hover:shadow-soft transition-all duration-300"
+                >
+                  Scan Another
                 </Button>
               )}
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,16 +18,21 @@ const AddBook = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("search");
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  
+  // Get ISBN from URL params if present
+  const isbnFromUrl = searchParams.get('isbn') || '';
+  
   const [formData, setFormData] = useState({
     title: "",
     author: "",
-    isbn: "",
+    isbn: isbnFromUrl,
     genre: "",
     pages: "",
     chapters: "",
     cover_url: "",
   });
-  const navigate = useNavigate();
 
   useEffect(() => {
     const getUser = async () => {
@@ -41,6 +46,15 @@ const AddBook = () => {
     
     getUser();
   }, [navigate]);
+
+  // Update ISBN when URL param changes
+  useEffect(() => {
+    if (isbnFromUrl) {
+      setFormData(prev => ({ ...prev, isbn: isbnFromUrl }));
+      // Switch to manual entry tab if ISBN is provided
+      setActiveTab("manual");
+    }
+  }, [isbnFromUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -11,7 +11,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useBadges } from "@/hooks/useBadges";
 import { useStreaks } from "@/hooks/useStreaks";
-import { Save, User, Upload, Palette, Award, Flame, MapPin, Target, BarChart3, BookMarked, ArrowRight } from "lucide-react";
+import { Save, User, Upload, Palette, Award, Flame, MapPin, Target, BarChart3, BookMarked, ArrowRight, Share2, Bell, BellOff } from "lucide-react";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { Switch } from "@/components/ui/switch";
+import { shareService } from "@/services/shareService";
+import { useBooks } from "@/hooks/useBooks";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
@@ -27,11 +31,25 @@ const ProfilePage = () => {
   const { user, loading: authLoading } = useAuth();
   const { badges, earnedBadges, loading: badgesLoading } = useBadges(user?.id);
   const { streakData, activityCalendar, loading: streaksLoading, useStreakFreeze } = useStreaks(user?.id);
+  const { books } = useBooks(user?.id);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const { isRegistered, register, unregister, error: pushError } = usePushNotifications();
+  const [notificationPrefs, setNotificationPrefs] = useState({
+    push_enabled: true,
+    messages_enabled: true,
+    followers_enabled: true,
+    book_clubs_enabled: true,
+    goals_enabled: true,
+    streaks_enabled: true,
+    reading_reminders_enabled: false,
+    quiet_hours_start: null as string | null,
+    quiet_hours_end: null as string | null,
+  });
+  const [loadingPrefs, setLoadingPrefs] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -55,6 +73,7 @@ const ProfilePage = () => {
     }
     if (user) {
       loadProfile();
+      loadNotificationPreferences();
     }
   }, [user, authLoading, navigate]);
 
@@ -66,6 +85,77 @@ const ProfilePage = () => {
       }
     };
   }, [previewUrl]);
+
+  const loadNotificationPreferences = async () => {
+    if (!user) return;
+    
+    try {
+      setLoadingPrefs(true);
+      const { data, error } = await supabase
+        .from("notification_preferences")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        throw error;
+      }
+
+      if (data) {
+        setNotificationPrefs({
+          push_enabled: data.push_enabled ?? true,
+          messages_enabled: data.messages_enabled ?? true,
+          followers_enabled: data.followers_enabled ?? true,
+          book_clubs_enabled: data.book_clubs_enabled ?? true,
+          goals_enabled: data.goals_enabled ?? true,
+          streaks_enabled: data.streaks_enabled ?? true,
+          reading_reminders_enabled: data.reading_reminders_enabled ?? false,
+          quiet_hours_start: data.quiet_hours_start || null,
+          quiet_hours_end: data.quiet_hours_end || null,
+        });
+      }
+    } catch (error: any) {
+      console.error("Error loading notification preferences:", error);
+    } finally {
+      setLoadingPrefs(false);
+    }
+  };
+
+  const saveNotificationPreferences = async () => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("notification_preferences")
+        .upsert({
+          user_id: user.id,
+          ...notificationPrefs,
+        }, {
+          onConflict: "user_id",
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Notification preferences saved",
+      });
+
+      // Register/unregister push notifications based on preference
+      if (notificationPrefs.push_enabled && !isRegistered) {
+        await register();
+      } else if (!notificationPrefs.push_enabled && isRegistered) {
+        await unregister();
+      }
+    } catch (error: any) {
+      console.error("Error saving notification preferences:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save notification preferences",
+      });
+    }
+  };
 
   const loadProfile = async () => {
     if (!user) return;
@@ -105,6 +195,77 @@ const ProfilePage = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadNotificationPreferences = async () => {
+    if (!user) return;
+    
+    try {
+      setLoadingPrefs(true);
+      const { data, error } = await supabase
+        .from("notification_preferences")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      if (data) {
+        setNotificationPrefs({
+          push_enabled: data.push_enabled ?? true,
+          messages_enabled: data.messages_enabled ?? true,
+          followers_enabled: data.followers_enabled ?? true,
+          book_clubs_enabled: data.book_clubs_enabled ?? true,
+          goals_enabled: data.goals_enabled ?? true,
+          streaks_enabled: data.streaks_enabled ?? true,
+          reading_reminders_enabled: data.reading_reminders_enabled ?? false,
+          quiet_hours_start: data.quiet_hours_start || null,
+          quiet_hours_end: data.quiet_hours_end || null,
+        });
+      }
+    } catch (error: any) {
+      console.error("Error loading notification preferences:", error);
+    } finally {
+      setLoadingPrefs(false);
+    }
+  };
+
+  const saveNotificationPreferences = async () => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("notification_preferences")
+        .upsert({
+          user_id: user.id,
+          ...notificationPrefs,
+        }, {
+          onConflict: "user_id",
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Notification preferences saved",
+      });
+
+      // Register/unregister push notifications based on preference
+      if (notificationPrefs.push_enabled && !isRegistered) {
+        await register();
+      } else if (!notificationPrefs.push_enabled && isRegistered) {
+        await unregister();
+      }
+    } catch (error: any) {
+      console.error("Error saving notification preferences:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save notification preferences",
+      });
     }
   };
 
@@ -657,6 +818,196 @@ const ProfilePage = () => {
           </CardContent>
         </Card>
 
+        {/* Notification Preferences */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Bell className="h-5 w-5 mr-2" />
+              Notification Preferences
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {loadingPrefs ? (
+              <div className="flex justify-center py-8">
+                <LoadingSpinner size="md" />
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="push_enabled">Push Notifications</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Receive push notifications on your device
+                      </p>
+                    </div>
+                    <Switch
+                      id="push_enabled"
+                      checked={notificationPrefs.push_enabled}
+                      onCheckedChange={(checked) => {
+                        setNotificationPrefs(prev => ({ ...prev, push_enabled: checked }));
+                        if (checked && !isRegistered) {
+                          register().catch(console.error);
+                        } else if (!checked && isRegistered) {
+                          unregister().catch(console.error);
+                        }
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="messages_enabled">Messages</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Notify me when I receive new messages
+                      </p>
+                    </div>
+                    <Switch
+                      id="messages_enabled"
+                      checked={notificationPrefs.messages_enabled}
+                      onCheckedChange={(checked) =>
+                        setNotificationPrefs(prev => ({ ...prev, messages_enabled: checked }))
+                      }
+                      disabled={!notificationPrefs.push_enabled}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="followers_enabled">New Followers</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Notify me when someone follows me
+                      </p>
+                    </div>
+                    <Switch
+                      id="followers_enabled"
+                      checked={notificationPrefs.followers_enabled}
+                      onCheckedChange={(checked) =>
+                        setNotificationPrefs(prev => ({ ...prev, followers_enabled: checked }))
+                      }
+                      disabled={!notificationPrefs.push_enabled}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="book_clubs_enabled">Book Clubs</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Notify me about book club updates
+                      </p>
+                    </div>
+                    <Switch
+                      id="book_clubs_enabled"
+                      checked={notificationPrefs.book_clubs_enabled}
+                      onCheckedChange={(checked) =>
+                        setNotificationPrefs(prev => ({ ...prev, book_clubs_enabled: checked }))
+                      }
+                      disabled={!notificationPrefs.push_enabled}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="goals_enabled">Goal Milestones</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Notify me when I reach reading goals
+                      </p>
+                    </div>
+                    <Switch
+                      id="goals_enabled"
+                      checked={notificationPrefs.goals_enabled}
+                      onCheckedChange={(checked) =>
+                        setNotificationPrefs(prev => ({ ...prev, goals_enabled: checked }))
+                      }
+                      disabled={!notificationPrefs.push_enabled}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="streaks_enabled">Streak Reminders</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Remind me to maintain my reading streak
+                      </p>
+                    </div>
+                    <Switch
+                      id="streaks_enabled"
+                      checked={notificationPrefs.streaks_enabled}
+                      onCheckedChange={(checked) =>
+                        setNotificationPrefs(prev => ({ ...prev, streaks_enabled: checked }))
+                      }
+                      disabled={!notificationPrefs.push_enabled}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="reading_reminders_enabled">Reading Reminders</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Daily reminders to read
+                      </p>
+                    </div>
+                    <Switch
+                      id="reading_reminders_enabled"
+                      checked={notificationPrefs.reading_reminders_enabled}
+                      onCheckedChange={(checked) =>
+                        setNotificationPrefs(prev => ({ ...prev, reading_reminders_enabled: checked }))
+                      }
+                      disabled={!notificationPrefs.push_enabled}
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="quiet_hours_start">Quiet Hours Start</Label>
+                      <Input
+                        id="quiet_hours_start"
+                        type="time"
+                        value={notificationPrefs.quiet_hours_start || ""}
+                        onChange={(e) =>
+                          setNotificationPrefs(prev => ({ ...prev, quiet_hours_start: e.target.value || null }))
+                        }
+                        disabled={!notificationPrefs.push_enabled}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="quiet_hours_end">Quiet Hours End</Label>
+                      <Input
+                        id="quiet_hours_end"
+                        type="time"
+                        value={notificationPrefs.quiet_hours_end || ""}
+                        onChange={(e) =>
+                          setNotificationPrefs(prev => ({ ...prev, quiet_hours_end: e.target.value || null }))
+                        }
+                        disabled={!notificationPrefs.push_enabled}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Notifications will be silenced during these hours
+                  </p>
+                </div>
+
+                {pushError && (
+                  <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg">
+                    {pushError}
+                  </div>
+                )}
+
+                <Button
+                  onClick={saveNotificationPreferences}
+                  className="w-full"
+                  variant="outline"
+                >
+                  Save Notification Preferences
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Account Information */}
         <Card>
           <CardHeader>
@@ -689,10 +1040,48 @@ const ProfilePage = () => {
         {/* Reading Streak Section */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <Flame className="h-5 w-5 mr-2 text-orange-500" />
-              Reading Streak
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center">
+                <Flame className="h-5 w-5 mr-2 text-orange-500" />
+                Reading Streak
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={async () => {
+                  try {
+                    // Calculate total reading hours from sessions
+                    const { data: sessions } = await supabase
+                      .from('reading_sessions')
+                      .select('duration')
+                      .eq('user_id', user?.id);
+                    
+                    const totalMinutes = sessions?.reduce((sum, s) => sum + (s.duration || 0), 0) || 0;
+                    const totalHours = Math.round(totalMinutes / 60);
+                    const completedBooks = books.filter(b => b.status === 'completed').length;
+
+                    await shareService.shareReadingStats({
+                      booksCompleted: completedBooks,
+                      totalHours,
+                      currentStreak: streakData.currentStreak,
+                      username: profile?.display_name || undefined,
+                    });
+                  } catch (error: any) {
+                    if (!error.message?.includes('cancelled')) {
+                      toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: "Failed to share reading stats",
+                      });
+                    }
+                  }
+                }}
+                title="Share reading stats"
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

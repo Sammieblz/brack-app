@@ -1,4 +1,4 @@
-import { Suspense, lazy, useMemo } from "react";
+import { Suspense, lazy, useMemo, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -36,6 +36,7 @@ import NotFound from "./screens/NotFound";
 import { useNetworkStatus } from "./hooks/useNetworkStatus";
 import { ConfirmDialogProvider } from "./contexts/ConfirmDialogContext";
 import { initSentry } from "./lib/sentry";
+import { usePushNotifications } from "./hooks/usePushNotifications";
 
 // Initialize Sentry error tracking
 initSentry();
@@ -64,6 +65,13 @@ const queryClient = new QueryClient({
 
 const App = () => {
   useNetworkStatus();
+  const { register: registerPushNotifications } = usePushNotifications();
+  
+  // Register for push notifications on app start (native only)
+  useEffect(() => {
+    registerPushNotifications().catch(console.error);
+  }, [registerPushNotifications]);
+
   const persister = useMemo(
     () => createSyncStoragePersister({ storage: window.localStorage }),
     []
