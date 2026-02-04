@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { BookSearch } from "@/components/BookSearch";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, BookOpen, Camera, Search, PenTool } from "lucide-react";
 import { toast } from "sonner";
+import { bookOperations } from "@/utils/offlineOperation";
 import { GENRES } from "@/constants";
 import type { Book } from "@/types";
 import type { GoogleBookResult } from "@/types/googleBooks";
@@ -18,16 +19,23 @@ const AddBook = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("search");
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  
+  // Get ISBN from URL params if present
+  const isbnFromUrl = searchParams.get('isbn') || '';
+  // Get search query from URL params (from cover scan)
+  const searchFromUrl = searchParams.get('search') || '';
+  
   const [formData, setFormData] = useState({
     title: "",
     author: "",
-    isbn: "",
+    isbn: isbnFromUrl,
     genre: "",
     pages: "",
     chapters: "",
     cover_url: "",
   });
-  const navigate = useNavigate();
 
   useEffect(() => {
     const getUser = async () => {
@@ -41,6 +49,22 @@ const AddBook = () => {
     
     getUser();
   }, [navigate]);
+
+  // Update ISBN when URL param changes
+  useEffect(() => {
+    if (isbnFromUrl) {
+      setFormData(prev => ({ ...prev, isbn: isbnFromUrl }));
+      // Switch to manual entry tab if ISBN is provided
+      setActiveTab("manual");
+    }
+  }, [isbnFromUrl]);
+
+  // Switch to search tab if search query is provided (from cover scan)
+  useEffect(() => {
+    if (searchFromUrl) {
+      setActiveTab("search");
+    }
+  }, [searchFromUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,11 +92,7 @@ const AddBook = () => {
         notes: null
       };
 
-      const { error } = await supabase
-        .from('books')
-        .insert(bookData);
-
-      if (error) throw error;
+      await bookOperations.create(bookData);
 
       toast.success("Book added successfully!");
       navigate("/dashboard");
@@ -132,6 +152,10 @@ const AddBook = () => {
 
   const handleScanISBN = () => {
     navigate("/scan");
+  };
+
+  const handleScanCover = () => {
+    navigate("/scan-cover");
   };
 
   return (

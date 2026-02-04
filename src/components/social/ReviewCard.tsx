@@ -6,7 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { useReviews } from "@/hooks/useReviews";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { Heart, MessageCircle, Star, Eye, EyeOff, MoreVertical, Trash2, Edit } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Heart, MessageCircle, Star, Eye, EyeOff, MoreVertical, Trash2, Edit, Share2 } from "lucide-react";
+import { shareService } from "@/services/shareService";
+import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import {
   DropdownMenu,
@@ -67,6 +70,30 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
   const handleDelete = async () => {
     if (confirm("Are you sure you want to delete this review?")) {
       await deleteReview(review.id);
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      // Fetch book info if not available
+      const { data: book } = await supabase
+        .from('books')
+        .select('title, author')
+        .eq('id', review.book_id)
+        .single();
+
+      await shareService.shareBookReview({
+        title: review.title || undefined,
+        content: review.content,
+        rating: review.rating,
+        bookTitle: book?.title || 'Unknown Book',
+        bookAuthor: book?.author || undefined,
+      });
+    } catch (error: any) {
+      console.error('Error sharing review:', error);
+      if (!error.message?.includes('cancelled')) {
+        toast.error('Failed to share review');
+      }
     }
   };
 
@@ -190,6 +217,15 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
           <Button variant="ghost" size="sm">
             <MessageCircle className="mr-2 h-4 w-4" />
             {review.comments_count}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleShare}
+            title="Share review"
+          >
+            <Share2 className="mr-2 h-4 w-4" />
+            Share
           </Button>
           {review.is_spoiler && (
             <Badge variant="secondary" className="ml-auto">

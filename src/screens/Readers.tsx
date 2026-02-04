@@ -17,6 +17,7 @@ import { BookClubCard } from "@/components/clubs/BookClubCard";
 import { CreateClubDialog } from "@/components/clubs/CreateClubDialog";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { PullToRefresh } from "@/components/PullToRefresh";
 
 export default function Readers() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -116,10 +117,19 @@ export default function Readers() {
     </Card>
   );
 
+  const handleRefresh = async () => {
+    // Trigger refetch - the useUserSearch hook will refetch on searchQuery change
+    // For now, we'll just trigger a re-render by updating search query
+    const currentQuery = searchQuery;
+    setSearchQuery('');
+    setTimeout(() => setSearchQuery(currentQuery), 100);
+  };
+
   return (
     <MobileLayout>
       {isMobile && <MobileHeader title="Discover" />}
       
+      <PullToRefresh onRefresh={handleRefresh}>
       <main className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
         {!isMobile && (
           <div className="mb-8">
@@ -346,6 +356,7 @@ export default function Readers() {
           </TabsContent>
         </Tabs>
       </main>
+      </PullToRefresh>
     </MobileLayout>
   );
 }

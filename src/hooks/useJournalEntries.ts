@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { updateBookStatusIfNeeded } from "@/utils/bookStatus";
+import { journalOperations } from "@/utils/offlineOperation";
 
 export interface JournalEntry {
   id: string;
@@ -12,6 +13,7 @@ export interface JournalEntry {
   content: string;
   page_reference?: number;
   tags?: string[];
+  photo_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -49,14 +51,10 @@ export const useJournalEntries = (bookId: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      const { error } = await supabase
-        .from('journal_entries')
-        .insert({
-          ...entry,
-          user_id: user.id,
-        });
-
-      if (error) throw error;
+      await journalOperations.create({
+        ...entry,
+        user_id: user.id,
+      });
 
       toast({
         title: "Success",
@@ -77,12 +75,7 @@ export const useJournalEntries = (bookId: string) => {
 
   const updateEntry = async (id: string, updates: Partial<JournalEntry>) => {
     try {
-      const { error } = await supabase
-        .from('journal_entries')
-        .update(updates)
-        .eq('id', id);
-
-      if (error) throw error;
+      await journalOperations.update(id, updates);
 
       toast({
         title: "Success",
@@ -102,12 +95,7 @@ export const useJournalEntries = (bookId: string) => {
 
   const deleteEntry = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('journal_entries')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      await journalOperations.delete(id);
 
       toast({
         title: "Success",

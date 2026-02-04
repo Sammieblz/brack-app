@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { dataCache } from "@/services/dataCache";
 import type { Book } from "@/types";
 
 const PAGE_SIZE = 20;
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 
 export const useBooks = (userId?: string) => {
   const [books, setBooks] = useState<Book[]>([]);
@@ -12,8 +14,22 @@ export const useBooks = (userId?: string) => {
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
 
-  const fetchBooks = async (isInitial = true) => {
+  const fetchBooks = async (isInitial = true, forceRefresh = false) => {
     if (!userId) return;
+    
+    const cacheKey = `books_${userId}_${isInitial ? 0 : offset}`;
+    
+    // Check cache first (only for initial load, not pagination)
+    if (isInitial && !forceRefresh) {
+      const cached = dataCache.get<{ books: Book[]; hasMore: boolean }>(cacheKey);
+      if (cached) {
+        setBooks(cached.books);
+        setHasMore(cached.hasMore);
+        setLoading(false);
+        setOffset(PAGE_SIZE);
+        return;
+      }
+    }
     
     try {
       if (isInitial) {
@@ -36,7 +52,14 @@ export const useBooks = (userId?: string) => {
       if (error) throw error;
       
       const newBooks = data || [];
-      setHasMore(newBooks.length === PAGE_SIZE);
+      const hasMoreData = newBooks.length === PAGE_SIZE;
+      
+      // Cache the result (only for initial load)
+      if (isInitial) {
+        dataCache.set(cacheKey, { books: newBooks, hasMore: hasMoreData }, CACHE_TTL);
+      }
+      
+      setHasMore(hasMoreData);
       
       if (isInitial) {
         setBooks(newBooks);
@@ -64,7 +87,11 @@ export const useBooks = (userId?: string) => {
   }, [loadingMore, hasMore, offset]);
 
   const refetchBooks = () => {
-    fetchBooks(true);
+    // Invalidate cache and force refresh
+    if (userId) {
+      dataCache.invalidate(`books_${userId}`);
+    }
+    fetchBooks(true, true);
   };
 
   return {

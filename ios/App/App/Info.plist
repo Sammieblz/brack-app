@@ -51,5 +51,18 @@
 	<string>Allow Brack to scan book barcodes and attach photos to your library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Allow Brack to let you pick cover images from your library.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Allow Brack to send you notifications about reading reminders, messages, and achievements.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.brack.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>brack</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

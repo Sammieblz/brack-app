@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "753070831446",
+    "project_id": "brack-app",
+    "storage_bucket": "brack-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:753070831446:android:d7f30e90f34cdb1a6a88f7",
+        "android_client_info": {
+          "package_name": "com.brack.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChgA5fiAKSMIci6BHc7RGLX988yL1jn7c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

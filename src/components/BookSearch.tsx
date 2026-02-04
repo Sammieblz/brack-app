@@ -11,19 +11,31 @@ import type { GoogleBookResult } from "@/types/googleBooks";
 interface BookSearchProps {
   onSelectBook: (book: GoogleBookResult) => void;
   onQuickAdd?: (book: GoogleBookResult) => Promise<void>;
+  initialQuery?: string;
 }
 
-export const BookSearch = ({ onSelectBook, onQuickAdd }: BookSearchProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
+export const BookSearch = ({ onSelectBook, onQuickAdd, initialQuery }: BookSearchProps) => {
+  const [searchQuery, setSearchQuery] = useState(initialQuery || "");
   const [results, setResults] = useState<GoogleBookResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [addingBookId, setAddingBookId] = useState<string | null>(null);
+  const [fromCoverScan, setFromCoverScan] = useState(false);
   const { toast } = useToast();
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Auto-search when initialQuery is provided
+  useEffect(() => {
+    if (initialQuery && initialQuery.trim()) {
+      setFromCoverScan(true);
+      handleSearch(undefined, initialQuery);
+    }
+  }, [initialQuery]);
+
+  const handleSearch = async (e?: React.FormEvent, queryOverride?: string) => {
+    e?.preventDefault();
     
-    if (!searchQuery.trim()) {
+    const query = queryOverride || searchQuery;
+    
+    if (!query.trim()) {
       toast({
         title: "Search required",
         description: "Please enter a book title, author, or ISBN",
@@ -35,7 +47,7 @@ export const BookSearch = ({ onSelectBook, onQuickAdd }: BookSearchProps) => {
     setSearching(true);
     try {
       const { data, error } = await supabase.functions.invoke("search-books", {
-        body: { query: searchQuery, maxResults: 20 },
+        body: { query: query, maxResults: 20 },
       });
 
       if (error) throw error;
@@ -84,6 +96,14 @@ export const BookSearch = ({ onSelectBook, onQuickAdd }: BookSearchProps) => {
 
   return (
     <div className="space-y-4">
+      {/* Cover Scan Indicator */}
+      {fromCoverScan && (
+        <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-lg">
+          <Camera className="h-4 w-4 text-primary" />
+          <p className="text-sm text-primary font-medium">Results from cover scan</p>
+        </div>
+      )}
+      
       {/* Search Form */}
       <form onSubmit={handleSearch} className="flex gap-2">
         <div className="relative flex-1">

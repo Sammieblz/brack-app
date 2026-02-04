@@ -7,7 +7,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { supabase } from "@/integrations/supabase/client";
 import { updateBookStatusIfNeeded } from "@/utils/bookStatus";
 import { toast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Camera, X } from "lucide-react";
+import { ImagePickerDialog } from "@/components/ImagePickerDialog";
+import { useImagePicker } from "@/hooks/useImagePicker";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ProgressLoggerProps {
   bookId: string;
@@ -31,7 +34,61 @@ export const ProgressLogger = ({
   const [paragraphNumber, setParagraphNumber] = useState<number | undefined>();
   const [timeSpent, setTimeSpent] = useState<number | undefined>();
   const [notes, setNotes] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+
+  const handleImagePicked = async (image: { dataUrl: string; format: string; base64?: string }) => {
+    if (!user || !image.base64) return;
+
+    setUploadingPhoto(true);
+    try {
+      // Convert base64 to blob
+      const byteCharacters = atob(image.base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: `image/${image.format}` });
+
+      // Upload to storage
+      const fileName = `progress-${Date.now()}.${image.format}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('progress-photos')
+        .upload(filePath, blob, {
+          contentType: `image/${image.format}`,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('progress-photos')
+        .getPublicUrl(filePath);
+
+      setPhotoUrl(urlData.publicUrl);
+      setPhotoPreview(image.dataUrl);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to upload photo",
+      });
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoUrl(null);
+    setPhotoPreview(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +113,7 @@ export const ProgressLogger = ({
           notes: notes || null,
           log_type: 'manual',
           time_spent_minutes: timeSpent || null,
+          photo_url: photoUrl || null,
         },
       });
 
@@ -75,6 +133,8 @@ export const ProgressLogger = ({
       setParagraphNumber(undefined);
       setTimeSpent(undefined);
       setNotes("");
+      setPhotoUrl(null);
+      setPhotoPreview(null);
       
       onOpenChange(false);
       onSuccess?.();
@@ -158,6 +218,47 @@ export const ProgressLogger = ({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add any thoughts or notes..."
               rows={3}
+            />
+          </div>
+
+          {/* Photo Attachment */}
+          <div>
+            <Label>Photo (optional)</Label>
+            {photoPreview ? (
+              <div className="relative mt-2">
+                <img
+                  src={photoPreview}
+                  alt="Preview"
+                  className="w-full h-48 object-cover rounded-lg border"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2 h-8 w-8"
+                  onClick={handleRemovePhoto}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowImagePicker(true)}
+                disabled={uploadingPhoto}
+                className="w-full mt-2"
+              >
+                <Camera className="h-4 w-4 mr-2" />
+                {uploadingPhoto ? "Uploading..." : "Add Photo"}
+              </Button>
+            )}
+            <ImagePickerDialog
+              open={showImagePicker}
+              onOpenChange={setShowImagePicker}
+              onImagePicked={handleImagePicked}
+              title="Add Photo to Progress Log"
+              description="Take a photo or select from your library"
             />
           </div>
 

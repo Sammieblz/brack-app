@@ -56,14 +56,25 @@ Deno.serve(async (req) => {
       console.error('Profile error:', profileError);
     }
 
-    // Get current user's reading preferences (genres)
-    const { data: userBooks } = await supabaseClient
-      .from('books')
-      .select('genre')
+    // Get current user's reading preferences from reading_habits (more efficient)
+    const { data: userHabits } = await supabaseClient
+      .from('reading_habits')
+      .select('genres, longest_genre, avg_time_per_book, avg_length')
       .eq('user_id', user.id)
-      .not('genre', 'is', null);
+      .single();
 
-    const userGenres = new Set(userBooks?.map(b => b.genre) || []);
+    // Fallback to books if reading_habits not available
+    let userGenres = new Set<string>();
+    if (userHabits?.genres && userHabits.genres.length > 0) {
+      userGenres = new Set(userHabits.genres);
+    } else {
+      const { data: userBooks } = await supabaseClient
+        .from('books')
+        .select('genre')
+        .eq('user_id', user.id)
+        .not('genre', 'is', null);
+      userGenres = new Set(userBooks?.map(b => b.genre) || []);
+    }
 
     // Get users the current user follows
     const { data: following } = await supabaseClient
@@ -123,16 +134,23 @@ Deno.serve(async (req) => {
     // Batch fetch all data in parallel
     const [
       { data: allBooks },
+      { data: allReadingHabits },
       { data: allMutualFollows },
       { data: allSessions },
       { data: allCompletedBooks },
     ] = await Promise.all([
-      // Fetch all books with genres for all profiles
+      // Fetch all books with genres for all profiles (fallback)
       supabaseClient
         .from('books')
         .select('user_id, genre')
         .in('user_id', profileIds)
         .not('genre', 'is', null),
+      
+      // Fetch reading habits for all profiles (more efficient for genre matching)
+      supabaseClient
+        .from('reading_habits')
+        .select('user_id, genres, longest_genre, avg_time_per_book, avg_length')
+        .in('user_id', profileIds),
       
       // Fetch all mutual follows in one query
       supabaseClient
@@ -158,13 +176,26 @@ Deno.serve(async (req) => {
     ]);
 
     // Create lookup maps for efficient access
-    const booksByUser = new Map<string, Set<string>>();
+    // Prefer reading_habits.genres over books.genre for better performance
+    const genresByUser = new Map<string, Set<string>>();
+    const readingHabitsByUser = new Map<string, any>();
+    
+    allReadingHabits?.forEach(habit => {
+      if (habit.user_id) {
+        readingHabitsByUser.set(habit.user_id, habit);
+        if (habit.genres && habit.genres.length > 0) {
+          genresByUser.set(habit.user_id, new Set(habit.genres));
+        }
+      }
+    });
+    
+    // Fallback to books for users without reading_habits
     allBooks?.forEach(book => {
       if (book.genre && book.user_id) {
-        if (!booksByUser.has(book.user_id)) {
-          booksByUser.set(book.user_id, new Set());
+        if (!genresByUser.has(book.user_id)) {
+          genresByUser.set(book.user_id, new Set());
         }
-        booksByUser.get(book.user_id)!.add(book.genre);
+        genresByUser.get(book.user_id)!.add(book.genre);
       }
     });
 
@@ -247,14 +278,35 @@ Deno.serve(async (req) => {
         reasons.push(`${mutual_follows} mutual connection${mutual_follows > 1 ? 's' : ''}`);
       }
 
-      // 3. Reading taste similarity (from pre-fetched data)
-      const theirGenres = booksByUser.get(profile.id) || new Set<string>();
+      // 3. Reading taste similarity (from reading_habits or books)
+      const theirGenres = genresByUser.get(profile.id) || new Set<string>();
       const commonGenres = [...userGenres].filter(g => theirGenres.has(g));
       const genre_overlap = commonGenres.length;
 
       if (genre_overlap > 0) {
         score += genre_overlap * 20;
         reasons.push(`${genre_overlap} similar genre${genre_overlap > 1 ? 's' : ''}`);
+      }
+
+      // 3b. Reading pace compatibility (from reading_habits)
+      const theirHabits = readingHabitsByUser.get(profile.id);
+      if (userHabits && theirHabits) {
+        // Match users with similar reading pace (within 20% difference)
+        if (userHabits.avg_time_per_book && theirHabits.avg_time_per_book) {
+          const paceDiff = Math.abs(userHabits.avg_time_per_book - theirHabits.avg_time_per_book);
+          const avgPace = (userHabits.avg_time_per_book + theirHabits.avg_time_per_book) / 2;
+          if (paceDiff / avgPace < 0.2) {
+            score += 10;
+            reasons.push('similar reading pace');
+          }
+        }
+        
+        // Match users with same longest genre preference
+        if (userHabits.longest_genre && theirHabits.longest_genre && 
+            userHabits.longest_genre === theirHabits.longest_genre) {
+          score += 15;
+          reasons.push(`both love ${userHabits.longest_genre}`);
+        }
       }
 
       // 4. Activity level (from pre-fetched data)

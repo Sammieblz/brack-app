@@ -73,6 +73,15 @@ export const FloatingActionButton = () => {
       },
     },
     {
+      icon: ScanLine,
+      label: "Scan Cover",
+      onClick: () => {
+        triggerHaptic("light");
+        navigate("/scan-cover");
+        setIsOpen(false);
+      },
+    },
+    {
       icon: Search,
       label: "Search Books",
       onClick: () => {

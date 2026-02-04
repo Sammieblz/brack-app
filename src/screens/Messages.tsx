@@ -35,9 +35,16 @@ const Messages = () => {
     preventScrollOnSwipe: false,
   });
 
-  // Handle starting a conversation from another page
+  // Handle starting a conversation from another page or deep link
   useEffect(() => {
     const startConversationWith = async () => {
+      // Handle deep link conversation ID
+      if (location.state?.conversationId) {
+        setSelectedConversationId(location.state.conversationId);
+        return;
+      }
+      
+      // Handle starting conversation with a user ID
       if (location.state?.startConversationWith) {
         const conversationId = await getOrCreateConversation(location.state.startConversationWith);
         if (conversationId) {
@@ -46,7 +53,7 @@ const Messages = () => {
       }
     };
     startConversationWith();
-  }, [location.state]);
+  }, [location.state, getOrCreateConversation]);
 
   const selectedConversation = conversations.find(c => c.id === selectedConversationId);
 

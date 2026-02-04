@@ -1,15 +1,20 @@
-import { Suspense, lazy, useMemo } from "react";
+import { Suspense, lazy, useMemo, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TimerProvider } from "@/contexts/TimerContext";
 import { FloatingTimerWidget } from "@/components/FloatingTimerWidget";
 import { SwipeBackHandler } from "@/components/SwipeBackHandler";
+import { JournalPromptHandler } from "@/components/JournalPromptHandler";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { syncService } from "@/services/syncService";
+import { deepLinkService } from "@/services/deepLinkService";
+import { DeepLinkHandler } from "@/components/DeepLinkHandler";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Index from "./screens/Index";
 import Auth from "./screens/Auth";
@@ -22,6 +27,7 @@ import AddBook from "./screens/AddBook";
 import BookDetail from "./screens/BookDetail";
 import EditBook from "./screens/EditBook";
 import ScanBarcode from "./screens/ScanBarcode";
+import ScanCover from "./screens/ScanCover";
 import Profile from "./screens/Profile";
 import BookLists from "./screens/BookLists";
 import BookListDetail from "./screens/BookListDetail";
@@ -36,6 +42,7 @@ import NotFound from "./screens/NotFound";
 import { useNetworkStatus } from "./hooks/useNetworkStatus";
 import { ConfirmDialogProvider } from "./contexts/ConfirmDialogContext";
 import { initSentry } from "./lib/sentry";
+import { usePushNotifications } from "./hooks/usePushNotifications";
 
 // Initialize Sentry error tracking
 initSentry();
@@ -64,6 +71,13 @@ const queryClient = new QueryClient({
 
 const App = () => {
   useNetworkStatus();
+  const { register: registerPushNotifications } = usePushNotifications();
+  
+  // Register for push notifications on app start (native only)
+  useEffect(() => {
+    registerPushNotifications().catch(console.error);
+  }, [registerPushNotifications]);
+
   const persister = useMemo(
     () => createSyncStoragePersister({ storage: window.localStorage }),
     []
@@ -87,6 +101,7 @@ const App = () => {
                   <Sonner />
                   <Suspense fallback={<div className="p-10 flex justify-center"><LoadingSpinner size="lg" /></div>}>
                     <BrowserRouter>
+                      <DeepLinkHandler />
                       <SwipeBackHandler>
                         <Routes>
                           <Route path="/" element={<Dashboard />} />
@@ -104,6 +119,7 @@ const App = () => {
                           <Route path="/edit-book/:id" element={<EditBook />} />
                           <Route path="/scan-barcode" element={<ScanBarcode />} />
                           <Route path="/scan" element={<ScanBarcode />} />
+                          <Route path="/scan-cover" element={<ScanCover />} />
                           <Route path="/history" element={<ReadingHistory />} />
                           <Route path="/profile" element={<Profile />} />
                           <Route path="/book-lists" element={<BookLists />} />
@@ -121,6 +137,8 @@ const App = () => {
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                         <FloatingTimerWidget />
+                        <JournalPromptHandler />
+                        <OfflineIndicator />
                       </SwipeBackHandler>
                     </BrowserRouter>
                   </Suspense>

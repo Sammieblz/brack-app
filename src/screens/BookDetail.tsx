@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Clock, CheckCircle, Edit, Trash2, Play, Star, TrendingUp, Calendar, BookOpen, FileText, BookMarked } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle, Edit, Trash2, Play, Star, TrendingUp, Calendar, BookOpen, FileText, BookMarked, Share2 } from "lucide-react";
+import { shareService } from "@/services/shareService";
 import { toast } from "sonner";
 import { formatDuration } from "@/utils";
 import { QuickProgressWidget } from "@/components/QuickProgressWidget";
@@ -184,7 +185,31 @@ const BookDetail = () => {
 
             <TabsContent value="overview" className="p-6 space-y-4">
               <div className="text-center mb-4">
-                <h2 className="text-xl font-bold text-foreground">{book.title}</h2>
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <h2 className="text-xl font-bold text-foreground">{book.title}</h2>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={async () => {
+                      try {
+                        await shareService.shareBook({
+                          title: book.title,
+                          author: book.author || undefined,
+                          isbn: book.isbn || undefined,
+                          coverUrl: book.cover_url || undefined,
+                        });
+                      } catch (error: any) {
+                        if (!error.message?.includes('cancelled')) {
+                          toast.error('Failed to share book');
+                        }
+                      }
+                    }}
+                    title="Share book"
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </Button>
+                </div>
                 {book.author && <p className="text-muted-foreground">by {book.author}</p>}
               </div>
 
