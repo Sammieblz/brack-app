@@ -21,7 +21,7 @@ interface TimerContextType extends TimerState {
   startTimer: (bookId: string, bookTitle: string) => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
-  finishTimer: () => Promise<void>;
+  finishTimer: (showJournalPrompt?: boolean) => Promise<void>;
   cancelTimer: () => void;
   toggleMinimized: () => void;
   hideWidget: () => void;
@@ -311,7 +311,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     setState(prev => ({ ...prev, isRunning: true }));
   };
 
-  const finishTimer = async () => {
+  const finishTimer = async (showJournalPrompt: boolean = true) => {
     if (state.time === 0) {
       toast.error("No time recorded");
       return;
@@ -351,6 +351,13 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       // Update book status if needed
       await updateBookStatusIfNeeded(state.bookId);
 
+      // Store session data temporarily for journal prompt
+      const sessionData = {
+        bookId: state.bookId,
+        bookTitle: state.bookTitle,
+        durationMinutes,
+      };
+
       // Reset state
       setState({
         time: 0,
@@ -361,6 +368,14 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
         isVisible: false,
         isMinimized: true,
       });
+
+      // Trigger journal prompt event if enabled
+      if (showJournalPrompt && durationMinutes >= 5) {
+        // Only prompt for sessions longer than 5 minutes
+        window.dispatchEvent(new CustomEvent('showJournalPrompt', {
+          detail: sessionData
+        }));
+      }
     } catch (error: any) {
       console.error('Error saving session:', error);
       toast.error("Failed to save reading session");

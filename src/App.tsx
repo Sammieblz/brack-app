@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TimerProvider } from "@/contexts/TimerContext";
 import { FloatingTimerWidget } from "@/components/FloatingTimerWidget";
 import { SwipeBackHandler } from "@/components/SwipeBackHandler";
+import { JournalPromptHandler } from "@/components/JournalPromptHandler";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Index from "./screens/Index";
 import Auth from "./screens/Auth";
@@ -129,6 +130,7 @@ const App = () => {
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                         <FloatingTimerWidget />
+                        <JournalPromptHandler />
                       </SwipeBackHandler>
                     </BrowserRouter>
                   </Suspense>

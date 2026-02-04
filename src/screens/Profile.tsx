@@ -22,7 +22,9 @@ import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { BadgeDisplay } from "@/components/BadgeDisplay";
 import { StreakDisplay } from "@/components/StreakDisplay";
 import { StreakCalendar } from "@/components/StreakCalendar";
+import { StreakHistoryTimeline } from "@/components/StreakHistoryTimeline";
 import { ReadingHabitsSection } from "@/components/ReadingHabitsSection";
+import { QuoteCollection } from "@/components/QuoteCollection";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import type { Profile } from "@/types";
@@ -1025,6 +1027,12 @@ const ProfilePage = () => {
 
         {/* Reading Habits Section */}
         {user && <ReadingHabitsSection userId={user.id} />}
+
+        {/* Streak History Section */}
+        {user && <StreakHistoryTimeline userId={user.id} />}
+
+        {/* Quote Collection Section */}
+        {user && <QuoteCollection userId={user.id} />}
 
         {/* Badges Section */}
         <Card>
