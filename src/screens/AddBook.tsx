@@ -10,6 +10,7 @@ import { BookSearch } from "@/components/BookSearch";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, BookOpen, Camera, Search, PenTool } from "lucide-react";
 import { toast } from "sonner";
+import { bookOperations } from "@/utils/offlineOperation";
 import { GENRES } from "@/constants";
 import type { Book } from "@/types";
 import type { GoogleBookResult } from "@/types/googleBooks";
@@ -23,6 +24,8 @@ const AddBook = () => {
   
   // Get ISBN from URL params if present
   const isbnFromUrl = searchParams.get('isbn') || '';
+  // Get search query from URL params (from cover scan)
+  const searchFromUrl = searchParams.get('search') || '';
   
   const [formData, setFormData] = useState({
     title: "",
@@ -56,6 +59,13 @@ const AddBook = () => {
     }
   }, [isbnFromUrl]);
 
+  // Switch to search tab if search query is provided (from cover scan)
+  useEffect(() => {
+    if (searchFromUrl) {
+      setActiveTab("search");
+    }
+  }, [searchFromUrl]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -82,11 +92,7 @@ const AddBook = () => {
         notes: null
       };
 
-      const { error } = await supabase
-        .from('books')
-        .insert(bookData);
-
-      if (error) throw error;
+      await bookOperations.create(bookData);
 
       toast.success("Book added successfully!");
       navigate("/dashboard");
@@ -146,6 +152,10 @@ const AddBook = () => {
 
   const handleScanISBN = () => {
     navigate("/scan");
+  };
+
+  const handleScanCover = () => {
+    navigate("/scan-cover");
   };
 
   return (

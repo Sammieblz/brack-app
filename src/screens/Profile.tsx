@@ -11,7 +11,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useBadges } from "@/hooks/useBadges";
 import { useStreaks } from "@/hooks/useStreaks";
-import { Save, User, Upload, Palette, Award, Flame, MapPin, Target, BarChart3, BookMarked, ArrowRight, Share2, Bell, BellOff } from "lucide-react";
+import { Save, User, Upload, Palette, Award, Flame, MapPin, Target, BarChart3, BookMarked, ArrowRight, Share2, Bell, BellOff, Camera } from "lucide-react";
+import { ImagePickerDialog } from "@/components/ImagePickerDialog";
+import { useImagePicker } from "@/hooks/useImagePicker";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Switch } from "@/components/ui/switch";
 import { shareService } from "@/services/shareService";
@@ -39,7 +41,9 @@ const ProfilePage = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showImagePicker, setShowImagePicker] = useState(false);
   const { isRegistered, register, unregister, error: pushError } = usePushNotifications();
+  const { pickWithPrompt } = useImagePicker();
   const [notificationPrefs, setNotificationPrefs] = useState({
     push_enabled: true,
     messages_enabled: true,
@@ -204,76 +208,22 @@ const ProfilePage = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !user) return;
-
-    // Validate file type
-    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-    if (!validTypes.includes(file.type)) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload a JPG, PNG, or WEBP image",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate file size (2MB max)
-    if (file.size > 2 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Please upload an image smaller than 2MB",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate file extension matches MIME type
-    const validExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-    const fileExt = file.name.split(".").pop()?.toLowerCase();
-    if (!fileExt || !validExtensions.includes(fileExt)) {
-      toast({
-        title: "Invalid file extension",
-        description: "File extension does not match file type",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Map MIME types to valid extensions
-    const mimeToExt: Record<string, string[]> = {
-      'image/jpeg': ['jpg', 'jpeg'],
-      'image/jpg': ['jpg', 'jpeg'],
-      'image/png': ['png'],
-      'image/webp': ['webp'],
-    };
-    const validExts = mimeToExt[file.type] || [];
-    if (!validExts.includes(fileExt)) {
-      toast({
-        title: "File type mismatch",
-        description: "File extension does not match the file's MIME type",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Sanitize filename to prevent path traversal
-    const sanitizeFileName = (fileName: string): string => {
-      return fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
-    };
-    const sanitizedExt = sanitizeFileName(fileExt);
+  const uploadAvatarToStorage = async (imageData: { dataUrl: string; format: string; base64?: string }) => {
+    if (!user || !imageData.base64) return;
 
     setUploading(true);
     try {
-      // Revoke previous preview URL if exists
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
+      // Convert base64 to blob
+      const byteCharacters = atob(imageData.base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
       }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: `image/${imageData.format}` });
 
-      // Create preview
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
+      // Set preview
+      setPreviewUrl(imageData.dataUrl);
 
       // Delete old avatar if exists
       if (profile?.avatar_url) {
@@ -282,12 +232,14 @@ const ProfilePage = () => {
       }
 
       // Upload new avatar
-      const fileName = `${Date.now()}-avatar.${sanitizedExt}`;
+      const fileName = `${Date.now()}-avatar.${imageData.format}`;
       const filePath = `${user.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file);
+        .upload(filePath, blob, {
+          contentType: `image/${imageData.format}`,
+        });
 
       if (uploadError) throw uploadError;
 
@@ -310,16 +262,20 @@ const ProfilePage = () => {
       });
 
       loadProfile();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error uploading avatar:", error);
       toast({
         title: "Error",
-        description: "Failed to upload profile photo",
+        description: error.message || "Failed to upload profile photo",
         variant: "destructive",
       });
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleImagePicked = async (image: { dataUrl: string; format: string; base64?: string }) => {
+    await uploadAvatarToStorage(image);
   };
 
   const handleRemoveAvatar = async () => {
@@ -538,11 +494,11 @@ const ProfilePage = () => {
                 <Button 
                   variant="outline" 
                   disabled={uploading}
-                  onClick={() => document.getElementById('avatar-upload')?.click()}
+                  onClick={() => setShowImagePicker(true)}
                   className="w-full sm:w-auto"
                 >
-                  <Upload className="h-4 w-4 mr-2" />
-                  {uploading ? "Uploading..." : "Upload Photo"}
+                  <Camera className="h-4 w-4 mr-2" />
+                  {uploading ? "Uploading..." : "Choose Photo"}
                 </Button>
                 {profile?.avatar_url && (
                   <Button 
@@ -555,12 +511,12 @@ const ProfilePage = () => {
                   </Button>
                 )}
               </div>
-              <input
-                id="avatar-upload"
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
-                onChange={handleFileUpload}
-                className="hidden"
+              <ImagePickerDialog
+                open={showImagePicker}
+                onOpenChange={setShowImagePicker}
+                onImagePicked={handleImagePicked}
+                title="Choose Profile Photo"
+                description="Take a photo or select from your library"
               />
             </div>
           </CardContent>

@@ -12,7 +12,10 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { TagManager } from "@/components/TagManager";
-import { ArrowLeft, Save, Upload } from "lucide-react";
+import { ArrowLeft, Save, Upload, Camera } from "lucide-react";
+import { ImagePickerDialog } from "@/components/ImagePickerDialog";
+import { useImagePicker } from "@/hooks/useImagePicker";
+import { bookOperations } from "@/utils/offlineOperation";
 import type { Book } from "@/types";
 
 export default function EditBook() {
@@ -24,6 +27,8 @@ export default function EditBook() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [book, setBook] = useState<Book | null>(null);
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const { pickWithPrompt } = useImagePicker();
 
   useEffect(() => {
     loadBook();
@@ -59,27 +64,22 @@ export default function EditBook() {
 
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('books')
-        .update({
-          title: book.title,
-          author: book.author,
-          genre: book.genre,
-          isbn: book.isbn,
-          pages: book.pages,
-          chapters: book.chapters,
-          current_page: book.current_page,
-          status: book.status,
-          rating: book.rating,
-          notes: book.notes,
-          cover_url: book.cover_url,
-          tags: book.tags,
-          date_started: book.date_started,
-          date_finished: book.date_finished,
-        })
-        .eq('id', id);
-
-      if (error) throw error;
+      await bookOperations.update(id, {
+        title: book.title,
+        author: book.author,
+        genre: book.genre,
+        isbn: book.isbn,
+        pages: book.pages,
+        chapters: book.chapters,
+        current_page: book.current_page,
+        status: book.status,
+        rating: book.rating,
+        notes: book.notes,
+        cover_url: book.cover_url,
+        tags: book.tags,
+        date_started: book.date_started,
+        date_finished: book.date_finished,
+      });
 
       toast({
         title: "Success",
@@ -97,73 +97,27 @@ export default function EditBook() {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-
-    // Validate file type
-    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-    if (!validTypes.includes(file.type)) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload a JPG, PNG, or WEBP image",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate file size (5MB max for book covers)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Please upload an image smaller than 5MB",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate file extension matches MIME type
-    const validExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-    const fileExt = file.name.split('.').pop()?.toLowerCase();
-    if (!fileExt || !validExtensions.includes(fileExt)) {
-      toast({
-        title: "Invalid file extension",
-        description: "File extension does not match file type",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Map MIME types to valid extensions
-    const mimeToExt: Record<string, string[]> = {
-      'image/jpeg': ['jpg', 'jpeg'],
-      'image/jpg': ['jpg', 'jpeg'],
-      'image/png': ['png'],
-      'image/webp': ['webp'],
-    };
-    const validExts = mimeToExt[file.type] || [];
-    if (!validExts.includes(fileExt)) {
-      toast({
-        title: "File type mismatch",
-        description: "File extension does not match the file's MIME type",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Sanitize filename to prevent path traversal
-    const sanitizeFileName = (fileName: string): string => {
-      return fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
-    };
-    const sanitizedExt = sanitizeFileName(fileExt);
+  const uploadImageToStorage = async (imageData: { dataUrl: string; format: string; base64?: string }) => {
+    if (!user || !imageData.base64) return;
 
     setUploading(true);
     try {
-      const fileName = `${user.id}/${Date.now()}.${sanitizedExt}`;
+      // Convert base64 to blob
+      const byteCharacters = atob(imageData.base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: `image/${imageData.format}` });
 
+      // Upload to storage
+      const fileName = `${user.id}/${Date.now()}.${imageData.format}`;
       const { error: uploadError } = await supabase.storage
         .from('book-covers')
-        .upload(fileName, file);
+        .upload(fileName, blob, {
+          contentType: `image/${imageData.format}`,
+        });
 
       if (uploadError) throw uploadError;
 
@@ -180,11 +134,22 @@ export default function EditBook() {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to upload image",
         variant: "destructive",
       });
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleImagePicked = async (image: { dataUrl: string; format: string; base64?: string }) => {
+    await uploadImageToStorage(image);
+  };
+
+  const handleNativeImagePick = async () => {
+    const image = await pickWithPrompt();
+    if (image) {
+      await uploadImageToStorage(image);
     }
   };
 
@@ -371,18 +336,18 @@ export default function EditBook() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => document.getElementById('cover-upload')?.click()}
+                      onClick={() => setShowImagePicker(true)}
                       disabled={uploading}
                     >
-                      <Upload className="mr-2 h-4 w-4" />
-                      {uploading ? 'Uploading...' : 'Upload'}
+                      <Camera className="mr-2 h-4 w-4" />
+                      {uploading ? 'Uploading...' : 'Choose Image'}
                     </Button>
-                    <input
-                      id="cover-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      className="hidden"
+                    <ImagePickerDialog
+                      open={showImagePicker}
+                      onOpenChange={setShowImagePicker}
+                      onImagePicked={handleImagePicked}
+                      title="Choose Cover Image"
+                      description="Take a photo or select from your library"
                     />
                   </div>
                 </div>

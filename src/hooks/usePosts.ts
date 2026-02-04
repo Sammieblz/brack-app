@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { dataCache } from "@/services/dataCache";
 import { toast } from "sonner";
+
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 
 export interface Post {
   id: string;
@@ -93,6 +96,9 @@ export const usePosts = () => {
       }));
 
       setPosts(enrichedPosts);
+      
+      // Cache the result
+      dataCache.set(cacheKey, enrichedPosts, CACHE_TTL);
     } catch (error: any) {
       console.error("Error fetching posts:", error);
       toast.error("Failed to load posts");
@@ -102,26 +108,63 @@ export const usePosts = () => {
   };
 
   useEffect(() => {
-    fetchPosts();
+    const cacheKey = 'posts_all';
+    
+    // Check cache first
+    const cached = dataCache.get<Post[]>(cacheKey);
+    if (cached) {
+      setPosts(cached);
+      setLoading(false);
+    } else {
+      fetchPosts();
+    }
 
-    // Subscribe to new posts
-    const channel = supabase
-      .channel("posts-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "posts",
-        },
-        () => {
-          fetchPosts();
+    // Only subscribe to real-time updates if page is visible
+    // This reduces battery drain when app is in background
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    const setupSubscription = () => {
+      if (document.hidden) return; // Don't subscribe if page is hidden
+
+      channel = supabase
+        .channel("posts-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "posts",
+          },
+          () => {
+            // Invalidate cache on changes
+            dataCache.invalidate('posts_all');
+            fetchPosts();
+          }
+        )
+        .subscribe();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Page hidden - unsubscribe to save battery
+        if (channel) {
+          supabase.removeChannel(channel);
+          channel = null;
         }
-      )
-      .subscribe();
+      } else {
+        // Page visible - subscribe
+        setupSubscription();
+      }
+    };
+
+    setupSubscription();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      supabase.removeChannel(channel);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, []);
 
@@ -151,6 +194,8 @@ export const usePosts = () => {
         if (error) throw error;
       }
 
+      // Invalidate cache and refetch
+      dataCache.invalidate('posts_all');
       await fetchPosts();
     } catch (error: any) {
       console.error("Error toggling like:", error);
@@ -158,5 +203,10 @@ export const usePosts = () => {
     }
   };
 
-  return { posts, loading, refetchPosts: fetchPosts, toggleLike };
+  const refetchPosts = () => {
+    dataCache.invalidate('posts_all');
+    fetchPosts();
+  };
+
+  return { posts, loading, refetchPosts, toggleLike };
 };

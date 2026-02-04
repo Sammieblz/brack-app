@@ -58,24 +58,51 @@ export const useMessages = (conversationId: string | null) => {
 
     if (!conversationId) return;
 
-    const channel = supabase
-      .channel(`messages-${conversationId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        () => {
-          fetchMessages();
+    // Only subscribe to real-time updates if page is visible
+    // This reduces battery drain when app is in background
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    const setupSubscription = () => {
+      if (document.hidden) return; // Don't subscribe if page is hidden
+
+      channel = supabase
+        .channel(`messages-${conversationId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "messages",
+            filter: `conversation_id=eq.${conversationId}`,
+          },
+          () => {
+            fetchMessages();
+          }
+        )
+        .subscribe();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Page hidden - unsubscribe to save battery
+        if (channel) {
+          supabase.removeChannel(channel);
+          channel = null;
         }
-      )
-      .subscribe();
+      } else {
+        // Page visible - subscribe
+        setupSubscription();
+      }
+    };
+
+    setupSubscription();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      supabase.removeChannel(channel);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [conversationId]);
 

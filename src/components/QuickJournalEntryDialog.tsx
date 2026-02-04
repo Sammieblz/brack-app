@@ -4,9 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BookOpen, Quote, FileText } from "lucide-react";
+import { BookOpen, Quote, FileText, Camera, X, Image as ImageIcon } from "lucide-react";
 import { useJournalEntries } from "@/hooks/useJournalEntries";
 import { useToast } from "@/hooks/use-toast";
+import { ImagePickerDialog } from "@/components/ImagePickerDialog";
+import { useImagePicker } from "@/hooks/useImagePicker";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface QuickJournalEntryDialogProps {
   open: boolean;
@@ -27,9 +31,63 @@ export const QuickJournalEntryDialog = ({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [pageReference, setPageReference] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const { addEntry } = useJournalEntries(bookId);
   const { toast } = useToast();
+  const { user } = useAuth();
   const [saving, setSaving] = useState(false);
+
+  const handleImagePicked = async (image: { dataUrl: string; format: string; base64?: string }) => {
+    if (!user || !image.base64) return;
+
+    setUploadingPhoto(true);
+    try {
+      // Convert base64 to blob
+      const byteCharacters = atob(image.base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: `image/${image.format}` });
+
+      // Upload to storage
+      const fileName = `journal-${Date.now()}.${image.format}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('journal-photos')
+        .upload(filePath, blob, {
+          contentType: `image/${image.format}`,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('journal-photos')
+        .getPublicUrl(filePath);
+
+      setPhotoUrl(urlData.publicUrl);
+      setPhotoPreview(image.dataUrl);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to upload photo",
+      });
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoUrl(null);
+    setPhotoPreview(null);
+  };
 
   const handleSave = async () => {
     if (!content.trim()) {
@@ -48,6 +106,7 @@ export const QuickJournalEntryDialog = ({
         title: title.trim() || undefined,
         content: content.trim(),
         page_reference: pageReference ? parseInt(pageReference) : undefined,
+        photo_url: photoUrl || undefined,
       });
 
       toast({
@@ -59,6 +118,8 @@ export const QuickJournalEntryDialog = ({
       setTitle("");
       setContent("");
       setPageReference("");
+      setPhotoUrl(null);
+      setPhotoPreview(null);
       setEntryType('note');
       onOpenChange(false);
     } catch (error) {
@@ -159,6 +220,47 @@ export const QuickJournalEntryDialog = ({
               onChange={(e) => setPageReference(e.target.value)}
               placeholder="Page number"
               min="1"
+            />
+          </div>
+
+          {/* Photo Attachment */}
+          <div>
+            <Label>Photo (optional)</Label>
+            {photoPreview ? (
+              <div className="relative mt-2">
+                <img
+                  src={photoPreview}
+                  alt="Preview"
+                  className="w-full h-48 object-cover rounded-lg border"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2 h-8 w-8"
+                  onClick={handleRemovePhoto}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowImagePicker(true)}
+                disabled={uploadingPhoto}
+                className="w-full mt-2"
+              >
+                <Camera className="h-4 w-4 mr-2" />
+                {uploadingPhoto ? "Uploading..." : "Add Photo"}
+              </Button>
+            )}
+            <ImagePickerDialog
+              open={showImagePicker}
+              onOpenChange={setShowImagePicker}
+              onImagePicked={handleImagePicked}
+              title="Add Photo to Journal Entry"
+              description="Take a photo or select from your library"
             />
           </div>
 

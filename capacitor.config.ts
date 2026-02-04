@@ -14,6 +14,10 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'always',
   },
+  app: {
+    // Deep linking configuration
+    customUrlScheme: 'brack',
+  },
 };
 
 export default config;

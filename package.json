@@ -20,6 +20,7 @@
     "@capacitor/cli": "^7.4.4",
     "@capacitor/core": "^7.4.4",
     "@capacitor/device": "^7.0.2",
+    "@capacitor/filesystem": "^7.1.6",
     "@capacitor/haptics": "^7.0.2",
     "@capacitor/ios": "^7.4.4",
     "@capacitor/local-notifications": "^7.0.4",
@@ -87,6 +88,7 @@
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
+    "tesseract.js": "^7.0.0",
     "vaul": "^0.9.3",
     "zod": "^3.23.8"
   },

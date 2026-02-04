@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { dataCache } from "@/services/dataCache";
+
+const CACHE_TTL = 1 * 60 * 1000; // 1 minute
 
 export interface FeedActivity {
   id: string;
@@ -30,7 +33,20 @@ export const useSocialFeed = (limit: number = 20) => {
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
 
-  const fetchFeed = async (offset: number = 0) => {
+  const fetchFeed = async (offset: number = 0, forceRefresh = false) => {
+    const cacheKey = `social_feed_${limit}_${offset}`;
+    
+    // Check cache first (only for initial load)
+    if (offset === 0 && !forceRefresh) {
+      const cached = dataCache.get<{ activities: FeedActivity[]; hasMore: boolean }>(cacheKey);
+      if (cached) {
+        setActivities(cached.activities);
+        setHasMore(cached.hasMore);
+        setLoading(false);
+        return;
+      }
+    }
+    
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke('social-feed', {
@@ -39,13 +55,21 @@ export const useSocialFeed = (limit: number = 20) => {
 
       if (error) throw error;
       
+      const activities = data.activities || [];
+      const hasMoreData = data.has_more || false;
+      
+      // Cache the result (only for initial load)
       if (offset === 0) {
-        setActivities(data.activities || []);
-      } else {
-        setActivities(prev => [...prev, ...(data.activities || [])]);
+        dataCache.set(cacheKey, { activities, hasMore: hasMoreData }, CACHE_TTL);
       }
       
-      setHasMore(data.has_more || false);
+      if (offset === 0) {
+        setActivities(activities);
+      } else {
+        setActivities(prev => [...prev, ...activities]);
+      }
+      
+      setHasMore(hasMoreData);
     } catch (error) {
       console.error('Error fetching social feed:', error);
     } finally {
@@ -56,26 +80,53 @@ export const useSocialFeed = (limit: number = 20) => {
   useEffect(() => {
     fetchFeed();
 
-    // Set up real-time subscription for new activities
-    const channel = supabase
-      .channel('social-feed-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'social_activities'
-        },
-        (payload) => {
-          console.log('New activity detected:', payload);
-          // Refetch feed to get enriched activity data
-          fetchFeed(0);
+    // Only subscribe to real-time updates if page is visible
+    // This reduces battery drain when app is in background
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    const setupSubscription = () => {
+      if (document.hidden) return; // Don't subscribe if page is hidden
+
+      channel = supabase
+        .channel('social-feed-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'social_activities'
+          },
+          (payload) => {
+            console.log('New activity detected:', payload);
+            // Invalidate cache and refetch feed
+            dataCache.invalidate('social_feed');
+            fetchFeed(0, true);
+          }
+        )
+        .subscribe();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Page hidden - unsubscribe to save battery
+        if (channel) {
+          supabase.removeChannel(channel);
+          channel = null;
         }
-      )
-      .subscribe();
+      } else {
+        // Page visible - subscribe
+        setupSubscription();
+      }
+    };
+
+    setupSubscription();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      supabase.removeChannel(channel);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [limit]);
 

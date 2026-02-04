@@ -5,9 +5,10 @@ import { CreateClubDialog } from "@/components/clubs/CreateClubDialog";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Users, BookMarked } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PullToRefresh } from "@/components/PullToRefresh";
 
 const BookClubs = () => {
-  const { clubs, loading, createClub, joinClub, leaveClub } = useBookClubs();
+  const { clubs, loading, createClub, joinClub, leaveClub, fetchClubs } = useBookClubs();
 
   const myClubs = clubs.filter(club => club.user_role);
   const publicClubs = clubs.filter(club => !club.is_private && !club.user_role);
@@ -23,9 +24,14 @@ const BookClubs = () => {
     );
   }
 
+  const handleRefresh = async () => {
+    await fetchClubs();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+      <PullToRefresh onRefresh={handleRefresh}>
       <main className="container max-w-6xl mx-auto px-4 py-8">
         <div className="mb-8 animate-fade-in">
           <div className="flex items-center justify-between mb-6">
@@ -121,6 +127,7 @@ const BookClubs = () => {
           </TabsContent>
         </Tabs>
       </main>
+      </PullToRefresh>
     </div>
   );
 };

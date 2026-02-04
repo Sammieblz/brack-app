@@ -25,6 +25,7 @@ import { useSwipeable } from "react-swipeable";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
+import { bookOperations } from "@/utils/offlineOperation";
 
 const MyBooks = () => {
   const { user } = useAuth();
@@ -109,12 +110,7 @@ const MyBooks = () => {
       });
       if (!confirmed) return;
 
-      const { error } = await supabase
-        .from("books")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("id", bookId);
-
-      if (error) throw error;
+      await bookOperations.delete(bookId);
       toast.success("Book removed");
       refetchBooks();
     } catch (err: any) {
@@ -124,6 +120,17 @@ const MyBooks = () => {
   };
 
   const handleEditBook = (bookId: string) => navigate(`/edit-book/${bookId}`);
+
+  const handleStatusChange = async (bookId: string, status: string) => {
+    try {
+      await bookOperations.update(bookId, { status });
+      toast.success(`Book marked as ${status}`);
+      refetchBooks();
+    } catch (err: any) {
+      console.error("Error updating book status:", err);
+      toast.error(err.message || "Failed to update book status");
+    }
+  };
 
   return (
     <MobileLayout>
@@ -364,6 +371,7 @@ const MyBooks = () => {
                           onView={handleBookClick}
                           onEdit={handleEditBook}
                           onDelete={handleDeleteBook}
+                          onStatusChange={handleStatusChange}
                         >
                           {card}
                         </SwipeableBookCard>

@@ -60,6 +60,15 @@ export const JournalEntryCard = ({ entry, onEdit, onDelete }: JournalEntryCardPr
         )}
       </CardHeader>
       <CardContent>
+        {entry.photo_url && (
+          <div className="mb-3">
+            <img
+              src={entry.photo_url}
+              alt={entry.title || "Journal entry photo"}
+              className="w-full h-48 object-cover rounded-lg border"
+            />
+          </div>
+        )}
         <p className="text-muted-foreground whitespace-pre-wrap mb-3">
           {entry.content}
         </p>
