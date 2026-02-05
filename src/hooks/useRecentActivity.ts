@@ -57,7 +57,7 @@ export const useRecentActivity = (userId?: string) => {
 
       if (sessions) {
         sessions.forEach(session => {
-          const bookTitle = (session as any).books?.title || 'Unknown Book';
+          const bookTitle = (session as { books?: { title?: string } }).books?.title || 'Unknown Book';
           const duration = Math.round((session.duration || 0) / 60); // Convert to minutes
           activities.push({
             id: `session-${session.id}`,

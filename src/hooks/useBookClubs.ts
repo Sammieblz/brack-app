@@ -110,7 +110,7 @@ export const useBookClubs = () => {
       );
 
       setClubs(enrichedClubs);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching clubs:', error);
       toast.error('Failed to load book clubs');
     } finally {
@@ -145,7 +145,7 @@ export const useBookClubs = () => {
       toast.success('Book club created successfully!');
       await fetchClubs();
       return data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating club:', error);
       toast.error('Failed to create book club');
       throw error;
@@ -169,7 +169,7 @@ export const useBookClubs = () => {
 
       toast.success('Joined book club!');
       await fetchClubs();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error joining club:', error);
       toast.error('Failed to join book club');
       throw error;
@@ -191,7 +191,7 @@ export const useBookClubs = () => {
 
       toast.success('Left book club');
       await fetchClubs();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error leaving club:', error);
       toast.error('Failed to leave book club');
       throw error;
@@ -209,7 +209,7 @@ export const useBookClubs = () => {
 
       toast.success('Club updated successfully');
       await fetchClubs();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating club:', error);
       toast.error('Failed to update club');
       throw error;
@@ -227,7 +227,7 @@ export const useBookClubs = () => {
 
       toast.success('Club deleted successfully');
       await fetchClubs();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting club:', error);
       toast.error('Failed to delete club');
       throw error;

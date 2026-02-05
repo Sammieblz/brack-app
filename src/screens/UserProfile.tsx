@@ -39,9 +39,9 @@ const UserProfile = () => {
   const { user: currentUser } = useAuth();
   const { profile, stats, loading, error } = useUserProfile(userId || null);
   const { followersCount, followingCount } = useFollowing(userId || null);
-  const [userBooks, setUserBooks] = useState<any[]>([]);
-  const [userPosts, setUserPosts] = useState<any[]>([]);
-  const [userClubs, setUserClubs] = useState<any[]>([]);
+  const [userBooks, setUserBooks] = useState<Array<{ id: string; title: string }>>([]);
+  const [userPosts, setUserPosts] = useState<Array<{ id: string; title: string }>>([]);
+  const [userClubs, setUserClubs] = useState<Array<{ id: string; name: string }>>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("books");
   const isMobile = useIsMobile();
@@ -474,7 +474,7 @@ const UserProfile = () => {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {userClubs.map((club: any) => (
+                {userClubs.map((club: { id: string; name: string }) => (
                   <Card
                     key={club.id}
                     className="cursor-pointer hover-scale active:scale-95 transition-transform touch-manipulation"

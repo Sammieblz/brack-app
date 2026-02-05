@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
 interface NotificationPayload {
   title: string;
   body: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   badge?: number;
   sound?: string;
 }
@@ -162,11 +162,11 @@ interface NotificationPayload {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error sending push notification:", error);
     return new Response(
       JSON.stringify({
-        error: error.message || "Internal server error",
+        error: error instanceof Error ? error.message : "Internal server error",
       }),
       {
         status: 500,
@@ -191,7 +191,25 @@ async function sendFCMNotifications(
   for (let i = 0; i < tokens.length; i += batchSize) {
     const batch = tokens.slice(i, i + batchSize);
 
-    const payload: any = {
+    const payload: {
+      registration_ids: string[];
+      notification: {
+        title: string;
+        body: string;
+        sound: string;
+        badge?: number;
+      };
+      data: Record<string, unknown>;
+      apns?: {
+        payload: {
+          aps: {
+            sound: string;
+            badge?: number;
+            "content-available": number;
+          };
+        };
+      };
+    } = {
       registration_ids: batch,
       notification: {
         title: notification.title,
@@ -233,7 +251,7 @@ async function sendFCMNotifications(
       
       // Count successful and failed sends
       if (result.results) {
-        result.results.forEach((r: any) => {
+        result.results.forEach((r: { error?: string }) => {
           if (r.error) {
             failed++;
           } else {

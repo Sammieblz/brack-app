@@ -46,10 +46,10 @@ export default function EditBook() {
 
       if (error) throw error;
       setBook(data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Failed to load book",
         variant: "destructive",
       });
       navigate('/my-books');
@@ -86,10 +86,10 @@ export default function EditBook() {
         description: "Book updated successfully",
       });
       navigate(`/book/${id}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Failed to load book",
         variant: "destructive",
       });
     } finally {
@@ -131,7 +131,7 @@ export default function EditBook() {
         title: "Success",
         description: "Cover image uploaded successfully",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
         description: error.message || "Failed to upload image",

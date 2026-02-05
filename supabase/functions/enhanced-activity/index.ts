@@ -90,7 +90,14 @@ Deno.serve(async (req) => {
     ]);
 
     // Transform to activities array
-    const activities: any[] = [];
+    const activities: Array<{
+      id: string;
+      type: string;
+      description: string;
+      timestamp: string | null;
+      book: { id: string; title: string; author: string | null; cover_url: string | null } | null;
+      details?: Record<string, unknown>;
+    }> = [];
 
     // Add completed book activities
     completedBooks?.forEach(book => {
@@ -116,7 +123,7 @@ Deno.serve(async (req) => {
 
     // Add progress log activities
     progressLogs?.forEach(log => {
-      const book = (log as any).books;
+      const book = (log as { books?: { id: string; title: string; author: string | null; cover_url: string | null } }).books;
       activities.push({
         id: `progress-${log.id}`,
         type: 'progress_logged',
@@ -133,7 +140,7 @@ Deno.serve(async (req) => {
 
     // Add reading session activities
     sessions?.forEach(session => {
-      const book = (session as any).books;
+      const book = (session as { books?: { id: string; title: string; author: string | null; cover_url: string | null } }).books;
       const duration = session.duration || 0;
       activities.push({
         id: `session-${session.id}`,

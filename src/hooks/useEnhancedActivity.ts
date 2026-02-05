@@ -12,7 +12,7 @@ interface Activity {
     author?: string;
     cover_url?: string;
   };
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 export const useEnhancedActivity = (limit: number = 20) => {

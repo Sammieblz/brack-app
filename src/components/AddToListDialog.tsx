@@ -70,12 +70,12 @@ export const AddToListDialog = ({ bookId, userId, trigger }: AddToListDialogProp
           description: "Book has been removed from the list",
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       triggerHaptic('error');
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to update list",
+        description: error instanceof Error ? error.message : "Failed to update list",
       });
     }
   };

@@ -151,7 +151,7 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
 
       toast.success("Post deleted");
       onDelete?.(post.id);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting post:", error);
       toast.error("Failed to delete post");
     }

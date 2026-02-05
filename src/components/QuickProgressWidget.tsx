@@ -22,7 +22,7 @@ export const QuickProgressWidget = ({ book, onUpdate }: QuickProgressWidgetProps
     setUpdating(true);
     try {
       const pageNum = parseInt(currentPage) || 0;
-      const updates: any = { current_page: pageNum };
+      const updates: Record<string, unknown> = { current_page: pageNum };
       
       // Auto-mark as completed if reached last page
       if (book.pages && pageNum >= book.pages && book.status !== 'completed') {
@@ -48,10 +48,10 @@ export const QuickProgressWidget = ({ book, onUpdate }: QuickProgressWidgetProps
       });
       
       onUpdate();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Failed to update progress",
         variant: "destructive",
       });
     } finally {

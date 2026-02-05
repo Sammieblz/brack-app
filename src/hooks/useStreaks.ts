@@ -81,7 +81,7 @@ export const useStreaks = (userId?: string) => {
           });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching streak data:", error);
     } finally {
       setLoading(false);
@@ -109,7 +109,7 @@ export const useStreaks = (userId?: string) => {
 
       await fetchStreakData();
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error using streak freeze:", error);
       toast({
         title: "Error",

@@ -45,7 +45,7 @@ export const useMessages = (conversationId: string | null) => {
           .neq("sender_id", user.id)
           .eq("is_read", false);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching messages:", error);
       toast.error("Failed to load messages");
     } finally {
@@ -124,7 +124,7 @@ export const useMessages = (conversationId: string | null) => {
       if (error) throw error;
 
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error sending message:", error);
       toast.error("Failed to send message");
       return false;

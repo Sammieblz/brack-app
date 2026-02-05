@@ -99,7 +99,7 @@ const Dashboard = () => {
       }
 
       setGoal(data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading goal:', error);
       toast.error("Failed to load goal data");
     }

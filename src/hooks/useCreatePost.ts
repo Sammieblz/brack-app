@@ -26,7 +26,7 @@ export const useCreatePost = () => {
 
       toast.success("Post created successfully!");
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating post:", error);
       toast.error("Failed to create post");
       return false;

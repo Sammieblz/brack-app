@@ -118,14 +118,14 @@ export const useBarcodeScanner = (): UseBarcodeScannerReturn => {
               }
             });
           });
-        } catch (err: any) {
-          if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        } catch (err: unknown) {
+          if (err instanceof Error && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
             throw new Error('Camera permission denied');
           }
           throw err;
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Barcode scan error:', err);
       setError(err.message || 'Failed to scan barcode');
       setIsScanning(false);

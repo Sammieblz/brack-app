@@ -14,12 +14,7 @@ export async function executeWithOfflineQueue<T>(
 ): Promise<T> {
   // If online, execute directly
   if (navigator.onLine) {
-    try {
-      return await operation();
-    } catch (error: any) {
-      // If operation fails and we're still online, it's a real error
-      throw error;
-    }
+    return await operation();
   }
 
   // If offline and queue action provided, queue it
@@ -38,7 +33,7 @@ export async function executeWithOfflineQueue<T>(
  * Helper to create book operations with offline queue support
  */
 export const bookOperations = {
-  async create(bookData: any) {
+  async create(bookData: Record<string, unknown>) {
     return executeWithOfflineQueue(
       async () => {
         const { data, error } = await supabase
@@ -53,7 +48,7 @@ export const bookOperations = {
     );
   },
 
-  async update(bookId: string, updates: any) {
+  async update(bookId: string, updates: Record<string, unknown>) {
     return executeWithOfflineQueue(
       async () => {
         const { error } = await supabase
@@ -84,7 +79,7 @@ export const bookOperations = {
  * Helper to create journal entry operations with offline queue support
  */
 export const journalOperations = {
-  async create(entryData: any) {
+  async create(entryData: Record<string, unknown>) {
     return executeWithOfflineQueue(
       async () => {
         const { data, error } = await supabase
@@ -99,7 +94,7 @@ export const journalOperations = {
     );
   },
 
-  async update(entryId: string, updates: any) {
+  async update(entryId: string, updates: Record<string, unknown>) {
     return executeWithOfflineQueue(
       async () => {
         const { error } = await supabase

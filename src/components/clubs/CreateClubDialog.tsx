@@ -20,7 +20,7 @@ interface CreateClubDialogProps {
     name: string;
     description?: string;
     is_private?: boolean;
-  }) => Promise<any>;
+  }) => Promise<void>;
 }
 
 export const CreateClubDialog = ({ onCreateClub }: CreateClubDialogProps) => {

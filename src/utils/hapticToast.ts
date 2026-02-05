@@ -18,7 +18,7 @@ export const hapticToast = {
     return toast({
       title: message,
       description,
-      variant: 'success' as any,
+      variant: 'default' as 'default' | 'destructive',
     });
   },
   
@@ -45,7 +45,7 @@ export const hapticToast = {
     return toast({
       title: message,
       description,
-      variant: 'warning' as any,
+      variant: 'default' as 'default' | 'destructive',
     });
   },
 };

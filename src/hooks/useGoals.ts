@@ -40,8 +40,8 @@ export const useGoals = (userId?: string) => {
       
       setGoals(data as Goal[] || []);
       setActiveGoals((data as Goal[])?.filter(g => g.is_active) || []);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -64,8 +64,8 @@ export const useGoals = (userId?: string) => {
       if (error) throw error;
       await fetchGoals();
       return data;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     }
   };
@@ -79,8 +79,8 @@ export const useGoals = (userId?: string) => {
       
       if (error) throw error;
       await fetchGoals();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
 
@@ -93,8 +93,8 @@ export const useGoals = (userId?: string) => {
       
       if (error) throw error;
       await fetchGoals();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
 
@@ -107,8 +107,8 @@ export const useGoals = (userId?: string) => {
       
       if (error) throw error;
       await fetchGoals();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
 

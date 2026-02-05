@@ -89,11 +89,11 @@ export const useFollowing = (userId: string | null) => {
         title: "Success",
         description: "You are now following this user",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error following user:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to follow user",
+        description: error instanceof Error ? error.message : "Failed to follow user",
         variant: "destructive",
       });
     }
@@ -122,11 +122,11 @@ export const useFollowing = (userId: string | null) => {
         title: "Success",
         description: "You unfollowed this user",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error unfollowing user:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to unfollow user",
+        description: error instanceof Error ? error.message : "Failed to unfollow user",
         variant: "destructive",
       });
     }

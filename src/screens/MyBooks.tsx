@@ -113,9 +113,9 @@ const MyBooks = () => {
       await bookOperations.delete(bookId);
       toast.success("Book removed");
       refetchBooks();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error deleting book:", err);
-      toast.error(err.message || "Failed to delete book");
+      toast.error(err instanceof Error ? err.message : "Failed to delete book");
     }
   };
 
@@ -126,8 +126,9 @@ const MyBooks = () => {
       await bookOperations.update(bookId, { status });
       toast.success(`Book marked as ${status}`);
       refetchBooks();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error updating book status:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to update book status");
       toast.error(err.message || "Failed to update book status");
     }
   };

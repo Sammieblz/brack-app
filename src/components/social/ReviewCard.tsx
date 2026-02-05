@@ -89,9 +89,9 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
         bookTitle: book?.title || 'Unknown Book',
         bookAuthor: book?.author || undefined,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sharing review:', error);
-      if (!error.message?.includes('cancelled')) {
+      if (error instanceof Error && !error.message?.includes('cancelled')) {
         toast.error('Failed to share review');
       }
     }

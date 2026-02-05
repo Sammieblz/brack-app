@@ -125,9 +125,9 @@ export const shareService = {
           throw new Error('Share not supported. Content copied to clipboard.');
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // User cancelled or error occurred
-      if (error.message?.includes('cancelled') || error.message?.includes('Share not supported')) {
+      if (error instanceof Error && (error.message?.includes('cancelled') || error.message?.includes('Share not supported'))) {
         // Silently handle cancellation or show toast
         return;
       }

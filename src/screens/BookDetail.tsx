@@ -77,7 +77,7 @@ const BookDetail = () => {
 
       if (sessionError) throw sessionError;
       setSessions(sessionData || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading book:', error);
       toast.error("Failed to load book details");
     } finally {
@@ -89,7 +89,7 @@ const BookDetail = () => {
     if (!book) return;
 
     try {
-      const updateData: any = { 
+      const updateData: Record<string, unknown> = { 
         status: newStatus, 
         updated_at: new Date().toISOString() 
       };
@@ -113,7 +113,7 @@ const BookDetail = () => {
 
       setBook({ ...book, ...updateData, status: newStatus });
       toast.success(`Book marked as ${newStatus.replace('_', ' ')}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating book status:', error);
       toast.error("Failed to update book status");
     }
@@ -134,7 +134,7 @@ const BookDetail = () => {
 
       toast.success("Book deleted successfully");
       navigate("/dashboard");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting book:', error);
       toast.error("Failed to delete book");
     }
@@ -199,8 +199,8 @@ const BookDetail = () => {
                           isbn: book.isbn || undefined,
                           coverUrl: book.cover_url || undefined,
                         });
-                      } catch (error: any) {
-                        if (!error.message?.includes('cancelled')) {
+                      } catch (error: unknown) {
+                        if (error instanceof Error && !error.message?.includes('cancelled')) {
                           toast.error('Failed to share book');
                         }
                       }

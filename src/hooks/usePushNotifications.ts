@@ -30,8 +30,8 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       } else {
         setError('Failed to register for push notifications');
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to register for push notifications');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to register for push notifications');
       setIsRegistered(false);
     }
   }, []);
@@ -42,8 +42,8 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       setToken(null);
       setIsRegistered(false);
       setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Failed to unregister from push notifications');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to unregister from push notifications');
     }
   }, []);
 

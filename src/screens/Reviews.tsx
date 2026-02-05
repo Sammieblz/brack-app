@@ -36,7 +36,7 @@ const Reviews = () => {
             <CardTitle>Community Reviews</CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
+            <Tabs value={filter} onValueChange={(v: string) => setFilter(v as typeof filter)}>
               <TabsList className="grid grid-cols-6 w-full">
                 <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="5">

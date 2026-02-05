@@ -45,7 +45,16 @@ export const usePostComments = (postId: string) => {
       const commentMap = new Map<string, PostComment>();
       const rootComments: PostComment[] = [];
 
-      data?.forEach((comment: any) => {
+      data?.forEach((comment: {
+        id: string;
+        post_id: string;
+        user_id: string;
+        parent_id: string | null;
+        content: string;
+        created_at: string;
+        updated_at: string;
+        profiles?: { id: string; display_name: string; avatar_url: string | null };
+      }) => {
         const commentObj: PostComment = {
           id: comment.id,
           post_id: comment.post_id,
@@ -81,7 +90,7 @@ export const usePostComments = (postId: string) => {
       });
 
       setComments(rootComments);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching comments:", error);
       toast.error("Failed to load comments");
     } finally {
@@ -138,7 +147,7 @@ export const usePostComments = (postId: string) => {
       toast.success(parentId ? "Reply added!" : "Comment added!");
       await fetchComments();
       return true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error adding comment:", error);
       toast.error("Failed to add comment");
       return false;
@@ -156,7 +165,7 @@ export const usePostComments = (postId: string) => {
 
       toast.success("Comment deleted");
       await fetchComments();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting comment:", error);
       toast.error("Failed to delete comment");
     }

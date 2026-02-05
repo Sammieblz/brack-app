@@ -5,6 +5,7 @@
 /**
  * Debounce function calls - delays execution until after wait time has passed
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
@@ -27,6 +28,7 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * Throttle function calls - limits execution to at most once per wait time
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
   wait: number
