@@ -64,7 +64,6 @@ const Welcome = () => {
             <div className="space-y-3">
               <h1 className="text-3xl font-bold text-foreground">
                 Welcome, {userName}! 
-                <span className="inline-block animate-[float_2s_ease-in-out_infinite] ml-2">👋</span>
               </h1>
               <p className="text-muted-foreground text-lg">
                 Ready to start tracking your reading journey?

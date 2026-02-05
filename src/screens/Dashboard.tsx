@@ -12,6 +12,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
 import { useBadges } from "@/hooks/useBadges";
 import { useStreaks } from "@/hooks/useStreaks";
+import { BadgeDisplay } from "@/components/BadgeDisplay";
+import { Award } from "lucide-react";
 import { useRecentActivity } from "@/hooks/useRecentActivity";
 import { useChartData } from "@/hooks/useChartData";
 import { WeeklyReadingChart } from "@/components/charts/WeeklyReadingChart";
@@ -37,7 +39,7 @@ const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const isMobile = useIsMobile();
   const { books, loading: booksLoading, refetchBooks } = useBooks(user?.id);
-  const { checkAndAwardBadges } = useBadges(user?.id);
+  const { badges, earnedBadges, loading: badgesLoading, checkAndAwardBadges } = useBadges(user?.id);
   const { streakData, activityCalendar, refetchStreaks, useStreakFreeze } = useStreaks(user?.id);
   const { activities, loading: activitiesLoading, formatTimeAgo } = useRecentActivity(user?.id);
   const { weeklyReading, loading: chartLoading } = useChartData(user?.id);
@@ -241,6 +243,30 @@ const Dashboard = () => {
             />
             <StreakCalendar activityCalendar={activityCalendar} />
           </div>
+
+          {/* Badges Widget */}
+          {!badgesLoading && badges.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between text-base md:text-lg">
+                  <span className="flex items-center">
+                    <Award className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                    Achievements
+                  </span>
+                  <Button variant="outline" size="sm" onClick={() => navigate("/settings")}>
+                    View All
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  You've earned {earnedBadges.length} out of {badges.length} badges
+                </p>
+                <BadgeDisplay badges={badges.slice(0, 6)} earnedBadges={earnedBadges} />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Analytics Snippet */}
           {!chartLoading && weeklyReading.length > 0 && (

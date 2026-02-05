@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Conversation } from "@/hooks/useConversations";
 import { MessageCircle, Trash2, Eye, EyeOff } from "lucide-react";
+import { EmptyMessages } from "@/components/empty/EmptyMessages";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useState } from "react";
@@ -44,15 +45,7 @@ export const ConversationsList = ({
   };
 
   if (conversations.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <p className="text-muted-foreground">No conversations yet</p>
-        <p className="text-sm text-muted-foreground mt-2">
-          Start a conversation from a user's profile
-        </p>
-      </div>
-    );
+    return <EmptyMessages />;
   }
 
   const handleDelete = async (conversationId: string, e: React.MouseEvent) => {

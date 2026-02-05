@@ -19,6 +19,16 @@ All colors MUST be HSL.
 */
 
 @layer base {
+  /* Smooth scrolling for all elements */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Momentum scrolling for mobile */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+  
   :root {
     --background: 45 100% 98%;
     --foreground: 25 5% 15%;

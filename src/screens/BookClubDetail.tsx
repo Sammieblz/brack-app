@@ -14,7 +14,7 @@ import { DiscussionThread } from "@/components/clubs/DiscussionThread";
 import { supabase } from "@/integrations/supabase/client";
 import { BookClub, ClubMember } from "@/hooks/useBookClubs";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Users, MessageSquare, BookOpen, ArrowLeft, Send, Crown, UserMinus } from "lucide-react";
+import { Users, MessageSquare, BookOpen, Send, Crown, UserMinus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
@@ -174,17 +174,6 @@ const BookClubDetail = () => {
     <MobileLayout>
       {isMobile && <MobileHeader title={club.name} showBack />}
       <main className="container max-w-6xl mx-auto px-4 py-4 md:py-8">
-        {!isMobile && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/clubs')}
-            className="mb-6 hover-scale"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Clubs
-          </Button>
-        )}
 
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <div className="md:col-span-2">

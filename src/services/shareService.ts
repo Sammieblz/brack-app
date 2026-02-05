@@ -22,10 +22,10 @@ export const shareService = {
     currentStreak: number;
     username?: string;
   }): Promise<void> {
-    const text = `📚 My Reading Stats on Brack:\n\n` +
-      `📖 Books Completed: ${stats.booksCompleted}\n` +
-      `⏱️ Total Reading Time: ${stats.totalHours} hours\n` +
-      `🔥 Current Streak: ${stats.currentStreak} days\n` +
+    const text = `My Reading Stats on Brack:\n\n` +
+      `Books Completed: ${stats.booksCompleted}\n` +
+      `Total Reading Time: ${stats.totalHours} hours\n` +
+      `Current Streak: ${stats.currentStreak} days\n` +
       (stats.username ? `\nFollow me: @${stats.username}` : '');
 
     await this.share({
@@ -44,8 +44,8 @@ export const shareService = {
     bookTitle: string;
     bookAuthor?: string;
   }): Promise<void> {
-    const stars = '⭐'.repeat(review.rating);
-    const text = `📖 Review: ${review.bookTitle}${review.bookAuthor ? ` by ${review.bookAuthor}` : ''}\n\n` +
+    const stars = '★'.repeat(review.rating);
+    const text = `Review: ${review.bookTitle}${review.bookAuthor ? ` by ${review.bookAuthor}` : ''}\n\n` +
       `${stars} ${review.rating}/5\n\n` +
       (review.title ? `${review.title}\n\n` : '') +
       `${review.content}`;
@@ -84,7 +84,7 @@ export const shareService = {
     isbn?: string;
     coverUrl?: string;
   }): Promise<void> {
-    const text = `📚 Check out this book: ${book.title}${book.author ? ` by ${book.author}` : ''}\n\n` +
+    const text = `Check out this book: ${book.title}${book.author ? ` by ${book.author}` : ''}\n\n` +
       `Read it on Brack!`;
 
     await this.share({

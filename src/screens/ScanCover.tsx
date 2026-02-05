@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Camera, X, CheckCircle, Edit, Sparkles } from "lucide-react";
+import { Camera, X, CheckCircle, Edit, Sparkles } from "lucide-react";
+import { MobileLayout } from "@/components/MobileLayout";
+import { MobileHeader } from "@/components/MobileHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { useCoverScanner } from "@/hooks/useCoverScanner";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
@@ -65,21 +68,12 @@ const ScanCover = () => {
     return "text-red-500";
   };
 
+  const isMobile = useIsMobile();
+
   return (
-    <div className="min-h-screen bg-gradient-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate("/add-book")}
-            className="border-border/50 hover:shadow-soft transition-all duration-300"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-        </div>
+    <MobileLayout>
+      {isMobile && <MobileHeader title="Scan Cover" showBack />}
+      <div className="container mx-auto px-4 py-4 md:py-8 max-w-md">
 
         {/* Scanner Card */}
         <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in">
@@ -273,7 +267,7 @@ const ScanCover = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MobileLayout>
   );
 };
 

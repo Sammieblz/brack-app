@@ -6,7 +6,10 @@ import { useBookLists } from "@/hooks/useBookLists";
 import { useListBooks } from "@/hooks/useListBooks";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Trash2, GripVertical } from "lucide-react";
+import { Trash2, GripVertical } from "lucide-react";
+import { MobileLayout } from "@/components/MobileLayout";
+import { MobileHeader } from "@/components/MobileHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { BookCard } from "@/components/BookCard";
 import { AddBooksToListDialog } from "@/components/AddBooksToListDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -192,19 +195,24 @@ const BookListDetail = () => {
     }
   };
 
+  const isMobile = useIsMobile();
+
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="container mx-auto p-6">
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/lists')}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Lists
-          </Button>
+    <MobileLayout>
+      {isMobile && <MobileHeader title={list.name} showBack />}
+      {!isMobile && <Navbar />}
+      <main className="container mx-auto p-4 md:p-6">
+        {!isMobile && (
+          <div className="mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/lists')}
+              className="mb-4"
+            >
+              Back to Lists
+            </Button>
+          </div>
+        )}
           
           <div className="flex items-start justify-between">
             <div>
@@ -223,7 +231,6 @@ const BookListDetail = () => {
               onBooksAdded={refetch}
             />
           </div>
-        </div>
 
         {sortableBooks.length === 0 ? (
           <div className="text-center py-12">
@@ -261,7 +268,7 @@ const BookListDetail = () => {
           </DndContext>
         )}
       </main>
-    </div>
+    </MobileLayout>
   );
 };
 

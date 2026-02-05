@@ -1,5 +1,6 @@
 import { useToast } from "@/hooks/use-toast"
 import { usePlatform } from "@/hooks/usePlatform"
+import { useHapticFeedback } from "@/hooks/useHapticFeedback"
 import {
   NativeToast,
   NativeToastClose,
@@ -9,10 +10,27 @@ import {
   NativeToastViewport,
   getToastIcon,
 } from "@/components/ui/native-toast"
+import { useEffect } from "react"
 
 export function Toaster() {
   const { toasts } = useToast()
   const { platform } = usePlatform()
+  const { triggerHaptic } = useHapticFeedback()
+
+  // Trigger haptic feedback when toast appears
+  useEffect(() => {
+    const visibleToasts = toasts.filter(t => t.open)
+    if (visibleToasts.length > 0) {
+      const latestToast = visibleToasts[visibleToasts.length - 1]
+      if (latestToast.variant === 'destructive') {
+        triggerHaptic('error')
+      } else if (latestToast.variant === 'success') {
+        triggerHaptic('success')
+      } else {
+        triggerHaptic('light')
+      }
+    }
+  }, [toasts, triggerHaptic])
 
   return (
     <NativeToastProvider duration={2500} swipeDirection="right">

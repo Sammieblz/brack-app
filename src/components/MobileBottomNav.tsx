@@ -1,4 +1,4 @@
-import { Home, BookOpen, Users, User, List, Radio } from "lucide-react";
+import { Home, BookOpen, Users, Settings, List, Radio } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
@@ -9,7 +9,7 @@ const tabs = [
   { name: "Discover", path: "/readers", icon: Users },
   { name: "Feed", path: "/feed", icon: Radio },
   { name: "Lists", path: "/lists", icon: List },
-  { name: "Profile", path: "/profile", icon: User },
+  { name: "Settings", path: "/settings", icon: Settings },
 ];
 
 export const MobileBottomNav = () => {

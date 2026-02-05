@@ -80,7 +80,7 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
             )}
             {activity.metadata?.rating && (
               <Badge variant="secondary" className="ml-2">
-                {activity.metadata.rating} ⭐
+                {activity.metadata.rating} ★
               </Badge>
             )}
           </>

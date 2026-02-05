@@ -29,6 +29,7 @@ import EditBook from "./screens/EditBook";
 import ScanBarcode from "./screens/ScanBarcode";
 import ScanCover from "./screens/ScanCover";
 import Profile from "./screens/Profile";
+import Settings from "./screens/Settings";
 import BookLists from "./screens/BookLists";
 import BookListDetail from "./screens/BookListDetail";
 import GoalsManagement from "./screens/GoalsManagement";
@@ -122,6 +123,7 @@ const App = () => {
                           <Route path="/scan-cover" element={<ScanCover />} />
                           <Route path="/history" element={<ReadingHistory />} />
                           <Route path="/profile" element={<Profile />} />
+                          <Route path="/settings" element={<Settings />} />
                           <Route path="/book-lists" element={<BookLists />} />
                           <Route path="/lists" element={<BookLists />} />
                           <Route path="/lists/:listId" element={<BookListDetail />} />

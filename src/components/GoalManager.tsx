@@ -79,7 +79,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
   const handleComplete = async (goalId: string) => {
     await completeGoal(goalId);
     toast({
-      title: "Goal completed! 🎉",
+      title: "Goal completed!",
       description: "Congratulations on achieving your reading goal",
     });
   };

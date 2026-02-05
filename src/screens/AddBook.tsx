@@ -8,7 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookSearch } from "@/components/BookSearch";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, BookOpen, Camera, Search, PenTool } from "lucide-react";
+import { BookOpen, Camera, Search, PenTool } from "lucide-react";
+import { MobileLayout } from "@/components/MobileLayout";
+import { MobileHeader } from "@/components/MobileHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileInput } from "@/components/mobile/MobileInput";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { bookOperations } from "@/utils/offlineOperation";
 import { GENRES } from "@/constants";
@@ -158,25 +163,12 @@ const AddBook = () => {
     navigate("/scan-cover");
   };
 
+  const isMobile = useIsMobile();
+
   return (
-    <div className="min-h-screen bg-gradient-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md relative z-10">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate("/dashboard")}
-            className="border-border/50 hover:shadow-soft transition-all duration-300"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <div className="flex items-center space-x-2">
-            <BookOpen className="h-6 w-6 text-primary" />
-            <span className="text-lg font-semibold">Add Book</span>
-          </div>
-        </div>
+    <MobileLayout>
+      {isMobile && <MobileHeader title="Add Book" showBack />}
+      <div className="container mx-auto px-4 py-4 md:py-8 max-w-md">
 
         {/* Form Card */}
         <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in">
@@ -187,14 +179,16 @@ const AddBook = () => {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="search" className="flex items-center gap-2">
+              <TabsList className="grid w-full grid-cols-2 mb-6 h-12">
+                <TabsTrigger value="search" className="flex items-center gap-2 min-h-[44px]">
                   <Search className="h-4 w-4" />
-                  Search Books
+                  <span className="hidden sm:inline">Search Books</span>
+                  <span className="sm:hidden">Search</span>
                 </TabsTrigger>
-                <TabsTrigger value="manual" className="flex items-center gap-2">
+                <TabsTrigger value="manual" className="flex items-center gap-2 min-h-[44px]">
                   <PenTool className="h-4 w-4" />
-                  Manual Entry
+                  <span className="hidden sm:inline">Manual Entry</span>
+                  <span className="sm:hidden">Manual</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -208,27 +202,23 @@ const AddBook = () => {
 
               {/* Manual Entry Tab */}
               <TabsContent value="manual">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Title</Label>
-                    <Input
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="Enter book title"
-                      required
-                    />
-                  </div>
+                <form onSubmit={handleSubmit} className="space-y-4 pb-24 md:pb-4">
+                  <MobileInput
+                    id="title"
+                    label="Title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="Enter book title"
+                    required
+                  />
 
-                  <div className="space-y-2">
-                    <Label htmlFor="author">Author</Label>
-                    <Input
-                      id="author"
-                      value={formData.author}
-                      onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                      placeholder="Enter author name"
-                    />
-                  </div>
+                  <MobileInput
+                    id="author"
+                    label="Author"
+                    value={formData.author}
+                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                    placeholder="Enter author name"
+                  />
 
                   <div className="space-y-2">
                     <Label htmlFor="isbn">ISBN</Label>
@@ -238,14 +228,14 @@ const AddBook = () => {
                         value={formData.isbn}
                         onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
                         placeholder="Enter ISBN"
-                        className="flex-1"
+                        className="flex-1 min-h-[44px]"
                       />
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         onClick={handleScanISBN}
-                        className="border-border/50 hover:shadow-soft transition-all duration-300 px-3"
+                        className="border-border/50 hover:shadow-soft transition-all duration-300 px-3 min-h-[44px]"
                       >
                         <Camera className="h-4 w-4" />
                       </Button>
@@ -255,7 +245,7 @@ const AddBook = () => {
                   <div className="space-y-2">
                     <Label htmlFor="genre">Genre</Label>
                     <Select value={formData.genre} onValueChange={(value) => setFormData({ ...formData, genre: value })}>
-                      <SelectTrigger>
+                      <SelectTrigger className="min-h-[44px]">
                         <SelectValue placeholder="Select a genre" />
                       </SelectTrigger>
                       <SelectContent>
@@ -266,46 +256,65 @@ const AddBook = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                    {/* Quick Genre Actions */}
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {GENRES.slice(0, 6).map((genre) => (
+                        <Button
+                          key={genre}
+                          type="button"
+                          variant={formData.genre === genre ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setFormData({ ...formData, genre })}
+                          className="text-xs min-h-[36px]"
+                        >
+                          {genre}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="pages">Page Count</Label>
-                    <Input
-                      id="pages"
-                      type="number"
-                      value={formData.pages}
-                      onChange={(e) => setFormData({ ...formData, pages: e.target.value })}
-                      placeholder="Enter page count"
-                      min="1"
-                    />
-                  </div>
+                  <MobileInput
+                    id="pages"
+                    label="Page Count"
+                    type="number"
+                    inputMode="numeric"
+                    value={formData.pages}
+                    onChange={(e) => setFormData({ ...formData, pages: e.target.value })}
+                    placeholder="Enter page count"
+                    min="1"
+                  />
 
-                  <div className="space-y-2">
-                    <Label htmlFor="chapters">Chapter Count</Label>
-                    <Input
-                      id="chapters"
-                      type="number"
-                      value={formData.chapters}
-                      onChange={(e) => setFormData({ ...formData, chapters: e.target.value })}
-                      placeholder="Enter chapter count"
-                      min="1"
-                    />
-                  </div>
+                  <MobileInput
+                    id="chapters"
+                    label="Chapter Count"
+                    type="number"
+                    inputMode="numeric"
+                    value={formData.chapters}
+                    onChange={(e) => setFormData({ ...formData, chapters: e.target.value })}
+                    placeholder="Enter chapter count"
+                    min="1"
+                  />
 
-                  <Button
-                    type="submit"
-                    className="w-full h-12 bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium"
-                    disabled={loading}
-                  >
-                    {loading ? "Adding Book..." : "Save Book"}
-                  </Button>
+                  {/* Sticky save button for mobile */}
+                  <div className={cn(
+                    "pt-4",
+                    isMobile && "fixed bottom-20 left-0 right-0 p-4 bg-background border-t z-40 -mx-4"
+                  )}>
+                    <Button
+                      type="submit"
+                      className="w-full min-h-[44px] bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium"
+                      disabled={loading}
+                    >
+                      {loading ? "Adding Book..." : "Save Book"}
+                    </Button>
+                  </div>
                 </form>
               </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MobileLayout>
   );
 };
 

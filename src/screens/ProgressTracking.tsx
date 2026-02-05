@@ -1,7 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Target, Clock, Zap, TrendingUp } from "lucide-react";
+import { Target, Clock, Zap, TrendingUp } from "lucide-react";
+import { MobileLayout } from "@/components/MobileLayout";
+import { MobileHeader } from "@/components/MobileHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useBookProgress } from "@/hooks/useBookProgress";
 import { ReadingVelocityChart } from "@/components/charts/ReadingVelocityChart";
@@ -47,21 +50,12 @@ const ProgressTracking = () => {
     );
   }
 
+  const isMobile = useIsMobile();
+
   return (
-    <div className="min-h-screen bg-gradient-background p-4">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(`/book/${id}`)}
-            className="border-border/50 hover:shadow-soft transition-all duration-300"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Book
-          </Button>
-        </div>
+    <MobileLayout>
+      {isMobile && <MobileHeader title="Progress Tracking" showBack />}
+      <div className="container max-w-4xl mx-auto px-4 py-4 md:py-8 space-y-6">
 
         {/* Title */}
         <div className="text-center space-y-2 animate-fade-in">
@@ -210,7 +204,7 @@ const ProgressTracking = () => {
           </Card>
         )}
       </div>
-    </div>
+    </MobileLayout>
   );
 };
 
