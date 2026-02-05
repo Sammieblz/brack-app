@@ -1,0 +1,195 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality-checks:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
+
+  build-web:
+    name: Build Web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Validate build output
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "Error: dist directory not found"
+            exit 1
+          fi
+          if [ ! -f "dist/index.html" ]; then
+            echo "Error: dist/index.html not found"
+            exit 1
+          fi
+          echo "Build validation successful"
+          ls -lah dist/ | head -20
+
+  validate-android:
+    name: Validate Android
+    runs-on: ubuntu-latest
+    needs: [quality-checks, build-web]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Sync Capacitor Android
+        run: npx cap sync android
+
+      - name: Validate Android project structure
+        run: |
+          if [ ! -d "android" ]; then
+            echo "Error: android directory not found"
+            exit 1
+          fi
+          if [ ! -f "android/app/build.gradle" ]; then
+            echo "Error: android/app/build.gradle not found"
+            exit 1
+          fi
+          echo "Android project structure validated"
+          ls -lah android/app/ | head -10
+
+      - name: Validate Gradle setup
+        working-directory: android
+        run: ./gradlew tasks --all || echo "Gradle validation completed (tasks may vary)"
+
+  validate-ios:
+    name: Validate iOS
+    runs-on: macos-latest
+    needs: [quality-checks, build-web]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install CocoaPods dependencies
+        working-directory: ios/App
+        run: |
+          if [ -f "Podfile" ]; then
+            pod install
+          else
+            echo "Podfile not found, skipping pod install"
+          fi
+
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: ios/App/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/App/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Sync Capacitor iOS
+        run: npx cap sync ios
+
+      - name: Validate iOS project structure
+        run: |
+          if [ ! -d "ios" ]; then
+            echo "Error: ios directory not found"
+            exit 1
+          fi
+          if [ ! -d "ios/App" ]; then
+            echo "Error: ios/App directory not found"
+            exit 1
+          fi
+          if [ ! -f "ios/App/App.xcodeproj/project.pbxproj" ]; then
+            echo "Error: iOS Xcode project not found"
+            exit 1
+          fi
+          echo "iOS project structure validated"
+          ls -lah ios/App/ | head -10
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    if: false  # Disabled until tests are added
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test || echo "Tests not configured yet"

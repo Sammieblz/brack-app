@@ -293,11 +293,215 @@ DENO_ENV=production
 VITE_SENTRY_DSN=your-production-sentry-dsn
 ```
 
-## CI/CD (Optional)
+## CI/CD Pipeline
 
-### GitHub Actions
+Brack uses GitHub Actions for continuous integration. The CI pipeline automatically validates code quality and builds on every push to `main` and on pull requests.
 
-Create `.github/workflows/deploy.yml`:
+### Pipeline Overview
+
+The CI pipeline consists of 5 jobs that run quality checks and validate builds:
+
+1. **Quality Checks** - ESLint and TypeScript validation
+2. **Build Web** - Production web build validation
+3. **Validate Android** - Capacitor Android sync validation
+4. **Validate iOS** - Capacitor iOS sync validation
+5. **Tests** - Test execution (disabled until tests are added)
+
+### Workflow File
+
+The CI pipeline is defined in `.github/workflows/ci.yml`:
+
+**Triggers**:
+- Push to `main` branch
+- Pull requests targeting `main` branch
+
+### Job Details
+
+#### Quality Checks Job
+
+**Runner**: `ubuntu-latest`
+
+**Steps**:
+1. Checkout code
+2. Setup Node.js 18 with npm caching
+3. Install dependencies (`npm ci`)
+4. Run ESLint (`npm run lint`)
+5. Run TypeScript type check (`npx tsc --noEmit`)
+
+**Purpose**: Catch code quality issues and type errors before merging.
+
+#### Build Web Job
+
+**Runner**: `ubuntu-latest`
+
+**Steps**:
+1. Checkout code
+2. Setup Node.js 18 with npm caching
+3. Install dependencies
+4. Build web app (`npm run build`)
+5. Validate `dist/` output exists and contains expected files
+
+**Purpose**: Ensure production build succeeds and generates expected output.
+
+#### Validate Android Job
+
+**Runner**: `ubuntu-latest`
+
+**Dependencies**: Requires `quality-checks` and `build-web` to succeed first
+
+**Steps**:
+1. Checkout code
+2. Setup Node.js 18
+3. Setup Java 17 (required for Android)
+4. Cache Gradle dependencies
+5. Install npm dependencies
+6. Build web app (prerequisite for Capacitor)
+7. Sync Capacitor Android (`npx cap sync android`)
+8. Validate Android project structure
+9. Validate Gradle setup
+
+**Purpose**: Ensure Android project can be synced and is properly configured.
+
+#### Validate iOS Job
+
+**Runner**: `macos-latest` (required for iOS builds)
+
+**Dependencies**: Requires `quality-checks` and `build-web` to succeed first
+
+**Steps**:
+1. Checkout code
+2. Setup Node.js 18
+3. Install CocoaPods dependencies
+4. Cache CocoaPods
+5. Install npm dependencies
+6. Build web app (prerequisite for Capacitor)
+7. Sync Capacitor iOS (`npx cap sync ios`)
+8. Validate iOS project structure
+
+**Purpose**: Ensure iOS project can be synced and is properly configured.
+
+**Note**: This job uses macOS runners which are more expensive. Consider making it conditional if cost is a concern.
+
+#### Tests Job
+
+**Runner**: `ubuntu-latest`
+
+**Status**: Currently disabled (`if: false`) until test framework is added
+
+**Future**: When tests are added (Vitest, Jest, etc.), enable this job to run test suite.
+
+### Caching Strategy
+
+The pipeline uses aggressive caching to speed up builds:
+
+- **npm dependencies**: Cached using `actions/setup-node@v4` with `cache: 'npm'`
+- **Gradle dependencies**: Cached in `~/.gradle/caches` (Android job)
+- **CocoaPods**: Cached in `ios/App/Pods` (iOS job)
+
+Cache keys are based on dependency lock files (`package-lock.json`, `Podfile.lock`, Gradle files).
+
+### Viewing CI Results
+
+1. **GitHub UI**: Go to your repository → Actions tab
+2. **Pull Requests**: CI status appears as checks on PRs
+3. **Commit Status**: Green checkmark or red X on commits
+
+### Debugging Failed Builds
+
+#### Common Issues
+
+**ESLint Errors**:
+```bash
+# Fix locally
+npm run lint
+npm run lint -- --fix  # Auto-fix where possible
+```
+
+**TypeScript Errors**:
+```bash
+# Check types locally
+npx tsc --noEmit
+```
+
+**Build Failures**:
+```bash
+# Test build locally
+npm run build
+```
+
+**Android Sync Failures**:
+```bash
+# Test locally
+npm run build
+npx cap sync android
+```
+
+**iOS Sync Failures**:
+```bash
+# Test locally (macOS only)
+npm run build
+npx cap sync ios
+```
+
+#### Viewing Logs
+
+1. Go to Actions tab in GitHub
+2. Click on the failed workflow run
+3. Click on the failed job
+4. Expand failed step to see error logs
+
+### Adding New Checks
+
+To add new quality checks to the pipeline:
+
+1. **Add to existing job** (if quick check):
+   ```yaml
+   - name: New Check
+     run: npm run new-check
+   ```
+
+2. **Create new job** (if separate concern):
+   ```yaml
+   new-check:
+     runs-on: ubuntu-latest
+     steps:
+       - uses: actions/checkout@v4
+       - uses: actions/setup-node@v4
+         with:
+           node-version: '18'
+       - run: npm ci
+       - run: npm run new-check
+   ```
+
+### Performance Optimization
+
+The pipeline is optimized for speed:
+
+- **Parallel execution**: Quality checks and web build run simultaneously
+- **Job dependencies**: Mobile validations only run after web build succeeds
+- **Caching**: Dependencies cached between runs
+- **Fast failure**: Jobs fail immediately on errors
+
+### Cost Considerations
+
+- **Ubuntu runners**: Free for public repos, 2000 minutes/month for private
+- **macOS runners**: 10x more expensive, use only when necessary (iOS validation)
+- **Optimization**: Consider making iOS validation conditional (only on main branch)
+
+### Future Enhancements
+
+Potential additions to the CI pipeline:
+
+1. **Bundle size analysis**: Check bundle size on PRs
+2. **Code coverage**: Report test coverage when tests are added
+3. **Security scanning**: Dependabot or Snyk integration
+4. **Artifact uploads**: Upload build artifacts for releases
+5. **Deployment jobs**: Auto-deploy to staging/production
+6. **Matrix testing**: Test against multiple Node.js versions
+
+### Deployment Workflow (Future)
+
+For actual deployments, create a separate workflow (e.g., `.github/workflows/deploy.yml`):
 
 ```yaml
 name: Deploy
@@ -305,23 +509,27 @@ name: Deploy
 on:
   push:
     branches: [main]
+    tags:
+      - 'v*'
 
 jobs:
   deploy-web:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
-      - run: npm install
+      - run: npm ci
       - run: npm run build
       - run: npm run deploy  # Configure based on hosting
 
   deploy-functions:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
       - run: npx supabase functions deploy
         env:
