@@ -154,7 +154,7 @@ const BookListDetail = () => {
           title: "Order updated",
           description: "Books have been reordered",
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         toast({
           variant: "destructive",
           title: "Error",
@@ -183,7 +183,7 @@ const BookListDetail = () => {
         title: "Book removed",
         description: "Book has been removed from the list",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: "destructive",
         title: "Error",

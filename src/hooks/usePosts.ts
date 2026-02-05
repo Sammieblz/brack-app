@@ -70,7 +70,20 @@ export const usePosts = () => {
         likedPostIds = likesData?.map(like => like.post_id) || [];
       }
 
-      const enrichedPosts: Post[] = (postsData || []).map((post: any) => ({
+      const enrichedPosts: Post[] = (postsData || []).map((post: {
+        id: string;
+        user_id: string;
+        book_id: string | null;
+        title: string;
+        content: string;
+        genre: string | null;
+        likes_count: number;
+        comments_count: number;
+        created_at: string;
+        updated_at: string;
+        profiles?: { id: string; display_name: string; avatar_url: string | null };
+        books?: { id: string; title: string; author: string; cover_url: string | null };
+      }) => ({
         id: post.id,
         user_id: post.user_id,
         book_id: post.book_id,
@@ -99,7 +112,7 @@ export const usePosts = () => {
       
       // Cache the result
       dataCache.set(cacheKey, enrichedPosts, CACHE_TTL);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching posts:", error);
       toast.error("Failed to load posts");
     } finally {
@@ -197,7 +210,7 @@ export const usePosts = () => {
       // Invalidate cache and refetch
       dataCache.invalidate('posts_all');
       await fetchPosts();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error toggling like:", error);
       toast.error("Failed to update like");
     }

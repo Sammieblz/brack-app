@@ -121,7 +121,7 @@ export const pushNotificationsService = {
   /**
    * Set up notification listeners
    */
-  setupListeners(onNotificationReceived?: (notification: any) => void): () => void {
+  setupListeners(onNotificationReceived?: (notification: { title?: string; body?: string; data?: Record<string, unknown> }) => void): () => void {
     if (!Capacitor.isNativePlatform()) {
       return () => {}; // Return no-op cleanup
     }

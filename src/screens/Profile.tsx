@@ -120,7 +120,7 @@ const ProfilePage = () => {
           quiet_hours_end: data.quiet_hours_end || null,
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error loading notification preferences:", error);
     } finally {
       setLoadingPrefs(false);
@@ -153,7 +153,7 @@ const ProfilePage = () => {
       } else if (!notificationPrefs.push_enabled && isRegistered) {
         await unregister();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving notification preferences:", error);
       toast({
         variant: "destructive",
@@ -192,12 +192,12 @@ const ProfilePage = () => {
           longitude: data.longitude?.toString() || "",
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading profile:', error);
       toast({
         variant: "destructive",
         title: "Error loading profile",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
       });
     } finally {
       setLoading(false);
@@ -262,11 +262,11 @@ const ProfilePage = () => {
       });
 
       loadProfile();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error uploading avatar:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to upload profile photo",
+        description: error instanceof Error ? error.message : "Failed to upload profile photo",
         variant: "destructive",
       });
     } finally {
@@ -345,7 +345,7 @@ const ProfilePage = () => {
         toast({
           variant: "destructive",
           title: "Location error",
-          description: error.message,
+          description: error instanceof Error ? error.message : "An error occurred",
         });
       }
     );
@@ -381,12 +381,12 @@ const ProfilePage = () => {
       });
       
       loadProfile(); // Reload profile data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating profile:', error);
       toast({
         variant: "destructive",
         title: "Error updating profile",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
       });
     } finally {
       setSaving(false);
@@ -483,7 +483,7 @@ const ProfilePage = () => {
           </CardHeader>
           <CardContent className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
             <Avatar className="h-20 w-20 shrink-0">
-              <AvatarImage src={previewUrl || profile?.avatar_url || (user?.user_metadata as any)?.avatar_url} />
+              <AvatarImage src={previewUrl || profile?.avatar_url || (user?.user_metadata as { avatar_url?: string } | undefined)?.avatar_url} />
               <AvatarFallback className="text-lg">{initials}</AvatarFallback>
             </Avatar>
             <div className="flex-1 w-full">
@@ -954,8 +954,8 @@ const ProfilePage = () => {
                       currentStreak: streakData.currentStreak,
                       username: profile?.display_name || undefined,
                     });
-                  } catch (error: any) {
-                    if (!error.message?.includes('cancelled')) {
+                  } catch (error: unknown) {
+                    if (error instanceof Error && !error.message?.includes('cancelled')) {
                       toast({
                         variant: "destructive",
                         title: "Error",

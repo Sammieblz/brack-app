@@ -74,11 +74,11 @@ export const ProgressLogger = ({
 
       setPhotoUrl(urlData.publicUrl);
       setPhotoPreview(image.dataUrl);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to upload photo",
+        description: error instanceof Error ? error.message : "Failed to upload photo",
       });
     } finally {
       setUploadingPhoto(false);
@@ -138,11 +138,11 @@ export const ProgressLogger = ({
       
       onOpenChange(false);
       onSuccess?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error logging progress:', error);
       toast({
         title: "Failed to log progress",
-        description: error.message || "Please try again",
+        description: error instanceof Error ? error.message : "Please try again",
         variant: "destructive",
       });
     } finally {

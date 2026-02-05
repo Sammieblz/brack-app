@@ -39,7 +39,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
       return;
     }
 
-    const goalData: any = {
+    const goalData: Record<string, unknown> = {
       goal_type: goalType,
       period_type: periodType,
       start_date: startDate.toISOString().split('T')[0],
@@ -121,7 +121,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Goal Type</Label>
-                <Select value={goalType} onValueChange={(v: any) => setGoalType(v)}>
+                <Select value={goalType} onValueChange={(v: string) => setGoalType(v)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -135,7 +135,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
 
               <div className="space-y-2">
                 <Label>Period</Label>
-                <Select value={periodType} onValueChange={(v: any) => setPeriodType(v)}>
+                <Select value={periodType} onValueChange={(v: string) => setPeriodType(v)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

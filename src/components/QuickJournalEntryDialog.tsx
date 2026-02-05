@@ -73,11 +73,11 @@ export const QuickJournalEntryDialog = ({
 
       setPhotoUrl(urlData.publicUrl);
       setPhotoPreview(image.dataUrl);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to upload photo",
+        description: error instanceof Error ? error.message : "Failed to upload photo",
       });
     } finally {
       setUploadingPhoto(false);

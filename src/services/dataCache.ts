@@ -64,7 +64,7 @@ class DataCacheService {
     }
 
     try {
-      const cached: CachedData<any> = JSON.parse(stored);
+      const cached: CachedData<unknown> = JSON.parse(stored);
       return Date.now() <= cached.expiresAt;
     } catch {
       return false;
@@ -94,7 +94,7 @@ class DataCacheService {
         try {
           const stored = localStorage.getItem(key);
           if (stored) {
-            const cached: CachedData<any> = JSON.parse(stored);
+            const cached: CachedData<unknown> = JSON.parse(stored);
             if (Date.now() > cached.expiresAt) {
               localStorage.removeItem(key);
               cleaned++;
@@ -123,7 +123,7 @@ class DataCacheService {
         const stored = localStorage.getItem(key);
         if (stored) {
           totalSize += stored.length;
-          const cached: CachedData<any> = JSON.parse(stored);
+          const cached: CachedData<unknown> = JSON.parse(stored);
           if (Date.now() > cached.expiresAt) {
             expiredCount++;
           }

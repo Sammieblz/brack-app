@@ -28,6 +28,7 @@ export const BookSearch = ({ onSelectBook, onQuickAdd, initialQuery }: BookSearc
       setFromCoverScan(true);
       handleSearch(undefined, initialQuery);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialQuery]);
 
   const handleSearch = async (e?: React.FormEvent, queryOverride?: string) => {
@@ -61,11 +62,11 @@ export const BookSearch = ({ onSelectBook, onQuickAdd, initialQuery }: BookSearc
           });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Search error:", error);
       toast({
         title: "Search failed",
-        description: error.message || "Unable to search books. Please try again.",
+        description: error instanceof Error ? error.message : "Unable to search books. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -83,10 +84,10 @@ export const BookSearch = ({ onSelectBook, onQuickAdd, initialQuery }: BookSearc
         title: "Book added!",
         description: `${book.title} has been added to your library`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Failed to add book",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Failed to add book',
         variant: "destructive",
       });
     } finally {

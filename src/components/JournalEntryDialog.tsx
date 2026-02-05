@@ -106,11 +106,11 @@ export const JournalEntryDialog = ({
 
       setPhotoUrl(urlData.publicUrl);
       setPhotoPreview(image.dataUrl);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to upload photo",
+        description: error instanceof Error ? error.message : "Failed to upload photo",
       });
     } finally {
       setUploadingPhoto(false);
@@ -160,7 +160,7 @@ export const JournalEntryDialog = ({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="entry-type">Entry Type</Label>
-            <Select value={entryType} onValueChange={(value: any) => setEntryType(value)}>
+            <Select value={entryType} onValueChange={(value: string) => setEntryType(value)}>
               <SelectTrigger id="entry-type">
                 <SelectValue />
               </SelectTrigger>

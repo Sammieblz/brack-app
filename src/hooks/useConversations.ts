@@ -80,7 +80,7 @@ export const useConversations = () => {
       );
 
       setConversations(enrichedConvs);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching conversations:", error);
       toast.error("Failed to load conversations");
     } finally {
@@ -154,7 +154,7 @@ export const useConversations = () => {
 
       await fetchConversations();
       return newConv.id;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating conversation:", error);
       toast.error("Failed to start conversation");
       return null;

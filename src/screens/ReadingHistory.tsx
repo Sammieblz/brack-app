@@ -125,8 +125,8 @@ export default function ReadingHistory() {
         console.error('Error fetching journals:', journalError);
       }
 
-      setProgressLogs((logsData as any) || []);
-      setJournalEntries((journalData as any) || []);
+      setProgressLogs((logsData as Array<{ id: string; page_number: number }>) || []);
+      setJournalEntries((journalData as Array<{ id: string; content: string }>) || []);
     } catch (error) {
       console.error('Error fetching history:', error);
     } finally {

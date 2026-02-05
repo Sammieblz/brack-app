@@ -88,19 +88,19 @@ export const useCoverScanner = (): UseCoverScannerReturn => {
       setIsScanning(false);
       
       return bookInfo;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Cover scan error:', err);
-      setError(err.message || 'Failed to scan book cover');
+      setError(err instanceof Error ? err.message : 'Failed to scan book cover');
       setIsScanning(false);
       setProgress(0);
       triggerHaptic('error');
       
       // Provide user-friendly error messages
-      if (err.message?.includes('permission')) {
+      if (err instanceof Error && err.message?.includes('permission')) {
         toast.error('Camera permission denied. Please enable camera access in settings.');
-      } else if (err.message?.includes('extract book information')) {
+      } else if (err instanceof Error && err.message?.includes('extract book information')) {
         toast.error('Could not read text from cover. Try again with better lighting or enter manually.');
-      } else if (err.message?.includes('No image data')) {
+      } else if (err instanceof Error && err.message?.includes('No image data')) {
         toast.error('No image captured. Please try again.');
       } else {
         toast.error('Failed to scan cover. Please try again or enter manually.');

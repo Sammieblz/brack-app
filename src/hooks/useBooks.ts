@@ -68,8 +68,8 @@ export const useBooks = (userId?: string) => {
         setBooks(prev => [...prev, ...newBooks]);
         setOffset(prev => prev + PAGE_SIZE);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch books');
     } finally {
       setLoading(false);
       setLoadingMore(false);

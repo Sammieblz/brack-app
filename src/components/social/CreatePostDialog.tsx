@@ -72,7 +72,7 @@ export const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
       setGenre("");
       setOpen(false);
       onPostCreated?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating post:", error);
       triggerHaptic('error');
       toast.error("Failed to create post");

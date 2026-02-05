@@ -70,7 +70,7 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
           longest_genre: data.longest_genre || "",
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading reading habits:', error);
     } finally {
       setLoading(false);
@@ -103,12 +103,12 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
       
       setIsEditing(false);
       loadHabits();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating reading habits:', error);
       toast({
         variant: "destructive",
         title: "Error updating reading habits",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Failed to update reading habits",
       });
     } finally {
       setSaving(false);

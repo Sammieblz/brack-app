@@ -130,21 +130,21 @@ export const useImagePicker = () => {
           document.body.removeChild(input);
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error picking image:', error);
       
       // Handle permission denied
-      if (error.message?.includes('permission') || error.message?.includes('denied')) {
+      if (error instanceof Error && (error.message?.includes('permission') || error.message?.includes('denied'))) {
         toast({
           variant: 'destructive',
           title: 'Permission denied',
           description: 'Please grant camera/photo library access in settings',
         });
-      } else if (error.message !== 'User cancelled') {
+      } else if (error instanceof Error && error.message !== 'User cancelled') {
         toast({
           variant: 'destructive',
           title: 'Error',
-          description: error.message || 'Failed to pick image',
+          description: error instanceof Error ? error.message : 'Failed to pick image',
         });
       }
       

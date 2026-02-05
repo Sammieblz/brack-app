@@ -12,7 +12,7 @@ export interface FeedActivity {
   review_id?: string;
   list_id?: string;
   badge_id?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   visibility: string;
   created_at: string;
   user?: {

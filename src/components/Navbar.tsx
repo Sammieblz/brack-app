@@ -46,7 +46,7 @@ export const Navbar = () => {
       triggerHaptic('success');
       toast.success("Signed out successfully");
       navigate("/");
-    } catch (error: any) {
+    } catch (error: unknown) {
       triggerHaptic('error');
       toast.error("Error signing out");
     }

@@ -41,14 +41,14 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
 
       if (error) throw error;
 
-      const quotesWithBooks = (data || []).map((entry: any) => ({
+      const quotesWithBooks = (data || []).map((entry: { books?: { title?: string; author?: string } }) => ({
         ...entry,
         book_title: entry.books?.title,
         book_author: entry.books?.author,
       }));
 
       setQuotes(quotesWithBooks);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching quotes:', error);
       toast({
         variant: "destructive",

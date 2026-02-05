@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
     // Create lookup maps for efficient access
     // Prefer reading_habits.genres over books.genre for better performance
     const genresByUser = new Map<string, Set<string>>();
-    const readingHabitsByUser = new Map<string, any>();
+    const readingHabitsByUser = new Map<string, { genres?: string[] }>();
     
     allReadingHabits?.forEach(habit => {
       if (habit.user_id) {

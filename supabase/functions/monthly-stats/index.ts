@@ -58,7 +58,12 @@ Deno.serve(async (req) => {
       .gte('created_at', startDate.toISOString());
 
     // Group by month
-    const monthlyData = new Map<string, any>();
+    const monthlyData = new Map<string, {
+      month: string;
+      books_read: number;
+      pages_read: number;
+      reading_time_minutes: number;
+    }>();
 
     // Initialize months
     for (let i = 0; i < monthsBack; i++) {

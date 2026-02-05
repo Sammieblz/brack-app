@@ -36,9 +36,9 @@ export const useStreakHistory = (userId?: string) => {
       if (fetchError) throw fetchError;
 
       setMilestones(data || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching streak history:", err);
-      setError(err.message || "Failed to load streak history");
+      setError(err instanceof Error ? err.message : "Failed to load streak history");
       toast({
         variant: "destructive",
         title: "Error",

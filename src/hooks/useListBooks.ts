@@ -26,8 +26,8 @@ export const useListBooks = (listId?: string) => {
       
       const booksData = data?.map(item => item.books).filter(Boolean) as Book[];
       setBooks(booksData || []);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load list books");
     } finally {
       setLoading(false);
     }

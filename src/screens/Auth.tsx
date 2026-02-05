@@ -123,11 +123,11 @@ const Auth = () => {
         
         if (error) throw error;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: "destructive",
         title: "Authentication failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Authentication failed",
       });
     } finally {
       setLoading(false);
@@ -146,11 +146,11 @@ const Auth = () => {
       });
       
       if (error) throw error;
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: "destructive",
         title: "Authentication failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Authentication failed",
       });
       setLoading(false);
     }

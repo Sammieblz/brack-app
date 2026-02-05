@@ -141,7 +141,7 @@ export const useBadges = (userId?: string) => {
 
       setBadges(allBadgesRes.data || []);
       setEarnedBadges(earnedBadgesRes.data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching badges:', error);
     } finally {
       setLoading(false);

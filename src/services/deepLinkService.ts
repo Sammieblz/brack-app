@@ -9,14 +9,14 @@ export interface DeepLinkParams {
 }
 
 class DeepLinkService {
-  private navigateCallback: ((path: string, options?: { state?: any }) => void) | null = null;
+  private navigateCallback: ((path: string, options?: { state?: unknown }) => void) | null = null;
   private pendingLink: string | null = null;
 
   /**
    * Initialize the deep link service
    * Should be called once when the app starts
    */
-  async initialize(navigate: (path: string, options?: { state?: any }) => void) {
+  async initialize(navigate: (path: string, options?: { state?: unknown }) => void) {
     this.navigateCallback = navigate;
 
     // Handle pending link if app was opened via deep link
@@ -62,7 +62,7 @@ class DeepLinkService {
   parseDeepLink(url: string): DeepLinkParams | null {
     try {
       // Remove protocol and domain
-      let path = url.replace(/^.*?:\/\//, '').replace(/^[^\/]+/, '');
+      const path = url.replace(/^.*?:\/\//, '').replace(/^[^/]+/, '');
       
       // Handle different URL formats
       // brack://book/123
@@ -126,7 +126,7 @@ class DeepLinkService {
     }
 
     let route: string;
-    let navigationState: any = undefined;
+    let navigationState: unknown = undefined;
 
     switch (params.type) {
       case 'book':

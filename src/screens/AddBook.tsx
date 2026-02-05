@@ -16,7 +16,7 @@ import type { Book } from "@/types";
 import type { GoogleBookResult } from "@/types/googleBooks";
 
 const AddBook = () => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("search");
   const [searchParams] = useSearchParams();
@@ -96,9 +96,9 @@ const AddBook = () => {
 
       toast.success("Book added successfully!");
       navigate("/dashboard");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error adding book:', error);
-      toast.error(error.message || "Failed to add book");
+      toast.error(error instanceof Error ? error.message : "Failed to add book");
     } finally {
       setLoading(false);
     }

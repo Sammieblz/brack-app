@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { App } from "@capacitor/app";
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, PluginListenerHandle } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -244,7 +244,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
-    let listener: any = null;
+    let listener: PluginListenerHandle | null = null;
 
     const setupListener = async () => {
       listener = await LocalNotifications.addListener(
@@ -376,7 +376,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
           detail: sessionData
         }));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving session:', error);
       toast.error("Failed to save reading session");
     }

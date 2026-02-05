@@ -94,9 +94,9 @@ export const useUserProfile = (userId: string | null) => {
             badges: badges || 0,
           });
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error fetching user profile:", err);
-        setError(err.message || "Failed to load profile");
+        setError(err instanceof Error ? err.message : "Failed to load profile");
       } finally {
         setLoading(false);
       }

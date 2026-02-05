@@ -26,6 +26,7 @@ export const AddBooksToListDialog = ({ listId, userId, onBooksAdded }: AddBooksT
     if (open) {
       loadExistingBooks();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, listId]);
 
   const loadExistingBooks = async () => {
@@ -79,11 +80,11 @@ export const AddBooksToListDialog = ({ listId, userId, onBooksAdded }: AddBooksT
       setSelectedBooks(new Set());
       setOpen(false);
       onBooksAdded?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to add books",
+        description: error instanceof Error ? error.message : "Failed to add books",
       });
     } finally {
       setLoading(false);

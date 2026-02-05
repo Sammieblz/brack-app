@@ -69,8 +69,8 @@ export const useBookLists = (userId?: string) => {
         setLists(prev => [...prev, ...listsWithCount]);
         setOffset(prev => prev + PAGE_SIZE);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -100,8 +100,8 @@ export const useBookLists = (userId?: string) => {
       if (error) throw error;
       await fetchLists(true);
       return data;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     }
   };
@@ -115,8 +115,8 @@ export const useBookLists = (userId?: string) => {
       
       if (error) throw error;
       await fetchLists(true);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
 
@@ -129,8 +129,8 @@ export const useBookLists = (userId?: string) => {
       
       if (error) throw error;
       await fetchLists(true);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
 
@@ -152,8 +152,8 @@ export const useBookLists = (userId?: string) => {
       
       if (error) throw error;
       await fetchLists(true);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
 
@@ -167,8 +167,8 @@ export const useBookLists = (userId?: string) => {
       
       if (error) throw error;
       await fetchLists(true);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
 
@@ -182,8 +182,8 @@ export const useBookLists = (userId?: string) => {
           .eq('book_id', item.book_id);
       }
       await fetchLists(true);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
 
@@ -240,8 +240,8 @@ export const useBookLists = (userId?: string) => {
       
       await fetchLists(true);
       return newList;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       return null;
     }
   };

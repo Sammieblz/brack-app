@@ -1,16 +1,16 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export type QueueAction = 
-  | { type: 'create_book'; data: any }
-  | { type: 'update_book'; id: string; data: any }
+  | { type: 'create_book'; data: Record<string, unknown> }
+  | { type: 'update_book'; id: string; data: Record<string, unknown> }
   | { type: 'delete_book'; id: string }
-  | { type: 'create_review'; data: any }
-  | { type: 'update_review'; id: string; data: any }
-  | { type: 'create_post'; data: any }
-  | { type: 'update_post'; id: string; data: any }
-  | { type: 'create_message'; data: any }
-  | { type: 'create_journal_entry'; data: any }
-  | { type: 'update_journal_entry'; id: string; data: any }
+  | { type: 'create_review'; data: Record<string, unknown> }
+  | { type: 'update_review'; id: string; data: Record<string, unknown> }
+  | { type: 'create_post'; data: Record<string, unknown> }
+  | { type: 'update_post'; id: string; data: Record<string, unknown> }
+  | { type: 'create_message'; data: Record<string, unknown> }
+  | { type: 'create_journal_entry'; data: Record<string, unknown> }
+  | { type: 'update_journal_entry'; id: string; data: Record<string, unknown> }
   | { type: 'delete_journal_entry'; id: string };
 
 interface QueuedAction {
@@ -107,9 +107,9 @@ class OfflineQueueService {
           // Remove successful action from queue
           this.queue = this.queue.filter(a => a.id !== queuedAction.id);
           this.saveQueue();
-        } catch (error: any) {
+        } catch (error: unknown) {
           queuedAction.retries++;
-          queuedAction.lastError = error.message;
+          queuedAction.lastError = error instanceof Error ? error.message : String(error);
 
           if (queuedAction.retries >= MAX_RETRIES) {
             // Remove action after max retries
@@ -136,91 +136,104 @@ class OfflineQueueService {
 
   private async executeAction(action: QueueAction): Promise<void> {
     switch (action.type) {
-      case 'create_book':
+      case 'create_book': {
         const { error: createBookError } = await supabase
           .from('books')
           .insert(action.data);
         if (createBookError) throw createBookError;
         break;
+      }
 
-      case 'update_book':
+      case 'update_book': {
         const { error: updateBookError } = await supabase
           .from('books')
           .update(action.data)
           .eq('id', action.id);
         if (updateBookError) throw updateBookError;
         break;
+      }
 
-      case 'delete_book':
+      case 'delete_book': {
         const { error: deleteBookError } = await supabase
           .from('books')
           .delete()
           .eq('id', action.id);
         if (deleteBookError) throw deleteBookError;
         break;
+      }
 
-      case 'create_review':
+      case 'create_review': {
         const { error: createReviewError } = await supabase
           .from('book_reviews')
           .insert(action.data);
         if (createReviewError) throw createReviewError;
         break;
+      }
 
-      case 'update_review':
+      case 'update_review': {
         const { error: updateReviewError } = await supabase
           .from('book_reviews')
           .update(action.data)
           .eq('id', action.id);
         if (updateReviewError) throw updateReviewError;
         break;
+      }
 
-      case 'create_post':
+      case 'create_post': {
         const { error: createPostError } = await supabase
           .from('posts')
           .insert(action.data);
         if (createPostError) throw createPostError;
         break;
+      }
 
-      case 'update_post':
+      case 'update_post': {
         const { error: updatePostError } = await supabase
           .from('posts')
           .update(action.data)
           .eq('id', action.id);
         if (updatePostError) throw updatePostError;
         break;
+      }
 
-      case 'create_message':
+      case 'create_message': {
         const { error: createMessageError } = await supabase
           .from('messages')
           .insert(action.data);
         if (createMessageError) throw createMessageError;
         break;
+      }
 
-      case 'create_journal_entry':
+      case 'create_journal_entry': {
         const { error: createJournalError } = await supabase
           .from('journal_entries')
           .insert(action.data);
         if (createJournalError) throw createJournalError;
         break;
+      }
 
-      case 'update_journal_entry':
+      case 'update_journal_entry': {
         const { error: updateJournalError } = await supabase
           .from('journal_entries')
           .update(action.data)
           .eq('id', action.id);
         if (updateJournalError) throw updateJournalError;
         break;
+      }
 
-      case 'delete_journal_entry':
+      case 'delete_journal_entry': {
         const { error: deleteJournalError } = await supabase
           .from('journal_entries')
           .delete()
           .eq('id', action.id);
         if (deleteJournalError) throw deleteJournalError;
         break;
+      }
 
-      default:
-        throw new Error(`Unknown action type: ${(action as any).type}`);
+      default: {
+        const _exhaustive: never = action;
+        throw new Error(`Unknown action type: ${_exhaustive}`);
+      }
     }
   }
 

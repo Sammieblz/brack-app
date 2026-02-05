@@ -57,7 +57,7 @@ export const useClubDiscussions = (clubId: string) => {
       );
 
       setDiscussions(enrichedDiscussions);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching discussions:', error);
       toast.error('Failed to load discussions');
     } finally {
@@ -113,7 +113,7 @@ export const useClubDiscussions = (clubId: string) => {
 
       toast.success(data.parent_id ? 'Reply posted!' : 'Discussion created!');
       await fetchDiscussions();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error creating discussion:', error);
       toast.error('Failed to post');
       throw error;
@@ -131,7 +131,7 @@ export const useClubDiscussions = (clubId: string) => {
 
       toast.success('Discussion deleted');
       await fetchDiscussions();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting discussion:', error);
       toast.error('Failed to delete');
       throw error;

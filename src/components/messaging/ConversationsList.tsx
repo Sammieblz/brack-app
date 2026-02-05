@@ -92,85 +92,89 @@ export const ConversationsList = ({
     }
   };
 
-  return (
-    <div className="space-y-2">
-      {conversations.map((conv) => {
-        const swipeHandlers = useSwipeable({
-          onSwipedLeft: () => {
-            triggerHaptic('light');
-            setSwipedId(conv.id);
-          },
-          onSwipedRight: () => {
-            triggerHaptic('light');
-            setSwipedId(null);
-          },
-          trackMouse: false,
-        });
+  const ConversationItem = ({ conv }: { conv: Conversation }) => {
+    const swipeHandlers = useSwipeable({
+      onSwipedLeft: () => {
+        triggerHaptic('light');
+        setSwipedId(conv.id);
+      },
+      onSwipedRight: () => {
+        triggerHaptic('light');
+        setSwipedId(null);
+      },
+      trackMouse: false,
+    });
 
-        const isSwiped = swipedId === conv.id;
+    const isSwiped = swipedId === conv.id;
 
-        return (
-          <div key={conv.id} {...swipeHandlers} className="relative">
-            <Card
-              className={`p-4 cursor-pointer transition-all hover:shadow-md ${
-                selectedConversationId === conv.id ? "bg-muted border-primary" : ""
-              } ${isSwiped ? 'translate-x-[-120px]' : ''} transition-transform duration-300`}
-              onClick={() => {
-                triggerHaptic('selection');
-                onSelectConversation(conv.id);
-              }}
-            >
-              <div className="flex items-start gap-3">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={conv.other_user?.avatar_url} />
-                  <AvatarFallback>{getInitials(conv.other_user?.display_name)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="font-semibold truncate">
-                      {conv.other_user?.display_name || "Unknown User"}
-                    </p>
-                    {conv.last_message && (
-                      <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
-                        {formatDate(conv.last_message.created_at)}
-                      </span>
-                    )}
-                  </div>
-                  {conv.last_message && (
-                    <p className="text-sm text-muted-foreground truncate">
-                      {conv.last_message.sender_id === currentUserId && "You: "}
-                      {sanitizeText(conv.last_message.content)}
-                    </p>
-                  )}
-                </div>
-                {conv.unread_count && conv.unread_count > 0 && (
-                  <Badge variant="default" className="ml-2">
-                    {conv.unread_count}
-                  </Badge>
+    return (
+      <div {...swipeHandlers} className="relative">
+        <Card
+          className={`p-4 cursor-pointer transition-all hover:shadow-md ${
+            selectedConversationId === conv.id ? "bg-muted border-primary" : ""
+          } ${isSwiped ? 'translate-x-[-120px]' : ''} transition-transform duration-300`}
+          onClick={() => {
+            triggerHaptic('selection');
+            onSelectConversation(conv.id);
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <Avatar className="h-12 w-12">
+              <AvatarImage src={conv.other_user?.avatar_url} />
+              <AvatarFallback>{getInitials(conv.other_user?.display_name)}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1">
+                <p className="font-semibold truncate">
+                  {conv.other_user?.display_name || "Unknown User"}
+                </p>
+                {conv.last_message && (
+                  <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                    {formatDate(conv.last_message.created_at)}
+                  </span>
                 )}
               </div>
-            </Card>
-            
-            {/* Swipe Actions */}
-            {isSwiped && (
-              <div className="absolute right-0 top-0 h-full flex items-center gap-2 pr-2">
-                <button
-                  onClick={(e) => handleMarkRead(conv.id, e)}
-                  className="bg-blue-500 text-white p-3 rounded-lg"
-                >
-                  {conv.unread_count ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
-                </button>
-                <button
-                  onClick={(e) => handleDelete(conv.id, e)}
-                  className="bg-destructive text-destructive-foreground p-3 rounded-lg"
-                >
-                  <Trash2 className="h-5 w-5" />
-                </button>
-              </div>
+              {conv.last_message && (
+                <p className="text-sm text-muted-foreground truncate">
+                  {conv.last_message.sender_id === currentUserId && "You: "}
+                  {sanitizeText(conv.last_message.content)}
+                </p>
+              )}
+            </div>
+            {conv.unread_count && conv.unread_count > 0 && (
+              <Badge variant="default" className="ml-2">
+                {conv.unread_count}
+              </Badge>
             )}
           </div>
-        );
-      })}
+        </Card>
+        
+        {/* Swipe Actions */}
+        {isSwiped && (
+          <div className="absolute right-0 top-0 h-full flex items-center gap-2 pr-2">
+            <button
+              onClick={(e) => handleMarkRead(conv.id, e)}
+              className="bg-blue-500 text-white p-3 rounded-lg"
+            >
+              {conv.unread_count ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+            </button>
+            <button
+              onClick={(e) => handleDelete(conv.id, e)}
+              className="bg-destructive text-destructive-foreground p-3 rounded-lg"
+            >
+              <Trash2 className="h-5 w-5" />
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-2">
+      {conversations.map((conv) => (
+        <ConversationItem key={conv.id} conv={conv} />
+      ))}
     </div>
   );
 };

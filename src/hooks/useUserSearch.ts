@@ -51,9 +51,9 @@ export const useUserSearch = (searchQuery: string = "", maxDistance: number = 50
         if (functionError) throw functionError;
 
         setResults(data);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error discovering users:", err);
-        setError(err.message || "Failed to discover users");
+        setError(err instanceof Error ? err.message : "Failed to discover users");
       } finally {
         setLoading(false);
       }

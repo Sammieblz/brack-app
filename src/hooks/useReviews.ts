@@ -87,7 +87,7 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
         const hasReview = data?.some((r) => r.user_id === currentUser.id);
         setUserHasReviewed(!!hasReview);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching reviews:", error);
       toast({
         title: "Error",
@@ -120,7 +120,7 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
       if (error) throw error;
 
       setReview(data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching review:", error);
     } finally {
       setLoading(false);
@@ -146,7 +146,7 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
       if (error) throw error;
 
       setComments(data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching comments:", error);
     }
   };
@@ -180,14 +180,14 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
 
       fetchReviews();
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating review:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create review",
+        description: error instanceof Error ? error.message : "Failed to create review",
         variant: "destructive",
       });
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
     }
   };
 
@@ -207,14 +207,14 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
 
       fetchReviews();
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating review:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to update review",
+        description: error instanceof Error ? error.message : "Failed to update review",
         variant: "destructive",
       });
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
     }
   };
 
@@ -234,14 +234,14 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
 
       fetchReviews();
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting review:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to delete review",
+        description: error instanceof Error ? error.message : "Failed to delete review",
         variant: "destructive",
       });
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
     }
   };
 
@@ -258,7 +258,7 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
       if (error) throw error;
 
       fetchReviews();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error liking review:", error);
       toast({
         title: "Error",
@@ -282,7 +282,7 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
       if (error) throw error;
 
       fetchReviews();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error unliking review:", error);
       toast({
         title: "Error",
@@ -331,7 +331,7 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
       });
 
       fetchComments();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error adding comment:", error);
       toast({
         title: "Error",
@@ -356,7 +356,7 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
       });
 
       fetchComments();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error deleting comment:", error);
       toast({
         title: "Error",

@@ -17,6 +17,7 @@ export const useHapticFeedback = () => {
   const isNative = Capacitor.isNativePlatform();
 
   const canVibrateWeb = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const activation = (navigator as any).userActivation;
     if (activation && activation.hasBeenActive === false) return false;
     return typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';

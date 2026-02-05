@@ -40,7 +40,7 @@ export interface Book {
   description: string | null;
   status: string;
   tags: string[] | null;
-  metadata: any;
+  metadata: Record<string, unknown> | null;
   current_page: number | null;
   date_started: string | null;
   date_finished: string | null;
