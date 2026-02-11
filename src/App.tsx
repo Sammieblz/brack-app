@@ -6,6 +6,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { PageTransition } from "@/components/animations/PageTransition";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TimerProvider } from "@/contexts/TimerContext";
 import { FloatingTimerWidget } from "@/components/FloatingTimerWidget";
@@ -16,6 +17,7 @@ import { syncService } from "@/services/syncService";
 import { deepLinkService } from "@/services/deepLinkService";
 import { DeepLinkHandler } from "@/components/DeepLinkHandler";
 import LoadingSpinner from "@/components/LoadingSpinner";
+// Critical path screens - keep synchronous for instant loading
 import Index from "./screens/Index";
 import Auth from "./screens/Auth";
 import Welcome from "./screens/Welcome";
@@ -30,20 +32,23 @@ import ScanBarcode from "./screens/ScanBarcode";
 import ScanCover from "./screens/ScanCover";
 import Profile from "./screens/Profile";
 import Settings from "./screens/Settings";
+import Achievements from "./screens/Achievements";
 import BookLists from "./screens/BookLists";
 import BookListDetail from "./screens/BookListDetail";
 import GoalsManagement from "./screens/GoalsManagement";
-import { ProfileProvider } from "./contexts/ProfileContext";
-import { ErrorBoundary } from "./components/ErrorBoundary";
 import UserProfile from "./screens/UserProfile";
 import Reviews from "./screens/Reviews";
 import Feed from "./screens/Feed";
 import Readers from "./screens/Readers";
 import NotFound from "./screens/NotFound";
+
+import { ProfileProvider } from "./contexts/ProfileContext";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useNetworkStatus } from "./hooks/useNetworkStatus";
 import { ConfirmDialogProvider } from "./contexts/ConfirmDialogContext";
 import { initSentry } from "./lib/sentry";
 import { usePushNotifications } from "./hooks/usePushNotifications";
+import { LiveRegion } from "./components/ui/live-region";
 
 // Initialize Sentry error tracking
 initSentry();
@@ -100,44 +105,48 @@ const App = () => {
                 <TooltipProvider>
                   <Toaster />
                   <Sonner />
+                  <LiveRegion level="polite" />
                   <Suspense fallback={<div className="p-10 flex justify-center"><LoadingSpinner size="lg" /></div>}>
                     <BrowserRouter>
                       <DeepLinkHandler />
                       <SwipeBackHandler>
-                        <Routes>
-                          <Route path="/" element={<Dashboard />} />
-                          <Route path="/auth" element={<Auth />} />
-                          <Route path="/welcome" element={<Welcome />} />
-                          <Route path="/questionnaire" element={<Questionnaire />} />
-                          <Route path="/goals" element={<Goals />} />
-                          <Route path="/dashboard" element={<Dashboard />} />
-                          <Route path="/my-books" element={<MyBooks />} />
-                          <Route path="/books" element={<MyBooks />} />
-                          <Route path="/analytics" element={<Analytics />} />
-                          <Route path="/add-book" element={<AddBook />} />
-                          <Route path="/book/:id" element={<BookDetail />} />
-                          <Route path="/book/:id/progress" element={<ProgressTracking />} />
-                          <Route path="/edit-book/:id" element={<EditBook />} />
-                          <Route path="/scan-barcode" element={<ScanBarcode />} />
-                          <Route path="/scan" element={<ScanBarcode />} />
-                          <Route path="/scan-cover" element={<ScanCover />} />
-                          <Route path="/history" element={<ReadingHistory />} />
-                          <Route path="/profile" element={<Profile />} />
-                          <Route path="/settings" element={<Settings />} />
-                          <Route path="/book-lists" element={<BookLists />} />
-                          <Route path="/lists" element={<BookLists />} />
-                          <Route path="/lists/:listId" element={<BookListDetail />} />
-                          <Route path="/goals-management" element={<GoalsManagement />} />
-                          <Route path="/users/:userId" element={<UserProfile />} />
-                          <Route path="/reviews" element={<Reviews />} />
-                          <Route path="/feed" element={<Feed />} />
-                          <Route path="/clubs" element={<BookClubs />} />
-                          <Route path="/clubs/:clubId" element={<BookClubDetail />} />
-                          <Route path="/readers" element={<Readers />} />
-                          <Route path="/messages" element={<Messages />} />
-                          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                          <Route path="*" element={<NotFound />} />
-                        </Routes>
+                        <PageTransition>
+                          <Routes>
+                            <Route path="/" element={<Index />} />
+                            <Route path="/auth" element={<Auth />} />
+                            <Route path="/welcome" element={<Welcome />} />
+                            <Route path="/questionnaire" element={<Questionnaire />} />
+                            <Route path="/goals" element={<Goals />} />
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/my-books" element={<MyBooks />} />
+                            <Route path="/books" element={<MyBooks />} />
+                            <Route path="/analytics" element={<Analytics />} />
+                            <Route path="/add-book" element={<AddBook />} />
+                            <Route path="/book/:id" element={<BookDetail />} />
+                            <Route path="/book/:id/progress" element={<ProgressTracking />} />
+                            <Route path="/edit-book/:id" element={<EditBook />} />
+                            <Route path="/scan-barcode" element={<ScanBarcode />} />
+                            <Route path="/scan" element={<ScanBarcode />} />
+                            <Route path="/scan-cover" element={<ScanCover />} />
+                            <Route path="/history" element={<ReadingHistory />} />
+                            <Route path="/profile" element={<Profile />} />
+                            <Route path="/settings" element={<Settings />} />
+                            <Route path="/achievements" element={<Achievements />} />
+                            <Route path="/book-lists" element={<BookLists />} />
+                            <Route path="/lists" element={<BookLists />} />
+                            <Route path="/lists/:listId" element={<BookListDetail />} />
+                            <Route path="/goals-management" element={<GoalsManagement />} />
+                            <Route path="/users/:userId" element={<UserProfile />} />
+                            <Route path="/reviews" element={<Reviews />} />
+                            <Route path="/feed" element={<Feed />} />
+                            <Route path="/clubs" element={<BookClubs />} />
+                            <Route path="/clubs/:clubId" element={<BookClubDetail />} />
+                            <Route path="/readers" element={<Readers />} />
+                            <Route path="/messages" element={<Messages />} />
+                            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                            <Route path="*" element={<NotFound />} />
+                          </Routes>
+                        </PageTransition>
                         <FloatingTimerWidget />
                         <JournalPromptHandler />
                         <OfflineIndicator />

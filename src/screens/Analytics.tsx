@@ -3,6 +3,17 @@ import { useChartData } from "@/hooks/useChartData";
 import { ReadingProgressChart } from "@/components/charts/ReadingProgressChart";
 import { GenreDistributionChart } from "@/components/charts/GenreDistributionChart";
 import { WeeklyReadingChart } from "@/components/charts/WeeklyReadingChart";
+import { ReadingVelocityChart } from "@/components/charts/ReadingVelocityChart";
+import { CompletionRateChart } from "@/components/charts/CompletionRateChart";
+import { ReadingHeatmap } from "@/components/charts/ReadingHeatmap";
+import { BookLengthScatter } from "@/components/charts/BookLengthScatter";
+import { MonthlyGoalsChart } from "@/components/charts/MonthlyGoalsChart";
+import { StreaksTimelineChart } from "@/components/charts/StreaksTimelineChart";
+import { ReadingPaceChart } from "@/components/charts/ReadingPaceChart";
+import { TopAuthorsChart } from "@/components/charts/TopAuthorsChart";
+import { TimeDistributionChart } from "@/components/charts/TimeDistributionChart";
+import { StatusFunnelChart } from "@/components/charts/StatusFunnelChart";
+import { ChartSkeleton } from "@/components/skeletons/ChartSkeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, TrendingUp, BookOpen, Clock } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -10,11 +21,27 @@ import { useBooks } from "@/hooks/useBooks";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Analytics = () => {
   const { user } = useAuth();
   const { books } = useBooks(user?.id);
-  const { readingProgress, genreData, weeklyReading, loading } = useChartData(user?.id);
+  const { 
+    readingProgress, 
+    genreData, 
+    weeklyReading,
+    readingVelocity,
+    completionRate,
+    heatmapData,
+    scatterData,
+    monthlyGoals,
+    streakTimeline,
+    paceData,
+    topAuthors,
+    timeDistribution,
+    statusFunnel,
+    loading 
+  } = useChartData(user?.id);
   const isMobile = useIsMobile();
 
   // Calculate analytics stats
@@ -110,25 +137,118 @@ const Analytics = () => {
         </div>
 
         {/* Charts */}
-        <div className="space-y-6">
-          {/* Reading Progress Chart */}
-          {readingProgress.length > 0 && (
-            <ReadingProgressChart data={readingProgress} />
-          )}
-          
-          {/* Charts Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {genreData.length > 0 && (
-              <GenreDistributionChart data={genreData} />
-            )}
-            {weeklyReading.length > 0 && (
-              <WeeklyReadingChart data={weeklyReading} />
-            )}
-          </div>
-        </div>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="detailed">Detailed</TabsTrigger>
+            <TabsTrigger value="insights">Insights</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            {/* Reading Progress Chart */}
+            {loading ? (
+              <ChartSkeleton />
+            ) : readingProgress.length > 0 ? (
+              <ReadingProgressChart data={readingProgress} />
+            ) : null}
+            
+            {/* Charts Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {loading ? (
+                <>
+                  <ChartSkeleton />
+                  <ChartSkeleton />
+                </>
+              ) : (
+                <>
+                  {genreData.length > 0 && (
+                    <GenreDistributionChart data={genreData} />
+                  )}
+                  {weeklyReading.length > 0 && (
+                    <WeeklyReadingChart data={weeklyReading} />
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Status Funnel */}
+            {loading ? (
+              <ChartSkeleton />
+            ) : statusFunnel.length > 0 ? (
+              <StatusFunnelChart data={statusFunnel} />
+            ) : null}
+          </TabsContent>
+
+          <TabsContent value="detailed" className="space-y-6">
+            {/* Reading Velocity */}
+            {loading ? (
+              <ChartSkeleton />
+            ) : readingVelocity.length > 0 ? (
+              <ReadingVelocityChart data={readingVelocity} />
+            ) : null}
+
+            {/* Completion Rate */}
+            {loading ? (
+              <ChartSkeleton />
+            ) : completionRate.length > 0 ? (
+              <CompletionRateChart data={completionRate} />
+            ) : null}
+
+            {/* Book Length Scatter */}
+            {loading ? (
+              <ChartSkeleton />
+            ) : scatterData.length > 0 ? (
+              <BookLengthScatter data={scatterData} />
+            ) : null}
+
+            {/* Monthly Goals */}
+            {loading ? (
+              <ChartSkeleton />
+            ) : monthlyGoals.length > 0 ? (
+              <MonthlyGoalsChart data={monthlyGoals} />
+            ) : null}
+
+            {/* Streak Timeline */}
+            {loading ? (
+              <ChartSkeleton />
+            ) : streakTimeline.length > 0 ? (
+              <StreaksTimelineChart data={streakTimeline} />
+            ) : null}
+          </TabsContent>
+
+          <TabsContent value="insights" className="space-y-6">
+            {/* Reading Heatmap */}
+            {loading ? (
+              <ChartSkeleton />
+            ) : heatmapData.length > 0 ? (
+              <ReadingHeatmap data={heatmapData} />
+            ) : null}
+
+            {/* Reading Pace */}
+            {loading ? (
+              <ChartSkeleton />
+            ) : paceData.length > 0 ? (
+              <ReadingPaceChart data={paceData} />
+            ) : null}
+
+            {/* Top Authors */}
+            {loading ? (
+              <ChartSkeleton />
+            ) : topAuthors.length > 0 ? (
+              <TopAuthorsChart data={topAuthors} />
+            ) : null}
+
+            {/* Time Distribution */}
+            {loading ? (
+              <ChartSkeleton />
+            ) : timeDistribution.length > 0 ? (
+              <TimeDistributionChart data={timeDistribution} />
+            ) : null}
+          </TabsContent>
+        </Tabs>
 
         {/* No Data State */}
-        {readingProgress.length === 0 && genreData.length === 0 && weeklyReading.length === 0 && (
+        {!loading && readingProgress.length === 0 && genreData.length === 0 && weeklyReading.length === 0 && (
           <Card>
             <CardContent className="p-8 text-center">
               <BarChart3 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />

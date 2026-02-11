@@ -14,6 +14,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Target, Calendar as CalendarIcon, CheckCircle2, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { TrophyReveal } from "@/components/animations/TrophyReveal";
+import { ProgressBarFill } from "@/components/animations/ProgressBarFill";
+import { Confetti } from "@/components/animations/Confetti";
+import { countUp } from "@/lib/animations/gsap-presets";
+import { useRef } from "react";
 
 interface GoalManagerProps {
   userId: string;
@@ -76,8 +81,14 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
     });
   };
 
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [completedGoalId, setCompletedGoalId] = useState<string | null>(null);
+
   const handleComplete = async (goalId: string) => {
     await completeGoal(goalId);
+    setCompletedGoalId(goalId);
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3000);
     toast({
       title: "Goal completed!",
       description: "Congratulations on achieving your reading goal",
@@ -104,8 +115,10 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <>
+      {showConfetti && <Confetti trigger={showConfetti} />}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">My Goals</h2>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
@@ -222,7 +235,14 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <Progress value={progress} />
+                    <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                      <ProgressBarFill progress={Math.min(progress, 100)} duration={1} />
+                    </div>
+                    {completedGoalId === goal.id && (
+                      <div className="flex items-center justify-center py-2">
+                        <TrophyReveal show={true} size={48} />
+                      </div>
+                    )}
                     <div className="text-sm text-muted-foreground">
                       {goal.start_date && goal.end_date && (
                         <div className="flex items-center gap-2">
@@ -306,6 +326,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 };

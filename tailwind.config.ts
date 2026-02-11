@@ -20,6 +20,40 @@ export default {
 			}
 		},
 		extend: {
+			fontSize: {
+				// Ensure minimum 16px for body text on mobile
+				'xs': ['0.75rem', { lineHeight: '1.5', letterSpacing: '0.01em' }], // 12px
+				'sm': ['0.875rem', { lineHeight: '1.5', letterSpacing: '0.005em' }], // 14px
+				'base': ['1rem', { lineHeight: '1.6', letterSpacing: '-0.01em' }], // 16px - minimum for mobile
+				'lg': ['1.125rem', { lineHeight: '1.6', letterSpacing: '-0.01em' }], // 18px
+				'xl': ['1.25rem', { lineHeight: '1.4', letterSpacing: '-0.01em' }], // 20px
+				'2xl': ['1.5rem', { lineHeight: '1.3', letterSpacing: '-0.01em' }], // 24px
+				'3xl': ['2rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }], // 32px
+				'4xl': ['2.5rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }], // 40px
+			},
+			spacing: {
+				// 4px base unit system for consistent spacing
+				'0.5': '0.125rem', // 2px
+				'1': '0.25rem', // 4px - base unit
+				'1.5': '0.375rem', // 6px
+				'2': '0.5rem', // 8px - 2x base unit
+				'2.5': '0.625rem', // 10px
+				'3': '0.75rem', // 12px - 3x base unit
+				'3.5': '0.875rem', // 14px
+				'4': '1rem', // 16px - 4x base unit
+				'5': '1.25rem', // 20px - 5x base unit
+				'6': '1.5rem', // 24px - 6x base unit
+				'7': '1.75rem', // 28px
+				'8': '2rem', // 32px - 8x base unit
+				'9': '2.25rem', // 36px
+				'10': '2.5rem', // 40px
+				'11': '2.75rem', // 44px - minimum tap target
+				'12': '3rem', // 48px
+				'14': '3.5rem', // 56px
+				'16': '4rem', // 64px
+				'20': '5rem', // 80px
+				'24': '6rem', // 96px
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',

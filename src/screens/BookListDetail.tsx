@@ -121,6 +121,7 @@ const BookListDetail = () => {
   const { books, loading: booksLoading, refetch } = useListBooks(listId);
   const { toast } = useToast();
   const [sortableBooks, setSortableBooks] = useState<Book[]>([]);
+  const isMobile = useIsMobile(); // Must be called before any early returns
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -169,15 +170,6 @@ const BookListDetail = () => {
     }
   };
 
-  if (authLoading || booksLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (!user || !list) {
-    navigate('/lists');
-    return null;
-  }
-
   const handleRemoveBook = async (bookId: string) => {
     try {
       await removeBookFromList(listId!, bookId);
@@ -195,7 +187,14 @@ const BookListDetail = () => {
     }
   };
 
-  const isMobile = useIsMobile();
+  if (authLoading || booksLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!user || !list) {
+    navigate('/lists');
+    return null;
+  }
 
   return (
     <MobileLayout>

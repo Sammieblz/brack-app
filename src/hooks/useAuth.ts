@@ -28,6 +28,8 @@ export const useAuth = () => {
   }, []);
 
   const signOut = async () => {
+    // Clear cached color theme so auth/landing pages show defaults
+    localStorage.removeItem('color_theme');
     await supabase.auth.signOut();
   };
 

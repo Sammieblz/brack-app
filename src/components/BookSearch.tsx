@@ -51,7 +51,125 @@ export const BookSearch = ({ onSelectBook, onQuickAdd, initialQuery }: BookSearc
         body: { query: query, maxResults: 20 },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Search function error:", error);
+        
+        // Debug logging (only in development)
+        if (process.env.NODE_ENV === 'development') {
+          const errorForLog = error as Record<string, unknown>;
+          console.error("Error details:", {
+            type: typeof error,
+            keys: error ? Object.keys(errorForLog) : [],
+            status: errorForLog?.status,
+            statusCode: errorForLog?.statusCode,
+            code: errorForLog?.code,
+            context: errorForLog?.context,
+          });
+        }
+        interface ErrorWithContext {
+          context?: { status?: number; message?: string };
+          status?: number;
+          statusCode?: number;
+          code?: number;
+          message?: string;
+          error?: { message?: string } | string;
+        }
+        const errorObj = error as ErrorWithContext;
+        
+        // Try multiple ways to get the status code
+        let errorStatus: number | null = null;
+        if (errorObj?.context?.status) {
+          errorStatus = errorObj.context.status;
+        } else if (errorObj?.status) {
+          errorStatus = errorObj.status;
+        } else if (errorObj?.statusCode) {
+          errorStatus = errorObj.statusCode;
+        } else if (errorObj?.code && typeof errorObj.code === 'number') {
+          errorStatus = errorObj.code;
+        }
+        
+        // Try to extract error message from various possible locations
+        let errorMessage = "Unknown error";
+        if (errorObj?.message) {
+          errorMessage = String(errorObj.message);
+        } else if (errorObj?.context?.message) {
+          errorMessage = String(errorObj.context.message);
+        } else if (errorObj?.error) {
+          if (typeof errorObj.error === 'string') {
+            errorMessage = errorObj.error;
+          } else if (errorObj.error?.message) {
+            errorMessage = String(errorObj.error.message);
+          } else {
+            errorMessage = JSON.stringify(errorObj.error);
+          }
+        }
+        const errorString = String(error);
+        const errorMessageLower = errorMessage.toLowerCase();
+        const errorStringLower = errorString.toLowerCase();
+        
+        const isRateLimit = errorStatus === 429 || 
+                           /429/.test(errorMessage) || 
+                           /429/.test(errorString) ||
+                           /too many requests/i.test(errorMessage) || 
+                           /too many requests/i.test(errorString) ||
+                           /rate limit/i.test(errorMessage) ||
+                           /rate limit/i.test(errorString) ||
+                           errorMessageLower.includes('too many') ||
+                           errorStringLower.includes('too many');
+        
+        if (isRateLimit) {
+          toast({
+            title: "Too many requests",
+            description: "Please wait a moment before searching again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Handle validation errors (400)
+        if (errorStatus === 400 || errorMessage.includes('required') || errorMessage.includes('invalid')) {
+          toast({
+            title: "Invalid search",
+            description: errorMessage.includes('required') || errorMessage.includes('invalid') 
+              ? errorMessage 
+              : "Please check your search query and try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Handle timeout errors
+        if (errorMessage.includes('timeout') || errorMessage.includes('took too long')) {
+          toast({
+            title: "Request timeout",
+            description: "The search took too long. Please try again with a different query.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Handle server errors (500+)
+        if (errorStatus >= 500 || errorMessage.includes('service') || errorMessage.includes('unavailable')) {
+          toast({
+            title: "Service unavailable",
+            description: "The search service is temporarily unavailable. Please try again later.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Generic error with sanitized message
+        const userMessage = errorMessage.length > 100 
+          ? "Unable to search books. Please try again." 
+          : errorMessage;
+        
+        toast({
+          title: "Search failed",
+          description: userMessage,
+          variant: "destructive",
+        });
+        return;
+      }
 
       if (data?.books) {
         setResults(data.books);
@@ -61,12 +179,25 @@ export const BookSearch = ({ onSelectBook, onQuickAdd, initialQuery }: BookSearc
             description: "Try a different search term",
           });
         }
+      } else {
+        // Handle case where data exists but no books array
+        setResults([]);
+        toast({
+          title: "No results",
+          description: "No books found for your search.",
+        });
       }
     } catch (error: unknown) {
       console.error("Search error:", error);
+      
+      // Handle unexpected errors
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      
       toast({
         title: "Search failed",
-        description: error instanceof Error ? error.message : "Unable to search books. Please try again.",
+        description: errorMessage.includes('timeout') 
+          ? "The search took too long. Please try again."
+          : "Unable to search books. Please try again.",
         variant: "destructive",
       });
     } finally {

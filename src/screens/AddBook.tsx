@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookSearch } from "@/components/BookSearch";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, Camera, Search, PenTool } from "lucide-react";
+import { BookOpen, Camera, Search, PenTool, Loader2 } from "lucide-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -19,6 +19,8 @@ import { bookOperations } from "@/utils/offlineOperation";
 import { GENRES } from "@/constants";
 import type { Book } from "@/types";
 import type { GoogleBookResult } from "@/types/googleBooks";
+import { SuccessCheckmark } from "@/components/animations/SuccessCheckmark";
+import { Confetti } from "@/components/animations/Confetti";
 
 const AddBook = () => {
   const [user, setUser] = useState<{ id: string } | null>(null);
@@ -26,6 +28,9 @@ const AddBook = () => {
   const [activeTab, setActiveTab] = useState("search");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [isFirstBook, setIsFirstBook] = useState(false);
   
   // Get ISBN from URL params if present
   const isbnFromUrl = searchParams.get('isbn') || '';
@@ -99,8 +104,27 @@ const AddBook = () => {
 
       await bookOperations.create(bookData);
 
-      toast.success("Book added successfully!");
-      navigate("/dashboard");
+      // Check if this is the first book
+      const { data: existingBooks } = await supabase
+        .from('books')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .is('deleted_at', null);
+      
+      const firstBook = (existingBooks?.length || 0) <= 1;
+      setIsFirstBook(firstBook);
+
+      // Show success animation
+      setShowSuccess(true);
+      if (firstBook) {
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3000);
+      }
+
+      setTimeout(() => {
+        setShowSuccess(false);
+        navigate("/dashboard");
+      }, 1500);
     } catch (error: unknown) {
       console.error('Error adding book:', error);
       toast.error(error instanceof Error ? error.message : "Failed to add book");
@@ -167,6 +191,17 @@ const AddBook = () => {
 
   return (
     <MobileLayout>
+      {showConfetti && <Confetti trigger={showConfetti} />}
+      {showSuccess && (
+        <div className="fixed inset-0 z-[9999] bg-background/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <SuccessCheckmark show={showSuccess} size={64} />
+            <p className="text-xl font-semibold">
+              {isFirstBook ? "Your first book! 🎉" : "Book added successfully!"}
+            </p>
+          </div>
+        </div>
+      )}
       {isMobile && <MobileHeader title="Add Book" showBack />}
       <div className="container mx-auto px-4 py-4 md:py-8 max-w-md">
 
@@ -179,30 +214,29 @@ const AddBook = () => {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6 h-12">
-                <TabsTrigger value="search" className="flex items-center gap-2 min-h-[44px]">
+              <TabsList className="w-full grid grid-cols-2 mb-6">
+                <TabsTrigger value="search" className="flex items-center gap-2">
                   <Search className="h-4 w-4" />
-                  <span className="hidden sm:inline">Search Books</span>
-                  <span className="sm:hidden">Search</span>
+                  <span>Search</span>
                 </TabsTrigger>
-                <TabsTrigger value="manual" className="flex items-center gap-2 min-h-[44px]">
+                <TabsTrigger value="manual" className="flex items-center gap-2">
                   <PenTool className="h-4 w-4" />
-                  <span className="hidden sm:inline">Manual Entry</span>
-                  <span className="sm:hidden">Manual</span>
+                  <span>Manual</span>
                 </TabsTrigger>
               </TabsList>
 
               {/* Search Tab */}
-              <TabsContent value="search" className="space-y-4">
+              <TabsContent value="search" className="space-y-4 mt-0">
                 <BookSearch 
                   onSelectBook={handleSelectBook}
                   onQuickAdd={handleQuickAdd}
+                  initialQuery={searchFromUrl}
                 />
               </TabsContent>
 
               {/* Manual Entry Tab */}
-              <TabsContent value="manual">
-                <form onSubmit={handleSubmit} className="space-y-4 pb-24 md:pb-4">
+              <TabsContent value="manual" className="mt-0">
+                <form id="add-book-form" onSubmit={handleSubmit} className="space-y-5">
                   <MobileInput
                     id="title"
                     label="Title"
@@ -221,7 +255,7 @@ const AddBook = () => {
                   />
 
                   <div className="space-y-2">
-                    <Label htmlFor="isbn">ISBN</Label>
+                    <Label htmlFor="isbn" className="text-sm font-medium">ISBN</Label>
                     <div className="flex space-x-2">
                       <Input
                         id="isbn"
@@ -235,7 +269,7 @@ const AddBook = () => {
                         variant="outline"
                         size="sm"
                         onClick={handleScanISBN}
-                        className="border-border/50 hover:shadow-soft transition-all duration-300 px-3 min-h-[44px]"
+                        className="border-border/50 hover:shadow-soft transition-all duration-300 px-3 min-h-[44px] min-w-[44px]"
                       >
                         <Camera className="h-4 w-4" />
                       </Button>
@@ -243,7 +277,7 @@ const AddBook = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="genre">Genre</Label>
+                    <Label htmlFor="genre" className="text-sm font-medium">Genre</Label>
                     <Select value={formData.genre} onValueChange={(value) => setFormData({ ...formData, genre: value })}>
                       <SelectTrigger className="min-h-[44px]">
                         <SelectValue placeholder="Select a genre" />
@@ -257,7 +291,7 @@ const AddBook = () => {
                       </SelectContent>
                     </Select>
                     {/* Quick Genre Actions */}
-                    <div className="flex flex-wrap gap-2 mt-2">
+                    <div className="flex flex-wrap gap-2 mt-3">
                       {GENRES.slice(0, 6).map((genre) => (
                         <Button
                           key={genre}
@@ -265,7 +299,10 @@ const AddBook = () => {
                           variant={formData.genre === genre ? "default" : "outline"}
                           size="sm"
                           onClick={() => setFormData({ ...formData, genre })}
-                          className="text-xs min-h-[36px]"
+                          className={cn(
+                            "text-xs min-h-[36px] px-3",
+                            formData.genre === genre && "bg-primary text-primary-foreground"
+                          )}
                         >
                           {genre}
                         </Button>
@@ -295,20 +332,33 @@ const AddBook = () => {
                     min="1"
                   />
 
-                  {/* Sticky save button for mobile */}
-                  <div className={cn(
-                    "pt-4",
-                    isMobile && "fixed bottom-20 left-0 right-0 p-4 bg-background border-t z-40 -mx-4"
-                  )}>
-                    <Button
-                      type="submit"
-                      className="w-full min-h-[44px] bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium"
-                      disabled={loading}
-                    >
-                      {loading ? "Adding Book..." : "Save Book"}
-                    </Button>
-                  </div>
+                  {/* Spacer for fixed button */}
+                  <div className="h-24 md:h-4" />
                 </form>
+
+                {/* Fixed Save Button - Properly positioned above bottom nav */}
+                <div className={cn(
+                  "fixed left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-t border-border/50",
+                  isMobile 
+                    ? "bottom-[calc(max(env(safe-area-inset-bottom),24px)+72px+16px)] px-4 py-3"
+                    : "relative bottom-0 px-0 py-4 border-t-0 bg-transparent"
+                )}>
+                  <Button
+                    type="submit"
+                    form="add-book-form"
+                    className="w-full min-h-[48px] bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-semibold text-base rounded-xl"
+                    disabled={loading || !formData.title.trim()}
+                  >
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Adding Book...
+                      </span>
+                    ) : (
+                      "Save Book"
+                    )}
+                  </Button>
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>

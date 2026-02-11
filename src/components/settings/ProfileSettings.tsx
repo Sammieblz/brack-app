@@ -5,11 +5,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Camera } from "lucide-react";
+import { User, Camera, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
 import { useImagePicker } from "@/hooks/useImagePicker";
+import { useFollowing } from "@/hooks/useFollowing";
+import { useNavigate } from "react-router-dom";
+import { getInitials } from "@/lib/avatarUtils";
 import type { User as UserType, Profile } from "@/types";
 
 interface ProfileSettingsProps {
@@ -19,6 +22,8 @@ interface ProfileSettingsProps {
 export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
   const { toast } = useToast();
   const { pickWithPrompt } = useImagePicker();
+  const navigate = useNavigate();
+  const { followersCount, followingCount } = useFollowing(user?.id || null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -168,7 +173,6 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
   };
 
   const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
-  const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -176,12 +180,57 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Profile Settings</h2>
-        <p className="text-muted-foreground mt-1">
-          Customize how others see your profile
-        </p>
-      </div>
+      {/* Social Profile View */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Social Profile
+          </CardTitle>
+          <CardDescription>
+            How others see your profile
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4 mb-4">
+            <Avatar className="h-16 w-16">
+              <AvatarImage src={previewUrl || profile?.avatar_url} />
+              <AvatarFallback className="text-lg">
+                {getInitials(displayName)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-lg truncate">{displayName}</h3>
+              {profile?.bio && (
+                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{profile.bio}</p>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex gap-6 pt-4 border-t">
+            <button
+              onClick={() => navigate(`/profile/${user?.id}/followers`)}
+              className="flex flex-col items-start hover:opacity-80 transition-opacity"
+            >
+              <span className="text-2xl font-bold">{followersCount}</span>
+              <span className="text-sm text-muted-foreground">Followers</span>
+            </button>
+            <button
+              onClick={() => navigate(`/profile/${user?.id}/following`)}
+              className="flex flex-col items-start hover:opacity-80 transition-opacity"
+            >
+              <span className="text-2xl font-bold">{followingCount}</span>
+              <span className="text-sm text-muted-foreground">Following</span>
+            </button>
+            <button
+              onClick={() => navigate(`/profile/${user?.id}`)}
+              className="flex flex-col items-start hover:opacity-80 transition-opacity ml-auto"
+            >
+              <span className="text-sm text-primary font-medium">View Profile</span>
+            </button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Avatar */}
       <Card>
@@ -197,18 +246,61 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
         <CardContent className="flex flex-col sm:flex-row items-center gap-4">
           <Avatar className="h-20 w-20 shrink-0">
             <AvatarImage src={previewUrl || profile?.avatar_url} />
-            <AvatarFallback className="text-lg">{initials}</AvatarFallback>
+            <AvatarFallback className="text-lg">
+              {getInitials(displayName)}
+            </AvatarFallback>
           </Avatar>
-          <div className="flex-1 w-full">
-            <Button
-              variant="outline"
-              disabled={uploading}
-              onClick={() => setShowImagePicker(true)}
-              className="w-full sm:w-auto"
-            >
-              <Camera className="h-4 w-4 mr-2" />
-              {uploading ? "Uploading..." : "Choose Photo"}
-            </Button>
+          <div className="flex-1 w-full space-y-2">
+            <p className="text-sm text-muted-foreground text-center sm:text-left">
+              Update your profile picture to personalize your account
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                variant="outline"
+                disabled={uploading}
+                onClick={() => setShowImagePicker(true)}
+                className="w-full sm:w-auto"
+              >
+                <Camera className="h-4 w-4 mr-2" />
+                {uploading ? "Uploading..." : "Choose Photo"}
+              </Button>
+              {profile?.avatar_url && (
+                <Button
+                  variant="outline"
+                  disabled={uploading}
+                  onClick={async () => {
+                    if (!user || !profile?.avatar_url) return;
+                    setUploading(true);
+                    try {
+                      const oldPath = profile.avatar_url.split('/').slice(-2).join('/');
+                      await supabase.storage.from("avatars").remove([oldPath]);
+                      const { error } = await supabase
+                        .from("profiles")
+                        .update({ avatar_url: null })
+                        .eq("id", user.id);
+                      if (error) throw error;
+                      setPreviewUrl(null);
+                      toast({
+                        title: "Success",
+                        description: "Profile photo removed successfully",
+                      });
+                      loadProfile();
+                    } catch (error) {
+                      toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: "Failed to remove profile photo",
+                      });
+                    } finally {
+                      setUploading(false);
+                    }
+                  }}
+                  className="w-full sm:w-auto"
+                >
+                  Remove
+                </Button>
+              )}
+            </div>
           </div>
           <ImagePickerDialog
             open={showImagePicker}

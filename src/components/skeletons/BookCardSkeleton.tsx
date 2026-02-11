@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { ShimmerEffect } from "@/components/animations/ShimmerEffect";
 
 export const BookCardSkeleton = () => {
   return (
@@ -6,16 +7,28 @@ export const BookCardSkeleton = () => {
       <CardContent className="p-4">
         <div className="flex gap-4">
           {/* Cover skeleton */}
-          <div className="w-16 h-24 bg-muted animate-pulse rounded" />
+          <div className="relative w-16 h-24 bg-muted rounded overflow-hidden">
+            <ShimmerEffect className="absolute inset-0" />
+          </div>
           
           {/* Content skeleton */}
           <div className="flex-1 space-y-2">
-            <div className="h-5 bg-muted animate-pulse rounded w-3/4" />
-            <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
-            <div className="h-4 bg-muted animate-pulse rounded w-2/3" />
+            <div className="relative h-5 bg-muted rounded w-3/4 overflow-hidden">
+              <ShimmerEffect className="absolute inset-0" />
+            </div>
+            <div className="relative h-4 bg-muted rounded w-1/2 overflow-hidden">
+              <ShimmerEffect className="absolute inset-0" />
+            </div>
+            <div className="relative h-4 bg-muted rounded w-2/3 overflow-hidden">
+              <ShimmerEffect className="absolute inset-0" />
+            </div>
             <div className="flex gap-2 mt-2">
-              <div className="h-6 bg-muted animate-pulse rounded w-16" />
-              <div className="h-6 bg-muted animate-pulse rounded w-20" />
+              <div className="relative h-6 bg-muted rounded w-16 overflow-hidden">
+                <ShimmerEffect className="absolute inset-0" />
+              </div>
+              <div className="relative h-6 bg-muted rounded w-20 overflow-hidden">
+                <ShimmerEffect className="absolute inset-0" />
+              </div>
             </div>
           </div>
         </div>

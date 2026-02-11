@@ -34,6 +34,7 @@ import { NativeHeader } from "@/components/NativeHeader";
 import { NativeScrollView } from "@/components/NativeScrollView";
 import { useProfileContext } from "@/contexts/ProfileContext";
 import { useSupabaseRequest } from "@/hooks/useSupabaseRequest";
+import { ReadingStatsWidget } from "@/components/ReadingStatsWidget";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -235,6 +236,16 @@ const Dashboard = () => {
             </div>
           )}
 
+          {/* Reading Statistics */}
+          {user && (
+            <ReadingStatsWidget
+              userId={user.id}
+              books={books}
+              currentStreak={streakData.currentStreak}
+              displayName={profile?.display_name}
+            />
+          )}
+
           {/* Reading Streaks Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
             <StreakDisplay 
@@ -253,7 +264,7 @@ const Dashboard = () => {
                     <Award className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                     Achievements
                   </span>
-                  <Button variant="outline" size="sm" onClick={() => navigate("/settings")}>
+                  <Button variant="outline" size="sm" onClick={() => navigate("/achievements")}>
                     View All
                     <ArrowRight className="h-4 w-4 ml-1" />
                   </Button>

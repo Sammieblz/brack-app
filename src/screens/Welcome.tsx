@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, Target, SkipForward } from "lucide-react";
+import { Target, SkipForward } from "lucide-react";
+import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 
 const Welcome = () => {
   const [userName, setUserName] = useState("");
@@ -17,7 +18,6 @@ const Welcome = () => {
         return;
       }
       
-      // Get display name from user metadata or email
       const displayName = user.user_metadata?.full_name || 
                           user.user_metadata?.name || 
                           user.email?.split('@')[0] || 
@@ -39,18 +39,16 @@ const Welcome = () => {
   return (
     <div className="min-h-screen bg-gradient-background flex items-center justify-center px-4 py-8 relative overflow-hidden safe-top safe-bottom">
       {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary-glow/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-float" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary-glow/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
       </div>
       
       <div className="w-full max-w-md relative z-10 animate-fade-in">
-        {/* Logo */}
+        {/* Logo — Brack icon */}
         <div className="text-center mb-8 animate-slide-up">
-          <div className="flex items-center justify-center space-x-3 mb-6">
-            <div className="p-3 bg-gradient-primary rounded-2xl shadow-glow animate-glow-pulse">
-              <BookOpen className="h-8 w-8 text-white" />
-            </div>
+          <div className="flex flex-col items-center gap-3 mb-6">
+            <ThemeAwareLogo variant="icon" size="h-16 w-16" className="drop-shadow-lg" />
             <span className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               BRACK
             </span>
