@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +11,9 @@ import { ImagePickerDialog } from "@/components/ImagePickerDialog";
 import { useImagePicker } from "@/hooks/useImagePicker";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { SuccessCheckmark } from "@/components/animations/SuccessCheckmark";
+import { useGSAP } from "@/hooks/useGSAP";
+import { gsap } from "gsap";
 
 interface QuickJournalEntryDialogProps {
   open: boolean;
@@ -39,6 +42,9 @@ export const QuickJournalEntryDialog = ({
   const { toast } = useToast();
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   const handleImagePicked = async (image: { dataUrl: string; format: string; base64?: string }) => {
     if (!user || !image.base64) return;
@@ -109,19 +115,25 @@ export const QuickJournalEntryDialog = ({
         photo_url: photoUrl || undefined,
       });
 
+      // Show success animation
+      setShowSuccess(true);
+      
       toast({
         title: "Journal entry saved!",
         description: "Your entry has been added successfully.",
       });
 
-      // Reset form
-      setTitle("");
-      setContent("");
-      setPageReference("");
-      setPhotoUrl(null);
-      setPhotoPreview(null);
-      setEntryType('note');
-      onOpenChange(false);
+      // Reset form after animation
+      setTimeout(() => {
+        setShowSuccess(false);
+        setTitle("");
+        setContent("");
+        setPageReference("");
+        setPhotoUrl(null);
+        setPhotoPreview(null);
+        setEntryType('note');
+        onOpenChange(false);
+      }, 1500);
     } catch (error) {
       console.error("Error saving journal entry:", error);
     } finally {
@@ -129,9 +141,39 @@ export const QuickJournalEntryDialog = ({
     }
   };
 
+  // Pen writing effect on content focus
+  useGSAP(() => {
+    if (contentRef.current && open) {
+      gsap.fromTo(
+        contentRef.current,
+        { opacity: 0.7 },
+        { opacity: 1, duration: 0.3, ease: "power2.out" }
+      );
+    }
+  }, { dependencies: [open] });
+
+  // Page turn animation on dialog open
+  useGSAP(() => {
+    if (dialogRef.current && open) {
+      gsap.fromTo(
+        dialogRef.current,
+        { rotateY: -90, opacity: 0 },
+        { rotateY: 0, opacity: 1, duration: 0.5, ease: "power2.out" }
+      );
+    }
+  }, { dependencies: [open] });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent ref={dialogRef} className="sm:max-w-[500px]">
+        {showSuccess && (
+          <div className="fixed inset-0 z-[9999] bg-background/80 backdrop-blur-sm flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <SuccessCheckmark show={showSuccess} size={64} />
+              <p className="text-xl font-semibold">Entry saved!</p>
+            </div>
+          </div>
+        )}
         <DialogHeader>
           <DialogTitle>Add Journal Entry</DialogTitle>
           <DialogDescription>

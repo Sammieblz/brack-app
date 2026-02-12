@@ -19,6 +19,16 @@ All colors MUST be HSL.
 */
 
 @layer base {
+  /* Smooth scrolling for all elements */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Momentum scrolling for mobile */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+  
   :root {
     --background: 45 100% 98%;
     --foreground: 25 5% 15%;
@@ -138,9 +148,49 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    font-size: 16px; /* Prevent iOS text zoom */
+    font-size: 16px; /* Prevent iOS text zoom - minimum for mobile readability */
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+    line-height: 1.6; /* Improved readability - optimal for body text */
+    letter-spacing: -0.01em; /* Slight tightening for better readability */
+  }
+
+  /* Typography hierarchy - ensure minimum 16px for body text */
+  p, span, div, li {
+    font-size: 1rem; /* 16px base */
+    line-height: 1.6;
+  }
+
+  /* Heading hierarchy with proper contrast */
+  h1 {
+    font-size: 2rem; /* 32px */
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-size: 1.5rem; /* 24px */
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: 1.25rem; /* 20px */
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  h4 {
+    font-size: 1.125rem; /* 18px */
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  /* Optimal line length for readability (45-75 characters) */
+  p, .readable-text {
+    max-width: 65ch; /* ~65 characters optimal line length */
   }
 
   /* Improve touch scrolling on mobile */
@@ -188,12 +238,102 @@ All colors MUST be HSL.
     user-select: none;
   }
 
-  /* Line clamp utilities for mobile */
+  /* Line clamp utilities for mobile - text truncation */
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Text truncation utilities */
+  .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Multi-line truncation with ellipsis */
+  .truncate-multiline {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Accessibility: Skip to content link */
+  .skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    padding: 8px 16px;
+    text-decoration: none;
+    z-index: 100;
+    border-radius: 4px;
+  }
+
+  .skip-to-content:focus {
+    top: 0;
+  }
+
+  /* Accessibility: Focus indicators */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Ensure minimum contrast for text */
+  .text-muted-foreground {
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    :root {
+      --border: 0 0% 20%;
+      --muted-foreground: 0 0% 30%;
+      --foreground: 0 0% 0%;
+      --card-foreground: 0 0% 0%;
+    }
+    
+    .dark {
+      --border: 0 0% 60%;
+      --muted-foreground: 0 0% 80%;
+      --foreground: 0 0% 100%;
+      --card-foreground: 0 0% 100%;
+    }
+  }
+
+  /* Colorblind-friendly: Ensure status indicators don't rely on color alone */
+  .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  /* GPU-accelerated animations */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
   }
 
   /* Native-style interactions */

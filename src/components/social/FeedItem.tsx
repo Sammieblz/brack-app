@@ -80,7 +80,7 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
             )}
             {activity.metadata?.rating && (
               <Badge variant="secondary" className="ml-2">
-                {activity.metadata.rating} ⭐
+                {activity.metadata.rating} ★
               </Badge>
             )}
           </>
@@ -149,9 +149,9 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-2 mb-2">
-              <p className="text-sm text-foreground flex-1 leading-relaxed">
+              <div className="text-sm text-foreground flex-1 leading-relaxed">
                 {getActivityMessage()}
-              </p>
+              </div>
             </div>
 
             {activity.activity_type === 'post' && activity.metadata?.content && (

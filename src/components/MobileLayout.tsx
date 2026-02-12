@@ -1,8 +1,10 @@
-import { ReactNode } from "react";
+import { ReactNode, useRef } from "react";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Navbar } from "./Navbar";
 import { useNativeApp } from "@/hooks/useNativeApp";
+import { usePersistentScrollPosition } from "@/hooks/useScrollPosition";
+import { useLocation } from "react-router-dom";
 
 interface MobileLayoutProps {
   children: ReactNode;
@@ -17,12 +19,15 @@ export const MobileLayout = ({
 }: MobileLayoutProps) => {
   const isMobile = useIsMobile();
   const isNative = useNativeApp();
+  const location = useLocation();
+  const scrollRef = usePersistentScrollPosition(location.pathname);
 
   if (isMobile) {
     return (
       <div className="h-screen flex flex-col bg-background overflow-hidden">
         {/* Main Content - Scrollable */}
         <main
+          ref={scrollRef as React.RefObject<HTMLElement>}
           className={`flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] ${
             isNative ? "safe-top safe-bottom" : ""
           } pb-28`}

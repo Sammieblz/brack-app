@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
 import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
 import { StatCardSkeleton } from "@/components/skeletons/StatCardSkeleton";
+import { EmptyBooks } from "@/components/empty/EmptyBooks";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { MobileLayout } from "@/components/MobileLayout";
@@ -299,32 +300,19 @@ const MyBooks = () => {
                 <BookCardSkeleton />
               </div>
             ) : filteredBooks.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  {books.length === 0 ? (
-                    <>
-                      <h3 className="font-semibold mb-2">No books yet</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Start building your digital library
-                      </p>
-                      {!isMobile && (
-                        <Button onClick={() => navigate("/add-book")}>
-                          <BookOpen className="mr-2 h-4 w-4" />
-                          Add Your First Book
-                        </Button>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <h3 className="font-semibold mb-2">No books found</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Try adjusting your search or filter
-                      </p>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+              books.length === 0 ? (
+                <EmptyBooks />
+              ) : (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="font-semibold mb-2">No books found</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Try adjusting your search or filter
+                    </p>
+                  </CardContent>
+                </Card>
+              )
             ) : (
               <div className="space-y-3">
                 {shouldVirtualize ? (

@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useState, ReactNode } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { MobileAlertDialog } from "@/components/ui/mobile-dialog";
 
 type ConfirmOptions = {
   title?: string;
@@ -35,24 +34,16 @@ export const ConfirmDialogProvider = ({ children }: { children: ReactNode }) => 
     <ConfirmDialogContext.Provider value={{ confirm }}>
       {children}
 
-      <Dialog open={!!pending} onOpenChange={(open) => !open && handleClose(false)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{pending?.options.title ?? "Are you sure?"}</DialogTitle>
-            {pending?.options.description && (
-              <DialogDescription>{pending.options.description}</DialogDescription>
-            )}
-          </DialogHeader>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => handleClose(false)}>
-              {pending?.options.cancelText ?? "Cancel"}
-            </Button>
-            <Button onClick={() => handleClose(true)} autoFocus>
-              {pending?.options.confirmText ?? "Confirm"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <MobileAlertDialog
+        open={!!pending}
+        onOpenChange={(open) => !open && handleClose(false)}
+        title={pending?.options.title ?? "Are you sure?"}
+        description={pending?.options.description}
+        cancelText={pending?.options.cancelText ?? "Cancel"}
+        confirmText={pending?.options.confirmText ?? "Confirm"}
+        onConfirm={() => handleClose(true)}
+        onCancel={() => handleClose(false)}
+      />
     </ConfirmDialogContext.Provider>
   );
 };

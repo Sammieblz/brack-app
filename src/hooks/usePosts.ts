@@ -111,6 +111,7 @@ export const usePosts = () => {
       setPosts(enrichedPosts);
       
       // Cache the result
+      const cacheKey = 'posts_all';
       dataCache.set(cacheKey, enrichedPosts, CACHE_TTL);
     } catch (error: unknown) {
       console.error("Error fetching posts:", error);

@@ -15,53 +15,92 @@ const chartConfig = {
 };
 
 export const GenreDistributionChart = ({ data }: GenreDistributionChartProps) => {
+  const totalBooks = data.reduce((sum, item) => sum + item.count, 0);
+  const topGenres = data.length;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center">
-          <BookOpen className="h-5 w-5 mr-2" />
+        <CardTitle className="flex items-center text-base md:text-lg">
+          <BookOpen className="h-4 w-4 md:h-5 md:w-5 mr-2" />
           Books by Genre
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px] w-full">
+      <CardContent className="px-2 sm:px-6">
+        <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={data}
                 cx="50%"
                 cy="50%"
-                outerRadius={80}
+                innerRadius={60}
+                outerRadius={90}
+                paddingAngle={2}
                 dataKey="count"
-                label={({ genre, count }) => `${genre}: ${count}`}
-                labelLine={false}
+                animationDuration={750}
               >
                 {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={entry.color}
+                    stroke="hsl(var(--background))"
+                    strokeWidth={2}
+                  />
                 ))}
               </Pie>
+              {/* Center stats */}
+              <text
+                x="50%"
+                y="45%"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="text-2xl md:text-3xl font-bold fill-foreground"
+              >
+                {totalBooks}
+              </text>
+              <text
+                x="50%"
+                y="55%"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="text-xs md:text-sm fill-muted-foreground"
+              >
+                Total Books
+              </text>
+              <text
+                x="50%"
+                y="65%"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="text-xs fill-muted-foreground"
+              >
+                {topGenres} Genres
+              </text>
               <ChartTooltip 
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
+                    const percentage = ((data.count / totalBooks) * 100).toFixed(1);
                     return (
-                      <div className="rounded-lg border bg-background p-2 shadow-sm">
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="flex flex-col">
-                            <span className="text-[0.70rem] uppercase text-muted-foreground">
-                              Genre
-                            </span>
-                            <span className="font-bold text-muted-foreground">
+                      <div className="rounded-lg border bg-background p-3 shadow-lg">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-3 h-3 rounded-full" 
+                              style={{ backgroundColor: data.color }}
+                            />
+                            <span className="font-semibold text-sm">
                               {data.genre}
                             </span>
                           </div>
-                          <div className="flex flex-col">
-                            <span className="text-[0.70rem] uppercase text-muted-foreground">
-                              Books
-                            </span>
-                            <span className="font-bold">
-                              {data.count}
-                            </span>
+                          <div className="flex justify-between gap-4 text-xs">
+                            <span className="text-muted-foreground">Books:</span>
+                            <span className="font-bold">{data.count}</span>
+                          </div>
+                          <div className="flex justify-between gap-4 text-xs">
+                            <span className="text-muted-foreground">Share:</span>
+                            <span className="font-bold">{percentage}%</span>
                           </div>
                         </div>
                       </div>

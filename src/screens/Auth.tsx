@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, Mail } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Auth = () => {
+  const [searchParams] = useSearchParams();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,6 +22,30 @@ const Auth = () => {
   const [pageLoading, setPageLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { resetToDefaultTheme } = useTheme();
+
+  // Force default theme on auth page (only if not authenticated)
+  useEffect(() => {
+    const checkAndResetTheme = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      // Only reset theme if user is not authenticated
+      if (!session) {
+        resetToDefaultTheme();
+      }
+    };
+    checkAndResetTheme();
+  }, [resetToDefaultTheme]);
+
+  // Read URL params to set sign-up/sign-in mode
+  useEffect(() => {
+    const mode = searchParams.get("mode");
+    if (mode === "signup") {
+      setIsSignUp(true);
+    } else if (mode === "signin") {
+      setIsSignUp(false);
+    }
+    // If no mode param, keep default (sign-in)
+  }, [searchParams]);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -41,8 +68,6 @@ const Auth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session && event === 'SIGNED_IN') {
-          // For existing users, go directly to dashboard
-          // New users will be handled by the signup flow
           navigate("/dashboard");
         }
       }
@@ -84,7 +109,6 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        // Validate password strength
         const passwordValidation = validatePassword(password);
         if (!passwordValidation.valid) {
           toast({
@@ -158,19 +182,20 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-gradient-background flex items-center justify-center px-4 py-8 relative overflow-hidden">
+      {/* Light/Dark toggle */}
+      <ThemeToggle />
+
       {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary-glow/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-float" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary-glow/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
       </div>
       
       <div className="w-full max-w-sm relative z-10 animate-fade-in safe-top">
-        {/* Logo Section */}
+        {/* Logo Section — Brack icon + heading */}
         <div className="text-center mb-6 md:mb-8 animate-slide-up">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="p-3 bg-gradient-primary rounded-2xl shadow-glow animate-glow-pulse">
-              <BookOpen className="h-8 w-8 text-white" />
-            </div>
+          <div className="flex flex-col items-center gap-3 mb-4">
+            <ThemeAwareLogo variant="icon" size="h-16 w-16" className="drop-shadow-lg" />
             <span className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               BRACK
             </span>
@@ -280,7 +305,7 @@ const Auth = () => {
               >
                 {loading ? (
                   <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     <span>Loading...</span>
                   </div>
                 ) : (

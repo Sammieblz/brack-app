@@ -12,10 +12,18 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { TagManager } from "@/components/TagManager";
-import { ArrowLeft, Save, Upload, Camera } from "lucide-react";
+import { Save, Upload, Camera, ArrowLeft } from "lucide-react";
+import { MobileBackButton } from "@/components/mobile/MobileBackButton";
+import { MobileLayout } from "@/components/MobileLayout";
+import { MobileHeader } from "@/components/MobileHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileInput } from "@/components/mobile/MobileInput";
+import { MobileTextarea } from "@/components/mobile/MobileTextarea";
+import { cn } from "@/lib/utils";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
 import { useImagePicker } from "@/hooks/useImagePicker";
 import { bookOperations } from "@/utils/offlineOperation";
+import { validateBookForm, type ValidationError } from "@/utils/formValidation";
 import type { Book } from "@/types";
 
 export default function EditBook() {
@@ -28,6 +36,7 @@ export default function EditBook() {
   const [uploading, setUploading] = useState(false);
   const [book, setBook] = useState<Book | null>(null);
   const [showImagePicker, setShowImagePicker] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const { pickWithPrompt } = useImagePicker();
 
   useEffect(() => {
@@ -62,6 +71,23 @@ export default function EditBook() {
     e.preventDefault();
     if (!book) return;
 
+    // Validate form
+    const validationErrors = validateBookForm(book);
+    if (validationErrors.length > 0) {
+      const errorMap: Record<string, string> = {};
+      validationErrors.forEach(err => {
+        errorMap[err.field] = err.message;
+      });
+      setErrors(errorMap);
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: "Please fix the errors in the form",
+      });
+      return;
+    }
+
+    setErrors({});
     setSaving(true);
     try {
       await bookOperations.update(id, {
@@ -153,29 +179,36 @@ export default function EditBook() {
     }
   };
 
+  const isMobile = useIsMobile();
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <LoadingSpinner />
-      </div>
+      <MobileLayout>
+        {isMobile && <MobileHeader title="Edit Book" showBack />}
+        <div className="flex items-center justify-center h-96">
+          <LoadingSpinner size="lg" text="Loading book..." />
+        </div>
+      </MobileLayout>
     );
   }
 
   if (!book) return null;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(`/book/${id}`)}
-          className="mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Book
-        </Button>
+    <MobileLayout>
+      {isMobile && <MobileHeader title="Edit Book" showBack />}
+      {!isMobile && <Navbar />}
+      <div className="container mx-auto px-4 py-4 md:py-8 max-w-2xl pb-24 md:pb-8">
+        {!isMobile && (
+          <Button
+            variant="ghost"
+            onClick={() => navigate(`/book/${id}`)}
+            className="mb-4"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Book
+          </Button>
+        )}
 
         <Card>
           <CardHeader>
@@ -183,24 +216,24 @@ export default function EditBook() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="title">Title *</Label>
-                <Input
-                  id="title"
-                  value={book.title}
-                  onChange={(e) => setBook({ ...book, title: e.target.value })}
-                  required
-                />
-              </div>
+              <MobileInput
+                id="title"
+                label="Title *"
+                value={book.title}
+                onChange={(e) => {
+                  setBook({ ...book, title: e.target.value });
+                  if (errors.title) setErrors(prev => ({ ...prev, title: '' }));
+                }}
+                error={errors.title}
+                required
+              />
 
-              <div>
-                <Label htmlFor="author">Author</Label>
-                <Input
-                  id="author"
-                  value={book.author || ''}
-                  onChange={(e) => setBook({ ...book, author: e.target.value })}
-                />
-              </div>
+              <MobileInput
+                id="author"
+                label="Author"
+                value={book.author || ''}
+                onChange={(e) => setBook({ ...book, author: e.target.value })}
+              />
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -222,39 +255,42 @@ export default function EditBook() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="pages">Total Pages</Label>
-                  <Input
-                    id="pages"
-                    type="number"
-                    value={book.pages || ''}
-                    onChange={(e) => setBook({ ...book, pages: parseInt(e.target.value) || null })}
-                  />
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <MobileInput
+                  id="pages"
+                  label="Total Pages"
+                  type="number"
+                  inputMode="numeric"
+                  value={book.pages || ''}
+                  onChange={(e) => {
+                    setBook({ ...book, pages: parseInt(e.target.value) || null });
+                    if (errors.pages) setErrors(prev => ({ ...prev, pages: '' }));
+                  }}
+                  error={errors.pages}
+                />
 
-                <div>
-                  <Label htmlFor="chapters">Total Chapters</Label>
-                  <Input
-                    id="chapters"
-                    type="number"
-                    value={book.chapters || ''}
-                    onChange={(e) => setBook({ ...book, chapters: parseInt(e.target.value) || null })}
-                  />
-                </div>
+                <MobileInput
+                  id="chapters"
+                  label="Total Chapters"
+                  type="number"
+                  inputMode="numeric"
+                  value={book.chapters || ''}
+                  onChange={(e) => setBook({ ...book, chapters: parseInt(e.target.value) || null })}
+                />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="current_page">Current Page</Label>
-                  <Input
-                    id="current_page"
-                    type="number"
-                    value={book.current_page || 0}
-                    onChange={(e) => setBook({ ...book, current_page: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-              </div>
+              <MobileInput
+                id="current_page"
+                label="Current Page"
+                type="number"
+                inputMode="numeric"
+                value={book.current_page || 0}
+                onChange={(e) => {
+                  setBook({ ...book, current_page: parseInt(e.target.value) || 0 });
+                  if (errors.current_page) setErrors(prev => ({ ...prev, current_page: '' }));
+                }}
+                error={errors.current_page}
+              />
 
               <div>
                 <Label htmlFor="status">Status</Label>
@@ -284,11 +320,11 @@ export default function EditBook() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">No rating</SelectItem>
-                    <SelectItem value="1">⭐ 1 Star</SelectItem>
-                    <SelectItem value="2">⭐⭐ 2 Stars</SelectItem>
-                    <SelectItem value="3">⭐⭐⭐ 3 Stars</SelectItem>
-                    <SelectItem value="4">⭐⭐⭐⭐ 4 Stars</SelectItem>
-                    <SelectItem value="5">⭐⭐⭐⭐⭐ 5 Stars</SelectItem>
+                    <SelectItem value="1">★ 1 Star</SelectItem>
+                    <SelectItem value="2">★★ 2 Stars</SelectItem>
+                    <SelectItem value="3">★★★ 3 Stars</SelectItem>
+                    <SelectItem value="4">★★★★ 4 Stars</SelectItem>
+                    <SelectItem value="5">★★★★★ 5 Stars</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -361,34 +397,38 @@ export default function EditBook() {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  value={book.notes || ''}
-                  onChange={(e) => setBook({ ...book, notes: e.target.value })}
-                  rows={6}
-                  placeholder="Add your thoughts, quotes, or annotations..."
-                />
-              </div>
+              <MobileTextarea
+                id="notes"
+                label="Notes"
+                value={book.notes || ''}
+                onChange={(e) => setBook({ ...book, notes: e.target.value })}
+                rows={6}
+                placeholder="Add your thoughts, quotes, or annotations..."
+              />
 
-              <div className="flex gap-2 pt-4">
-                <Button type="submit" disabled={saving} className="flex-1">
+              {/* Sticky save button for mobile */}
+              <div className={cn(
+                "flex gap-2 pt-4",
+                isMobile && "fixed bottom-20 left-0 right-0 p-4 bg-background border-t z-40"
+              )}>
+                <Button type="submit" disabled={saving} className="flex-1 min-h-[44px]">
                   <Save className="mr-2 h-4 w-4" />
                   {saving ? 'Saving...' : 'Save Changes'}
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate(`/book/${id}`)}
-                >
-                  Cancel
-                </Button>
+                {!isMobile && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate(`/book/${id}`)}
+                  >
+                    Cancel
+                  </Button>
+                )}
               </div>
             </form>
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MobileLayout>
   );
 }

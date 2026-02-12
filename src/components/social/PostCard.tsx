@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MessageCircle, Trash2, Edit, Flag, Share2 } from "lucide-react";
+import { HeartLike } from "@/components/animations/HeartLike";
 import { Post } from "@/hooks/usePosts";
 import { usePostComments, PostComment } from "@/hooks/usePostComments";
 import { supabase } from "@/integrations/supabase/client";
@@ -325,15 +326,14 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
           )}
 
           <div className="flex items-center gap-4 pt-3 border-t">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onLike(post.id)}
-              className={post.user_has_liked ? "text-red-500" : ""}
-            >
-              <Heart className={`h-4 w-4 mr-2 ${post.user_has_liked ? "fill-current" : ""}`} />
-              {post.likes_count}
-            </Button>
+            <div className="flex items-center gap-2">
+              <HeartLike
+                liked={post.user_has_liked}
+                onLike={() => onLike(post.id)}
+                size={20}
+              />
+              <span className="text-sm text-muted-foreground">{post.likes_count}</span>
+            </div>
             <Button
               variant="ghost"
               size="sm"

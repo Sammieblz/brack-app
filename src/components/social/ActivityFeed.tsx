@@ -3,6 +3,7 @@ import { FeedItem } from "./FeedItem";
 import { Button } from "@/components/ui/button";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { RefreshCw, Users, BookOpen } from "lucide-react";
+import { EmptyActivity } from "@/components/empty/EmptyActivity";
 
 export const ActivityFeed = () => {
   const { activities, loading, hasMore, loadMore, formatTimeAgo, refetchFeed } = useSocialFeed();
@@ -19,23 +20,7 @@ export const ActivityFeed = () => {
   }
 
   if (activities.length === 0) {
-    return (
-      <div className="text-center py-16 animate-fade-in">
-        <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 max-w-md mx-auto">
-          <div className="p-4 rounded-full bg-primary/20 w-fit mx-auto mb-4">
-            <Users className="h-8 w-8 text-primary" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2">Your feed is empty</h3>
-          <p className="text-muted-foreground mb-6">
-            Follow other readers to see their reading activities and updates!
-          </p>
-          <Button variant="default" className="hover-scale">
-            <BookOpen className="h-4 w-4 mr-2" />
-            Discover Readers
-          </Button>
-        </div>
-      </div>
-    );
+    return <EmptyActivity />;
   }
 
   return (

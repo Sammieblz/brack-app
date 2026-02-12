@@ -1,4 +1,4 @@
-import { Home, BookOpen, Users, User, List, Radio } from "lucide-react";
+import { Home, BookOpen, Users, List, Radio } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
@@ -9,7 +9,6 @@ const tabs = [
   { name: "Discover", path: "/readers", icon: Users },
   { name: "Feed", path: "/feed", icon: Radio },
   { name: "Lists", path: "/lists", icon: List },
-  { name: "Profile", path: "/profile", icon: User },
 ];
 
 export const MobileBottomNav = () => {
@@ -42,17 +41,25 @@ export const MobileBottomNav = () => {
               to={tab.path}
               onClick={() => triggerHaptic("selection")}
               className={cn(
-                "relative flex min-w-0 flex-col items-center justify-center flex-1 h-full transition-all touch-manipulation rounded-2xl px-2 sm:px-3 py-2 gap-1 text-[11px] sm:text-xs font-medium",
+                "relative flex min-w-0 flex-col items-center justify-center flex-1 h-full transition-all duration-200 touch-manipulation rounded-2xl px-2 sm:px-3 py-2 gap-1 text-[11px] sm:text-xs font-medium active:scale-95",
                 active
                   ? "text-primary"
-                  : "text-muted-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               )}
+              aria-label={`Navigate to ${tab.name}`}
+              aria-current={active ? "page" : undefined}
             >
               {active && (
-                <span className="absolute inset-0 rounded-2xl bg-primary/12 shadow-inner shadow-primary/10 supports-[backdrop-filter]:backdrop-blur-md transition-all" />
+                <span className="absolute inset-0 rounded-2xl bg-primary/12 shadow-inner shadow-primary/10 supports-[backdrop-filter]:backdrop-blur-md transition-all duration-200 animate-in fade-in" />
               )}
-              <Icon className={cn("h-5 w-5 sm:h-6 sm:w-6 z-10", active && "stroke-[2.25]")} />
-              <span className="z-10 truncate">{tab.name}</span>
+              <Icon className={cn(
+                "h-5 w-5 sm:h-6 sm:w-6 z-10 transition-all duration-200",
+                active && "stroke-[2.25] scale-110"
+              )} />
+              <span className={cn(
+                "z-10 truncate transition-all duration-200",
+                active && "font-semibold"
+              )}>{tab.name}</span>
             </Link>
           );
         })}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, BookPlus, Camera, Search, Timer, TrendingUp, Clock, ListPlus } from "lucide-react";
+import { Plus, BookPlus, Camera, Search, Timer, TrendingUp, Clock, ListPlus, Scan } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -73,7 +73,7 @@ export const FloatingActionButton = () => {
       },
     },
     {
-      icon: ScanLine,
+      icon: Scan,
       label: "Scan Cover",
       onClick: () => {
         triggerHaptic("light");

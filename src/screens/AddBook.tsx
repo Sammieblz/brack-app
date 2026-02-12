@@ -8,12 +8,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookSearch } from "@/components/BookSearch";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, BookOpen, Camera, Search, PenTool } from "lucide-react";
+import { BookOpen, Camera, Search, PenTool, Loader2 } from "lucide-react";
+import { MobileLayout } from "@/components/MobileLayout";
+import { MobileHeader } from "@/components/MobileHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileInput } from "@/components/mobile/MobileInput";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { bookOperations } from "@/utils/offlineOperation";
 import { GENRES } from "@/constants";
 import type { Book } from "@/types";
 import type { GoogleBookResult } from "@/types/googleBooks";
+import { SuccessCheckmark } from "@/components/animations/SuccessCheckmark";
+import { Confetti } from "@/components/animations/Confetti";
 
 const AddBook = () => {
   const [user, setUser] = useState<{ id: string } | null>(null);
@@ -21,6 +28,9 @@ const AddBook = () => {
   const [activeTab, setActiveTab] = useState("search");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [isFirstBook, setIsFirstBook] = useState(false);
   
   // Get ISBN from URL params if present
   const isbnFromUrl = searchParams.get('isbn') || '';
@@ -94,8 +104,27 @@ const AddBook = () => {
 
       await bookOperations.create(bookData);
 
-      toast.success("Book added successfully!");
-      navigate("/dashboard");
+      // Check if this is the first book
+      const { data: existingBooks } = await supabase
+        .from('books')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .is('deleted_at', null);
+      
+      const firstBook = (existingBooks?.length || 0) <= 1;
+      setIsFirstBook(firstBook);
+
+      // Show success animation
+      setShowSuccess(true);
+      if (firstBook) {
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3000);
+      }
+
+      setTimeout(() => {
+        setShowSuccess(false);
+        navigate("/dashboard");
+      }, 1500);
     } catch (error: unknown) {
       console.error('Error adding book:', error);
       toast.error(error instanceof Error ? error.message : "Failed to add book");
@@ -158,25 +187,23 @@ const AddBook = () => {
     navigate("/scan-cover");
   };
 
+  const isMobile = useIsMobile();
+
   return (
-    <div className="min-h-screen bg-gradient-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md relative z-10">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate("/dashboard")}
-            className="border-border/50 hover:shadow-soft transition-all duration-300"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <div className="flex items-center space-x-2">
-            <BookOpen className="h-6 w-6 text-primary" />
-            <span className="text-lg font-semibold">Add Book</span>
+    <MobileLayout>
+      {showConfetti && <Confetti trigger={showConfetti} />}
+      {showSuccess && (
+        <div className="fixed inset-0 z-[9999] bg-background/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <SuccessCheckmark show={showSuccess} size={64} />
+            <p className="text-xl font-semibold">
+              {isFirstBook ? "Your first book! 🎉" : "Book added successfully!"}
+            </p>
           </div>
         </div>
+      )}
+      {isMobile && <MobileHeader title="Add Book" showBack />}
+      <div className="container mx-auto px-4 py-4 md:py-8 max-w-md">
 
         {/* Form Card */}
         <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in">
@@ -187,65 +214,62 @@ const AddBook = () => {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsList className="w-full grid grid-cols-2 mb-6">
                 <TabsTrigger value="search" className="flex items-center gap-2">
                   <Search className="h-4 w-4" />
-                  Search Books
+                  <span>Search</span>
                 </TabsTrigger>
                 <TabsTrigger value="manual" className="flex items-center gap-2">
                   <PenTool className="h-4 w-4" />
-                  Manual Entry
+                  <span>Manual</span>
                 </TabsTrigger>
               </TabsList>
 
               {/* Search Tab */}
-              <TabsContent value="search" className="space-y-4">
+              <TabsContent value="search" className="space-y-4 mt-0">
                 <BookSearch 
                   onSelectBook={handleSelectBook}
                   onQuickAdd={handleQuickAdd}
+                  initialQuery={searchFromUrl}
                 />
               </TabsContent>
 
               {/* Manual Entry Tab */}
-              <TabsContent value="manual">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Title</Label>
-                    <Input
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="Enter book title"
-                      required
-                    />
-                  </div>
+              <TabsContent value="manual" className="mt-0">
+                <form id="add-book-form" onSubmit={handleSubmit} className="space-y-5">
+                  <MobileInput
+                    id="title"
+                    label="Title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="Enter book title"
+                    required
+                  />
+
+                  <MobileInput
+                    id="author"
+                    label="Author"
+                    value={formData.author}
+                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                    placeholder="Enter author name"
+                  />
 
                   <div className="space-y-2">
-                    <Label htmlFor="author">Author</Label>
-                    <Input
-                      id="author"
-                      value={formData.author}
-                      onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                      placeholder="Enter author name"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="isbn">ISBN</Label>
+                    <Label htmlFor="isbn" className="text-sm font-medium">ISBN</Label>
                     <div className="flex space-x-2">
                       <Input
                         id="isbn"
                         value={formData.isbn}
                         onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
                         placeholder="Enter ISBN"
-                        className="flex-1"
+                        className="flex-1 min-h-[44px]"
                       />
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         onClick={handleScanISBN}
-                        className="border-border/50 hover:shadow-soft transition-all duration-300 px-3"
+                        className="border-border/50 hover:shadow-soft transition-all duration-300 px-3 min-h-[44px] min-w-[44px]"
                       >
                         <Camera className="h-4 w-4" />
                       </Button>
@@ -253,9 +277,9 @@ const AddBook = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="genre">Genre</Label>
+                    <Label htmlFor="genre" className="text-sm font-medium">Genre</Label>
                     <Select value={formData.genre} onValueChange={(value) => setFormData({ ...formData, genre: value })}>
-                      <SelectTrigger>
+                      <SelectTrigger className="min-h-[44px]">
                         <SelectValue placeholder="Select a genre" />
                       </SelectTrigger>
                       <SelectContent>
@@ -266,46 +290,81 @@ const AddBook = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                    {/* Quick Genre Actions */}
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {GENRES.slice(0, 6).map((genre) => (
+                        <Button
+                          key={genre}
+                          type="button"
+                          variant={formData.genre === genre ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setFormData({ ...formData, genre })}
+                          className={cn(
+                            "text-xs min-h-[36px] px-3",
+                            formData.genre === genre && "bg-primary text-primary-foreground"
+                          )}
+                        >
+                          {genre}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="pages">Page Count</Label>
-                    <Input
-                      id="pages"
-                      type="number"
-                      value={formData.pages}
-                      onChange={(e) => setFormData({ ...formData, pages: e.target.value })}
-                      placeholder="Enter page count"
-                      min="1"
-                    />
-                  </div>
+                  <MobileInput
+                    id="pages"
+                    label="Page Count"
+                    type="number"
+                    inputMode="numeric"
+                    value={formData.pages}
+                    onChange={(e) => setFormData({ ...formData, pages: e.target.value })}
+                    placeholder="Enter page count"
+                    min="1"
+                  />
 
-                  <div className="space-y-2">
-                    <Label htmlFor="chapters">Chapter Count</Label>
-                    <Input
-                      id="chapters"
-                      type="number"
-                      value={formData.chapters}
-                      onChange={(e) => setFormData({ ...formData, chapters: e.target.value })}
-                      placeholder="Enter chapter count"
-                      min="1"
-                    />
-                  </div>
+                  <MobileInput
+                    id="chapters"
+                    label="Chapter Count"
+                    type="number"
+                    inputMode="numeric"
+                    value={formData.chapters}
+                    onChange={(e) => setFormData({ ...formData, chapters: e.target.value })}
+                    placeholder="Enter chapter count"
+                    min="1"
+                  />
 
+                  {/* Spacer for fixed button */}
+                  <div className="h-24 md:h-4" />
+                </form>
+
+                {/* Fixed Save Button - Properly positioned above bottom nav */}
+                <div className={cn(
+                  "fixed left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-t border-border/50",
+                  isMobile 
+                    ? "bottom-[calc(max(env(safe-area-inset-bottom),24px)+72px+16px)] px-4 py-3"
+                    : "relative bottom-0 px-0 py-4 border-t-0 bg-transparent"
+                )}>
                   <Button
                     type="submit"
-                    className="w-full h-12 bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium"
-                    disabled={loading}
+                    form="add-book-form"
+                    className="w-full min-h-[48px] bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-semibold text-base rounded-xl"
+                    disabled={loading || !formData.title.trim()}
                   >
-                    {loading ? "Adding Book..." : "Save Book"}
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Adding Book...
+                      </span>
+                    ) : (
+                      "Save Book"
+                    )}
                   </Button>
-                </form>
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MobileLayout>
   );
 };
 

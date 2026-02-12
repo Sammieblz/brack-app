@@ -7,8 +7,11 @@ import { getProgressPercentage } from "@/utils/bookProgress";
 import { AddToListDialog } from "@/components/AddToListDialog";
 import { ContextMenuNative } from "@/components/ui/context-menu-native";
 import { OptimizedImage } from "@/components/OptimizedImage";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 import type { Book } from "@/types";
 import { useNavigate } from "react-router-dom";
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 interface BookCardProps {
   book: Book;
@@ -20,6 +23,20 @@ interface BookCardProps {
 
 export const BookCard = ({ book, onClick, onStatusChange, onDelete, userId }: BookCardProps) => {
   const navigate = useNavigate();
+  const [lightboxOpen, setLightboxOpen] = React.useState(false);
+  
+  // Track previous status for smooth transitions
+  const prevStatusRef = React.useRef(book.status);
+  const [isTransitioning, setIsTransitioning] = React.useState(false);
+
+  React.useEffect(() => {
+    if (prevStatusRef.current !== book.status) {
+      setIsTransitioning(true);
+      const timer = setTimeout(() => setIsTransitioning(false), 500);
+      prevStatusRef.current = book.status;
+      return () => clearTimeout(timer);
+    }
+  }, [book.status]);
 
   const contextActions = [
     {
@@ -79,11 +96,22 @@ export const BookCard = ({ book, onClick, onStatusChange, onDelete, userId }: Bo
           <div onClick={onClick} className="cursor-pointer flex-1 flex items-start space-x-3 sm:space-x-4">
           <div className="flex-shrink-0">
             {book.cover_url ? (
-              <OptimizedImage
+              <ImageLightbox
                 src={book.cover_url}
                 alt={book.title}
-                className="w-14 h-20 sm:w-16 sm:h-24 object-cover rounded shadow-sm"
-              />
+                isOpen={lightboxOpen}
+                onClose={() => setLightboxOpen(false)}
+              >
+                <OptimizedImage
+                  src={book.cover_url}
+                  alt={book.title}
+                  className="w-14 h-20 sm:w-16 sm:h-24 object-cover rounded shadow-sm cursor-zoom-in"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightboxOpen(true);
+                  }}
+                />
+              </ImageLightbox>
             ) : (
               <div className="w-14 h-20 sm:w-16 sm:h-24 bg-gradient-primary rounded flex items-center justify-center">
                 <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
@@ -104,7 +132,11 @@ export const BookCard = ({ book, onClick, onStatusChange, onDelete, userId }: Bo
             <div className="flex items-center justify-between mt-1.5 sm:mt-2">
               <Badge 
                 variant="secondary" 
-                className={`text-[10px] sm:text-xs px-2 py-0.5 ${getStatusColor(book.status)}`}
+                className={cn(
+                  "text-[10px] sm:text-xs px-2 py-0.5 transition-all duration-500 ease-in-out",
+                  getStatusColor(book.status),
+                  isTransitioning && "scale-110"
+                )}
               >
                 {book.status.replace('_', ' ')}
               </Badge>

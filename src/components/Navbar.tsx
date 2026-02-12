@@ -8,7 +8,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { BookOpen, BarChart3, Library, User, LogOut, Menu, X, BookMarked, Target, ListChecks, Users, UserSearch, MessageCircle } from "lucide-react";
+import { BookOpen, BarChart3, Library, Settings, LogOut, Menu, X, BookMarked, Target, ListChecks, Users, UserSearch, MessageCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -119,9 +119,9 @@ export const Navbar = () => {
                 className="w-56 mt-2 bg-background/95 backdrop-blur-sm border border-border/50" 
                 align="end"
               >
-                <DropdownMenuItem onClick={() => navigate("/profile")} className="cursor-pointer">
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
+                <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />

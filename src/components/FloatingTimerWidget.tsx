@@ -2,9 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { useTimer } from "@/contexts/TimerContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Pause, Square, Minimize2, Maximize2, X } from "lucide-react";
+import { Play, Pause, Square, Minimize2, Maximize2, X, Clock } from "lucide-react";
 import { formatTime } from "@/utils";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { useGSAP } from "@/hooks/useGSAP";
+import { gsap } from "gsap";
+import { Confetti } from "@/components/animations/Confetti";
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 const STORAGE_KEY = "floatingTimerPosition";
@@ -32,6 +35,9 @@ export const FloatingTimerWidget = () => {
   const dragStartPosition = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const dragRef = useRef<HTMLDivElement>(null);
   const dragBounds = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
+  const timeDisplayRef = useRef<HTMLDivElement>(null);
+  const clockIconRef = useRef<HTMLDivElement>(null);
+  const [showSessionComplete, setShowSessionComplete] = useState(false);
 
   const constrainToViewport = (pos: { x: number; y: number }, size = DEFAULT_SIZE) => {
     if (typeof window === "undefined") return pos;
@@ -69,6 +75,40 @@ export const FloatingTimerWidget = () => {
     // Default near bottom-right with margin
     setPosition(constrainToViewport({ x: vw - DEFAULT_SIZE.w, y: vh - DEFAULT_SIZE.h }));
   }, []);
+
+  // Timer start pulse animation
+  useGSAP(() => {
+    if (clockIconRef.current && isRunning) {
+      gsap.to(clockIconRef.current, {
+        scale: 1.2,
+        duration: 0.3,
+        yoyo: true,
+        repeat: 1,
+        ease: "power2.out",
+      });
+    }
+  }, { dependencies: [isRunning] });
+
+  // Smooth time display updates
+  useGSAP(() => {
+    if (timeDisplayRef.current && isRunning) {
+      gsap.to(timeDisplayRef.current, {
+        scale: 1.05,
+        duration: 0.1,
+        yoyo: true,
+        ease: "power2.out",
+      });
+    }
+  }, { dependencies: [time, isRunning] });
+
+  // Trigger celebration on session completion
+  useEffect(() => {
+    if (time === 0 && !isRunning && !isVisible) {
+      // Timer was just finished
+      setShowSessionComplete(true);
+      setTimeout(() => setShowSessionComplete(false), 3000);
+    }
+  }, [time, isRunning, isVisible]);
 
   if (!isVisible) return null;
 
@@ -182,11 +222,16 @@ export const FloatingTimerWidget = () => {
   }
 
   return (
-    <div {...commonDragProps}>
-      <Card className="bg-gradient-card shadow-soft border border-border/60 backdrop-blur-sm w-[340px] max-w-[90vw]">
+    <>
+      {showSessionComplete && <Confetti trigger={showSessionComplete} />}
+      <div {...commonDragProps}>
+        <Card className="bg-gradient-card shadow-soft border border-border/60 backdrop-blur-sm w-[340px] max-w-[90vw]">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <div ref={clockIconRef}>
+                <Clock className="h-5 w-5 text-primary" />
+              </div>
               Reading Timer
             </CardTitle>
             <Button
@@ -205,7 +250,7 @@ export const FloatingTimerWidget = () => {
         <CardContent className="space-y-4">
           {/* Time Display */}
           <div className="text-center py-4">
-            <div className="text-5xl font-mono font-bold text-foreground">
+            <div ref={timeDisplayRef} className="text-5xl font-mono font-bold text-foreground">
               {formatTime(time)}
             </div>
             <p className="text-sm text-muted-foreground mt-2">
@@ -259,6 +304,7 @@ export const FloatingTimerWidget = () => {
           </Button>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 };

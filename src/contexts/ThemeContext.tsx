@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { useTheme as useNextTheme } from 'next-themes';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +11,8 @@ interface ThemeContextType {
   setThemeMode: (mode: 'light' | 'dark' | 'system') => Promise<void>;
   resolvedTheme: string | undefined;
   isLoading: boolean;
+  /** Resets color theme to 'default'. Called on sign-out and on unauthenticated pages. */
+  resetToDefaultTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -41,20 +43,29 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [currentTheme, setCurrentTheme] = useState('default');
   const [isLoading, setIsLoading] = useState(true);
 
+  // ── Reset to default theme (synchronous, no DB call) ────────────────
+  const resetToDefaultTheme = useCallback(() => {
+    localStorage.removeItem('color_theme');
+    const theme = getTheme('default');
+    const isDark = document.documentElement.classList.contains('dark');
+    const colors = isDark ? theme.colors.dark : theme.colors.light;
+    applyThemeColors(colors);
+    setCurrentTheme('default');
+  }, []);
+
+  // ── Auto-reset when user signs out (user becomes null) ──────────────
+  useEffect(() => {
+    if (!user) {
+      resetToDefaultTheme();
+      setIsLoading(false);
+    }
+  }, [user, resetToDefaultTheme]);
+
   // Load user's saved theme preference
   useEffect(() => {
     const loadTheme = async () => {
-      // First, try to load from localStorage for instant application
-      const cachedTheme = localStorage.getItem('color_theme');
-      if (cachedTheme) {
-        const theme = getTheme(cachedTheme);
-        const isDark = document.documentElement.classList.contains('dark');
-        const colors = isDark ? theme.colors.dark : theme.colors.light;
-        applyThemeColors(colors);
-        setCurrentTheme(cachedTheme);
-      }
-
       if (!user) {
+        // No user → ensure defaults are applied (handled by the auto-reset above)
         setIsLoading(false);
         return;
       }
@@ -68,50 +79,72 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
         if (error) throw error;
 
-        if (data?.color_theme) {
-          const theme = getTheme(data.color_theme);
-          const isDark = document.documentElement.classList.contains('dark');
-          const colors = isDark ? theme.colors.dark : theme.colors.light;
-          applyThemeColors(colors);
-          setCurrentTheme(data.color_theme);
-          localStorage.setItem('color_theme', data.color_theme);
+        // Determine theme to use: DB value, or 'default' for new users
+        const themeId = data?.color_theme || 'default';
+        const themeModeToUse = data?.theme_mode || 'system';
+        
+        // If new user (no color_theme or theme_mode in DB), save defaults to DB
+        if (!data?.color_theme || !data?.theme_mode) {
+          await supabase
+            .from('profiles')
+            .upsert({ 
+              id: user.id,
+              color_theme: themeId,
+              theme_mode: themeModeToUse,
+              updated_at: new Date().toISOString()
+            }, {
+              onConflict: 'id'
+            });
         }
 
-        if (data?.theme_mode) {
-          setNextTheme(data.theme_mode);
+        // Apply theme mode first (so dark class is set correctly)
+        setNextTheme(themeModeToUse);
+
+        // Set currentTheme state immediately - the effect below will apply colors when resolvedTheme is ready
+        setCurrentTheme(themeId);
+        localStorage.setItem('color_theme', themeId);
+        
+        // If resolvedTheme is already available, apply colors immediately
+        // Otherwise, the effect below will apply when resolvedTheme becomes available
+        if (resolvedTheme) {
+          const theme = getTheme(themeId);
+          const isDark = resolvedTheme === 'dark';
+          const colors = isDark ? theme.colors.dark : theme.colors.light;
+          applyThemeColors(colors);
         }
       } catch (error) {
         console.error('Error loading theme:', error);
+        // Fallback to default theme on error
+        const theme = getTheme('default');
+        const isDark = resolvedTheme === 'dark' || document.documentElement.classList.contains('dark');
+        const colors = isDark ? theme.colors.dark : theme.colors.light;
+        applyThemeColors(colors);
+        setCurrentTheme('default');
       } finally {
         setIsLoading(false);
       }
     };
 
     loadTheme();
-  }, [user]);
+  }, [user, setNextTheme, resolvedTheme]);
 
-  // Apply theme when system theme changes
   useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const theme = getTheme(currentTheme);
-      const isDark = document.documentElement.classList.contains('dark');
-      const colors = isDark ? theme.colors.dark : theme.colors.light;
-      applyThemeColors(colors);
-    });
+    if (!user) return;
+    
+    // Wait for resolvedTheme to be available before applying colors
+    if (!resolvedTheme) return;
 
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-
-    return () => observer.disconnect();
-  }, [currentTheme]);
+    const theme = getTheme(currentTheme);
+    const isDark = resolvedTheme === 'dark';
+    const colors = isDark ? theme.colors.dark : theme.colors.light;
+    applyThemeColors(colors);
+  }, [currentTheme, user, resolvedTheme]);
 
   const setTheme = async (themeId: string) => {
     if (!user) return;
 
     try {
-      // Apply theme immediately
+      // Apply theme immediately, respecting current theme mode (light/dark)
       const theme = getTheme(themeId);
       const isDark = document.documentElement.classList.contains('dark');
       const colors = isDark ? theme.colors.dark : theme.colors.light;
@@ -121,27 +154,53 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       // Cache in localStorage for instant load on next visit
       localStorage.setItem('color_theme', themeId);
 
-      // Save to database
+      // Save to database (use upsert to ensure it's set even for new users)
       const { error } = await supabase
         .from('profiles')
-        .update({ color_theme: themeId })
-        .eq('id', user.id);
+        .upsert({ 
+          id: user.id,
+          color_theme: themeId,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'id'
+        });
 
       if (error) throw error;
     } catch (error) {
       console.error('Error saving theme:', error);
+      // Revert to previous theme on error
+      const previousTheme = localStorage.getItem('color_theme') || 'default';
+      const theme = getTheme(previousTheme);
+      const isDark = document.documentElement.classList.contains('dark');
+      const colors = isDark ? theme.colors.dark : theme.colors.light;
+      applyThemeColors(colors);
+      setCurrentTheme(previousTheme);
     }
   };
 
   const setThemeMode = async (mode: 'light' | 'dark' | 'system') => {
     setNextTheme(mode);
     
+    // Wait for theme mode to apply, then re-apply color theme with correct variant
+    setTimeout(() => {
+      const theme = getTheme(currentTheme);
+      const isDark = document.documentElement.classList.contains('dark');
+      const colors = isDark ? theme.colors.dark : theme.colors.light;
+      applyThemeColors(colors);
+    }, 0);
+    
     if (user) {
       try {
+        // Save to database (use upsert to ensure it's set even for new users)
         const { error } = await supabase
           .from('profiles')
-          .update({ theme_mode: mode })
-          .eq('id', user.id);
+          .upsert({ 
+            id: user.id,
+            theme_mode: mode,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'id'
+          });
 
         if (error) throw error;
       } catch (error) {
@@ -151,7 +210,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <ThemeContext.Provider value={{ currentTheme, setTheme, themeMode, setThemeMode, resolvedTheme, isLoading }}>
+    <ThemeContext.Provider value={{ 
+      currentTheme, setTheme, themeMode, setThemeMode, 
+      resolvedTheme, isLoading, resetToDefaultTheme 
+    }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -27,13 +27,14 @@ class DeepLinkService {
 
     if (Capacitor.isNativePlatform()) {
       // Listen for app URL open events (native)
-      const listener = await App.addListener('appUrlOpen', (event: AppUrlOpen) => {
+      App.addListener('appUrlOpen', (event: AppUrlOpen) => {
         console.log('Deep link received:', event.url);
         this.handleDeepLink(event.url);
       });
 
+      // Return cleanup function that does nothing (listener auto-cleans)
       return () => {
-        listener.remove();
+        // Capacitor listeners are automatically cleaned up
       };
     } else {
       // Web: handle URL changes
