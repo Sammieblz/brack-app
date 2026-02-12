@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { User } from "@/types";
+import type { User, Profile } from "@/types";
 
 interface PersonalInfoProps {
   user: User;
@@ -16,7 +16,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   
   const [formData, setFormData] = useState({
     first_name: "",

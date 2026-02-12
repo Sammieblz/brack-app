@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Lock, Mail, Calendar, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { User } from "@/types";
+import type { User, Profile } from "@/types";
 
 interface AccountSettingsProps {
   user: User;
@@ -16,7 +16,7 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
   const { toast } = useToast();
   const [email, setEmail] = useState(user?.email || "");
   const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     loadProfile();

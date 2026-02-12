@@ -101,6 +101,15 @@ export const FloatingTimerWidget = () => {
     }
   }, { dependencies: [time, isRunning] });
 
+  // Trigger celebration on session completion
+  useEffect(() => {
+    if (time === 0 && !isRunning && !isVisible) {
+      // Timer was just finished
+      setShowSessionComplete(true);
+      setTimeout(() => setShowSessionComplete(false), 3000);
+    }
+  }, [time, isRunning, isVisible]);
+
   if (!isVisible) return null;
 
   const updateBounds = () => {
@@ -211,15 +220,6 @@ export const FloatingTimerWidget = () => {
       </div>
     );
   }
-
-  // Trigger celebration on session completion
-  useEffect(() => {
-    if (time === 0 && !isRunning && !isVisible) {
-      // Timer was just finished
-      setShowSessionComplete(true);
-      setTimeout(() => setShowSessionComplete(false), 3000);
-    }
-  }, [time, isRunning, isVisible]);
 
   return (
     <>

@@ -17,6 +17,7 @@ import type { Book } from "@/types";
 const ProgressTracking = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const isMobile = useIsMobile(); // Must be called before any early returns
   const [book, setBook] = useState<Book | null>(null);
   const { dailyProgress, velocityData, forecastData, loading } = useProgressTracking(id);
   const { progress } = useBookProgress(id);
@@ -49,8 +50,6 @@ const ProgressTracking = () => {
       </div>
     );
   }
-
-  const isMobile = useIsMobile();
 
   return (
     <MobileLayout>
