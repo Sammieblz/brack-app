@@ -62,7 +62,7 @@ export const QuickProgressWidget = ({ book, onUpdate }: QuickProgressWidgetProps
   return (
     <Card className="bg-gradient-card">
       <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
+        <CardTitle className="font-display text-lg flex items-center gap-2">
           <BookOpen className="h-5 w-5" />
           Quick Progress Update
         </CardTitle>
@@ -87,7 +87,7 @@ export const QuickProgressWidget = ({ book, onUpdate }: QuickProgressWidgetProps
             </div>
           </div>
           {book.pages && (
-            <p className="text-sm text-muted-foreground">
+            <p className="font-sans text-sm text-muted-foreground">
               {Math.round((parseInt(currentPage) / book.pages) * 100)}% complete
             </p>
           )}

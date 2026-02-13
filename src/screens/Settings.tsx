@@ -140,8 +140,8 @@ const Settings = () => {
       <div className="container max-w-4xl mx-auto p-4 md:p-6">
         {!isMobile && (
           <div className="mb-6">
-            <h1 className="text-3xl font-bold">Settings</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="font-display text-3xl font-bold">Settings</h1>
+            <p className="font-sans text-muted-foreground mt-1">
               Manage your account and preferences
             </p>
           </div>
@@ -166,8 +166,8 @@ const Settings = () => {
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="flex-1 text-left">
-                      <div className="font-medium">{section.label}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
+                      <div className="font-sans font-medium">{section.label}</div>
+                      <div className="font-sans text-xs text-muted-foreground mt-0.5">
                         {section.description}
                       </div>
                     </div>

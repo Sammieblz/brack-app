@@ -307,8 +307,8 @@ export default function Readers() {
                         <div className="p-4 rounded-full bg-primary/20 w-fit mx-auto mb-4">
                           <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                         </div>
-                        <h3 className="font-semibold mb-2">No clubs yet</h3>
-                        <p className="text-sm text-muted-foreground">
+                        <h3 className="font-display font-semibold mb-2">No clubs yet</h3>
+                        <p className="font-sans text-sm text-muted-foreground">
                           Create your first book club or join existing ones!
                         </p>
                       </CardContent>
@@ -333,8 +333,8 @@ export default function Readers() {
                         <div className="p-4 rounded-full bg-secondary/20 w-fit mx-auto mb-4">
                           <Users className="h-6 w-6 sm:h-8 sm:w-8 text-secondary" />
                         </div>
-                        <h3 className="font-semibold mb-2">No public clubs</h3>
-                        <p className="text-sm text-muted-foreground">
+                        <h3 className="font-display font-semibold mb-2">No public clubs</h3>
+                        <p className="font-sans text-sm text-muted-foreground">
                           Be the first to create a public book club!
                         </p>
                       </CardContent>

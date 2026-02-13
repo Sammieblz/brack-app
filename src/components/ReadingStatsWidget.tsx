@@ -118,7 +118,7 @@ export const ReadingStatsWidget = ({
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center text-base md:text-lg">
+          <CardTitle className="font-display flex items-center text-base md:text-lg">
             <BarChart3 className="h-4 w-4 md:h-5 md:w-5 mr-2" />
             Reading Statistics
           </CardTitle>
@@ -147,28 +147,28 @@ export const ReadingStatsWidget = ({
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="space-y-1">
-            <div className="text-2xl md:text-3xl font-bold text-primary">{stats.totalBooks}</div>
-            <div className="text-xs md:text-sm text-muted-foreground">Total Books</div>
+            <div className="font-sans text-2xl md:text-3xl font-bold text-primary">{stats.totalBooks}</div>
+            <div className="font-sans text-xs md:text-sm text-muted-foreground">Total Books</div>
           </div>
           <div className="space-y-1">
-            <div className="text-2xl md:text-3xl font-bold text-green-500">{stats.completedBooks}</div>
-            <div className="text-xs md:text-sm text-muted-foreground">Completed</div>
+            <div className="font-sans text-2xl md:text-3xl font-bold text-green-500">{stats.completedBooks}</div>
+            <div className="font-sans text-xs md:text-sm text-muted-foreground">Completed</div>
           </div>
           <div className="space-y-1">
-            <div className="text-2xl md:text-3xl font-bold text-blue-500">{stats.totalReadingHours}h</div>
-            <div className="text-xs md:text-sm text-muted-foreground">Reading Time</div>
+            <div className="font-sans text-2xl md:text-3xl font-bold text-blue-500">{stats.totalReadingHours}h</div>
+            <div className="font-sans text-xs md:text-sm text-muted-foreground">Reading Time</div>
           </div>
           <div className="space-y-1">
-            <div className="text-2xl md:text-3xl font-bold text-purple-500">{stats.totalPages.toLocaleString()}</div>
-            <div className="text-xs md:text-sm text-muted-foreground">Pages Read</div>
+            <div className="font-sans text-2xl md:text-3xl font-bold text-purple-500">{stats.totalPages.toLocaleString()}</div>
+            <div className="font-sans text-xs md:text-sm text-muted-foreground">Pages Read</div>
           </div>
           <div className="space-y-1">
-            <div className="text-2xl md:text-3xl font-bold text-orange-500">{stats.avgPagesPerHour}</div>
-            <div className="text-xs md:text-sm text-muted-foreground">Pages/Hour</div>
+            <div className="font-sans text-2xl md:text-3xl font-bold text-orange-500">{stats.avgPagesPerHour}</div>
+            <div className="font-sans text-xs md:text-sm text-muted-foreground">Pages/Hour</div>
           </div>
           <div className="space-y-1">
-            <div className="text-2xl md:text-3xl font-bold text-indigo-500">{stats.longestBook}</div>
-            <div className="text-xs md:text-sm text-muted-foreground">Longest Book</div>
+            <div className="font-sans text-2xl md:text-3xl font-bold text-indigo-500">{stats.longestBook}</div>
+            <div className="font-sans text-xs md:text-sm text-muted-foreground">Longest Book</div>
           </div>
         </div>
       </CardContent>

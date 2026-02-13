@@ -108,10 +108,10 @@ const Messages = () => {
                 <MessageCircle className="h-7 w-7 text-primary" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                <h1 className="font-display text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                   Messages
                 </h1>
-                <p className="text-muted-foreground mt-1">
+                <p className="font-sans text-muted-foreground mt-1">
                   Connect with other readers
                 </p>
               </div>
@@ -158,7 +158,7 @@ const Messages = () => {
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">
                     <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p>Select a conversation to start messaging</p>
+                    <p className="font-sans">Select a conversation to start messaging</p>
                   </div>
                 </div>
               )}

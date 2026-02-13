@@ -46,7 +46,7 @@ export const MobileBackButton = ({ title, onClick, className }: MobileBackButton
       )}
       {title && (
         <span className={cn(
-          "ml-1 font-medium",
+          "font-sans ml-1 font-medium",
           isIOS && "text-base",
           !isIOS && "text-sm"
         )}>

@@ -26,8 +26,8 @@ export const SupportContact = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Support & Help</h2>
-        <p className="text-muted-foreground mt-1">
+        <h2 className="font-display text-2xl font-bold">Support & Help</h2>
+        <p className="font-sans text-muted-foreground mt-1">
           Get help and share your feedback
         </p>
       </div>
@@ -43,20 +43,20 @@ export const SupportContact = () => {
         <CardContent>
           <div className="space-y-4">
             <div>
-              <h4 className="font-medium mb-1">How do I reset my password?</h4>
-              <p className="text-sm text-muted-foreground">
+              <h4 className="font-sans font-medium mb-1">How do I reset my password?</h4>
+              <p className="font-sans text-sm text-muted-foreground">
                 Go to Account Settings and click "Send Password Reset Email"
               </p>
             </div>
             <div>
-              <h4 className="font-medium mb-1">How do I delete my account?</h4>
-              <p className="text-sm text-muted-foreground">
+              <h4 className="font-sans font-medium mb-1">How do I delete my account?</h4>
+              <p className="font-sans text-sm text-muted-foreground">
                 Go to Account Management in Settings and click "Delete Account"
               </p>
             </div>
             <div>
-              <h4 className="font-medium mb-1">How do I export my data?</h4>
-              <p className="text-sm text-muted-foreground">
+              <h4 className="font-sans font-medium mb-1">How do I export my data?</h4>
+              <p className="font-sans text-sm text-muted-foreground">
                 Go to Account Management and click "Export My Data"
               </p>
             </div>

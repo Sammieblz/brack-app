@@ -82,8 +82,8 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>Write a Review</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="font-display">Write a Review</DialogTitle>
+          <DialogDescription className="font-sans">
             Share your thoughts about this book with the community
           </DialogDescription>
         </DialogHeader>
@@ -95,7 +95,7 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
               name="rating"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Rating *</FormLabel>
+                  <FormLabel className="font-sans">Rating *</FormLabel>
                   <FormControl>
                     <div className="flex gap-2">
                       {Array.from({ length: 5 }).map((_, i) => {
@@ -131,7 +131,7 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Review Title (Optional)</FormLabel>
+                  <FormLabel className="font-sans">Review Title (Optional)</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Sum up your review in one line"
@@ -148,15 +148,16 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Review *</FormLabel>
+                  <FormLabel className="font-sans">Review *</FormLabel>
                   <FormControl>
                     <Textarea
+                      className="font-serif"
                       placeholder="What did you think about this book?"
                       rows={6}
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>Minimum 10 characters</FormDescription>
+                  <FormDescription className="font-sans">Minimum 10 characters</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -168,8 +169,8 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
               render={({ field }) => (
                 <FormItem className="flex items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Contains Spoilers</FormLabel>
-                    <FormDescription>
+                    <FormLabel className="font-sans text-base">Contains Spoilers</FormLabel>
+                    <FormDescription className="font-sans">
                       Mark this if your review reveals plot details
                     </FormDescription>
                   </div>
@@ -189,8 +190,8 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
               render={({ field }) => (
                 <FormItem className="flex items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base">Public Review</FormLabel>
-                    <FormDescription>
+                    <FormLabel className="font-sans text-base">Public Review</FormLabel>
+                    <FormDescription className="font-sans">
                       Allow others to see your review
                     </FormDescription>
                   </div>

@@ -49,7 +49,7 @@ const Welcome = () => {
         <div className="text-center mb-8 animate-slide-up">
           <div className="flex flex-col items-center gap-3 mb-6">
             <ThemeAwareLogo variant="icon" size="h-16 w-16" className="drop-shadow-lg" />
-            <span className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <span className="font-display text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               BRACK
             </span>
           </div>
@@ -60,10 +60,10 @@ const Welcome = () => {
           <CardContent className="p-8 space-y-8">
             {/* Welcome Message */}
             <div className="space-y-3">
-              <h1 className="text-3xl font-bold text-foreground">
+              <h1 className="font-display text-3xl font-bold text-foreground">
                 Welcome, {userName}! 
               </h1>
-              <p className="text-muted-foreground text-lg">
+              <p className="font-sans text-muted-foreground text-lg">
                 Ready to start tracking your reading journey?
               </p>
             </div>
@@ -73,10 +73,10 @@ const Welcome = () => {
               <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mx-auto mb-4 shadow-soft">
                 <Target className="h-6 w-6 text-white" />
               </div>
-              <p className="text-foreground font-medium">
+              <p className="font-sans text-foreground font-medium">
                 Do you have a reading goal in mind?
               </p>
-              <p className="text-muted-foreground text-sm mt-2">
+              <p className="font-sans text-muted-foreground text-sm mt-2">
                 Setting goals helps you stay motivated and track progress
               </p>
             </div>

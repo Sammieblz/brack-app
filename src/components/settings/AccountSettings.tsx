@@ -61,8 +61,8 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Account Settings</h2>
-        <p className="text-muted-foreground mt-1">
+        <h2 className="font-display text-2xl font-bold">Account Settings</h2>
+        <p className="font-sans text-muted-foreground mt-1">
           Manage your account information and security
         </p>
       </div>
@@ -70,11 +70,11 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
       {/* Email */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="font-display flex items-center gap-2">
             <Mail className="h-5 w-5" />
             Email Address
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="font-sans">
             Your email address cannot be changed. Contact support if you need to update it.
           </CardDescription>
         </CardHeader>
@@ -93,11 +93,11 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
       {/* Password */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="font-display flex items-center gap-2">
             <Lock className="h-5 w-5" />
             Password
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="font-sans">
             Change your password to keep your account secure
           </CardDescription>
         </CardHeader>

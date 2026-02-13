@@ -87,7 +87,7 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="font-display flex items-center">
             <Quote className="h-5 w-5 mr-2" />
             My Quotes
           </CardTitle>
@@ -105,19 +105,19 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="font-display flex items-center">
             <Quote className="h-5 w-5 mr-2" />
             My Quotes
           </CardTitle>
-          <CardDescription>Your favorite quotes from books</CardDescription>
+          <CardDescription className="font-sans">Your favorite quotes from books</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <Quote className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="font-sans text-sm text-muted-foreground mb-4">
               No quotes saved yet
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="font-sans text-xs text-muted-foreground">
               Add quotes while reading to build your collection
             </p>
           </div>
@@ -129,13 +129,13 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="font-display flex items-center justify-between">
           <div className="flex items-center">
             <Quote className="h-5 w-5 mr-2" />
             My Quotes ({quotes.length})
           </div>
         </CardTitle>
-        <CardDescription>Your favorite quotes from books</CardDescription>
+        <CardDescription className="font-sans">Your favorite quotes from books</CardDescription>
       </CardHeader>
       <CardContent>
         {/* Search */}
@@ -155,7 +155,7 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
         <div className="space-y-4">
           {filteredQuotes.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-sm text-muted-foreground">
+              <p className="font-sans text-sm text-muted-foreground">
                 No quotes match your search
               </p>
             </div>
@@ -168,14 +168,14 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     {quote.title && (
-                      <p className="text-sm font-semibold mb-2">{quote.title}</p>
+                      <p className="font-serif text-sm font-semibold mb-2">{quote.title}</p>
                     )}
-                    <p className="text-base italic mb-3">"{quote.content}"</p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <p className="font-serif text-base italic mb-3">"{quote.content}"</p>
+                    <div className="font-sans flex items-center gap-2 text-xs text-muted-foreground">
                       {quote.book_title && (
                         <>
                           <BookOpen className="h-3 w-3" />
-                          <span>
+                          <span className="font-serif">
                             {quote.book_title}
                             {quote.book_author && ` by ${quote.book_author}`}
                           </span>

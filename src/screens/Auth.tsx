@@ -196,15 +196,15 @@ const Auth = () => {
         <div className="text-center mb-6 md:mb-8 animate-slide-up">
           <div className="flex flex-col items-center gap-3 mb-4">
             <ThemeAwareLogo variant="icon" size="h-16 w-16" className="drop-shadow-lg" />
-            <span className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <span className="font-display text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               BRACK
             </span>
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="font-display text-2xl font-bold text-foreground">
               {isSignUp ? "Join BRACK" : "Welcome Back"}
             </h1>
-            <p className="text-muted-foreground text-sm">
+            <p className="font-sans text-muted-foreground text-sm">
               {isSignUp 
                 ? "Start your reading journey today" 
                 : "Continue your reading adventure"

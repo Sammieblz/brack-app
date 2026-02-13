@@ -178,7 +178,7 @@ export const ImageLightbox = ({
                   variant="ghost"
                   size="icon"
                   onClick={handleReset}
-                  className="text-white hover:bg-white/20 h-11 w-11"
+                  className="font-sans text-white hover:bg-white/20 h-11 w-11"
                   aria-label="Reset zoom and rotation"
                 >
                   Reset
@@ -213,7 +213,7 @@ export const ImageLightbox = ({
 
             {/* Zoom indicator */}
             {scale !== 1 && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
+              <div className="font-sans absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
                 {Math.round(scale * 100)}%
               </div>
             )}

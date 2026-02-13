@@ -115,11 +115,11 @@ export const AddBooksToListDialog = ({ listId, userId, onBooksAdded }: AddBooksT
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Add Books to List</DialogTitle>
+          <DialogTitle className="font-display">Add Books to List</DialogTitle>
         </DialogHeader>
         
         {availableBooks.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-6">
+          <p className="font-sans text-sm text-muted-foreground text-center py-6">
             All your books are already in this list
           </p>
         ) : (
@@ -146,12 +146,12 @@ export const AddBooksToListDialog = ({ listId, userId, onBooksAdded }: AddBooksT
                           />
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium">{book.title}</p>
+                          <p className="font-serif font-medium">{book.title}</p>
                           {book.author && (
-                            <p className="text-sm text-muted-foreground">{book.author}</p>
+                            <p className="font-serif text-sm text-muted-foreground">{book.author}</p>
                           )}
                           {book.genre && (
-                            <p className="text-xs text-muted-foreground mt-1">{book.genre}</p>
+                            <p className="font-sans text-xs text-muted-foreground mt-1">{book.genre}</p>
                           )}
                         </div>
                       </div>
@@ -162,7 +162,7 @@ export const AddBooksToListDialog = ({ listId, userId, onBooksAdded }: AddBooksT
             </ScrollArea>
             
             <div className="flex justify-between items-center pt-4 border-t">
-              <p className="text-sm text-muted-foreground">
+              <p className="font-sans text-sm text-muted-foreground">
                 {selectedBooks.size} book(s) selected
               </p>
               <div className="flex gap-2">

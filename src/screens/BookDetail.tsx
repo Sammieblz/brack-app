@@ -161,7 +161,7 @@ const BookDetail = () => {
     return (
       <div className="min-h-screen bg-gradient-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground">Book not found</p>
+          <p className="font-sans text-muted-foreground">Book not found</p>
         </div>
       </div>
     );
@@ -186,7 +186,7 @@ const BookDetail = () => {
             <TabsContent value="overview" className="p-6 space-y-4">
               <div className="text-center mb-4">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <h2 className="text-xl font-bold text-foreground">{book.title}</h2>
+                  <h2 className="font-serif text-xl font-bold text-foreground">{book.title}</h2>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -210,16 +210,16 @@ const BookDetail = () => {
                     <Share2 className="h-4 w-4" />
                   </Button>
                 </div>
-                {book.author && <p className="text-muted-foreground">by {book.author}</p>}
+                {book.author && <p className="font-serif text-muted-foreground">by {book.author}</p>}
               </div>
 
               {book.description && (
                 <div className="pb-4 border-b space-y-2">
-                  <span className="text-sm text-muted-foreground font-medium flex items-center gap-1">
+                  <span className="font-sans text-sm text-muted-foreground font-medium flex items-center gap-1">
                     <FileText className="h-4 w-4" />
                     Description
                   </span>
-                  <p className="text-sm text-foreground/80 leading-relaxed">{book.description}</p>
+                  <p className="font-serif text-sm text-foreground/80 leading-relaxed">{book.description}</p>
                 </div>
               )}
 
@@ -313,27 +313,27 @@ const BookDetail = () => {
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <Card className="p-4">
-                      <div className="text-sm text-muted-foreground mb-1">Current Page</div>
-                      <div className="text-2xl font-bold">{progress.current_page}</div>
-                      <div className="text-xs text-muted-foreground">of {progress.total_pages}</div>
+                      <div className="font-sans text-sm text-muted-foreground mb-1">Current Page</div>
+                      <div className="font-sans text-2xl font-bold">{progress.current_page}</div>
+                      <div className="font-sans text-xs text-muted-foreground">of {progress.total_pages}</div>
                     </Card>
                     <Card className="p-4">
-                      <div className="text-sm text-muted-foreground mb-1">Progress</div>
-                      <div className="text-2xl font-bold">{progress.progress_percentage.toFixed(1)}%</div>
+                      <div className="font-sans text-sm text-muted-foreground mb-1">Progress</div>
+                      <div className="font-sans text-2xl font-bold">{progress.progress_percentage.toFixed(1)}%</div>
                       <Progress value={progress.progress_percentage} className="mt-2" />
                     </Card>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <Card className="p-4">
-                      <div className="text-sm text-muted-foreground mb-1">Reading Velocity</div>
-                      <div className="text-xl font-bold">{progress.reading_velocity.overall.toFixed(1)}</div>
-                      <div className="text-xs text-muted-foreground">pages/hour</div>
+                      <div className="font-sans text-sm text-muted-foreground mb-1">Reading Velocity</div>
+                      <div className="font-sans text-xl font-bold">{progress.reading_velocity.overall.toFixed(1)}</div>
+                      <div className="font-sans text-xs text-muted-foreground">pages/hour</div>
                     </Card>
                     <Card className="p-4">
-                      <div className="text-sm text-muted-foreground mb-1">Total Time</div>
-                      <div className="text-xl font-bold">{progress.total_time_hours.toFixed(1)}h</div>
-                      <div className="text-xs text-muted-foreground">{progress.statistics.total_sessions} sessions</div>
+                      <div className="font-sans text-sm text-muted-foreground mb-1">Total Time</div>
+                      <div className="font-sans text-xl font-bold">{progress.total_time_hours.toFixed(1)}h</div>
+                      <div className="font-sans text-xs text-muted-foreground">{progress.statistics.total_sessions} sessions</div>
                     </Card>
                   </div>
 
@@ -341,9 +341,9 @@ const BookDetail = () => {
                     <Card className="p-4 border-primary/20 bg-primary/5">
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-sm text-muted-foreground mb-1">Estimated Completion</div>
-                          <div className="text-lg font-bold">{new Date(progress.estimated_completion_date).toLocaleDateString()}</div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="font-sans text-sm text-muted-foreground mb-1">Estimated Completion</div>
+                          <div className="font-sans text-lg font-bold">{new Date(progress.estimated_completion_date).toLocaleDateString()}</div>
+                          <div className="font-sans text-xs text-muted-foreground">
                             in ~{progress.estimated_days_to_completion} days
                           </div>
                         </div>
@@ -385,8 +385,8 @@ const BookDetail = () => {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <BookOpen className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No progress data available yet</p>
-                  <p className="text-sm">Start logging your progress to see statistics</p>
+                  <p className="font-sans">No progress data available yet</p>
+                  <p className="font-sans text-sm">Start logging your progress to see statistics</p>
                 </div>
               )}
             </TabsContent>
@@ -396,7 +396,7 @@ const BookDetail = () => {
                 {/* Review Summary */}
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-lg font-semibold">Community Reviews</h3>
+                    <h3 className="font-sans text-lg font-semibold">Community Reviews</h3>
                     {averageRating && (
                       <div className="flex items-center gap-2 mt-1">
                         <div className="flex items-center">
@@ -411,7 +411,7 @@ const BookDetail = () => {
                             />
                           ))}
                         </div>
-                        <span className="text-sm text-muted-foreground">
+                        <span className="font-sans text-sm text-muted-foreground">
                           {averageRating.toFixed(1)} ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
                         </span>
                       </div>
@@ -435,7 +435,7 @@ const BookDetail = () => {
                 ) : (
                   <div className="text-center py-12">
                     <Star className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                    <p className="text-muted-foreground mb-4">No reviews yet</p>
+                    <p className="font-sans text-muted-foreground mb-4">No reviews yet</p>
                     {!userHasReviewed && user && (
                       <Button onClick={() => setShowReviewForm(true)}>
                         Be the first to review
@@ -460,8 +460,8 @@ const BookDetail = () => {
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No progress logs yet</p>
-                  <p className="text-sm">Log your reading progress to track your journey</p>
+                  <p className="font-sans">No progress logs yet</p>
+                  <p className="font-sans text-sm">Log your reading progress to track your journey</p>
                 </div>
               )}
             </TabsContent>

@@ -167,16 +167,16 @@ const Dashboard = () => {
           {/* Desktop Header */}
           {!isMobile && (
             <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold">Welcome back, {displayName}!</h1>
-              <p className="text-muted-foreground">Here's what's happening with your reading journey</p>
+              <h1 className="font-display text-3xl font-bold">Welcome back, {displayName}!</h1>
+              <p className="font-sans text-muted-foreground">Here's what's happening with your reading journey</p>
             </div>
           )}
 
           {/* Mobile Welcome */}
           {isMobile && (
             <div>
-              <h2 className="text-xl font-bold">Welcome back{profile?.display_name ? `, ${profile.display_name}` : ''}!</h2>
-              <p className="text-sm text-muted-foreground">Here's your reading journey</p>
+              <h2 className="font-display text-xl font-bold">Welcome back{profile?.display_name ? `, ${profile.display_name}` : ''}!</h2>
+              <p className="font-sans text-sm text-muted-foreground">Here's your reading journey</p>
             </div>
           )}
 
@@ -186,29 +186,29 @@ const Dashboard = () => {
           ) : goal ? (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center text-base md:text-lg">
+                <CardTitle className="font-display flex items-center text-base md:text-lg">
                   <Target className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                   Your Reading Progress
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 md:space-y-4">
-                <div className="flex justify-between text-xs md:text-sm">
+                <div className="font-sans flex justify-between text-xs md:text-sm">
                   <span>Books Read: {completedBooksCount} / {goal.target_books}</span>
                   <span>{progressPercentage}% Complete</span>
                 </div>
                 <Progress value={progressPercentage} className="w-full" />
                 <div className="grid grid-cols-3 gap-3 md:gap-4 text-center">
                   <div className="space-y-0.5 md:space-y-1">
-                    <div className="text-xl md:text-2xl font-bold text-primary">{completedBooksCount}</div>
-                    <div className="text-xs md:text-sm text-muted-foreground">Completed</div>
+                    <div className="font-sans text-xl md:text-2xl font-bold text-primary">{completedBooksCount}</div>
+                    <div className="font-sans text-xs md:text-sm text-muted-foreground">Completed</div>
                   </div>
                   <div className="space-y-0.5 md:space-y-1">
-                    <div className="text-xl md:text-2xl font-bold text-primary">42h</div>
-                    <div className="text-xs md:text-sm text-muted-foreground">Reading Time</div>
+                    <div className="font-sans text-xl md:text-2xl font-bold text-primary">42h</div>
+                    <div className="font-sans text-xs md:text-sm text-muted-foreground">Reading Time</div>
                   </div>
                   <div className="space-y-0.5 md:space-y-1">
-                    <div className="text-xl md:text-2xl font-bold text-primary">58</div>
-                    <div className="text-xs md:text-sm text-muted-foreground">Pages/Hour</div>
+                    <div className="font-sans text-xl md:text-2xl font-bold text-primary">58</div>
+                    <div className="font-sans text-xs md:text-sm text-muted-foreground">Pages/Hour</div>
                   </div>
                 </div>
               </CardContent>
@@ -259,7 +259,7 @@ const Dashboard = () => {
           {!badgesLoading && badges.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between text-base md:text-lg">
+                <CardTitle className="font-display flex items-center justify-between text-base md:text-lg">
                   <span className="flex items-center">
                     <Award className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                     Achievements
@@ -271,7 +271,7 @@ const Dashboard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="font-sans text-sm text-muted-foreground mb-4">
                   You've earned {earnedBadges.length} out of {badges.length} badges
                 </p>
                 <BadgeDisplay badges={badges.slice(0, 6)} earnedBadges={earnedBadges} />
@@ -283,7 +283,7 @@ const Dashboard = () => {
           {!chartLoading && weeklyReading.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-base md:text-lg font-semibold flex items-center">
+                <h3 className="font-display text-base md:text-lg font-semibold flex items-center">
                   <BarChart3 className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                   This Week's Reading
                 </h3>
@@ -302,7 +302,7 @@ const Dashboard = () => {
           {/* My Books Snippet */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center justify-between text-base md:text-lg">
+              <CardTitle className="font-display flex items-center justify-between text-base md:text-lg">
                 <span className="flex items-center">
                   <Library className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                   My Books
@@ -322,7 +322,7 @@ const Dashboard = () => {
               ) : books.length === 0 ? (
                 <div className="text-center py-8">
                   <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground mb-4">No books yet. Add your first book to get started!</p>
+                  <p className="font-sans text-muted-foreground mb-4">No books yet. Add your first book to get started!</p>
                   {!isMobile && (
                     <Button onClick={() => navigate("/add-book")}>
                       <BookOpen className="mr-2 h-4 w-4" />
@@ -354,7 +354,7 @@ const Dashboard = () => {
           {/* Recent Activity */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center text-base md:text-lg">
+              <CardTitle className="font-display flex items-center text-base md:text-lg">
                 <Clock className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                 Recent Activity
               </CardTitle>
@@ -369,12 +369,12 @@ const Dashboard = () => {
               ) : activities.length === 0 ? (
                 <div className="text-center py-8">
                   <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-sm text-muted-foreground">No recent activity. Start reading to see your progress here!</p>
+                  <p className="font-sans text-sm text-muted-foreground">No recent activity. Start reading to see your progress here!</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {activities.slice(0, 5).map((activity) => (
-                    <div key={activity.id} className="flex items-center space-x-3 text-sm">
+                    <div key={activity.id} className="font-sans flex items-center space-x-3 text-sm">
                       <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0"></div>
                       <span className="text-muted-foreground flex-1 min-w-0 truncate">{activity.description}</span>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">

@@ -80,10 +80,10 @@ export const StatusFunnelChart = ({ data }: StatusFunnelChartProps) => {
                   return (
                     <div className="rounded-lg border bg-background p-3 shadow-lg">
                       <div className="space-y-1">
-                        <div className="font-semibold text-sm capitalize">
+                        <div className="font-sans font-semibold text-sm capitalize">
                           {data.status.replace('_', ' ')}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="font-sans flex items-center gap-2">
                           <div 
                             className="w-3 h-3 rounded-full" 
                             style={{ backgroundColor: statusColors[data.status] || 'hsl(var(--chart-1))' }}
@@ -93,7 +93,7 @@ export const StatusFunnelChart = ({ data }: StatusFunnelChartProps) => {
                             <span className="text-xs text-muted-foreground">books</span>
                           </div>
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="font-sans text-xs text-muted-foreground">
                           {data.percentage.toFixed(1)}% of total
                         </div>
                       </div>

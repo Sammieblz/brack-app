@@ -290,11 +290,11 @@ export const BookSearch = ({ onSelectBook, onQuickAdd, initialQuery }: BookSearc
 
                     {/* Book Details */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground truncate">
+                      <h3 className="font-serif font-semibold text-foreground truncate">
                         {book.title}
                       </h3>
                       {book.author && (
-                        <p className="text-sm text-muted-foreground truncate">
+                        <p className="font-serif text-sm text-muted-foreground truncate">
                           by {book.author}
                         </p>
                       )}
@@ -330,7 +330,7 @@ export const BookSearch = ({ onSelectBook, onQuickAdd, initialQuery }: BookSearc
                       </div>
 
                       {book.description && (
-                        <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
+                        <p className="font-serif text-xs text-muted-foreground mt-2 line-clamp-2">
                           {book.description}
                         </p>
                       )}

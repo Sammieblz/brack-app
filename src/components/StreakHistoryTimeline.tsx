@@ -15,7 +15,7 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="font-display flex items-center">
             <Trophy className="h-5 w-5 mr-2" />
             Streak Milestones
           </CardTitle>
@@ -36,16 +36,16 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="font-display flex items-center">
             <Trophy className="h-5 w-5 mr-2" />
             Streak Milestones
           </CardTitle>
-          <CardDescription>Track your reading streak achievements</CardDescription>
+          <CardDescription className="font-sans">Track your reading streak achievements</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <Flame className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="text-sm text-muted-foreground">
+            <p className="font-sans text-sm text-muted-foreground">
               Start a reading streak to unlock milestones!
             </p>
           </div>
@@ -57,11 +57,11 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center">
+        <CardTitle className="font-display flex items-center">
           <Trophy className="h-5 w-5 mr-2" />
           Streak Milestones
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="font-sans">
           {longestStreakMilestone && (
             <span>
               Longest streak: <strong>{longestStreakMilestone.streak_count} days</strong>
@@ -73,7 +73,7 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
         <div className="space-y-4">
           {/* Milestone Badges */}
           <div>
-            <h4 className="text-sm font-semibold mb-3">Milestone Achievements</h4>
+            <h4 className="font-display text-sm font-semibold mb-3">Milestone Achievements</h4>
             <div className="grid grid-cols-3 gap-2">
               {milestoneBadges.map((badge) => (
                 <div
@@ -84,8 +84,8 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
                       : "bg-muted/30 border-muted opacity-50"
                   }`}
                 >
-                  <div className="text-2xl font-bold">{badge.threshold}</div>
-                  <div className="text-xs text-muted-foreground mt-1">days</div>
+                  <div className="font-sans text-2xl font-bold">{badge.threshold}</div>
+                  <div className="font-sans text-xs text-muted-foreground mt-1">days</div>
                   {badge.achieved && (
                     <Trophy className="h-4 w-4 mx-auto mt-1 text-primary" />
                   )}
@@ -97,7 +97,7 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
           {/* Timeline of Achievements */}
           {milestones.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold mb-3">Achievement History</h4>
+              <h4 className="font-display text-sm font-semibold mb-3">Achievement History</h4>
               <div className="space-y-3">
                 {milestones.slice(0, 5).map((milestone) => (
                   <div
@@ -110,11 +110,11 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="font-sans flex items-center gap-2">
                         <span className="font-semibold">{milestone.streak_count} days</span>
                         <span className="text-xs text-muted-foreground">streak achieved</span>
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="font-sans flex items-center gap-2 mt-1">
                         <Calendar className="h-3 w-3 text-muted-foreground" />
                         <span className="text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(milestone.achieved_at), {
@@ -127,7 +127,7 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
                 ))}
               </div>
               {milestones.length > 5 && (
-                <p className="text-xs text-muted-foreground text-center mt-3">
+                <p className="font-sans text-xs text-muted-foreground text-center mt-3">
                   +{milestones.length - 5} more milestone{milestones.length - 5 > 1 ? "s" : ""}
                 </p>
               )}

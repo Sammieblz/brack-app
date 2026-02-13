@@ -82,7 +82,7 @@ export const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center space-x-2 sm:space-x-3">
             <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-            <span className="text-base sm:text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            <span className="font-display text-base sm:text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               BookTracker
             </span>
           </div>
@@ -97,7 +97,7 @@ export const Navbar = () => {
                   onClick={() => triggerHaptic('selection')}
                 >
                   <item.icon className="h-4 w-4" />
-                  <span>{item.label}</span>
+                  <span className="font-sans">{item.label}</span>
                 </NavLink>
               ))}
           </div>
@@ -167,7 +167,7 @@ export const Navbar = () => {
                   }}
                 >
                   <item.icon className="h-5 w-5 flex-shrink-0" />
-                  <span>{item.label}</span>
+                  <span className="font-sans">{item.label}</span>
                 </NavLink>
               ))}
             </div>

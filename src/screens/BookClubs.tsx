@@ -40,11 +40,11 @@ const BookClubs = () => {
                 <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
                   <Users className="h-7 w-7 text-primary" />
                 </div>
-                <h1 className="text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                <h1 className="font-display text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                   Book Clubs
                 </h1>
               </div>
-              <p className="text-muted-foreground">
+              <p className="font-sans text-muted-foreground">
                 Join reading communities and discuss books together
               </p>
             </div>
@@ -71,8 +71,8 @@ const BookClubs = () => {
                   <div className="p-4 rounded-full bg-primary/20 w-fit mx-auto mb-4">
                     <Users className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">No clubs yet</h3>
-                  <p className="text-muted-foreground mb-6">
+                  <h3 className="font-display text-lg font-semibold mb-2">No clubs yet</h3>
+                  <p className="font-sans text-muted-foreground mb-6">
                     Create your first book club or join existing ones to start discussions!
                   </p>
                 </div>
@@ -102,8 +102,8 @@ const BookClubs = () => {
                   <div className="p-4 rounded-full bg-secondary/20 w-fit mx-auto mb-4">
                     <Users className="h-8 w-8 text-secondary" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">No public clubs</h3>
-                  <p className="text-muted-foreground">
+                  <h3 className="font-display text-lg font-semibold mb-2">No public clubs</h3>
+                  <p className="font-sans text-muted-foreground">
                     Be the first to create a public book club!
                   </p>
                 </div>

@@ -83,7 +83,7 @@ const NativeToastAction = React.forwardRef<
   <ToastPrimitives.Action
     ref={ref}
     className={cn(
-      "inline-flex h-8 shrink-0 items-center justify-center rounded-md px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+      "font-sans inline-flex h-8 shrink-0 items-center justify-center rounded-md px-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
       platform === 'ios' && "text-primary font-semibold",
       platform === 'android' && "text-primary uppercase tracking-wider text-xs font-bold",
       "hover:bg-secondary",
@@ -125,7 +125,7 @@ const NativeToastTitle = React.forwardRef<
   <ToastPrimitives.Title
     ref={ref}
     className={cn(
-      "text-sm font-semibold leading-tight",
+      "font-sans text-sm font-semibold leading-tight",
       platform === 'ios' && "text-base",
       platform === 'android' && "text-sm font-medium",
       className
@@ -144,7 +144,7 @@ const NativeToastDescription = React.forwardRef<
   <ToastPrimitives.Description
     ref={ref}
     className={cn(
-      "text-sm opacity-90 leading-relaxed break-words",
+      "font-sans text-sm opacity-90 leading-relaxed break-words",
       platform === 'ios' && "text-sm",
       platform === 'android' && "text-sm",
       className

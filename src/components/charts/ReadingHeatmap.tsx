@@ -63,10 +63,10 @@ export const ReadingHeatmap = ({ data }: ReadingHeatmapProps) => {
             
             return (
               <div key={month} className="space-y-2">
-                <div className="text-sm font-medium text-muted-foreground">{month}</div>
+                <div className="font-sans text-sm font-medium text-muted-foreground">{month}</div>
                 <div className="grid grid-cols-7 gap-1">
                   {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
-                    <div key={day} className="text-xs text-center text-muted-foreground p-1">
+                    <div key={day} className="font-sans text-xs text-center text-muted-foreground p-1">
                       {day}
                     </div>
                   ))}
@@ -99,7 +99,7 @@ export const ReadingHeatmap = ({ data }: ReadingHeatmapProps) => {
                           </TooltipTrigger>
                           {dayData && (
                             <TooltipContent>
-                              <div className="space-y-1">
+                              <div className="font-sans space-y-1">
                                 <div className="text-xs font-semibold">{dateStr}</div>
                                 <div className="text-sm font-bold">{dayData.value} min</div>
                               </div>
@@ -113,7 +113,7 @@ export const ReadingHeatmap = ({ data }: ReadingHeatmapProps) => {
               </div>
             );
           })}
-          <div className="flex items-center justify-between text-xs text-muted-foreground pt-2">
+          <div className="font-sans flex items-center justify-between text-xs text-muted-foreground pt-2">
             <span>Less</span>
             <div className="flex gap-1">
               <div className="w-3 h-3 rounded-sm bg-muted/20" />

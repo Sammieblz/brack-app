@@ -224,26 +224,26 @@ const MyBooks = () => {
               <>
                 <Card>
                   <CardContent className="p-3 md:p-4 text-center">
-                    <div className="text-xl md:text-2xl font-bold text-primary">{bookStats.total}</div>
-                    <div className="text-xs md:text-sm text-muted-foreground">Total</div>
+                    <div className="font-sans text-xl md:text-2xl font-bold text-primary">{bookStats.total}</div>
+                    <div className="font-sans text-xs md:text-sm text-muted-foreground">Total</div>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-3 md:p-4 text-center">
-                    <div className="text-xl md:text-2xl font-bold text-blue-500">{bookStats.reading}</div>
-                    <div className="text-xs md:text-sm text-muted-foreground">Reading</div>
+                    <div className="font-sans text-xl md:text-2xl font-bold text-blue-500">{bookStats.reading}</div>
+                    <div className="font-sans text-xs md:text-sm text-muted-foreground">Reading</div>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-3 md:p-4 text-center">
-                    <div className="text-xl md:text-2xl font-bold text-green-500">{bookStats.completed}</div>
-                    <div className="text-xs md:text-sm text-muted-foreground">Done</div>
+                    <div className="font-sans text-xl md:text-2xl font-bold text-green-500">{bookStats.completed}</div>
+                    <div className="font-sans text-xs md:text-sm text-muted-foreground">Done</div>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-3 md:p-4 text-center">
-                    <div className="text-xl md:text-2xl font-bold text-orange-500">{bookStats.toRead}</div>
-                    <div className="text-xs md:text-sm text-muted-foreground">To Read</div>
+                    <div className="font-sans text-xl md:text-2xl font-bold text-orange-500">{bookStats.toRead}</div>
+                    <div className="font-sans text-xs md:text-sm text-muted-foreground">To Read</div>
                   </CardContent>
                 </Card>
               </>

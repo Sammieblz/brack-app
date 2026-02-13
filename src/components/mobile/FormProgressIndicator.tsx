@@ -27,7 +27,7 @@ export const FormProgressIndicator = ({
             <div key={index} className="flex-1 flex flex-col items-center">
               <div
                 className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all",
+                  "font-sans w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all",
                   isCompleted && "bg-primary text-primary-foreground",
                   isCurrent && "bg-primary text-primary-foreground ring-4 ring-primary/20",
                   isUpcoming && "bg-muted text-muted-foreground"
@@ -41,7 +41,7 @@ export const FormProgressIndicator = ({
               </div>
               <div
                 className={cn(
-                  "text-xs mt-1 text-center max-w-[80px]",
+                  "font-sans text-xs mt-1 text-center max-w-[80px]",
                   isCurrent && "font-medium text-primary",
                   isUpcoming && "text-muted-foreground"
                 )}

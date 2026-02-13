@@ -107,8 +107,8 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Notification Preferences</h2>
-        <p className="text-muted-foreground mt-1">
+        <h2 className="font-display text-2xl font-bold">Notification Preferences</h2>
+        <p className="font-sans text-muted-foreground mt-1">
           Control how and when you receive notifications
         </p>
       </div>
@@ -131,7 +131,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="push_enabled">Push Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-sans text-sm text-muted-foreground">
                       Receive push notifications on your device
                     </p>
                   </div>
@@ -152,7 +152,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="messages_enabled">Messages</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-sans text-sm text-muted-foreground">
                       Notify me when I receive new messages
                     </p>
                   </div>
@@ -169,7 +169,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="followers_enabled">New Followers</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-sans text-sm text-muted-foreground">
                       Notify me when someone follows me
                     </p>
                   </div>
@@ -186,7 +186,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="book_clubs_enabled">Book Clubs</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-sans text-sm text-muted-foreground">
                       Notify me about book club updates
                     </p>
                   </div>
@@ -203,7 +203,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="goals_enabled">Goal Milestones</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-sans text-sm text-muted-foreground">
                       Notify me when I reach reading goals
                     </p>
                   </div>
@@ -220,7 +220,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="streaks_enabled">Streak Reminders</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-sans text-sm text-muted-foreground">
                       Remind me to maintain my reading streak
                     </p>
                   </div>
@@ -237,7 +237,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="reading_reminders_enabled">Reading Reminders</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-sans text-sm text-muted-foreground">
                       Daily reminders to read
                     </p>
                   </div>
@@ -280,13 +280,13 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                     />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="font-sans text-xs text-muted-foreground mt-2">
                   Notifications will be silenced during these hours
                 </p>
               </div>
 
               {pushError && (
-                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg">
+                <div className="font-sans bg-destructive/10 text-destructive text-sm p-3 rounded-lg">
                   {pushError}
                 </div>
               )}

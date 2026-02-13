@@ -27,7 +27,7 @@ export const PullToRefresh = ({ onRefresh, children, disabled = false }: PullToR
       onRefresh={handleRefresh}
       pullingContent={
         <div className="flex justify-center py-4">
-          <div className="text-muted-foreground text-sm">Pull to refresh</div>
+          <div className="font-sans text-muted-foreground text-sm">Pull to refresh</div>
         </div>
       }
       refreshingContent={

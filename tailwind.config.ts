@@ -20,6 +20,16 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				// Book-inspired serif for book content
+				serif: ['Merriweather', 'Georgia', 'serif'],
+				// Elegant display serif for headings
+				display: ['Playfair Display', 'Merriweather', 'serif'],
+				// Modern sans-serif for UI elements (override default)
+				sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+				// Monospace for timers/numbers (keep existing)
+				mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
+			},
 			fontSize: {
 				// Ensure minimum 16px for body text on mobile
 				'xs': ['0.75rem', { lineHeight: '1.5', letterSpacing: '0.01em' }], // 12px

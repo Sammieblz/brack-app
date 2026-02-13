@@ -134,11 +134,11 @@ export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-foreground truncate">{displayName}</p>
-                  <p className="text-sm text-muted-foreground truncate">{email}</p>
+                  <p className="font-sans font-semibold text-foreground truncate">{displayName}</p>
+                  <p className="font-sans text-sm text-muted-foreground truncate">{email}</p>
                   <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                    <span>{followingCount} Following</span>
-                    <span>{followersCount} Followers</span>
+                    <span className="font-sans">{followingCount} Following</span>
+                    <span className="font-sans">{followersCount} Followers</span>
                   </div>
                 </div>
               </div>
@@ -161,7 +161,7 @@ export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
                   )}
                 >
                   <Icon className="h-5 w-5 text-muted-foreground" />
-                  <span className="flex-1 font-medium text-foreground">{item.label}</span>
+                  <span className="font-sans flex-1 font-medium text-foreground">{item.label}</span>
                   {item.badge !== undefined && item.badge > 0 && (
                     <Badge 
                       variant="destructive" 
@@ -181,7 +181,7 @@ export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
           <div className="p-6 space-y-4">
             {/* Theme Toggle */}
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Theme</span>
+              <span className="font-sans text-sm text-muted-foreground">Theme</span>
               <ThemeToggle variant="inline" />
             </div>
 
@@ -196,7 +196,7 @@ export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
             </Button>
 
             {/* App Version */}
-            <p className="text-xs text-center text-muted-foreground">
+            <p className="font-sans text-xs text-center text-muted-foreground">
               v2.1.0
             </p>
           </div>

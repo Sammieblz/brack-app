@@ -81,10 +81,10 @@ const Questionnaire = () => {
           <div className="flex justify-center mb-4">
             <div className="flex items-center space-x-2">
               <BookOpen className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold text-primary">BRACK</span>
+              <span className="font-display text-xl font-bold text-primary">BRACK</span>
             </div>
           </div>
-          <CardTitle>Tell us about your reading habits</CardTitle>
+          <CardTitle className="font-display">Tell us about your reading habits</CardTitle>
         </CardHeader>
         
         <CardContent>

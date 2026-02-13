@@ -59,10 +59,10 @@ const ScanBarcode = () => {
         {/* Scanner Card */}
         <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in">
           <CardHeader className="text-center">
-            <CardTitle className="text-xl font-bold text-foreground">
+            <CardTitle className="font-display text-xl font-bold text-foreground">
               Scan Book ISBN
             </CardTitle>
-            <p className="text-muted-foreground text-sm">
+            <p className="font-sans text-muted-foreground text-sm">
               Point your camera at the book's barcode
             </p>
           </CardHeader>
@@ -74,8 +74,8 @@ const ScanBarcode = () => {
                   <div className="text-center w-full h-full flex flex-col items-center justify-center">
                     <div className="animate-pulse">
                       <Camera className="h-16 w-16 text-primary mx-auto mb-4" />
-                      <p className="text-muted-foreground font-medium">Scanning barcode...</p>
-                      <p className="text-xs text-muted-foreground mt-2">Point camera at ISBN barcode</p>
+                      <p className="font-sans text-muted-foreground font-medium">Scanning barcode...</p>
+                      <p className="font-sans text-xs text-muted-foreground mt-2">Point camera at ISBN barcode</p>
                     </div>
                     {/* Scanning overlay */}
                     <div className="absolute inset-4 border-2 border-primary rounded-lg animate-pulse pointer-events-none"></div>
@@ -83,20 +83,20 @@ const ScanBarcode = () => {
                 ) : scannedCode ? (
                   <div className="text-center">
                     <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                    <p className="text-green-500 font-medium">Barcode scanned!</p>
-                    <p className="text-xs text-muted-foreground mt-2">{scannedCode}</p>
+                    <p className="font-sans text-green-500 font-medium">Barcode scanned!</p>
+                    <p className="font-sans text-xs text-muted-foreground mt-2">{scannedCode}</p>
                   </div>
                 ) : error ? (
                   <div className="text-center p-4">
                     <Camera className="h-16 w-16 text-destructive/50 mx-auto mb-4" />
-                    <p className="text-destructive text-sm font-medium">Scan failed</p>
-                    <p className="text-xs text-muted-foreground mt-2">{error}</p>
+                    <p className="font-sans text-destructive text-sm font-medium">Scan failed</p>
+                    <p className="font-sans text-xs text-muted-foreground mt-2">{error}</p>
                   </div>
                 ) : (
                   <div className="text-center">
                     <Camera className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-                    <p className="text-muted-foreground">Ready to scan</p>
-                    <p className="text-xs text-muted-foreground mt-2">Tap "Start Scanning" to begin</p>
+                    <p className="font-sans text-muted-foreground">Ready to scan</p>
+                    <p className="font-sans text-xs text-muted-foreground mt-2">Tap "Start Scanning" to begin</p>
                   </div>
                 )}
               </div>
@@ -144,7 +144,7 @@ const ScanBarcode = () => {
             </div>
 
             {/* Instructions */}
-            <div className="text-center text-sm text-muted-foreground space-y-1 p-4 bg-muted/20 rounded-lg">
+            <div className="text-center font-sans text-sm text-muted-foreground space-y-1 p-4 bg-muted/20 rounded-lg">
               <p className="font-medium">How to scan:</p>
               <p>1. Hold your device steady</p>
               <p>2. Point camera at the barcode</p>

@@ -23,14 +23,14 @@ export const BadgeDisplay = ({ badges, earnedBadges }: BadgeDisplayProps) => {
               <div className={`text-4xl ${!isEarned && 'opacity-30 grayscale'}`}>
                 {badge.icon_url}
               </div>
-              <h3 className={`font-semibold text-sm ${!isEarned && 'text-muted-foreground'}`}>
+              <h3 className={`font-sans font-semibold text-sm ${!isEarned && 'text-muted-foreground'}`}>
                 {badge.title}
               </h3>
-              <p className="text-xs text-muted-foreground line-clamp-2">
+              <p className="font-sans text-xs text-muted-foreground line-clamp-2">
                 {badge.description}
               </p>
               {isEarned && (
-                <div className="text-xs text-primary font-medium">
+                <div className="font-sans text-xs text-primary font-medium">
                   ✓ Earned
                 </div>
               )}

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 
 interface MonthlyData {
   month: string;
@@ -46,14 +46,14 @@ export const MonthlyReadingChart = ({ data }: MonthlyReadingChartProps) => {
               <XAxis 
                 dataKey="month" 
                 fontSize={12}
-                className="text-muted-foreground"
+                className="font-sans text-muted-foreground"
               />
               <YAxis 
                 fontSize={12}
-                className="text-muted-foreground"
+                className="font-sans text-muted-foreground"
               />
               <ChartTooltip content={<ChartTooltipContent />} />
-              <Legend />
+              <ChartLegend content={<ChartLegendContent />} />
               <Bar 
                 dataKey="books" 
                 fill="var(--color-books)" 

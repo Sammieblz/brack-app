@@ -71,8 +71,8 @@ const Analytics = () => {
           <div className="flex items-center space-x-3">
             <BarChart3 className="h-8 w-8 text-primary" />
             <div>
-              <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-              <p className="text-muted-foreground">
+              <h1 className="font-display text-3xl font-bold">Analytics Dashboard</h1>
+              <p className="font-sans text-muted-foreground">
                 Insights into your reading journey
               </p>
             </div>
@@ -87,8 +87,8 @@ const Analytics = () => {
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">{completedBooks}</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="font-sans text-2xl font-bold text-primary">{completedBooks}</div>
+              <p className="font-sans text-xs text-muted-foreground">
                 +{completedBooks} this year
               </p>
             </CardContent>
@@ -96,12 +96,12 @@ const Analytics = () => {
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Reading Time</CardTitle>
+              <CardTitle className="font-sans text-sm font-medium">Total Reading Time</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">{totalHours}h</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="font-sans text-2xl font-bold text-primary">{totalHours}h</div>
+              <p className="font-sans text-xs text-muted-foreground">
                 {totalMinutes} minutes total
               </p>
             </CardContent>
@@ -109,12 +109,12 @@ const Analytics = () => {
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Daily Average</CardTitle>
+              <CardTitle className="font-sans text-sm font-medium">Daily Average</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">{avgMinutesPerDay}m</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="font-sans text-2xl font-bold text-primary">{avgMinutesPerDay}m</div>
+              <p className="font-sans text-xs text-muted-foreground">
                 per day this period
               </p>
             </CardContent>
@@ -122,14 +122,14 @@ const Analytics = () => {
           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Favorite Genre</CardTitle>
+              <CardTitle className="font-sans text-sm font-medium">Favorite Genre</CardTitle>
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">
+              <div className="font-sans text-2xl font-bold text-primary">
                 {genreData[0]?.genre || "N/A"}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-sans text-xs text-muted-foreground">
                 {genreData[0]?.count || 0} books
               </p>
             </CardContent>
@@ -252,7 +252,7 @@ const Analytics = () => {
           <Card>
             <CardContent className="p-8 text-center">
               <BarChart3 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No analytics data yet</h3>
+              <h3 className="font-display text-lg font-semibold mb-2">No analytics data yet</h3>
               <p className="text-muted-foreground">
                 Start reading and tracking your sessions to see beautiful analytics here.
               </p>

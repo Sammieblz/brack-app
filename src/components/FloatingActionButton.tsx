@@ -178,8 +178,8 @@ export const FloatingActionButton = () => {
             {readingBooks.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Timer className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No books currently being read</p>
-                <p className="text-sm mt-2">Add books and mark them as "Reading" to start tracking time</p>
+                <p className="font-sans">No books currently being read</p>
+                <p className="font-sans text-sm mt-2">Add books and mark them as "Reading" to start tracking time</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -202,12 +202,12 @@ export const FloatingActionButton = () => {
                       </div>
                     )}
                     <div className="flex-1 text-left">
-                      <div className="font-semibold line-clamp-2">{book.title}</div>
+                      <div className="font-serif font-semibold line-clamp-2">{book.title}</div>
                       {book.author && (
-                        <div className="text-sm text-muted-foreground">{book.author}</div>
+                        <div className="font-serif text-sm text-muted-foreground">{book.author}</div>
                       )}
                       {book.current_page && book.pages && (
-                        <div className="text-xs text-muted-foreground mt-1">
+                        <div className="font-sans text-xs text-muted-foreground mt-1">
                           Page {book.current_page} of {book.pages}
                         </div>
                       )}

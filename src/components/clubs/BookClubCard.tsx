@@ -24,7 +24,7 @@ export const BookClubCard = ({ club, onJoin, onLeave }: BookClubCardProps) => {
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <h3 
-                className="text-lg font-semibold text-foreground cursor-pointer hover:text-primary transition-colors"
+                className="font-display text-lg font-semibold text-foreground cursor-pointer hover:text-primary transition-colors"
                 onClick={() => navigate(`/clubs/${club.id}`)}
               >
                 {club.name}
@@ -39,7 +39,7 @@ export const BookClubCard = ({ club, onJoin, onLeave }: BookClubCardProps) => {
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-muted-foreground line-clamp-2">
+            <p className="font-sans text-sm text-muted-foreground line-clamp-2">
               {club.description || 'No description'}
             </p>
           </div>
@@ -54,7 +54,7 @@ export const BookClubCard = ({ club, onJoin, onLeave }: BookClubCardProps) => {
       </CardHeader>
 
       <CardContent className="pb-3">
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-4 font-sans text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <Users className="h-4 w-4" />
             <span>{club.member_count || 0} members</span>
@@ -65,7 +65,7 @@ export const BookClubCard = ({ club, onJoin, onLeave }: BookClubCardProps) => {
           <div className="mt-3 p-3 rounded-lg bg-muted/30 border border-border/40">
             <div className="flex items-center gap-2 mb-1">
               <BookOpen className="h-4 w-4 text-primary" />
-              <span className="text-xs font-semibold text-muted-foreground">
+              <span className="font-sans text-xs font-semibold text-muted-foreground">
                 Currently Reading
               </span>
             </div>
@@ -78,11 +78,11 @@ export const BookClubCard = ({ club, onJoin, onLeave }: BookClubCardProps) => {
                 />
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">
+                <p className="font-serif text-sm font-medium text-foreground truncate">
                   {club.current_book.title}
                 </p>
                 {club.current_book.author && (
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="font-serif text-xs text-muted-foreground truncate">
                     by {club.current_book.author}
                   </p>
                 )}

@@ -61,11 +61,11 @@ export const StreakDisplay = ({ streakData, onUseFreeze }: StreakDisplayProps) =
                 ) : (
                   <Flame className="h-8 w-8 text-muted" />
                 )}
-                <div ref={streakNumberRef} className="text-4xl font-bold">
+                <div ref={streakNumberRef} className="font-sans text-4xl font-bold">
                   {displayedStreak}
                 </div>
               </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-sans text-sm text-muted-foreground">
               {isStreakActive ? 'Day Reading Streak!' : 'Start a streak today'}
             </p>
             
@@ -74,7 +74,7 @@ export const StreakDisplay = ({ streakData, onUseFreeze }: StreakDisplayProps) =
                 {milestones.map((milestone, i) => (
                   <span 
                     key={i}
-                    className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium"
+                    className="font-sans text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium"
                   >
                     {milestone}
                   </span>
@@ -88,19 +88,19 @@ export const StreakDisplay = ({ streakData, onUseFreeze }: StreakDisplayProps) =
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <Award className="h-4 w-4 text-primary" />
-                <span className="text-2xl font-bold">{streakData.longestStreak}</span>
+                <span className="font-sans text-2xl font-bold">{streakData.longestStreak}</span>
               </div>
-              <p className="text-xs text-muted-foreground">Longest Streak</p>
+              <p className="font-sans text-xs text-muted-foreground">Longest Streak</p>
             </div>
 
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <Shield className="h-4 w-4 text-primary" />
-                <span className="text-2xl font-bold">
+                <span className="font-sans text-2xl font-bold">
                   {streakData.freezeAvailable ? '1' : '0'}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">Freeze Available</p>
+              <p className="font-sans text-xs text-muted-foreground">Freeze Available</p>
             </div>
           </div>
 
@@ -117,7 +117,7 @@ export const StreakDisplay = ({ streakData, onUseFreeze }: StreakDisplayProps) =
                 <Shield className="mr-2 h-4 w-4" />
                 Use Streak Freeze Today
               </Button>
-              <p className="text-xs text-muted-foreground text-center mt-2">
+              <p className="font-sans text-xs text-muted-foreground text-center mt-2">
                 {streakData.freezeAvailable
                   ? 'Preserve your streak without reading today'
                   : 'Freeze available again in 7 days'}

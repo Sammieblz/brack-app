@@ -154,7 +154,7 @@ export const JournalEntryDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{editEntry ? 'Edit' : 'Add'} Journal Entry</DialogTitle>
+          <DialogTitle className="font-display">{editEntry ? 'Edit' : 'Add'} Journal Entry</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
@@ -195,7 +195,7 @@ export const JournalEntryDialog = ({
               }
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="min-h-[200px]"
+              className={`min-h-[200px] ${entryType === 'quote' || entryType === 'reflection' ? 'font-serif' : 'font-sans'}`}
             />
           </div>
 

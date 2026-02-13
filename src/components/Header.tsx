@@ -23,9 +23,9 @@ export const Header = ({ title, subtitle, onBack, rightAction }: HeaderProps) =>
           </Button>
         )}
         <div>
-          <h1 className="text-xl font-bold text-foreground">{title}</h1>
+          <h1 className="font-display text-xl font-bold text-foreground">{title}</h1>
           {subtitle && (
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
+            <p className="font-sans text-sm text-muted-foreground">{subtitle}</p>
           )}
         </div>
       </div>

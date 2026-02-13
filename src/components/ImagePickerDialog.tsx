@@ -40,8 +40,8 @@ export const ImagePickerDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle className="font-display">{title}</DialogTitle>
+          <DialogDescription className="font-sans">{description}</DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-4 py-4">
@@ -52,7 +52,7 @@ export const ImagePickerDialog = ({
             className="flex flex-col h-auto py-6 gap-2"
           >
             <Camera className="h-8 w-8" />
-            <span>Camera</span>
+            <span className="font-sans">Camera</span>
           </Button>
           <Button
             onClick={handlePhotos}
@@ -61,12 +61,12 @@ export const ImagePickerDialog = ({
             className="flex flex-col h-auto py-6 gap-2"
           >
             <ImageIcon className="h-8 w-8" />
-            <span>Photo Library</span>
+            <span className="font-sans">Photo Library</span>
           </Button>
         </div>
 
         {picking && (
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="font-sans text-sm text-muted-foreground text-center">
             Processing image...
           </p>
         )}

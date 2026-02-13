@@ -217,12 +217,12 @@ const Index = () => {
           
           {/* Main Heading */}
           <div ref={headlineRef} className="space-y-5">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight">
+            <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight">
               Turn Every Page Into
               <br />
               <span className="bg-gradient-primary bg-clip-text text-transparent text-5xl md:text-7xl lg:text-8xl">Progress</span>
             </h1>
-            <p ref={subheadlineRef} className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p ref={subheadlineRef} className="font-serif text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               Master your reading life. Transform pages into progress with elegant data and forge deep connections. 
               Cement your habits online or offline.
             </p>
@@ -252,8 +252,8 @@ const Index = () => {
                 <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6 group-hover:shadow-glow transition-all duration-300">
                   <Trophy className="h-7 w-7 md:h-8 md:w-8 text-white" />
                 </div>
-                <CardTitle className="text-lg md:text-xl mb-3 md:mb-4 text-foreground">Set Goals</CardTitle>
-                <CardDescription className="text-muted-foreground leading-relaxed text-sm md:text-base">
+                <CardTitle className="font-display text-lg md:text-xl mb-3 md:mb-4 text-foreground">Set Goals</CardTitle>
+                <CardDescription className="font-serif text-muted-foreground leading-relaxed text-sm md:text-base">
                   Build reading habits that stick. Set yearly goals, track daily progress, and watch your streaks grow.
                 </CardDescription>
               </CardContent>
@@ -264,8 +264,8 @@ const Index = () => {
                 <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6 group-hover:shadow-glow transition-all duration-300">
                   <Timer className="h-7 w-7 md:h-8 md:w-8 text-white" />
                 </div>
-                <CardTitle className="text-lg md:text-xl mb-3 md:mb-4 text-foreground">Track Time</CardTitle>
-                <CardDescription className="text-muted-foreground leading-relaxed text-sm md:text-base">
+                <CardTitle className="font-display text-lg md:text-xl mb-3 md:mb-4 text-foreground">Track Time</CardTitle>
+                <CardDescription className="font-serif text-muted-foreground leading-relaxed text-sm md:text-base">
                   Every minute counts. Use our reading timer to log sessions, discover your pace, and see how time adds up.
                 </CardDescription>
               </CardContent>
@@ -276,8 +276,8 @@ const Index = () => {
                 <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6 group-hover:shadow-glow transition-all duration-300">
                   <StatsReport className="h-7 w-7 md:h-8 md:w-8 text-white" />
                 </div>
-                <CardTitle className="text-lg md:text-xl mb-3 md:mb-4 text-foreground">Analyze Progress</CardTitle>
-                <CardDescription className="text-muted-foreground leading-relaxed text-sm md:text-base">
+                <CardTitle className="font-display text-lg md:text-xl mb-3 md:mb-4 text-foreground">Analyze Progress</CardTitle>
+                <CardDescription className="font-serif text-muted-foreground leading-relaxed text-sm md:text-base">
                   Turn reading into insights. See your velocity, genre preferences, and completion rates in beautiful charts.
                 </CardDescription>
               </CardContent>

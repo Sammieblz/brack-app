@@ -22,9 +22,10 @@ export function Toaster() {
     const visibleToasts = toasts.filter(t => t.open)
     if (visibleToasts.length > 0) {
       const latestToast = visibleToasts[visibleToasts.length - 1]
-      if (latestToast.variant === 'destructive') {
+      const variant = latestToast.variant as string | undefined
+      if (variant === 'destructive') {
         triggerHaptic('error')
-      } else if (latestToast.variant === 'success') {
+      } else if (variant === 'success') {
         triggerHaptic('success')
       } else {
         triggerHaptic('light')

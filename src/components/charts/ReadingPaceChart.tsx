@@ -62,7 +62,7 @@ export const ReadingPaceChart = ({ data }: ReadingPaceChartProps) => {
               fontSize={11}
               tick={{ fontSize: 11 }}
               width={40}
-              label={{ value: 'Pages/Hour', angle: -90, position: 'insideLeft' }}
+              label={{ value: 'Pages/Hour', angle: -90, position: 'insideLeft', style: { fontFamily: 'Inter, system-ui, sans-serif' } }}
             />
             <ChartTooltip 
               content={({ active, payload }) => {
@@ -73,16 +73,16 @@ export const ReadingPaceChart = ({ data }: ReadingPaceChartProps) => {
                   return (
                     <div className="rounded-lg border bg-background p-3 shadow-lg">
                       <div className="space-y-1">
-                        <div className="font-semibold text-sm">{data.period}</div>
-                        <div className="flex items-center gap-2">
+                        <div className="font-sans font-semibold text-sm">{data.period}</div>
+                        <div className="font-sans flex items-center gap-2">
                           <div className="w-3 h-3 rounded-full bg-[hsl(var(--chart-1))]" />
                           <span className="text-sm">Your pace: <span className="font-bold">{data.yourPace.toFixed(1)}</span></span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="font-sans flex items-center gap-2">
                           <div className="w-3 h-3 rounded-full bg-muted-foreground/50" />
                           <span className="text-sm">Average: <span className="font-bold">{data.averagePace.toFixed(1)}</span></span>
                         </div>
-                        <div className={`text-xs pt-1 ${diff >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        <div className={`font-sans text-xs pt-1 ${diff >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                           {diff >= 0 ? '+' : ''}{diffPercent}% vs average
                         </div>
                       </div>

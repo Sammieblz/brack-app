@@ -57,7 +57,7 @@ export const SwipeableBookListsCarousel = () => {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-base md:text-lg font-semibold flex items-center">
+        <h3 className="font-display text-base md:text-lg font-semibold flex items-center">
           <BookMarked className="h-4 w-4 md:h-5 md:w-5 mr-2" />
           My Book Lists
         </h3>
@@ -79,21 +79,21 @@ export const SwipeableBookListsCarousel = () => {
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <BookMarked className="h-5 w-5 text-primary flex-shrink-0" />
-                <CardTitle className="text-base line-clamp-1">{currentList.name}</CardTitle>
+                <CardTitle className="font-display text-base line-clamp-1">{currentList.name}</CardTitle>
               </div>
               <Badge variant="secondary" className="text-xs whitespace-nowrap">
                 {currentList.book_count || 0} books
               </Badge>
             </div>
             {currentList.description && (
-              <CardDescription className="text-sm line-clamp-2">
+              <CardDescription className="font-sans text-sm line-clamp-2">
                 {currentList.description}
               </CardDescription>
             )}
           </CardHeader>
           <CardContent className="pb-4">
             <div className="flex items-center justify-between">
-              <div className="text-xs text-muted-foreground">
+              <div className="font-sans text-xs text-muted-foreground">
                 Tap to view list
               </div>
               {hasMultiple && (
@@ -146,7 +146,7 @@ export const SwipeableBookListsCarousel = () => {
       </div>
 
       {hasMultiple && (
-        <div className="text-center text-xs text-muted-foreground">
+        <div className="font-sans text-center text-xs text-muted-foreground">
           Swipe to see more lists • {currentIndex + 1} of {lists.length}
         </div>
       )}

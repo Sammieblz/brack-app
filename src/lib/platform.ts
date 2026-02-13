@@ -18,21 +18,21 @@ export const getPlatformStyles = (platform: Platform) => {
   const styles = {
     ios: {
       borderRadius: '12px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display"',
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif',
       buttonRadius: '10px',
       cardRadius: '12px',
       inputRadius: '10px',
     },
     android: {
       borderRadius: '16px',
-      fontFamily: 'Roboto, "Noto Sans", system-ui',
+      fontFamily: 'Inter, Roboto, "Noto Sans", system-ui, sans-serif',
       buttonRadius: '20px',
       cardRadius: '16px',
       inputRadius: '4px',
     },
     web: {
       borderRadius: '8px',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
+      fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
       buttonRadius: '8px',
       cardRadius: '8px',
       inputRadius: '6px',

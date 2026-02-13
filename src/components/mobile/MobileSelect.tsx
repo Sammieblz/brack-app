@@ -2,23 +2,26 @@ import { forwardRef } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import type { SelectProps } from "@radix-ui/react-select";
 
-interface MobileSelectProps extends React.ComponentPropsWithoutRef<typeof SelectTrigger> {
+interface MobileSelectProps extends Omit<SelectProps, 'defaultValue'> {
   label?: string;
   error?: string;
   helperText?: string;
   options: Array<{ value: string; label: string }>;
   placeholder?: string;
+  className?: string;
+  id?: string;
 }
 
 export const MobileSelect = forwardRef<
   React.ElementRef<typeof SelectTrigger>,
   MobileSelectProps & { onValueChange?: (value: string) => void; value?: string }
->(({ label, error, helperText, options, placeholder, className, ...props }, ref) => {
+>(({ label, error, helperText, options, placeholder, className, id, ...props }, ref) => {
   return (
     <div className="space-y-2">
       {label && (
-        <Label htmlFor={props.id} className="text-sm font-medium">
+        <Label htmlFor={id} className="text-sm font-medium">
           {label}
         </Label>
       )}
@@ -43,10 +46,10 @@ export const MobileSelect = forwardRef<
         </SelectContent>
       </Select>
       {error && (
-        <p className="text-sm text-destructive">{error}</p>
+        <p className="font-sans text-sm text-destructive">{error}</p>
       )}
       {helperText && !error && (
-        <p className="text-sm text-muted-foreground">{helperText}</p>
+        <p className="font-sans text-sm text-muted-foreground">{helperText}</p>
       )}
     </div>
   );

@@ -40,12 +40,12 @@ export const CompletionForecastChart = ({ data, totalPages }: CompletionForecast
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="font-display flex items-center justify-between">
           <span className="flex items-center">
             <Calendar className="h-5 w-5 mr-2" />
             Completion Forecast
           </span>
-          <span className="text-sm font-normal text-muted-foreground">
+          <span className="font-sans text-sm font-normal text-muted-foreground">
             Est: {completionDateStr}
           </span>
         </CardTitle>
@@ -53,7 +53,7 @@ export const CompletionForecastChart = ({ data, totalPages }: CompletionForecast
       <CardContent>
         {data.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No forecast data available yet</p>
+            <p className="font-sans">No forecast data available yet</p>
           </div>
         ) : (
           <ChartContainer config={chartConfig} className="h-[250px]">
@@ -77,7 +77,7 @@ export const CompletionForecastChart = ({ data, totalPages }: CompletionForecast
                   y={totalPages} 
                   stroke="hsl(var(--primary))" 
                   strokeDasharray="3 3"
-                  label={{ value: 'Target', position: 'right', fill: 'hsl(var(--primary))' }}
+                  label={{ value: 'Target', position: 'right', fill: 'hsl(var(--primary))', style: { fontFamily: 'Inter, system-ui, sans-serif' } }}
                 />
                 <Line 
                   type="monotone" 

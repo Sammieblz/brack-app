@@ -45,8 +45,8 @@ export const GoalsSheet = () => {
         </DismissableSheetTrigger>
         <DismissableSheetContent className="max-h-[85vh]">
           <DismissableSheetHeader>
-            <DismissableSheetTitle>Reading Goals</DismissableSheetTitle>
-            <DismissableSheetDescription>
+            <DismissableSheetTitle className="font-display">Reading Goals</DismissableSheetTitle>
+            <DismissableSheetDescription className="font-sans">
               Set and track your reading goals
             </DismissableSheetDescription>
           </DismissableSheetHeader>
@@ -66,8 +66,8 @@ export const GoalsSheet = () => {
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Reading Goals</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="font-display">Reading Goals</DialogTitle>
+          <DialogDescription className="font-sans">
             Set and track your reading goals
           </DialogDescription>
         </DialogHeader>

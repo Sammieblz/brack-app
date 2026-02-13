@@ -30,10 +30,10 @@ export const MobileDatePicker = forwardRef<HTMLInputElement, MobileDatePickerPro
           {...props}
         />
         {error && (
-          <p className="text-sm text-destructive">{error}</p>
+          <p className="font-sans text-sm text-destructive">{error}</p>
         )}
         {helperText && !error && (
-          <p className="text-sm text-muted-foreground">{helperText}</p>
+          <p className="font-sans text-sm text-muted-foreground">{helperText}</p>
         )}
       </div>
     );

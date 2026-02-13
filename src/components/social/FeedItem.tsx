@@ -41,10 +41,10 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
       case 'book_started':
         return (
           <>
-            <span className="font-semibold">{userName}</span> started reading{' '}
+            <span className="font-sans font-semibold">{userName}</span> started reading{' '}
             {activity.book && (
               <span 
-                className="font-semibold text-primary cursor-pointer hover:underline"
+                className="font-serif font-semibold text-primary cursor-pointer hover:underline"
                 onClick={() => navigate(`/book/${activity.book_id}`)}
               >
                 {activity.book.title}
@@ -55,10 +55,10 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
       case 'book_completed':
         return (
           <>
-            <span className="font-semibold">{userName}</span> finished reading{' '}
+            <span className="font-sans font-semibold">{userName}</span> finished reading{' '}
             {activity.book && (
               <span 
-                className="font-semibold text-primary cursor-pointer hover:underline"
+                className="font-serif font-semibold text-primary cursor-pointer hover:underline"
                 onClick={() => navigate(`/book/${activity.book_id}`)}
               >
                 {activity.book.title}
@@ -69,10 +69,10 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
       case 'book_reviewed':
         return (
           <>
-            <span className="font-semibold">{userName}</span> reviewed{' '}
+            <span className="font-sans font-semibold">{userName}</span> reviewed{' '}
             {activity.book && (
               <span 
-                className="font-semibold text-primary cursor-pointer hover:underline"
+                className="font-serif font-semibold text-primary cursor-pointer hover:underline"
                 onClick={() => navigate(`/book/${activity.book_id}`)}
               >
                 {activity.book.title}
@@ -88,32 +88,32 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
       case 'followed_user':
         return (
           <>
-            <span className="font-semibold">{userName}</span> started following{' '}
-            <span className="font-semibold">{activity.metadata?.followed_user_name || 'someone'}</span>
+            <span className="font-sans font-semibold">{userName}</span> started following{' '}
+            <span className="font-sans font-semibold">{activity.metadata?.followed_user_name || 'someone'}</span>
           </>
         );
       case 'created_list':
         return (
           <>
-            <span className="font-semibold">{userName}</span> created a new list:{' '}
-            <span className="font-semibold">{activity.metadata?.list_name}</span>
+            <span className="font-sans font-semibold">{userName}</span> created a new list:{' '}
+            <span className="font-sans font-semibold">{activity.metadata?.list_name}</span>
           </>
         );
       case 'earned_badge':
         return (
           <>
-            <span className="font-semibold">{userName}</span> earned the badge:{' '}
-            <span className="font-semibold">{activity.metadata?.badge_title}</span>
+            <span className="font-sans font-semibold">{userName}</span> earned the badge:{' '}
+            <span className="font-sans font-semibold">{activity.metadata?.badge_title}</span>
           </>
         );
       case 'post':
         return (
           <>
-            <span className="font-semibold">{userName}</span> shared an update
+            <span className="font-sans font-semibold">{userName}</span> shared an update
           </>
         );
       default:
-        return <span className="font-semibold">{userName}</span>;
+        return <span className="font-sans font-semibold">{userName}</span>;
     }
   };
 
@@ -149,14 +149,14 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-2 mb-2">
-              <div className="text-sm text-foreground flex-1 leading-relaxed">
+              <div className="font-sans text-sm text-foreground flex-1 leading-relaxed">
                 {getActivityMessage()}
               </div>
             </div>
 
             {activity.activity_type === 'post' && activity.metadata?.content && (
               <div className="mt-3 p-3 bg-muted/50 rounded-lg">
-                <p className="text-sm">{activity.metadata.content}</p>
+                <p className="font-serif text-sm">{activity.metadata.content}</p>
               </div>
             )}
 
@@ -178,7 +178,7 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
 
             <div className="flex items-center gap-2 mt-3">
               <div className="h-1 w-1 rounded-full bg-muted-foreground/40" />
-              <p className="text-xs text-muted-foreground">
+              <p className="font-sans text-xs text-muted-foreground">
                 {formatTimeAgo(activity.created_at)}
               </p>
             </div>

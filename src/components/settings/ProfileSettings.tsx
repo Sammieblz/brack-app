@@ -200,9 +200,9 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-lg truncate">{displayName}</h3>
+              <h3 className="font-sans font-semibold text-lg truncate">{displayName}</h3>
               {profile?.bio && (
-                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{profile.bio}</p>
+                <p className="font-sans text-sm text-muted-foreground line-clamp-2 mt-1">{profile.bio}</p>
               )}
             </div>
           </div>
@@ -212,21 +212,21 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
               onClick={() => navigate(`/profile/${user?.id}/followers`)}
               className="flex flex-col items-start hover:opacity-80 transition-opacity"
             >
-              <span className="text-2xl font-bold">{followersCount}</span>
-              <span className="text-sm text-muted-foreground">Followers</span>
+              <span className="font-sans text-2xl font-bold">{followersCount}</span>
+              <span className="font-sans text-sm text-muted-foreground">Followers</span>
             </button>
             <button
               onClick={() => navigate(`/profile/${user?.id}/following`)}
               className="flex flex-col items-start hover:opacity-80 transition-opacity"
             >
-              <span className="text-2xl font-bold">{followingCount}</span>
-              <span className="text-sm text-muted-foreground">Following</span>
+              <span className="font-sans text-2xl font-bold">{followingCount}</span>
+              <span className="font-sans text-sm text-muted-foreground">Following</span>
             </button>
             <button
               onClick={() => navigate(`/profile/${user?.id}`)}
               className="flex flex-col items-start hover:opacity-80 transition-opacity ml-auto"
             >
-              <span className="text-sm text-primary font-medium">View Profile</span>
+              <span className="font-sans text-sm text-primary font-medium">View Profile</span>
             </button>
           </div>
         </CardContent>
@@ -235,11 +235,11 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
       {/* Avatar */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="font-display flex items-center gap-2">
             <User className="h-5 w-5" />
             Profile Picture
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="font-sans">
             Update your profile picture to personalize your account
           </CardDescription>
         </CardHeader>
@@ -251,7 +251,7 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 w-full space-y-2">
-            <p className="text-sm text-muted-foreground text-center sm:text-left">
+            <p className="font-sans text-sm text-muted-foreground text-center sm:text-left">
               Update your profile picture to personalize your account
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
@@ -315,8 +315,8 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
       {/* Display Name */}
       <Card>
         <CardHeader>
-          <CardTitle>Display Name</CardTitle>
-          <CardDescription>
+          <CardTitle className="font-display">Display Name</CardTitle>
+          <CardDescription className="font-sans">
             This is how your name appears to other users
           </CardDescription>
         </CardHeader>
@@ -336,8 +336,8 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
       {/* Bio */}
       <Card>
         <CardHeader>
-          <CardTitle>Bio</CardTitle>
-          <CardDescription>
+          <CardTitle className="font-display">Bio</CardTitle>
+          <CardDescription className="font-sans">
             Tell others about yourself and your reading interests
           </CardDescription>
         </CardHeader>
@@ -350,6 +350,7 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
               onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
               placeholder="Tell us a bit about yourself and your reading interests..."
               rows={4}
+              className="font-sans"
             />
           </div>
         </CardContent>

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookSearch } from "@/components/BookSearch";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { BookOpen, Camera, Search, PenTool, Loader2 } from "lucide-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
@@ -94,7 +95,7 @@ const AddBook = () => {
         cover_url: formData.cover_url || null,
         description: null,
         tags: null,
-        metadata: {},
+        metadata: null,
         current_page: 0,
         date_started: null,
         date_finished: null,
@@ -162,7 +163,7 @@ const AddBook = () => {
       cover_url: book.cover_url,
       description: book.description,
       tags: null,
-      metadata: {},
+      metadata: null,
       current_page: 0,
       date_started: null,
       date_finished: null,
@@ -172,7 +173,10 @@ const AddBook = () => {
 
     const { error } = await supabase
       .from('books')
-      .insert(bookData);
+      .insert({
+        ...bookData,
+        metadata: bookData.metadata as Json | null
+      });
 
     if (error) throw error;
 
@@ -196,7 +200,7 @@ const AddBook = () => {
         <div className="fixed inset-0 z-[9999] bg-background/80 backdrop-blur-sm flex items-center justify-center">
           <div className="text-center space-y-4">
             <SuccessCheckmark show={showSuccess} size={64} />
-            <p className="text-xl font-semibold">
+            <p className="font-sans text-xl font-semibold">
               {isFirstBook ? "Your first book! 🎉" : "Book added successfully!"}
             </p>
           </div>
@@ -208,7 +212,7 @@ const AddBook = () => {
         {/* Form Card */}
         <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-xl font-bold text-foreground">
+            <CardTitle className="font-display text-xl font-bold text-foreground">
               Add a New Book
             </CardTitle>
           </CardHeader>

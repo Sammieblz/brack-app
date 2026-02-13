@@ -91,8 +91,8 @@ export const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create a Post</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="font-display">Create a Post</DialogTitle>
+          <DialogDescription className="font-sans">
             Share your reading thoughts with the community
           </DialogDescription>
         </DialogHeader>
@@ -131,7 +131,7 @@ export const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={8}
-              className="resize-none"
+              className="font-serif resize-none"
             />
           </div>
 

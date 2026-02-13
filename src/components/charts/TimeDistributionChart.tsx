@@ -64,8 +64,8 @@ export const TimeDistributionChart = ({ data }: TimeDistributionChartProps) => {
                   return (
                     <div className="rounded-lg border bg-background p-3 shadow-lg">
                       <div className="space-y-1">
-                        <div className="font-semibold text-sm">{displayHour}:00 {period}</div>
-                        <div className="flex items-center gap-2">
+                        <div className="font-sans font-semibold text-sm">{displayHour}:00 {period}</div>
+                        <div className="font-sans flex items-center gap-2">
                           <div className="w-3 h-3 rounded-full bg-[hsl(var(--chart-5))]" />
                           <div className="flex items-baseline gap-1">
                             <span className="text-lg font-bold">{value}</span>

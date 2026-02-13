@@ -147,8 +147,8 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Personal Information</h2>
-        <p className="text-muted-foreground mt-1">
+        <h2 className="font-display text-2xl font-bold">Personal Information</h2>
+        <p className="font-sans text-muted-foreground mt-1">
           Manage your personal details and location
         </p>
       </div>
@@ -156,7 +156,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
       {/* Name */}
       <Card>
         <CardHeader>
-          <CardTitle>Name</CardTitle>
+          <CardTitle className="font-display">Name</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -185,7 +185,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
       {/* Contact */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="font-display flex items-center gap-2">
             <Phone className="h-5 w-5" />
             Contact Information
           </CardTitle>
@@ -219,11 +219,11 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
       {/* Location */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="font-display flex items-center gap-2">
             <MapPin className="h-5 w-5" />
             Location
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="font-sans">
             Add your location to discover readers near you
           </CardDescription>
         </CardHeader>
@@ -285,7 +285,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
           </Button>
 
           <div className="bg-muted/50 p-3 rounded-lg">
-            <p className="text-xs text-muted-foreground">
+            <p className="font-sans text-xs text-muted-foreground">
               <strong>Privacy Note:</strong> Your location data is used only for reader discovery features.
             </p>
           </div>
