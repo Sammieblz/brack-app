@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, X } from "lucide-react";
+import { Book, Xmark } from "iconoir-react";
 
 const GENRES = [
   "Fiction", "Non-Fiction", "Mystery", "Romance", "Sci-Fi", "Fantasy", 
@@ -80,7 +80,7 @@ const Questionnaire = () => {
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="flex items-center space-x-2">
-              <BookOpen className="h-6 w-6 text-primary" />
+              <Book className="h-6 w-6 text-primary" />
               <span className="font-display text-xl font-bold text-primary">BRACK</span>
             </div>
           </div>
@@ -147,7 +147,7 @@ const Questionnaire = () => {
                   >
                     {genre}
                     {selectedGenres.includes(genre) && (
-                      <X className="ml-1 h-3 w-3" />
+                      <Xmark className="ml-1 h-3 w-3" />
                     )}
                   </Badge>
                 ))}

@@ -1,13 +1,13 @@
-import { Home, BookOpen, Users, List, Radio } from "lucide-react";
+import { Home, Book, User, List, Activity } from "iconoir-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 const tabs = [
   { name: "Home", path: "/", icon: Home },
-  { name: "Library", path: "/my-books", icon: BookOpen },
-  { name: "Discover", path: "/readers", icon: Users },
-  { name: "Feed", path: "/feed", icon: Radio },
+  { name: "Library", path: "/my-books", icon: Book },
+  { name: "Discover", path: "/readers", icon: User },
+  { name: "Feed", path: "/feed", icon: Activity },
   { name: "Lists", path: "/lists", icon: List },
 ];
 

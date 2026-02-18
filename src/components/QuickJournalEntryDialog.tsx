@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BookOpen, Quote, FileText, Camera, X, Image as ImageIcon } from "lucide-react";
+import { Book, Quote, Notes, Camera, Xmark, MediaImage } from "iconoir-react";
 import { useJournalEntries } from "@/hooks/useJournalEntries";
 import { useToast } from "@/hooks/use-toast";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
@@ -41,6 +41,7 @@ export const QuickJournalEntryDialog = ({
   const { addEntry } = useJournalEntries(bookId);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { pickImage, picking } = useImagePicker();
   const [saving, setSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const contentRef = useRef<HTMLTextAreaElement>(null);
@@ -108,6 +109,7 @@ export const QuickJournalEntryDialog = ({
     setSaving(true);
     try {
       await addEntry({
+        book_id: bookId,
         entry_type: entryType,
         title: title.trim() || undefined,
         content: content.trim(),
@@ -194,7 +196,7 @@ export const QuickJournalEntryDialog = ({
                 onClick={() => setEntryType('note')}
                 className="flex flex-col h-auto py-3"
               >
-                <FileText className="h-4 w-4 mb-1" />
+                <Notes className="h-4 w-4 mb-1" />
                 <span className="text-xs">Note</span>
               </Button>
               <Button
@@ -214,7 +216,7 @@ export const QuickJournalEntryDialog = ({
                 onClick={() => setEntryType('reflection')}
                 className="flex flex-col h-auto py-3"
               >
-                <BookOpen className="h-4 w-4 mb-1" />
+                <Book className="h-4 w-4 mb-1" />
                 <span className="text-xs">Reflection</span>
               </Button>
             </div>
@@ -282,20 +284,37 @@ export const QuickJournalEntryDialog = ({
                   className="absolute top-2 right-2 h-8 w-8"
                   onClick={handleRemovePhoto}
                 >
-                  <X className="h-4 w-4" />
+                  <Xmark className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowImagePicker(true)}
-                disabled={uploadingPhoto}
-                className="w-full mt-2"
-              >
-                <Camera className="h-4 w-4 mr-2" />
-                {uploadingPhoto ? "Uploading..." : "Add Photo"}
-              </Button>
+              <div className="flex gap-2 mt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={async () => {
+                    const image = await pickImage({ source: 'prompt' });
+                    if (image) {
+                      handleImagePicked(image);
+                    }
+                  }}
+                  disabled={uploadingPhoto || picking}
+                  className="flex-1"
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  {uploadingPhoto || picking ? "Processing..." : "Quick Add"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowImagePicker(true)}
+                  disabled={uploadingPhoto || picking}
+                  className="flex-1"
+                >
+                  <MediaImage className="h-4 w-4 mr-2" />
+                  {uploadingPhoto ? "Uploading..." : "Choose Photo"}
+                </Button>
+              </div>
             )}
             <ImagePickerDialog
               open={showImagePicker}

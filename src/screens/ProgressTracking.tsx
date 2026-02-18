@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target, Clock, Zap, TrendingUp } from "lucide-react";
+import { Trophy, Clock, Bolt, StatsReport } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -70,7 +70,7 @@ const ProgressTracking = () => {
             <Card className="bg-gradient-card border-0 shadow-medium">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                  <Target className="h-4 w-4 mr-2" />
+                  <Trophy className="h-4 w-4 mr-2" />
                   Progress
                 </CardTitle>
               </CardHeader>
@@ -85,7 +85,7 @@ const ProgressTracking = () => {
             <Card className="bg-gradient-card border-0 shadow-medium">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                  <Zap className="h-4 w-4 mr-2" />
+                  <Bolt className="h-4 w-4 mr-2" />
                   Velocity
                 </CardTitle>
               </CardHeader>
@@ -113,7 +113,7 @@ const ProgressTracking = () => {
             <Card className="bg-gradient-card border-0 shadow-medium">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                  <TrendingUp className="h-4 w-4 mr-2" />
+                  <StatsReport className="h-4 w-4 mr-2" />
                   Days Left
                 </CardTitle>
               </CardHeader>
@@ -191,7 +191,7 @@ const ProgressTracking = () => {
         {dailyProgress.length === 0 && (
           <Card className="bg-gradient-card border-0 shadow-medium">
             <CardContent className="text-center py-12">
-              <TrendingUp className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <StatsReport className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
               <h3 className="font-display text-lg font-medium mb-2">No Progress Data Yet</h3>
               <p className="font-sans text-muted-foreground mb-4">
                 Start logging your reading progress to see detailed analytics and forecasts

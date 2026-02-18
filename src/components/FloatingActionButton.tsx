@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, BookPlus, Camera, Search, Timer, TrendingUp, Clock, ListPlus, Scan } from "lucide-react";
+import { Plus, Book, Camera, Search, Timer, StatsReport, Clock, Plus as ListPlus, ScanBarcode } from "iconoir-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -37,7 +37,7 @@ export const FloatingActionButton = () => {
 
   const actions: FABAction[] = [
     {
-      icon: TrendingUp,
+      icon: StatsReport,
       label: "Quick Stats",
       onClick: () => {
         triggerHaptic("light");
@@ -55,7 +55,7 @@ export const FloatingActionButton = () => {
       },
     },
     {
-      icon: BookPlus,
+      icon: Book,
       label: "Add Book",
       onClick: () => {
         triggerHaptic("light");
@@ -73,7 +73,7 @@ export const FloatingActionButton = () => {
       },
     },
     {
-      icon: Scan,
+      icon: ScanBarcode,
       label: "Scan Cover",
       onClick: () => {
         triggerHaptic("light");
@@ -198,7 +198,7 @@ export const FloatingActionButton = () => {
                       />
                     ) : (
                       <div className="w-12 h-16 bg-muted rounded flex items-center justify-center">
-                        <BookPlus className="h-6 w-6 text-muted-foreground" />
+                        <Book className="h-6 w-6 text-muted-foreground" />
                       </div>
                     )}
                     <div className="flex-1 text-left">

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart3, Share2, ArrowRight } from "lucide-react";
+import { StatsReport, ShareIos, ArrowRight } from "iconoir-react";
 import { useToast } from "@/hooks/use-toast";
 import { shareService } from "@/services/shareService";
 import { useNavigate } from "react-router-dom";
@@ -119,7 +119,7 @@ export const ReadingStatsWidget = ({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="font-display flex items-center text-base md:text-lg">
-            <BarChart3 className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+            <StatsReport className="h-4 w-4 md:h-5 md:w-5 mr-2" />
             Reading Statistics
           </CardTitle>
           <div className="flex gap-2">
@@ -130,7 +130,7 @@ export const ReadingStatsWidget = ({
               onClick={handleShare}
               title="Share reading stats"
             >
-              <Share2 className="h-4 w-4" />
+              <ShareIos className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"

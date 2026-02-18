@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, Edit2, Save, X } from "lucide-react";
+import { Book, EditPencil, FloppyDisk, Xmark } from "iconoir-react";
 
 const GENRES = [
   "Fiction", "Non-Fiction", "Mystery", "Thriller", "Science Fiction",
@@ -129,7 +129,7 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
       <Card>
         <CardHeader>
           <CardTitle className="font-display flex items-center">
-            <BookOpen className="h-5 w-5 mr-2" />
+            <Book className="h-5 w-5 mr-2" />
             Reading Habits
           </CardTitle>
         </CardHeader>
@@ -145,7 +145,7 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="font-display flex items-center">
-            <BookOpen className="h-5 w-5 mr-2" />
+            <Book className="h-5 w-5 mr-2" />
             Reading Habits
           </CardTitle>
           {!isEditing ? (
@@ -154,7 +154,7 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
               size="sm"
               onClick={() => setIsEditing(true)}
             >
-              <Edit2 className="h-4 w-4 mr-2" />
+              <EditPencil className="h-4 w-4 mr-2" />
               Edit
             </Button>
           ) : (
@@ -167,7 +167,7 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
                   loadHabits();
                 }}
               >
-                <X className="h-4 w-4 mr-2" />
+                <Xmark className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
               <Button
@@ -175,7 +175,7 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
                 onClick={handleSave}
                 disabled={saving}
               >
-                <Save className="h-4 w-4 mr-2" />
+                <FloppyDisk className="h-4 w-4 mr-2" />
                 {saving ? "Saving..." : "Save"}
               </Button>
             </div>

@@ -6,7 +6,7 @@ import { useBookLists } from "@/hooks/useBookLists";
 import { useListBooks } from "@/hooks/useListBooks";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
-import { Trash2, GripVertical } from "lucide-react";
+import { Trash, Drag } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -76,7 +76,7 @@ const SortableBookItem = ({ book, userId, onRemove, onNavigate }: SortableBookIt
           {...attributes}
           {...listeners}
         >
-          <GripVertical className="h-4 w-4" />
+          <Drag className="h-4 w-4" />
         </Button>
       </div>
       <BookCard
@@ -91,7 +91,7 @@ const SortableBookItem = ({ book, userId, onRemove, onNavigate }: SortableBookIt
             size="icon"
             className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash className="h-4 w-4" />
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>

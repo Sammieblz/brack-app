@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Flame, Award, Shield } from "lucide-react";
+import { FireFlame, Trophy, Shield } from "iconoir-react";
 import type { StreakData } from "@/utils/streakCalculation";
 import { getStreakMilestones } from "@/utils/streakCalculation";
 import { StreakFlame } from "@/components/animations/StreakFlame";
@@ -59,7 +59,7 @@ export const StreakDisplay = ({ streakData, onUseFreeze }: StreakDisplayProps) =
                 {isStreakActive ? (
                   <StreakFlame active={isStreakActive} intensity={1} className="h-8 w-8" />
                 ) : (
-                  <Flame className="h-8 w-8 text-muted" />
+                  <FireFlame className="h-8 w-8 text-muted" />
                 )}
                 <div ref={streakNumberRef} className="font-sans text-4xl font-bold">
                   {displayedStreak}
@@ -87,7 +87,7 @@ export const StreakDisplay = ({ streakData, onUseFreeze }: StreakDisplayProps) =
           <div className="grid grid-cols-2 gap-4 pt-4 border-t">
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
-                <Award className="h-4 w-4 text-primary" />
+                <Trophy className="h-4 w-4 text-primary" />
                 <span className="font-sans text-2xl font-bold">{streakData.longestStreak}</span>
               </div>
               <p className="font-sans text-xs text-muted-foreground">Longest Streak</p>

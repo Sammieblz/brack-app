@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
-import { Check, ChevronRight, Circle } from "lucide-react"
+import { Check, NavArrowRight, Circle } from "iconoir-react"
 
 import { cn } from "@/lib/utils"
 
@@ -32,7 +32,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    <ChevronRight className="ml-auto h-4 w-4" />
+    <NavArrowRight className="ml-auto h-4 w-4" />
   </DropdownMenuPrimitive.SubTrigger>
 ))
 DropdownMenuSubTrigger.displayName =

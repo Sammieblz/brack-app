@@ -1,5 +1,5 @@
 import * as React from "react";
-import { X } from "lucide-react";
+import { Xmark } from "iconoir-react";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -56,16 +56,28 @@ export function ActionSheet({
             : "rounded-t-[16px] sm:rounded-[16px]"
         )}
       >
-        {(title || description) && (
-          <DialogHeader className="text-center sm:text-center">
-            {title && <DialogTitle className="font-display text-lg">{title}</DialogTitle>}
-            {description && (
-              <DialogDescription className="font-sans text-sm">
-                {description}
-              </DialogDescription>
+        <div className="relative">
+          {(title || description) && (
+            <DialogHeader className="text-center sm:text-center">
+              {title && <DialogTitle className="font-display text-lg">{title}</DialogTitle>}
+              {description && (
+                <DialogDescription className="font-sans text-sm">
+                  {description}
+                </DialogDescription>
+              )}
+            </DialogHeader>
+          )}
+          <button
+            onClick={() => onOpenChange?.(false)}
+            className={cn(
+              "absolute right-0 top-0 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none",
+              "font-sans p-2"
             )}
-          </DialogHeader>
-        )}
+            aria-label="Close"
+          >
+            <Xmark className="h-4 w-4" />
+          </button>
+        </div>
         
         <div className="flex flex-col gap-2 py-4">
           {actions.map((action, index) => (

@@ -17,7 +17,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Settings as SettingsIcon, User, Shield, Bell, Palette, HelpCircle, LogOut } from "lucide-react";
+import { Settings as SettingsIcon, User, Shield, Bell, Palette, HelpCircle, LogOut } from "iconoir-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 type SettingsSection = 

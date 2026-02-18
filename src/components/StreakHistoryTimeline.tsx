@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Trophy, Calendar, Flame } from "lucide-react";
+import { Trophy, Calendar, FireFlame } from "iconoir-react";
 import { useStreakHistory } from "@/hooks/useStreakHistory";
 import { formatDistanceToNow } from "date-fns";
 import LoadingSpinner from "./LoadingSpinner";
@@ -44,7 +44,7 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <Flame className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <FireFlame className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
             <p className="font-sans text-sm text-muted-foreground">
               Start a reading streak to unlock milestones!
             </p>
@@ -106,7 +106,7 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
                   >
                     <div className="flex-shrink-0">
                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Flame className="h-5 w-5 text-primary" />
+                        <FireFlame className="h-5 w-5 text-primary" />
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ArrowLeft } from "lucide-react";
+import { NavArrowLeft, ArrowLeft } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePlatform } from "@/hooks/usePlatform";
@@ -40,7 +40,7 @@ export const MobileBackButton = ({ title, onClick, className }: MobileBackButton
       )}
     >
       {isIOS ? (
-        <ChevronLeft className="h-6 w-6" />
+        <NavArrowLeft className="h-6 w-6" />
       ) : (
         <ArrowLeft className="h-5 w-5" />
       )}

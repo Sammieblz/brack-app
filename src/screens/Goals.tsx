@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, Calendar as CalendarIcon, Clock } from "lucide-react";
+import { Book, Calendar as CalendarIcon, Clock } from "iconoir-react";
 import { format } from "date-fns";
 
 const Goals = () => {
@@ -65,7 +65,7 @@ const Goals = () => {
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="flex items-center space-x-2">
-              <BookOpen className="h-6 w-6 text-primary" />
+              <Book className="h-6 w-6 text-primary" />
               <span className="font-display text-xl font-bold text-primary">BRACK</span>
             </div>
           </div>

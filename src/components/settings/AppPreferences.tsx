@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Palette } from "lucide-react";
+import { Palette } from "iconoir-react";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 

@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useBookLists } from "@/hooks/useBookLists";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, BookMarked, Trash2, Edit2, Copy, Loader2 } from "lucide-react";
+import { Plus, Bookmark, Trash, EditPencil, Copy, Refresh } from "iconoir-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { BookListCardSkeleton } from "./skeletons/BookListCardSkeleton";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
@@ -166,7 +166,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
             <CardHeader className="p-4 sm:p-6">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <BookMarked className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                  <Bookmark className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                   <CardTitle className="font-display text-base sm:text-lg line-clamp-2">{list.name}</CardTitle>
                 </div>
                 <Badge variant="secondary" className="text-xs whitespace-nowrap">{list.book_count || 0} books</Badge>
@@ -195,7 +195,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
                         setNewListDescription(list.description || "");
                       }}
                     >
-                      <Edit2 className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <EditPencil className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       <span className="font-sans text-xs sm:text-sm">Edit</span>
                     </Button>
                   </DialogTrigger>
@@ -241,7 +241,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="outline" size="sm" className="h-10 px-3 touch-manipulation">
-                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <Trash className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -269,7 +269,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
         <div ref={loadMoreRef} className="py-8 flex justify-center">
           {loadingMore && (
             <div className="font-sans flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <Refresh className="h-5 w-5 animate-spin" />
               <span>Loading more lists...</span>
             </div>
           )}
@@ -279,7 +279,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
       {lists.length === 0 && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
-            <BookMarked className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mb-4" />
+            <Bookmark className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mb-4" />
             <p className="font-sans text-sm sm:text-base text-muted-foreground text-center mb-4">
               You haven't created any lists yet
             </p>

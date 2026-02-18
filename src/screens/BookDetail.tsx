@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Clock, CheckCircle, Edit, Trash2, Play, Star, TrendingUp, Calendar, BookOpen, FileText, BookMarked, Share2 } from "lucide-react";
+import { ArrowLeft, Clock, CheckCircle, EditPencil, Trash, Play, Star, StatsReport, Calendar, Book as BookIcon, Notes, Bookmark, ShareIos } from "iconoir-react";
 import { shareService } from "@/services/shareService";
 import { toast } from "sonner";
 import { formatDuration } from "@/utils";
@@ -171,6 +171,24 @@ const BookDetail = () => {
     <MobileLayout>
       {isMobile && <MobileHeader title={book.title} showBack />}
       <div className="container max-w-4xl mx-auto p-4">
+        {!isMobile && (
+          <div className="mb-6 flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="h-10 w-10"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="font-display text-2xl font-bold">{book.title}</h1>
+              {book.author && (
+                <p className="font-serif text-muted-foreground mt-1">by {book.author}</p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Book Details Tabs */}
         <Card className="bg-gradient-card shadow-medium border-0 mb-6 animate-scale-in">
@@ -187,6 +205,22 @@ const BookDetail = () => {
               <div className="text-center mb-4">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <h2 className="font-serif text-xl font-bold text-foreground">{book.title}</h2>
+                  {user && (
+                    <AddToListDialog 
+                      bookId={book.id} 
+                      userId={user.id}
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          title="Add to list"
+                        >
+                          <Bookmark className="h-4 w-4" />
+                        </Button>
+                      }
+                    />
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -207,7 +241,7 @@ const BookDetail = () => {
                     }}
                     title="Share book"
                   >
-                    <Share2 className="h-4 w-4" />
+                    <ShareIos className="h-4 w-4" />
                   </Button>
                 </div>
                 {book.author && <p className="font-serif text-muted-foreground">by {book.author}</p>}
@@ -216,7 +250,7 @@ const BookDetail = () => {
               {book.description && (
                 <div className="pb-4 border-b space-y-2">
                   <span className="font-sans text-sm text-muted-foreground font-medium flex items-center gap-1">
-                    <FileText className="h-4 w-4" />
+                    <Notes className="h-4 w-4" />
                     Description
                   </span>
                   <p className="font-serif text-sm text-foreground/80 leading-relaxed">{book.description}</p>
@@ -378,13 +412,13 @@ const BookDetail = () => {
                     onClick={() => navigate(`/book/${book.id}/progress`)}
                     className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium mt-4"
                   >
-                    <TrendingUp className="mr-2 h-4 w-4" />
+                    <StatsReport className="mr-2 h-4 w-4" />
                     View Detailed Analytics
                   </Button>
                 </>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  <BookOpen className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <BookIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p className="font-sans">No progress data available yet</p>
                   <p className="font-sans text-sm">Start logging your progress to see statistics</p>
                 </div>
@@ -459,7 +493,7 @@ const BookDetail = () => {
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <Notes className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p className="font-sans">No progress logs yet</p>
                   <p className="font-sans text-sm">Log your reading progress to track your journey</p>
                 </div>
@@ -491,7 +525,7 @@ const BookDetail = () => {
               variant="outline"
               className="border-border/50 hover:shadow-soft transition-all duration-300"
             >
-              <BookOpen className="mr-2 h-4 w-4" />
+              <BookIcon className="mr-2 h-4 w-4" />
               Log Progress
             </Button>
           </div>
@@ -513,21 +547,18 @@ const BookDetail = () => {
               variant="outline"
               className="border-border/50 hover:shadow-soft transition-all duration-300"
             >
-              <Edit className="mr-2 h-4 w-4" />
+              <EditPencil className="mr-2 h-4 w-4" />
               Edit
             </Button>
           </div>
 
-          {user && (
-            <AddToListDialog bookId={book.id} userId={user.id} />
-          )}
 
           <Button
             onClick={handleDeleteBook}
             variant="outline"
             className="w-full border-destructive/50 text-destructive hover:bg-destructive/10 transition-all duration-300"
           >
-            <Trash2 className="mr-2 h-4 w-4" />
+            <Trash className="mr-2 h-4 w-4" />
             Delete Book
           </Button>
         </div>

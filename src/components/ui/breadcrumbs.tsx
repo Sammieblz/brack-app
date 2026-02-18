@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ChevronRight, Home } from "lucide-react"
+import { NavArrowRight, Home } from "iconoir-react"
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 
@@ -75,7 +75,7 @@ export const Breadcrumbs = ({ items, className }: BreadcrumbsProps) => {
                 </Link>
               ) : item.href && !isLast ? (
                 <>
-                  <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                  <NavArrowRight className="h-4 w-4" aria-hidden="true" />
                   <Link
                     to={item.href}
                     className="font-sans hover:text-foreground transition-colors"
@@ -86,7 +86,7 @@ export const Breadcrumbs = ({ items, className }: BreadcrumbsProps) => {
                 </>
               ) : (
                 <>
-                  <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                  <NavArrowRight className="h-4 w-4" aria-hidden="true" />
                   <span 
                     className={cn("font-sans text-foreground font-medium", !item.href && "cursor-default")}
                     itemProp="name"

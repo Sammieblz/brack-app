@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Message } from "@/hooks/useMessages";
-import { Send } from "lucide-react";
+import { Send } from "iconoir-react";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useIsMobile } from "@/hooks/use-mobile";

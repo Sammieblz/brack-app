@@ -2,7 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookClub } from "@/hooks/useBookClubs";
-import { Users, Lock, BookOpen, Crown } from "lucide-react";
+import { Group, Lock, Book, Crown } from "iconoir-react";
 import { useNavigate } from "react-router-dom";
 
 interface BookClubCardProps {
@@ -56,7 +56,7 @@ export const BookClubCard = ({ club, onJoin, onLeave }: BookClubCardProps) => {
       <CardContent className="pb-3">
         <div className="flex items-center gap-4 font-sans text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
-            <Users className="h-4 w-4" />
+            <Group className="h-4 w-4" />
             <span>{club.member_count || 0} members</span>
           </div>
         </div>
@@ -64,7 +64,7 @@ export const BookClubCard = ({ club, onJoin, onLeave }: BookClubCardProps) => {
         {club.current_book && (
           <div className="mt-3 p-3 rounded-lg bg-muted/30 border border-border/40">
             <div className="flex items-center gap-2 mb-1">
-              <BookOpen className="h-4 w-4 text-primary" />
+              <Book className="h-4 w-4 text-primary" />
               <span className="font-sans text-xs font-semibold text-muted-foreground">
                 Currently Reading
               </span>

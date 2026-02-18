@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, X, Clock, ArrowLeft } from 'lucide-react';
+import { Search, Xmark, Clock, ArrowLeft } from 'iconoir-react';
 import { cn } from '@/lib/utils';
 import { usePlatform } from '@/hooks/usePlatform';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
@@ -142,7 +142,7 @@ export const NativeSearchBar = ({
                 'animate-in fade-in-0 zoom-in-50 duration-200'
               )}
             >
-              <X className="h-3 w-3 text-muted-foreground" />
+              <Xmark className="h-3 w-3 text-muted-foreground" />
             </button>
           )}
         </div>
@@ -209,7 +209,7 @@ export const NativeSearchBar = ({
                   }}
                   className="p-1 hover:bg-muted rounded-full transition-all active:scale-90"
                 >
-                  <X className="h-3 w-3 text-muted-foreground" />
+                  <Xmark className="h-3 w-3 text-muted-foreground" />
                 </button>
               </button>
             ))}

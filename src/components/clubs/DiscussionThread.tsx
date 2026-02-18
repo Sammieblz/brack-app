@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ClubDiscussion } from "@/hooks/useBookClubs";
-import { MessageCircle, Trash2, Send } from "lucide-react";
+import { ChatBubble, Trash, Send } from "iconoir-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface DiscussionThreadProps {
@@ -85,7 +85,7 @@ export const DiscussionThread = ({
               onClick={() => onDelete(discussion.id)}
               className="text-destructive hover:text-destructive"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash className="h-4 w-4" />
             </Button>
           )}
         </div>
@@ -99,7 +99,7 @@ export const DiscussionThread = ({
             onClick={() => setShowReplyForm(!showReplyForm)}
             className="text-xs"
           >
-            <MessageCircle className="h-3 w-3 mr-1" />
+            <ChatBubble className="h-3 w-3 mr-1" />
             Reply ({discussion.replies?.length || 0})
           </Button>
         </div>

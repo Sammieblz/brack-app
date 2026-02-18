@@ -7,7 +7,7 @@ import { useReviews } from "@/hooks/useReviews";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, MessageCircle, Star, Eye, EyeOff, MoreVertical, Trash2, Edit, Share2 } from "lucide-react";
+import { Heart, ChatBubble, Star, Eye, EyeClosed, Menu, Trash, EditPencil, ShareIos } from "iconoir-react";
 import { shareService } from "@/services/shareService";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -153,18 +153,18 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
-                  <MoreVertical className="h-4 w-4" />
+                  <Menu className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 {onEdit && (
                   <DropdownMenuItem onClick={onEdit}>
-                    <Edit className="mr-2 h-4 w-4" />
+                    <EditPencil className="mr-2 h-4 w-4" />
                     Edit Review
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem onClick={handleDelete} className="text-destructive">
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash className="mr-2 h-4 w-4" />
                   Delete Review
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -197,7 +197,7 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
                 size="sm"
                 onClick={() => setShowSpoiler(false)}
               >
-                <EyeOff className="mr-2 h-4 w-4" />
+                <EyeClosed className="mr-2 h-4 w-4" />
                 Hide Spoiler
               </Button>
             )}
@@ -215,7 +215,7 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
             {review.likes_count}
           </Button>
           <Button variant="ghost" size="sm">
-            <MessageCircle className="mr-2 h-4 w-4" />
+            <ChatBubble className="mr-2 h-4 w-4" />
             {review.comments_count}
           </Button>
           <Button
@@ -224,7 +224,7 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
             onClick={handleShare}
             title="Share review"
           >
-            <Share2 className="mr-2 h-4 w-4" />
+            <ShareIos className="mr-2 h-4 w-4" />
             Share
           </Button>
           {review.is_spoiler && (

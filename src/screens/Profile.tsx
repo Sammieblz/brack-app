@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Save, User, Camera, Users } from "lucide-react";
+import { FloppyDisk, User, Camera, User as Users } from "iconoir-react";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
 import { useImagePicker } from "@/hooks/useImagePicker";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -386,7 +386,7 @@ const ProfilePage = () => {
               </>
             ) : (
               <>
-                <Save className="h-4 w-4 mr-2" />
+                <FloppyDisk className="h-4 w-4 mr-2" />
                 Save Changes
               </>
             )}

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Calendar } from "lucide-react";
+import { Calendar } from "iconoir-react";
 
 interface HeatmapData {
   date: string;

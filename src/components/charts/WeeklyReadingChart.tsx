@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, defs, linearGradient, stop } from "recharts";
-import { Calendar } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Calendar } from "iconoir-react";
 import type { WeeklyReadingData } from "@/hooks/useChartData";
 
 interface WeeklyReadingChartProps {

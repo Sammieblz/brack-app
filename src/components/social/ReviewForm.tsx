@@ -23,7 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useReviews } from "@/hooks/useReviews";
-import { Star } from "lucide-react";
+import { Star } from "iconoir-react";
 import { sanitizeInput } from "@/utils/sanitize";
 
 const reviewSchema = z.object({

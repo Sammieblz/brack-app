@@ -1,5 +1,5 @@
 import * as React from "react"
-import { X, ZoomIn, ZoomOut, RotateCw } from "lucide-react"
+import { Xmark, ZoomIn, ZoomOut, Refresh } from "iconoir-react"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -139,7 +139,7 @@ export const ImageLightbox = ({
               className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 h-11 w-11"
               aria-label="Close image viewer"
             >
-              <X className="h-5 w-5" />
+              <Xmark className="h-5 w-5" />
             </Button>
 
             {/* Controls */}
@@ -171,7 +171,7 @@ export const ImageLightbox = ({
                 className="text-white hover:bg-white/20 h-11 w-11"
                 aria-label="Rotate image"
               >
-                <RotateCw className="h-5 w-5" />
+                <Refresh className="h-5 w-5" />
               </Button>
               {scale !== 1 && (
                 <Button

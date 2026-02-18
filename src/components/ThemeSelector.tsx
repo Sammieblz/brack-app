@@ -1,4 +1,4 @@
-import { Check, BookOpen, TrendingUp, Heart } from 'lucide-react';
+import { Check, Book } from 'iconoir-react';
 import { themes } from '@/lib/themes';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -61,7 +61,7 @@ export const ThemeSelector = () => {
                       transform: isHovered ? 'scale(1.1) rotate(360deg)' : 'scale(1) rotate(0deg)'
                     }}
                   >
-                    <BookOpen className="h-3 w-3" style={{ color: `hsl(${themeColors?.primaryForeground})` }} />
+                    <Book className="h-3 w-3" style={{ color: `hsl(${themeColors?.primaryForeground})` }} />
                   </div>
                   <div 
                     className="flex-1 h-2 rounded-full transition-all duration-500"

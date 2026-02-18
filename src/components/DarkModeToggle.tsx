@@ -1,4 +1,4 @@
-import { Moon, Sun, Monitor } from "lucide-react";
+import { HalfMoon, SunLight, Computer } from "iconoir-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,19 +14,19 @@ export const DarkModeToggle = () => {
   const modes = [
     { 
       value: 'light' as const, 
-      icon: Sun, 
+      icon: SunLight, 
       label: 'Light Mode',
       description: 'Always use light theme'
     },
     { 
       value: 'dark' as const, 
-      icon: Moon, 
+      icon: HalfMoon, 
       label: 'Dark Mode',
       description: 'Always use dark theme'
     },
     { 
       value: 'system' as const, 
-      icon: Monitor, 
+      icon: Computer, 
       label: 'System',
       description: 'Follow system preference'
     },

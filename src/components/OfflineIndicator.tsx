@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { WifiOff, Wifi, RefreshCw, CheckCircle2 } from "lucide-react";
+import { WifiOff, Wifi, Refresh, CheckCircle } from "iconoir-react";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { offlineQueue } from "@/services/offlineQueue";
 import { useToast } from "@/hooks/use-toast";
@@ -80,7 +80,7 @@ export const OfflineIndicator = () => {
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="h-4 w-4 inline mr-1" />
+                    <CheckCircle className="h-4 w-4 inline mr-1" />
                     All changes synced
                   </>
                 )}
@@ -106,12 +106,12 @@ export const OfflineIndicator = () => {
           >
             {syncing ? (
               <>
-                <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                <Refresh className="h-3 w-3 mr-1 animate-spin" />
                 Syncing...
               </>
             ) : (
               <>
-                <RefreshCw className="h-3 w-3 mr-1" />
+                <Refresh className="h-3 w-3 mr-1" />
                 Sync Now
               </>
             )}

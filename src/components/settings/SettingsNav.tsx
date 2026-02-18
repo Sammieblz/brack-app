@@ -1,4 +1,4 @@
-import { Settings, User, Shield, Bell, Palette, HelpCircle, LogOut, Mail, Lock, Trash2, Download } from "lucide-react";
+import { Settings, User, Shield, Bell, Palette, QuestionMark as HelpCircle, LogOut, Lock, Trash, Download } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -121,7 +121,7 @@ export const SettingsNav = ({ activeSection, onSectionChange, onSignOut }: Setti
               // TODO: Implement clear cache
             }}
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash className="h-4 w-4 mr-2" />
             Clear Cache
           </Button>
           <Button
@@ -132,7 +132,7 @@ export const SettingsNav = ({ activeSection, onSectionChange, onSignOut }: Setti
               // TODO: Implement delete account
             }}
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash className="h-4 w-4 mr-2" />
             Delete Account
           </Button>
         </CardContent>

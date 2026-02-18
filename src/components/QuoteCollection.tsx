@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Quote, BookOpen, Share2, Search } from "lucide-react";
+import { Quote, Book, ShareIos, Search } from "iconoir-react";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -174,7 +174,7 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
                     <div className="font-sans flex items-center gap-2 text-xs text-muted-foreground">
                       {quote.book_title && (
                         <>
-                          <BookOpen className="h-3 w-3" />
+                          <Book className="h-3 w-3" />
                           <span className="font-serif">
                             {quote.book_title}
                             {quote.book_author && ` by ${quote.book_author}`}
@@ -192,7 +192,7 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
                     onClick={() => handleShareQuote(quote)}
                     className="flex-shrink-0"
                   >
-                    <Share2 className="h-4 w-4" />
+                    <ShareIos className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

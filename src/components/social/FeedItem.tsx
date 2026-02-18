@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Book, Star, UserPlus, List, Award, BookOpen } from "lucide-react";
+import { Book, Star, UserPlus, List, Trophy } from "iconoir-react";
 import { FeedActivity } from "@/hooks/useSocialFeed";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +16,7 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
   const getActivityIcon = () => {
     switch (activity.activity_type) {
       case 'book_started':
-        return <BookOpen className="h-5 w-5 text-primary" />;
+        return <Book className="h-5 w-5 text-primary" />;
       case 'book_completed':
         return <Book className="h-5 w-5 text-success" />;
       case 'book_reviewed':
@@ -26,9 +26,9 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
       case 'created_list':
         return <List className="h-5 w-5 text-secondary" />;
       case 'earned_badge':
-        return <Award className="h-5 w-5 text-accent" />;
+        return <Trophy className="h-5 w-5 text-accent" />;
       case 'post':
-        return <BookOpen className="h-5 w-5 text-primary" />;
+        return <Book className="h-5 w-5 text-primary" />;
       default:
         return <Book className="h-5 w-5" />;
     }

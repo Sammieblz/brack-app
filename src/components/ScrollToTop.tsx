@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useIsMobile } from "@/hooks/use-mobile";

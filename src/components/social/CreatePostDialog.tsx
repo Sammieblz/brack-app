@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { PenSquare } from "lucide-react";
+import { EditPencil } from "iconoir-react";
 import { GENRES } from "@/constants";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { sanitizeInput } from "@/utils/sanitize";
@@ -85,7 +85,7 @@ export const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <PenSquare className="mr-2 h-4 w-4" />
+          <EditPencil className="mr-2 h-4 w-4" />
           Create Post
         </Button>
       </DialogTrigger>

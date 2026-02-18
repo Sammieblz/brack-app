@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, Target, Clock, BarChart3, ArrowRight, Library } from "lucide-react";
+import { Book, Trophy, Clock, StatsReport, ArrowRight, BookStack } from "iconoir-react";
 import { BookCard } from "@/components/BookCard";
 import { StreakDisplay } from "@/components/StreakDisplay";
 import { StreakCalendar } from "@/components/StreakCalendar";
@@ -13,7 +13,6 @@ import { useBooks } from "@/hooks/useBooks";
 import { useBadges } from "@/hooks/useBadges";
 import { useStreaks } from "@/hooks/useStreaks";
 import { BadgeDisplay } from "@/components/BadgeDisplay";
-import { Award } from "lucide-react";
 import { useRecentActivity } from "@/hooks/useRecentActivity";
 import { useChartData } from "@/hooks/useChartData";
 import { WeeklyReadingChart } from "@/components/charts/WeeklyReadingChart";
@@ -187,7 +186,7 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="font-display flex items-center text-base md:text-lg">
-                  <Target className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                  <Trophy className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                   Your Reading Progress
                 </CardTitle>
               </CardHeader>
@@ -222,7 +221,7 @@ const Dashboard = () => {
                 onClick={() => navigate("/add-book")}
                 className="h-20 text-lg"
               >
-                <BookOpen className="mr-2 h-6 w-6" />
+                <Book className="mr-2 h-6 w-6" />
                 Add New Book
               </Button>
               <Button 
@@ -230,7 +229,7 @@ const Dashboard = () => {
                 variant="outline"
                 className="h-20 text-lg"
               >
-                <Library className="mr-2 h-6 w-6" />
+                <BookStack className="mr-2 h-6 w-6" />
                 View My Books
               </Button>
             </div>
@@ -261,7 +260,7 @@ const Dashboard = () => {
               <CardHeader>
                 <CardTitle className="font-display flex items-center justify-between text-base md:text-lg">
                   <span className="flex items-center">
-                    <Award className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                    <Trophy className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                     Achievements
                   </span>
                   <Button variant="outline" size="sm" onClick={() => navigate("/achievements")}>
@@ -284,7 +283,7 @@ const Dashboard = () => {
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-display text-base md:text-lg font-semibold flex items-center">
-                  <BarChart3 className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                  <StatsReport className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                   This Week's Reading
                 </h3>
                 <Button variant="outline" size="sm" onClick={() => navigate("/analytics")}>
@@ -304,7 +303,7 @@ const Dashboard = () => {
             <CardHeader>
               <CardTitle className="font-display flex items-center justify-between text-base md:text-lg">
                 <span className="flex items-center">
-                  <Library className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                  <BookStack className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                   My Books
                 </span>
                 <Button variant="outline" size="sm" onClick={() => navigate("/my-books")}>
@@ -321,11 +320,11 @@ const Dashboard = () => {
                 </div>
               ) : books.length === 0 ? (
                 <div className="text-center py-8">
-                  <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <Book className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="font-sans text-muted-foreground mb-4">No books yet. Add your first book to get started!</p>
                   {!isMobile && (
                     <Button onClick={() => navigate("/add-book")}>
-                      <BookOpen className="mr-2 h-4 w-4" />
+                      <Book className="mr-2 h-4 w-4" />
                       Add Your First Book
                     </Button>
                   )}

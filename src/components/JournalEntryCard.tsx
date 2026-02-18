@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, BookOpen, Quote, Lightbulb } from "lucide-react";
+import { EditPencil, Trash, Book, Quote, LightBulb } from "iconoir-react";
 import { JournalEntry } from "@/hooks/useJournalEntries";
 import { formatDistanceToNow } from "date-fns";
 
@@ -12,9 +12,9 @@ interface JournalEntryCardProps {
 }
 
 const entryTypeConfig = {
-  note: { icon: BookOpen, label: "Note", color: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+  note: { icon: Book, label: "Note", color: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
   quote: { icon: Quote, label: "Quote", color: "bg-purple-500/10 text-purple-500 border-purple-500/20" },
-  reflection: { icon: Lightbulb, label: "Reflection", color: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
+  reflection: { icon: LightBulb, label: "Reflection", color: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
 };
 
 export const JournalEntryCard = ({ entry, onEdit, onDelete }: JournalEntryCardProps) => {
@@ -43,7 +43,7 @@ export const JournalEntryCard = ({ entry, onEdit, onDelete }: JournalEntryCardPr
               className="h-8 w-8"
               onClick={() => onEdit(entry)}
             >
-              <Pencil className="h-4 w-4" />
+              <EditPencil className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
@@ -51,7 +51,7 @@ export const JournalEntryCard = ({ entry, onEdit, onDelete }: JournalEntryCardPr
               className="h-8 w-8 text-destructive hover:text-destructive"
               onClick={() => onDelete(entry.id)}
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash className="h-4 w-4" />
             </Button>
           </div>
         </div>

@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { supabase } from "@/integrations/supabase/client";
 import { updateBookStatusIfNeeded } from "@/utils/bookStatus";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Camera, X } from "lucide-react";
+import { Refresh, Camera, Xmark } from "iconoir-react";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
 import { useImagePicker } from "@/hooks/useImagePicker";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,6 +40,7 @@ export const ProgressLogger = ({
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const { pickImage, picking } = useImagePicker();
 
   const handleImagePicked = async (image: { dataUrl: string; format: string; base64?: string }) => {
     if (!user || !image.base64) return;
@@ -239,20 +240,37 @@ export const ProgressLogger = ({
                   className="absolute top-2 right-2 h-8 w-8"
                   onClick={handleRemovePhoto}
                 >
-                  <X className="h-4 w-4" />
+                  <Xmark className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowImagePicker(true)}
-                disabled={uploadingPhoto}
-                className="w-full mt-2"
-              >
-                <Camera className="h-4 w-4 mr-2" />
-                {uploadingPhoto ? "Uploading..." : "Add Photo"}
-              </Button>
+              <div className="flex gap-2 mt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={async () => {
+                    const image = await pickImage({ source: 'prompt' });
+                    if (image) {
+                      handleImagePicked(image);
+                    }
+                  }}
+                  disabled={uploadingPhoto || picking}
+                  className="flex-1"
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  {uploadingPhoto || picking ? "Processing..." : "Quick Add"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowImagePicker(true)}
+                  disabled={uploadingPhoto || picking}
+                  className="flex-1"
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  {uploadingPhoto ? "Uploading..." : "Choose Photo"}
+                </Button>
+              </div>
             )}
             <ImagePickerDialog
               open={showImagePicker}
@@ -273,7 +291,7 @@ export const ProgressLogger = ({
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <Refresh className="mr-2 h-4 w-4 animate-spin" />}
               Log Progress
             </Button>
           </div>

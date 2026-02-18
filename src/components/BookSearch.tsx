@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, BookOpen, Loader2, Star, Camera } from "lucide-react";
+import { Search, Plus, Book, Refresh, Star, Camera } from "iconoir-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { GoogleBookResult } from "@/types/googleBooks";
@@ -250,7 +250,7 @@ export const BookSearch = ({ onSelectBook, onQuickAdd, initialQuery }: BookSearc
         <Button type="submit" disabled={searching}>
           {searching ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Refresh className="mr-2 h-4 w-4 animate-spin" />
               Searching...
             </>
           ) : (
@@ -283,7 +283,7 @@ export const BookSearch = ({ onSelectBook, onQuickAdd, initialQuery }: BookSearc
                         />
                       ) : (
                         <div className="w-16 h-24 bg-gradient-primary rounded flex items-center justify-center">
-                          <BookOpen className="h-8 w-8 text-white" />
+                          <Book className="h-8 w-8 text-white" />
                         </div>
                       )}
                     </div>
@@ -352,7 +352,7 @@ export const BookSearch = ({ onSelectBook, onQuickAdd, initialQuery }: BookSearc
                           disabled={addingBookId === book.googleBooksId}
                         >
                           {addingBookId === book.googleBooksId ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <Refresh className="h-4 w-4 animate-spin" />
                           ) : (
                             <>
                               <Plus className="mr-1 h-3 w-3" />

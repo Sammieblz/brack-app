@@ -8,7 +8,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { BookOpen, BarChart3, Library, Settings, LogOut, Menu, X, BookMarked, Target, ListChecks, Users, UserSearch, MessageCircle } from "lucide-react";
+import { Book, StatsReport, BookStack, Settings, LogOut, Menu, Xmark, Bookmark, Trophy, List, User, UserStar, ChatBubble } from "iconoir-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,14 +58,14 @@ export const Navbar = () => {
                       'Reader';
 
   const navItems = [
-    { to: "/dashboard", label: "Dashboard", icon: BookOpen },
-    { to: "/books", label: "My Books", icon: Library },
-    { to: "/lists", label: "Lists", icon: ListChecks },
-    { to: "/goals-management", label: "Goals", icon: Target },
-    { to: "/analytics", label: "Analytics", icon: BarChart3 },
-    { to: "/clubs", label: "Clubs", icon: Users },
-    { to: "/readers", label: "Readers", icon: UserSearch },
-    { to: "/messages", label: "Messages", icon: MessageCircle },
+    { to: "/dashboard", label: "Dashboard", icon: Book },
+    { to: "/books", label: "My Books", icon: BookStack },
+    { to: "/lists", label: "Lists", icon: List },
+    { to: "/goals-management", label: "Goals", icon: Trophy },
+    { to: "/analytics", label: "Analytics", icon: StatsReport },
+    { to: "/clubs", label: "Clubs", icon: User },
+    { to: "/readers", label: "Readers", icon: UserStar },
+    { to: "/messages", label: "Messages", icon: ChatBubble },
   ];
 
   const getNavLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -81,7 +81,7 @@ export const Navbar = () => {
         <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <Book className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
             <span className="font-display text-base sm:text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               BookTracker
             </span>
@@ -138,7 +138,7 @@ export const Navbar = () => {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? (
-                <X className="h-6 w-6" />
+                <Xmark className="h-6 w-6" />
               ) : (
                 <Menu className="h-6 w-6" />
               )}

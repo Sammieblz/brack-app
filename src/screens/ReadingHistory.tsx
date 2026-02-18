@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
-import { BookOpen, Calendar, Clock, FileText, Search } from "lucide-react";
+import { Book, Calendar, Clock, Notes, Search } from "iconoir-react";
 import { format } from "date-fns";
 
 interface ProgressLog {
@@ -202,7 +202,7 @@ export default function ReadingHistory() {
             {filteredLogs.length === 0 ? (
               <Card>
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <Book className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No progress logs found</p>
                 </CardContent>
               </Card>
@@ -225,7 +225,7 @@ export default function ReadingHistory() {
                           />
                         ) : (
                           <div className="w-16 h-24 bg-gradient-primary rounded flex items-center justify-center">
-                            <BookOpen className="h-8 w-8 text-white" />
+                            <Book className="h-8 w-8 text-white" />
                           </div>
                         )}
                       </div>
@@ -282,7 +282,7 @@ export default function ReadingHistory() {
             {filteredJournals.length === 0 ? (
               <Card>
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <Notes className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No journal entries found</p>
                 </CardContent>
               </Card>
@@ -324,7 +324,7 @@ export default function ReadingHistory() {
                           />
                         ) : (
                           <div className="w-12 h-16 bg-gradient-primary rounded flex items-center justify-center">
-                            <BookOpen className="h-6 w-6 text-white" />
+                            <Book className="h-6 w-6 text-white" />
                           </div>
                         )}
                       </div>

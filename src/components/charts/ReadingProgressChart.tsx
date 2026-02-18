@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, defs, linearGradient, stop } from "recharts";
-import { TrendingUp } from "lucide-react";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { StatsReport } from "iconoir-react";
 import type { ReadingProgressData } from "@/hooks/useChartData";
 
 interface ReadingProgressChartProps {
@@ -24,7 +24,7 @@ export const ReadingProgressChart = ({ data }: ReadingProgressChartProps) => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center text-base md:text-lg">
-          <TrendingUp className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+          <StatsReport className="h-4 w-4 md:h-5 md:w-5 mr-2" />
           Reading Progress (Last 14 Days)
         </CardTitle>
       </CardHeader>

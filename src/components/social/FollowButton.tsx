@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useFollowing } from "@/hooks/useFollowing";
-import { UserPlus, UserMinus } from "lucide-react";
+import { UserPlus, UserXmark } from "iconoir-react";
 import { useAuth } from "@/hooks/useAuth";
 
 interface FollowButtonProps {
@@ -35,7 +35,7 @@ export const FollowButton = ({ userId, variant = "default", size = "default" }: 
     >
       {isFollowing ? (
         <>
-          <UserMinus className="mr-2 h-4 w-4" />
+          <UserXmark className="mr-2 h-4 w-4" />
           Unfollow
         </>
       ) : (

@@ -2,7 +2,7 @@ import { useSocialFeed } from "@/hooks/useSocialFeed";
 import { FeedItem } from "./FeedItem";
 import { Button } from "@/components/ui/button";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { RefreshCw, Users, BookOpen } from "lucide-react";
+import { Refresh } from "iconoir-react";
 import { EmptyActivity } from "@/components/empty/EmptyActivity";
 
 export const ActivityFeed = () => {
@@ -39,7 +39,7 @@ export const ActivityFeed = () => {
           disabled={loading}
           className="hover-scale"
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <Refresh className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>
@@ -69,7 +69,7 @@ export const ActivityFeed = () => {
           >
             {loading ? (
               <>
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                <Refresh className="h-4 w-4 mr-2 animate-spin" />
                 Loading...
               </>
             ) : (

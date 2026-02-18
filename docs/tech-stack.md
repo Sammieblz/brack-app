@@ -131,7 +131,7 @@ Brack uses modern, production-ready technologies for web and mobile development.
 
 | Library | Purpose |
 |---------|---------|
-| lucide-react | Icon system (462 icons) |
+| iconoir-react | Icon system (1000+ icons) |
 | recharts | Data visualization |
 | date-fns | Date formatting |
 | embla-carousel-react | Carousels |

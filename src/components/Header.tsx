@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 
 interface HeaderProps {

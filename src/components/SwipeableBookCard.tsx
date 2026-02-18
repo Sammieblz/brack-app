@@ -1,6 +1,6 @@
 import { useState, ReactNode } from "react";
 import { useSwipeable } from "react-swipeable";
-import { Trash2, CheckCircle2, Edit } from "lucide-react";
+import { Trash, CheckCircle, EditPencil } from "iconoir-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
 import type { Book } from "@/types";
@@ -109,7 +109,7 @@ export const SwipeableBookCard = ({
                 className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-lg active:scale-95 transition-transform"
                 aria-label="Edit book"
               >
-                <Edit className="h-5 w-5" />
+                <EditPencil className="h-5 w-5" />
               </button>
             )}
             {onStatusChange && (
@@ -118,7 +118,7 @@ export const SwipeableBookCard = ({
                 className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white shadow-lg active:scale-95 transition-transform"
                 aria-label={isCompleted ? "Mark as reading" : "Mark as complete"}
               >
-                <CheckCircle2 className="h-5 w-5" />
+                <CheckCircle className="h-5 w-5" />
               </button>
             )}
             {onDelete && (
@@ -127,7 +127,7 @@ export const SwipeableBookCard = ({
                 className="w-12 h-12 rounded-full bg-destructive flex items-center justify-center text-white shadow-lg active:scale-95 transition-transform"
                 aria-label="Delete book"
               >
-                <Trash2 className="h-5 w-5" />
+                <Trash className="h-5 w-5" />
               </button>
             )}
           </>

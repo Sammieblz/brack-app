@@ -5,7 +5,7 @@ import { MessageThread } from "@/components/messaging/MessageThread";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
-import { MessageCircle } from "lucide-react";
+import { ChatBubble } from "iconoir-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useLocation } from "react-router-dom";
 import { MobileLayout } from "@/components/MobileLayout";
@@ -105,7 +105,7 @@ const Messages = () => {
           <div className="mb-8 animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
-                <MessageCircle className="h-7 w-7 text-primary" />
+                <ChatBubble className="h-7 w-7 text-primary" />
               </div>
               <div>
                 <h1 className="font-display text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
@@ -157,7 +157,7 @@ const Messages = () => {
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">
-                    <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                    <ChatBubble className="h-16 w-16 mx-auto mb-4 opacity-50" />
                     <p className="font-sans">Select a conversation to start messaging</p>
                   </div>
                 </div>

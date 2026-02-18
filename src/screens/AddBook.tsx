@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookSearch } from "@/components/BookSearch";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-import { BookOpen, Camera, Search, PenTool, Loader2 } from "lucide-react";
+import { Book as BookIcon, Camera, Search, EditPencil, Refresh } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -212,7 +212,8 @@ const AddBook = () => {
         {/* Form Card */}
         <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="font-display text-xl font-bold text-foreground">
+            <CardTitle className="font-display text-xl font-bold text-foreground flex items-center justify-center gap-2">
+              <BookIcon className="h-5 w-5" />
               Add a New Book
             </CardTitle>
           </CardHeader>
@@ -224,7 +225,7 @@ const AddBook = () => {
                   <span>Search</span>
                 </TabsTrigger>
                 <TabsTrigger value="manual" className="flex items-center gap-2">
-                  <PenTool className="h-4 w-4" />
+                  <EditPencil className="h-4 w-4" />
                   <span>Manual</span>
                 </TabsTrigger>
               </TabsList>
@@ -355,7 +356,7 @@ const AddBook = () => {
                   >
                     {loading ? (
                       <span className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Refresh className="h-4 w-4 animate-spin" />
                         Adding Book...
                       </span>
                     ) : (

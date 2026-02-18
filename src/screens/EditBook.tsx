@@ -12,7 +12,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { TagManager } from "@/components/TagManager";
-import { Save, Upload, Camera, ArrowLeft } from "lucide-react";
+import { FloppyDisk, Upload, Camera, ArrowLeft } from "iconoir-react";
 import { MobileBackButton } from "@/components/mobile/MobileBackButton";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
@@ -72,10 +72,10 @@ export default function EditBook() {
     if (!book) return;
 
     // Validate form
-    const validationErrors = validateBookForm(book);
+    const validationErrors: ValidationError[] = validateBookForm(book);
     if (validationErrors.length > 0) {
       const errorMap: Record<string, string> = {};
-      validationErrors.forEach(err => {
+      validationErrors.forEach((err: ValidationError) => {
         errorMap[err.field] = err.message;
       });
       setErrors(errorMap);
@@ -199,7 +199,11 @@ export default function EditBook() {
       {isMobile && <MobileHeader title="Edit Book" showBack />}
       {!isMobile && <Navbar />}
       <div className="container mx-auto px-4 py-4 md:py-8 max-w-2xl pb-24 md:pb-8">
-        {!isMobile && (
+        {isMobile ? (
+          <div className="mb-4">
+            <MobileBackButton title="Back to Book" onClick={() => navigate(`/book/${id}`)} />
+          </div>
+        ) : (
           <Button
             variant="ghost"
             onClick={() => navigate(`/book/${id}`)}
@@ -375,8 +379,17 @@ export default function EditBook() {
                       onClick={() => setShowImagePicker(true)}
                       disabled={uploading}
                     >
-                      <Camera className="mr-2 h-4 w-4" />
-                      {uploading ? 'Uploading...' : 'Choose Image'}
+                      {uploading ? (
+                        <>
+                          <Upload className="mr-2 h-4 w-4 animate-pulse" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Camera className="mr-2 h-4 w-4" />
+                          Choose Image
+                        </>
+                      )}
                     </Button>
                     <ImagePickerDialog
                       open={showImagePicker}
@@ -397,14 +410,28 @@ export default function EditBook() {
                 />
               </div>
 
-              <MobileTextarea
-                id="notes"
-                label="Notes"
-                value={book.notes || ''}
-                onChange={(e) => setBook({ ...book, notes: e.target.value })}
-                rows={6}
-                placeholder="Add your thoughts, quotes, or annotations..."
-              />
+              {isMobile ? (
+                <MobileTextarea
+                  id="notes"
+                  label="Notes"
+                  value={book.notes || ''}
+                  onChange={(e) => setBook({ ...book, notes: e.target.value })}
+                  rows={6}
+                  placeholder="Add your thoughts, quotes, or annotations..."
+                />
+              ) : (
+                <div>
+                  <Label htmlFor="notes">Notes</Label>
+                  <Textarea
+                    id="notes"
+                    value={book.notes || ''}
+                    onChange={(e) => setBook({ ...book, notes: e.target.value })}
+                    rows={6}
+                    placeholder="Add your thoughts, quotes, or annotations..."
+                    className="mt-2"
+                  />
+                </div>
+              )}
 
               {/* Sticky save button for mobile */}
               <div className={cn(
@@ -412,7 +439,7 @@ export default function EditBook() {
                 isMobile && "fixed bottom-20 left-0 right-0 p-4 bg-background border-t z-40"
               )}>
                 <Button type="submit" disabled={saving} className="flex-1 min-h-[44px]">
-                  <Save className="mr-2 h-4 w-4" />
+                  <FloppyDisk className="mr-2 h-4 w-4" />
                   {saving ? 'Saving...' : 'Save Changes'}
                 </Button>
                 {!isMobile && (

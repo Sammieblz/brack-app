@@ -1,7 +1,7 @@
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
 import { cva, type VariantProps } from "class-variance-authority"
-import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from "lucide-react"
+import { Xmark, CheckCircle, WarningCircle, InfoCircle, WarningTriangle } from "iconoir-react"
 import { cn } from "@/lib/utils"
 import { usePlatform } from "@/hooks/usePlatform"
 
@@ -111,7 +111,7 @@ const NativeToastClose = React.forwardRef<
     toast-close=""
     {...props}
   >
-    <X className="h-4 w-4" />
+    <Xmark className="h-4 w-4" />
   </ToastPrimitives.Close>
 ))
 NativeToastClose.displayName = ToastPrimitives.Close.displayName
@@ -160,15 +160,15 @@ type NativeToastActionElement = React.ReactElement<typeof NativeToastAction>
 const getToastIcon = (variant?: string) => {
   switch (variant) {
     case 'success':
-      return <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+      return <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
     case 'destructive':
-      return <AlertCircle className="h-5 w-5 text-destructive" />
+      return <WarningCircle className="h-5 w-5 text-destructive" />
     case 'warning':
-      return <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+      return <WarningTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
     case 'info':
-      return <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+      return <InfoCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
     default:
-      return <Info className="h-5 w-5 text-muted-foreground" />
+      return <InfoCircle className="h-5 w-5 text-muted-foreground" />
   }
 }
 

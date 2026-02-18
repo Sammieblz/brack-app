@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
-import { BookOpen } from "lucide-react";
+import { Book } from "iconoir-react";
 
 interface DailyProgress {
   date: string;
@@ -34,7 +34,7 @@ export const DailyPagesChart = ({ data }: DailyPagesChartProps) => {
       <CardHeader>
         <CardTitle className="font-display flex items-center justify-between">
           <span className="flex items-center">
-            <BookOpen className="h-5 w-5 mr-2" />
+            <Book className="h-5 w-5 mr-2" />
             Daily Pages Read
           </span>
           <span className="font-sans text-sm font-normal text-muted-foreground">
