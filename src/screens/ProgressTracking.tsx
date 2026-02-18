@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Clock, Bolt, StatsReport } from "iconoir-react";
+import { Trophy, Clock, Flash, StatsReport } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -85,7 +85,7 @@ const ProgressTracking = () => {
             <Card className="bg-gradient-card border-0 shadow-medium">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                  <Bolt className="h-4 w-4 mr-2" />
+                  <Flash className="h-4 w-4 mr-2" />
                   Velocity
                 </CardTitle>
               </CardHeader>
