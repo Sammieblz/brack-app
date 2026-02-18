@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MessageCircle, Trash2, Edit, Flag, Share2 } from "lucide-react";
+import { Heart, ChatBubble, Trash, EditPencil, WarningTriangle, ShareIos } from "iconoir-react";
 import { HeartLike } from "@/components/animations/HeartLike";
 import { Post } from "@/hooks/usePosts";
 import { usePostComments, PostComment } from "@/hooks/usePostComments";
@@ -74,7 +74,7 @@ const CommentItem = ({
                 onClick={() => onDelete(comment.id)}
                 className="font-sans text-xs text-muted-foreground hover:text-destructive flex items-center gap-1"
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash className="h-3 w-3" />
                 Delete
               </button>
             )}
@@ -161,14 +161,14 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
   const contextActions = user?.id === post.user_id ? [
     {
       label: "Edit Post",
-      icon: <Edit className="h-5 w-5" />,
+      icon: <EditPencil className="h-5 w-5" />,
       onClick: () => {
         toast.info("Edit feature coming soon");
       },
     },
     {
       label: "Share",
-      icon: <Share2 className="h-5 w-5" />,
+      icon: <ShareIos className="h-5 w-5" />,
       onClick: () => {
         if (navigator.share) {
           navigator.share({
@@ -180,14 +180,14 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
     },
     {
       label: "Delete Post",
-      icon: <Trash2 className="h-5 w-5" />,
+      icon: <Trash className="h-5 w-5" />,
       variant: 'destructive' as const,
       onClick: handleDeletePost,
     },
   ] : [
     {
       label: "Share",
-      icon: <Share2 className="h-5 w-5" />,
+      icon: <ShareIos className="h-5 w-5" />,
       onClick: () => {
         if (navigator.share) {
           navigator.share({
@@ -199,7 +199,7 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
     },
     {
       label: "Report",
-      icon: <Flag className="h-5 w-5" />,
+      icon: <WarningTriangle className="h-5 w-5" />,
       variant: 'destructive' as const,
       onClick: () => {
         toast.success("Post reported. Thank you for keeping our community safe.");
@@ -214,7 +214,7 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
 
   const handleAddComment = async () => {
     if (!commentContent.trim()) return;
-    const sanitized = sanitizeInput(commentContent);
+    const sanitized = sanitizeText(commentContent);
     const success = await addComment(sanitized);
     if (success) {
       setCommentContent("");
@@ -222,7 +222,7 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
   };
 
   const handleReply = async (parentId: string, content: string) => {
-    const sanitized = sanitizeInput(content);
+    const sanitized = sanitizeText(content);
     await addComment(sanitized, parentId);
   };
 
@@ -292,7 +292,7 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
                 onClick={handleDeletePost}
                 className="text-muted-foreground hover:text-destructive"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash className="h-4 w-4" />
               </Button>
             )}
           </div>
@@ -339,7 +339,7 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
               size="sm"
               onClick={() => setShowComments(!showComments)}
             >
-              <MessageCircle className="h-4 w-4 mr-2" />
+              <ChatBubble className="h-4 w-4 mr-2" />
               {post.comments_count}
             </Button>
           </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useGoals } from "@/hooks/useGoals";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Target, Calendar as CalendarIcon, CheckCircle2, Trash2 } from "lucide-react";
+import { Plus, Trophy, Calendar as CalendarIcon, CheckCircle, Trash } from "iconoir-react";
 import { format } from "date-fns";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { TrophyReveal } from "@/components/animations/TrophyReveal";
@@ -33,6 +33,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
   const [targetValue, setTargetValue] = useState("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
+  const progressRefs = useRef<Record<string, HTMLSpanElement | null>>({});
 
   const handleCreate = async () => {
     if (!targetValue || !startDate || !endDate) {
@@ -217,13 +218,14 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
               const target = goal.target_books || goal.target_pages || goal.target_minutes || 0;
               const current = 0; // TODO: Calculate actual progress
               const progress = target > 0 ? (current / target) * 100 : 0;
+              const progressPercentage = Math.round(progress);
 
               return (
                 <Card key={goal.id}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
-                        <Target className="h-5 w-5 text-primary" />
+                        <Trophy className="h-5 w-5 text-primary" />
                         <div>
                           <CardTitle className="font-sans text-lg">
                             {target} {getGoalTypeLabel(goal.goal_type)}
@@ -231,10 +233,18 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
                           <CardDescription className="font-sans">{getPeriodTypeLabel(goal.period_type)}</CardDescription>
                         </div>
                       </div>
-                      <Badge variant="secondary">{Math.round(progress)}%</Badge>
+                      <Badge variant="secondary">
+                        <span ref={(el) => {
+                          progressRefs.current[goal.id] = el;
+                          if (el) {
+                            countUp(el, 0, progressPercentage, { duration: 1 });
+                          }
+                        }}>{progressPercentage}%</span>
+                      </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    <Progress value={Math.min(progress, 100)} className="h-2" />
                     <div className="relative h-2 bg-muted rounded-full overflow-hidden">
                       <ProgressBarFill progress={Math.min(progress, 100)} duration={1} />
                     </div>
@@ -258,13 +268,13 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
                         className="flex-1"
                         onClick={() => handleComplete(goal.id)}
                       >
-                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        <CheckCircle className="mr-2 h-4 w-4" />
                         Complete
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="outline" size="sm">
-                            <Trash2 className="h-4 w-4" />
+                            <Trash className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -291,7 +301,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
           {activeGoals.length === 0 && (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <Target className="h-12 w-12 text-muted-foreground mb-4" />
+                <Trophy className="h-12 w-12 text-muted-foreground mb-4" />
                 <p className="font-sans text-muted-foreground text-center">No active goals</p>
               </CardContent>
             </Card>
@@ -306,7 +316,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
                 <Card key={goal.id}>
                   <CardContent className="flex items-center justify-between py-4">
                     <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      <CheckCircle className="h-5 w-5 text-green-500" />
                       <div>
                         <p className="font-sans font-medium">
                           {goal.target_books || goal.target_pages || goal.target_minutes} {getGoalTypeLabel(goal.goal_type)}

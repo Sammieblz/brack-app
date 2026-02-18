@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Target, SkipForward } from "lucide-react";
+import { Trophy, SkipNext } from "iconoir-react";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 
 const Welcome = () => {
@@ -71,7 +71,7 @@ const Welcome = () => {
             {/* Goal Card */}
             <div className="p-6 bg-gradient-primary/10 rounded-2xl border border-primary/20 animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mx-auto mb-4 shadow-soft">
-                <Target className="h-6 w-6 text-white" />
+                <Trophy className="h-6 w-6 text-white" />
               </div>
               <p className="font-sans text-foreground font-medium">
                 Do you have a reading goal in mind?
@@ -87,16 +87,16 @@ const Welcome = () => {
                 onClick={handleSetGoal} 
                 className="w-full h-14 bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium text-lg"
               >
-                <Target className="mr-3 h-5 w-5" />
+                <Trophy className="mr-3 h-5 w-5" />
                 Set My Reading Goal
               </Button>
               
               <Button 
                 onClick={handleSkip} 
-                variant="outline" 
+                variant="outline"
                 className="w-full h-12 border-border/50 hover:shadow-soft transition-all duration-300 font-medium"
               >
-                <SkipForward className="mr-2 h-4 w-4" />
+                <SkipNext className="mr-2 h-4 w-4" />
                 Skip for Now
               </Button>
             </div>

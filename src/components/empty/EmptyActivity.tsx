@@ -1,4 +1,4 @@
-import { Activity } from "lucide-react";
+import { Activity } from "iconoir-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const EmptyActivity = () => {

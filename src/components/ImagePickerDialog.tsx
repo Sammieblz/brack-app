@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, Image as ImageIcon } from "lucide-react";
+import { Camera, MediaImage } from "iconoir-react";
 import { useImagePicker } from "@/hooks/useImagePicker";
 
 interface ImagePickerDialogProps {
@@ -60,7 +60,7 @@ export const ImagePickerDialog = ({
             variant="outline"
             className="flex flex-col h-auto py-6 gap-2"
           >
-            <ImageIcon className="h-8 w-8" />
+            <MediaImage className="h-8 w-8" />
             <span className="font-sans">Photo Library</span>
           </Button>
         </div>

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, defs, linearGradient, stop } from "recharts";
-import { Flame } from "lucide-react";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { FireFlame } from "iconoir-react";
 
 interface StreakTimelineData {
   date: string;
@@ -28,7 +28,7 @@ export const StreaksTimelineChart = ({ data }: StreaksTimelineChartProps) => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center text-base md:text-lg">
-          <Flame className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+          <FireFlame className="h-4 w-4 md:h-5 md:w-5 mr-2" />
           Streak Timeline
         </CardTitle>
       </CardHeader>

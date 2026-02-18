@@ -1,5 +1,5 @@
 import { useTheme as useNextTheme } from "next-themes";
-import { Sun, Moon } from "lucide-react";
+import { SunLight, HalfMoon } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { cn } from "@/lib/utils";
@@ -33,9 +33,9 @@ export const ThemeToggle = ({ className, variant = "floating" }: ThemeToggleProp
       )}
     >
       {isDark ? (
-        <Sun className="h-5 w-5 text-yellow-400 transition-transform duration-300 rotate-0 hover:rotate-45" />
+        <SunLight className="h-5 w-5 text-yellow-400 transition-transform duration-300 rotate-0 hover:rotate-45" />
       ) : (
-        <Moon className="h-5 w-5 text-slate-700 transition-transform duration-300 rotate-0 hover:-rotate-12" />
+        <HalfMoon className="h-5 w-5 text-slate-700 transition-transform duration-300 rotate-0 hover:-rotate-12" />
       )}
     </Button>
   );

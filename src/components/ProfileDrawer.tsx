@@ -16,16 +16,14 @@ import { getInitials } from "@/lib/avatarUtils";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { 
   User, 
-  Target, 
-  BarChart3, 
-  Award, 
-  MessageCircle, 
-  BookOpen, 
+  StatsReport, 
+  Trophy, 
+  ChatBubble, 
+  Book, 
   List, 
   Settings, 
-  LogOut,
-  Users
-} from "lucide-react";
+  LogOut
+} from "iconoir-react";
 import { cn } from "@/lib/utils";
 
 interface ProfileDrawerProps {
@@ -83,11 +81,11 @@ export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
 
   const menuItems: MenuItem[] = [
     { label: "Profile", icon: User, path: "/profile" },
-    { label: "Goals", icon: Target, path: "/goals-management" },
-    { label: "Analytics", icon: BarChart3, path: "/analytics" },
-    { label: "Achievements", icon: Award, path: "/achievements" },
-    { label: "Messages", icon: MessageCircle, path: "/messages", badge: unreadCount > 0 ? unreadCount : undefined },
-    { label: "Book Clubs", icon: Users, path: "/clubs" },
+    { label: "Goals", icon: Trophy, path: "/goals-management" },
+    { label: "Analytics", icon: StatsReport, path: "/analytics" },
+    { label: "Achievements", icon: Trophy, path: "/achievements" },
+    { label: "Messages", icon: ChatBubble, path: "/messages", badge: unreadCount > 0 ? unreadCount : undefined },
+    { label: "Book Clubs", icon: User, path: "/clubs" },
     { label: "Lists", icon: List, path: "/lists" },
     { label: "Settings", icon: Settings, path: "/settings" },
   ];

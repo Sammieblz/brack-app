@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTimer } from "@/contexts/TimerContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Pause, Square, Minimize2, Maximize2, X, Clock } from "lucide-react";
+import { Play, Pause, Square, Collapse, Expand, Xmark, Clock } from "iconoir-react";
 import { formatTime } from "@/utils";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useGSAP } from "@/hooks/useGSAP";
@@ -213,7 +213,7 @@ export const FloatingTimerWidget = () => {
               onClick={toggleMinimized}
               className="h-8 w-8 p-0"
             >
-              <Maximize2 className="h-4 w-4" />
+              <Expand className="h-4 w-4" />
             </Button>
           </CardContent>
         </Card>
@@ -240,7 +240,7 @@ export const FloatingTimerWidget = () => {
               onClick={cancelTimer}
               className="h-8 w-8 p-0"
             >
-              <X className="h-4 w-4" />
+              <Xmark className="h-4 w-4" />
             </Button>
           </div>
           <p className="font-sans text-sm text-muted-foreground truncate">
@@ -299,7 +299,7 @@ export const FloatingTimerWidget = () => {
             variant="ghost"
             className="w-full"
           >
-            <Minimize2 className="mr-2 h-4 w-4" />
+            <Collapse className="mr-2 h-4 w-4" />
             Minimize
           </Button>
         </CardContent>

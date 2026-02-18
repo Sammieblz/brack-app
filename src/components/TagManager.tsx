@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { X, Plus } from "lucide-react";
+import { Xmark, Plus } from "iconoir-react";
 
 interface TagManagerProps {
   tags: string[];
@@ -65,7 +65,7 @@ export const TagManager = ({ tags, onChange }: TagManagerProps) => {
                 onClick={() => removeTag(tag)}
                 className="ml-1 hover:bg-muted rounded-full p-0.5"
               >
-                <X className="h-3 w-3" />
+                <Xmark className="h-3 w-3" />
               </button>
             </Badge>
           ))}

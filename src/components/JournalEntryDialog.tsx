@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { JournalEntry } from "@/hooks/useJournalEntries";
 import { Badge } from "@/components/ui/badge";
-import { X, Camera, Image as ImageIcon } from "lucide-react";
+import { Xmark, Camera, MediaImage } from "iconoir-react";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
 import { useImagePicker } from "@/hooks/useImagePicker";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +41,7 @@ export const JournalEntryDialog = ({
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { pickImage, picking } = useImagePicker();
 
   useEffect(() => {
     if (editEntry) {
@@ -234,7 +235,7 @@ export const JournalEntryDialog = ({
                 {tags.map((tag) => (
                   <Badge key={tag} variant="secondary" className="gap-1">
                     {tag}
-                    <X
+                    <Xmark
                       className="h-3 w-3 cursor-pointer"
                       onClick={() => handleRemoveTag(tag)}
                     />
@@ -261,20 +262,37 @@ export const JournalEntryDialog = ({
                   className="absolute top-2 right-2 h-8 w-8"
                   onClick={handleRemovePhoto}
                 >
-                  <X className="h-4 w-4" />
+                  <Xmark className="h-4 w-4" />
                 </Button>
               </div>
             ) : (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowImagePicker(true)}
-                disabled={uploadingPhoto}
-                className="w-full"
-              >
-                <Camera className="h-4 w-4 mr-2" />
-                {uploadingPhoto ? "Uploading..." : "Add Photo"}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={async () => {
+                    const image = await pickImage({ source: 'prompt' });
+                    if (image) {
+                      handleImagePicked(image);
+                    }
+                  }}
+                  disabled={uploadingPhoto || picking}
+                  className="flex-1"
+                >
+                  <Camera className="h-4 w-4 mr-2" />
+                  {uploadingPhoto || picking ? "Processing..." : "Quick Add"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowImagePicker(true)}
+                  disabled={uploadingPhoto || picking}
+                  className="flex-1"
+                >
+                  <MediaImage className="h-4 w-4 mr-2" />
+                  {uploadingPhoto ? "Uploading..." : "Choose Photo"}
+                </Button>
+              </div>
             )}
             <ImagePickerDialog
               open={showImagePicker}

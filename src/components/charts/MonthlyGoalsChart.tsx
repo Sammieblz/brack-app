@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, defs, linearGradient, stop } from "recharts";
-import { Target } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Trophy } from "iconoir-react";
 
 interface MonthlyGoalData {
   month: string;
@@ -33,7 +33,7 @@ export const MonthlyGoalsChart = ({ data }: MonthlyGoalsChartProps) => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center text-base md:text-lg">
-          <Target className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+          <Trophy className="h-4 w-4 md:h-5 md:w-5 mr-2" />
           Monthly Goals vs Actual
         </CardTitle>
       </CardHeader>

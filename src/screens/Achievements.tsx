@@ -7,7 +7,7 @@ import { useBadges } from "@/hooks/useBadges";
 import { BadgeDisplay } from "@/components/BadgeDisplay";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Award, Trophy, Target, ArrowLeft } from "lucide-react";
+import { Trophy, ArrowLeft } from "iconoir-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -100,29 +100,67 @@ const Achievements = () => {
             <TabsTrigger value="earned">Earned ({earnedCount})</TabsTrigger>
             <TabsTrigger value="unearned">Locked ({totalCount - earnedCount})</TabsTrigger>
           </TabsList>
+          
+          {/* Badges Grid */}
+          <TabsContent value="all" className="mt-6">
+            {loading ? (
+              <div className="flex items-center justify-center h-96">
+                <LoadingSpinner size="lg" text="Loading achievements..." />
+              </div>
+            ) : badges.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                  <p className="font-sans text-muted-foreground">No badges available</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <BadgeDisplay badges={badges} earnedBadges={earnedBadges} />
+            )}
+          </TabsContent>
+          
+          <TabsContent value="earned" className="mt-6">
+            {loading ? (
+              <div className="flex items-center justify-center h-96">
+                <LoadingSpinner size="lg" text="Loading achievements..." />
+              </div>
+            ) : earnedBadges.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                  <p className="font-sans text-muted-foreground">
+                    You haven't earned any badges yet. Keep reading!
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <BadgeDisplay 
+                badges={badges.filter(badge => earnedBadgeIds.has(badge.id))} 
+                earnedBadges={earnedBadges} 
+              />
+            )}
+          </TabsContent>
+          
+          <TabsContent value="unearned" className="mt-6">
+            {loading ? (
+              <div className="flex items-center justify-center h-96">
+                <LoadingSpinner size="lg" text="Loading achievements..." />
+              </div>
+            ) : badges.filter(badge => !earnedBadgeIds.has(badge.id)).length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                  <p className="font-sans text-muted-foreground">All badges earned!</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <BadgeDisplay 
+                badges={badges.filter(badge => !earnedBadgeIds.has(badge.id))} 
+                earnedBadges={earnedBadges} 
+              />
+            )}
+          </TabsContent>
         </Tabs>
-
-        {/* Badges Grid */}
-        {loading ? (
-          <div className="flex items-center justify-center h-96">
-            <LoadingSpinner size="lg" text="Loading achievements..." />
-          </div>
-        ) : filteredBadges.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Award className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-              <p className="font-sans text-muted-foreground">
-                {filter === 'earned' 
-                  ? "You haven't earned any badges yet. Keep reading!"
-                  : filter === 'unearned'
-                  ? "All badges earned!"
-                  : "No badges available"}
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <BadgeDisplay badges={filteredBadges} earnedBadges={earnedBadges} />
-        )}
       </div>
     </MobileLayout>
   );

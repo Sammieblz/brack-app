@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useBookLists } from "@/hooks/useBookLists";
 import { useToast } from "@/hooks/use-toast";
-import { ListPlus } from "lucide-react";
+import { Plus } from "iconoir-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 interface AddToListDialogProps {
@@ -85,7 +85,7 @@ export const AddToListDialog = ({ bookId, userId, trigger }: AddToListDialogProp
       <DialogTrigger asChild>
         {trigger || (
           <Button variant="outline" size="sm">
-            <ListPlus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-2" />
             Add to List
           </Button>
         )}

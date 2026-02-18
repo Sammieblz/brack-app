@@ -15,7 +15,7 @@ import { TimeDistributionChart } from "@/components/charts/TimeDistributionChart
 import { StatusFunnelChart } from "@/components/charts/StatusFunnelChart";
 import { ChartSkeleton } from "@/components/skeletons/ChartSkeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, TrendingUp, BookOpen, Clock } from "lucide-react";
+import { StatsReport, Book, Clock } from "iconoir-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useBooks } from "@/hooks/useBooks";
 import { MobileLayout } from "@/components/MobileLayout";
@@ -69,7 +69,7 @@ const Analytics = () => {
         {/* Header - Desktop only */}
         {!isMobile && (
           <div className="flex items-center space-x-3">
-            <BarChart3 className="h-8 w-8 text-primary" />
+            <StatsReport className="h-8 w-8 text-primary" />
             <div>
               <h1 className="font-display text-3xl font-bold">Analytics Dashboard</h1>
               <p className="font-sans text-muted-foreground">
@@ -84,7 +84,7 @@ const Analytics = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Books Completed</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
+              <Book className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="font-sans text-2xl font-bold text-primary">{completedBooks}</div>
@@ -110,7 +110,7 @@ const Analytics = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="font-sans text-sm font-medium">Daily Average</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <StatsReport className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="font-sans text-2xl font-bold text-primary">{avgMinutesPerDay}m</div>
@@ -123,7 +123,7 @@ const Analytics = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="font-sans text-sm font-medium">Favorite Genre</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
+              <Book className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="font-sans text-2xl font-bold text-primary">
@@ -251,7 +251,7 @@ const Analytics = () => {
         {!loading && readingProgress.length === 0 && genreData.length === 0 && weeklyReading.length === 0 && (
           <Card>
             <CardContent className="p-8 text-center">
-              <BarChart3 className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <StatsReport className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="font-display text-lg font-semibold mb-2">No analytics data yet</h3>
               <p className="text-muted-foreground">
                 Start reading and tracking your sessions to see beautiful analytics here.

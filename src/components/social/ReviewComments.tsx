@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { Trash2 } from "lucide-react";
+import { Trash } from "iconoir-react";
 import { sanitizeText, sanitizeInput } from "@/utils/sanitize";
 
 interface ReviewCommentsProps {
@@ -126,7 +126,7 @@ export const ReviewComments = ({
                         className="h-7 w-7"
                         onClick={() => onDeleteComment(comment.id)}
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash className="h-3 w-3" />
                       </Button>
                     )}
                   </div>

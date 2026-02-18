@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { BookOpen } from "lucide-react";
+import { Book } from "iconoir-react";
 import type { GenreData } from "@/hooks/useChartData";
 
 interface GenreDistributionChartProps {
@@ -22,7 +22,7 @@ export const GenreDistributionChart = ({ data }: GenreDistributionChartProps) =>
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center text-base md:text-lg">
-          <BookOpen className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+          <Book className="h-4 w-4 md:h-5 md:w-5 mr-2" />
           Books by Genre
         </CardTitle>
       </CardHeader>

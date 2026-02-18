@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, TrendingUp, Flame, Clock } from "lucide-react";
+import { Xmark, StatsReport, FireFlame, Clock } from "iconoir-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useBooks } from "@/hooks/useBooks";
 import { useStreaks } from "@/hooks/useStreaks";
@@ -111,7 +111,7 @@ export const FloatingQuickStatsWidget = ({ isVisible, onClose }: FloatingQuickSt
               className="h-8 w-8 p-0"
               disableHaptic
             >
-              <X className="h-4 w-4" />
+              <Xmark className="h-4 w-4" />
             </Button>
           </div>
         </CardHeader>
@@ -119,7 +119,7 @@ export const FloatingQuickStatsWidget = ({ isVisible, onClose }: FloatingQuickSt
           {/* Books This Month */}
           <div className="flex items-center gap-3 p-3 rounded-lg bg-background/50">
             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="h-5 w-5 text-primary" />
+              <StatsReport className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-sans text-2xl font-bold text-foreground">{booksReadThisMonth}</div>
@@ -130,7 +130,7 @@ export const FloatingQuickStatsWidget = ({ isVisible, onClose }: FloatingQuickSt
           {/* Current Streak */}
           <div className="flex items-center gap-3 p-3 rounded-lg bg-background/50">
             <div className="h-10 w-10 rounded-full bg-orange-500/10 flex items-center justify-center flex-shrink-0">
-              <Flame className="h-5 w-5 text-orange-500" />
+              <FireFlame className="h-5 w-5 text-orange-500" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-sans text-2xl font-bold text-foreground">{streakData.currentStreak}</div>

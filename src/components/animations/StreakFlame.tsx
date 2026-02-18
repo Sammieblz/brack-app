@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
-import { Flame } from "lucide-react";
+import { FireFlame } from "iconoir-react";
 import { cn } from "@/lib/utils";
 
 interface StreakFlameProps {
@@ -47,7 +47,7 @@ export const StreakFlame = ({
       ref={flameRef}
       className={cn("inline-flex items-center justify-center", className)}
     >
-      <Flame className="h-full w-full text-orange-500" fill="currentColor" />
+      <FireFlame className="h-full w-full text-orange-500" fill="currentColor" />
     </div>
   );
 };

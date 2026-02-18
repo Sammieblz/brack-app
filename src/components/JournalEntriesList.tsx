@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen } from "lucide-react";
+import { Plus, Book } from "iconoir-react";
 import { JournalEntryCard } from "./JournalEntryCard";
 import { JournalEntryDialog } from "./JournalEntryDialog";
 import { useJournalEntries, JournalEntry } from "@/hooks/useJournalEntries";
@@ -80,7 +80,7 @@ export const JournalEntriesList = ({ bookId }: JournalEntriesListProps) => {
 
       {filteredEntries.length === 0 ? (
         <div className="text-center py-12">
-          <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <Book className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="font-display text-lg font-semibold mb-2">No Journal Entries Yet</h3>
           <p className="font-sans text-muted-foreground mb-4">
             Start capturing your thoughts, quotes, and reflections

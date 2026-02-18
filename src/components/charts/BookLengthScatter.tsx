@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Scatter, ScatterChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
-import { BookOpen } from "lucide-react";
+import { Book } from "iconoir-react";
 
 interface ScatterData {
   pages: number;
@@ -29,7 +29,7 @@ export const BookLengthScatter = ({ data }: BookLengthScatterProps) => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center text-base md:text-lg">
-          <BookOpen className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+          <Book className="h-4 w-4 md:h-5 md:w-5 mr-2" />
           Book Length vs Completion Time
         </CardTitle>
       </CardHeader>

@@ -890,14 +890,14 @@ export const MyComponent = ({
 ## Icon Usage
 
 ```tsx
-import { BookOpen, Star, Settings } from 'lucide-react';
+import { Book, Star, Settings } from 'iconoir-react';
 
-<BookOpen className="h-4 w-4" />
+<Book className="h-4 w-4" />
 <Star className="h-5 w-5 text-yellow-500" />
 <Settings className="mr-2 h-4 w-4" /> Settings
 ```
 
-**Icon Library**: lucide-react (462+ icons)
+**Icon Library**: iconoir-react (1000+ icons)
 
 ## Animation Classes
 

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, Calendar } from "lucide-react";
+import { Pin, Phone, Calendar } from "iconoir-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { User, Profile } from "@/types";
@@ -220,7 +220,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
       <Card>
         <CardHeader>
           <CardTitle className="font-display flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
+            <Pin className="h-5 w-5" />
             Location
           </CardTitle>
           <CardDescription className="font-sans">

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { FollowButton } from "./FollowButton";
 import { useNavigate } from "react-router-dom";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { BookOpen, Award, Flame } from "lucide-react";
+import { Book, Trophy, FireFlame } from "iconoir-react";
 
 interface UserCardProps {
   userId: string;
@@ -71,24 +71,24 @@ export const UserCard = ({
               <FollowButton userId={userId} size="sm" />
             </div>
 
-            <div className="font-sans flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm">
+            <div className="font-sans flex flex-wrap gap-2">
               {booksRead > 0 && (
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <Badge variant="secondary" className="flex items-center gap-1.5">
+                  <Book className="h-3 w-3" />
                   <span>{booksRead}</span>
-                </div>
+                </Badge>
               )}
               {currentStreak > 0 && (
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Flame className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <Badge variant="secondary" className="flex items-center gap-1.5">
+                  <FireFlame className="h-3 w-3" />
                   <span>{currentStreak}d</span>
-                </div>
+                </Badge>
               )}
               {badges > 0 && (
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <Badge variant="secondary" className="flex items-center gap-1.5">
+                  <Trophy className="h-3 w-3" />
                   <span>{badges}</span>
-                </div>
+                </Badge>
               )}
             </div>
           </div>

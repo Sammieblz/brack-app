@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
-import { Check } from "lucide-react";
+import { Check } from "iconoir-react";
 import { cn } from "@/lib/utils";
 
 interface SuccessCheckmarkProps {

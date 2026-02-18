@@ -21,17 +21,35 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import {
-  BookOpen,
-  BookMarked,
-  Award,
-  Flame,
+  Book as BookIcon,
+  Bookmark,
+  Trophy,
+  FireFlame,
   Calendar,
-  Users,
+  Group,
   Settings,
-  MessageCircle,
-  BookUser,
-} from "lucide-react";
+  ChatBubble,
+  Book as BookUser,
+} from "iconoir-react";
 import { format } from "date-fns";
+import type { Book } from "@/types";
+import type { Post } from "@/hooks/usePosts";
+import type { BookClub } from "@/hooks/useBookClubs";
+
+// Type for Supabase post response with nested relations
+type PostWithRelations = Post & {
+  profiles?: {
+    id: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  };
+  books?: {
+    id: string;
+    title: string;
+    author: string | null;
+    cover_url: string | null;
+  };
+};
 
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -39,9 +57,9 @@ const UserProfile = () => {
   const { user: currentUser } = useAuth();
   const { profile, stats, loading, error } = useUserProfile(userId || null);
   const { followersCount, followingCount } = useFollowing(userId || null);
-  const [userBooks, setUserBooks] = useState<Array<{ id: string; title: string }>>([]);
-  const [userPosts, setUserPosts] = useState<Array<{ id: string; title: string }>>([]);
-  const [userClubs, setUserClubs] = useState<Array<{ id: string; name: string }>>([]);
+  const [userBooks, setUserBooks] = useState<Book[]>([]);
+  const [userPosts, setUserPosts] = useState<PostWithRelations[]>([]);
+  const [userClubs, setUserClubs] = useState<BookClub[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("books");
   const isMobile = useIsMobile();
@@ -88,7 +106,7 @@ const UserProfile = () => {
           .order("created_at", { ascending: false })
           .limit(10);
 
-        setUserBooks(books || []);
+        setUserBooks((books || []) as Book[]);
 
         // Fetch user's posts
         const { data: posts } = await supabase
@@ -111,7 +129,7 @@ const UserProfile = () => {
           .order("created_at", { ascending: false })
           .limit(10);
 
-        setUserPosts(posts || []);
+        setUserPosts((posts || []) as PostWithRelations[]);
 
         // Fetch user's book clubs
         const { data: clubs } = await supabase
@@ -127,7 +145,7 @@ const UserProfile = () => {
           `)
           .eq("user_id", userId);
 
-        setUserClubs(clubs?.map(c => c.book_clubs).filter(Boolean) || []);
+        setUserClubs((clubs?.map(c => c.book_clubs).filter(Boolean) || []) as BookClub[]);
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {
@@ -143,26 +161,17 @@ const UserProfile = () => {
       <MobileLayout>
         <MobileHeader title="Profile" showBack />
         <div className="container mx-auto px-4 py-6 space-y-6 animate-fade-in">
-          {/* Avatar and Name Skeleton */}
+          {/* Profile Header Loading */}
           <Card>
             <CardContent className="pt-6">
-              <div className="flex flex-col md:flex-row gap-6 items-start">
-                <div className="h-32 w-32 rounded-full bg-muted animate-pulse" />
-                <div className="flex-1 space-y-4 w-full">
-                  <div className="h-8 w-48 bg-muted animate-pulse rounded" />
-                  <div className="h-4 w-full bg-muted animate-pulse rounded" />
-                  <div className="h-4 w-3/4 bg-muted animate-pulse rounded" />
-                  <div className="flex gap-4">
-                    <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-                    <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-                  </div>
-                </div>
+              <div className="flex flex-col md:flex-row gap-6 items-center justify-center min-h-[200px]">
+                <LoadingSpinner size="lg" text="Loading profile..." />
               </div>
             </CardContent>
           </Card>
           
           {/* Stats Skeleton */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <StatCardSkeleton />
             <StatCardSkeleton />
             <StatCardSkeleton />
@@ -256,7 +265,7 @@ const UserProfile = () => {
                             navigate("/messages", { state: { startConversationWith: userId } });
                           }}
                         >
-                          <MessageCircle className="mr-2 h-4 w-4" />
+                          <ChatBubble className="mr-2 h-4 w-4" />
                           {isMobile ? "" : "Message"}
                         </Button>
                       </>
@@ -267,13 +276,13 @@ const UserProfile = () => {
                 {/* Stats Row */}
                 <div className="flex flex-wrap gap-4 sm:gap-6 font-sans text-sm">
                   <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <Group className="h-4 w-4 text-muted-foreground" />
                     <span>
                       <strong>{followersCount}</strong> Followers
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <Group className="h-4 w-4 text-muted-foreground" />
                     <span>
                       <strong>{followingCount}</strong> Following
                     </span>
@@ -307,7 +316,7 @@ const UserProfile = () => {
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-primary shrink-0" />
+                <BookIcon className="h-4 w-4 text-primary shrink-0" />
                 <span className="truncate">Total Books</span>
               </CardTitle>
             </CardHeader>
@@ -319,7 +328,7 @@ const UserProfile = () => {
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="font-sans text-xs sm:text-sm font-medium flex items-center gap-2">
-                <BookMarked className="h-4 w-4 text-primary shrink-0" />
+                <Bookmark className="h-4 w-4 text-primary shrink-0" />
                 <span className="truncate">Books Read</span>
               </CardTitle>
             </CardHeader>
@@ -331,7 +340,7 @@ const UserProfile = () => {
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="font-sans text-xs sm:text-sm font-medium flex items-center gap-2">
-                <Flame className="h-4 w-4 text-primary shrink-0" />
+                <FireFlame className="h-4 w-4 text-primary shrink-0" />
                 <span className="truncate">Streak</span>
               </CardTitle>
             </CardHeader>
@@ -344,7 +353,7 @@ const UserProfile = () => {
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="font-sans text-xs sm:text-sm font-medium flex items-center gap-2">
-                <Award className="h-4 w-4 text-primary shrink-0" />
+                <Trophy className="h-4 w-4 text-primary shrink-0" />
                 <span className="truncate">Badges</span>
               </CardTitle>
             </CardHeader>
@@ -361,10 +370,10 @@ const UserProfile = () => {
         }} className="w-full">
           <TabsList className="grid w-full grid-cols-3 sticky top-0 z-10 bg-background">
             <TabsTrigger value="books" className="text-xs sm:text-sm">
-              {isMobile ? <BookOpen className="h-4 w-4" /> : <><BookOpen className="h-4 w-4 mr-2" />Books</>}
+              {isMobile ? <BookIcon className="h-4 w-4" /> : <><BookIcon className="h-4 w-4 mr-2" />Books</>}
             </TabsTrigger>
             <TabsTrigger value="posts" className="text-xs sm:text-sm">
-              {isMobile ? <MessageCircle className="h-4 w-4" /> : <><MessageCircle className="h-4 w-4 mr-2" />Posts</>}
+              {isMobile ? <ChatBubble className="h-4 w-4" /> : <><ChatBubble className="h-4 w-4 mr-2" />Posts</>}
             </TabsTrigger>
             <TabsTrigger value="clubs" className="text-xs sm:text-sm">
               {isMobile ? <BookUser className="h-4 w-4" /> : <><BookUser className="h-4 w-4 mr-2" />Clubs</>}
@@ -381,7 +390,7 @@ const UserProfile = () => {
             ) : userBooks.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
-                  <BookOpen className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                  <BookIcon className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
                   <p className="font-sans">No books yet</p>
                 </CardContent>
               </Card>
@@ -429,7 +438,7 @@ const UserProfile = () => {
             ) : userPosts.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
-                  <MessageCircle className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                  <ChatBubble className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
                   <p className="font-sans">No posts yet</p>
                 </CardContent>
               </Card>
@@ -474,7 +483,7 @@ const UserProfile = () => {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {userClubs.map((club: { id: string; name: string }) => (
+                {userClubs.map((club) => (
                   <Card
                     key={club.id}
                     className="cursor-pointer hover-scale active:scale-95 transition-transform touch-manipulation"

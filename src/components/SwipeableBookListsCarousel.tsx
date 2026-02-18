@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookMarked, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Bookmark, NavArrowLeft, NavArrowRight, Plus } from "iconoir-react";
 import { useBookLists } from "@/hooks/useBookLists";
 import { useAuth } from "@/hooks/useAuth";
 import { useSwipeable } from "react-swipeable";
@@ -58,7 +58,7 @@ export const SwipeableBookListsCarousel = () => {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="font-display text-base md:text-lg font-semibold flex items-center">
-          <BookMarked className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+          <Bookmark className="h-4 w-4 md:h-5 md:w-5 mr-2" />
           My Book Lists
         </h3>
         <Button 
@@ -78,7 +78,7 @@ export const SwipeableBookListsCarousel = () => {
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0 flex-1">
-                <BookMarked className="h-5 w-5 text-primary flex-shrink-0" />
+                <Bookmark className="h-5 w-5 text-primary flex-shrink-0" />
                 <CardTitle className="font-display text-base line-clamp-1">{currentList.name}</CardTitle>
               </div>
               <Badge variant="secondary" className="text-xs whitespace-nowrap">
@@ -127,7 +127,7 @@ export const SwipeableBookListsCarousel = () => {
               }}
               disabled={currentIndex === 0}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <NavArrowLeft className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
@@ -139,7 +139,7 @@ export const SwipeableBookListsCarousel = () => {
               }}
               disabled={currentIndex === lists.length - 1}
             >
-              <ChevronRight className="h-4 w-4" />
+              <NavArrowRight className="h-4 w-4" />
             </Button>
           </>
         )}

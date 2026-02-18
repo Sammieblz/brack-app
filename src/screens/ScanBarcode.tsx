@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Camera, X, CheckCircle } from "lucide-react";
+import { Camera, Xmark, CheckCircle } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -119,7 +119,7 @@ const ScanBarcode = () => {
                   variant="outline"
                   className="w-full h-12 border-destructive/50 text-destructive hover:bg-destructive/10 transition-all duration-300"
                 >
-                  <X className="mr-2 h-5 w-5" />
+                  <Xmark className="mr-2 h-5 w-5" />
                   Cancel Scanning
                 </Button>
               ) : null}

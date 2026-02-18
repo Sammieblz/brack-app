@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
-import { Trophy } from "lucide-react";
+import { Trophy } from "iconoir-react";
 import { cn } from "@/lib/utils";
 
 interface TrophyRevealProps {

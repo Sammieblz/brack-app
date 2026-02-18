@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Camera, X, CheckCircle, Edit, Sparkles } from "lucide-react";
+import { Camera, Xmark, CheckCircle, EditPencil, Sparks } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -49,9 +49,15 @@ const ScanCover = () => {
       return;
     }
 
-    const query = editedAuthor.trim() 
-      ? `${editedTitle.trim()} ${editedAuthor.trim()}`
-      : editedTitle.trim();
+    // Use buildSearchQuery to properly format the search query
+    const bookInfo = {
+      title: editedTitle.trim(),
+      author: editedAuthor.trim() || undefined,
+      confidence: scannedInfo?.confidence || 0,
+      rawText: scannedInfo?.rawText || '',
+    };
+    
+    const query = buildSearchQuery(bookInfo);
     
     triggerHaptic('light');
     navigate(`/add-book?search=${encodeURIComponent(query)}`);
@@ -92,7 +98,7 @@ const ScanCover = () => {
                 {isScanning ? (
                   <div className="text-center w-full h-full flex flex-col items-center justify-center p-6">
                     <div className="w-full">
-                      <Sparkles className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse" />
+                      <Sparks className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse" />
                       <p className="font-sans text-muted-foreground font-medium mb-2">
                         {progress < 30 ? 'Capturing image...' :
                          progress < 40 ? 'Preprocessing...' :
@@ -129,7 +135,7 @@ const ScanCover = () => {
                   </div>
                 ) : scannedInfo && editMode ? (
                   <div className="text-center p-6 w-full">
-                    <Edit className="h-12 w-12 text-primary mx-auto mb-4" />
+                    <EditPencil className="h-12 w-12 text-primary mx-auto mb-4" />
                     <p className="font-sans text-muted-foreground font-medium mb-4">Edit extracted info</p>
                     
                     <div className="space-y-3 text-left">
@@ -189,7 +195,7 @@ const ScanCover = () => {
                   className="w-full h-12 border-destructive/50 text-destructive hover:bg-destructive/10 transition-all duration-300"
                   disabled={progress > 50} // Can't cancel mid-OCR
                 >
-                  <X className="mr-2 h-5 w-5" />
+                  <Xmark className="mr-2 h-5 w-5" />
                   Cancel
                 </Button>
               ) : null}
@@ -207,7 +213,7 @@ const ScanCover = () => {
                     variant="outline"
                     className="w-full h-12 border-border/50 hover:shadow-soft transition-all duration-300"
                   >
-                    <Edit className="mr-2 h-5 w-5" />
+                    <EditPencil className="mr-2 h-5 w-5" />
                     Edit Info
                   </Button>
                 </>

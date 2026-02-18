@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReviewCard } from "@/components/social/ReviewCard";
 import { useReviews } from "@/hooks/useReviews";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Star } from "lucide-react";
+import { Star } from "iconoir-react";
 
 const Reviews = () => {
   const { reviews, loading } = useReviews();
@@ -55,23 +55,105 @@ const Reviews = () => {
                   <Star className="h-4 w-4 fill-primary text-primary" />1
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="all" className="mt-6">
+                <div className="space-y-4">
+                  {reviews.length === 0 ? (
+                    <Card>
+                      <CardContent className="py-12 text-center">
+                        <p className="font-sans text-muted-foreground">No reviews found</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    reviews.map((review) => (
+                      <ReviewCard key={review.id} review={review} showBookInfo />
+                    ))
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="5" className="mt-6">
+                <div className="space-y-4">
+                  {reviews.filter((r) => r.rating === 5).length === 0 ? (
+                    <Card>
+                      <CardContent className="py-12 text-center">
+                        <p className="font-sans text-muted-foreground">No 5-star reviews found</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    reviews.filter((r) => r.rating === 5).map((review) => (
+                      <ReviewCard key={review.id} review={review} showBookInfo />
+                    ))
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="4" className="mt-6">
+                <div className="space-y-4">
+                  {reviews.filter((r) => r.rating === 4).length === 0 ? (
+                    <Card>
+                      <CardContent className="py-12 text-center">
+                        <p className="font-sans text-muted-foreground">No 4-star reviews found</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    reviews.filter((r) => r.rating === 4).map((review) => (
+                      <ReviewCard key={review.id} review={review} showBookInfo />
+                    ))
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="3" className="mt-6">
+                <div className="space-y-4">
+                  {reviews.filter((r) => r.rating === 3).length === 0 ? (
+                    <Card>
+                      <CardContent className="py-12 text-center">
+                        <p className="font-sans text-muted-foreground">No 3-star reviews found</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    reviews.filter((r) => r.rating === 3).map((review) => (
+                      <ReviewCard key={review.id} review={review} showBookInfo />
+                    ))
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="2" className="mt-6">
+                <div className="space-y-4">
+                  {reviews.filter((r) => r.rating === 2).length === 0 ? (
+                    <Card>
+                      <CardContent className="py-12 text-center">
+                        <p className="font-sans text-muted-foreground">No 2-star reviews found</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    reviews.filter((r) => r.rating === 2).map((review) => (
+                      <ReviewCard key={review.id} review={review} showBookInfo />
+                    ))
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="1" className="mt-6">
+                <div className="space-y-4">
+                  {reviews.filter((r) => r.rating === 1).length === 0 ? (
+                    <Card>
+                      <CardContent className="py-12 text-center">
+                        <p className="font-sans text-muted-foreground">No 1-star reviews found</p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    reviews.filter((r) => r.rating === 1).map((review) => (
+                      <ReviewCard key={review.id} review={review} showBookInfo />
+                    ))
+                  )}
+                </div>
+              </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
-
-        <div className="space-y-4">
-          {filteredReviews.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <p className="font-sans text-muted-foreground">No reviews found</p>
-              </CardContent>
-            </Card>
-          ) : (
-            filteredReviews.map((review) => (
-              <ReviewCard key={review.id} review={review} showBookInfo />
-            ))
-          )}
-        </div>
       </div>
     </div>
   );

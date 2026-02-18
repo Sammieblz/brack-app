@@ -1,4 +1,4 @@
-import { Check, Loader2, AlertCircle } from "lucide-react";
+import { Check, Refresh, WarningCircle } from "iconoir-react";
 import { cn } from "@/lib/utils";
 
 interface AutoSaveIndicatorProps {
@@ -19,7 +19,7 @@ export const AutoSaveIndicator = ({
       case 'saving':
         return (
           <>
-            <Loader2 className="h-3 w-3 animate-spin" />
+            <Refresh className="h-3 w-3 animate-spin" />
             <span className="font-sans text-xs">Saving...</span>
           </>
         );
@@ -35,7 +35,7 @@ export const AutoSaveIndicator = ({
       case 'error':
         return (
           <>
-            <AlertCircle className="h-3 w-3" />
+            <WarningCircle className="h-3 w-3" />
             <span className="font-sans text-xs">Save failed</span>
           </>
         );

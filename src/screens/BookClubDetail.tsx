@@ -14,7 +14,7 @@ import { DiscussionThread } from "@/components/clubs/DiscussionThread";
 import { supabase } from "@/integrations/supabase/client";
 import { BookClub, ClubMember } from "@/hooks/useBookClubs";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Users, MessageSquare, BookOpen, Send, Crown, UserMinus } from "lucide-react";
+import { Group, ChatBubble, Book, Send, Crown, UserRemove } from "iconoir-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 
@@ -197,7 +197,7 @@ const BookClubDetail = () => {
                 <CardContent>
                   <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
                     <div className="flex items-center gap-2 mb-3">
-                      <BookOpen className="h-5 w-5 text-primary" />
+                      <Book className="h-5 w-5 text-primary" />
                       <span className="font-sans font-semibold">Currently Reading</span>
                     </div>
                     <div className="flex gap-4">
@@ -224,7 +224,7 @@ const BookClubDetail = () => {
           <Card className="border-border/50">
             <CardHeader>
               <CardTitle className="font-sans flex items-center gap-2">
-                <Users className="h-5 w-5" />
+                <Group className="h-5 w-5" />
                 Members ({members.length})
               </CardTitle>
             </CardHeader>
@@ -259,7 +259,7 @@ const BookClubDetail = () => {
         <Tabs defaultValue="discussions" className="space-y-6">
           <TabsList>
             <TabsTrigger value="discussions" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
+              <ChatBubble className="h-4 w-4" />
               Discussions
             </TabsTrigger>
           </TabsList>

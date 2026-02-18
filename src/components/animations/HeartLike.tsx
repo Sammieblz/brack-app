@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
-import { Heart } from "lucide-react";
+import { Heart } from "iconoir-react";
 import { cn } from "@/lib/utils";
 
 interface HeartLikeProps {

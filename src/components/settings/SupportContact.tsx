@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { HelpCircle, Mail, MessageSquare, FileText } from "lucide-react";
+import { QuestionMark, Mail, ChatBubble, Notes } from "iconoir-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -36,7 +36,7 @@ export const SupportContact = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HelpCircle className="h-5 w-5" />
+            <QuestionMark className="h-5 w-5" />
             Frequently Asked Questions
           </CardTitle>
         </CardHeader>
@@ -96,7 +96,7 @@ export const SupportContact = () => {
             />
           </div>
           <Button onClick={handleSubmitFeedback} className="w-full">
-            <MessageSquare className="h-4 w-4 mr-2" />
+            <ChatBubble className="h-4 w-4 mr-2" />
             Send Message
           </Button>
         </CardContent>
@@ -106,7 +106,7 @@ export const SupportContact = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+            <Notes className="h-5 w-5" />
             Share Feedback
           </CardTitle>
           <CardDescription>
@@ -134,7 +134,7 @@ export const SupportContact = () => {
             />
           </div>
           <Button onClick={handleSubmitFeedback} variant="outline" className="w-full">
-            <FileText className="h-4 w-4 mr-2" />
+            <Notes className="h-4 w-4 mr-2" />
             Submit Feedback
           </Button>
         </CardContent>

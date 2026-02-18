@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Flame, ChevronLeft, ChevronRight } from "lucide-react";
+import { FireFlame, NavArrowLeft, NavArrowRight } from "iconoir-react";
 import type { DayActivity } from "@/utils/streakCalculation";
 
 interface StreakCalendarProps {
@@ -69,7 +69,7 @@ export const StreakCalendar = ({ activityCalendar }: StreakCalendarProps) => {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="font-display text-lg flex items-center gap-2">
-            <Flame className="h-5 w-5 text-primary" />
+            <FireFlame className="h-5 w-5 text-primary" />
             Activity
           </CardTitle>
           <div className="flex items-center gap-2">
@@ -80,7 +80,7 @@ export const StreakCalendar = ({ activityCalendar }: StreakCalendarProps) => {
               onClick={() => setCurrentMonthOffset(currentMonthOffset + 1)}
               disabled={!canGoBack}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <NavArrowLeft className="h-4 w-4" />
             </Button>
             <span className="font-sans text-sm font-medium min-w-[140px] text-center">
               {monthName}
@@ -92,7 +92,7 @@ export const StreakCalendar = ({ activityCalendar }: StreakCalendarProps) => {
               onClick={() => setCurrentMonthOffset(currentMonthOffset - 1)}
               disabled={!canGoForward}
             >
-              <ChevronRight className="h-4 w-4" />
+              <NavArrowRight className="h-4 w-4" />
             </Button>
           </div>
         </div>

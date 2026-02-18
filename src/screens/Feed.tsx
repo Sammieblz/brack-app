@@ -3,7 +3,7 @@ import { ActivityFeed } from "@/components/social/ActivityFeed";
 import { PostCard } from "@/components/social/PostCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { TrendingUp, Users } from "lucide-react";
+import { StatsReport, Group } from "iconoir-react";
 import { useSocialFeed } from "@/hooks/useSocialFeed";
 import { usePosts } from "@/hooks/usePosts";
 import { PostCardSkeleton } from "@/components/skeletons/PostCardSkeleton";
@@ -44,7 +44,7 @@ const Feed = () => {
                 <div>
                   <h1 className="font-display text-3xl font-bold">Activity Feed</h1>
                   <p className="font-sans text-muted-foreground flex items-center gap-2 mt-1">
-                    <Users className="h-4 w-4" />
+                    <Group className="h-4 w-4" />
                     See what your reading community is up to
                   </p>
                 </div>
@@ -57,14 +57,14 @@ const Feed = () => {
               <div className="grid grid-cols-2 gap-4">
                 <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
                   <div className="flex items-center gap-2 text-primary mb-1">
-                    <TrendingUp className="h-4 w-4" />
+                    <StatsReport className="h-4 w-4" />
                     <span className="font-sans text-sm font-semibold">Trending</span>
                   </div>
                   <p className="font-sans text-xs text-muted-foreground">Most active readers today</p>
                 </Card>
                 <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
                   <div className="flex items-center gap-2 text-secondary mb-1">
-                    <Users className="h-4 w-4" />
+                    <Group className="h-4 w-4" />
                     <span className="font-sans text-sm font-semibold">Following</span>
                   </div>
                   <p className="font-sans text-xs text-muted-foreground">Updates from your network</p>
@@ -88,7 +88,7 @@ const Feed = () => {
                 </>
               ) : posts.length === 0 ? (
                 <Card className="p-12 text-center">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <Group className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="font-sans text-muted-foreground">No posts yet. Be the first to share!</p>
                 </Card>
               ) : (

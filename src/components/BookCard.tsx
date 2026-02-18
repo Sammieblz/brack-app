@@ -1,4 +1,4 @@
-import { BookOpen, ListPlus, Edit, Trash2, Share2 } from "lucide-react";
+import { Book as BookIcon, Plus, EditPencil, Trash, ShareIos } from "iconoir-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -41,17 +41,17 @@ export const BookCard = ({ book, onClick, onStatusChange, onDelete, userId }: Bo
   const contextActions = [
     {
       label: "View Details",
-      icon: <BookOpen className="h-5 w-5" />,
+      icon: <BookIcon className="h-5 w-5" />,
       onClick: () => onClick?.(),
     },
     {
       label: "Edit",
-      icon: <Edit className="h-5 w-5" />,
+      icon: <EditPencil className="h-5 w-5" />,
       onClick: () => navigate(`/edit-book/${book.id}`),
     },
     {
       label: "Share",
-      icon: <Share2 className="h-5 w-5" />,
+      icon: <ShareIos className="h-5 w-5" />,
       onClick: () => {
         if (navigator.share) {
           navigator.share({
@@ -63,7 +63,7 @@ export const BookCard = ({ book, onClick, onStatusChange, onDelete, userId }: Bo
     },
     {
       label: "Delete",
-      icon: <Trash2 className="h-5 w-5" />,
+      icon: <Trash className="h-5 w-5" />,
       variant: 'destructive' as const,
       onClick: () => onDelete?.(book.id),
     },
@@ -114,7 +114,7 @@ export const BookCard = ({ book, onClick, onStatusChange, onDelete, userId }: Bo
               </ImageLightbox>
             ) : (
               <div className="w-14 h-20 sm:w-16 sm:h-24 bg-gradient-primary rounded flex items-center justify-center">
-                <BookOpen className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+                <BookIcon className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
               </div>
             )}
           </div>
@@ -190,7 +190,7 @@ export const BookCard = ({ book, onClick, onStatusChange, onDelete, userId }: Bo
                 userId={userId}
                 trigger={
                   <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-10 sm:w-10 touch-manipulation">
-                    <ListPlus className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
                   </Button>
                 }
               />

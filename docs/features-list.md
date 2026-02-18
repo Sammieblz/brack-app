@@ -557,7 +557,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 ### Components
 - **shadcn/ui**: 54 base components
 - **Custom**: 72 feature components
-- **Icons**: lucide-react (462 icons)
+- **Icons**: iconoir-react (1000+ icons)
 
 ---
 

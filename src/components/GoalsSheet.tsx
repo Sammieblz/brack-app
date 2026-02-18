@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Target } from "lucide-react";
+import { Trophy } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import {
   DismissableSheet,
@@ -39,7 +39,7 @@ export const GoalsSheet = () => {
       <DismissableSheet open={open} onOpenChange={setOpen}>
         <DismissableSheetTrigger asChild>
           <Button variant="outline" size="sm" className="gap-2">
-            <Target className="h-4 w-4" />
+            <Trophy className="h-4 w-4" />
             Goals
           </Button>
         </DismissableSheetTrigger>
@@ -60,7 +60,7 @@ export const GoalsSheet = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-          <Target className="h-4 w-4" />
+          <Trophy className="h-4 w-4" />
           Goals
         </Button>
       </DialogTrigger>

@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Conversation } from "@/hooks/useConversations";
-import { MessageCircle, Trash2, Eye, EyeOff } from "lucide-react";
+import { Trash, Eye, EyeClosed } from "iconoir-react";
 import { EmptyMessages } from "@/components/empty/EmptyMessages";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
@@ -149,13 +149,13 @@ export const ConversationsList = ({
               onClick={(e) => handleMarkRead(conv.id, e)}
               className="bg-blue-500 text-white p-3 rounded-lg"
             >
-              {conv.unread_count ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+              {conv.unread_count ? <Eye className="h-5 w-5" /> : <EyeClosed className="h-5 w-5" />}
             </button>
             <button
               onClick={(e) => handleDelete(conv.id, e)}
               className="bg-destructive text-destructive-foreground p-3 rounded-lg"
             >
-              <Trash2 className="h-5 w-5" />
+              <Trash className="h-5 w-5" />
             </button>
           </div>
         )}

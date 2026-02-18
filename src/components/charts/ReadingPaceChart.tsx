@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, defs, linearGradient, stop, ReferenceLine } from "recharts";
-import { Gauge } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ReferenceLine } from "recharts";
+import { DashboardDots} from "iconoir-react";
 
 interface PaceData {
   period: string;
@@ -33,7 +33,7 @@ export const ReadingPaceChart = ({ data }: ReadingPaceChartProps) => {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center text-base md:text-lg">
-          <Gauge className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+          <DashboardDots className="h-4 w-4 md:h-5 md:w-5 mr-2" />
           Reading Pace Comparison
         </CardTitle>
       </CardHeader>

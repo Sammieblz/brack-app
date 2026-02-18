@@ -1,5 +1,5 @@
 import PullToRefreshLib from 'react-simple-pull-to-refresh';
-import { Loader2 } from 'lucide-react';
+import { Refresh } from 'iconoir-react';
 import { ReactNode } from 'react';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
@@ -32,7 +32,7 @@ export const PullToRefresh = ({ onRefresh, children, disabled = false }: PullToR
       }
       refreshingContent={
         <div className="flex justify-center py-4">
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <Refresh className="h-5 w-5 animate-spin text-primary" />
         </div>
       }
       pullDownThreshold={80}
