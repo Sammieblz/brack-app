@@ -78,10 +78,10 @@ const ScanCover = () => {
         {/* Scanner Card */}
         <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in">
           <CardHeader className="text-center">
-            <CardTitle className="text-xl font-bold text-foreground">
+            <CardTitle className="font-display text-xl font-bold text-foreground">
               Scan Book Cover
             </CardTitle>
-            <p className="text-muted-foreground text-sm">
+            <p className="font-sans text-muted-foreground text-sm">
               Take a photo of the book cover to extract title and author
             </p>
           </CardHeader>
@@ -93,35 +93,35 @@ const ScanCover = () => {
                   <div className="text-center w-full h-full flex flex-col items-center justify-center p-6">
                     <div className="w-full">
                       <Sparkles className="h-16 w-16 text-primary mx-auto mb-4 animate-pulse" />
-                      <p className="text-muted-foreground font-medium mb-2">
+                      <p className="font-sans text-muted-foreground font-medium mb-2">
                         {progress < 30 ? 'Capturing image...' :
                          progress < 40 ? 'Preprocessing...' :
                          progress < 90 ? 'Reading text...' :
                          'Processing...'}
                       </p>
                       <Progress value={progress} className="w-full" />
-                      <p className="text-xs text-muted-foreground mt-2">{progress}% complete</p>
+                      <p className="font-sans text-xs text-muted-foreground mt-2">{progress}% complete</p>
                     </div>
                   </div>
                 ) : scannedInfo && !editMode ? (
                   <div className="text-center p-6 w-full">
                     <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                    <p className="text-green-500 font-medium mb-4">Cover scanned!</p>
+                    <p className="font-sans text-green-500 font-medium mb-4">Cover scanned!</p>
                     
                     <div className="space-y-3 text-left bg-background/50 p-4 rounded-lg">
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">Title:</p>
-                        <p className="font-semibold text-foreground">{scannedInfo.title}</p>
+                        <p className="font-sans text-xs text-muted-foreground mb-1">Title:</p>
+                        <p className="font-serif font-semibold text-foreground">{scannedInfo.title}</p>
                       </div>
                       {scannedInfo.author && (
                         <div>
-                          <p className="text-xs text-muted-foreground mb-1">Author:</p>
-                          <p className="font-medium text-foreground">{scannedInfo.author}</p>
+                          <p className="font-sans text-xs text-muted-foreground mb-1">Author:</p>
+                          <p className="font-serif font-medium text-foreground">{scannedInfo.author}</p>
                         </div>
                       )}
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">Confidence:</p>
-                        <p className={`font-medium ${getConfidenceColor(scannedInfo.confidence)}`}>
+                        <p className="font-sans text-xs text-muted-foreground mb-1">Confidence:</p>
+                        <p className={`font-sans font-medium ${getConfidenceColor(scannedInfo.confidence)}`}>
                           {scannedInfo.confidence}%
                         </p>
                       </div>
@@ -130,7 +130,7 @@ const ScanCover = () => {
                 ) : scannedInfo && editMode ? (
                   <div className="text-center p-6 w-full">
                     <Edit className="h-12 w-12 text-primary mx-auto mb-4" />
-                    <p className="text-muted-foreground font-medium mb-4">Edit extracted info</p>
+                    <p className="font-sans text-muted-foreground font-medium mb-4">Edit extracted info</p>
                     
                     <div className="space-y-3 text-left">
                       <div>
@@ -158,14 +158,14 @@ const ScanCover = () => {
                 ) : error ? (
                   <div className="text-center p-4">
                     <Camera className="h-16 w-16 text-destructive/50 mx-auto mb-4" />
-                    <p className="text-destructive text-sm font-medium">Scan failed</p>
-                    <p className="text-xs text-muted-foreground mt-2">{error}</p>
+                    <p className="font-sans text-destructive text-sm font-medium">Scan failed</p>
+                    <p className="font-sans text-xs text-muted-foreground mt-2">{error}</p>
                   </div>
                 ) : (
                   <div className="text-center p-6">
                     <Camera className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-                    <p className="text-muted-foreground">Ready to scan</p>
-                    <p className="text-xs text-muted-foreground mt-2">Tap "Scan Cover" to begin</p>
+                    <p className="font-sans text-muted-foreground">Ready to scan</p>
+                    <p className="font-sans text-xs text-muted-foreground mt-2">Tap "Scan Cover" to begin</p>
                   </div>
                 )}
               </div>

@@ -44,7 +44,7 @@ export const BookLengthScatter = ({ data }: BookLengthScatterProps) => {
               stroke="hsl(var(--muted-foreground))"
               fontSize={11}
               tick={{ fontSize: 11 }}
-              label={{ value: 'Pages', position: 'insideBottom', offset: -5 }}
+              label={{ value: 'Pages', position: 'insideBottom', offset: -5, style: { fontFamily: 'Inter, system-ui, sans-serif' } }}
             />
             <YAxis 
               type="number"
@@ -54,7 +54,7 @@ export const BookLengthScatter = ({ data }: BookLengthScatterProps) => {
               fontSize={11}
               tick={{ fontSize: 11 }}
               width={40}
-              label={{ value: 'Days', angle: -90, position: 'insideLeft' }}
+              label={{ value: 'Days', angle: -90, position: 'insideLeft', style: { fontFamily: 'Inter, system-ui, sans-serif' } }}
             />
             <ChartTooltip 
               content={({ active, payload }) => {
@@ -63,11 +63,11 @@ export const BookLengthScatter = ({ data }: BookLengthScatterProps) => {
                   return (
                     <div className="rounded-lg border bg-background p-3 shadow-lg">
                       <div className="space-y-1">
-                        <div className="font-semibold text-sm">{data.title}</div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="font-serif font-semibold text-sm">{data.title}</div>
+                        <div className="font-sans text-xs text-muted-foreground">
                           {data.pages} pages
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="font-sans text-xs text-muted-foreground">
                           {data.completionDays} days to complete
                         </div>
                       </div>

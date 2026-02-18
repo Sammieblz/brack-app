@@ -55,7 +55,7 @@ export const GenreDistributionChart = ({ data }: GenreDistributionChartProps) =>
                 y="45%"
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="text-2xl md:text-3xl font-bold fill-foreground"
+                className="font-sans text-2xl md:text-3xl font-bold fill-foreground"
               >
                 {totalBooks}
               </text>
@@ -64,7 +64,7 @@ export const GenreDistributionChart = ({ data }: GenreDistributionChartProps) =>
                 y="55%"
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="text-xs md:text-sm fill-muted-foreground"
+                className="font-sans text-xs md:text-sm fill-muted-foreground"
               >
                 Total Books
               </text>
@@ -73,7 +73,7 @@ export const GenreDistributionChart = ({ data }: GenreDistributionChartProps) =>
                 y="65%"
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="text-xs fill-muted-foreground"
+                className="font-sans text-xs fill-muted-foreground"
               >
                 {topGenres} Genres
               </text>
@@ -90,15 +90,15 @@ export const GenreDistributionChart = ({ data }: GenreDistributionChartProps) =>
                               className="w-3 h-3 rounded-full" 
                               style={{ backgroundColor: data.color }}
                             />
-                            <span className="font-semibold text-sm">
+                            <span className="font-sans font-semibold text-sm">
                               {data.genre}
                             </span>
                           </div>
-                          <div className="flex justify-between gap-4 text-xs">
+                          <div className="font-sans flex justify-between gap-4 text-xs">
                             <span className="text-muted-foreground">Books:</span>
                             <span className="font-bold">{data.count}</span>
                           </div>
-                          <div className="flex justify-between gap-4 text-xs">
+                          <div className="font-sans flex justify-between gap-4 text-xs">
                             <span className="text-muted-foreground">Share:</span>
                             <span className="font-bold">{percentage}%</span>
                           </div>

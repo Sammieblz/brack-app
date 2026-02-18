@@ -70,10 +70,10 @@ export const MobileFloatingTextarea = forwardRef<HTMLTextAreaElement, MobileFloa
           </Label>
         </div>
         {error && (
-          <p className="text-sm text-destructive mt-1 px-3">{error}</p>
+          <p className="font-sans text-sm text-destructive mt-1 px-3">{error}</p>
         )}
         {helperText && !error && (
-          <p className="text-sm text-muted-foreground mt-1 px-3">{helperText}</p>
+          <p className="font-sans text-sm text-muted-foreground mt-1 px-3">{helperText}</p>
         )}
       </div>
     );

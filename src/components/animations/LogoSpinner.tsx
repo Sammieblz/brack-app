@@ -59,7 +59,7 @@ export const LogoSpinner = ({ size = "md", text, className }: LogoSpinnerProps) 
         <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg -z-10" />
       </div>
       {text && (
-        <span className={cn(textSizes[size], "font-medium text-muted-foreground")}>
+        <span className={cn(textSizes[size], "font-sans font-medium text-muted-foreground")}>
           {text}
         </span>
       )}

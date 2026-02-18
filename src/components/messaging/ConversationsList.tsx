@@ -118,17 +118,17 @@ export const ConversationsList = ({
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
-                <p className="font-semibold truncate">
+                <p className="font-sans font-semibold truncate">
                   {conv.other_user?.display_name || "Unknown User"}
                 </p>
                 {conv.last_message && (
-                  <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                  <span className="font-sans text-xs text-muted-foreground whitespace-nowrap ml-2">
                     {formatDate(conv.last_message.created_at)}
                   </span>
                 )}
               </div>
               {conv.last_message && (
-                <p className="text-sm text-muted-foreground truncate">
+                <p className="font-sans text-sm text-muted-foreground truncate">
                   {conv.last_message.sender_id === currentUserId && "You: "}
                   {sanitizeText(conv.last_message.content)}
                 </p>

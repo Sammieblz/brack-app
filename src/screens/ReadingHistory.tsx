@@ -169,7 +169,7 @@ export default function ReadingHistory() {
       <div className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
         {!isMobile && (
           <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">Reading History</h1>
+            <h1 className="font-display text-3xl font-bold mb-2">Reading History</h1>
             <p className="text-muted-foreground">View all your progress logs and journal entries</p>
           </div>
         )}
@@ -232,9 +232,9 @@ export default function ReadingHistory() {
 
                       {/* Log Details */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold truncate">{log.books.title}</h3>
+                        <h3 className="font-serif font-semibold truncate">{log.books.title}</h3>
                         {log.books.author && (
-                          <p className="text-sm text-muted-foreground truncate">
+                          <p className="font-serif text-sm text-muted-foreground truncate">
                             by {log.books.author}
                           </p>
                         )}
@@ -260,7 +260,7 @@ export default function ReadingHistory() {
                         </div>
 
                         {log.notes && (
-                          <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                          <p className="font-serif text-sm text-muted-foreground mt-2 line-clamp-2">
                             {log.notes}
                           </p>
                         )}
@@ -307,7 +307,7 @@ export default function ReadingHistory() {
                           )}
                         </div>
                         {entry.title && (
-                          <CardTitle className="text-lg">{entry.title}</CardTitle>
+                          <CardTitle className="font-serif text-lg">{entry.title}</CardTitle>
                         )}
                       </div>
                     </div>
@@ -330,14 +330,14 @@ export default function ReadingHistory() {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{entry.books.title}</p>
+                        <p className="font-serif text-sm font-medium truncate">{entry.books.title}</p>
                         {entry.books.author && (
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="font-serif text-xs text-muted-foreground truncate">
                             by {entry.books.author}
                           </p>
                         )}
 
-                        <p className="text-sm mt-3 line-clamp-3">{entry.content}</p>
+                        <p className="font-serif text-sm mt-3 line-clamp-3">{entry.content}</p>
 
                         {entry.tags && entry.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-3">

@@ -48,14 +48,14 @@ export const NativeHeader = ({
         <div className="flex-1 min-w-0">
           <h1
             className={cn(
-              "font-bold text-foreground transition-all duration-300 truncate",
+              "font-display font-bold text-foreground transition-all duration-300 truncate",
               isScrolled ? "text-xl" : "text-3xl sm:text-4xl"
             )}
           >
             {title}
           </h1>
           {subtitle && !isScrolled && (
-            <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+            <p className="font-sans text-sm text-muted-foreground mt-1">{subtitle}</p>
           )}
         </div>
         {action && <div className="ml-4 flex-shrink-0">{action}</div>}

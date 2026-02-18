@@ -124,7 +124,7 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
             </Avatar>
             <div>
               <p
-                className="font-semibold cursor-pointer hover:underline"
+                className="font-sans font-semibold cursor-pointer hover:underline"
                 onClick={() => navigate(`/users/${review.user_id}`)}
               >
                 {review.profiles.display_name || "Anonymous User"}
@@ -142,7 +142,7 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
                     />
                   ))}
                 </div>
-                <span className="text-sm text-muted-foreground">
+                <span className="font-sans text-sm text-muted-foreground">
                   {formatDistanceToNow(new Date(review.created_at), { addSuffix: true })}
                 </span>
               </div>
@@ -174,11 +174,11 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {review.title && <h3 className="font-semibold text-lg">{sanitizeText(review.title)}</h3>}
+        {review.title && <h3 className="font-serif font-semibold text-lg">{sanitizeText(review.title)}</h3>}
 
         {review.is_spoiler && !showSpoiler ? (
           <div className="bg-muted p-4 rounded-lg text-center">
-            <p className="text-sm font-medium mb-2">⚠️ This review contains spoilers</p>
+            <p className="font-sans text-sm font-medium mb-2">⚠️ This review contains spoilers</p>
             <Button
               variant="outline"
               size="sm"
@@ -190,7 +190,7 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
           </div>
         ) : (
           <div className="space-y-2">
-            <p className="text-foreground whitespace-pre-wrap">{sanitizeText(review.content)}</p>
+            <p className="font-serif text-foreground whitespace-pre-wrap">{sanitizeText(review.content)}</p>
             {review.is_spoiler && showSpoiler && (
               <Button
                 variant="ghost"

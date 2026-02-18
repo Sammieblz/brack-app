@@ -120,11 +120,11 @@ export const BookCard = ({ book, onClick, onStatusChange, onDelete, userId }: Bo
           </div>
           
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-sm sm:text-base text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+            <h3 className="font-serif font-semibold text-sm sm:text-base text-foreground line-clamp-2 group-hover:text-primary transition-colors">
               {book.title}
             </h3>
             {book.author && (
-              <p className="text-xs sm:text-sm text-muted-foreground truncate mt-0.5">
+              <p className="font-serif text-xs sm:text-sm text-muted-foreground truncate mt-0.5">
                 by {book.author}
               </p>
             )}

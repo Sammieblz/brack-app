@@ -105,7 +105,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">My Book Lists</h2>
+          <h2 className="font-display text-2xl font-bold">My Book Lists</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <BookListCardSkeleton />
@@ -119,7 +119,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
-        <h2 className="text-xl sm:text-2xl font-bold">My Book Lists</h2>
+        <h2 className="font-display text-xl sm:text-2xl font-bold">My Book Lists</h2>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button className="h-11 w-full sm:w-auto touch-manipulation">
@@ -129,7 +129,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create New List</DialogTitle>
+              <DialogTitle className="font-display">Create New List</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -167,12 +167,12 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <BookMarked className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                  <CardTitle className="text-base sm:text-lg line-clamp-2">{list.name}</CardTitle>
+                  <CardTitle className="font-display text-base sm:text-lg line-clamp-2">{list.name}</CardTitle>
                 </div>
                 <Badge variant="secondary" className="text-xs whitespace-nowrap">{list.book_count || 0} books</Badge>
               </div>
               {list.description && (
-                <CardDescription className="text-xs sm:text-sm line-clamp-2">{list.description}</CardDescription>
+                <CardDescription className="font-sans text-xs sm:text-sm line-clamp-2">{list.description}</CardDescription>
               )}
             </CardHeader>
             <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
@@ -196,12 +196,12 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
                       }}
                     >
                       <Edit2 className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="text-xs sm:text-sm">Edit</span>
+                      <span className="font-sans text-xs sm:text-sm">Edit</span>
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Edit List</DialogTitle>
+                      <DialogTitle className="font-display">Edit List</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div className="space-y-2">
@@ -235,7 +235,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
                   title="Duplicate list"
                 >
                   <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span className="ml-2 text-xs sm:text-sm hidden sm:inline">Copy</span>
+                  <span className="font-sans ml-2 text-xs sm:text-sm hidden sm:inline">Copy</span>
                 </Button>
 
                 <AlertDialog>
@@ -268,7 +268,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
       {hasMore && lists.length > 0 && (
         <div ref={loadMoreRef} className="py-8 flex justify-center">
           {loadingMore && (
-            <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="font-sans flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin" />
               <span>Loading more lists...</span>
             </div>
@@ -280,7 +280,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
             <BookMarked className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mb-4" />
-            <p className="text-sm sm:text-base text-muted-foreground text-center mb-4">
+            <p className="font-sans text-sm sm:text-base text-muted-foreground text-center mb-4">
               You haven't created any lists yet
             </p>
             <Button 

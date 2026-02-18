@@ -119,7 +119,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
       {showConfetti && <Confetti trigger={showConfetti} />}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">My Goals</h2>
+        <h2 className="font-display text-2xl font-bold">My Goals</h2>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -129,7 +129,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Create New Goal</DialogTitle>
+              <DialogTitle className="font-display">Create New Goal</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -211,7 +211,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
 
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold mb-3">Active Goals</h3>
+          <h3 className="font-display text-lg font-semibold mb-3">Active Goals</h3>
           <div className="grid gap-4 md:grid-cols-2">
             {activeGoals.map((goal) => {
               const target = goal.target_books || goal.target_pages || goal.target_minutes || 0;
@@ -225,10 +225,10 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
                       <div className="flex items-center gap-2">
                         <Target className="h-5 w-5 text-primary" />
                         <div>
-                          <CardTitle className="text-lg">
+                          <CardTitle className="font-sans text-lg">
                             {target} {getGoalTypeLabel(goal.goal_type)}
                           </CardTitle>
-                          <CardDescription>{getPeriodTypeLabel(goal.period_type)}</CardDescription>
+                          <CardDescription className="font-sans">{getPeriodTypeLabel(goal.period_type)}</CardDescription>
                         </div>
                       </div>
                       <Badge variant="secondary">{Math.round(progress)}%</Badge>
@@ -243,7 +243,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
                         <TrophyReveal show={true} size={48} />
                       </div>
                     )}
-                    <div className="text-sm text-muted-foreground">
+                    <div className="font-sans text-sm text-muted-foreground">
                       {goal.start_date && goal.end_date && (
                         <div className="flex items-center gap-2">
                           <CalendarIcon className="h-4 w-4" />
@@ -269,8 +269,8 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Goal</AlertDialogTitle>
-                            <AlertDialogDescription>
+                            <AlertDialogTitle className="font-display">Delete Goal</AlertDialogTitle>
+                            <AlertDialogDescription className="font-sans">
                               Are you sure you want to delete this goal? This action cannot be undone.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
@@ -292,7 +292,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Target className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground text-center">No active goals</p>
+                <p className="font-sans text-muted-foreground text-center">No active goals</p>
               </CardContent>
             </Card>
           )}
@@ -300,7 +300,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
 
         {goals.filter(g => g.is_completed).length > 0 && (
           <div>
-            <h3 className="text-lg font-semibold mb-3">Completed Goals</h3>
+            <h3 className="font-display text-lg font-semibold mb-3">Completed Goals</h3>
             <div className="space-y-2">
               {goals.filter(g => g.is_completed).map((goal) => (
                 <Card key={goal.id}>
@@ -308,10 +308,10 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
                     <div className="flex items-center gap-3">
                       <CheckCircle2 className="h-5 w-5 text-green-500" />
                       <div>
-                        <p className="font-medium">
+                        <p className="font-sans font-medium">
                           {goal.target_books || goal.target_pages || goal.target_minutes} {getGoalTypeLabel(goal.goal_type)}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="font-sans text-sm text-muted-foreground">
                           Completed {goal.completed_at && format(new Date(goal.completed_at), "MMM dd, yyyy")}
                         </p>
                       </div>

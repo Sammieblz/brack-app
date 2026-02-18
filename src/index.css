@@ -148,11 +148,20 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif; /* UI default */
     font-size: 16px; /* Prevent iOS text zoom - minimum for mobile readability */
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
     line-height: 1.6; /* Improved readability - optimal for body text */
     letter-spacing: -0.01em; /* Slight tightening for better readability */
+  }
+
+  /* Book content uses serif font */
+  .book-content,
+  .book-title,
+  .book-description {
+    font-family: 'Merriweather', Georgia, serif;
+    line-height: 1.7; /* Slightly more spacing for serif */
   }
 
   /* Typography hierarchy - ensure minimum 16px for body text */
@@ -163,6 +172,7 @@ All colors MUST be HSL.
 
   /* Heading hierarchy with proper contrast */
   h1 {
+    font-family: 'Playfair Display', 'Merriweather', serif; /* Elegant display serif */
     font-size: 2rem; /* 32px */
     line-height: 1.2;
     font-weight: 700;
@@ -170,6 +180,7 @@ All colors MUST be HSL.
   }
 
   h2 {
+    font-family: 'Playfair Display', 'Merriweather', serif; /* Elegant display serif */
     font-size: 1.5rem; /* 24px */
     line-height: 1.3;
     font-weight: 600;
@@ -177,15 +188,22 @@ All colors MUST be HSL.
   }
 
   h3 {
+    font-family: 'Merriweather', Georgia, serif;
     font-size: 1.25rem; /* 20px */
     line-height: 1.4;
-    font-weight: 600;
+    font-weight: 700;
   }
 
   h4 {
+    font-family: 'Merriweather', Georgia, serif;
     font-size: 1.125rem; /* 18px */
     line-height: 1.4;
-    font-weight: 600;
+    font-weight: 700;
+  }
+
+  /* UI elements use sans-serif */
+  button, input, select, label, nav, textarea {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   /* Optimal line length for readability (45-75 characters) */

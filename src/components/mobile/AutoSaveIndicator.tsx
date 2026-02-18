@@ -20,14 +20,14 @@ export const AutoSaveIndicator = ({
         return (
           <>
             <Loader2 className="h-3 w-3 animate-spin" />
-            <span className="text-xs">Saving...</span>
+            <span className="font-sans text-xs">Saving...</span>
           </>
         );
       case 'saved':
         return (
           <>
             <Check className="h-3 w-3" />
-            <span className="text-xs">
+            <span className="font-sans text-xs">
               Saved{lastSaved && ` at ${lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
             </span>
           </>
@@ -36,7 +36,7 @@ export const AutoSaveIndicator = ({
         return (
           <>
             <AlertCircle className="h-3 w-3" />
-            <span className="text-xs">Save failed</span>
+            <span className="font-sans text-xs">Save failed</span>
           </>
         );
       default:

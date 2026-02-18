@@ -81,8 +81,8 @@ export const JournalEntriesList = ({ bookId }: JournalEntriesListProps) => {
       {filteredEntries.length === 0 ? (
         <div className="text-center py-12">
           <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Journal Entries Yet</h3>
-          <p className="text-muted-foreground mb-4">
+          <h3 className="font-display text-lg font-semibold mb-2">No Journal Entries Yet</h3>
+          <p className="font-sans text-muted-foreground mb-4">
             Start capturing your thoughts, quotes, and reflections
           </p>
           <Button onClick={() => setDialogOpen(true)}>

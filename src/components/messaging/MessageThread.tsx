@@ -144,7 +144,7 @@ export const MessageThread = ({
               <AvatarFallback>{getInitials(otherUser?.display_name)}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-semibold">{otherUser?.display_name || "Unknown User"}</p>
+              <p className="font-sans font-semibold">{otherUser?.display_name || "Unknown User"}</p>
             </div>
           </div>
         </div>
@@ -154,7 +154,7 @@ export const MessageThread = ({
       <div className={`flex-1 overflow-y-auto space-y-4 ${isMobile ? 'p-3' : 'p-4'}`}>
         {messages.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
-            No messages yet. Start the conversation!
+            <p className="font-sans">No messages yet. Start the conversation!</p>
           </div>
         ) : (
           messages.map((message) => {
@@ -179,9 +179,9 @@ export const MessageThread = ({
                           : "bg-muted"
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap break-words">{sanitizeText(message.content)}</p>
+                      <p className="font-sans text-sm whitespace-pre-wrap break-words">{sanitizeText(message.content)}</p>
                     </Card>
-                    <p className={`text-xs text-muted-foreground/80 mt-1.5 font-medium ${isOwnMessage ? "text-right" : ""}`}>
+                    <p className={`font-sans text-xs text-muted-foreground/80 mt-1.5 font-medium ${isOwnMessage ? "text-right" : ""}`}>
                       {formatTimestamp(message.created_at)}
                     </p>
                   </div>

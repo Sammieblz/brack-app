@@ -59,19 +59,19 @@ export const UserCard = ({
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <h3
-                  className="font-semibold text-base sm:text-lg cursor-pointer hover:underline line-clamp-1"
+                  className="font-sans font-semibold text-base sm:text-lg cursor-pointer hover:underline line-clamp-1"
                   onClick={handleNavigate}
                 >
                   {displayName || "Anonymous User"}
                 </h3>
                 {bio && (
-                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mt-1">{bio}</p>
+                  <p className="font-sans text-xs sm:text-sm text-muted-foreground line-clamp-2 mt-1">{bio}</p>
                 )}
               </div>
               <FollowButton userId={userId} size="sm" />
             </div>
 
-            <div className="flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm">
+            <div className="font-sans flex flex-wrap gap-3 sm:gap-4 text-xs sm:text-sm">
               {booksRead > 0 && (
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />

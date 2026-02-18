@@ -59,7 +59,7 @@ export const ReviewComments = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Comments ({comments.length})</CardTitle>
+        <CardTitle className="font-display">Comments ({comments.length})</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Add Comment */}
@@ -70,6 +70,7 @@ export const ReviewComments = ({
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               rows={3}
+              className="font-sans"
             />
             <Button
               onClick={handleSubmit}
@@ -84,7 +85,7 @@ export const ReviewComments = ({
         {/* Comments List */}
         <div className="space-y-4">
           {comments.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
+            <p className="font-sans text-sm text-muted-foreground text-center py-4">
               No comments yet. Be the first to comment!
             </p>
           ) : (
@@ -107,12 +108,12 @@ export const ReviewComments = ({
                   <div className="flex items-start justify-between">
                     <div>
                       <p
-                        className="font-semibold text-sm cursor-pointer hover:underline"
+                        className="font-sans font-semibold text-sm cursor-pointer hover:underline"
                         onClick={() => navigate(`/users/${comment.user_id}`)}
                       >
                         {comment.profiles.display_name || "Anonymous User"}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="font-sans text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(comment.created_at), {
                           addSuffix: true,
                         })}
@@ -129,7 +130,7 @@ export const ReviewComments = ({
                       </Button>
                     )}
                   </div>
-                  <p className="text-sm">{sanitizeText(comment.content)}</p>
+                  <p className="font-sans text-sm">{sanitizeText(comment.content)}</p>
                 </div>
               </div>
             ))

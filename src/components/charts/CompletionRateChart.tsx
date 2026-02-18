@@ -65,15 +65,15 @@ export const CompletionRateChart = ({ data }: CompletionRateChartProps) => {
                   return (
                     <div className="rounded-lg border bg-background p-3 shadow-lg">
                       <div className="space-y-1">
-                        <div className="font-semibold text-sm">{data.genre}</div>
-                        <div className="flex items-center gap-2">
+                        <div className="font-sans font-semibold text-sm">{data.genre}</div>
+                        <div className="font-sans flex items-center gap-2">
                           <div className="w-3 h-3 rounded-full bg-[hsl(var(--chart-2))]" />
                           <div className="flex items-baseline gap-1">
                             <span className="text-lg font-bold">{data.completionRate.toFixed(1)}</span>
                             <span className="text-xs text-muted-foreground">%</span>
                           </div>
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="font-sans text-xs text-muted-foreground">
                           {data.total} books total
                         </div>
                       </div>

@@ -61,19 +61,19 @@ export const DiscussionThread = ({
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className="font-semibold text-sm">
+                <span className="font-sans font-semibold text-sm">
                   {discussion.user?.display_name || 'Unknown User'}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="font-sans text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(discussion.created_at), { addSuffix: true })}
                 </span>
               </div>
               {discussion.title && (
-                <h4 className="font-semibold text-foreground mb-2">
+                <h4 className="font-display font-semibold text-foreground mb-2">
                   {discussion.title}
                 </h4>
               )}
-              <p className="text-sm text-foreground whitespace-pre-wrap">
+              <p className="font-serif text-sm text-foreground whitespace-pre-wrap">
                 {discussion.content}
               </p>
             </div>
@@ -117,10 +117,10 @@ export const DiscussionThread = ({
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-xs">
+                    <span className="font-sans font-semibold text-xs">
                       {reply.user?.display_name || 'Unknown User'}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="font-sans text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
                     </span>
                     {currentUserId === reply.user_id && (
@@ -134,7 +134,7 @@ export const DiscussionThread = ({
                       </Button>
                     )}
                   </div>
-                  <p className="text-sm text-foreground whitespace-pre-wrap">
+                  <p className="font-serif text-sm text-foreground whitespace-pre-wrap">
                     {reply.content}
                   </p>
                 </div>

@@ -63,7 +63,7 @@ const Reviews = () => {
           {filteredReviews.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground">No reviews found</p>
+                <p className="font-sans text-muted-foreground">No reviews found</p>
               </CardContent>
             </Card>
           ) : (

@@ -191,7 +191,7 @@ export const FloatingTimerWidget = () => {
       <div {...commonDragProps}>
         <Card className="bg-gradient-card shadow-soft border border-border/50 backdrop-blur-sm min-w-[200px] max-w-[90vw]">
           <CardContent className="p-3 flex items-center gap-3">
-            <span className="text-lg font-semibold">Timer</span>
+            <span className="font-sans text-lg font-semibold">Timer</span>
             <span className="font-mono font-bold text-foreground min-w-[80px]">
               {formatTime(time)}
             </span>
@@ -228,7 +228,7 @@ export const FloatingTimerWidget = () => {
         <Card className="bg-gradient-card shadow-soft border border-border/60 backdrop-blur-sm w-[340px] max-w-[90vw]">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
+            <CardTitle className="font-display text-lg font-bold flex items-center gap-2">
               <div ref={clockIconRef}>
                 <Clock className="h-5 w-5 text-primary" />
               </div>
@@ -243,7 +243,7 @@ export const FloatingTimerWidget = () => {
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground truncate">
+          <p className="font-sans text-sm text-muted-foreground truncate">
             {bookTitle}
           </p>
         </CardHeader>
@@ -253,7 +253,7 @@ export const FloatingTimerWidget = () => {
             <div ref={timeDisplayRef} className="text-5xl font-mono font-bold text-foreground">
               {formatTime(time)}
             </div>
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="font-sans text-sm text-muted-foreground mt-2">
               {isRunning ? "Reading in progress..." : time > 0 ? "Paused" : "Ready"}
             </p>
           </div>

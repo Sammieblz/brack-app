@@ -47,7 +47,7 @@ export const Breadcrumbs = ({ items, className }: BreadcrumbsProps) => {
   return (
     <nav 
       aria-label="Breadcrumb navigation" 
-      className={cn("flex items-center gap-2 text-sm text-muted-foreground mb-4", className)}
+      className={cn("font-sans flex items-center gap-2 text-sm text-muted-foreground mb-4", className)}
     >
       <ol className="flex items-center gap-2 flex-wrap" itemScope itemType="https://schema.org/BreadcrumbList">
         {breadcrumbItems.map((item, index) => {
@@ -71,14 +71,14 @@ export const Breadcrumbs = ({ items, className }: BreadcrumbsProps) => {
                   aria-label="Navigate to home"
                 >
                   <Home className="h-4 w-4" />
-                  <span itemProp="name">{item.label}</span>
+                  <span className="font-sans" itemProp="name">{item.label}</span>
                 </Link>
               ) : item.href && !isLast ? (
                 <>
                   <ChevronRight className="h-4 w-4" aria-hidden="true" />
                   <Link
                     to={item.href}
-                    className="hover:text-foreground transition-colors"
+                    className="font-sans hover:text-foreground transition-colors"
                     itemProp="name"
                   >
                     {item.label}
@@ -88,7 +88,7 @@ export const Breadcrumbs = ({ items, className }: BreadcrumbsProps) => {
                 <>
                   <ChevronRight className="h-4 w-4" aria-hidden="true" />
                   <span 
-                    className={cn("text-foreground font-medium", !item.href && "cursor-default")}
+                    className={cn("font-sans text-foreground font-medium", !item.href && "cursor-default")}
                     itemProp="name"
                     aria-current="page"
                   >

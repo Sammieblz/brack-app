@@ -160,7 +160,7 @@ const BookClubDetail = () => {
         {isMobile && <MobileHeader title="Book Club" showBack />}
         <div className="container max-w-4xl mx-auto px-4 py-8">
           <div className="text-center">
-            <p className="text-muted-foreground">Club not found</p>
+            <p className="font-sans text-muted-foreground">Club not found</p>
           </div>
         </div>
       </MobileLayout>
@@ -181,8 +181,8 @@ const BookClubDetail = () => {
               <CardHeader>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <CardTitle className="text-2xl mb-2">{club.name}</CardTitle>
-                    <p className="text-muted-foreground">{club.description}</p>
+                    <CardTitle className="font-display text-2xl mb-2">{club.name}</CardTitle>
+                    <p className="font-sans text-muted-foreground">{club.description}</p>
                   </div>
                   {club.cover_image_url && (
                     <img
@@ -198,7 +198,7 @@ const BookClubDetail = () => {
                   <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
                     <div className="flex items-center gap-2 mb-3">
                       <BookOpen className="h-5 w-5 text-primary" />
-                      <span className="font-semibold">Currently Reading</span>
+                      <span className="font-sans font-semibold">Currently Reading</span>
                     </div>
                     <div className="flex gap-4">
                       {club.current_book.cover_url && (
@@ -209,9 +209,9 @@ const BookClubDetail = () => {
                         />
                       )}
                       <div>
-                        <h4 className="font-semibold text-lg">{club.current_book.title}</h4>
+                        <h4 className="font-serif font-semibold text-lg">{club.current_book.title}</h4>
                         {club.current_book.author && (
-                          <p className="text-muted-foreground">by {club.current_book.author}</p>
+                          <p className="font-serif text-muted-foreground">by {club.current_book.author}</p>
                         )}
                       </div>
                     </div>
@@ -223,7 +223,7 @@ const BookClubDetail = () => {
 
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="font-sans flex items-center gap-2">
                 <Users className="h-5 w-5" />
                 Members ({members.length})
               </CardTitle>
@@ -239,11 +239,11 @@ const BookClubDetail = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
+                      <p className="font-sans text-sm font-medium truncate">
                         {member.user?.display_name || 'Unknown User'}
                       </p>
                       {member.role === 'admin' && (
-                        <div className="flex items-center gap-1 text-xs text-primary">
+                        <div className="flex items-center gap-1 font-sans text-xs text-primary">
                           <Crown className="h-3 w-3" />
                           Admin
                         </div>
@@ -305,7 +305,7 @@ const BookClubDetail = () => {
               </div>
             ) : discussions.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">
+                <p className="font-sans text-muted-foreground">
                   No discussions yet. Start the conversation!
                 </p>
               </div>

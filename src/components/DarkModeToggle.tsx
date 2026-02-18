@@ -53,8 +53,8 @@ export const DarkModeToggle = () => {
               </TooltipTrigger>
               <TooltipContent>
                 <div className="text-center">
-                  <p className="font-medium">{label}</p>
-                  <p className="text-xs text-muted-foreground">{description}</p>
+                  <p className="font-sans font-medium">{label}</p>
+                  <p className="font-sans text-xs text-muted-foreground">{description}</p>
                 </div>
               </TooltipContent>
             </Tooltip>

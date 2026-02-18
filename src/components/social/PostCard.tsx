@@ -59,26 +59,26 @@ const CommentItem = ({
         </Avatar>
         <div className="flex-1">
           <div className="bg-muted rounded-lg px-3 py-2">
-            <p className="font-semibold text-sm">{comment.user?.display_name || "Unknown User"}</p>
-            <p className="text-sm mt-1">{sanitizeText(comment.content)}</p>
+            <p className="font-sans font-semibold text-sm">{comment.user?.display_name || "Unknown User"}</p>
+            <p className="font-serif text-sm mt-1">{sanitizeText(comment.content)}</p>
           </div>
           <div className="flex items-center gap-3 mt-1 ml-3">
             <button
               onClick={() => setShowReplyForm(!showReplyForm)}
-              className="text-xs text-muted-foreground hover:text-foreground"
+              className="font-sans text-xs text-muted-foreground hover:text-foreground"
             >
               Reply
             </button>
             {currentUserId === comment.user_id && (
               <button
                 onClick={() => onDelete(comment.id)}
-                className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1"
+                className="font-sans text-xs text-muted-foreground hover:text-destructive flex items-center gap-1"
               >
                 <Trash2 className="h-3 w-3" />
                 Delete
               </button>
             )}
-            <span className="text-xs text-muted-foreground">
+            <span className="font-sans text-xs text-muted-foreground">
               {new Date(comment.created_at).toLocaleDateString([], {
                 month: "short",
                 day: "numeric",
@@ -297,7 +297,7 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
             )}
           </div>
 
-          <h3 className="text-xl font-bold mb-2">{sanitizeText(post.title)}</h3>
+          <h3 className="font-serif text-xl font-bold mb-2">{sanitizeText(post.title)}</h3>
           
           {post.genre && (
             <Badge variant="secondary" className="mb-3">
@@ -305,7 +305,7 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
             </Badge>
           )}
 
-          <p className="text-foreground whitespace-pre-wrap mb-4">{sanitizeText(post.content)}</p>
+          <p className="font-serif text-foreground whitespace-pre-wrap mb-4">{sanitizeText(post.content)}</p>
 
           {post.book && (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted mb-4">
@@ -317,9 +317,9 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
                 />
               )}
               <div>
-                <p className="font-medium text-sm">{post.book.title}</p>
+                <p className="font-serif font-medium text-sm">{post.book.title}</p>
                 {post.book.author && (
-                  <p className="text-xs text-muted-foreground">{post.book.author}</p>
+                  <p className="font-serif text-xs text-muted-foreground">{post.book.author}</p>
                 )}
               </div>
             </div>
@@ -332,7 +332,7 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
                 onLike={() => onLike(post.id)}
                 size={20}
               />
-              <span className="text-sm text-muted-foreground">{post.likes_count}</span>
+              <span className="font-sans text-sm text-muted-foreground">{post.likes_count}</span>
             </div>
             <Button
               variant="ghost"
@@ -352,7 +352,7 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
                   value={commentContent}
                   onChange={(e) => setCommentContent(e.target.value)}
                   rows={3}
-                  className="resize-none"
+                  className="font-sans resize-none"
                 />
                 <Button onClick={handleAddComment} disabled={!commentContent.trim()}>
                   Comment

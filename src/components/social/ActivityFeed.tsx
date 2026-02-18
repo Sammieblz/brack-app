@@ -14,7 +14,7 @@ export const ActivityFeed = () => {
         <div className="p-4 rounded-full bg-primary/10 mb-4">
           <LoadingSpinner />
         </div>
-        <p className="text-sm text-muted-foreground">Loading your feed...</p>
+        <p className="font-sans text-sm text-muted-foreground">Loading your feed...</p>
       </div>
     );
   }
@@ -28,7 +28,7 @@ export const ActivityFeed = () => {
       <div className="flex justify-between items-center mb-6 p-4 rounded-lg bg-muted/30 border border-border/40">
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-sm text-muted-foreground">
+          <span className="font-sans text-sm text-muted-foreground">
             {activities.length} {activities.length === 1 ? 'update' : 'updates'}
           </span>
         </div>

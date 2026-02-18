@@ -101,7 +101,7 @@ export const FloatingQuickStatsWidget = ({ isVisible, onClose }: FloatingQuickSt
       <Card className="bg-gradient-card shadow-glow border-0 backdrop-blur-sm w-[300px]">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-bold flex items-center gap-2">
+            <CardTitle className="font-display text-base font-bold flex items-center gap-2">
               📊 Quick Stats
             </CardTitle>
             <Button
@@ -122,8 +122,8 @@ export const FloatingQuickStatsWidget = ({ isVisible, onClose }: FloatingQuickSt
               <TrendingUp className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-2xl font-bold text-foreground">{booksReadThisMonth}</div>
-              <div className="text-xs text-muted-foreground">Books this month</div>
+              <div className="font-sans text-2xl font-bold text-foreground">{booksReadThisMonth}</div>
+              <div className="font-sans text-xs text-muted-foreground">Books this month</div>
             </div>
           </div>
 
@@ -133,8 +133,8 @@ export const FloatingQuickStatsWidget = ({ isVisible, onClose }: FloatingQuickSt
               <Flame className="h-5 w-5 text-orange-500" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-2xl font-bold text-foreground">{streakData.currentStreak}</div>
-              <div className="text-xs text-muted-foreground">Day streak</div>
+              <div className="font-sans text-2xl font-bold text-foreground">{streakData.currentStreak}</div>
+              <div className="font-sans text-xs text-muted-foreground">Day streak</div>
             </div>
           </div>
 
@@ -144,10 +144,10 @@ export const FloatingQuickStatsWidget = ({ isVisible, onClose }: FloatingQuickSt
               <Clock className="h-5 w-5 text-blue-500" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-2xl font-bold text-foreground">
+              <div className="font-sans text-2xl font-bold text-foreground">
                 {readingHours > 0 ? `${readingHours}h` : `${readingMinutes}m`}
               </div>
-              <div className="text-xs text-muted-foreground">Total reading time</div>
+              <div className="font-sans text-xs text-muted-foreground">Total reading time</div>
             </div>
           </div>
         </CardContent>

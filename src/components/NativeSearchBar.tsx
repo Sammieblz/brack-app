@@ -173,14 +173,14 @@ export const NativeSearchBar = ({
           )}
         >
           <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-secondary/30">
-            <span className="text-sm font-medium text-muted-foreground">Recent</span>
+            <span className="font-sans text-sm font-medium text-muted-foreground">Recent</span>
             <button
               type="button"
               onClick={() => {
                 triggerHaptic('light');
                 clearAll();
               }}
-              className="text-xs text-primary hover:text-primary/80 transition-colors active:scale-95"
+              className="font-sans text-xs text-primary hover:text-primary/80 transition-colors active:scale-95"
             >
               Clear all
             </button>
@@ -199,7 +199,7 @@ export const NativeSearchBar = ({
                 )}
               >
                 <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <span className="flex-1 text-sm text-foreground truncate">{query}</span>
+                <span className="font-sans flex-1 text-sm text-foreground truncate">{query}</span>
                 <button
                   type="button"
                   onClick={(e) => {

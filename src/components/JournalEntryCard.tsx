@@ -56,7 +56,7 @@ export const JournalEntryCard = ({ entry, onEdit, onDelete }: JournalEntryCardPr
           </div>
         </div>
         {entry.title && (
-          <h3 className="font-semibold text-lg mt-2">{entry.title}</h3>
+          <h3 className="font-serif font-semibold text-lg mt-2">{entry.title}</h3>
         )}
       </CardHeader>
       <CardContent>
@@ -69,7 +69,7 @@ export const JournalEntryCard = ({ entry, onEdit, onDelete }: JournalEntryCardPr
             />
           </div>
         )}
-        <p className="text-muted-foreground whitespace-pre-wrap mb-3">
+        <p className="font-serif text-muted-foreground whitespace-pre-wrap mb-3">
           {entry.content}
         </p>
         <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -80,7 +80,7 @@ export const JournalEntryCard = ({ entry, onEdit, onDelete }: JournalEntryCardPr
               </Badge>
             ))}
           </div>
-          <span className="text-xs text-muted-foreground">
+          <span className="font-sans text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(entry.created_at), { addSuffix: true })}
           </span>
         </div>

@@ -154,8 +154,8 @@ export const ProgressLogger = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Log Reading Progress</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="font-display">Log Reading Progress</DialogTitle>
+          <DialogDescription className="font-sans">
             Track your progress in "{bookTitle}"
           </DialogDescription>
         </DialogHeader>
@@ -218,6 +218,7 @@ export const ProgressLogger = ({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add any thoughts or notes..."
               rows={3}
+              className="font-serif"
             />
           </div>
 

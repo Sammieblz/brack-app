@@ -58,9 +58,9 @@ export function ActionSheet({
       >
         {(title || description) && (
           <DialogHeader className="text-center sm:text-center">
-            {title && <DialogTitle className="text-lg">{title}</DialogTitle>}
+            {title && <DialogTitle className="font-display text-lg">{title}</DialogTitle>}
             {description && (
-              <DialogDescription className="text-sm">
+              <DialogDescription className="font-sans text-sm">
                 {description}
               </DialogDescription>
             )}
@@ -73,7 +73,7 @@ export function ActionSheet({
               key={index}
               onClick={() => handleActionClick(action)}
               className={cn(
-                "flex items-center justify-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors",
+                "font-sans flex items-center justify-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors",
                 "active:scale-[0.98] transition-transform duration-100",
                 action.variant === 'destructive'
                   ? "text-destructive hover:bg-destructive/10"
@@ -88,7 +88,7 @@ export function ActionSheet({
           <button
             onClick={() => onOpenChange?.(false)}
             className={cn(
-              "mt-2 px-4 py-3 rounded-lg font-semibold",
+              "font-sans mt-2 px-4 py-3 rounded-lg font-semibold",
               "bg-muted text-foreground hover:bg-muted/80",
               "active:scale-[0.98] transition-transform duration-100"
             )}

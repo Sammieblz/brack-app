@@ -51,8 +51,8 @@ const Achievements = () => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Achievements</h1>
-              <p className="text-muted-foreground mt-1">
+              <h1 className="font-display text-3xl font-bold">Achievements</h1>
+              <p className="font-sans text-muted-foreground mt-1">
                 Track your reading milestones and accomplishments
               </p>
             </div>
@@ -71,16 +71,16 @@ const Achievements = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-3xl font-bold text-primary">
+                  <div className="font-sans text-3xl font-bold text-primary">
                     {earnedCount} / {totalCount}
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="font-sans text-sm text-muted-foreground">
                     Badges Earned
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-3xl font-bold">{progressPercentage}%</div>
-                  <div className="text-sm text-muted-foreground">Complete</div>
+                  <div className="font-sans text-3xl font-bold">{progressPercentage}%</div>
+                  <div className="font-sans text-sm text-muted-foreground">Complete</div>
                 </div>
               </div>
               <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
@@ -111,7 +111,7 @@ const Achievements = () => {
           <Card>
             <CardContent className="py-12 text-center">
               <Award className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-              <p className="text-muted-foreground">
+              <p className="font-sans text-muted-foreground">
                 {filter === 'earned' 
                   ? "You haven't earned any badges yet. Keep reading!"
                   : filter === 'unearned'

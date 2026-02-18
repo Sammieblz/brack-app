@@ -8,8 +8,8 @@ export const AppPreferences = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">App Preferences</h2>
-        <p className="text-muted-foreground mt-1">
+        <h2 className="font-display text-2xl font-bold">App Preferences</h2>
+        <p className="font-sans text-muted-foreground mt-1">
           Customize your app experience
         </p>
       </div>
@@ -33,7 +33,7 @@ export const AppPreferences = () => {
           
           <div>
             <Label className="text-sm font-medium mb-2 block">Color Palette</Label>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="font-sans text-sm text-muted-foreground mb-4">
               Choose your preferred color palette. Changes are applied instantly.
             </p>
             <ThemeSelector />

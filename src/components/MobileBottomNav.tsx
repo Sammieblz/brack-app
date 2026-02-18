@@ -57,7 +57,7 @@ export const MobileBottomNav = () => {
                 active && "stroke-[2.25] scale-110"
               )} />
               <span className={cn(
-                "z-10 truncate transition-all duration-200",
+                "font-sans z-10 truncate transition-all duration-200",
                 active && "font-semibold"
               )}>{tab.name}</span>
             </Link>

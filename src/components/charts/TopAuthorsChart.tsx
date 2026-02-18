@@ -64,7 +64,7 @@ export const TopAuthorsChart = ({ data }: TopAuthorsChartProps) => {
                 y="45%"
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="text-xl md:text-2xl font-bold fill-foreground"
+                className="font-sans text-xl md:text-2xl font-bold fill-foreground"
               >
                 {topAuthor?.author.split(' ').map(n => n[0]).join('').slice(0, 2) || 'N/A'}
               </text>
@@ -73,7 +73,7 @@ export const TopAuthorsChart = ({ data }: TopAuthorsChartProps) => {
                 y="55%"
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="text-xs md:text-sm fill-muted-foreground"
+                className="font-serif text-xs md:text-sm fill-muted-foreground"
               >
                 {topAuthor?.author || 'No Author'}
               </text>
@@ -82,7 +82,7 @@ export const TopAuthorsChart = ({ data }: TopAuthorsChartProps) => {
                 y="65%"
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="text-xs fill-muted-foreground"
+                className="font-sans text-xs fill-muted-foreground"
               >
                 {totalBooks} books
               </text>
@@ -99,15 +99,15 @@ export const TopAuthorsChart = ({ data }: TopAuthorsChartProps) => {
                               className="w-3 h-3 rounded-full" 
                               style={{ backgroundColor: data.color }}
                             />
-                            <span className="font-semibold text-sm">
+                            <span className="font-serif font-semibold text-sm">
                               {data.author}
                             </span>
                           </div>
-                          <div className="flex justify-between gap-4 text-xs">
+                          <div className="font-sans flex justify-between gap-4 text-xs">
                             <span className="text-muted-foreground">Books:</span>
                             <span className="font-bold">{data.count}</span>
                           </div>
-                          <div className="flex justify-between gap-4 text-xs">
+                          <div className="font-sans flex justify-between gap-4 text-xs">
                             <span className="text-muted-foreground">Share:</span>
                             <span className="font-bold">{percentage}%</span>
                           </div>

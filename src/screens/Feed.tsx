@@ -42,8 +42,8 @@ const Feed = () => {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h1 className="text-3xl font-bold">Activity Feed</h1>
-                  <p className="text-muted-foreground flex items-center gap-2 mt-1">
+                  <h1 className="font-display text-3xl font-bold">Activity Feed</h1>
+                  <p className="font-sans text-muted-foreground flex items-center gap-2 mt-1">
                     <Users className="h-4 w-4" />
                     See what your reading community is up to
                   </p>
@@ -58,16 +58,16 @@ const Feed = () => {
                 <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
                   <div className="flex items-center gap-2 text-primary mb-1">
                     <TrendingUp className="h-4 w-4" />
-                    <span className="text-sm font-semibold">Trending</span>
+                    <span className="font-sans text-sm font-semibold">Trending</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">Most active readers today</p>
+                  <p className="font-sans text-xs text-muted-foreground">Most active readers today</p>
                 </Card>
                 <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
                   <div className="flex items-center gap-2 text-secondary mb-1">
                     <Users className="h-4 w-4" />
-                    <span className="text-sm font-semibold">Following</span>
+                    <span className="font-sans text-sm font-semibold">Following</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">Updates from your network</p>
+                  <p className="font-sans text-xs text-muted-foreground">Updates from your network</p>
                 </Card>
               </div>
             </div>
@@ -89,7 +89,7 @@ const Feed = () => {
               ) : posts.length === 0 ? (
                 <Card className="p-12 text-center">
                   <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No posts yet. Be the first to share!</p>
+                  <p className="font-sans text-muted-foreground">No posts yet. Be the first to share!</p>
                 </Card>
               ) : (
                 posts.map((post) => (

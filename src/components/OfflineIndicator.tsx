@@ -73,7 +73,7 @@ export const OfflineIndicator = () => {
           {isOnline ? (
             <>
               <Wifi className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
+              <AlertDescription className="font-sans text-blue-800">
                 {queueSize > 0 ? (
                   <>
                     {queueSize} pending change{queueSize > 1 ? 's' : ''} to sync
@@ -89,7 +89,7 @@ export const OfflineIndicator = () => {
           ) : (
             <>
               <WifiOff className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-orange-800">
+              <AlertDescription className="font-sans text-orange-800">
                 You're offline. {queueSize > 0 && `${queueSize} change${queueSize > 1 ? 's' : ''} queued`}
               </AlertDescription>
             </>

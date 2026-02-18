@@ -92,14 +92,14 @@ export const AddToListDialog = ({ bookId, userId, trigger }: AddToListDialogProp
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add to Lists</DialogTitle>
+          <DialogTitle className="font-display">Add to Lists</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           {loading ? (
-            <p className="text-sm text-muted-foreground">Loading lists...</p>
+            <p className="font-sans text-sm text-muted-foreground">Loading lists...</p>
           ) : lists.length === 0 ? (
             <div className="text-center py-6">
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="font-sans text-sm text-muted-foreground mb-4">
                 You haven't created any lists yet
               </p>
               <Button onClick={() => {
@@ -120,12 +120,12 @@ export const AddToListDialog = ({ bookId, userId, trigger }: AddToListDialogProp
                   />
                   <label
                     htmlFor={list.id}
-                    className="flex-1 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    className="font-sans flex-1 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                   >
                     <div>
                       <p>{list.name}</p>
                       {list.description && (
-                        <p className="text-xs text-muted-foreground mt-1">{list.description}</p>
+                        <p className="font-sans text-xs text-muted-foreground mt-1">{list.description}</p>
                       )}
                     </div>
                   </label>

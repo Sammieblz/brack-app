@@ -220,9 +220,9 @@ const ProfilePage = () => {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-lg truncate">{displayName}</h3>
+                <h3 className="font-sans font-semibold text-lg truncate">{displayName}</h3>
                 {profile?.bio && (
-                  <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{profile.bio}</p>
+                  <p className="font-serif text-sm text-muted-foreground line-clamp-2 mt-1">{profile.bio}</p>
                 )}
               </div>
             </div>
@@ -232,15 +232,15 @@ const ProfilePage = () => {
                 onClick={() => navigate(`/users/${user?.id}/followers`)}
                 className="flex flex-col items-start hover:opacity-80 transition-opacity"
               >
-                <span className="text-2xl font-bold">{followersCount}</span>
-                <span className="text-sm text-muted-foreground">Followers</span>
+                <span className="font-sans text-2xl font-bold">{followersCount}</span>
+                <span className="font-sans text-sm text-muted-foreground">Followers</span>
               </button>
               <button
                 onClick={() => navigate(`/users/${user?.id}/following`)}
                 className="flex flex-col items-start hover:opacity-80 transition-opacity"
               >
-                <span className="text-2xl font-bold">{followingCount}</span>
-                <span className="text-sm text-muted-foreground">Following</span>
+                <span className="font-sans text-2xl font-bold">{followingCount}</span>
+                <span className="font-sans text-sm text-muted-foreground">Following</span>
               </button>
               <button
                 onClick={() => navigate(`/users/${user?.id}`)}

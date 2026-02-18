@@ -180,7 +180,7 @@ const UserProfile = () => {
         <div className="container mx-auto px-4 py-8">
           <Card>
             <CardContent className="py-12 text-center">
-              <h2 className="text-2xl font-bold mb-2">Profile Not Found</h2>
+              <h2 className="font-display text-2xl font-bold mb-2">Profile Not Found</h2>
               <p className="text-muted-foreground mb-4">
                 {error || "This profile doesn't exist or is private"}
               </p>
@@ -228,11 +228,11 @@ const UserProfile = () => {
               <div className="flex-1 space-y-4 w-full">
                 <div className="space-y-3">
                   <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold mb-2">
+                    <h1 className="font-display text-2xl sm:text-3xl font-bold mb-2">
                       {profile.display_name || "Anonymous User"}
                     </h1>
                     {profile.bio && (
-                      <p className="text-muted-foreground text-sm sm:text-base">{profile.bio}</p>
+                      <p className="font-sans text-muted-foreground text-sm sm:text-base">{profile.bio}</p>
                     )}
                   </div>
                   
@@ -265,7 +265,7 @@ const UserProfile = () => {
                 </div>
 
                 {/* Stats Row */}
-                <div className="flex flex-wrap gap-4 sm:gap-6 text-sm">
+                <div className="flex flex-wrap gap-4 sm:gap-6 font-sans text-sm">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-muted-foreground" />
                     <span>
@@ -312,44 +312,44 @@ const UserProfile = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">{stats.totalBooks}</div>
+              <div className="font-sans text-xl sm:text-2xl font-bold">{stats.totalBooks}</div>
             </CardContent>
           </Card>
 
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
+              <CardTitle className="font-sans text-xs sm:text-sm font-medium flex items-center gap-2">
                 <BookMarked className="h-4 w-4 text-primary shrink-0" />
                 <span className="truncate">Books Read</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">{stats.booksRead}</div>
+              <div className="font-sans text-xl sm:text-2xl font-bold">{stats.booksRead}</div>
             </CardContent>
           </Card>
 
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
+              <CardTitle className="font-sans text-xs sm:text-sm font-medium flex items-center gap-2">
                 <Flame className="h-4 w-4 text-primary shrink-0" />
                 <span className="truncate">Streak</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">{profile.current_streak}</div>
-              <span className="text-xs text-muted-foreground">days</span>
+              <div className="font-sans text-xl sm:text-2xl font-bold">{profile.current_streak}</div>
+              <span className="font-sans text-xs text-muted-foreground">days</span>
             </CardContent>
           </Card>
 
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
+              <CardTitle className="font-sans text-xs sm:text-sm font-medium flex items-center gap-2">
                 <Award className="h-4 w-4 text-primary shrink-0" />
                 <span className="truncate">Badges</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">{stats.badges}</div>
+              <div className="font-sans text-xl sm:text-2xl font-bold">{stats.badges}</div>
             </CardContent>
           </Card>
         </div>
@@ -382,7 +382,7 @@ const UserProfile = () => {
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
                   <BookOpen className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                  <p>No books yet</p>
+                  <p className="font-sans">No books yet</p>
                 </CardContent>
               </Card>
             ) : (
@@ -405,9 +405,9 @@ const UserProfile = () => {
                           loading="lazy"
                         />
                       )}
-                      <p className="font-semibold text-sm line-clamp-2">{book.title}</p>
+                      <p className="font-serif font-semibold text-sm line-clamp-2">{book.title}</p>
                       {book.author && (
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{book.author}</p>
+                        <p className="font-serif text-xs text-muted-foreground line-clamp-1 mt-1">{book.author}</p>
                       )}
                       <Badge variant="secondary" className="mt-2 text-xs">
                         {book.status}
@@ -430,7 +430,7 @@ const UserProfile = () => {
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
                   <MessageCircle className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                  <p>No posts yet</p>
+                  <p className="font-sans">No posts yet</p>
                 </CardContent>
               </Card>
             ) : (
@@ -469,7 +469,7 @@ const UserProfile = () => {
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
                   <BookUser className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                  <p>Not a member of any book clubs yet</p>
+                  <p className="font-sans">Not a member of any book clubs yet</p>
                 </CardContent>
               </Card>
             ) : (

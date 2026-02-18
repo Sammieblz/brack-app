@@ -170,13 +170,13 @@ export const QuickJournalEntryDialog = ({
           <div className="fixed inset-0 z-[9999] bg-background/80 backdrop-blur-sm flex items-center justify-center">
             <div className="text-center space-y-4">
               <SuccessCheckmark show={showSuccess} size={64} />
-              <p className="text-xl font-semibold">Entry saved!</p>
+              <p className="font-sans text-xl font-semibold">Entry saved!</p>
             </div>
           </div>
         )}
         <DialogHeader>
-          <DialogTitle>Add Journal Entry</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="font-display">Add Journal Entry</DialogTitle>
+          <DialogDescription className="font-sans">
             Save your thoughts about "{bookTitle}"
             {readingTimeMinutes && ` (${Math.round(readingTimeMinutes)} min read)`}
           </DialogDescription>
@@ -248,7 +248,7 @@ export const QuickJournalEntryDialog = ({
                   : 'Write your notes here...'
               }
               rows={5}
-              className="resize-none"
+              className="font-serif resize-none"
             />
           </div>
 

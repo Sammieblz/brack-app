@@ -12,8 +12,8 @@ export const EmptyBooks = () => {
         <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
           <BookOpen className="h-10 w-10 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-semibold mb-2">No books yet</h3>
-        <p className="text-sm text-muted-foreground text-center mb-6 max-w-sm">
+        <h3 className="font-display text-lg font-semibold mb-2">No books yet</h3>
+        <p className="font-sans text-sm text-muted-foreground text-center mb-6 max-w-sm">
           Start building your reading library by adding your first book
         </p>
         <Button onClick={() => navigate("/add-book")} className="min-h-[44px]">

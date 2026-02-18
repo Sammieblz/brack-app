@@ -128,13 +128,13 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="font-display flex items-center">
             <BookOpen className="h-5 w-5 mr-2" />
             Reading Habits
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="font-sans text-muted-foreground">Loading...</p>
         </CardContent>
       </Card>
     );
@@ -144,7 +144,7 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center">
+          <CardTitle className="font-display flex items-center">
             <BookOpen className="h-5 w-5 mr-2" />
             Reading Habits
           </CardTitle>
@@ -185,7 +185,7 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
       <CardContent className="space-y-6">
         {!habits && !isEditing ? (
           <div className="text-center py-8">
-            <p className="text-muted-foreground mb-4">
+            <p className="font-sans text-muted-foreground mb-4">
               No reading habits recorded yet
             </p>
             <Button onClick={() => setIsEditing(true)}>
@@ -242,7 +242,7 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
 
             <div className="space-y-2">
               <Label>Favorite Genres</Label>
-              <p className="text-sm text-muted-foreground mb-2">
+              <p className="font-sans text-sm text-muted-foreground mb-2">
                 Select all genres you enjoy reading
               </p>
               <div className="flex flex-wrap gap-2">
@@ -282,26 +282,26 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Avg. days per book</p>
-                <p className="text-lg font-semibold">{habits?.avg_time_per_book || "N/A"} days</p>
+                <p className="font-sans text-sm text-muted-foreground">Avg. days per book</p>
+                <p className="font-sans text-lg font-semibold">{habits?.avg_time_per_book || "N/A"} days</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Avg. book length</p>
-                <p className="text-lg font-semibold">{habits?.avg_length || "N/A"} pages</p>
+                <p className="font-sans text-sm text-muted-foreground">Avg. book length</p>
+                <p className="font-sans text-lg font-semibold">{habits?.avg_length || "N/A"} pages</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Books (6 months)</p>
-                <p className="text-lg font-semibold">{habits?.books_6mo || 0}</p>
+                <p className="font-sans text-sm text-muted-foreground">Books (6 months)</p>
+                <p className="font-sans text-lg font-semibold">{habits?.books_6mo || 0}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Books (1 year)</p>
-                <p className="text-lg font-semibold">{habits?.books_1yr || 0}</p>
+                <p className="font-sans text-sm text-muted-foreground">Books (1 year)</p>
+                <p className="font-sans text-lg font-semibold">{habits?.books_1yr || 0}</p>
               </div>
             </div>
 
             {habits?.genres && habits.genres.length > 0 && (
               <div>
-                <p className="text-sm text-muted-foreground mb-2">Favorite Genres</p>
+                <p className="font-sans text-sm text-muted-foreground mb-2">Favorite Genres</p>
                 <div className="flex flex-wrap gap-2">
                   {habits.genres.map((genre) => (
                     <Badge key={genre} variant="secondary">{genre}</Badge>
@@ -312,7 +312,7 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
 
             {habits?.longest_genre && (
               <div>
-                <p className="text-sm text-muted-foreground">Takes longest to read</p>
+                <p className="font-sans text-sm text-muted-foreground">Takes longest to read</p>
                 <Badge variant="outline" className="mt-1">{habits.longest_genre}</Badge>
               </div>
             )}

@@ -212,7 +212,7 @@ export default function EditBook() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Edit Book</CardTitle>
+            <CardTitle className="font-display">Edit Book</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">

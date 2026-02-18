@@ -140,7 +140,7 @@ export const BrandedLoadingScreen = ({
 
       {/* Loading Text */}
       <div ref={textRef} className="opacity-0">
-        <p className="text-lg md:text-xl font-medium text-muted-foreground">
+        <p className="font-sans text-lg md:text-xl font-medium text-muted-foreground">
           Loading your reading journey...
         </p>
       </div>

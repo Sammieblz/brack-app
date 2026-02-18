@@ -215,9 +215,9 @@ const BookListDetail = () => {
           
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-3xl font-bold mb-2">{list.name}</h1>
+              <h1 className="font-display text-3xl font-bold mb-2">{list.name}</h1>
               {list.description && (
-                <p className="text-muted-foreground">{list.description}</p>
+                <p className="font-sans text-muted-foreground">{list.description}</p>
               )}
               <p className="text-sm text-muted-foreground mt-2">
                 {books.length} {books.length === 1 ? 'book' : 'books'}
@@ -233,7 +233,7 @@ const BookListDetail = () => {
 
         {sortableBooks.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">
+            <p className="font-sans text-muted-foreground mb-4">
               No books in this list yet
             </p>
             <AddBooksToListDialog

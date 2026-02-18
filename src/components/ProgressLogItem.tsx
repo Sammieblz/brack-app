@@ -38,12 +38,12 @@ export const ProgressLogItem = ({ log }: ProgressLogItemProps) => {
             <Badge variant="outline" className={logTypeColors[log.log_type]}>
               {logTypeLabels[log.log_type]}
             </Badge>
-            <span className="text-sm text-muted-foreground">
+            <span className="font-sans text-sm text-muted-foreground">
               {formatDate(log.logged_at)}
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-sm">
+          <div className="font-sans flex items-center gap-4 text-sm">
             <div className="flex items-center gap-1">
               <BookOpen className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">Page {log.page_number}</span>
@@ -66,7 +66,7 @@ export const ProgressLogItem = ({ log }: ProgressLogItemProps) => {
             <div className="mt-2 p-2 bg-muted/50 rounded-md">
               <div className="flex items-start gap-2">
                 <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <p className="text-sm text-foreground/90">{log.notes}</p>
+                <p className="font-serif text-sm text-foreground/90">{log.notes}</p>
               </div>
             </div>
           )}

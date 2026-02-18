@@ -34,7 +34,7 @@ export const ThemeSelector = () => {
             )}
             
             <div className="space-y-3 relative z-10">
-              <h3 className="font-semibold text-sm">{theme.name}</h3>
+              <h3 className="font-sans font-semibold text-sm">{theme.name}</h3>
               <div className="flex gap-2">
                 {theme.preview.map((color, index) => (
                   <div

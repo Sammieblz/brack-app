@@ -63,8 +63,8 @@ export const CreateClubDialog = ({ onCreateClub }: CreateClubDialogProps) => {
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create Book Club</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="font-display">Create Book Club</DialogTitle>
+            <DialogDescription className="font-sans">
               Start a new book club and invite others to join your reading journey.
             </DialogDescription>
           </DialogHeader>
@@ -87,12 +87,13 @@ export const CreateClubDialog = ({ onCreateClub }: CreateClubDialogProps) => {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Tell members what your club is about..."
                 rows={4}
+                className="font-sans"
               />
             </div>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>Private Club</Label>
-                <p className="text-xs text-muted-foreground">
+                <p className="font-sans text-xs text-muted-foreground">
                   Only invited members can see and join
                 </p>
               </div>

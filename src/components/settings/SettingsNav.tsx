@@ -65,13 +65,13 @@ export const SettingsNav = ({ activeSection, onSectionChange, onSignOut }: Setti
               </div>
               <div className="flex-1 min-w-0">
                 <div className={cn(
-                  "font-medium",
+                  "font-sans font-medium",
                   isActive && "text-primary"
                 )}>
                   {section.label}
                 </div>
                 {section.description && (
-                  <div className="text-xs text-muted-foreground mt-0.5">
+                  <div className="font-sans text-xs text-muted-foreground mt-0.5">
                     {section.description}
                   </div>
                 )}
@@ -101,7 +101,7 @@ export const SettingsNav = ({ activeSection, onSectionChange, onSignOut }: Setti
       {/* Account Management */}
       <Card className="mt-4 border-muted">
         <CardContent className="p-4 space-y-2">
-          <div className="text-sm font-medium mb-3">Account Management</div>
+          <div className="font-sans text-sm font-medium mb-3">Account Management</div>
           <Button
             variant="ghost"
             className="w-full justify-start text-muted-foreground"

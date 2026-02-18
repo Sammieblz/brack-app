@@ -32,12 +32,12 @@ export const DailyPagesChart = ({ data }: DailyPagesChartProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="font-display flex items-center justify-between">
           <span className="flex items-center">
             <BookOpen className="h-5 w-5 mr-2" />
             Daily Pages Read
           </span>
-          <span className="text-sm font-normal text-muted-foreground">
+          <span className="font-sans text-sm font-normal text-muted-foreground">
             Avg: {avgPages} pages/day
           </span>
         </CardTitle>
@@ -45,7 +45,7 @@ export const DailyPagesChart = ({ data }: DailyPagesChartProps) => {
       <CardContent>
         {data.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No daily progress data available yet</p>
+            <p className="font-sans">No daily progress data available yet</p>
           </div>
         ) : (
           <ChartContainer config={chartConfig} className="h-[200px]">
