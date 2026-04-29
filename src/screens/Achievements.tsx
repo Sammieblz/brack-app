@@ -11,6 +11,8 @@ import { Trophy, ArrowLeft } from "iconoir-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Badge, UserBadge } from "@/types";
+import { BadgeDetailsDialog } from "@/components/BadgeDetailsDialog";
 
 const Achievements = () => {
   const { user } = useAuth();
@@ -18,6 +20,9 @@ const Achievements = () => {
   const isMobile = useIsMobile();
   const { badges, earnedBadges, loading } = useBadges(user?.id);
   const [filter, setFilter] = useState<'all' | 'earned' | 'unearned'>('all');
+  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
+  const [selectedEarnedBadge, setSelectedEarnedBadge] = useState<UserBadge | undefined>(undefined);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   if (!user) {
     return null;
@@ -34,6 +39,13 @@ const Achievements = () => {
   const earnedCount = earnedBadges.length;
   const totalCount = badges.length;
   const progressPercentage = totalCount > 0 ? Math.round((earnedCount / totalCount) * 100) : 0;
+
+  const handleBadgeClick = (badge: Badge, earnedBadge?: UserBadge) => {
+    if (!earnedBadge) return; // Only show details for earned badges
+    setSelectedBadge(badge);
+    setSelectedEarnedBadge(earnedBadge);
+    setDetailsOpen(true);
+  };
 
   return (
     <MobileLayout>
@@ -115,7 +127,11 @@ const Achievements = () => {
                 </CardContent>
               </Card>
             ) : (
-              <BadgeDisplay badges={badges} earnedBadges={earnedBadges} />
+              <BadgeDisplay
+                badges={badges}
+                earnedBadges={earnedBadges}
+                onBadgeClick={handleBadgeClick}
+              />
             )}
           </TabsContent>
           
@@ -136,7 +152,8 @@ const Achievements = () => {
             ) : (
               <BadgeDisplay 
                 badges={badges.filter(badge => earnedBadgeIds.has(badge.id))} 
-                earnedBadges={earnedBadges} 
+                earnedBadges={earnedBadges}
+                onBadgeClick={handleBadgeClick}
               />
             )}
           </TabsContent>
@@ -157,10 +174,21 @@ const Achievements = () => {
               <BadgeDisplay 
                 badges={badges.filter(badge => !earnedBadgeIds.has(badge.id))} 
                 earnedBadges={earnedBadges} 
+                // Locked badges won't trigger details since earnedBadge will be undefined
+                onBadgeClick={handleBadgeClick}
               />
             )}
           </TabsContent>
         </Tabs>
+
+        {selectedBadge && (
+          <BadgeDetailsDialog
+            badge={selectedBadge}
+            earnedBadge={selectedEarnedBadge}
+            open={detailsOpen}
+            onOpenChange={(open) => setDetailsOpen(open)}
+          />
+        )}
       </div>
     </MobileLayout>
   );

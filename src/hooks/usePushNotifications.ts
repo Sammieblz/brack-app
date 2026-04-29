@@ -1,6 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { pushNotificationsService } from '@/services/pushNotifications';
 import { Capacitor } from '@capacitor/core';
+import { toast } from "sonner";
+import { NewBadgeToast } from "@/components/NewBadgeToast";
 
 interface UsePushNotificationsReturn {
   isRegistered: boolean;
@@ -53,7 +55,28 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
 
     const cleanup = pushNotificationsService.setupListeners((notification) => {
       console.log('Notification received:', notification);
-      // Handle notification display (toast, etc.)
+
+      const data = notification.data || {};
+
+      if (data.type === "badge_earned") {
+        const badgeTitle = String(data.badgeTitle ?? "");
+        const badgeDescription =
+          typeof data.badgeDescription === "string" ? data.badgeDescription : null;
+        const badgeImageUrl =
+          typeof data.badgeImageUrl === "string" ? data.badgeImageUrl : null;
+
+        toast.custom(() =>
+          React.createElement(NewBadgeToast, {
+            badge: {
+              id: String(data.badgeId ?? "badge"),
+              title: badgeTitle,
+              description: badgeDescription,
+              icon_url: badgeImageUrl,
+              created_at: "",
+            },
+          })
+        );
+      }
     });
 
     return cleanup;

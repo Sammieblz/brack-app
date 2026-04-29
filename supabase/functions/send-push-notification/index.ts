@@ -11,6 +11,8 @@ interface NotificationPayload {
   data?: Record<string, unknown>;
   badge?: number;
   sound?: string;
+  // Optional rich image URL (e.g. achievement badge)
+  image?: string;
 }
 
   // Handle CORS preflight
@@ -198,6 +200,7 @@ async function sendFCMNotifications(
         body: string;
         sound: string;
         badge?: number;
+        image?: string;
       };
       data: Record<string, unknown>;
       apns?: {
@@ -216,6 +219,7 @@ async function sendFCMNotifications(
         body: notification.body,
         sound: notification.sound || "default",
         badge: notification.badge,
+        image: notification.image,
       },
       data: notification.data || {},
     };

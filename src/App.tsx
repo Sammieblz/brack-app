@@ -49,6 +49,7 @@ import { ConfirmDialogProvider } from "./contexts/ConfirmDialogContext";
 import { initSentry } from "./lib/sentry";
 import { usePushNotifications } from "./hooks/usePushNotifications";
 import { LiveRegion } from "./components/ui/live-region";
+import { BadgeCelebrationProvider } from "./contexts/BadgeCelebrationContext";
 
 // Initialize Sentry error tracking
 initSentry();
@@ -107,11 +108,12 @@ const App = () => {
                   <Sonner />
                   <LiveRegion level="polite" />
                   <Suspense fallback={<div className="p-10 flex justify-center"><LoadingSpinner size="lg" /></div>}>
-                    <BrowserRouter>
-                      <DeepLinkHandler />
-                      <SwipeBackHandler>
-                        <PageTransition>
-                          <Routes>
+                    <BadgeCelebrationProvider>
+                      <BrowserRouter>
+                        <DeepLinkHandler />
+                        <SwipeBackHandler>
+                          <PageTransition>
+                            <Routes>
                             <Route path="/" element={<Index />} />
                             <Route path="/auth" element={<Auth />} />
                             <Route path="/welcome" element={<Welcome />} />
@@ -152,6 +154,7 @@ const App = () => {
                         <OfflineIndicator />
                       </SwipeBackHandler>
                     </BrowserRouter>
+                    </BadgeCelebrationProvider>
                   </Suspense>
                 </TooltipProvider>
               </TimerProvider>

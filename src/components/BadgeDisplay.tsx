@@ -1,28 +1,45 @@
 import { Card, CardContent } from "@/components/ui/card";
 import type { Badge, UserBadge } from "@/types";
+import { getBadgeImagePath } from "@/lib/badgeImages";
 
 interface BadgeDisplayProps {
   badges: Badge[];
   earnedBadges: UserBadge[];
+  onBadgeClick?: (badge: Badge, earnedBadge?: UserBadge) => void;
 }
 
-export const BadgeDisplay = ({ badges, earnedBadges }: BadgeDisplayProps) => {
-  const earnedBadgeIds = new Set(earnedBadges.map(eb => eb.badge_id));
+export const BadgeDisplay = ({ badges, earnedBadges, onBadgeClick }: BadgeDisplayProps) => {
+  const earnedBadgeById = new Map(earnedBadges.map((eb) => [eb.badge_id, eb]));
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
       {badges.map((badge) => {
-        const isEarned = earnedBadgeIds.has(badge.id);
+        const earnedBadge = earnedBadgeById.get(badge.id);
+        const isEarned = Boolean(earnedBadge);
+        const imagePath = getBadgeImagePath(badge);
+
+        const handleClick = () => {
+          if (!isEarned || !onBadgeClick) return;
+          onBadgeClick(badge, earnedBadge);
+        };
         
         return (
           <Card 
             key={badge.id} 
-            className={`${isEarned ? 'bg-gradient-card' : 'bg-muted/30'} transition-all hover:shadow-soft`}
+            onClick={handleClick}
+            className={`${isEarned ? 'bg-gradient-card cursor-pointer' : 'bg-muted/30'} transition-all hover:shadow-soft`}
           >
             <CardContent className="p-4 text-center space-y-2">
-              <div className={`text-4xl ${!isEarned && 'opacity-30 grayscale'}`}>
-                {badge.icon_url}
-              </div>
+              {imagePath && (
+                <div className={`flex justify-center ${!isEarned ? 'opacity-40 grayscale' : ''}`}>
+                  <img
+                    src={imagePath}
+                    alt={badge.title}
+                    className="h-20 w-20 object-contain"
+                    loading="lazy"
+                  />
+                </div>
+              )}
               <h3 className={`font-sans font-semibold text-sm ${!isEarned && 'text-muted-foreground'}`}>
                 {badge.title}
               </h3>

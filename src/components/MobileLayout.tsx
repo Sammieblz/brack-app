@@ -44,9 +44,9 @@ export const MobileLayout = ({
 
   // Desktop layout
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
       {showTopNav && <Navbar />}
-      <main className="w-full">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden">
         {children}
       </main>
     </div>

@@ -1,7 +1,10 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { Badge, UserBadge, Book, ReadingSession } from "@/types";
+import { getAbsoluteBadgeImageUrl } from "@/lib/badgeImages";
+import { NewBadgeToast } from "@/components/NewBadgeToast";
+import { useBadgeCelebration } from "@/contexts/BadgeCelebrationContext";
 
 export const BADGE_RULES = {
   'first-book': {
@@ -118,6 +121,7 @@ export const useBadges = (userId?: string) => {
   const [earnedBadges, setEarnedBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { showCelebration } = useBadgeCelebration();
 
   useEffect(() => {
     if (userId) {
@@ -177,15 +181,42 @@ export const useBadges = (userId?: string) => {
       }
     }
 
-    // Show toast for newly earned badges
+    // Show toast and send push notifications for newly earned badges
     if (newBadges.length > 0) {
       await fetchBadges(); // Refresh earned badges
-      
+
       for (const badge of newBadges) {
         toast({
           title: "New Badge Earned!",
-          description: `${badge.icon_url ?? ""} ${badge.title}: ${badge.description ?? ""}`.trim(),
+          description: React.createElement(NewBadgeToast, { badge }),
         });
+
+        // Fire-and-forget push notification; ignore errors here
+        const imageUrl = getAbsoluteBadgeImageUrl(badge);
+        supabase.functions
+          .invoke("send-push-notification", {
+            body: {
+              user_ids: [userId],
+              notification: {
+                title: "New Badge Earned!",
+                body: `${badge.title}${badge.description ? ` — ${badge.description}` : ""}`,
+                image: imageUrl ?? undefined,
+                data: {
+                  type: "badge_earned",
+                  badgeId: badge.id,
+                  badgeTitle: badge.title,
+                  badgeDescription: badge.description,
+                  badgeImageUrl: imageUrl ?? null,
+                },
+              },
+            },
+          })
+          .catch((error) => {
+            console.error("Error sending badge push notification:", error);
+          });
+
+        // Trigger in-app celebration overlay
+        showCelebration(badge);
       }
     }
   };
