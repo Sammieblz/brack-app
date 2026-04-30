@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/Navbar";
 import { useBookClubs } from "@/hooks/useBookClubs";
 import { BookClubCard } from "@/components/clubs/BookClubCard";
 import { CreateClubDialog } from "@/components/clubs/CreateClubDialog";
@@ -6,21 +5,25 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Group, Bookmark } from "iconoir-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { MobileLayout } from "@/components/MobileLayout";
+import { MobileHeader } from "@/components/MobileHeader";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const BookClubs = () => {
   const { clubs, loading, createClub, joinClub, leaveClub, fetchClubs } = useBookClubs();
+  const isMobile = useIsMobile();
 
   const myClubs = clubs.filter(club => club.user_role);
   const publicClubs = clubs.filter(club => !club.is_private && !club.user_role);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
+      <MobileLayout>
+        {isMobile && <MobileHeader title="Book Clubs" />}
         <div className="flex justify-center items-center py-20">
           <LoadingSpinner />
         </div>
-      </div>
+      </MobileLayout>
     );
   }
 
@@ -29,10 +32,10 @@ const BookClubs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <MobileLayout>
+      {isMobile && <MobileHeader title="Book Clubs" />}
       <PullToRefresh onRefresh={handleRefresh}>
-      <main className="container max-w-6xl mx-auto px-4 py-8">
+      <main className="app-page">
         <div className="mb-8 animate-fade-in">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -128,7 +131,7 @@ const BookClubs = () => {
         </Tabs>
       </main>
       </PullToRefresh>
-    </div>
+    </MobileLayout>
   );
 };
 

@@ -20,7 +20,7 @@ const GoalsManagement = () => {
   return (
     <MobileLayout>
       {isMobile && <MobileHeader title="Reading Goals" showBack />}
-      <main className="container mx-auto p-4 md:p-6">
+      <main className="app-page-narrow">
         <GoalManager userId={user.id} />
       </main>
     </MobileLayout>

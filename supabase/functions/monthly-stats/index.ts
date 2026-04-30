@@ -4,6 +4,7 @@ import { getCorsHeaders } from '../_shared/cors.ts';
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
+  let userId: string | null = null;
   
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -33,9 +34,26 @@ Deno.serve(async (req) => {
         function: "monthly-stats",
       });
     }
+    userId = user.id;
 
     const url = new URL(req.url);
-    const monthsBack = parseInt(url.searchParams.get('months') || '12');
+    let requestedMonths = url.searchParams.get('months');
+
+    if (!requestedMonths && req.method !== 'GET') {
+      try {
+        const body = await req.json();
+        if (body?.months !== undefined) {
+          requestedMonths = String(body.months);
+        }
+      } catch {
+        // Body is optional; fall back to the default window below.
+      }
+    }
+
+    const parsedMonths = parseInt(requestedMonths || '12', 10);
+    const monthsBack = Number.isFinite(parsedMonths)
+      ? Math.min(Math.max(parsedMonths, 1), 36)
+      : 12;
 
     // Calculate start date
     const startDate = new Date();
@@ -60,9 +78,11 @@ Deno.serve(async (req) => {
     // Group by month
     const monthlyData = new Map<string, {
       month: string;
-      books_read: number;
-      pages_read: number;
-      reading_time_minutes: number;
+      books_completed: number;
+      total_pages: number;
+      total_reading_minutes: number;
+      avg_daily_minutes: number;
+      most_read_genre: string | null;
     }>();
 
     // Initialize months
@@ -86,8 +106,8 @@ Deno.serve(async (req) => {
         const date = new Date(book.date_finished);
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         
-        if (monthlyData.has(monthKey)) {
-          const data = monthlyData.get(monthKey);
+        const data = monthlyData.get(monthKey);
+        if (data) {
           data.books_completed += 1;
           data.total_pages += book.pages || 0;
         }
@@ -99,8 +119,8 @@ Deno.serve(async (req) => {
       const date = new Date(session.created_at);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       
-      if (monthlyData.has(monthKey)) {
-        const data = monthlyData.get(monthKey);
+      const data = monthlyData.get(monthKey);
+      if (data) {
         data.total_reading_minutes += session.duration || 0;
       }
     });
@@ -128,7 +148,7 @@ Deno.serve(async (req) => {
         });
         
         let maxCount = 0;
-        let topGenre = null;
+        let topGenre: string | null = null;
         for (const [genre, count] of genreCounts.entries()) {
           if (count > maxCount) {
             maxCount = count;
@@ -152,7 +172,7 @@ Deno.serve(async (req) => {
     const { createErrorResponse } = await import("../_shared/errorHandler.ts");
     return createErrorResponse(error, 500, req.headers.get('origin'), {
       function: "monthly-stats",
-      userId: user?.id,
+      userId,
     });
   }
 });

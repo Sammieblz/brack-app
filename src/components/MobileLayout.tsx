@@ -1,7 +1,8 @@
-import { ReactNode, useRef } from "react";
+import { ReactNode } from "react";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Navbar } from "./Navbar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useNativeApp } from "@/hooks/useNativeApp";
 import { usePersistentScrollPosition } from "@/hooks/useScrollPosition";
 import { useLocation } from "react-router-dom";
@@ -42,18 +43,31 @@ export const MobileLayout = ({
     );
   }
 
-  // Desktop layout
+  if (!showTopNav) {
+    return (
+      <div className="h-screen bg-background overflow-hidden">
+        <main
+          ref={scrollRef as React.RefObject<HTMLElement>}
+          className="h-full overflow-y-auto overflow-x-hidden"
+        >
+          {children}
+        </main>
+      </div>
+    );
+  }
+
+  // Tablet and desktop layout
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
-      {showTopNav && <Navbar />}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden">
-        {children}
-      </main>
-    </div>
+    <SidebarProvider defaultOpen>
+      <AppSidebar />
+      <SidebarInset className="h-screen min-h-0 overflow-hidden">
+        <main
+          ref={scrollRef as React.RefObject<HTMLElement>}
+          className="h-full overflow-y-auto overflow-x-hidden bg-gradient-background"
+        >
+          {children}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 };
-
-// Helper to avoid import issues
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(" ");
-}

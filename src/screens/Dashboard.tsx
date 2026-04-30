@@ -139,12 +139,6 @@ const Dashboard = () => {
     );
   }
 
-  const displayName = profile?.display_name || 
-                      user?.user_metadata?.full_name || 
-                      user?.user_metadata?.name || 
-                      user?.email?.split('@')[0] || 
-                      'Reader';
-
   return (
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
@@ -162,15 +156,7 @@ const Dashboard = () => {
           />
         )}
         
-        <NativeScrollView id="dashboard-scroll" className="max-w-6xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
-          {/* Desktop Header */}
-          {!isMobile && (
-            <div className="text-center space-y-2">
-              <h1 className="font-display text-3xl font-bold">Welcome back, {displayName}!</h1>
-              <p className="font-sans text-muted-foreground">Here's what's happening with your reading journey</p>
-            </div>
-          )}
-
+        <NativeScrollView id="dashboard-scroll" className="app-page space-y-4 md:space-y-6">
           {/* Mobile Welcome */}
           {isMobile && (
             <div>

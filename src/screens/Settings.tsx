@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Settings as SettingsIcon, User, Shield, Bell, Palette, HelpCircle, LogOut } from "iconoir-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { cn } from "@/lib/utils";
 
 type SettingsSection = 
   | 'account' 
@@ -94,6 +95,7 @@ const Settings = () => {
   const isMobile = useIsMobile();
   const { triggerHaptic } = useHapticFeedback();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
+  const [activeSection, setActiveSection] = useState<SettingsSection>('account');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -137,7 +139,7 @@ const Settings = () => {
     <MobileLayout>
       {isMobile && <MobileHeader title="Settings" showBack />}
       
-      <div className="container max-w-4xl mx-auto p-4 md:p-6">
+      <div className="app-page-narrow">
         {!isMobile && (
           <div className="mb-6">
             <h1 className="font-display text-3xl font-bold">Settings</h1>
@@ -147,41 +149,83 @@ const Settings = () => {
           </div>
         )}
 
-        <Accordion type="single" collapsible className="w-full space-y-2">
-          {sections.map((section) => {
-            const Icon = section.icon;
-            
-            return (
-              <AccordionItem 
-                key={section.id} 
-                value={section.id}
-                className="border rounded-lg px-4 bg-card"
-              >
-                <AccordionTrigger 
-                  className="hover:no-underline py-4"
-                  onClick={() => triggerHaptic("light")}
+        {isMobile ? (
+          <Accordion type="single" collapsible className="w-full space-y-2">
+            {sections.map((section) => {
+              const Icon = section.icon;
+              
+              return (
+                <AccordionItem 
+                  key={section.id} 
+                  value={section.id}
+                  className="border rounded-lg px-4 bg-card"
                 >
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <div className="font-sans font-medium">{section.label}</div>
-                      <div className="font-sans text-xs text-muted-foreground mt-0.5">
-                        {section.description}
+                  <AccordionTrigger 
+                    className="hover:no-underline py-4"
+                    onClick={() => triggerHaptic("light")}
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <div className="font-sans font-medium">{section.label}</div>
+                        <div className="font-sans text-xs text-muted-foreground mt-0.5">
+                          {section.description}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-4 pt-0">
-                  <div className="pt-2">
-                    {section.component(user)}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-4 pt-0">
+                    <div className="pt-2">
+                      {section.component(user)}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+            <Card className="self-start">
+              <CardContent className="p-2">
+                {sections.map((section) => {
+                  const Icon = section.icon;
+                  const active = activeSection === section.id;
+
+                  return (
+                    <button
+                      key={section.id}
+                      type="button"
+                      onClick={() => {
+                        triggerHaptic("light");
+                        setActiveSection(section.id);
+                      }}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-md px-3 py-3 text-left transition-colors",
+                        active
+                          ? "bg-primary/12 text-primary"
+                          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                      )}
+                    >
+                      <Icon className="h-5 w-5 shrink-0" />
+                      <span className="min-w-0">
+                        <span className="block font-sans text-sm font-medium">{section.label}</span>
+                        <span className="block truncate font-sans text-xs opacity-80">{section.description}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                {sections.find((section) => section.id === activeSection)?.component(user)}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Sign Out Button */}
         <Card className="mt-6 border-destructive/50">

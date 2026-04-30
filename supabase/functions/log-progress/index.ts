@@ -4,6 +4,7 @@ import { getCorsHeaders } from '../_shared/cors.ts';
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
+  let userId: string | null = null;
   
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -33,8 +34,9 @@ Deno.serve(async (req) => {
         function: "log-progress",
       });
     }
+    userId = user.id;
 
-    const { book_id, page_number, chapter_number, paragraph_number, notes, log_type, time_spent_minutes } = await req.json();
+    const { book_id, page_number, chapter_number, paragraph_number, notes, log_type, time_spent_minutes, photo_url } = await req.json();
 
     if (!book_id || !page_number || !log_type) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -55,6 +57,7 @@ Deno.serve(async (req) => {
         p_notes: notes || null,
         p_log_type: log_type,
         p_time_spent_minutes: time_spent_minutes || null,
+        p_photo_url: photo_url || null,
       }
     );
 
@@ -81,7 +84,7 @@ Deno.serve(async (req) => {
     const { createErrorResponse } = await import("../_shared/errorHandler.ts");
     return createErrorResponse(error, 500, req.headers.get('origin'), {
       function: "log-progress",
-      userId: user?.id,
+      userId,
     });
   }
 });

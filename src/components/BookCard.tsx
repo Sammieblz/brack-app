@@ -88,9 +88,7 @@ export const BookCard = ({ book, onClick, onStatusChange, onDelete, userId }: Bo
       title={book.title}
       description="Choose an action"
     >
-      <Card 
-        className="bg-gradient-card shadow-soft border-0 hover:shadow-medium active:scale-[0.98] transition-all duration-200 group touch-manipulation"
-      >
+      <Card className="active:scale-[0.98] group touch-manipulation">
       <CardContent className="p-3 sm:p-4">
         <div className="flex items-start space-x-3 sm:space-x-4">
           <div onClick={onClick} className="cursor-pointer flex-1 flex items-start space-x-3 sm:space-x-4">

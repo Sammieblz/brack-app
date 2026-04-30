@@ -60,8 +60,8 @@ const Goals = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 md:p-8">
+      <Card className="w-full max-w-md lg:max-w-2xl">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="flex items-center space-x-2">

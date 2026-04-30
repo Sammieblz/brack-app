@@ -170,7 +170,7 @@ const Index = () => {
   }
 
   return (
-    <div className="h-screen bg-gradient-background relative overflow-x-hidden overflow-y-auto">
+    <div className="min-h-screen bg-gradient-background relative overflow-x-hidden overflow-y-auto">
       {/* Light / Dark toggle */}
       <ThemeToggle />
 

@@ -156,7 +156,7 @@ class OfflineQueueService {
       case 'delete_book': {
         const { error: deleteBookError } = await supabase
           .from('books')
-          .delete()
+          .update({ deleted_at: new Date().toISOString() })
           .eq('id', action.id);
         if (deleteBookError) throw deleteBookError;
         break;

@@ -16,11 +16,13 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useFollowing } from "@/hooks/useFollowing";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { getInitials } from "@/lib/avatarUtils";
 import type { Profile } from "@/types";
 
 const ProfilePage = () => {
   const { user, loading: authLoading } = useAuth();
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { pickWithPrompt } = useImagePicker();
@@ -197,8 +199,8 @@ const ProfilePage = () => {
 
   return (
     <MobileLayout>
-      <MobileHeader title="Profile Settings" showBack />
-      <div className="container max-w-2xl mx-auto p-4 space-y-6">
+      {isMobile && <MobileHeader title="Profile Settings" showBack />}
+      <div className="app-page-narrow space-y-6">
 
         {/* Social Profile View */}
         <Card>

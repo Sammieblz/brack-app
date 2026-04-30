@@ -376,6 +376,77 @@ All colors MUST be HSL.
     scroll-behavior: smooth;
   }
 
+  .app-page {
+    width: 100%;
+    max-width: 88rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1rem;
+  }
+
+  .app-page-header {
+    width: 100%;
+    max-width: 88rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .app-page-narrow {
+    width: 100%;
+    max-width: 64rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1rem;
+  }
+
+  .app-page-form {
+    width: 100%;
+    max-width: 72rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1rem;
+  }
+
+  .app-page-scan {
+    width: 100%;
+    max-width: 36rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .app-page,
+    .app-page-header,
+    .app-page-narrow,
+    .app-page-form,
+    .app-page-scan {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+
+    .app-page,
+    .app-page-narrow,
+    .app-page-form,
+    .app-page-scan {
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1440px) {
+    .app-page,
+    .app-page-header,
+    .app-page-narrow,
+    .app-page-form,
+    .app-page-scan {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
   /* iOS-style rubber band effect */
   @supports (-webkit-overflow-scrolling: touch) {
     .native-scroll {

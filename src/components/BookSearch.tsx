@@ -269,7 +269,7 @@ export const BookSearch = ({ onSelectBook, onQuickAdd, initialQuery }: BookSearc
             {results.map((book) => (
               <Card
                 key={book.googleBooksId}
-                className="bg-gradient-card hover:shadow-soft transition-all cursor-pointer"
+                className="cursor-pointer"
               >
                 <CardContent className="p-4">
                   <div className="flex gap-3">

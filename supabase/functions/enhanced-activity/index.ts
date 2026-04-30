@@ -4,6 +4,7 @@ import { getCorsHeaders } from '../_shared/cors.ts';
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
+  let userId: string | null = null;
   
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -33,6 +34,7 @@ Deno.serve(async (req) => {
         function: "enhanced-activity",
       });
     }
+    userId = user.id;
 
     const url = new URL(req.url);
     const limit = parseInt(url.searchParams.get('limit') || '20');
@@ -176,7 +178,7 @@ Deno.serve(async (req) => {
     const { createErrorResponse } = await import("../_shared/errorHandler.ts");
     return createErrorResponse(error, 500, req.headers.get('origin'), {
       function: "enhanced-activity",
-      userId: user?.id,
+      userId,
     });
   }
 });

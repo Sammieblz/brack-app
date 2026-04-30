@@ -191,7 +191,7 @@ const Auth = () => {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary-glow/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
       </div>
       
-      <div className="w-full max-w-sm relative z-10 animate-fade-in safe-top">
+      <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg relative z-10 animate-fade-in safe-top">
         {/* Logo Section — Brack icon + heading */}
         <div className="text-center mb-6 md:mb-8 animate-slide-up">
           <div className="flex flex-col items-center gap-3 mb-4">

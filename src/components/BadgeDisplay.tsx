@@ -27,7 +27,7 @@ export const BadgeDisplay = ({ badges, earnedBadges, onBadgeClick }: BadgeDispla
           <Card 
             key={badge.id} 
             onClick={handleClick}
-            className={`${isEarned ? 'bg-gradient-card cursor-pointer' : 'bg-muted/30'} transition-all hover:shadow-soft`}
+            className={isEarned ? "cursor-pointer" : "bg-muted/30"}
           >
             <CardContent className="p-4 text-center space-y-2">
               {imagePath && (

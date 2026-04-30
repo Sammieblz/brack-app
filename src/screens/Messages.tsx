@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
 import { ConversationsList } from "@/components/messaging/ConversationsList";
 import { MessageThread } from "@/components/messaging/MessageThread";
 import { useConversations } from "@/hooks/useConversations";
@@ -60,7 +59,6 @@ const Messages = () => {
   if (loading) {
     return (
       <MobileLayout showBottomNav={!isMobile || !selectedConversationId}>
-        {!isMobile && <Navbar />}
         <LoadingSpinner />
       </MobileLayout>
     );
@@ -94,13 +92,11 @@ const Messages = () => {
 
   return (
     <MobileLayout showBottomNav={!isMobile || !selectedConversationId}>
-      {!isMobile && <Navbar />}
-      
       {isMobile && (
         <MobileHeader title="Messages" />
       )}
       
-      <main className={`${isMobile ? '' : 'container max-w-7xl mx-auto px-4 py-8'}`}>
+      <main className={isMobile ? "" : "app-page"}>
         {!isMobile && (
           <div className="mb-8 animate-fade-in">
             <div className="flex items-center gap-3 mb-4">

@@ -50,7 +50,7 @@ export const StreakDisplay = ({ streakData, onUseFreeze }: StreakDisplayProps) =
   return (
     <>
       {showConfetti && <Confetti trigger={showConfetti} />}
-      <Card className="bg-gradient-card border-0 shadow-soft">
+      <Card>
         <CardContent className="p-6">
           <div className="space-y-4">
             {/* Current Streak */}

@@ -51,7 +51,7 @@ const Achievements = () => {
     <MobileLayout>
       {isMobile && <MobileHeader title="Achievements" showBack />}
       
-      <div className="container max-w-6xl mx-auto p-4 md:p-6">
+      <div className="app-page">
         {!isMobile && (
           <div className="mb-6 flex items-center gap-4">
             <Button

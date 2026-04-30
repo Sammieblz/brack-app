@@ -158,7 +158,7 @@ const BookClubDetail = () => {
     return (
       <MobileLayout>
         {isMobile && <MobileHeader title="Book Club" showBack />}
-        <div className="container max-w-4xl mx-auto px-4 py-8">
+        <div className="app-page-narrow">
           <div className="text-center">
             <p className="font-sans text-muted-foreground">Club not found</p>
           </div>
@@ -173,7 +173,7 @@ const BookClubDetail = () => {
   return (
     <MobileLayout>
       {isMobile && <MobileHeader title={club.name} showBack />}
-      <main className="container max-w-6xl mx-auto px-4 py-4 md:py-8">
+      <main className="app-page">
 
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <div className="md:col-span-2">
