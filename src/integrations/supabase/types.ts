@@ -726,6 +726,7 @@ export type Database = {
           notes: string | null
           page_number: number
           paragraph_number: number | null
+          photo_url: string | null
           session_id: string | null
           time_spent_minutes: number | null
           user_id: string
@@ -740,6 +741,7 @@ export type Database = {
           notes?: string | null
           page_number: number
           paragraph_number?: number | null
+          photo_url?: string | null
           session_id?: string | null
           time_spent_minutes?: number | null
           user_id: string
@@ -754,6 +756,7 @@ export type Database = {
           notes?: string | null
           page_number?: number
           paragraph_number?: number | null
+          photo_url?: string | null
           session_id?: string | null
           time_spent_minutes?: number | null
           user_id?: string

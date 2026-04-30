@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { useBookLists } from "@/hooks/useBookLists";
 import { useListBooks } from "@/hooks/useListBooks";
@@ -199,8 +198,7 @@ const BookListDetail = () => {
   return (
     <MobileLayout>
       {isMobile && <MobileHeader title={list.name} showBack />}
-      {!isMobile && <Navbar />}
-      <main className="container mx-auto p-4 md:p-6">
+      <main className="app-page">
         {!isMobile && (
           <div className="mb-6">
             <Button

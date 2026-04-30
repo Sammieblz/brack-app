@@ -14,17 +14,9 @@ import { useGSAPTimeline } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
 import { getInitials } from "@/lib/avatarUtils";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { 
-  User, 
-  StatsReport, 
-  Trophy, 
-  ChatBubble, 
-  Book, 
-  List, 
-  Settings, 
-  LogOut
-} from "iconoir-react";
+import { User, LogOut } from "iconoir-react";
 import { cn } from "@/lib/utils";
+import { NAV_ITEMS } from "@/config/navigation";
 
 interface ProfileDrawerProps {
   open: boolean;
@@ -81,13 +73,12 @@ export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
 
   const menuItems: MenuItem[] = [
     { label: "Profile", icon: User, path: "/profile" },
-    { label: "Goals", icon: Trophy, path: "/goals-management" },
-    { label: "Analytics", icon: StatsReport, path: "/analytics" },
-    { label: "Achievements", icon: Trophy, path: "/achievements" },
-    { label: "Messages", icon: ChatBubble, path: "/messages", badge: unreadCount > 0 ? unreadCount : undefined },
-    { label: "Book Clubs", icon: User, path: "/clubs" },
-    { label: "Lists", icon: List, path: "/lists" },
-    { label: "Settings", icon: Settings, path: "/settings" },
+    ...NAV_ITEMS.filter((item) => item.label !== "Home").map((item) => ({
+      label: item.label,
+      icon: item.icon,
+      path: item.path,
+      badge: item.path === "/messages" && unreadCount > 0 ? unreadCount : undefined,
+    })),
   ];
 
   const handleMenuItemClick = (path: string) => {

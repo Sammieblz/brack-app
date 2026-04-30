@@ -28,7 +28,7 @@ const BookLists = () => {
     <MobileLayout>
       {isMobile && <MobileHeader title="Book Lists" showBack />}
       <PullToRefresh onRefresh={handleRefresh}>
-        <main className="container mx-auto p-4 md:p-6">
+        <main className="app-page">
           <BookListManager key={refreshKey} userId={user.id} />
         </main>
       </PullToRefresh>

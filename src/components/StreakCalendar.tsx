@@ -65,7 +65,7 @@ export const StreakCalendar = ({ activityCalendar }: StreakCalendarProps) => {
   const monthName = displayMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   return (
-    <Card className="bg-gradient-card">
+    <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="font-display text-lg flex items-center gap-2">

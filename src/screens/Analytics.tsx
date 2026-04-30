@@ -65,7 +65,7 @@ const Analytics = () => {
     <MobileLayout>
       {isMobile && <MobileHeader title="Analytics" showBack />}
       
-      <div className="container max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+      <div className="app-page space-y-6">
         {/* Header - Desktop only */}
         {!isMobile && (
           <div className="flex items-center space-x-3">

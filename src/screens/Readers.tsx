@@ -130,7 +130,7 @@ export default function Readers() {
       {isMobile && <MobileHeader title="Discover" />}
       
       <PullToRefresh onRefresh={handleRefresh}>
-      <main className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
+      <main className="app-page">
         {!isMobile && (
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Discover</h1>

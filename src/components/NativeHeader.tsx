@@ -41,7 +41,7 @@ export const NativeHeader = ({
     >
       <div
         className={cn(
-          "px-4 transition-all duration-300 flex items-end justify-between",
+          "app-page-header transition-all duration-300 flex items-end justify-between gap-4",
           isScrolled ? "py-3" : "py-6 pb-4"
         )}
       >
@@ -58,7 +58,7 @@ export const NativeHeader = ({
             <p className="font-sans text-sm text-muted-foreground mt-1">{subtitle}</p>
           )}
         </div>
-        {action && <div className="ml-4 flex-shrink-0">{action}</div>}
+        {action && <div className="flex-shrink-0">{action}</div>}
       </div>
     </header>
   );

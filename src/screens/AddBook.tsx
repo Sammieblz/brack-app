@@ -105,14 +105,17 @@ const AddBook = () => {
 
       await bookOperations.create(bookData);
 
-      // Check if this is the first book
-      const { data: existingBooks } = await supabase
-        .from('books')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .is('deleted_at', null);
-      
-      const firstBook = (existingBooks?.length || 0) <= 1;
+      let firstBook = false;
+      if (navigator.onLine) {
+        const { count, error: countError } = await supabase
+          .from('books')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .is('deleted_at', null);
+
+        if (countError) throw countError;
+        firstBook = (count || 0) <= 1;
+      }
       setIsFirstBook(firstBook);
 
       // Show success animation
@@ -171,14 +174,10 @@ const AddBook = () => {
       notes: null
     };
 
-    const { error } = await supabase
-      .from('books')
-      .insert({
-        ...bookData,
-        metadata: bookData.metadata as Json | null
-      });
-
-    if (error) throw error;
+    await bookOperations.create({
+      ...bookData,
+      metadata: bookData.metadata as Json | null
+    });
 
     navigate("/dashboard");
   };
@@ -207,10 +206,10 @@ const AddBook = () => {
         </div>
       )}
       {isMobile && <MobileHeader title="Add Book" showBack />}
-      <div className="container mx-auto px-4 py-4 md:py-8 max-w-md">
+      <div className="app-page-form">
 
         {/* Form Card */}
-        <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in">
+        <Card className="animate-scale-in max-w-4xl mx-auto">
           <CardHeader className="text-center pb-4">
             <CardTitle className="font-display text-xl font-bold text-foreground flex items-center justify-center gap-2">
               <BookIcon className="h-5 w-5" />

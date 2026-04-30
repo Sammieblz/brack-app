@@ -170,7 +170,7 @@ const BookDetail = () => {
   return (
     <MobileLayout>
       {isMobile && <MobileHeader title={book.title} showBack />}
-      <div className="container max-w-4xl mx-auto p-4">
+      <div className="app-page-narrow">
         {!isMobile && (
           <div className="mb-6 flex items-center gap-4">
             <Button
@@ -191,15 +191,17 @@ const BookDetail = () => {
         )}
 
         {/* Book Details Tabs */}
-        <Card className="bg-gradient-card shadow-medium border-0 mb-6 animate-scale-in">
+        <Card className="mb-6 animate-scale-in">
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="progress">Progress</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews</TabsTrigger>
-              <TabsTrigger value="journal">Journal</TabsTrigger>
-              <TabsTrigger value="logs">Logs</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto px-1 pt-1">
+              <TabsList className="grid min-w-[640px] w-full grid-cols-5 md:min-w-0">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="progress">Progress</TabsTrigger>
+                <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                <TabsTrigger value="journal">Journal</TabsTrigger>
+                <TabsTrigger value="logs">Logs</TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="overview" className="p-6 space-y-4">
               <div className="text-center mb-4">
@@ -587,7 +589,7 @@ const BookDetail = () => {
 
         {/* Recent Sessions */}
         {sessions.length > 0 && (
-          <Card className="bg-gradient-card shadow-medium border-0 animate-fade-in">
+          <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle className="text-lg font-bold text-foreground flex items-center">
                 <Clock className="mr-2 h-5 w-5" />

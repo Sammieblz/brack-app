@@ -100,23 +100,14 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         // Apply theme mode first (so dark class is set correctly)
         setNextTheme(themeModeToUse);
 
-        // Set currentTheme state immediately - the effect below will apply colors when resolvedTheme is ready
+        // Set currentTheme state immediately; the effect below applies colors when resolvedTheme is ready.
         setCurrentTheme(themeId);
         localStorage.setItem('color_theme', themeId);
-        
-        // If resolvedTheme is already available, apply colors immediately
-        // Otherwise, the effect below will apply when resolvedTheme becomes available
-        if (resolvedTheme) {
-          const theme = getTheme(themeId);
-          const isDark = resolvedTheme === 'dark';
-          const colors = isDark ? theme.colors.dark : theme.colors.light;
-          applyThemeColors(colors);
-        }
       } catch (error) {
         console.error('Error loading theme:', error);
         // Fallback to default theme on error
         const theme = getTheme('default');
-        const isDark = resolvedTheme === 'dark' || document.documentElement.classList.contains('dark');
+        const isDark = document.documentElement.classList.contains('dark');
         const colors = isDark ? theme.colors.dark : theme.colors.light;
         applyThemeColors(colors);
         setCurrentTheme('default');
@@ -126,15 +117,13 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     };
 
     loadTheme();
-  }, [user, setNextTheme, resolvedTheme]);
+  }, [user, setNextTheme]);
 
   useEffect(() => {
-    if (!user) return;
-    
     // Wait for resolvedTheme to be available before applying colors
     if (!resolvedTheme) return;
 
-    const theme = getTheme(currentTheme);
+    const theme = getTheme(user ? currentTheme : 'default');
     const isDark = resolvedTheme === 'dark';
     const colors = isDark ? theme.colors.dark : theme.colors.light;
     applyThemeColors(colors);

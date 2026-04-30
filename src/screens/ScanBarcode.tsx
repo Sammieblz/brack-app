@@ -54,10 +54,10 @@ const ScanBarcode = () => {
   return (
     <MobileLayout>
       {isMobile && <MobileHeader title="Scan Barcode" showBack />}
-      <div className="container mx-auto px-4 py-4 md:py-8 max-w-md">
+      <div className="app-page-scan">
 
         {/* Scanner Card */}
-        <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in">
+        <Card className="animate-scale-in">
           <CardHeader className="text-center">
             <CardTitle className="font-display text-xl font-bold text-foreground">
               Scan Book ISBN

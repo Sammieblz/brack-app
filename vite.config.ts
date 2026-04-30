@@ -49,6 +49,7 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        globIgnores: ["**/achievement-badges/*.png"],
         runtimeCaching: [
           {
             // Use environment variable or fallback pattern

@@ -4,6 +4,7 @@ import { getCorsHeaders } from '../_shared/cors.ts';
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
+  let userId: string | null = null;
   
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -33,6 +34,7 @@ Deno.serve(async (req) => {
         function: "calculate-book-progress",
       });
     }
+    userId = user.id;
 
     const { book_id } = await req.json();
 
@@ -149,7 +151,7 @@ Deno.serve(async (req) => {
     const { createErrorResponse } = await import("../_shared/errorHandler.ts");
     return createErrorResponse(error, 500, req.headers.get('origin'), {
       function: "calculate-book-progress",
-      userId: user?.id,
+      userId,
     });
   }
 });

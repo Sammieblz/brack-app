@@ -37,7 +37,7 @@ const Feed = () => {
           />
         )}
         
-        <main className="container max-w-4xl mx-auto px-4 py-4 md:py-8">
+        <main className="app-page-narrow">
           {!isMobile && (
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">

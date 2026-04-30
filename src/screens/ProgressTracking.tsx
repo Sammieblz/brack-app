@@ -54,7 +54,7 @@ const ProgressTracking = () => {
   return (
     <MobileLayout>
       {isMobile && <MobileHeader title="Progress Tracking" showBack />}
-      <div className="container max-w-4xl mx-auto px-4 py-4 md:py-8 space-y-6">
+      <div className="app-page-narrow space-y-6">
 
         {/* Title */}
         <div className="text-center space-y-2 animate-fade-in">
@@ -67,7 +67,7 @@ const ProgressTracking = () => {
         {/* Key Metrics */}
         {progress && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-scale-in">
-            <Card className="bg-gradient-card border-0 shadow-medium">
+            <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                   <Trophy className="h-4 w-4 mr-2" />
@@ -82,7 +82,7 @@ const ProgressTracking = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-card border-0 shadow-medium">
+            <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                   <Flash className="h-4 w-4 mr-2" />
@@ -95,7 +95,7 @@ const ProgressTracking = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-card border-0 shadow-medium">
+            <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                   <Clock className="h-4 w-4 mr-2" />
@@ -110,7 +110,7 @@ const ProgressTracking = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-card border-0 shadow-medium">
+            <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                   <StatsReport className="h-4 w-4 mr-2" />
@@ -145,7 +145,7 @@ const ProgressTracking = () => {
 
         {/* Reading Insights */}
         {progress && dailyProgress.length > 0 && (
-          <Card className="bg-gradient-card border-0 shadow-medium animate-scale-in">
+          <Card className="animate-scale-in">
             <CardHeader>
               <CardTitle>Reading Insights</CardTitle>
             </CardHeader>
@@ -189,7 +189,7 @@ const ProgressTracking = () => {
 
         {/* Empty State */}
         {dailyProgress.length === 0 && (
-          <Card className="bg-gradient-card border-0 shadow-medium">
+          <Card>
             <CardContent className="text-center py-12">
               <StatsReport className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
               <h3 className="font-display text-lg font-medium mb-2">No Progress Data Yet</h3>

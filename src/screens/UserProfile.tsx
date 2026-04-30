@@ -159,8 +159,8 @@ const UserProfile = () => {
   if (loading) {
     return (
       <MobileLayout>
-        <MobileHeader title="Profile" showBack />
-        <div className="container mx-auto px-4 py-6 space-y-6 animate-fade-in">
+        {isMobile && <MobileHeader title="Profile" showBack />}
+        <div className="app-page-narrow space-y-6 animate-fade-in">
           {/* Profile Header Loading */}
           <Card>
             <CardContent className="pt-6">
@@ -185,8 +185,8 @@ const UserProfile = () => {
   if (error || !profile) {
     return (
       <MobileLayout>
-        <MobileHeader title="Profile" showBack />
-        <div className="container mx-auto px-4 py-8">
+        {isMobile && <MobileHeader title="Profile" showBack />}
+        <div className="app-page-narrow">
           <Card>
             <CardContent className="py-12 text-center">
               <h2 className="font-display text-2xl font-bold mb-2">Profile Not Found</h2>
@@ -215,11 +215,13 @@ const UserProfile = () => {
 
   return (
     <MobileLayout>
-      <MobileHeader 
-        title={profile.display_name || "Profile"} 
-        showBack 
-      />
-      <div className="container mx-auto px-4 py-6 max-w-5xl space-y-6 animate-fade-in">
+      {isMobile && (
+        <MobileHeader
+          title={profile.display_name || "Profile"}
+          showBack
+        />
+      )}
+      <div className="app-page-narrow space-y-6 animate-fade-in">
         {/* Profile Header */}
         <Card className="overflow-hidden">
           <CardContent className="p-6">

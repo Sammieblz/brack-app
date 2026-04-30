@@ -166,7 +166,7 @@ export default function ReadingHistory() {
   return (
     <MobileLayout>
       {isMobile && <MobileHeader title="Reading History" showBack />}
-      <div className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
+      <div className="app-page">
         {!isMobile && (
           <div className="mb-6">
             <h1 className="font-display text-3xl font-bold mb-2">Reading History</h1>
@@ -210,7 +210,7 @@ export default function ReadingHistory() {
               filteredLogs.map((log) => (
                 <Card 
                   key={log.id}
-                  className="hover:shadow-soft transition-all cursor-pointer"
+                  className="cursor-pointer"
                   onClick={() => navigate(`/book/${log.book_id}`)}
                 >
                   <CardContent className="p-4">
@@ -290,7 +290,7 @@ export default function ReadingHistory() {
               filteredJournals.map((entry) => (
                 <Card 
                   key={entry.id}
-                  className="hover:shadow-soft transition-all cursor-pointer"
+                  className="cursor-pointer"
                   onClick={() => navigate(`/book/${entry.book_id}`)}
                 >
                   <CardHeader>

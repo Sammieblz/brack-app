@@ -1,8 +1,8 @@
-import { useTheme as useNextTheme } from "next-themes";
 import { SunLight, HalfMoon } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface ThemeToggleProps {
   className?: string;
@@ -11,13 +11,13 @@ interface ThemeToggleProps {
 }
 
 export const ThemeToggle = ({ className, variant = "floating" }: ThemeToggleProps) => {
-  const { resolvedTheme, setTheme } = useNextTheme();
+  const { resolvedTheme, setThemeMode } = useTheme();
   const { triggerHaptic } = useHapticFeedback();
   const isDark = resolvedTheme === "dark";
 
   const toggle = () => {
     triggerHaptic("selection");
-    setTheme(isDark ? "light" : "dark");
+    void setThemeMode(isDark ? "light" : "dark");
   };
 
   return (
@@ -26,6 +26,7 @@ export const ThemeToggle = ({ className, variant = "floating" }: ThemeToggleProp
       size="icon"
       onClick={toggle}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-pressed={isDark}
       className={cn(
         "h-10 w-10 rounded-full bg-background/60 backdrop-blur-md border border-border/40 shadow-sm hover:shadow-md transition-all duration-300",
         variant === "floating" && "fixed top-4 right-4 z-50",

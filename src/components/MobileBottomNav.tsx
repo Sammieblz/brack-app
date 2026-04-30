@@ -1,24 +1,11 @@
-import { Home, Book, User, List, Activity } from "iconoir-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-
-const tabs = [
-  { name: "Home", path: "/", icon: Home },
-  { name: "Library", path: "/my-books", icon: Book },
-  { name: "Discover", path: "/readers", icon: User },
-  { name: "Feed", path: "/feed", icon: Activity },
-  { name: "Lists", path: "/lists", icon: List },
-];
+import { MOBILE_NAV_ITEMS, isNavItemActive } from "@/config/navigation";
 
 export const MobileBottomNav = () => {
   const location = useLocation();
   const { triggerHaptic } = useHapticFeedback();
-
-  const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
-    return location.pathname.startsWith(path);
-  };
 
   return (
     <nav
@@ -31,9 +18,9 @@ export const MobileBottomNav = () => {
         <div className="absolute inset-x-8 top-[16%] h-px bg-white/14 rounded-full pointer-events-none" />
 
         <div className="relative flex items-center justify-around h-[72px] max-w-4xl mx-auto gap-0.5 rounded-[28px] max-[400px]:h-16">
-        {tabs.map((tab) => {
+        {MOBILE_NAV_ITEMS.map((tab) => {
           const Icon = tab.icon;
-          const active = isActive(tab.path);
+          const active = isNavItemActive(location.pathname, tab);
           
           return (
             <Link
@@ -46,7 +33,7 @@ export const MobileBottomNav = () => {
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
-              aria-label={`Navigate to ${tab.name}`}
+              aria-label={`Navigate to ${tab.label}`}
               aria-current={active ? "page" : undefined}
             >
               {active && (
@@ -59,7 +46,7 @@ export const MobileBottomNav = () => {
               <span className={cn(
                 "font-sans z-10 truncate transition-all duration-200",
                 active && "font-semibold"
-              )}>{tab.name}</span>
+              )}>{tab.label}</span>
             </Link>
           );
         })}

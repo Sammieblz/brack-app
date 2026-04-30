@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Navbar } from "@/components/Navbar";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -197,8 +196,7 @@ export default function EditBook() {
   return (
     <MobileLayout>
       {isMobile && <MobileHeader title="Edit Book" showBack />}
-      {!isMobile && <Navbar />}
-      <div className="container mx-auto px-4 py-4 md:py-8 max-w-2xl pb-24 md:pb-8">
+      <div className="app-page-form pb-24 md:pb-8">
         {isMobile ? (
           <div className="mb-4">
             <MobileBackButton title="Back to Book" onClick={() => navigate(`/book/${id}`)} />
@@ -214,7 +212,7 @@ export default function EditBook() {
           </Button>
         )}
 
-        <Card>
+        <Card className="max-w-4xl mx-auto">
           <CardHeader>
             <CardTitle className="font-display">Edit Book</CardTitle>
           </CardHeader>

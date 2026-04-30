@@ -149,7 +149,7 @@ const MyBooks = () => {
     }
 
     return (
-      <div className="space-y-3">
+      <div className={isMobile || shouldVirtualize ? "space-y-3" : "grid gap-4 lg:grid-cols-2 2xl:grid-cols-3"}>
         {shouldVirtualize ? (
           <div
             ref={listParentRef}
@@ -206,7 +206,7 @@ const MyBooks = () => {
         )}
         
         {hasMore && (
-          <div ref={loadMoreRef} className="py-8 flex justify-center">
+          <div ref={loadMoreRef} className="py-8 flex justify-center lg:col-span-2 2xl:col-span-3">
             {loadingMore && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Refresh className="h-5 w-5 animate-spin" />
@@ -273,7 +273,7 @@ const MyBooks = () => {
           />
         )}
         
-        <NativeScrollView id="library-scroll" className="max-w-6xl mx-auto px-4 py-4 md:p-6 space-y-4 md:space-y-6">
+        <NativeScrollView id="library-scroll" className="app-page space-y-4 md:space-y-6">
           {/* Desktop Header */}
           {!isMobile && (
             <div className="flex justify-between items-center">
