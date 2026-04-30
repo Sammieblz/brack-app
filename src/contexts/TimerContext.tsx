@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef, ReactNode } fro
 import { App } from "@capacitor/app";
 import { Capacitor, PluginListenerHandle } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { updateBookStatusIfNeeded } from "@/utils/bookStatus";
@@ -33,6 +34,7 @@ const STORAGE_KEY = 'readingTimer';
 
 export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const confirmDialog = useConfirmDialog();
+  const queryClient = useQueryClient();
   const [state, setState] = useState<TimerState>({
     time: 0,
     isRunning: false,
@@ -330,9 +332,9 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const endTime = new Date();
-      const durationMinutes = Math.round(state.time / 60);
+      const durationMinutes = Math.max(1, Math.round(state.time / 60));
 
-      const { error } = await supabase
+      const { data: session, error } = await supabase
         .from('reading_sessions')
         .insert({
           user_id: user.id,
@@ -340,7 +342,9 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
           start_time: state.startTime.toISOString(),
           end_time: endTime.toISOString(),
           duration: durationMinutes
-        });
+        })
+        .select('id, user_id, book_id, start_time, end_time, duration, created_at')
+        .single();
 
       if (error) throw error;
 
@@ -350,6 +354,17 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
 
       // Update book status if needed
       await updateBookStatusIfNeeded(state.bookId);
+      await queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+
+      window.dispatchEvent(new CustomEvent('readingSessionSaved', {
+        detail: {
+          userId: user.id,
+          bookId: state.bookId,
+          sessionId: session?.id,
+          durationMinutes,
+          activityDate: state.startTime.toISOString().split('T')[0],
+        },
+      }));
 
       // Store session data temporarily for journal prompt
       const sessionData = {

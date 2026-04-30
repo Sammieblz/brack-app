@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,12 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
+import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
+
+type AuthTransition = {
+  to: string;
+  message: string;
+};
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -20,7 +26,7 @@ const Auth = () => {
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
-  const navigate = useNavigate();
+  const [transition, setTransition] = useState<AuthTransition | null>(null);
   const { toast } = useToast();
   const { resetToDefaultTheme } = useTheme();
 
@@ -53,7 +59,10 @@ const Auth = () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          navigate("/dashboard");
+          setTransition({
+            to: "/dashboard",
+            message: "Opening your reading dashboard...",
+          });
           return;
         }
       } catch (error) {
@@ -68,13 +77,16 @@ const Auth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session && event === 'SIGNED_IN') {
-          navigate("/dashboard");
+          setTransition((current) => current ?? {
+            to: isSignUp ? "/welcome" : "/dashboard",
+            message: isSignUp ? "Creating your Brack space..." : "Welcome back to Brack...",
+          });
         }
       }
     );
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [isSignUp]);
 
   const validatePassword = (password: string): { valid: boolean; error?: string } => {
     if (password.length < 8) {
@@ -94,6 +106,10 @@ const Auth = () => {
     }
     return { valid: true };
   };
+
+  if (transition) {
+    return <BrandedRouteTransition to={transition.to} message={transition.message} />;
+  }
 
   if (pageLoading) {
     return (
@@ -120,7 +136,7 @@ const Auth = () => {
           return;
         }
 
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -134,6 +150,14 @@ const Auth = () => {
         });
         
         if (error) throw error;
+
+        if (data.session) {
+          setTransition({
+            to: "/welcome",
+            message: "Creating your Brack space...",
+          });
+          return;
+        }
         
         toast({
           title: "Check your email",
@@ -146,6 +170,11 @@ const Auth = () => {
         });
         
         if (error) throw error;
+
+        setTransition({
+          to: "/dashboard",
+          message: "Welcome back to Brack...",
+        });
       }
     } catch (error: unknown) {
       toast({
@@ -195,7 +224,7 @@ const Auth = () => {
         {/* Logo Section — Brack icon + heading */}
         <div className="text-center mb-6 md:mb-8 animate-slide-up">
           <div className="flex flex-col items-center gap-3 mb-4">
-            <ThemeAwareLogo variant="icon" size="h-16 w-16" className="drop-shadow-lg" />
+            <ThemeAwareLogo variant="icon" tone="theme" size="h-16 w-16" className="drop-shadow-lg" />
             <span className="font-display text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               BRACK
             </span>

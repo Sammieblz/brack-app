@@ -5,7 +5,7 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useBadges } from "@/hooks/useBadges";
 import { BadgeDisplay } from "@/components/BadgeDisplay";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trophy, ArrowLeft } from "iconoir-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -13,6 +13,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Badge, UserBadge } from "@/types";
 import { BadgeDetailsDialog } from "@/components/BadgeDetailsDialog";
+import { BRACK_TROPHY_IMAGE } from "@/config/brackAssets";
 
 const Achievements = () => {
   const { user } = useAuth();
@@ -72,33 +73,51 @@ const Achievements = () => {
         )}
 
         {/* Progress Overview */}
-        <Card className="mb-6 bg-gradient-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-primary" />
-              Your Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-sans text-3xl font-bold text-primary">
-                    {earnedCount} / {totalCount}
+        <Card className="mb-6 overflow-hidden">
+          <CardContent className="p-0">
+            <div className="grid md:grid-cols-[minmax(0,1fr)_12rem]">
+              <div className="space-y-4 p-5 md:p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5 text-primary" />
+                    Your Progress
+                  </CardTitle>
+                  <img
+                    src={BRACK_TROPHY_IMAGE}
+                    alt=""
+                    aria-hidden="true"
+                    className="h-16 w-16 shrink-0 rounded-md border border-border/70 object-cover md:hidden"
+                    draggable={false}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-sans text-3xl font-bold text-primary">
+                      {earnedCount} / {totalCount}
+                    </div>
+                    <div className="font-sans text-sm text-muted-foreground">
+                      Badges Earned
+                    </div>
                   </div>
-                  <div className="font-sans text-sm text-muted-foreground">
-                    Badges Earned
+                  <div className="text-right">
+                    <div className="font-sans text-3xl font-bold">{progressPercentage}%</div>
+                    <div className="font-sans text-sm text-muted-foreground">Complete</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="font-sans text-3xl font-bold">{progressPercentage}%</div>
-                  <div className="font-sans text-sm text-muted-foreground">Complete</div>
+                <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all duration-500"
+                    style={{ width: `${progressPercentage}%` }}
+                  />
                 </div>
               </div>
-              <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
-                <div
-                  className="bg-primary h-full transition-all duration-500 rounded-full"
-                  style={{ width: `${progressPercentage}%` }}
+              <div className="hidden border-l border-border/70 bg-muted/20 p-4 md:block">
+                <img
+                  src={BRACK_TROPHY_IMAGE}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-full min-h-40 w-full rounded-md object-cover"
+                  draggable={false}
                 />
               </div>
             </div>
@@ -122,7 +141,13 @@ const Achievements = () => {
             ) : badges.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                  <img
+                    src={BRACK_TROPHY_IMAGE}
+                    alt=""
+                    aria-hidden="true"
+                    className="mx-auto mb-4 h-24 w-24 rounded-md object-cover opacity-80"
+                    draggable={false}
+                  />
                   <p className="font-sans text-muted-foreground">No badges available</p>
                 </CardContent>
               </Card>
@@ -143,7 +168,13 @@ const Achievements = () => {
             ) : earnedBadges.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                  <img
+                    src={BRACK_TROPHY_IMAGE}
+                    alt=""
+                    aria-hidden="true"
+                    className="mx-auto mb-4 h-24 w-24 rounded-md object-cover opacity-80"
+                    draggable={false}
+                  />
                   <p className="font-sans text-muted-foreground">
                     You haven't earned any badges yet. Keep reading!
                   </p>
@@ -166,7 +197,13 @@ const Achievements = () => {
             ) : badges.filter(badge => !earnedBadgeIds.has(badge.id)).length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                  <img
+                    src={BRACK_TROPHY_IMAGE}
+                    alt=""
+                    aria-hidden="true"
+                    className="mx-auto mb-4 h-24 w-24 rounded-md object-cover opacity-80"
+                    draggable={false}
+                  />
                   <p className="font-sans text-muted-foreground">All badges earned!</p>
                 </CardContent>
               </Card>

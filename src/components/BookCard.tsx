@@ -19,9 +19,17 @@ interface BookCardProps {
   onStatusChange?: (bookId: string, status: string) => void;
   onDelete?: (bookId: string) => void;
   userId?: string;
+  showAddToList?: boolean;
 }
 
-export const BookCard = ({ book, onClick, onStatusChange, onDelete, userId }: BookCardProps) => {
+export const BookCard = ({
+  book,
+  onClick,
+  onStatusChange,
+  onDelete,
+  userId,
+  showAddToList = true,
+}: BookCardProps) => {
   const navigate = useNavigate();
   const [lightboxOpen, setLightboxOpen] = React.useState(false);
   
@@ -61,12 +69,16 @@ export const BookCard = ({ book, onClick, onStatusChange, onDelete, userId }: Bo
         }
       },
     },
-    {
-      label: "Delete",
-      icon: <Trash className="h-5 w-5" />,
-      variant: 'destructive' as const,
-      onClick: () => onDelete?.(book.id),
-    },
+    ...(onDelete
+      ? [
+          {
+            label: "Delete",
+            icon: <Trash className="h-5 w-5" />,
+            variant: "destructive" as const,
+            onClick: () => onDelete(book.id),
+          },
+        ]
+      : []),
   ];
 
   const getStatusColor = (status: string) => {
@@ -181,7 +193,7 @@ export const BookCard = ({ book, onClick, onStatusChange, onDelete, userId }: Bo
           </div>
         </div>
           
-          {userId && (
+          {userId && showAddToList && (
             <div className="flex-shrink-0 ml-1 sm:ml-2" onClick={(e) => e.stopPropagation()}>
               <AddToListDialog 
                 bookId={book.id} 

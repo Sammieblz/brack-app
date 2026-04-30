@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Lock, Mail, Calendar, Shield } from "iconoir-react";
+import { Lock, Mail, Calendar, CardWallet } from "iconoir-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { User, Profile } from "@/types";
@@ -129,14 +129,6 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
               className="bg-muted"
             />
           </div>
-          <div className="space-y-2">
-            <Label>User ID</Label>
-            <Input
-              value={user.id}
-              disabled
-              className="bg-muted font-mono text-xs"
-            />
-          </div>
         </CardContent>
       </Card>
 
@@ -144,7 +136,7 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
+            <CardWallet className="h-5 w-5" />
             Subscription
           </CardTitle>
           <CardDescription>

@@ -52,6 +52,7 @@ export const LogoSpinner = ({ size = "md", text, className }: LogoSpinnerProps) 
       <div ref={logoRef} className={cn("relative", sizeClasses[size])}>
         <ThemeAwareLogo
           variant="icon"
+          tone="theme"
           size={sizeClasses[size]}
           className="h-full w-full"
         />

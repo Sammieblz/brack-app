@@ -5,6 +5,7 @@ import type { Badge, UserBadge, Book, ReadingSession } from "@/types";
 import { getAbsoluteBadgeImageUrl } from "@/lib/badgeImages";
 import { NewBadgeToast } from "@/components/NewBadgeToast";
 import { useBadgeCelebration } from "@/contexts/BadgeCelebrationContext";
+import { Capacitor } from "@capacitor/core";
 
 export const BADGE_RULES = {
   'first-book': {
@@ -191,29 +192,31 @@ export const useBadges = (userId?: string) => {
           description: React.createElement(NewBadgeToast, { badge }),
         });
 
-        // Fire-and-forget push notification; ignore errors here
-        const imageUrl = getAbsoluteBadgeImageUrl(badge);
-        supabase.functions
-          .invoke("send-push-notification", {
-            body: {
-              user_ids: [userId],
-              notification: {
-                title: "New Badge Earned!",
-                body: `${badge.title}${badge.description ? ` — ${badge.description}` : ""}`,
-                image: imageUrl ?? undefined,
-                data: {
-                  type: "badge_earned",
-                  badgeId: badge.id,
-                  badgeTitle: badge.title,
-                  badgeDescription: badge.description,
-                  badgeImageUrl: imageUrl ?? null,
+        // Fire-and-forget native push notification; web keeps the in-app toast/overlay.
+        if (Capacitor.isNativePlatform()) {
+          const imageUrl = getAbsoluteBadgeImageUrl(badge);
+          supabase.functions
+            .invoke("send-push-notification", {
+              body: {
+                user_ids: [userId],
+                notification: {
+                  title: "New Badge Earned!",
+                  body: `${badge.title}${badge.description ? ` - ${badge.description}` : ""}`,
+                  image: imageUrl ?? undefined,
+                  data: {
+                    type: "badge_earned",
+                    badgeId: badge.id,
+                    badgeTitle: badge.title,
+                    badgeDescription: badge.description,
+                    badgeImageUrl: imageUrl ?? null,
+                  },
                 },
               },
-            },
-          })
-          .catch((error) => {
-            console.error("Error sending badge push notification:", error);
-          });
+            })
+            .catch((error) => {
+              console.error("Error sending badge push notification:", error);
+            });
+        }
 
         // Trigger in-app celebration overlay
         showCelebration(badge);

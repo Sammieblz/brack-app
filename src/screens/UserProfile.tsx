@@ -52,11 +52,12 @@ type PostWithRelations = Post & {
 };
 
 const UserProfile = () => {
-  const { userId } = useParams<{ userId: string }>();
+  const { userId: routeUserId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const { user: currentUser } = useAuth();
-  const { profile, stats, loading, error } = useUserProfile(userId || null);
-  const { followersCount, followingCount } = useFollowing(userId || null);
+  const { user: currentUser, loading: authLoading } = useAuth();
+  const resolvedUserId = routeUserId === "me" ? currentUser?.id ?? null : routeUserId ?? null;
+  const { profile, stats, loading, error } = useUserProfile(resolvedUserId);
+  const { followersCount, followingCount } = useFollowing(resolvedUserId);
   const [userBooks, setUserBooks] = useState<Book[]>([]);
   const [userPosts, setUserPosts] = useState<PostWithRelations[]>([]);
   const [userClubs, setUserClubs] = useState<BookClub[]>([]);
@@ -65,7 +66,13 @@ const UserProfile = () => {
   const isMobile = useIsMobile();
   const { triggerHaptic } = useHapticFeedback();
 
-  const isOwnProfile = currentUser?.id === userId;
+  const isOwnProfile = currentUser?.id === resolvedUserId;
+
+  useEffect(() => {
+    if (!authLoading && routeUserId === "me" && !currentUser) {
+      navigate("/auth");
+    }
+  }, [authLoading, currentUser, navigate, routeUserId]);
 
   // Swipe gestures for tab navigation
   const swipeHandlers = useSwipeable({
@@ -93,7 +100,12 @@ const UserProfile = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!userId) return;
+      if (!resolvedUserId) {
+        if (!authLoading) {
+          setDataLoading(false);
+        }
+        return;
+      }
 
       try {
         setDataLoading(true);
@@ -102,7 +114,7 @@ const UserProfile = () => {
         const { data: books } = await supabase
           .from("books")
           .select("*")
-          .eq("user_id", userId)
+          .eq("user_id", resolvedUserId)
           .order("created_at", { ascending: false })
           .limit(10);
 
@@ -125,7 +137,7 @@ const UserProfile = () => {
               cover_url
             )
           `)
-          .eq("user_id", userId)
+          .eq("user_id", resolvedUserId)
           .order("created_at", { ascending: false })
           .limit(10);
 
@@ -143,7 +155,7 @@ const UserProfile = () => {
               is_private
             )
           `)
-          .eq("user_id", userId);
+          .eq("user_id", resolvedUserId);
 
         setUserClubs((clubs?.map(c => c.book_clubs).filter(Boolean) || []) as BookClub[]);
       } catch (error) {
@@ -154,9 +166,9 @@ const UserProfile = () => {
     };
 
     fetchUserData();
-  }, [userId]);
+  }, [authLoading, resolvedUserId]);
 
-  if (loading) {
+  if (authLoading || loading || (routeUserId === "me" && !resolvedUserId)) {
     return (
       <MobileLayout>
         {isMobile && <MobileHeader title="Profile" showBack />}
@@ -259,12 +271,12 @@ const UserProfile = () => {
                       </Button>
                     ) : (
                       <>
-                        <FollowButton userId={userId!} />
+                        <FollowButton userId={resolvedUserId!} />
                         <Button
                           variant="outline"
                           onClick={() => {
                             triggerHaptic("light");
-                            navigate("/messages", { state: { startConversationWith: userId } });
+                            navigate("/messages", { state: { startConversationWith: resolvedUserId } });
                           }}
                         >
                           <ChatBubble className="mr-2 h-4 w-4" />

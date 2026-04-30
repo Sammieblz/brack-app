@@ -867,6 +867,50 @@ export type Database = {
           },
         ]
       }
+      reading_streak_days: {
+        Row: {
+          activity_date: string
+          created_at: string
+          id: string
+          progress_log_count: number
+          session_count: number
+          total_minutes: number
+          updated_at: string
+          used_freeze: boolean
+          user_id: string
+        }
+        Insert: {
+          activity_date: string
+          created_at?: string
+          id?: string
+          progress_log_count?: number
+          session_count?: number
+          total_minutes?: number
+          updated_at?: string
+          used_freeze?: boolean
+          user_id: string
+        }
+        Update: {
+          activity_date?: string
+          created_at?: string
+          id?: string
+          progress_log_count?: number
+          session_count?: number
+          total_minutes?: number
+          updated_at?: string
+          used_freeze?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_streak_days_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reading_streak_history: {
         Row: {
           achieved_at: string
@@ -1132,6 +1176,24 @@ export type Database = {
       is_club_member: {
         Args: { club_id: string; user_id: string }
         Returns: boolean
+      }
+      recalculate_user_reading_streak: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
+      use_reading_streak_freeze: {
+        Args: { p_activity_date?: string; p_user_id: string }
+        Returns: {
+          activity_date: string
+          created_at: string
+          id: string
+          progress_log_count: number
+          session_count: number
+          total_minutes: number
+          updated_at: string
+          used_freeze: boolean
+          user_id: string
+        }
       }
     }
     Enums: {

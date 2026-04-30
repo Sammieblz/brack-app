@@ -14,7 +14,12 @@ import {
   User,
 } from "iconoir-react";
 
-export type NavSection = "primary" | "social" | "account";
+export type NavSection = "overview" | "books" | "progress" | "community" | "account";
+
+export interface NavGroup {
+  section: Exclude<NavSection, "account">;
+  label: string;
+}
 
 export interface NavItem {
   label: string;
@@ -30,7 +35,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Home",
     path: "/dashboard",
     icon: Home,
-    section: "primary",
+    section: "overview",
     matchPaths: ["/dashboard"],
     showInMobileNav: true,
   },
@@ -38,74 +43,74 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Library",
     path: "/my-books",
     icon: Book,
-    section: "primary",
+    section: "books",
     matchPaths: ["/my-books", "/books", "/book", "/edit-book", "/add-book", "/scan", "/scan-barcode", "/scan-cover"],
+    showInMobileNav: true,
+  },
+  {
+    label: "Lists",
+    path: "/lists",
+    icon: List,
+    section: "books",
+    matchPaths: ["/lists", "/book-lists"],
     showInMobileNav: true,
   },
   {
     label: "Analytics",
     path: "/analytics",
     icon: StatsReport,
-    section: "primary",
+    section: "progress",
     matchPaths: ["/analytics", "/history"],
   },
   {
     label: "Goals",
     path: "/goals-management",
     icon: Trophy,
-    section: "primary",
+    section: "progress",
     matchPaths: ["/goals-management", "/goals"],
   },
   {
     label: "Achievements",
     path: "/achievements",
     icon: Star,
-    section: "primary",
+    section: "progress",
     matchPaths: ["/achievements"],
-  },
-  {
-    label: "Readers",
-    path: "/readers",
-    icon: User,
-    section: "social",
-    matchPaths: ["/readers", "/users"],
-    showInMobileNav: true,
   },
   {
     label: "Feed",
     path: "/feed",
     icon: Activity,
-    section: "social",
+    section: "community",
     matchPaths: ["/feed"],
+    showInMobileNav: true,
+  },
+  {
+    label: "Readers",
+    path: "/readers",
+    icon: User,
+    section: "community",
+    matchPaths: ["/readers", "/users"],
     showInMobileNav: true,
   },
   {
     label: "Clubs",
     path: "/clubs",
     icon: Group,
-    section: "social",
+    section: "community",
     matchPaths: ["/clubs"],
   },
   {
     label: "Messages",
     path: "/messages",
     icon: ChatBubble,
-    section: "social",
+    section: "community",
     matchPaths: ["/messages"],
-  },
-  {
-    label: "Lists",
-    path: "/lists",
-    icon: List,
-    section: "social",
-    matchPaths: ["/lists", "/book-lists"],
-    showInMobileNav: true,
   },
   {
     label: "Reviews",
     path: "/reviews",
     icon: BookStack,
-    section: "social",
+    section: "community",
     matchPaths: ["/reviews"],
   },
   {
@@ -115,6 +120,13 @@ export const NAV_ITEMS: NavItem[] = [
     section: "account",
     matchPaths: ["/settings"],
   },
+];
+
+export const NAV_GROUPS: NavGroup[] = [
+  { section: "overview", label: "Overview" },
+  { section: "books", label: "Books" },
+  { section: "progress", label: "Progress" },
+  { section: "community", label: "Community" },
 ];
 
 const matchesDynamicPath = (pathname: string, matchPath: string) => {

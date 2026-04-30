@@ -14,7 +14,11 @@ export const useRecentActivity = (userId?: string) => {
   const [loading, setLoading] = useState(true);
 
   const fetchRecentActivity = async () => {
-    if (!userId) return;
+    if (!userId) {
+      setActivities([]);
+      setLoading(false);
+      return;
+    }
     
     try {
       setLoading(true);
@@ -102,7 +106,7 @@ export const useRecentActivity = (userId?: string) => {
   };
 
   useEffect(() => {
-    fetchRecentActivity();
+    void fetchRecentActivity();
   }, [userId]);
 
   const formatTimeAgo = (timestamp: string) => {

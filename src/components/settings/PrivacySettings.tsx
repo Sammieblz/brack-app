@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Shield } from "iconoir-react";
+import { DatabaseSettings, Eye } from "iconoir-react";
 import type { User } from "@/types";
 
 interface PrivacySettingsProps {
@@ -22,7 +22,7 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
+            <Eye className="h-5 w-5" />
             Profile Visibility
           </CardTitle>
           <CardDescription>
@@ -64,7 +64,10 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-display">Data Sharing</CardTitle>
+          <CardTitle className="font-display flex items-center gap-2">
+            <DatabaseSettings className="h-5 w-5" />
+            Data Sharing
+          </CardTitle>
           <CardDescription className="font-sans">
             Control how your data is used
           </CardDescription>

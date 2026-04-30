@@ -6,6 +6,7 @@ import { Play, Pause, Square, Collapse, Expand, Xmark, Clock } from "iconoir-rea
 import { formatTime } from "@/utils";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useGSAP } from "@/hooks/useGSAP";
+import { BREAKPOINTS, useBreakpoint } from "@/hooks/useBreakpoint";
 import { gsap } from "gsap";
 import { Confetti } from "@/components/animations/Confetti";
 
@@ -28,7 +29,10 @@ export const FloatingTimerWidget = () => {
     toggleMinimized,
   } = useTimer();
 
+  const { isPhone } = useBreakpoint();
   const { triggerHaptic } = useHapticFeedback();
+  const isFloatingTimerViewport =
+    isPhone && (typeof window === "undefined" || window.innerWidth < BREAKPOINTS.tablet);
   const [position, setPosition] = useState<{ x: number; y: number }>(() => ({ x: 0, y: 0 }));
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
@@ -110,7 +114,7 @@ export const FloatingTimerWidget = () => {
     }
   }, [time, isRunning, isVisible]);
 
-  if (!isVisible) return null;
+  if (!isFloatingTimerViewport || !isVisible) return null;
 
   const updateBounds = () => {
     const w = dragRef.current?.offsetWidth ?? 0;

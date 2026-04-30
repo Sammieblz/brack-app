@@ -130,7 +130,7 @@ export const DiscussionThread = ({
                         onClick={() => onDelete(reply.id)}
                         className="h-6 w-6 p-0 text-destructive hover:text-destructive ml-auto"
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash className="h-3 w-3" />
                       </Button>
                     )}
                   </div>

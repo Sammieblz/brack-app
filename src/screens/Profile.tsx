@@ -230,22 +230,16 @@ const ProfilePage = () => {
             </div>
             
             <div className="flex gap-6 pt-4 border-t">
-              <button
-                onClick={() => navigate(`/users/${user?.id}/followers`)}
-                className="flex flex-col items-start hover:opacity-80 transition-opacity"
-              >
+              <div className="flex flex-col items-start">
                 <span className="font-sans text-2xl font-bold">{followersCount}</span>
                 <span className="font-sans text-sm text-muted-foreground">Followers</span>
-              </button>
-              <button
-                onClick={() => navigate(`/users/${user?.id}/following`)}
-                className="flex flex-col items-start hover:opacity-80 transition-opacity"
-              >
+              </div>
+              <div className="flex flex-col items-start">
                 <span className="font-sans text-2xl font-bold">{followingCount}</span>
                 <span className="font-sans text-sm text-muted-foreground">Following</span>
-              </button>
+              </div>
               <button
-                onClick={() => navigate(`/users/${user?.id}`)}
+                onClick={() => navigate("/users/me")}
                 className="flex flex-col items-start hover:opacity-80 transition-opacity ml-auto"
               >
                 <span className="text-sm text-primary font-medium">View Profile</span>

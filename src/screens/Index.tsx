@@ -210,6 +210,7 @@ const Index = () => {
           <div ref={logoRef} className="flex justify-center mb-8">
             <ThemeAwareLogo
               variant="full"
+              tone="theme"
               size="h-28 md:h-36"
               className="drop-shadow-xl"
             />

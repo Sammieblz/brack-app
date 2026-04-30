@@ -22,7 +22,10 @@ export const QuickProgressWidget = ({ book, onUpdate }: QuickProgressWidgetProps
     setUpdating(true);
     try {
       const pageNum = parseInt(currentPage) || 0;
-      const updates: Record<string, unknown> = { current_page: pageNum };
+      const updates: Record<string, unknown> = {
+        current_page: pageNum,
+        updated_at: new Date().toISOString(),
+      };
       
       // Auto-mark as completed if reached last page
       if (book.pages && pageNum >= book.pages && book.status !== 'completed') {
@@ -33,6 +36,10 @@ export const QuickProgressWidget = ({ book, onUpdate }: QuickProgressWidgetProps
       // Auto-set date_started if not set
       if (!book.date_started && pageNum > 0) {
         updates.date_started = new Date().toISOString().split('T')[0];
+      }
+
+      if (book.status === 'to_read' && pageNum > 0 && (!book.pages || pageNum < book.pages)) {
+        updates.status = 'reading';
       }
 
       const { error } = await supabase

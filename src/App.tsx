@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PageTransition } from "@/components/animations/PageTransition";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TimerProvider } from "@/contexts/TimerContext";
@@ -108,8 +108,8 @@ const App = () => {
                   <Sonner />
                   <LiveRegion level="polite" />
                   <Suspense fallback={<div className="p-10 flex justify-center"><LoadingSpinner size="lg" /></div>}>
-                    <BadgeCelebrationProvider>
-                      <BrowserRouter>
+                    <BrowserRouter>
+                      <BadgeCelebrationProvider>
                         <DeepLinkHandler />
                         <SwipeBackHandler>
                           <PageTransition>
@@ -153,8 +153,8 @@ const App = () => {
                         <JournalPromptHandler />
                         <OfflineIndicator />
                       </SwipeBackHandler>
+                      </BadgeCelebrationProvider>
                     </BrowserRouter>
-                    </BadgeCelebrationProvider>
                   </Suspense>
                 </TooltipProvider>
               </TimerProvider>
