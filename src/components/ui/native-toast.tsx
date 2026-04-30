@@ -17,7 +17,7 @@ const NativeToastViewport = React.forwardRef<
     <ToastPrimitives.Viewport
       ref={ref}
       className={cn(
-        "fixed z-[100] flex max-h-screen w-full flex-col p-4 md:max-w-[420px]",
+        "pointer-events-none fixed z-[100] flex max-h-screen w-full flex-col gap-2 p-4 md:max-w-[420px]",
         "top-4 left-4 right-4 md:top-4 md:left-auto md:right-4 md:translate-x-0",
         "max-w-[calc(100%-2rem)] md:max-w-[420px]",
         className
@@ -29,20 +29,20 @@ const NativeToastViewport = React.forwardRef<
 NativeToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const nativeToastVariants = cva(
-  "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border transition-all data-[swipe=cancel]:translate-y-0 data-[swipe=end]:translate-y-[var(--radix-toast-swipe-end-y)] data-[swipe=move]:translate-y-[var(--radix-toast-swipe-move-y)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-80",
+  "group pointer-events-auto relative flex min-h-[56px] w-full items-start justify-between gap-3 overflow-hidden rounded-md border p-4 pr-10 shadow-lg transition-all data-[swipe=cancel]:translate-y-0 data-[swipe=end]:translate-y-[var(--radix-toast-swipe-end-y)] data-[swipe=move]:translate-y-[var(--radix-toast-swipe-move-y)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-80",
   {
     variants: {
       variant: {
-        default: "border bg-background text-foreground",
-        destructive: "destructive group border-destructive bg-destructive text-destructive-foreground",
-        success: "border-green-500/50 bg-green-500/10 dark:bg-green-500/20 text-green-700 dark:text-green-300",
-        warning: "border-yellow-500/50 bg-yellow-500/10 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-300",
-        info: "border-blue-500/50 bg-blue-500/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300",
+        default: "border-border/70 bg-card text-card-foreground",
+        destructive: "destructive group border-destructive/50 bg-destructive/10 text-foreground",
+        success: "border-green-500/35 bg-green-500/10 text-foreground",
+        warning: "border-yellow-500/35 bg-yellow-500/10 text-foreground",
+        info: "border-blue-500/35 bg-blue-500/10 text-foreground",
       },
       platform: {
-        ios: "data-[state=closed]:slide-out-to-top-full data-[state=open]:slide-in-from-top-full backdrop-blur-xl bg-background/80 border-border/50 shadow-lg",
-        android: "data-[state=closed]:slide-out-to-top-full data-[state=open]:slide-in-from-top-full shadow-2xl border-0 rounded-lg",
-        web: "data-[state=closed]:slide-out-to-top-full data-[state=open]:slide-in-from-top-full shadow-lg border",
+        ios: "data-[state=closed]:slide-out-to-top-full data-[state=open]:slide-in-from-top-full min-h-[60px] backdrop-blur-xl",
+        android: "data-[state=closed]:slide-out-to-top-full data-[state=open]:slide-in-from-top-full rounded-lg shadow-xl",
+        web: "data-[state=closed]:slide-out-to-top-full data-[state=open]:slide-in-from-top-full",
       },
     },
     defaultVariants: {
@@ -64,8 +64,6 @@ const NativeToast = React.forwardRef<
       ref={ref}
       className={cn(
         nativeToastVariants({ variant, platform }),
-        platform === 'ios' && "p-4 min-h-[60px] shadow-lg",
-        platform === 'android' && "p-4 min-h-[56px] shadow-xl",
         className
       )}
       {...props}
@@ -103,9 +101,9 @@ const NativeToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      "absolute top-2 right-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100",
-      platform === 'ios' && "top-1 right-1",
-      platform === 'android' && "top-2 right-2",
+      "absolute right-3 top-3 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100",
+      platform === 'ios' && "right-2.5 top-2.5",
+      platform === 'android' && "right-3 top-3",
       className
     )}
     toast-close=""
@@ -125,7 +123,7 @@ const NativeToastTitle = React.forwardRef<
   <ToastPrimitives.Title
     ref={ref}
     className={cn(
-      "font-sans text-sm font-semibold leading-tight",
+      "font-sans text-sm font-semibold leading-snug",
       platform === 'ios' && "text-base",
       platform === 'android' && "text-sm font-medium",
       className
@@ -144,7 +142,7 @@ const NativeToastDescription = React.forwardRef<
   <ToastPrimitives.Description
     ref={ref}
     className={cn(
-      "font-sans text-sm opacity-90 leading-relaxed break-words",
+      "font-sans text-sm leading-snug text-muted-foreground break-words",
       platform === 'ios' && "text-sm",
       platform === 'android' && "text-sm",
       className

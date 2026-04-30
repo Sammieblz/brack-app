@@ -11,13 +11,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useGoals } from "@/hooks/useGoals";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trophy, Calendar as CalendarIcon, CheckCircle, Trash } from "iconoir-react";
+import { Plus, Calendar as CalendarIcon, CheckCircle, Trash } from "iconoir-react";
 import { format } from "date-fns";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { TrophyReveal } from "@/components/animations/TrophyReveal";
 import { ProgressBarFill } from "@/components/animations/ProgressBarFill";
 import { Confetti } from "@/components/animations/Confetti";
 import { countUp } from "@/lib/animations/gsap-presets";
+import { BRACK_GOALS_IMAGE, BRACK_TROPHY_IMAGE } from "@/config/brackAssets";
 import { useRef } from "react";
 
 interface GoalManagerProps {
@@ -119,8 +120,17 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
     <>
       {showConfetti && <Confetti trigger={showConfetti} />}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-        <h2 className="font-display text-2xl font-bold">My Goals</h2>
+        <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <img
+            src={BRACK_GOALS_IMAGE}
+            alt=""
+            aria-hidden="true"
+            className="h-12 w-12 shrink-0 rounded-md border border-border/70 object-cover"
+            draggable={false}
+          />
+          <h2 className="font-display text-2xl font-bold">My Goals</h2>
+        </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -225,7 +235,13 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
-                        <Trophy className="h-5 w-5 text-primary" />
+                        <img
+                          src={BRACK_GOALS_IMAGE}
+                          alt=""
+                          aria-hidden="true"
+                          className="h-10 w-10 shrink-0 rounded-md border border-border/70 object-cover"
+                          draggable={false}
+                        />
                         <div>
                           <CardTitle className="font-sans text-lg">
                             {target} {getGoalTypeLabel(goal.goal_type)}
@@ -301,7 +317,13 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
           {activeGoals.length === 0 && (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <Trophy className="h-12 w-12 text-muted-foreground mb-4" />
+                <img
+                  src={BRACK_GOALS_IMAGE}
+                  alt=""
+                  aria-hidden="true"
+                  className="mb-4 h-24 w-24 rounded-md border border-border/70 object-cover opacity-85"
+                  draggable={false}
+                />
                 <p className="font-sans text-muted-foreground text-center">No active goals</p>
               </CardContent>
             </Card>
@@ -316,7 +338,13 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
                 <Card key={goal.id}>
                   <CardContent className="flex items-center justify-between py-4">
                     <div className="flex items-center gap-3">
-                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <img
+                        src={BRACK_TROPHY_IMAGE}
+                        alt=""
+                        aria-hidden="true"
+                        className="h-10 w-10 rounded-md border border-border/70 object-cover"
+                        draggable={false}
+                      />
                       <div>
                         <p className="font-sans font-medium">
                           {goal.target_books || goal.target_pages || goal.target_minutes} {getGoalTypeLabel(goal.goal_type)}

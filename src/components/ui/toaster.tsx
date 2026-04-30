@@ -40,13 +40,13 @@ export function Toaster() {
         
         return (
           <NativeToast key={id} platform={platform} {...props}>
-            <div className="flex items-start gap-3 flex-1">
+            <div className="flex min-w-0 flex-1 items-start gap-3">
               {variant && (
                 <div className="mt-0.5 shrink-0">
                   {getToastIcon(variant)}
                 </div>
               )}
-              <div className="grid gap-1 flex-1">
+              <div className="grid min-w-0 flex-1 gap-1">
                 {title && <NativeToastTitle platform={platform}>{title}</NativeToastTitle>}
                 {description && (
                   <NativeToastDescription platform={platform}>

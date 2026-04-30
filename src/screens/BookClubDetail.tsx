@@ -14,7 +14,7 @@ import { DiscussionThread } from "@/components/clubs/DiscussionThread";
 import { supabase } from "@/integrations/supabase/client";
 import { BookClub, ClubMember } from "@/hooks/useBookClubs";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Group, ChatBubble, Book, Send, Crown, UserRemove } from "iconoir-react";
+import { Group, ChatBubble, Book, Send, Crown } from "iconoir-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 

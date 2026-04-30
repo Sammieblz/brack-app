@@ -28,3 +28,6 @@ dist-ssr
 .env.*
 
 /LLM
+
+# Supabase local CLI state
+supabase/.temp/

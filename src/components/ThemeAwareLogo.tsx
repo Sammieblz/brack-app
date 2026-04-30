@@ -1,4 +1,4 @@
-import { useTheme as useNextTheme } from "next-themes";
+import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 
 interface ThemeAwareLogoProps {
@@ -34,7 +34,7 @@ export const ThemeAwareLogo = ({
   useOrange = false,
   tone = "adaptive",
 }: ThemeAwareLogoProps) => {
-  const { resolvedTheme } = useNextTheme();
+  const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const defaultSize = variant === "icon" ? "h-16 w-16" : "h-12 md:h-14";
 

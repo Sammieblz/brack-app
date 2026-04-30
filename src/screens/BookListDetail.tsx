@@ -82,6 +82,7 @@ const SortableBookItem = ({ book, userId, onRemove, onNavigate }: SortableBookIt
         book={book}
         onClick={() => onNavigate(book.id)}
         userId={userId}
+        showAddToList={false}
       />
       <AlertDialog>
         <AlertDialogTrigger asChild>

@@ -1,4 +1,4 @@
-import { Settings, User, Shield, Bell, Palette, QuestionMark as HelpCircle, LogOut, Lock, Trash, Download } from "iconoir-react";
+import { User, ProfileCircle, Bell, Palette, HelpCircle, LogOut, Lock, PrivacyPolicy, Trash, Download } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -22,15 +22,15 @@ interface SettingsNavProps {
 const sections: Array<{
   id: SettingsSection;
   label: string;
-  icon: typeof Settings;
+  icon: typeof Lock;
   description?: string;
 }> = [
   { id: 'account', label: 'Account', icon: Lock, description: 'Email, password, subscription' },
   { id: 'profile', label: 'Profile', icon: User, description: 'Display name, bio, avatar' },
-  { id: 'personal', label: 'Personal Info', icon: Shield, description: 'Name, location, preferences' },
+  { id: 'personal', label: 'Personal Info', icon: ProfileCircle, description: 'Name, location, preferences' },
   { id: 'app', label: 'App Preferences', icon: Palette, description: 'Theme, colors, behavior' },
   { id: 'notifications', label: 'Notifications', icon: Bell, description: 'Push notifications, quiet hours' },
-  { id: 'privacy', label: 'Privacy', icon: Shield, description: 'Visibility, data sharing' },
+  { id: 'privacy', label: 'Privacy', icon: PrivacyPolicy, description: 'Visibility, data sharing' },
   { id: 'support', label: 'Support & Help', icon: HelpCircle, description: 'FAQs, contact, feedback' },
 ];
 

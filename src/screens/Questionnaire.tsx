@@ -8,7 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Book, Xmark } from "iconoir-react";
+import { Xmark } from "iconoir-react";
+import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
+import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
+
+type QuestionnaireTransition = {
+  to: string;
+  message: string;
+};
 
 const GENRES = [
   "Fiction", "Non-Fiction", "Mystery", "Romance", "Sci-Fi", "Fantasy", 
@@ -24,6 +31,7 @@ const Questionnaire = () => {
   const [books1yr, setBooks1yr] = useState("");
   const [longestGenre, setLongestGenre] = useState("");
   const [loading, setLoading] = useState(false);
+  const [transition, setTransition] = useState<QuestionnaireTransition | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -62,7 +70,10 @@ const Questionnaire = () => {
         description: "Let's set up your reading goals.",
       });
 
-      navigate("/goals");
+      setTransition({
+        to: "/goals",
+        message: "Saving your reading profile...",
+      });
     } catch (error: unknown) {
       toast({
         variant: "destructive",
@@ -74,13 +85,17 @@ const Questionnaire = () => {
     }
   };
 
+  if (transition) {
+    return <BrandedRouteTransition to={transition.to} message={transition.message} />;
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8 md:px-8 safe-top safe-bottom">
       <Card className="w-full max-w-2xl lg:max-w-4xl">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="flex items-center space-x-2">
-              <Book className="h-6 w-6 text-primary" />
+              <ThemeAwareLogo variant="icon" tone="theme" size="h-8 w-8" className="drop-shadow-sm" />
               <span className="font-display text-xl font-bold text-primary">BRACK</span>
             </div>
           </div>

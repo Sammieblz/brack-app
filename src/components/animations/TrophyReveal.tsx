@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
-import { Trophy } from "iconoir-react";
 import { cn } from "@/lib/utils";
+import { BRACK_TROPHY_IMAGE } from "@/config/brackAssets";
 
 interface TrophyRevealProps {
   show?: boolean;
@@ -77,9 +77,12 @@ export const TrophyReveal = ({
         style={{ width: size * 1.5, height: size * 1.5 }}
       />
       <div ref={trophyRef} className="relative z-10">
-        <Trophy
-          className="text-yellow-500 fill-yellow-500"
+        <img
+          src={BRACK_TROPHY_IMAGE}
+          alt="Trophy"
+          className="rounded-md object-cover shadow-soft"
           style={{ width: size, height: size }}
+          draggable={false}
         />
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,22 +16,16 @@ import { getInitials } from "@/lib/avatarUtils";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { User, LogOut } from "iconoir-react";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS } from "@/config/navigation";
+import { NAV_GROUPS, getNavItemsBySection, isNavItemActive, type NavItem } from "@/config/navigation";
 
 interface ProfileDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-interface MenuItem {
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  path: string;
-  badge?: number;
-}
-
 export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile, isLoading } = useProfileContext();
   const { user, signOut } = useAuth();
   const { followersCount, followingCount } = useFollowing(user?.id || null);
@@ -71,15 +65,17 @@ export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
     { dependencies: [open, prefersReducedMotion] }
   );
 
-  const menuItems: MenuItem[] = [
-    { label: "Profile", icon: User, path: "/profile" },
-    ...NAV_ITEMS.filter((item) => item.label !== "Home").map((item) => ({
-      label: item.label,
-      icon: item.icon,
-      path: item.path,
-      badge: item.path === "/messages" && unreadCount > 0 ? unreadCount : undefined,
-    })),
-  ];
+  const getBadge = (item: NavItem) =>
+    item.path === "/messages" && unreadCount > 0 ? unreadCount : undefined;
+
+  const drawerGroups = NAV_GROUPS
+    .map((group) => ({
+      ...group,
+      items: getNavItemsBySection(group.section),
+    }))
+    .filter((group) => group.items.length > 0);
+
+  const accountItems = getNavItemsBySection("account");
 
   const handleMenuItemClick = (path: string) => {
     triggerHaptic("selection");
@@ -136,32 +132,89 @@ export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
 
           {/* Menu Items */}
           <div ref={menuItemsRef} className="flex-1 py-4">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.path}
-                  data-menu-item
-                  onClick={() => handleMenuItemClick(item.path)}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-6 py-3 text-left transition-colors",
-                    "hover:bg-muted/50 active:bg-muted",
-                    "focus:outline-none focus:bg-muted/50"
-                  )}
-                >
-                  <Icon className="h-5 w-5 text-muted-foreground" />
-                  <span className="font-sans flex-1 font-medium text-foreground">{item.label}</span>
-                  {item.badge !== undefined && item.badge > 0 && (
-                    <Badge 
-                      variant="destructive" 
-                      className="h-5 min-w-5 flex items-center justify-center px-1.5 text-xs"
-                    >
-                      {item.badge > 9 ? '9+' : item.badge}
-                    </Badge>
-                  )}
-                </button>
-              );
-            })}
+            <div className="px-3 pb-2">
+              <button
+                data-menu-item
+                onClick={() => handleMenuItemClick("/profile")}
+                className={cn(
+                  "w-full flex items-center gap-3 rounded-lg px-3 py-3 text-left transition-colors",
+                  "hover:bg-muted/50 active:bg-muted focus:outline-none focus:bg-muted/50",
+                  location.pathname === "/profile" && "bg-primary/10 text-primary"
+                )}
+              >
+                <User className={cn("h-5 w-5", location.pathname === "/profile" ? "text-primary" : "text-muted-foreground")} />
+                <span className="font-sans flex-1 font-medium">Profile</span>
+              </button>
+            </div>
+
+            {drawerGroups.map((group) => (
+              <div key={group.section} className="px-3 py-2">
+                <div className="px-3 pb-1.5 font-sans text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {group.label}
+                </div>
+                <div className="space-y-1">
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    const active = isNavItemActive(location.pathname, item);
+                    const badge = getBadge(item);
+
+                    return (
+                      <button
+                        key={item.path}
+                        data-menu-item
+                        onClick={() => handleMenuItemClick(item.path)}
+                        className={cn(
+                          "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
+                          "hover:bg-muted/50 active:bg-muted focus:outline-none focus:bg-muted/50",
+                          active && "bg-primary/10 text-primary"
+                        )}
+                      >
+                        <Icon className={cn("h-5 w-5", active ? "text-primary" : "text-muted-foreground")} />
+                        <span className="font-sans flex-1 font-medium">{item.label}</span>
+                        {badge !== undefined && badge > 0 && (
+                          <Badge
+                            variant="destructive"
+                            className="h-5 min-w-5 flex items-center justify-center px-1.5 text-xs"
+                          >
+                            {badge > 9 ? "9+" : badge}
+                          </Badge>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            {accountItems.length > 0 && (
+              <div className="px-3 py-2">
+                <div className="px-3 pb-1.5 font-sans text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Account
+                </div>
+                <div className="space-y-1">
+                  {accountItems.map((item) => {
+                    const Icon = item.icon;
+                    const active = isNavItemActive(location.pathname, item);
+
+                    return (
+                      <button
+                        key={item.path}
+                        data-menu-item
+                        onClick={() => handleMenuItemClick(item.path)}
+                        className={cn(
+                          "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
+                          "hover:bg-muted/50 active:bg-muted focus:outline-none focus:bg-muted/50",
+                          active && "bg-primary/10 text-primary"
+                        )}
+                      >
+                        <Icon className={cn("h-5 w-5", active ? "text-primary" : "text-muted-foreground")} />
+                        <span className="font-sans flex-1 font-medium">{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           <Separator />

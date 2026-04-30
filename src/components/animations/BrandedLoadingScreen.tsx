@@ -10,12 +10,14 @@ interface BrandedLoadingScreenProps {
   onComplete?: () => void;
   minDisplayTime?: number;
   progress?: number;
+  message?: string;
 }
 
 export const BrandedLoadingScreen = ({
   onComplete,
   minDisplayTime = 1500,
   progress,
+  message = "Loading your reading journey...",
 }: BrandedLoadingScreenProps) => {
   const [isVisible, setIsVisible] = useState(true);
   const logoRef = useRef<HTMLDivElement>(null);
@@ -130,6 +132,7 @@ export const BrandedLoadingScreen = ({
         <div className="relative">
           <ThemeAwareLogo
             variant="icon"
+            tone="theme"
             size="h-20 w-20 md:h-24 md:w-24"
             className="drop-shadow-lg"
           />
@@ -141,7 +144,7 @@ export const BrandedLoadingScreen = ({
       {/* Loading Text */}
       <div ref={textRef} className="opacity-0">
         <p className="font-sans text-lg md:text-xl font-medium text-muted-foreground">
-          Loading your reading journey...
+          {message}
         </p>
       </div>
 

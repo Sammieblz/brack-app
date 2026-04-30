@@ -13,7 +13,8 @@ export const StreakCalendar = ({ activityCalendar }: StreakCalendarProps) => {
 
   const getActivityColor = (activity: DayActivity) => {
     if (!activity.hasActivity) return "bg-muted";
-    
+    if (activity.source === "freeze") return "bg-primary/20 ring-1 ring-primary/50";
+
     const minutes = activity.totalMinutes;
     if (minutes >= 60) return "bg-primary";
     if (minutes >= 30) return "bg-primary/70";
@@ -23,34 +24,32 @@ export const StreakCalendar = ({ activityCalendar }: StreakCalendarProps) => {
 
   const getActivityLabel = (activity: DayActivity) => {
     if (!activity.hasActivity) return "No activity";
-    
+    if (activity.source === "freeze") return "Streak freeze used";
+
     const hours = Math.floor(activity.totalMinutes / 60);
     const mins = activity.totalMinutes % 60;
     const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-    
-    return `${activity.sessionCount} session${activity.sessionCount > 1 ? 's' : ''} • ${timeStr}`;
+    const activityCount = activity.sessionCount + activity.progressLogCount;
+
+    return `${activityCount} reading ${activityCount === 1 ? "entry" : "entries"} / ${timeStr}`;
   };
 
-  // Get current month data
   const today = new Date();
   const displayMonth = new Date(today.getFullYear(), today.getMonth() - currentMonthOffset, 1);
   const monthStart = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), 1);
   const monthEnd = new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 0);
-  
-  // Filter activities for current displayed month
-  const monthActivities = activityCalendar.filter(activity => {
-    const activityDate = new Date(activity.date);
+
+  const monthActivities = activityCalendar.filter((activity) => {
+    const activityDate = parseDateString(activity.date);
     return activityDate >= monthStart && activityDate <= monthEnd;
   });
 
-  // Pad the beginning to align with correct day of week
   const firstDayOfWeek = monthStart.getDay();
   const paddedActivities: (DayActivity | null)[] = [
     ...Array(firstDayOfWeek).fill(null),
-    ...monthActivities
+    ...monthActivities,
   ];
 
-  // Group by weeks for display
   const weeks: (DayActivity | null)[][] = [];
   for (let i = 0; i < paddedActivities.length; i += 7) {
     weeks.push(paddedActivities.slice(i, i + 7));
@@ -58,11 +57,14 @@ export const StreakCalendar = ({ activityCalendar }: StreakCalendarProps) => {
 
   const dayLabels = ["S", "M", "T", "W", "T", "F", "S"];
   const todayStr = today.toISOString().split("T")[0];
-  
-  const canGoBack = currentMonthOffset < 2; // Allow going back 3 months (0, 1, 2)
+
+  const canGoBack = currentMonthOffset < 2;
   const canGoForward = currentMonthOffset > 0;
 
-  const monthName = displayMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const monthName = displayMonth.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <Card>
@@ -99,16 +101,17 @@ export const StreakCalendar = ({ activityCalendar }: StreakCalendarProps) => {
       </CardHeader>
       <CardContent className="pb-4">
         <div className="space-y-2">
-          {/* Day labels */}
           <div className="grid grid-cols-7 gap-1">
             {dayLabels.map((day, i) => (
-              <div key={i} className="font-sans text-[10px] text-muted-foreground text-center font-medium h-5 flex items-center justify-center">
+              <div
+                key={i}
+                className="font-sans text-[10px] text-muted-foreground text-center font-medium h-5 flex items-center justify-center"
+              >
                 {day}
               </div>
             ))}
           </div>
 
-          {/* Calendar grid */}
           <div className="space-y-1">
             {weeks.map((week, weekIdx) => (
               <div key={weekIdx} className="grid grid-cols-7 gap-1">
@@ -116,10 +119,10 @@ export const StreakCalendar = ({ activityCalendar }: StreakCalendarProps) => {
                   if (!day) {
                     return <div key={dayIdx} className="aspect-square" />;
                   }
-                  
+
                   const isToday = day.date === todayStr;
-                  const date = new Date(day.date);
-                  
+                  const date = parseDateString(day.date);
+
                   return (
                     <div
                       key={dayIdx}
@@ -130,15 +133,21 @@ export const StreakCalendar = ({ activityCalendar }: StreakCalendarProps) => {
                         className={`
                           aspect-square rounded-sm
                           ${getActivityColor(day)}
-                          ${isToday ? 'ring-1 ring-primary ring-offset-1' : ''}
+                          ${isToday ? "ring-1 ring-primary ring-offset-1" : ""}
                           transition-all hover:scale-110 cursor-pointer
                         `}
                       />
-                      
-                      {/* Tooltip on hover */}
+
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover border text-popover-foreground text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                        <div className="font-sans font-medium">{date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
-                        <div className="font-sans text-muted-foreground">{getActivityLabel(day)}</div>
+                        <div className="font-sans font-medium">
+                          {date.toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </div>
+                        <div className="font-sans text-muted-foreground">
+                          {getActivityLabel(day)}
+                        </div>
                       </div>
                     </div>
                   );
@@ -147,7 +156,6 @@ export const StreakCalendar = ({ activityCalendar }: StreakCalendarProps) => {
             ))}
           </div>
 
-          {/* Legend */}
           <div className="flex items-center justify-between pt-3 border-t text-[10px] text-muted-foreground">
             <span className="font-sans">Less</span>
             <div className="flex gap-1">
@@ -163,4 +171,9 @@ export const StreakCalendar = ({ activityCalendar }: StreakCalendarProps) => {
       </CardContent>
     </Card>
   );
+};
+
+const parseDateString = (dateString: string) => {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
 };

@@ -84,6 +84,18 @@ export interface ReadingSession {
   created_at: string;
 }
 
+export interface ReadingStreakDay {
+  id: string;
+  user_id: string;
+  activity_date: string;
+  session_count: number;
+  progress_log_count: number;
+  total_minutes: number;
+  used_freeze: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Badge {
   id: string;
   title: string;

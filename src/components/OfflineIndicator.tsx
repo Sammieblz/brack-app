@@ -64,16 +64,18 @@ export const OfflineIndicator = () => {
 
   return (
     <Alert
-      className={`fixed top-16 left-1/2 transform -translate-x-1/2 z-50 max-w-md shadow-lg ${
-        isOnline ? 'bg-blue-50 border-blue-200' : 'bg-orange-50 border-orange-200'
+      className={`fixed left-1/2 top-16 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 border shadow-lg backdrop-blur ${
+        isOnline
+          ? 'border-blue-500/30 bg-blue-500/10 text-blue-900 dark:text-blue-100'
+          : 'border-orange-500/30 bg-orange-500/10 text-orange-900 dark:text-orange-100'
       }`}
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           {isOnline ? (
             <>
-              <Wifi className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="font-sans text-blue-800">
+              <Wifi className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+              <AlertDescription className="font-sans text-current">
                 {queueSize > 0 ? (
                   <>
                     {queueSize} pending change{queueSize > 1 ? 's' : ''} to sync
@@ -88,8 +90,8 @@ export const OfflineIndicator = () => {
             </>
           ) : (
             <>
-              <WifiOff className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="font-sans text-orange-800">
+              <WifiOff className="h-4 w-4 text-orange-600 dark:text-orange-300" />
+              <AlertDescription className="font-sans text-current">
                 You're offline. {queueSize > 0 && `${queueSize} change${queueSize > 1 ? 's' : ''} queued`}
               </AlertDescription>
             </>
@@ -102,7 +104,7 @@ export const OfflineIndicator = () => {
             variant="outline"
             onClick={handleSync}
             disabled={syncing}
-            className="h-8"
+            className="h-8 bg-background/80"
           >
             {syncing ? (
               <>

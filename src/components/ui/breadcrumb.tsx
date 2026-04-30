@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
-import { NavArrowRight, Dots } from "iconoir-react"
+import { NavArrowRight } from "iconoir-react"
 
 import { cn } from "@/lib/utils"
 
@@ -98,7 +98,11 @@ const BreadcrumbEllipsis = ({
     className={cn("flex h-9 w-9 items-center justify-center", className)}
     {...props}
   >
-    <Dots className="h-4 w-4" />
+    <span className="flex items-center gap-0.5" aria-hidden="true">
+      <span className="h-1 w-1 rounded-full bg-current" />
+      <span className="h-1 w-1 rounded-full bg-current" />
+      <span className="h-1 w-1 rounded-full bg-current" />
+    </span>
     <span className="sr-only">More</span>
   </span>
 )

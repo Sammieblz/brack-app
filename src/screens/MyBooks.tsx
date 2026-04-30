@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Book, Search, Filter, Refresh, StatsReport } from "iconoir-react";
+import { Book, Bookmark, Search, Filter, Refresh, StatsReport } from "iconoir-react";
 import { BookCard } from "@/components/BookCard";
 import { SwipeableBookCard } from "@/components/SwipeableBookCard";
 import { useAuth } from "@/hooks/useAuth";
@@ -251,21 +251,32 @@ const MyBooks = () => {
             title="My Library" 
             subtitle="Manage your personal collection"
             action={
-              <div className="flex gap-3">
+              <div className="flex flex-wrap justify-end gap-2">
                 <Button 
                   onClick={() => navigate("/book-lists")}
                   variant="outline"
                   size="sm"
+                  title="Book Lists"
                 >
-                  Book Lists
+                  <Bookmark className="h-4 w-4 lg:mr-2" />
+                  <span className="hidden lg:inline">Book Lists</span>
                 </Button>
                 <Button 
                   onClick={() => navigate("/analytics")}
                   variant="outline"
                   size="sm"
+                  title="Analytics"
                 >
-                  <StatsReport className="mr-2 h-4 w-4" />
-                  Analytics
+                  <StatsReport className="h-4 w-4 lg:mr-2" />
+                  <span className="hidden lg:inline">Analytics</span>
+                </Button>
+                <Button
+                  onClick={() => navigate("/add-book")}
+                  size="sm"
+                  title="Add Book"
+                >
+                  <Book className="h-4 w-4 lg:mr-2" />
+                  <span className="hidden lg:inline">Add Book</span>
                 </Button>
               </div>
             }
@@ -274,39 +285,6 @@ const MyBooks = () => {
         )}
         
         <NativeScrollView id="library-scroll" className="app-page space-y-4 md:space-y-6">
-          {/* Desktop Header */}
-          {!isMobile && (
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-bold flex items-center">
-                  <Book className="mr-3 h-8 w-8 text-primary" />
-                  My Books
-                </h1>
-                <p className="text-muted-foreground mt-1">Manage your personal library</p>
-              </div>
-              
-              <div className="flex gap-3">
-                <Button 
-                  onClick={() => navigate("/book-lists")}
-                  variant="outline"
-                >
-                  Book Lists
-                </Button>
-                <Button 
-                  onClick={() => navigate("/analytics")}
-                  variant="outline"
-                >
-                  <StatsReport className="mr-2 h-4 w-4" />
-                  Analytics
-                </Button>
-                <Button onClick={() => navigate("/add-book")}>
-                  <Book className="mr-2 h-4 w-4" />
-                  Add Book
-                </Button>
-              </div>
-            </div>
-          )}
-
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             {loading ? (

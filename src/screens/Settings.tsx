@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { AccountSettings } from "@/components/settings/AccountSettings";
@@ -17,7 +17,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Settings as SettingsIcon, User, Shield, Bell, Palette, HelpCircle, LogOut } from "iconoir-react";
+import { Lock, User, ProfileCircle, Bell, Palette, PrivacyPolicy, HelpCircle, LogOut } from "iconoir-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { cn } from "@/lib/utils";
 
@@ -33,14 +33,14 @@ type SettingsSection =
 const sections: Array<{
   id: SettingsSection;
   label: string;
-  icon: typeof SettingsIcon;
+  icon: typeof Lock;
   description: string;
   component: (user: { id: string }) => React.ReactNode;
 }> = [
   { 
     id: 'account', 
     label: 'Account', 
-    icon: SettingsIcon, 
+    icon: Lock,
     description: 'Email, password, subscription',
     component: (user) => <AccountSettings user={user} />
   },
@@ -54,7 +54,7 @@ const sections: Array<{
   { 
     id: 'personal', 
     label: 'Personal Info', 
-    icon: Shield, 
+    icon: ProfileCircle,
     description: 'Name, location, preferences',
     component: (user) => <PersonalInfo user={user} />
   },
@@ -75,7 +75,7 @@ const sections: Array<{
   { 
     id: 'privacy', 
     label: 'Privacy', 
-    icon: Shield, 
+    icon: PrivacyPolicy,
     description: 'Visibility, data sharing',
     component: (user) => <PrivacySettings user={user} />
   },
@@ -88,20 +88,42 @@ const sections: Array<{
   },
 ];
 
+const getSettingsSection = (value: string | null): SettingsSection | null =>
+  sections.some((section) => section.id === value) ? (value as SettingsSection) : null;
+
 const Settings = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { triggerHaptic } = useHapticFeedback();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
-  const [activeSection, setActiveSection] = useState<SettingsSection>('account');
+  const [activeSection, setActiveSection] = useState<SettingsSection>(
+    () => getSettingsSection(searchParams.get('section')) ?? 'account'
+  );
 
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth");
     }
   }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    setActiveSection(getSettingsSection(searchParams.get('section')) ?? 'account');
+  }, [searchParams]);
+
+  const handleSectionChange = (section: SettingsSection) => {
+    triggerHaptic("light");
+    setActiveSection(section);
+
+    if (section === 'account') {
+      setSearchParams({}, { replace: true });
+      return;
+    }
+
+    setSearchParams({ section }, { replace: true });
+  };
 
   const handleSignOut = async () => {
     try {
@@ -150,7 +172,7 @@ const Settings = () => {
         )}
 
         {isMobile ? (
-          <Accordion type="single" collapsible className="w-full space-y-2">
+          <Accordion type="single" collapsible defaultValue={activeSection} className="w-full space-y-2">
             {sections.map((section) => {
               const Icon = section.icon;
               
@@ -197,10 +219,7 @@ const Settings = () => {
                     <button
                       key={section.id}
                       type="button"
-                      onClick={() => {
-                        triggerHaptic("light");
-                        setActiveSection(section.id);
-                      }}
+                      onClick={() => handleSectionChange(section.id)}
                       className={cn(
                         "flex w-full items-center gap-3 rounded-md px-3 py-3 text-left transition-colors",
                         active

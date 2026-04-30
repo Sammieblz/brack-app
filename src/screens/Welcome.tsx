@@ -5,9 +5,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, SkipNext } from "iconoir-react";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
+import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
+import { BRACK_GOALS_IMAGE } from "@/config/brackAssets";
+
+type WelcomeTransition = {
+  to: string;
+  message: string;
+};
 
 const Welcome = () => {
   const [userName, setUserName] = useState("");
+  const [transition, setTransition] = useState<WelcomeTransition | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,8 +41,15 @@ const Welcome = () => {
   };
 
   const handleSkip = () => {
-    navigate("/dashboard");
+    setTransition({
+      to: "/dashboard",
+      message: "Opening your dashboard...",
+    });
   };
+
+  if (transition) {
+    return <BrandedRouteTransition to={transition.to} message={transition.message} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-background flex items-center justify-center px-4 py-8 relative overflow-hidden safe-top safe-bottom">
@@ -48,7 +63,7 @@ const Welcome = () => {
         {/* Logo — Brack icon */}
         <div className="text-center mb-8 animate-slide-up">
           <div className="flex flex-col items-center gap-3 mb-6">
-            <ThemeAwareLogo variant="icon" size="h-16 w-16" className="drop-shadow-lg" />
+            <ThemeAwareLogo variant="icon" tone="theme" size="h-16 w-16" className="drop-shadow-lg" />
             <span className="font-display text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               BRACK
             </span>
@@ -69,16 +84,24 @@ const Welcome = () => {
             </div>
             
             {/* Goal Card */}
-            <div className="p-6 bg-gradient-primary/10 rounded-2xl border border-primary/20 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mx-auto mb-4 shadow-soft">
-                <Trophy className="h-6 w-6 text-white" />
+            <div className="grid gap-4 rounded-md border border-primary/20 bg-primary/10 p-4 text-left sm:grid-cols-[6rem_minmax(0,1fr)] sm:items-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              <div className="mx-auto h-24 w-24 overflow-hidden rounded-md border border-border/70 bg-background sm:mx-0">
+                <img
+                  src={BRACK_GOALS_IMAGE}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-full w-full object-cover"
+                  draggable={false}
+                />
               </div>
-              <p className="font-sans text-foreground font-medium">
-                Do you have a reading goal in mind?
-              </p>
-              <p className="font-sans text-muted-foreground text-sm mt-2">
-                Setting goals helps you stay motivated and track progress
-              </p>
+              <div>
+                <p className="font-sans font-medium text-foreground">
+                  Do you have a reading goal in mind?
+                </p>
+                <p className="font-sans text-muted-foreground text-sm mt-2">
+                  Setting goals helps you stay motivated and track progress
+                </p>
+              </div>
             </div>
             
             {/* Action Buttons */}

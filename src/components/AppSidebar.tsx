@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LogOut, User } from "iconoir-react";
+import { HalfMoon, LogOut, SunLight } from "iconoir-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import {
@@ -16,15 +16,17 @@ import {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfileContext } from "@/contexts/ProfileContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { getInitials } from "@/lib/avatarUtils";
-import { getNavItemsBySection, isNavItemActive, type NavItem } from "@/config/navigation";
+import { NAV_GROUPS, getNavItemsBySection, isNavItemActive, type NavItem } from "@/config/navigation";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 const renderNavGroup = (label: string, items: NavItem[], pathname: string) => (
-  <SidebarGroup>
+  <SidebarGroup className="px-2 py-1.5">
     <SidebarGroupLabel>{label}</SidebarGroupLabel>
     <SidebarGroupContent>
       <SidebarMenu>
@@ -53,7 +55,10 @@ export const AppSidebar = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { profile } = useProfileContext();
+  const { resolvedTheme, setThemeMode } = useTheme();
   const { triggerHaptic } = useHapticFeedback();
+  const { setOpen } = useSidebar();
+  const isDarkMode = resolvedTheme === "dark";
 
   const displayName =
     profile?.display_name ||
@@ -68,13 +73,23 @@ export const AppSidebar = () => {
     navigate("/");
   };
 
+  const handleThemeToggle = () => {
+    triggerHaptic("selection");
+    void setThemeMode(isDarkMode ? "light" : "dark");
+  };
+
   return (
     <Sidebar collapsible="icon" variant="sidebar">
-      <SidebarHeader className="p-3">
-        <div className="flex items-center gap-2">
-          <SidebarMenuButton asChild size="lg" tooltip="Dashboard" className="min-w-0 flex-1">
+      <SidebarHeader className="px-2 py-3 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-2">
+        <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
+          <SidebarMenuButton
+            asChild
+            size="lg"
+            tooltip="Dashboard"
+            className="min-w-0 flex-1 rounded-lg group-data-[collapsible=icon]:hidden"
+          >
             <Link to="/dashboard" className="min-w-0">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 p-1 shadow-sm ring-1 ring-primary/25">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 p-1.5 shadow-sm ring-1 ring-primary/25">
                 <ThemeAwareLogo
                   variant="icon"
                   tone="theme"
@@ -88,17 +103,36 @@ export const AppSidebar = () => {
               </div>
             </Link>
           </SidebarMenuButton>
-          <SidebarTrigger className="shrink-0" />
+
+          <button
+            type="button"
+            aria-label="Open sidebar"
+            title="Open sidebar"
+            onClick={() => setOpen(true)}
+            className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 p-1.5 shadow-sm ring-1 ring-primary/25 transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:flex"
+          >
+            <ThemeAwareLogo
+              variant="icon"
+              tone="theme"
+              size="h-full w-full"
+              className="drop-shadow-sm"
+            />
+          </button>
+
+          <SidebarTrigger className="shrink-0 group-data-[collapsible=icon]:hidden" />
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
-        {renderNavGroup("Read", getNavItemsBySection("primary"), location.pathname)}
-        <SidebarSeparator />
-        {renderNavGroup("Community", getNavItemsBySection("social"), location.pathname)}
+      <SidebarContent className="px-1 group-data-[collapsible=icon]:px-0">
+        {NAV_GROUPS.map((group, index) => (
+          <div key={group.section}>
+            {index > 0 && <SidebarSeparator />}
+            {renderNavGroup(group.label, getNavItemsBySection(group.section), location.pathname)}
+          </div>
+        ))}
       </SidebarContent>
 
-      <SidebarFooter className="p-3">
+      <SidebarFooter className="px-2 py-3">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Profile" isActive={location.pathname === "/profile"}>
@@ -131,6 +165,21 @@ export const AppSidebar = () => {
               </SidebarMenuItem>
             );
           })}
+
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+              onClick={handleThemeToggle}
+              aria-pressed={isDarkMode}
+            >
+              {isDarkMode ? (
+                <SunLight className="h-4 w-4 text-primary" />
+              ) : (
+                <HalfMoon className="h-4 w-4 text-primary" />
+              )}
+              <span>{isDarkMode ? "Light mode" : "Dark mode"}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
 
           <SidebarMenuItem>
             <SidebarMenuButton tooltip="Sign out" onClick={handleSignOut}>

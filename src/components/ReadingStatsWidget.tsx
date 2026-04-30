@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowRight,
-  Book,
+  Book as BookIcon,
   CheckCircle,
   Clock,
   Flash,
@@ -213,7 +213,7 @@ export const ReadingStatsWidget = ({
                 </p>
               </div>
               <div className="rounded-md bg-background p-2 text-primary ring-1 ring-border/70">
-                <Book className="h-5 w-5" />
+                <BookIcon className="h-5 w-5" />
               </div>
             </div>
 
