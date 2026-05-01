@@ -15,13 +15,13 @@ import { TimeDistributionChart } from "@/components/charts/TimeDistributionChart
 import { StatusFunnelChart } from "@/components/charts/StatusFunnelChart";
 import { ChartSkeleton } from "@/components/skeletons/ChartSkeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatsReport, Book, Clock } from "iconoir-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useBooks } from "@/hooks/useBooks";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { APP_ICONS } from "@/config/iconography";
 
 const Analytics = () => {
   const { user } = useAuth();
@@ -53,7 +53,7 @@ const Analytics = () => {
   if (loading) {
     return (
       <MobileLayout>
-        {isMobile && <MobileHeader title="Analytics" showBack />}
+        {isMobile && <MobileHeader title="Analytics" />}
         <div className="flex items-center justify-center h-96">
           <LoadingSpinner size="lg" text="Loading analytics..." />
         </div>
@@ -63,13 +63,13 @@ const Analytics = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Analytics" showBack />}
+      {isMobile && <MobileHeader title="Analytics" />}
       
       <div className="app-page space-y-6">
         {/* Header - Desktop only */}
         {!isMobile && (
           <div className="flex items-center space-x-3">
-            <StatsReport className="h-8 w-8 text-primary" />
+            <APP_ICONS.analytics.header className="h-8 w-8 text-primary" />
             <div>
               <h1 className="font-display text-3xl font-bold">Analytics Dashboard</h1>
               <p className="font-sans text-muted-foreground">
@@ -84,7 +84,7 @@ const Analytics = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Books Completed</CardTitle>
-              <Book className="h-4 w-4 text-muted-foreground" />
+              <APP_ICONS.analytics.completed className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="font-sans text-2xl font-bold text-primary">{completedBooks}</div>
@@ -97,7 +97,7 @@ const Analytics = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="font-sans text-sm font-medium">Total Reading Time</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <APP_ICONS.analytics.readingTime className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="font-sans text-2xl font-bold text-primary">{totalHours}h</div>
@@ -110,7 +110,7 @@ const Analytics = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="font-sans text-sm font-medium">Daily Average</CardTitle>
-              <StatsReport className="h-4 w-4 text-muted-foreground" />
+              <APP_ICONS.analytics.dailyAverage className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="font-sans text-2xl font-bold text-primary">{avgMinutesPerDay}m</div>
@@ -123,7 +123,7 @@ const Analytics = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="font-sans text-sm font-medium">Favorite Genre</CardTitle>
-              <Book className="h-4 w-4 text-muted-foreground" />
+              <APP_ICONS.analytics.favoriteGenre className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="font-sans text-2xl font-bold text-primary">
@@ -221,7 +221,12 @@ const Analytics = () => {
             {loading ? (
               <ChartSkeleton />
             ) : heatmapData.length > 0 ? (
-              <ReadingHeatmap data={heatmapData} />
+              <ReadingHeatmap
+                data={heatmapData}
+                title="Reading Activity Heatmap"
+                subtitle="Daily reading time across the last 12 weeks"
+                weeks={12}
+              />
             ) : null}
 
             {/* Reading Pace */}
@@ -251,7 +256,7 @@ const Analytics = () => {
         {!loading && readingProgress.length === 0 && genreData.length === 0 && weeklyReading.length === 0 && (
           <Card>
             <CardContent className="p-8 text-center">
-              <StatsReport className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <APP_ICONS.analytics.empty className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="font-display text-lg font-semibold mb-2">No analytics data yet</h3>
               <p className="text-muted-foreground">
                 Start reading and tracking your sessions to see beautiful analytics here.

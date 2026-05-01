@@ -2,12 +2,12 @@ import { useBookClubs } from "@/hooks/useBookClubs";
 import { BookClubCard } from "@/components/clubs/BookClubCard";
 import { CreateClubDialog } from "@/components/clubs/CreateClubDialog";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Group, Bookmark } from "iconoir-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { APP_ICONS } from "@/config/iconography";
 
 const BookClubs = () => {
   const { clubs, loading, createClub, joinClub, leaveClub, fetchClubs } = useBookClubs();
@@ -41,7 +41,7 @@ const BookClubs = () => {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
-                  <Group className="h-7 w-7 text-primary" />
+                  <APP_ICONS.readers.clubs className="h-7 w-7 text-primary" />
                 </div>
                 <h1 className="font-display text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                   Book Clubs
@@ -58,11 +58,11 @@ const BookClubs = () => {
         <Tabs defaultValue="my-clubs" className="space-y-6">
           <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="my-clubs" className="flex items-center gap-2">
-              <Bookmark className="h-4 w-4" />
+              <APP_ICONS.readers.myClubs className="h-4 w-4" />
               My Clubs ({myClubs.length})
             </TabsTrigger>
             <TabsTrigger value="discover" className="flex items-center gap-2">
-              <Group className="h-4 w-4" />
+              <APP_ICONS.readers.discoverClubs className="h-4 w-4" />
               Discover ({publicClubs.length})
             </TabsTrigger>
           </TabsList>
@@ -72,7 +72,7 @@ const BookClubs = () => {
               <div className="text-center py-16 animate-fade-in">
                 <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 max-w-md mx-auto">
                   <div className="p-4 rounded-full bg-primary/20 w-fit mx-auto mb-4">
-                    <Group className="h-8 w-8 text-primary" />
+                    <APP_ICONS.readers.clubs className="h-8 w-8 text-primary" />
                   </div>
                   <h3 className="font-display text-lg font-semibold mb-2">No clubs yet</h3>
                   <p className="font-sans text-muted-foreground mb-6">
@@ -103,7 +103,7 @@ const BookClubs = () => {
               <div className="text-center py-16 animate-fade-in">
                 <div className="p-6 rounded-2xl bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/20 max-w-md mx-auto">
                   <div className="p-4 rounded-full bg-secondary/20 w-fit mx-auto mb-4">
-                    <Group className="h-8 w-8 text-secondary" />
+                    <APP_ICONS.readers.discoverClubs className="h-8 w-8 text-secondary" />
                   </div>
                   <h3 className="font-display text-lg font-semibold mb-2">No public clubs</h3>
                   <p className="font-sans text-muted-foreground">

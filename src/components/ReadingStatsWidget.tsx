@@ -3,21 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  ArrowRight,
-  Book as BookIcon,
-  CheckCircle,
-  Clock,
-  Flash,
-  Page,
-  ShareIos,
-  StatsReport,
-  Trophy,
-} from "iconoir-react";
+import { NavArrowRight, ShareIos } from "iconoir-react";
 import { useToast } from "@/hooks/use-toast";
 import { shareService } from "@/services/shareService";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { APP_ICONS } from "@/config/iconography";
 import type { Book } from "@/types";
 
 interface ReadingStatsWidgetProps {
@@ -125,25 +116,25 @@ export const ReadingStatsWidget = ({
       label: "Reading time",
       value: `${stats.totalReadingHours.toLocaleString(undefined, { maximumFractionDigits: 1 })}h`,
       detail: "logged sessions",
-      icon: Clock,
+      icon: APP_ICONS.stats.readingTime,
     },
     {
       label: "Pages read",
       value: stats.totalPages.toLocaleString(),
       detail: `${pagesPerBook.toLocaleString()} avg / book`,
-      icon: Page,
+      icon: APP_ICONS.stats.pagesRead,
     },
     {
       label: "Pace",
       value: stats.avgPagesPerHour.toLocaleString(undefined, { maximumFractionDigits: 1 }),
       detail: "pages / hour",
-      icon: Flash,
+      icon: APP_ICONS.stats.pace,
     },
     {
       label: "Longest book",
       value: stats.longestBook.toLocaleString(),
       detail: "pages",
-      icon: Trophy,
+      icon: APP_ICONS.stats.longestBook,
     },
   ];
 
@@ -165,7 +156,7 @@ export const ReadingStatsWidget = ({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1">
             <CardTitle className="font-display flex items-center text-base md:text-lg">
-              <StatsReport className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+              <APP_ICONS.stats.header className="h-4 w-4 md:h-5 md:w-5 mr-2" />
               Reading Statistics
             </CardTitle>
             <p className="font-sans text-sm text-muted-foreground">
@@ -189,7 +180,7 @@ export const ReadingStatsWidget = ({
               onClick={() => navigate('/analytics')}
               title="View detailed analytics"
             >
-              <ArrowRight className="h-4 w-4" />
+              <NavArrowRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -213,7 +204,7 @@ export const ReadingStatsWidget = ({
                 </p>
               </div>
               <div className="rounded-md bg-background p-2 text-primary ring-1 ring-border/70">
-                <BookIcon className="h-5 w-5" />
+                <APP_ICONS.stats.library className="h-5 w-5" />
               </div>
             </div>
 
@@ -228,7 +219,7 @@ export const ReadingStatsWidget = ({
             <div className="mt-5 grid grid-cols-2 gap-4 border-t border-border/70 pt-4">
               <div>
                 <div className="flex items-center gap-1.5 text-primary">
-                  <CheckCircle className="h-4 w-4" />
+                  <APP_ICONS.stats.completed className="h-4 w-4" />
                   <span className="font-sans text-lg font-semibold">
                     {stats.completedBooks.toLocaleString()}
                   </span>
@@ -237,7 +228,7 @@ export const ReadingStatsWidget = ({
               </div>
               <div>
                 <div className="flex items-center gap-1.5 text-primary">
-                  <Trophy className="h-4 w-4" />
+                  <APP_ICONS.stats.streak className="h-4 w-4" />
                   <span className="font-sans text-lg font-semibold">
                     {currentStreak.toLocaleString()}
                   </span>

@@ -3,9 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Book, Refresh, Star, Camera } from "iconoir-react";
+import { Search, Plus, Refresh, Star, Camera } from "iconoir-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { APP_ICONS } from "@/config/iconography";
 import type { GoogleBookResult } from "@/types/googleBooks";
 
 interface BookSearchProps {
@@ -283,7 +284,7 @@ export const BookSearch = ({ onSelectBook, onQuickAdd, initialQuery }: BookSearc
                         />
                       ) : (
                         <div className="w-16 h-24 bg-gradient-primary rounded flex items-center justify-center">
-                          <Book className="h-8 w-8 text-white" />
+                          <APP_ICONS.dashboard.coverFallback className="h-8 w-8 text-white" />
                         </div>
                       )}
                     </div>

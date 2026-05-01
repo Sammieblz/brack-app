@@ -5,6 +5,7 @@ import { useFollowing } from "@/hooks/useFollowing";
 import { useAuth } from "@/hooks/useAuth";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
+import { AppBackButton } from "@/components/AppBackButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -20,17 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import {
-  Book as BookIcon,
-  Bookmark,
-  Trophy,
-  FireFlame,
-  Calendar,
-  Group,
-  Settings,
-  ChatBubble,
-  Book as BookUser,
-} from "iconoir-react";
+import { APP_ICONS } from "@/config/iconography";
 import { format } from "date-fns";
 import type { Book } from "@/types";
 import type { Post } from "@/hooks/usePosts";
@@ -67,6 +58,7 @@ const UserProfile = () => {
   const { triggerHaptic } = useHapticFeedback();
 
   const isOwnProfile = currentUser?.id === resolvedUserId;
+  const profileBackPath = routeUserId === "me" ? "/profile" : "/readers";
 
   useEffect(() => {
     if (!authLoading && routeUserId === "me" && !currentUser) {
@@ -171,7 +163,12 @@ const UserProfile = () => {
   if (authLoading || loading || (routeUserId === "me" && !resolvedUserId)) {
     return (
       <MobileLayout>
-        {isMobile && <MobileHeader title="Profile" showBack />}
+        {isMobile && (
+          <MobileHeader
+            title="Profile"
+            back={{ label: "Back", ariaLabel: "Go back", fallbackPath: profileBackPath }}
+          />
+        )}
         <div className="app-page-narrow space-y-6 animate-fade-in">
           {/* Profile Header Loading */}
           <Card>
@@ -197,7 +194,12 @@ const UserProfile = () => {
   if (error || !profile) {
     return (
       <MobileLayout>
-        {isMobile && <MobileHeader title="Profile" showBack />}
+        {isMobile && (
+          <MobileHeader
+            title="Profile"
+            back={{ label: "Back", ariaLabel: "Go back", fallbackPath: profileBackPath }}
+          />
+        )}
         <div className="app-page-narrow">
           <Card>
             <CardContent className="py-12 text-center">
@@ -205,9 +207,14 @@ const UserProfile = () => {
               <p className="text-muted-foreground mb-4">
                 {error || "This profile doesn't exist or is private"}
               </p>
-              <Button onClick={() => navigate(-1)}>
-                Back
-              </Button>
+              <AppBackButton
+                label="Back"
+                ariaLabel="Go back"
+                fallbackPath={profileBackPath}
+                showLabel
+                variant="outline"
+                className="mx-auto border-border/70 bg-card/45 shadow-none hover:bg-accent"
+              />
             </CardContent>
           </Card>
         </div>
@@ -230,10 +237,21 @@ const UserProfile = () => {
       {isMobile && (
         <MobileHeader
           title={profile.display_name || "Profile"}
-          showBack
+          back={{ label: "Back", ariaLabel: "Go back", fallbackPath: profileBackPath }}
         />
       )}
       <div className="app-page-narrow space-y-6 animate-fade-in">
+        {!isMobile && (
+          <AppBackButton
+            label="Back"
+            ariaLabel="Go back"
+            fallbackPath={profileBackPath}
+            showLabel
+            variant="outline"
+            className="border-border/70 bg-card/45 shadow-none hover:bg-accent"
+          />
+        )}
+
         {/* Profile Header */}
         <Card className="overflow-hidden">
           <CardContent className="p-6">
@@ -266,7 +284,7 @@ const UserProfile = () => {
                         triggerHaptic("light");
                         navigate("/profile");
                       }}>
-                        <Settings className="mr-2 h-4 w-4" />
+                        <APP_ICONS.profile.edit className="mr-2 h-4 w-4" />
                         Edit Profile
                       </Button>
                     ) : (
@@ -279,7 +297,7 @@ const UserProfile = () => {
                             navigate("/messages", { state: { startConversationWith: resolvedUserId } });
                           }}
                         >
-                          <ChatBubble className="mr-2 h-4 w-4" />
+                          <APP_ICONS.profile.message className="mr-2 h-4 w-4" />
                           {isMobile ? "" : "Message"}
                         </Button>
                       </>
@@ -290,20 +308,20 @@ const UserProfile = () => {
                 {/* Stats Row */}
                 <div className="flex flex-wrap gap-4 sm:gap-6 font-sans text-sm">
                   <div className="flex items-center gap-2">
-                    <Group className="h-4 w-4 text-muted-foreground" />
+                    <APP_ICONS.profile.followers className="h-4 w-4 text-muted-foreground" />
                     <span>
                       <strong>{followersCount}</strong> Followers
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Group className="h-4 w-4 text-muted-foreground" />
+                    <APP_ICONS.profile.following className="h-4 w-4 text-muted-foreground" />
                     <span>
                       <strong>{followingCount}</strong> Following
                     </span>
                   </div>
                   {!isMobile && (
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <APP_ICONS.profile.joined className="h-4 w-4 text-muted-foreground" />
                       <span>
                         Joined {format(new Date(profile.created_at), "MMM yyyy")}
                       </span>
@@ -330,7 +348,7 @@ const UserProfile = () => {
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
-                <BookIcon className="h-4 w-4 text-primary shrink-0" />
+                <APP_ICONS.profile.totalBooks className="h-4 w-4 text-primary shrink-0" />
                 <span className="truncate">Total Books</span>
               </CardTitle>
             </CardHeader>
@@ -342,7 +360,7 @@ const UserProfile = () => {
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="font-sans text-xs sm:text-sm font-medium flex items-center gap-2">
-                <Bookmark className="h-4 w-4 text-primary shrink-0" />
+                <APP_ICONS.profile.booksRead className="h-4 w-4 text-primary shrink-0" />
                 <span className="truncate">Books Read</span>
               </CardTitle>
             </CardHeader>
@@ -354,7 +372,7 @@ const UserProfile = () => {
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="font-sans text-xs sm:text-sm font-medium flex items-center gap-2">
-                <FireFlame className="h-4 w-4 text-primary shrink-0" />
+                <APP_ICONS.profile.streak className="h-4 w-4 text-primary shrink-0" />
                 <span className="truncate">Streak</span>
               </CardTitle>
             </CardHeader>
@@ -367,7 +385,7 @@ const UserProfile = () => {
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="font-sans text-xs sm:text-sm font-medium flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-primary shrink-0" />
+                <APP_ICONS.profile.badges className="h-4 w-4 text-primary shrink-0" />
                 <span className="truncate">Badges</span>
               </CardTitle>
             </CardHeader>
@@ -384,13 +402,13 @@ const UserProfile = () => {
         }} className="w-full">
           <TabsList className="grid w-full grid-cols-3 sticky top-0 z-10 bg-background">
             <TabsTrigger value="books" className="text-xs sm:text-sm">
-              {isMobile ? <BookIcon className="h-4 w-4" /> : <><BookIcon className="h-4 w-4 mr-2" />Books</>}
+              {isMobile ? <APP_ICONS.profile.booksTab className="h-4 w-4" /> : <><APP_ICONS.profile.booksTab className="h-4 w-4 mr-2" />Books</>}
             </TabsTrigger>
             <TabsTrigger value="posts" className="text-xs sm:text-sm">
-              {isMobile ? <ChatBubble className="h-4 w-4" /> : <><ChatBubble className="h-4 w-4 mr-2" />Posts</>}
+              {isMobile ? <APP_ICONS.profile.posts className="h-4 w-4" /> : <><APP_ICONS.profile.posts className="h-4 w-4 mr-2" />Posts</>}
             </TabsTrigger>
             <TabsTrigger value="clubs" className="text-xs sm:text-sm">
-              {isMobile ? <BookUser className="h-4 w-4" /> : <><BookUser className="h-4 w-4 mr-2" />Clubs</>}
+              {isMobile ? <APP_ICONS.profile.clubs className="h-4 w-4" /> : <><APP_ICONS.profile.clubs className="h-4 w-4 mr-2" />Clubs</>}
             </TabsTrigger>
           </TabsList>
 
@@ -404,7 +422,7 @@ const UserProfile = () => {
             ) : userBooks.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
-                  <BookIcon className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                  <APP_ICONS.profile.booksTab className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
                   <p className="font-sans">No books yet</p>
                 </CardContent>
               </Card>
@@ -452,7 +470,7 @@ const UserProfile = () => {
             ) : userPosts.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
-                  <ChatBubble className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                  <APP_ICONS.profile.posts className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
                   <p className="font-sans">No posts yet</p>
                 </CardContent>
               </Card>
@@ -491,7 +509,7 @@ const UserProfile = () => {
             ) : userClubs.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
-                  <BookUser className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                  <APP_ICONS.profile.clubs className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
                   <p className="font-sans">Not a member of any book clubs yet</p>
                 </CardContent>
               </Card>

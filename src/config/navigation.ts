@@ -1,18 +1,4 @@
-import type { ComponentType } from "react";
-import {
-  Activity,
-  Book,
-  BookStack,
-  ChatBubble,
-  Group,
-  Home,
-  List,
-  Settings,
-  Star,
-  StatsReport,
-  Trophy,
-  User,
-} from "iconoir-react";
+import { APP_ICONS, type AppIcon } from "@/config/iconography";
 
 export type NavSection = "overview" | "books" | "progress" | "community" | "account";
 
@@ -24,7 +10,7 @@ export interface NavGroup {
 export interface NavItem {
   label: string;
   path: string;
-  icon: ComponentType<{ className?: string }>;
+  icon: AppIcon;
   section: NavSection;
   matchPaths: string[];
   showInMobileNav?: boolean;
@@ -34,7 +20,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     label: "Home",
     path: "/dashboard",
-    icon: Home,
+    icon: APP_ICONS.nav.home,
     section: "overview",
     matchPaths: ["/dashboard"],
     showInMobileNav: true,
@@ -42,7 +28,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     label: "Library",
     path: "/my-books",
-    icon: Book,
+    icon: APP_ICONS.nav.library,
     section: "books",
     matchPaths: ["/my-books", "/books", "/book", "/edit-book", "/add-book", "/scan", "/scan-barcode", "/scan-cover"],
     showInMobileNav: true,
@@ -50,7 +36,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     label: "Lists",
     path: "/lists",
-    icon: List,
+    icon: APP_ICONS.nav.lists,
     section: "books",
     matchPaths: ["/lists", "/book-lists"],
     showInMobileNav: true,
@@ -58,28 +44,28 @@ export const NAV_ITEMS: NavItem[] = [
   {
     label: "Analytics",
     path: "/analytics",
-    icon: StatsReport,
+    icon: APP_ICONS.nav.analytics,
     section: "progress",
     matchPaths: ["/analytics", "/history"],
   },
   {
     label: "Goals",
     path: "/goals-management",
-    icon: Trophy,
+    icon: APP_ICONS.nav.goals,
     section: "progress",
     matchPaths: ["/goals-management", "/goals"],
   },
   {
     label: "Achievements",
     path: "/achievements",
-    icon: Star,
+    icon: APP_ICONS.nav.achievements,
     section: "progress",
     matchPaths: ["/achievements"],
   },
   {
     label: "Feed",
     path: "/feed",
-    icon: Activity,
+    icon: APP_ICONS.nav.feed,
     section: "community",
     matchPaths: ["/feed"],
     showInMobileNav: true,
@@ -87,7 +73,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     label: "Readers",
     path: "/readers",
-    icon: User,
+    icon: APP_ICONS.nav.readers,
     section: "community",
     matchPaths: ["/readers", "/users"],
     showInMobileNav: true,
@@ -95,28 +81,28 @@ export const NAV_ITEMS: NavItem[] = [
   {
     label: "Clubs",
     path: "/clubs",
-    icon: Group,
+    icon: APP_ICONS.nav.clubs,
     section: "community",
     matchPaths: ["/clubs"],
   },
   {
     label: "Messages",
     path: "/messages",
-    icon: ChatBubble,
+    icon: APP_ICONS.nav.messages,
     section: "community",
     matchPaths: ["/messages"],
   },
   {
     label: "Reviews",
     path: "/reviews",
-    icon: BookStack,
+    icon: APP_ICONS.nav.reviews,
     section: "community",
     matchPaths: ["/reviews"],
   },
   {
     label: "Settings",
     path: "/settings",
-    icon: Settings,
+    icon: APP_ICONS.nav.settings,
     section: "account",
     matchPaths: ["/settings"],
   },

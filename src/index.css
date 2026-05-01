@@ -145,6 +145,7 @@ All colors MUST be HSL.
     height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
+    overscroll-behavior-x: none;
   }
 
   body {
@@ -382,11 +383,41 @@ All colors MUST be HSL.
   }
 
   /* Native scroll styles */
-  .native-scroll {
+  .app-viewport {
+    height: var(--app-viewport-height, 100vh);
+    min-height: 100svh;
+  }
+
+  .min-h-app-viewport {
+    min-height: var(--app-viewport-height, 100vh);
+  }
+
+  @supports (height: 100dvh) {
+    .app-viewport {
+      height: var(--app-viewport-height, 100dvh);
+    }
+
+    .min-h-app-viewport {
+      min-height: var(--app-viewport-height, 100dvh);
+    }
+  }
+
+  .app-scroll-container {
+    min-height: 0;
     overflow-y: auto;
-    overscroll-behavior-y: contain;
+    overflow-x: hidden;
+    overscroll-behavior-y: auto;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
+    touch-action: pan-y;
+  }
+
+  .native-scroll {
+    overflow-y: auto;
+    overscroll-behavior-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    touch-action: pan-y;
   }
 
   .app-page {

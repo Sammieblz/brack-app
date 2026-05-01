@@ -5,16 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  ArrowRight,
-  Book,
-  BookStack,
-  Clock,
-  FireFlame,
-  Plus,
-  StatsReport,
-  Trophy,
-} from "iconoir-react";
+import { NavArrowRight, Plus } from "iconoir-react";
 import { ProgressLogger } from "@/components/ProgressLogger";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
@@ -23,7 +14,7 @@ import { useStreaks } from "@/hooks/useStreaks";
 import { BadgeDisplay } from "@/components/BadgeDisplay";
 import { useRecentActivity } from "@/hooks/useRecentActivity";
 import { useChartData } from "@/hooks/useChartData";
-import { WeeklyReadingChart } from "@/components/charts/WeeklyReadingChart";
+import { ReadingHeatmap } from "@/components/charts/ReadingHeatmap";
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import type { Book as BookType, Goal } from "@/types";
@@ -47,6 +38,7 @@ import {
   BRACK_STREAK_SAD_IMAGE,
   BRACK_TROPHY_IMAGE,
 } from "@/config/brackAssets";
+import { APP_ICONS } from "@/config/iconography";
 import {
   type DashboardBookCandidate,
   useDashboardHomeData,
@@ -65,7 +57,7 @@ const Dashboard = () => {
     formatTimeAgo,
     refetchActivity,
   } = useRecentActivity(user?.id);
-  const { weeklyReading, loading: chartLoading } = useChartData(user?.id);
+  const { heatmapData, loading: chartLoading } = useChartData(user?.id);
   const {
     primaryBook,
     secondaryBooks,
@@ -246,7 +238,7 @@ const Dashboard = () => {
             <SectionHeader
               title="Insights"
               subtitle="Stats and trends for deeper review"
-              icon={<StatsReport className="h-5 w-5 text-primary" />}
+              icon={<APP_ICONS.dashboard.insights className="h-5 w-5 text-primary" />}
             />
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)]">
               {user && (
@@ -259,8 +251,14 @@ const Dashboard = () => {
               )}
 
               <div className="space-y-4">
-                {!chartLoading && weeklyReading.length > 0 && (
-                  <WeeklyReadingChart data={weeklyReading} />
+                {!chartLoading && heatmapData.length > 0 && (
+                  <ReadingHeatmap
+                    data={heatmapData}
+                    title="Reading Heatmap"
+                    subtitle="Your recent reading activity"
+                    weeks={10}
+                    compact
+                  />
                 )}
 
                 <AchievementsPreview
@@ -327,17 +325,21 @@ const ContinueReadingSection = ({
   onLogProgress,
   onViewLibrary,
 }: ContinueReadingSectionProps) => {
+  const EmptyStateIcon = hasAnyBooks
+    ? APP_ICONS.dashboard.emptyWithBooks
+    : APP_ICONS.dashboard.emptyNoBooks;
+
   return (
     <section className="space-y-3">
       <SectionHeader
         title={primaryBook?.book.status === "to_read" ? "Pick Up a Book" : "Continue Reading"}
         subtitle="Your most recent reading activity appears first"
-        icon={<Book className="h-5 w-5 text-primary" />}
+        icon={<APP_ICONS.dashboard.continueReading className="h-5 w-5 text-primary" />}
         action={
           hasAnyBooks ? (
             <Button variant="outline" size="sm" onClick={onViewLibrary}>
               Library
-              <ArrowRight className="ml-1 h-4 w-4" />
+              <NavArrowRight className="ml-1 h-4 w-4" />
             </Button>
           ) : undefined
         }
@@ -386,7 +388,7 @@ const ContinueReadingSection = ({
           <CardContent className="p-5">
             <div className="grid gap-4 sm:grid-cols-[4rem_minmax(0,1fr)] sm:items-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-md bg-primary/10 text-primary">
-                {hasAnyBooks ? <BookStack className="h-7 w-7" /> : <Book className="h-7 w-7" />}
+                <EmptyStateIcon className="h-7 w-7" />
               </div>
               <div className="space-y-3">
                 <div>
@@ -481,7 +483,7 @@ const PrimaryContinueCard = ({
             <div className="flex flex-wrap gap-2">
               <Button onClick={() => onBookClick(book.id)}>
                 {candidate.ctaLabel}
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <NavArrowRight className="ml-2 h-4 w-4" />
               </Button>
               {onLogProgress && (
                 <Button variant="outline" onClick={() => onLogProgress(book)}>
@@ -562,7 +564,7 @@ const TodaySection = ({
       <SectionHeader
         title="Today"
         subtitle="Momentum, streak, and goal status"
-        icon={<FireFlame className="h-5 w-5 text-primary" />}
+        icon={<APP_ICONS.dashboard.today className="h-5 w-5 text-primary" />}
       />
       <div className="grid gap-4 lg:grid-cols-2">
         <GoalStatusCard
@@ -604,7 +606,7 @@ const GoalStatusCard = ({
           <div className="space-y-3">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-primary" />
+                <APP_ICONS.dashboard.goal className="h-5 w-5 text-primary" />
                 <h3 className="font-display text-lg font-semibold">Reading Goal</h3>
               </div>
               <img
@@ -684,7 +686,7 @@ const StreakStatusCard = ({
           <div className="space-y-3">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2">
-                <FireFlame className="h-5 w-5 text-primary" />
+                <APP_ICONS.dashboard.streak className="h-5 w-5 text-primary" />
                 <h3 className="font-display text-lg font-semibold">Reading Streak</h3>
               </div>
               <img
@@ -778,7 +780,7 @@ const AchievementsPreview = ({
           </span>
           <Button variant="outline" size="sm" onClick={onViewAll}>
             View All
-            <ArrowRight className="ml-1 h-4 w-4" />
+            <NavArrowRight className="ml-1 h-4 w-4" />
           </Button>
         </CardTitle>
       </CardHeader>
@@ -807,7 +809,7 @@ const RecentActivityCard = ({
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="font-display flex items-center text-base md:text-lg">
-          <Clock className="mr-2 h-5 w-5 text-primary" />
+          <APP_ICONS.dashboard.recentActivity className="mr-2 h-5 w-5 text-primary" />
           Recent Activity
         </CardTitle>
       </CardHeader>
@@ -820,7 +822,7 @@ const RecentActivityCard = ({
           </div>
         ) : activities.length === 0 ? (
           <div className="py-6 text-center">
-            <Clock className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+            <APP_ICONS.dashboard.recentActivity className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
             <p className="font-sans text-sm text-muted-foreground">
               Start reading to see your progress here.
             </p>
@@ -888,7 +890,7 @@ const BookCover = ({ book, className }: BookCoverProps) => {
 
   return (
     <div className={`${className} flex items-center justify-center rounded-md border border-border/70 bg-primary/10 text-primary`}>
-      <Book className="h-8 w-8" />
+      <APP_ICONS.dashboard.coverFallback className="h-8 w-8" />
     </div>
   );
 };

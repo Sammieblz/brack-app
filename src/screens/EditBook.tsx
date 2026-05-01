@@ -11,10 +11,10 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { TagManager } from "@/components/TagManager";
-import { FloppyDisk, Upload, Camera, ArrowLeft } from "iconoir-react";
-import { MobileBackButton } from "@/components/mobile/MobileBackButton";
+import { FloppyDisk, Upload, Camera } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
+import { AppBackButton } from "@/components/AppBackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileInput } from "@/components/mobile/MobileInput";
 import { MobileTextarea } from "@/components/mobile/MobileTextarea";
@@ -183,7 +183,12 @@ export default function EditBook() {
   if (loading) {
     return (
       <MobileLayout>
-        {isMobile && <MobileHeader title="Edit Book" showBack />}
+        {isMobile && (
+          <MobileHeader
+            title="Edit Book"
+            back={{ label: "Book", ariaLabel: "Back to book", to: id ? `/book/${id}` : "/my-books" }}
+          />
+        )}
         <div className="flex items-center justify-center h-96">
           <LoadingSpinner size="lg" text="Loading book..." />
         </div>
@@ -195,21 +200,22 @@ export default function EditBook() {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Edit Book" showBack />}
+      {isMobile && (
+        <MobileHeader
+          title="Edit Book"
+          back={{ label: "Book", ariaLabel: "Back to book", to: `/book/${id}` }}
+        />
+      )}
       <div className="app-page-form pb-24 md:pb-8">
-        {isMobile ? (
-          <div className="mb-4">
-            <MobileBackButton title="Back to Book" onClick={() => navigate(`/book/${id}`)} />
-          </div>
-        ) : (
-          <Button
-            variant="ghost"
-            onClick={() => navigate(`/book/${id}`)}
-            className="mb-4"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Book
-          </Button>
+        {!isMobile && (
+          <AppBackButton
+            label="Book"
+            ariaLabel="Back to book"
+            to={`/book/${id}`}
+            showLabel
+            variant="outline"
+            className="mb-4 border-border/70 bg-card/45 shadow-none hover:bg-accent"
+          />
         )}
 
         <Card className="max-w-4xl mx-auto">

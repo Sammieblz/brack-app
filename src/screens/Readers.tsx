@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserSearch, type UserSearchResult } from "@/hooks/useUserSearch";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Search, Book, FireFlame, Pin, Group, Sparks, StatsReport, Bookmark } from "iconoir-react";
+import { Search } from "iconoir-react";
 import { FollowButton } from "@/components/social/FollowButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import { CreateClubDialog } from "@/components/clubs/CreateClubDialog";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { APP_ICONS } from "@/config/iconography";
 
 export default function Readers() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -95,18 +96,18 @@ export default function Readers() {
             </div>
             <div className="flex flex-wrap gap-2 md:gap-3 mt-2 md:mt-3 text-xs md:text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
-                <Book className="h-3 w-3 md:h-4 md:w-4" />
+                <APP_ICONS.readers.booksRead className="h-3 w-3 md:h-4 md:w-4" />
                 <span>{user.books_read_count} books</span>
               </div>
               {user.current_streak > 0 && (
                 <div className="flex items-center gap-1">
-                  <FireFlame className="h-3 w-3 md:h-4 md:w-4 text-orange-500" />
+                  <APP_ICONS.readers.streak className="h-3 w-3 md:h-4 md:w-4 text-orange-500" />
                   <span>{user.current_streak} day streak</span>
                 </div>
               )}
               {user.distance_km !== undefined && (
                 <div className="flex items-center gap-1">
-                  <Pin className="h-3 w-3 md:h-4 md:w-4" />
+                  <APP_ICONS.readers.distance className="h-3 w-3 md:h-4 md:w-4" />
                   <span>{Math.round(user.distance_km)}km away</span>
                 </div>
               )}
@@ -144,11 +145,11 @@ export default function Readers() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mb-4">
           <TabsList className="grid w-full max-w-md grid-cols-2" onClick={() => triggerHaptic("selection")}>
             <TabsTrigger value="readers" className="flex items-center gap-2">
-              <Group className="h-4 w-4" />
+              <APP_ICONS.readers.readers className="h-4 w-4" />
               Readers
             </TabsTrigger>
             <TabsTrigger value="clubs" className="flex items-center gap-2">
-              <Bookmark className="h-4 w-4" />
+              <APP_ICONS.readers.clubs className="h-4 w-4" />
               Book Clubs
             </TabsTrigger>
           </TabsList>
@@ -170,27 +171,27 @@ export default function Readers() {
               <Tabs defaultValue="all" className="w-full">
             <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3' : 'grid-cols-5'}`}>
               <TabsTrigger value="all" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
-                <Sparks className="h-3 w-3 md:h-4 md:w-4" />
+                <APP_ICONS.readers.all className="h-3 w-3 md:h-4 md:w-4" />
                 <span className="hidden sm:inline">All</span>
               </TabsTrigger>
               <TabsTrigger value="nearby" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
-                <Pin className="h-3 w-3 md:h-4 md:w-4" />
+                <APP_ICONS.readers.nearby className="h-3 w-3 md:h-4 md:w-4" />
                 <span className="hidden sm:inline">Nearby</span>
               </TabsTrigger>
               {!isMobile && (
                 <>
                   <TabsTrigger value="social" className="flex items-center gap-2">
-                    <Group className="h-4 w-4" />
+                    <APP_ICONS.readers.connections className="h-4 w-4" />
                     Connections
                   </TabsTrigger>
                   <TabsTrigger value="taste" className="flex items-center gap-2">
-                    <Book className="h-4 w-4" />
+                    <APP_ICONS.readers.similarTaste className="h-4 w-4" />
                     Similar Taste
                   </TabsTrigger>
                 </>
               )}
               <TabsTrigger value="active" className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
-                <StatsReport className="h-3 w-3 md:h-4 md:w-4" />
+                <APP_ICONS.readers.active className="h-3 w-3 md:h-4 md:w-4" />
                 <span className="hidden sm:inline">Active</span>
               </TabsTrigger>
             </TabsList>
@@ -213,7 +214,7 @@ export default function Readers() {
               {results.nearby.length === 0 ? (
                 <Card>
                   <CardContent className="py-8 text-center text-muted-foreground">
-                    <Pin className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <APP_ICONS.readers.nearby className="h-8 w-8 mx-auto mb-2 opacity-50" />
                     <p>No nearby readers found</p>
                     <p className="text-xs md:text-sm mt-1">
                       Add your location in profile settings to see readers near you
@@ -231,7 +232,7 @@ export default function Readers() {
                   {results.socialConnections.length === 0 ? (
                     <Card>
                       <CardContent className="py-8 text-center text-muted-foreground">
-                        <Group className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <APP_ICONS.readers.connections className="h-8 w-8 mx-auto mb-2 opacity-50" />
                         <p>No mutual connections found</p>
                         <p className="text-sm mt-1">
                           Follow more readers to discover mutual connections
@@ -247,7 +248,7 @@ export default function Readers() {
                   {results.similarTaste.length === 0 ? (
                     <Card>
                       <CardContent className="py-8 text-center text-muted-foreground">
-                        <Book className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <APP_ICONS.readers.similarTaste className="h-8 w-8 mx-auto mb-2 opacity-50" />
                         <p>No readers with similar taste found</p>
                         <p className="text-sm mt-1">
                           Add more books to get better recommendations
@@ -265,7 +266,7 @@ export default function Readers() {
               {results.activeReaders.length === 0 ? (
                 <Card>
                   <CardContent className="py-8 text-center text-muted-foreground">
-                    <StatsReport className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <APP_ICONS.readers.active className="h-8 w-8 mx-auto mb-2 opacity-50" />
                     <p>No active readers found</p>
                   </CardContent>
                 </Card>
@@ -291,11 +292,11 @@ export default function Readers() {
               <Tabs defaultValue="my-clubs" className="w-full">
                 <TabsList className="grid w-full max-w-md grid-cols-2">
                   <TabsTrigger value="my-clubs" className="flex items-center gap-2 text-xs sm:text-sm">
-                    <Bookmark className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <APP_ICONS.readers.myClubs className="h-3 w-3 sm:h-4 sm:w-4" />
                     My Clubs ({myClubs.length})
                   </TabsTrigger>
                   <TabsTrigger value="discover" className="flex items-center gap-2 text-xs sm:text-sm">
-                    <Group className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <APP_ICONS.readers.discoverClubs className="h-3 w-3 sm:h-4 sm:w-4" />
                     Discover ({publicClubs.length})
                   </TabsTrigger>
                 </TabsList>
@@ -305,7 +306,7 @@ export default function Readers() {
                     <Card>
                       <CardContent className="py-8 text-center">
                         <div className="p-4 rounded-full bg-primary/20 w-fit mx-auto mb-4">
-                          <Group className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                          <APP_ICONS.readers.clubs className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                         </div>
                         <h3 className="font-display font-semibold mb-2">No clubs yet</h3>
                         <p className="font-sans text-sm text-muted-foreground">
@@ -331,7 +332,7 @@ export default function Readers() {
                     <Card>
                       <CardContent className="py-8 text-center">
                         <div className="p-4 rounded-full bg-secondary/20 w-fit mx-auto mb-4">
-                          <Group className="h-6 w-6 sm:h-8 sm:w-8 text-secondary" />
+                          <APP_ICONS.readers.discoverClubs className="h-6 w-6 sm:h-8 sm:w-8 text-secondary" />
                         </div>
                         <h3 className="font-display font-semibold mb-2">No public clubs</h3>
                         <p className="font-sans text-sm text-muted-foreground">

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Trash, Drag } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
+import { AppBackButton } from "@/components/AppBackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { BookCard } from "@/components/BookCard";
 import { AddBooksToListDialog } from "@/components/AddBooksToListDialog";
@@ -198,17 +199,23 @@ const BookListDetail = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title={list.name} showBack />}
+      {isMobile && (
+        <MobileHeader
+          title={list.name}
+          back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/lists" }}
+        />
+      )}
       <main className="app-page">
         {!isMobile && (
           <div className="mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/lists')}
-              className="mb-4"
-            >
-              Back to Lists
-            </Button>
+            <AppBackButton
+              label="Back"
+              ariaLabel="Go back"
+              fallbackPath="/lists"
+              showLabel
+              variant="outline"
+              className="mb-4 border-border/70 bg-card/45 shadow-none hover:bg-accent"
+            />
           </div>
         )}
           

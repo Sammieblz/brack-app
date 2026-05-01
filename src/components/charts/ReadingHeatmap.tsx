@@ -1,6 +1,10 @@
+import { useMemo } from "react";
+import Chart from "react-apexcharts";
+import type { ApexOptions } from "apexcharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Calendar } from "iconoir-react";
+import { APP_ICONS } from "@/config/iconography";
+import { useTheme } from "@/contexts/ThemeContext";
+import { cn } from "@/lib/utils";
 
 interface HeatmapData {
   date: string;
@@ -9,120 +13,275 @@ interface HeatmapData {
 
 interface ReadingHeatmapProps {
   data: HeatmapData[];
+  title?: string;
+  subtitle?: string;
+  weeks?: number;
+  compact?: boolean;
+  className?: string;
 }
 
-export const ReadingHeatmap = ({ data }: ReadingHeatmapProps) => {
+type HeatmapPoint = {
+  x: string;
+  y: number;
+  date: string;
+  label: string;
+};
+
+const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const toDateKey = (date: Date) => {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const formatDateLabel = (date: Date) =>
+  date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+
+const formatTooltipDate = (dateKey: string) =>
+  new Date(`${dateKey}T00:00:00`).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+const formatMinutes = (minutes: number) => {
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+};
+
+export const ReadingHeatmap = ({
+  data,
+  title = "Reading Activity Heatmap",
+  subtitle = "Daily reading minutes across recent weeks",
+  weeks = 12,
+  compact = false,
+  className,
+}: ReadingHeatmapProps) => {
+  const { currentTheme, resolvedTheme } = useTheme();
+
+  const { series, maxValue, totalMinutes } = useMemo(() => {
+    const valueByDate = new Map(data.map((item) => [item.date, item.value]));
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const currentWeekStart = new Date(today);
+    currentWeekStart.setDate(today.getDate() - today.getDay());
+
+    const startDate = new Date(currentWeekStart);
+    startDate.setDate(currentWeekStart.getDate() - (weeks - 1) * 7);
+
+    const nextSeries = DAY_LABELS.map((dayLabel, dayIndex) => {
+      const points: HeatmapPoint[] = [];
+
+      for (let weekIndex = 0; weekIndex < weeks; weekIndex += 1) {
+        const date = new Date(startDate.getTime() + (weekIndex * 7 + dayIndex) * MS_PER_DAY);
+        const dateKey = toDateKey(date);
+        const isFuture = date > today;
+        const value = isFuture ? 0 : valueByDate.get(dateKey) ?? 0;
+
+        points.push({
+          x: formatDateLabel(new Date(startDate.getTime() + weekIndex * 7 * MS_PER_DAY)),
+          y: value,
+          date: dateKey,
+          label: formatDateLabel(date),
+        });
+      }
+
+      return {
+        name: dayLabel,
+        data: points,
+      };
+    });
+
+    return {
+      series: nextSeries,
+      maxValue: Math.max(...data.map((item) => item.value), 1),
+      totalMinutes: data.reduce((sum, item) => sum + item.value, 0),
+    };
+  }, [data, weeks]);
+
+  const options = useMemo<ApexOptions>(() => {
+    const low = Math.max(1, Math.ceil(maxValue * 0.25));
+    const medium = Math.max(low + 1, Math.ceil(maxValue * 0.5));
+    const high = Math.max(medium + 1, Math.ceil(maxValue * 0.75));
+
+    return {
+      chart: {
+        type: "heatmap",
+        background: "transparent",
+        toolbar: { show: false },
+        animations: {
+          enabled: true,
+          speed: 350,
+        },
+        fontFamily: "Inter, system-ui, sans-serif",
+        foreColor: "hsl(var(--muted-foreground))",
+      },
+      theme: {
+        mode: resolvedTheme === "dark" ? "dark" : "light",
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      grid: {
+        show: false,
+        padding: {
+          top: -8,
+          right: 0,
+          bottom: -6,
+          left: 0,
+        },
+      },
+      legend: {
+        show: true,
+        position: "bottom",
+        horizontalAlign: "center",
+        fontFamily: "Inter, system-ui, sans-serif",
+        labels: {
+          colors: "hsl(var(--muted-foreground))",
+        },
+        markers: {
+          width: 10,
+          height: 10,
+          radius: 3,
+        },
+      },
+      plotOptions: {
+        heatmap: {
+          radius: 5,
+          enableShades: false,
+          colorScale: {
+            ranges: [
+              {
+                from: 0,
+                to: 0,
+                name: "None",
+                color: "hsl(var(--muted) / 0.45)",
+                foreColor: "hsl(var(--muted-foreground))",
+              },
+              {
+                from: 1,
+                to: low,
+                name: "Light",
+                color: "hsl(var(--primary) / 0.28)",
+              },
+              {
+                from: low + 1,
+                to: medium,
+                name: "Steady",
+                color: "hsl(var(--primary) / 0.5)",
+              },
+              {
+                from: medium + 1,
+                to: high,
+                name: "Strong",
+                color: "hsl(var(--primary) / 0.72)",
+              },
+              {
+                from: high + 1,
+                to: Math.max(high + 1, maxValue),
+                name: "Deep",
+                color: "hsl(var(--primary))",
+              },
+            ],
+          },
+        },
+      },
+      stroke: {
+        width: 3,
+        colors: ["hsl(var(--card))"],
+      },
+      tooltip: {
+        theme: resolvedTheme === "dark" ? "dark" : "light",
+        custom: ({ seriesIndex, dataPointIndex }) => {
+          const point = series[seriesIndex]?.data[dataPointIndex] as HeatmapPoint | undefined;
+          if (!point) return "";
+
+          return `
+            <div style="border: 1px solid hsl(var(--border)); border-radius: 0.375rem; background: hsl(var(--popover)); color: hsl(var(--popover-foreground)); padding: 0.5rem 0.75rem; box-shadow: 0 10px 30px hsl(var(--foreground) / 0.14);">
+              <div style="font-family: Inter, system-ui, sans-serif; font-size: 0.75rem; font-weight: 600;">${formatTooltipDate(point.date)}</div>
+              <div style="font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 700;">${formatMinutes(point.y)}</div>
+            </div>
+          `;
+        },
+      },
+      xaxis: {
+        type: "category",
+        labels: {
+          rotate: -35,
+          trim: false,
+          style: {
+            colors: "hsl(var(--muted-foreground))",
+            fontFamily: "Inter, system-ui, sans-serif",
+            fontSize: "11px",
+          },
+        },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+        tooltip: { enabled: false },
+      },
+      yaxis: {
+        labels: {
+          style: {
+            colors: "hsl(var(--muted-foreground))",
+            fontFamily: "Inter, system-ui, sans-serif",
+            fontSize: "11px",
+          },
+        },
+      },
+      states: {
+        hover: {
+          filter: {
+            type: "lighten",
+            value: 0.08,
+          },
+        },
+        active: {
+          filter: {
+            type: "none",
+          },
+        },
+      },
+    };
+  }, [maxValue, resolvedTheme, series]);
+
   if (!data || data.length === 0) {
     return null;
   }
 
-  // Generate calendar grid (last 12 months)
-  const months: { [key: string]: HeatmapData[] } = {};
-  const today = new Date();
-  
-  for (let i = 11; i >= 0; i--) {
-    const date = new Date(today);
-    date.setMonth(date.getMonth() - i);
-    const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    months[monthKey] = [];
-  }
-
-  // Group data by month
-  data.forEach(item => {
-    const date = new Date(item.date);
-    const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    if (months[monthKey]) {
-      months[monthKey].push(item);
-    }
-  });
-
-  // Calculate intensity levels
-  const maxValue = Math.max(...data.map(d => d.value), 1);
-  const getIntensity = (value: number) => {
-    if (value === 0) return 0;
-    const ratio = value / maxValue;
-    if (ratio < 0.25) return 1;
-    if (ratio < 0.5) return 2;
-    if (ratio < 0.75) return 3;
-    return 4;
-  };
-
   return (
-    <Card>
-      <CardHeader>
+    <Card className={className}>
+      <CardHeader className={cn(compact && "pb-2")}>
         <CardTitle className="flex items-center text-base md:text-lg">
-          <Calendar className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-          Reading Activity Heatmap
+          <APP_ICONS.dashboard.today className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+          {title}
         </CardTitle>
+        {!compact && (
+          <p className="font-sans text-sm text-muted-foreground">
+            {subtitle} - {formatMinutes(totalMinutes)} total
+          </p>
+        )}
       </CardHeader>
       <CardContent className="px-2 sm:px-6">
-        <div className="space-y-4">
-          {Object.entries(months).map(([month, monthData]) => {
-            const daysInMonth = new Date(month.split(' ')[1], new Date(`${month} 1`).getMonth() + 1, 0).getDate();
-            const firstDay = new Date(`${month} 1`).getDay();
-            
-            return (
-              <div key={month} className="space-y-2">
-                <div className="font-sans text-sm font-medium text-muted-foreground">{month}</div>
-                <div className="grid grid-cols-7 gap-1">
-                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
-                    <div key={day} className="font-sans text-xs text-center text-muted-foreground p-1">
-                      {day}
-                    </div>
-                  ))}
-                  {Array.from({ length: firstDay }).map((_, i) => (
-                    <div key={`empty-${i}`} className="aspect-square" />
-                  ))}
-                  {Array.from({ length: daysInMonth }).map((_, i) => {
-                    const day = i + 1;
-                    const dateStr = `${month} ${day}`;
-                    const dayData = monthData.find(d => {
-                      const dDate = new Date(d.date);
-                      return dDate.getDate() === day;
-                    });
-                    const intensity = dayData ? getIntensity(dayData.value) : 0;
-                    const bgColors = [
-                      'bg-muted/20',
-                      'bg-primary/30',
-                      'bg-primary/50',
-                      'bg-primary/70',
-                      'bg-primary',
-                    ];
-
-                    return (
-                      <TooltipProvider key={day}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div
-                              className={`aspect-square rounded-sm ${bgColors[intensity]} transition-colors hover:ring-2 hover:ring-primary cursor-pointer`}
-                            />
-                          </TooltipTrigger>
-                          {dayData && (
-                            <TooltipContent>
-                              <div className="font-sans space-y-1">
-                                <div className="text-xs font-semibold">{dateStr}</div>
-                                <div className="text-sm font-bold">{dayData.value} min</div>
-                              </div>
-                            </TooltipContent>
-                          )}
-                        </Tooltip>
-                      </TooltipProvider>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-          <div className="font-sans flex items-center justify-between text-xs text-muted-foreground pt-2">
-            <span>Less</span>
-            <div className="flex gap-1">
-              <div className="w-3 h-3 rounded-sm bg-muted/20" />
-              <div className="w-3 h-3 rounded-sm bg-primary/30" />
-              <div className="w-3 h-3 rounded-sm bg-primary/50" />
-              <div className="w-3 h-3 rounded-sm bg-primary/70" />
-              <div className="w-3 h-3 rounded-sm bg-primary" />
-            </div>
-            <span>More</span>
+        <div className="native-scroll overflow-x-auto">
+          <div className="min-w-[44rem] md:min-w-0">
+            <Chart
+              key={`${currentTheme}-${resolvedTheme}-${weeks}-${compact ? "compact" : "full"}`}
+              options={options}
+              series={series}
+              type="heatmap"
+              height={compact ? 260 : 340}
+              width="100%"
+            />
           </div>
         </div>
       </CardContent>

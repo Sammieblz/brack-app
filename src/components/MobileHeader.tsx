@@ -1,6 +1,4 @@
 import { ReactNode, useState } from "react";
-import { ArrowLeft } from "iconoir-react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
@@ -11,10 +9,13 @@ import { ProfileDrawer } from "@/components/ProfileDrawer";
 import { useSwipeToOpenDrawer } from "@/hooks/useSwipeToOpenDrawer";
 import { getInitials } from "@/lib/avatarUtils";
 import { cn } from "@/lib/utils";
+import { AppBackButton } from "@/components/AppBackButton";
+import type { BackButtonConfig } from "@/hooks/useAppBack";
 
 interface MobileHeaderProps {
   title: string;
   showBack?: boolean;
+  back?: BackButtonConfig;
   action?: ReactNode;
   className?: string;
 }
@@ -22,18 +23,20 @@ interface MobileHeaderProps {
 export const MobileHeader = ({ 
   title, 
   showBack = false, 
+  back,
   action,
   className
 }: MobileHeaderProps) => {
-  const navigate = useNavigate();
   const { triggerHaptic } = useHapticFeedback();
   const { profile, isLoading: profileLoading } = useProfileContext();
   const isMobile = useIsMobile();
-  const { isSwiping } = useSwipeBack(isMobile && showBack);
+  const backConfig = back ?? (showBack ? {} : undefined);
+  const hasBack = Boolean(backConfig);
+  const { isSwiping } = useSwipeBack(isMobile && hasBack && !backConfig?.onBack && !backConfig?.to);
   const [drawerOpen, setDrawerOpen] = useState(false);
   
   // Determine if we should show avatar (root-level pages without back button)
-  const showAvatar = !showBack && isMobile;
+  const showAvatar = !hasBack && isMobile;
   const displayName = profile?.display_name || 'User';
 
   // Enable swipe-to-open drawer only on root-level pages (when avatar is shown)
@@ -54,16 +57,12 @@ export const MobileHeader = ({
       )}>
         <div className="flex items-center justify-between h-14 px-4">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            {showBack && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate(-1)}
-                className="shrink-0"
-                aria-label="Go back"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
+            {backConfig && (
+              <AppBackButton
+                {...backConfig}
+                className="-ml-2 h-10 w-10"
+                ariaLabel={backConfig.ariaLabel ?? "Go back"}
+              />
             )}
             <h1 className="font-display text-lg font-semibold truncate">{title}</h1>
           </div>

@@ -9,9 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookSearch } from "@/components/BookSearch";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-import { Book as BookIcon, Camera, Search, EditPencil, Refresh } from "iconoir-react";
+import { Camera, Search, EditPencil, Refresh } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
+import { AppBackButton } from "@/components/AppBackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileInput } from "@/components/mobile/MobileInput";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ import type { Book } from "@/types";
 import type { GoogleBookResult } from "@/types/googleBooks";
 import { SuccessCheckmark } from "@/components/animations/SuccessCheckmark";
 import { Confetti } from "@/components/animations/Confetti";
+import { APP_ICONS } from "@/config/iconography";
 
 const AddBook = () => {
   const [user, setUser] = useState<{ id: string } | null>(null);
@@ -205,14 +207,29 @@ const AddBook = () => {
           </div>
         </div>
       )}
-      {isMobile && <MobileHeader title="Add Book" showBack />}
+      {isMobile && (
+        <MobileHeader
+          title="Add Book"
+          back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/my-books" }}
+        />
+      )}
       <div className="app-page-form">
+        {!isMobile && (
+          <AppBackButton
+            label="Back"
+            ariaLabel="Go back"
+            fallbackPath="/my-books"
+            showLabel
+            variant="outline"
+            className="mb-4 border-border/70 bg-card/45 shadow-none hover:bg-accent"
+          />
+        )}
 
         {/* Form Card */}
         <Card className="animate-scale-in max-w-4xl mx-auto">
           <CardHeader className="text-center pb-4">
             <CardTitle className="font-display text-xl font-bold text-foreground flex items-center justify-center gap-2">
-              <BookIcon className="h-5 w-5" />
+              <APP_ICONS.library.addBook className="h-5 w-5" />
               Add a New Book
             </CardTitle>
           </CardHeader>

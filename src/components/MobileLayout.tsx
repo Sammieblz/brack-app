@@ -6,6 +6,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useNativeApp } from "@/hooks/useNativeApp";
 import { usePersistentScrollPosition } from "@/hooks/useScrollPosition";
 import { useLocation } from "react-router-dom";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 interface MobileLayoutProps {
   children: ReactNode;
@@ -25,17 +26,27 @@ export const MobileLayout = ({
 
   if (isMobile) {
     return (
-      <div className="h-screen flex flex-col bg-background overflow-hidden">
+      <div className="app-viewport flex flex-col overflow-hidden bg-background">
         {/* Main Content - Scrollable */}
         <main
           ref={scrollRef as React.RefObject<HTMLElement>}
-          className={`flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] ${
+          data-app-scroll-container="true"
+          className={`app-scroll-container flex-1 ${
             isNative ? "safe-top safe-bottom" : ""
           } pb-28`}
-          style={{ paddingBottom: "max(env(safe-area-inset-bottom), 104px)" }}
+          style={{
+            paddingBottom: showBottomNav
+              ? "max(env(safe-area-inset-bottom), 104px)"
+              : "env(safe-area-inset-bottom)",
+          }}
         >
           {children}
         </main>
+        <ScrollToTop
+          containerRef={scrollRef}
+          hasBottomNav={showBottomNav}
+          resetKey={location.pathname}
+        />
         
         {/* Mobile Bottom Navigation */}
         {showBottomNav && <MobileBottomNav />}
@@ -45,13 +56,15 @@ export const MobileLayout = ({
 
   if (!showTopNav) {
     return (
-      <div className="h-screen bg-background overflow-hidden">
+      <div className="app-viewport overflow-hidden bg-background">
         <main
           ref={scrollRef as React.RefObject<HTMLElement>}
-          className="h-full overflow-y-auto overflow-x-hidden"
+          data-app-scroll-container="true"
+          className="app-scroll-container h-full"
         >
           {children}
         </main>
+        <ScrollToTop containerRef={scrollRef} resetKey={location.pathname} />
       </div>
     );
   }
@@ -60,13 +73,15 @@ export const MobileLayout = ({
   return (
     <SidebarProvider defaultOpen>
       <AppSidebar />
-      <SidebarInset className="h-screen min-h-0 overflow-hidden">
+      <SidebarInset className="app-viewport min-h-0 min-w-0 overflow-hidden">
         <main
           ref={scrollRef as React.RefObject<HTMLElement>}
-          className="h-full overflow-y-auto overflow-x-hidden bg-gradient-background"
+          data-app-scroll-container="true"
+          className="app-scroll-container h-full bg-gradient-background"
         >
           {children}
         </main>
+        <ScrollToTop containerRef={scrollRef} resetKey={location.pathname} />
       </SidebarInset>
     </SidebarProvider>
   );

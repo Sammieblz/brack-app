@@ -1,4 +1,4 @@
-import { Book as BookIcon, Plus, EditPencil, Trash, ShareIos } from "iconoir-react";
+import { Plus, EditPencil, Trash, ShareIos } from "iconoir-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -12,6 +12,7 @@ import type { Book } from "@/types";
 import { useNavigate } from "react-router-dom";
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { APP_ICONS } from "@/config/iconography";
 
 interface BookCardProps {
   book: Book;
@@ -49,7 +50,7 @@ export const BookCard = ({
   const contextActions = [
     {
       label: "View Details",
-      icon: <BookIcon className="h-5 w-5" />,
+      icon: <APP_ICONS.dashboard.coverFallback className="h-5 w-5" />,
       onClick: () => onClick?.(),
     },
     {
@@ -124,7 +125,7 @@ export const BookCard = ({
               </ImageLightbox>
             ) : (
               <div className="w-14 h-20 sm:w-16 sm:h-24 bg-gradient-primary rounded flex items-center justify-center">
-                <BookIcon className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+                <APP_ICONS.dashboard.coverFallback className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
               </div>
             )}
           </div>

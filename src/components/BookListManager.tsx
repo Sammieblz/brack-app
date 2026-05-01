@@ -9,11 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useBookLists } from "@/hooks/useBookLists";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Bookmark, Trash, EditPencil, Copy, Refresh } from "iconoir-react";
+import { Plus, Trash, EditPencil, Copy, Refresh } from "iconoir-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { BookListCardSkeleton } from "./skeletons/BookListCardSkeleton";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { APP_ICONS } from "@/config/iconography";
 
 interface BookListManagerProps {
   userId: string;
@@ -166,7 +167,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
             <CardHeader className="p-4 sm:p-6">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <Bookmark className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                  <APP_ICONS.library.bookLists className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                   <CardTitle className="font-display text-base sm:text-lg line-clamp-2">{list.name}</CardTitle>
                 </div>
                 <Badge variant="secondary" className="text-xs whitespace-nowrap">{list.book_count || 0} books</Badge>
@@ -279,7 +280,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
       {lists.length === 0 && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
-            <Bookmark className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mb-4" />
+            <APP_ICONS.library.bookLists className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mb-4" />
             <p className="font-sans text-sm sm:text-base text-muted-foreground text-center mb-4">
               You haven't created any lists yet
             </p>

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Calendar as CalendarIcon, Clock } from "iconoir-react";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
+import { AppBackButton } from "@/components/AppBackButton";
 import { BRACK_GOALS_IMAGE } from "@/config/brackAssets";
 import { format } from "date-fns";
 
@@ -28,7 +28,6 @@ const Goals = () => {
   const [reminderTime, setReminderTime] = useState("19:00");
   const [loading, setLoading] = useState(false);
   const [transition, setTransition] = useState<GoalsTransition | null>(null);
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,8 +75,8 @@ const Goals = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-5xl items-center justify-center md:min-h-[calc(100vh-4rem)]">
+    <div className="min-h-app-viewport bg-background p-4 md:p-8">
+      <div className="mx-auto flex min-h-[calc(var(--app-viewport-height,100dvh)-2rem)] w-full max-w-5xl items-center justify-center md:min-h-[calc(var(--app-viewport-height,100dvh)-4rem)]">
         <Card className="w-full overflow-hidden">
           <div className="grid lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
             <div className="border-b border-border/70 bg-muted/20 p-5 lg:border-b-0 lg:border-r lg:p-8">
@@ -198,14 +197,14 @@ const Goals = () => {
                   </div>
                   
                   <div className="flex gap-4 pt-4">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => navigate("/questionnaire")}
+                    <AppBackButton
+                      label="Back"
+                      ariaLabel="Back to questionnaire"
+                      to="/questionnaire"
+                      showLabel
+                      variant="outline"
                       className="flex-1"
-                    >
-                      Back
-                    </Button>
+                    />
                     <Button 
                       type="submit" 
                       disabled={loading}

@@ -113,7 +113,7 @@ const Auth = () => {
 
   if (pageLoading) {
     return (
-      <div className="min-h-screen bg-gradient-background flex items-center justify-center">
+      <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background">
         <LoadingSpinner size="lg" text="Loading..." />
       </div>
     );
@@ -210,7 +210,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-background flex items-center justify-center px-4 py-8 relative overflow-hidden">
+    <div className="relative flex min-h-app-viewport items-center justify-center overflow-x-hidden overflow-y-auto bg-gradient-background px-4 py-8">
       {/* Light/Dark toggle */}
       <ThemeToggle />
 

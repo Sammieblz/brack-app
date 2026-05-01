@@ -1,23 +1,20 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { useBadges } from "@/hooks/useBadges";
 import { BadgeDisplay } from "@/components/BadgeDisplay";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Trophy, ArrowLeft } from "iconoir-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Badge, UserBadge } from "@/types";
 import { BadgeDetailsDialog } from "@/components/BadgeDetailsDialog";
 import { BRACK_TROPHY_IMAGE } from "@/config/brackAssets";
+import { APP_ICONS } from "@/config/iconography";
 
 const Achievements = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { badges, earnedBadges, loading } = useBadges(user?.id);
   const [filter, setFilter] = useState<'all' | 'earned' | 'unearned'>('all');
@@ -50,19 +47,11 @@ const Achievements = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Achievements" showBack />}
+      {isMobile && <MobileHeader title="Achievements" />}
       
       <div className="app-page">
         {!isMobile && (
-          <div className="mb-6 flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="h-10 w-10"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+          <div className="mb-6">
             <div>
               <h1 className="font-display text-3xl font-bold">Achievements</h1>
               <p className="font-sans text-muted-foreground mt-1">
@@ -79,7 +68,7 @@ const Achievements = () => {
               <div className="space-y-4 p-5 md:p-6">
                 <div className="flex items-start justify-between gap-3">
                   <CardTitle className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5 text-primary" />
+                    <APP_ICONS.nav.achievements className="h-5 w-5 text-primary" />
                     Your Progress
                   </CardTitle>
                   <img

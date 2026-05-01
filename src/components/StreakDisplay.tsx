@@ -2,13 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Shield } from "iconoir-react";
 import type { StreakData } from "@/utils/streakCalculation";
 import { getStreakMilestones } from "@/utils/streakCalculation";
 import { Confetti } from "@/components/animations/Confetti";
 import { useGSAP } from "@/hooks/useGSAP";
 import { countUp } from "@/lib/animations/gsap-presets";
 import { BRACK_STREAK_HAPPY_IMAGE, BRACK_STREAK_SAD_IMAGE } from "@/config/brackAssets";
+import { APP_ICONS } from "@/config/iconography";
 
 interface StreakDisplayProps {
   streakData: StreakData;
@@ -174,7 +174,7 @@ export const StreakDisplay = ({ streakData, onUseFreeze }: StreakDisplayProps) =
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-md border border-border/70 p-3">
                 <div className="mb-1 flex items-center gap-2">
-                  <Trophy className="h-4 w-4 text-primary" />
+                  <APP_ICONS.stats.longestStreak className="h-4 w-4 text-primary" />
                   <span className="font-sans text-lg font-bold">{streakData.longestStreak}</span>
                 </div>
                 <p className="font-sans text-xs text-muted-foreground">Longest streak</p>
@@ -182,7 +182,7 @@ export const StreakDisplay = ({ streakData, onUseFreeze }: StreakDisplayProps) =
 
               <div className="rounded-md border border-border/70 p-3">
                 <div className="mb-1 flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-primary" />
+                  <APP_ICONS.stats.freezeStatus className="h-4 w-4 text-primary" />
                   <span className="font-sans text-lg font-bold">
                     {streakData.freezeAvailable ? "Ready" : "Used"}
                   </span>
@@ -200,7 +200,7 @@ export const StreakDisplay = ({ streakData, onUseFreeze }: StreakDisplayProps) =
                   className="w-full"
                   size="sm"
                 >
-                  <Shield className="mr-2 h-4 w-4" />
+                  <APP_ICONS.stats.useFreeze className="mr-2 h-4 w-4" />
                   Use Streak Freeze Today
                 </Button>
                 <p className="font-sans mt-2 text-center text-xs text-muted-foreground">

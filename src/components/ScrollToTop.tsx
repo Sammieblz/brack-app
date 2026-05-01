@@ -1,85 +1,90 @@
-import { useEffect, useState } from "react";
-import { ArrowUp } from "iconoir-react";
+import { type RefObject, useEffect, useState } from "react";
+import { NavArrowUp } from "iconoir-react";
 import { Button } from "@/components/ui/button";
-import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { addScrollListener, getScrollTop, type ScrollTarget } from "@/utils/scroll";
 
 interface ScrollToTopProps {
-  containerRef?: React.RefObject<HTMLElement>;
+  containerRef?: RefObject<HTMLElement | null>;
   threshold?: number;
+  hasBottomNav?: boolean;
+  resetKey?: string;
   className?: string;
 }
 
+const getTarget = (containerRef?: RefObject<HTMLElement | null>): ScrollTarget => {
+  return containerRef?.current ?? window;
+};
+
+const getScrollBehavior = (): ScrollBehavior => {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return "auto";
+  }
+
+  return "smooth";
+};
+
 export const ScrollToTop = ({ 
   containerRef, 
-  threshold = 300,
+  threshold = 320,
+  hasBottomNav = false,
+  resetKey,
   className 
 }: ScrollToTopProps) => {
   const [isVisible, setIsVisible] = useState(false);
-  const { triggerHaptic } = useHapticFeedback();
-  const isMobile = useIsMobile();
 
   useEffect(() => {
-    const container = containerRef?.current || window;
-    
-    const handleScroll = () => {
-      const scrollTop = containerRef?.current 
-        ? containerRef.current.scrollTop 
-        : window.scrollY || document.documentElement.scrollTop;
-      
-      setIsVisible(scrollTop > threshold);
+    const target = getTarget(containerRef);
+
+    const updateVisibility = () => {
+      setIsVisible(getScrollTop(target) > threshold);
     };
 
-    if (containerRef?.current) {
-      containerRef.current.addEventListener("scroll", handleScroll);
-    } else {
-      window.addEventListener("scroll", handleScroll);
-    }
+    updateVisibility();
+    const syncAfterRestore = window.setTimeout(updateVisibility, 120);
+    const removeScrollListener = addScrollListener(target, updateVisibility, { passive: true });
 
     return () => {
-      if (containerRef?.current) {
-        containerRef.current.removeEventListener("scroll", handleScroll);
-      } else {
-        window.removeEventListener("scroll", handleScroll);
-      }
+      window.clearTimeout(syncAfterRestore);
+      removeScrollListener();
     };
-  }, [containerRef, threshold]);
+  }, [containerRef, resetKey, threshold]);
 
   const scrollToTop = () => {
-    triggerHaptic("light");
-    
-    if (containerRef?.current) {
-      containerRef.current.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    } else {
+    const target = getTarget(containerRef);
+    const behavior = getScrollBehavior();
+
+    if (target === window) {
       window.scrollTo({
         top: 0,
-        behavior: "smooth",
+        behavior,
+      });
+    } else {
+      target.scrollTo({
+        top: 0,
+        behavior,
       });
     }
   };
 
-  if (!isVisible) return null;
-
   return (
     <Button
+      type="button"
       onClick={scrollToTop}
       size="icon"
       className={cn(
-        "fixed bottom-20 right-4 z-50 rounded-full shadow-lg",
-        "bg-primary text-primary-foreground",
-        "hover:bg-primary/90",
-        "transition-all duration-300",
-        "animate-in fade-in slide-in-from-bottom-4",
-        isMobile && "bottom-24",
+        "fixed z-[55] h-11 w-11 rounded-full border border-primary/30 bg-primary text-primary-foreground shadow-[0_18px_42px_rgba(0,0,0,0.35)] shadow-primary/20 ring-1 ring-primary/20 transition-all duration-200 hover:bg-primary/90 hover:shadow-[0_22px_50px_rgba(0,0,0,0.42)] focus-visible:ring-primary/50",
+        "bottom-[calc(env(safe-area-inset-bottom)+1rem)] right-4 md:bottom-6 md:right-6",
+        hasBottomNav && "bottom-[calc(max(env(safe-area-inset-bottom),24px)+108px)] left-4 right-auto md:bottom-6 md:left-auto md:right-6",
+        isVisible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0",
         className
       )}
       aria-label="Scroll to top"
+      aria-hidden={!isVisible}
+      tabIndex={isVisible ? 0 : -1}
+      title="Scroll to top"
     >
-      <ArrowUp className="h-5 w-5" />
+      <NavArrowUp className="h-5 w-5" />
     </Button>
   );
 };

@@ -1,5 +1,4 @@
-import { ArrowLeft } from "iconoir-react";
-import { Button } from "@/components/ui/button";
+import { AppBackButton } from "@/components/AppBackButton";
 
 interface HeaderProps {
   title: string;
@@ -13,14 +12,13 @@ export const Header = ({ title, subtitle, onBack, rightAction }: HeaderProps) =>
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center space-x-4">
         {onBack && (
-          <Button
+          <AppBackButton
             variant="outline"
-            size="sm"
-            onClick={onBack}
+            showLabel
+            label="Back"
+            onBack={onBack}
             className="border-border/50 hover:shadow-soft transition-all duration-300"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+          />
         )}
         <div>
           <h1 className="font-display text-xl font-bold text-foreground">{title}</h1>

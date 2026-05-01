@@ -1,9 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Clock, Flash, StatsReport } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
+import { AppBackButton } from "@/components/AppBackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useBookProgress } from "@/hooks/useBookProgress";
@@ -12,6 +12,7 @@ import { DailyPagesChart } from "@/components/charts/DailyPagesChart";
 import { CompletionForecastChart } from "@/components/charts/CompletionForecastChart";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { APP_ICONS } from "@/config/iconography";
 import type { Book } from "@/types";
 
 const ProgressTracking = () => {
@@ -42,7 +43,7 @@ const ProgressTracking = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-background flex items-center justify-center">
+      <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading progress data...</p>
@@ -53,8 +54,23 @@ const ProgressTracking = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Progress Tracking" showBack />}
+      {isMobile && (
+        <MobileHeader
+          title="Progress Tracking"
+          back={{ label: "Book", ariaLabel: "Back to book", to: `/book/${id}` }}
+        />
+      )}
       <div className="app-page-narrow space-y-6">
+        {!isMobile && (
+          <AppBackButton
+            label="Book"
+            ariaLabel="Back to book"
+            to={`/book/${id}`}
+            showLabel
+            variant="outline"
+            className="border-border/70 bg-card/45 shadow-none hover:bg-accent"
+          />
+        )}
 
         {/* Title */}
         <div className="text-center space-y-2 animate-fade-in">
@@ -70,7 +86,7 @@ const ProgressTracking = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                  <Trophy className="h-4 w-4 mr-2" />
+                  <APP_ICONS.analytics.completed className="h-4 w-4 mr-2" />
                   Progress
                 </CardTitle>
               </CardHeader>
@@ -85,7 +101,7 @@ const ProgressTracking = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                  <Flash className="h-4 w-4 mr-2" />
+                  <APP_ICONS.stats.pace className="h-4 w-4 mr-2" />
                   Velocity
                 </CardTitle>
               </CardHeader>
@@ -98,7 +114,7 @@ const ProgressTracking = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                  <Clock className="h-4 w-4 mr-2" />
+                  <APP_ICONS.stats.readingTime className="h-4 w-4 mr-2" />
                   Time Spent
                 </CardTitle>
               </CardHeader>
@@ -113,7 +129,7 @@ const ProgressTracking = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                  <StatsReport className="h-4 w-4 mr-2" />
+                  <APP_ICONS.bookDetail.progressDate className="h-4 w-4 mr-2" />
                   Days Left
                 </CardTitle>
               </CardHeader>
@@ -191,7 +207,7 @@ const ProgressTracking = () => {
         {dailyProgress.length === 0 && (
           <Card>
             <CardContent className="text-center py-12">
-              <StatsReport className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <APP_ICONS.analytics.empty className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
               <h3 className="font-display text-lg font-medium mb-2">No Progress Data Yet</h3>
               <p className="font-sans text-muted-foreground mb-4">
                 Start logging your reading progress to see detailed analytics and forecasts

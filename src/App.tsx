@@ -50,6 +50,7 @@ import { initSentry } from "./lib/sentry";
 import { usePushNotifications } from "./hooks/usePushNotifications";
 import { LiveRegion } from "./components/ui/live-region";
 import { BadgeCelebrationProvider } from "./contexts/BadgeCelebrationContext";
+import { useAppViewportHeight } from "./hooks/useAppViewportHeight";
 
 // Initialize Sentry error tracking
 initSentry();
@@ -77,6 +78,7 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
+  useAppViewportHeight();
   useNetworkStatus();
   const { register: registerPushNotifications } = usePushNotifications();
   

@@ -23,8 +23,8 @@ const Reviews = () => {
   if (loading) {
     return (
       <MobileLayout>
-        {isMobile && <MobileHeader title="Reviews" showBack />}
-        <div className="flex items-center justify-center h-[calc(100vh-80px)]">
+        {isMobile && <MobileHeader title="Reviews" />}
+        <div className="flex h-[calc(var(--app-viewport-height,100dvh)-80px)] items-center justify-center">
           <LoadingSpinner />
         </div>
       </MobileLayout>
@@ -33,7 +33,7 @@ const Reviews = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Reviews" showBack />}
+      {isMobile && <MobileHeader title="Reviews" />}
       <div className="app-page-narrow">
         {!isMobile && (
           <Header

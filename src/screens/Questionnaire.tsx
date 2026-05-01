@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Xmark } from "iconoir-react";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
+import { AppBackButton } from "@/components/AppBackButton";
 
 type QuestionnaireTransition = {
   to: string;
@@ -32,7 +32,6 @@ const Questionnaire = () => {
   const [longestGenre, setLongestGenre] = useState("");
   const [loading, setLoading] = useState(false);
   const [transition, setTransition] = useState<QuestionnaireTransition | null>(null);
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleGenreToggle = (genre: string) => {
@@ -90,7 +89,7 @@ const Questionnaire = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8 md:px-8 safe-top safe-bottom">
+    <div className="flex min-h-app-viewport items-center justify-center bg-background px-4 py-8 safe-top safe-bottom md:px-8">
       <Card className="w-full max-w-2xl lg:max-w-4xl">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -186,14 +185,14 @@ const Questionnaire = () => {
             </div>
             
             <div className="flex gap-4 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => navigate("/welcome")}
+              <AppBackButton
+                label="Back"
+                ariaLabel="Back to welcome"
+                to="/welcome"
+                showLabel
+                variant="outline"
                 className="flex-1"
-              >
-                Back
-              </Button>
+              />
               <Button 
                 type="submit" 
                 disabled={loading}

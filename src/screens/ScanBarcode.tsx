@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Camera, Xmark, CheckCircle } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
+import { AppBackButton } from "@/components/AppBackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { useBarcodeScanner } from "@/hooks/useBarcodeScanner";
@@ -53,8 +54,23 @@ const ScanBarcode = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Scan Barcode" showBack />}
+      {isMobile && (
+        <MobileHeader
+          title="Scan Barcode"
+          back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/add-book" }}
+        />
+      )}
       <div className="app-page-scan">
+        {!isMobile && (
+          <AppBackButton
+            label="Back"
+            ariaLabel="Go back"
+            fallbackPath="/add-book"
+            showLabel
+            variant="outline"
+            className="mb-4 border-border/70 bg-card/45 shadow-none hover:bg-accent"
+          />
+        )}
 
         {/* Scanner Card */}
         <Card className="animate-scale-in">
