@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Trophy, Calendar, FireFlame } from "iconoir-react";
+import { Calendar, FireFlame } from "iconoir-react";
 import { useStreakHistory } from "@/hooks/useStreakHistory";
 import { formatDistanceToNow } from "date-fns";
 import LoadingSpinner from "./LoadingSpinner";
+import { APP_ICONS } from "@/config/iconography";
 
 interface StreakHistoryTimelineProps {
   userId: string;
@@ -16,7 +17,7 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
       <Card>
         <CardHeader>
           <CardTitle className="font-display flex items-center">
-            <Trophy className="h-5 w-5 mr-2" />
+            <APP_ICONS.stats.longestStreak className="h-5 w-5 mr-2" />
             Streak Milestones
           </CardTitle>
         </CardHeader>
@@ -37,7 +38,7 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
       <Card>
         <CardHeader>
           <CardTitle className="font-display flex items-center">
-            <Trophy className="h-5 w-5 mr-2" />
+            <APP_ICONS.stats.longestStreak className="h-5 w-5 mr-2" />
             Streak Milestones
           </CardTitle>
           <CardDescription className="font-sans">Track your reading streak achievements</CardDescription>
@@ -58,7 +59,7 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
     <Card>
       <CardHeader>
         <CardTitle className="font-display flex items-center">
-          <Trophy className="h-5 w-5 mr-2" />
+          <APP_ICONS.stats.longestStreak className="h-5 w-5 mr-2" />
           Streak Milestones
         </CardTitle>
         <CardDescription className="font-sans">
@@ -87,7 +88,7 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
                   <div className="font-sans text-2xl font-bold">{badge.threshold}</div>
                   <div className="font-sans text-xs text-muted-foreground mt-1">days</div>
                   {badge.achieved && (
-                    <Trophy className="h-4 w-4 mx-auto mt-1 text-primary" />
+                    <APP_ICONS.stats.longestStreak className="h-4 w-4 mx-auto mt-1 text-primary" />
                   )}
                 </div>
               ))}

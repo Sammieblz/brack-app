@@ -1,6 +1,6 @@
-import { User, ProfileCircle, Bell, Palette, HelpCircle, LogOut, Lock, PrivacyPolicy, Trash, Download } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { APP_ICONS, type AppIcon } from "@/config/iconography";
 import { cn } from "@/lib/utils";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
@@ -22,16 +22,16 @@ interface SettingsNavProps {
 const sections: Array<{
   id: SettingsSection;
   label: string;
-  icon: typeof Lock;
+  icon: AppIcon;
   description?: string;
 }> = [
-  { id: 'account', label: 'Account', icon: Lock, description: 'Email, password, subscription' },
-  { id: 'profile', label: 'Profile', icon: User, description: 'Display name, bio, avatar' },
-  { id: 'personal', label: 'Personal Info', icon: ProfileCircle, description: 'Name, location, preferences' },
-  { id: 'app', label: 'App Preferences', icon: Palette, description: 'Theme, colors, behavior' },
-  { id: 'notifications', label: 'Notifications', icon: Bell, description: 'Push notifications, quiet hours' },
-  { id: 'privacy', label: 'Privacy', icon: PrivacyPolicy, description: 'Visibility, data sharing' },
-  { id: 'support', label: 'Support & Help', icon: HelpCircle, description: 'FAQs, contact, feedback' },
+  { id: 'account', label: 'Account', icon: APP_ICONS.settings.account, description: 'Email, password, subscription' },
+  { id: 'profile', label: 'Profile', icon: APP_ICONS.settings.profile, description: 'Display name, bio, avatar' },
+  { id: 'personal', label: 'Personal Info', icon: APP_ICONS.settings.personal, description: 'Name, location, preferences' },
+  { id: 'app', label: 'App Preferences', icon: APP_ICONS.settings.app, description: 'Theme, colors, behavior' },
+  { id: 'notifications', label: 'Notifications', icon: APP_ICONS.settings.notifications, description: 'Push notifications, quiet hours' },
+  { id: 'privacy', label: 'Privacy', icon: APP_ICONS.settings.privacy, description: 'Visibility, data sharing' },
+  { id: 'support', label: 'Support & Help', icon: APP_ICONS.settings.support, description: 'FAQs, contact, feedback' },
 ];
 
 export const SettingsNav = ({ activeSection, onSectionChange, onSignOut }: SettingsNavProps) => {
@@ -92,7 +92,7 @@ export const SettingsNav = ({ activeSection, onSectionChange, onSignOut }: Setti
               onSignOut();
             }}
           >
-            <LogOut className="h-4 w-4 mr-2" />
+            <APP_ICONS.common.signOut className="h-4 w-4 mr-2" />
             Sign Out
           </Button>
         </CardContent>
@@ -110,7 +110,7 @@ export const SettingsNav = ({ activeSection, onSectionChange, onSignOut }: Setti
               // TODO: Implement export data
             }}
           >
-            <Download className="h-4 w-4 mr-2" />
+            <APP_ICONS.common.download className="h-4 w-4 mr-2" />
             Export My Data
           </Button>
           <Button
@@ -121,7 +121,7 @@ export const SettingsNav = ({ activeSection, onSectionChange, onSignOut }: Setti
               // TODO: Implement clear cache
             }}
           >
-            <Trash className="h-4 w-4 mr-2" />
+            <APP_ICONS.common.clearCache className="h-4 w-4 mr-2" />
             Clear Cache
           </Button>
           <Button
@@ -132,7 +132,7 @@ export const SettingsNav = ({ activeSection, onSectionChange, onSignOut }: Setti
               // TODO: Implement delete account
             }}
           >
-            <Trash className="h-4 w-4 mr-2" />
+            <APP_ICONS.common.deleteItem className="h-4 w-4 mr-2" />
             Delete Account
           </Button>
         </CardContent>

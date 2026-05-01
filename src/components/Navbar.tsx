@@ -8,11 +8,12 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { Book, StatsReport, BookStack, Settings, LogOut, Menu, Xmark, Bookmark, Trophy, List, User, UserStar, ChatBubble } from "iconoir-react";
+import { Menu, Xmark } from "iconoir-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { APP_ICONS } from "@/config/iconography";
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -58,14 +59,14 @@ export const Navbar = () => {
                       'Reader';
 
   const navItems = [
-    { to: "/dashboard", label: "Dashboard", icon: Book },
-    { to: "/books", label: "My Books", icon: BookStack },
-    { to: "/lists", label: "Lists", icon: List },
-    { to: "/goals-management", label: "Goals", icon: Trophy },
-    { to: "/analytics", label: "Analytics", icon: StatsReport },
-    { to: "/clubs", label: "Clubs", icon: User },
-    { to: "/readers", label: "Readers", icon: UserStar },
-    { to: "/messages", label: "Messages", icon: ChatBubble },
+    { to: "/dashboard", label: "Dashboard", icon: APP_ICONS.nav.home },
+    { to: "/books", label: "My Books", icon: APP_ICONS.nav.library },
+    { to: "/lists", label: "Lists", icon: APP_ICONS.nav.lists },
+    { to: "/goals-management", label: "Goals", icon: APP_ICONS.nav.goals },
+    { to: "/analytics", label: "Analytics", icon: APP_ICONS.nav.analytics },
+    { to: "/clubs", label: "Clubs", icon: APP_ICONS.nav.clubs },
+    { to: "/readers", label: "Readers", icon: APP_ICONS.nav.readers },
+    { to: "/messages", label: "Messages", icon: APP_ICONS.nav.messages },
   ];
 
   const getNavLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -81,7 +82,7 @@ export const Navbar = () => {
         <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <Book className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <APP_ICONS.nav.library className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
             <span className="font-display text-base sm:text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               BookTracker
             </span>
@@ -120,11 +121,11 @@ export const Navbar = () => {
                 align="end"
               >
                 <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
+                  <APP_ICONS.nav.settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <APP_ICONS.common.signOut className="mr-2 h-4 w-4" />
                   <span>Sign Out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>

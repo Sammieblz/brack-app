@@ -4,7 +4,6 @@ import { MessageThread } from "@/components/messaging/MessageThread";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
-import { ChatBubble } from "iconoir-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useLocation } from "react-router-dom";
 import { MobileLayout } from "@/components/MobileLayout";
@@ -13,6 +12,7 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { APP_ICONS } from "@/config/iconography";
 
 const Messages = () => {
   const location = useLocation();
@@ -70,9 +70,13 @@ const Messages = () => {
       <MobileLayout showBottomNav={false}>
         <MobileHeader 
           title={selectedConversation?.other_user?.display_name || "Message"}
-          showBack={true}
+          back={{
+            label: "Messages",
+            ariaLabel: "Back to messages",
+            onBack: () => setSelectedConversationId(null),
+          }}
         />
-        <div className="h-[calc(100vh-3.5rem)] native-scroll" {...swipeHandlers}>
+        <div className="h-[calc(var(--app-viewport-height,100dvh)-3.5rem)] native-scroll" {...swipeHandlers}>
           {messagesLoading ? (
             <LoadingSpinner />
           ) : (
@@ -101,7 +105,7 @@ const Messages = () => {
           <div className="mb-8 animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
-                <ChatBubble className="h-7 w-7 text-primary" />
+                <APP_ICONS.nav.messages className="h-7 w-7 text-primary" />
               </div>
               <div>
                 <h1 className="font-display text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
@@ -117,7 +121,7 @@ const Messages = () => {
 
         {isMobile ? (
           <PullToRefresh onRefresh={refetchConversations}>
-            <div className="min-h-screen bg-background pb-4">
+            <div className="min-h-full bg-background pb-4">
               <ConversationsList
                 conversations={conversations}
                 selectedConversationId={selectedConversationId}
@@ -127,7 +131,7 @@ const Messages = () => {
             </div>
           </PullToRefresh>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-16rem)]">
+          <div className="grid h-[calc(var(--app-viewport-height,100dvh)-16rem)] min-h-[24rem] grid-cols-1 gap-6 md:grid-cols-3">
             <div className="md:col-span-1 overflow-y-auto">
               <ConversationsList
                 conversations={conversations}
@@ -153,7 +157,7 @@ const Messages = () => {
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">
-                    <ChatBubble className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                    <APP_ICONS.nav.messages className="h-16 w-16 mx-auto mb-4 opacity-50" />
                     <p className="font-sans">Select a conversation to start messaging</p>
                   </div>
                 </div>

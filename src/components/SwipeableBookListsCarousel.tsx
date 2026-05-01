@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Bookmark, NavArrowLeft, NavArrowRight, Plus } from "iconoir-react";
+import { NavArrowLeft, NavArrowRight } from "iconoir-react";
 import { useBookLists } from "@/hooks/useBookLists";
 import { useAuth } from "@/hooks/useAuth";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { APP_ICONS } from "@/config/iconography";
 
 export const SwipeableBookListsCarousel = () => {
   const { user } = useAuth();
@@ -58,7 +59,7 @@ export const SwipeableBookListsCarousel = () => {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="font-display text-base md:text-lg font-semibold flex items-center">
-          <Bookmark className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+          <APP_ICONS.library.bookLists className="h-4 w-4 md:h-5 md:w-5 mr-2" />
           My Book Lists
         </h3>
         <Button 
@@ -78,7 +79,7 @@ export const SwipeableBookListsCarousel = () => {
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0 flex-1">
-                <Bookmark className="h-5 w-5 text-primary flex-shrink-0" />
+                <APP_ICONS.library.bookLists className="h-5 w-5 text-primary flex-shrink-0" />
                 <CardTitle className="font-display text-base line-clamp-1">{currentList.name}</CardTitle>
               </div>
               <Badge variant="secondary" className="text-xs whitespace-nowrap">

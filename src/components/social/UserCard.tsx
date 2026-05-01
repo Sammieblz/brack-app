@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { FollowButton } from "./FollowButton";
 import { useNavigate } from "react-router-dom";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { Book, Trophy, FireFlame } from "iconoir-react";
+import { APP_ICONS } from "@/config/iconography";
 
 interface UserCardProps {
   userId: string;
@@ -74,19 +74,19 @@ export const UserCard = ({
             <div className="font-sans flex flex-wrap gap-2">
               {booksRead > 0 && (
                 <Badge variant="secondary" className="flex items-center gap-1.5">
-                  <Book className="h-3 w-3" />
+                  <APP_ICONS.profile.booksRead className="h-3 w-3" />
                   <span>{booksRead}</span>
                 </Badge>
               )}
               {currentStreak > 0 && (
                 <Badge variant="secondary" className="flex items-center gap-1.5">
-                  <FireFlame className="h-3 w-3" />
+                  <APP_ICONS.profile.streak className="h-3 w-3" />
                   <span>{currentStreak}d</span>
                 </Badge>
               )}
               {badges > 0 && (
                 <Badge variant="secondary" className="flex items-center gap-1.5">
-                  <Trophy className="h-3 w-3" />
+                  <APP_ICONS.profile.badges className="h-3 w-3" />
                   <span>{badges}</span>
                 </Badge>
               )}

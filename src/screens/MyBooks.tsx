@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Book, Bookmark, Search, Filter, Refresh, StatsReport } from "iconoir-react";
+import { Refresh, Search } from "iconoir-react";
 import { BookCard } from "@/components/BookCard";
 import { SwipeableBookCard } from "@/components/SwipeableBookCard";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,6 +26,7 @@ import { useSwipeable } from "react-swipeable";
 import { toast } from "sonner";
 import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
 import { bookOperations } from "@/utils/offlineOperation";
+import { APP_ICONS } from "@/config/iconography";
 
 const MyBooks = () => {
   const { user } = useAuth();
@@ -138,7 +139,7 @@ const MyBooks = () => {
       ) : (
         <Card>
           <CardContent className="p-8 text-center">
-            <Book className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <APP_ICONS.library.emptyResults className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="font-semibold mb-2">No books found</h3>
             <p className="text-sm text-muted-foreground">
               Try adjusting your search or filter
@@ -242,7 +243,7 @@ const MyBooks = () => {
                 size="sm"
                 onClick={() => navigate("/analytics")}
               >
-                <StatsReport className="h-4 w-4" />
+                <APP_ICONS.library.analytics className="h-4 w-4" />
               </Button>
             }
           />
@@ -258,7 +259,7 @@ const MyBooks = () => {
                   size="sm"
                   title="Book Lists"
                 >
-                  <Bookmark className="h-4 w-4 lg:mr-2" />
+                  <APP_ICONS.library.bookLists className="h-4 w-4 lg:mr-2" />
                   <span className="hidden lg:inline">Book Lists</span>
                 </Button>
                 <Button 
@@ -267,7 +268,7 @@ const MyBooks = () => {
                   size="sm"
                   title="Analytics"
                 >
-                  <StatsReport className="h-4 w-4 lg:mr-2" />
+                  <APP_ICONS.library.analytics className="h-4 w-4 lg:mr-2" />
                   <span className="hidden lg:inline">Analytics</span>
                 </Button>
                 <Button
@@ -275,7 +276,7 @@ const MyBooks = () => {
                   size="sm"
                   title="Add Book"
                 >
-                  <Book className="h-4 w-4 lg:mr-2" />
+                  <APP_ICONS.library.addBook className="h-4 w-4 lg:mr-2" />
                   <span className="hidden lg:inline">Add Book</span>
                 </Button>
               </div>
@@ -382,7 +383,7 @@ const MyBooks = () => {
 
               {/* Desktop Filter */}
               <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
+                <APP_ICONS.library.filter className="h-4 w-4 text-muted-foreground" />
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-[200px]">
                     <SelectValue placeholder="Filter by status" />

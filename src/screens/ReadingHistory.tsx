@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
+import { AppBackButton } from "@/components/AppBackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -157,7 +158,12 @@ export default function ReadingHistory() {
   if (loading) {
     return (
       <MobileLayout>
-        {isMobile && <MobileHeader title="Reading History" showBack />}
+        {isMobile && (
+          <MobileHeader
+            title="Reading History"
+            back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/analytics" }}
+          />
+        )}
         <LoadingSpinner />
       </MobileLayout>
     );
@@ -165,12 +171,27 @@ export default function ReadingHistory() {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Reading History" showBack />}
+      {isMobile && (
+        <MobileHeader
+          title="Reading History"
+          back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/analytics" }}
+        />
+      )}
       <div className="app-page">
         {!isMobile && (
-          <div className="mb-6">
-            <h1 className="font-display text-3xl font-bold mb-2">Reading History</h1>
-            <p className="text-muted-foreground">View all your progress logs and journal entries</p>
+          <div className="mb-6 flex items-center gap-4">
+            <AppBackButton
+              label="Back"
+              ariaLabel="Go back"
+              fallbackPath="/analytics"
+              showLabel
+              variant="outline"
+              className="border-border/70 bg-card/45 shadow-none hover:bg-accent"
+            />
+            <div>
+              <h1 className="font-display text-3xl font-bold mb-2">Reading History</h1>
+              <p className="text-muted-foreground">View all your progress logs and journal entries</p>
+            </div>
           </div>
         )}
 

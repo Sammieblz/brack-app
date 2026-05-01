@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Book as BookIcon } from "iconoir-react";
+import { APP_ICONS } from "@/config/iconography";
 import type { Book } from "@/types";
 
 interface QuickProgressWidgetProps {
@@ -70,7 +70,7 @@ export const QuickProgressWidget = ({ book, onUpdate }: QuickProgressWidgetProps
     <Card className="bg-gradient-card">
       <CardHeader>
         <CardTitle className="font-display text-lg flex items-center gap-2">
-          <BookIcon className="h-5 w-5" />
+          <APP_ICONS.bookDetail.logProgress className="h-5 w-5" />
           Quick Progress Update
         </CardTitle>
       </CardHeader>

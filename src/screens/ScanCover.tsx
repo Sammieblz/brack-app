@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Camera, Xmark, CheckCircle, EditPencil, Sparks } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
+import { AppBackButton } from "@/components/AppBackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { useCoverScanner } from "@/hooks/useCoverScanner";
@@ -78,8 +79,23 @@ const ScanCover = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Scan Cover" showBack />}
+      {isMobile && (
+        <MobileHeader
+          title="Scan Cover"
+          back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/add-book" }}
+        />
+      )}
       <div className="app-page-scan">
+        {!isMobile && (
+          <AppBackButton
+            label="Back"
+            ariaLabel="Go back"
+            fallbackPath="/add-book"
+            showLabel
+            variant="outline"
+            className="mb-4 border-border/70 bg-card/45 shadow-none hover:bg-accent"
+          />
+        )}
 
         {/* Scanner Card */}
         <Card className="animate-scale-in">

@@ -5,14 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Camera, Group } from "iconoir-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
-import { useImagePicker } from "@/hooks/useImagePicker";
 import { useFollowing } from "@/hooks/useFollowing";
 import { useNavigate } from "react-router-dom";
 import { getInitials } from "@/lib/avatarUtils";
+import { APP_ICONS } from "@/config/iconography";
 import type { User as UserType, Profile } from "@/types";
 
 interface ProfileSettingsProps {
@@ -21,7 +20,6 @@ interface ProfileSettingsProps {
 
 export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
   const { toast } = useToast();
-  const { pickWithPrompt } = useImagePicker();
   const navigate = useNavigate();
   const { followersCount, followingCount } = useFollowing(user?.id || null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -184,7 +182,7 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Group className="h-5 w-5" />
+            <APP_ICONS.profile.social className="h-5 w-5" />
             Social Profile
           </CardTitle>
           <CardDescription>
@@ -230,7 +228,7 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
       <Card>
         <CardHeader>
           <CardTitle className="font-display flex items-center gap-2">
-            <User className="h-5 w-5" />
+            <APP_ICONS.profile.picture className="h-5 w-5" />
             Profile Picture
           </CardTitle>
           <CardDescription className="font-sans">
@@ -255,7 +253,7 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
                 onClick={() => setShowImagePicker(true)}
                 className="w-full sm:w-auto"
               >
-                <Camera className="h-4 w-4 mr-2" />
+                <APP_ICONS.common.camera className="h-4 w-4 mr-2" />
                 {uploading ? "Uploading..." : "Choose Photo"}
               </Button>
               {profile?.avatar_url && (

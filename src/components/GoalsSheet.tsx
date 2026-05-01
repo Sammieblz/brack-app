@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Trophy } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import {
   DismissableSheet,
@@ -20,6 +19,7 @@ import {
 import { GoalManager } from "@/components/GoalManager";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { APP_ICONS } from "@/config/iconography";
 
 export const GoalsSheet = () => {
   const [open, setOpen] = useState(false);
@@ -39,7 +39,7 @@ export const GoalsSheet = () => {
       <DismissableSheet open={open} onOpenChange={setOpen}>
         <DismissableSheetTrigger asChild>
           <Button variant="outline" size="sm" className="gap-2">
-            <Trophy className="h-4 w-4" />
+            <APP_ICONS.dashboard.goal className="h-4 w-4" />
             Goals
           </Button>
         </DismissableSheetTrigger>
@@ -60,7 +60,7 @@ export const GoalsSheet = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-          <Trophy className="h-4 w-4" />
+          <APP_ICONS.dashboard.goal className="h-4 w-4" />
           Goals
         </Button>
       </DialogTrigger>

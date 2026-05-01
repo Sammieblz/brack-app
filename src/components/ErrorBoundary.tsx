@@ -43,7 +43,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <div className="min-h-screen bg-background flex items-center justify-center px-4">
+          <div className="flex min-h-app-viewport items-center justify-center bg-background px-4">
             <div className="max-w-md text-center space-y-4">
               <h1 className="font-display text-2xl font-bold text-foreground">
                 Something went wrong

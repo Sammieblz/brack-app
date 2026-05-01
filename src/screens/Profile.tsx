@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { FloppyDisk, User, Camera, User as Users } from "iconoir-react";
+import { FloppyDisk } from "iconoir-react";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
 import { useImagePicker } from "@/hooks/useImagePicker";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -18,6 +18,7 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { useFollowing } from "@/hooks/useFollowing";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getInitials } from "@/lib/avatarUtils";
+import { APP_ICONS } from "@/config/iconography";
 import type { Profile } from "@/types";
 
 const ProfilePage = () => {
@@ -186,7 +187,7 @@ const ProfilePage = () => {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gradient-background flex items-center justify-center">
+      <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background">
         <LoadingSpinner size="lg" text="Loading profile..." />
       </div>
     );
@@ -199,14 +200,14 @@ const ProfilePage = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Profile Settings" showBack />}
+      {isMobile && <MobileHeader title="Profile Settings" />}
       <div className="app-page-narrow space-y-6">
 
         {/* Social Profile View */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
+              <APP_ICONS.profile.social className="h-5 w-5" />
               Social Profile
             </CardTitle>
             <CardDescription>
@@ -252,7 +253,7 @@ const ProfilePage = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
+              <APP_ICONS.profile.picture className="h-5 w-5" />
               Profile Picture
             </CardTitle>
             <CardDescription>
@@ -274,7 +275,7 @@ const ProfilePage = () => {
                   onClick={() => setShowImagePicker(true)}
                   className="w-full sm:w-auto"
                 >
-                  <Camera className="h-4 w-4 mr-2" />
+                  <APP_ICONS.common.camera className="h-4 w-4 mr-2" />
                   {uploading ? "Uploading..." : "Choose Photo"}
                 </Button>
                 {profile?.avatar_url && (

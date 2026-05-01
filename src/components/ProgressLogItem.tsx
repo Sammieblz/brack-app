@@ -1,7 +1,7 @@
 import { formatDate, formatDuration } from "@/utils";
 import { Badge } from "./ui/badge";
 import { Card } from "./ui/card";
-import { Book, Clock, Notes } from "iconoir-react";
+import { APP_ICONS } from "@/config/iconography";
 
 interface ProgressLog {
   id: string;
@@ -45,7 +45,7 @@ export const ProgressLogItem = ({ log }: ProgressLogItemProps) => {
 
           <div className="font-sans flex items-center gap-4 text-sm">
             <div className="flex items-center gap-1">
-              <Book className="h-4 w-4 text-muted-foreground" />
+              <APP_ICONS.stats.pagesRead className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">Page {log.page_number}</span>
               {log.paragraph_number && (
                 <span className="text-muted-foreground">
@@ -56,7 +56,7 @@ export const ProgressLogItem = ({ log }: ProgressLogItemProps) => {
 
             {log.time_spent_minutes && log.time_spent_minutes > 0 && (
               <div className="flex items-center gap-1 text-muted-foreground">
-                <Clock className="h-4 w-4" />
+                <APP_ICONS.stats.readingTime className="h-4 w-4" />
                 <span>{formatDuration(log.time_spent_minutes)}</span>
               </div>
             )}
@@ -65,7 +65,7 @@ export const ProgressLogItem = ({ log }: ProgressLogItemProps) => {
           {log.notes && (
             <div className="mt-2 p-2 bg-muted/50 rounded-md">
               <div className="flex items-start gap-2">
-                <Notes className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <APP_ICONS.bookDetail.logProgress className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <p className="font-serif text-sm text-foreground/90">{log.notes}</p>
               </div>
             </div>

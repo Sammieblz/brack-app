@@ -26,7 +26,7 @@ const BookLists = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Book Lists" showBack />}
+      {isMobile && <MobileHeader title="Book Lists" />}
       <PullToRefresh onRefresh={handleRefresh}>
         <main className="app-page">
           <BookListManager key={refreshKey} userId={user.id} />

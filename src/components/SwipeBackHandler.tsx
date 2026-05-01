@@ -27,7 +27,7 @@ export const SwipeBackHandler = ({
     : 1;
 
   return (
-    <div className={cn("relative h-full w-full overflow-hidden", className)}>
+    <div className={cn("relative min-h-full w-full overflow-x-hidden", className)}>
       {/* Previous page hint (parallax background) */}
       {isSwiping && (
         <div 
@@ -45,7 +45,7 @@ export const SwipeBackHandler = ({
       {/* Current page */}
       <div
         className={cn(
-          "relative h-full w-full bg-background",
+          "relative min-h-full w-full bg-background",
           isSwiping && "will-change-transform"
         )}
         style={{

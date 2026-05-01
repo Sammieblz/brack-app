@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, SkipNext } from "iconoir-react";
+import { SkipNext } from "iconoir-react";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
 import { BRACK_GOALS_IMAGE } from "@/config/brackAssets";
+import { APP_ICONS } from "@/config/iconography";
 
 type WelcomeTransition = {
   to: string;
@@ -52,7 +53,7 @@ const Welcome = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-background flex items-center justify-center px-4 py-8 relative overflow-hidden safe-top safe-bottom">
+    <div className="relative flex min-h-app-viewport items-center justify-center overflow-x-hidden overflow-y-auto bg-gradient-background px-4 py-8 safe-top safe-bottom">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-float" />
@@ -110,7 +111,7 @@ const Welcome = () => {
                 onClick={handleSetGoal} 
                 className="w-full h-14 bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium text-lg"
               >
-                <Trophy className="mr-3 h-5 w-5" />
+                <APP_ICONS.dashboard.goal className="mr-3 h-5 w-5" />
                 Set My Reading Goal
               </Button>
               

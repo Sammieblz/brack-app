@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Clock, CheckCircle, EditPencil, Trash, Play, Star, StatsReport, Calendar, Book as BookIcon, Notes, Bookmark, ShareIos } from "iconoir-react";
+import { CheckCircle, EditPencil, Trash, Star, Bookmark, ShareIos } from "iconoir-react";
 import { shareService } from "@/services/shareService";
 import { toast } from "sonner";
 import { formatDuration } from "@/utils";
@@ -24,7 +24,9 @@ import { ReviewForm } from "@/components/social/ReviewForm";
 import { useReviews } from "@/hooks/useReviews";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
+import { AppBackButton } from "@/components/AppBackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { APP_ICONS } from "@/config/iconography";
 import type { Book, ReadingSession } from "@/types";
 
 const BookDetail = () => {
@@ -148,7 +150,7 @@ const BookDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-background flex items-center justify-center">
+      <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading book details...</p>
@@ -159,7 +161,7 @@ const BookDetail = () => {
 
   if (!book) {
     return (
-      <div className="min-h-screen bg-gradient-background flex items-center justify-center">
+      <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background">
         <div className="text-center">
           <p className="font-sans text-muted-foreground">Book not found</p>
         </div>
@@ -169,18 +171,23 @@ const BookDetail = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title={book.title} showBack />}
+      {isMobile && (
+        <MobileHeader
+          title={book.title}
+          back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/my-books" }}
+        />
+      )}
       <div className="app-page-narrow">
         {!isMobile && (
           <div className="mb-6 flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="h-10 w-10"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+            <AppBackButton
+              label="Back"
+              ariaLabel="Go back"
+              fallbackPath="/my-books"
+              showLabel
+              variant="outline"
+              className="border-border/70 bg-card/45 shadow-none hover:bg-accent"
+            />
             <div>
               <h1 className="font-display text-2xl font-bold">{book.title}</h1>
               {book.author && (
@@ -252,7 +259,7 @@ const BookDetail = () => {
               {book.description && (
                 <div className="pb-4 border-b space-y-2">
                   <span className="font-sans text-sm text-muted-foreground font-medium flex items-center gap-1">
-                    <Notes className="h-4 w-4" />
+                    <APP_ICONS.bookDetail.description className="h-4 w-4" />
                     Description
                   </span>
                   <p className="font-serif text-sm text-foreground/80 leading-relaxed">{book.description}</p>
@@ -383,7 +390,7 @@ const BookDetail = () => {
                             in ~{progress.estimated_days_to_completion} days
                           </div>
                         </div>
-                        <Calendar className="h-8 w-8 text-primary" />
+                        <APP_ICONS.bookDetail.progressDate className="h-8 w-8 text-primary" />
                       </div>
                     </Card>
                   )}
@@ -414,13 +421,13 @@ const BookDetail = () => {
                     onClick={() => navigate(`/book/${book.id}/progress`)}
                     className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium mt-4"
                   >
-                    <StatsReport className="mr-2 h-4 w-4" />
+                    <APP_ICONS.bookDetail.detailedAnalytics className="mr-2 h-4 w-4" />
                     View Detailed Analytics
                   </Button>
                 </>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  <BookIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <APP_ICONS.bookDetail.progressEmpty className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p className="font-sans">No progress data available yet</p>
                   <p className="font-sans text-sm">Start logging your progress to see statistics</p>
                 </div>
@@ -495,7 +502,7 @@ const BookDetail = () => {
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
-                  <Notes className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <APP_ICONS.bookDetail.logProgress className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p className="font-sans">No progress logs yet</p>
                   <p className="font-sans text-sm">Log your reading progress to track your journey</p>
                 </div>
@@ -518,7 +525,7 @@ const BookDetail = () => {
               onClick={() => startTimer(book.id, book.title)}
               className="bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium"
             >
-              <Play className="mr-2 h-4 w-4" />
+              <APP_ICONS.bookDetail.startTimer className="mr-2 h-4 w-4" />
               Start Timer
             </Button>
             
@@ -527,7 +534,7 @@ const BookDetail = () => {
               variant="outline"
               className="border-border/50 hover:shadow-soft transition-all duration-300"
             >
-              <BookIcon className="mr-2 h-4 w-4" />
+              <APP_ICONS.bookDetail.logProgress className="mr-2 h-4 w-4" />
               Log Progress
             </Button>
           </div>
@@ -592,7 +599,7 @@ const BookDetail = () => {
           <Card className="animate-fade-in">
             <CardHeader>
               <CardTitle className="text-lg font-bold text-foreground flex items-center">
-                <Clock className="mr-2 h-5 w-5" />
+                <APP_ICONS.bookDetail.recentSessions className="mr-2 h-5 w-5" />
                 Recent Sessions
               </CardTitle>
             </CardHeader>

@@ -45,7 +45,7 @@ export const PageTransition = ({ children, className }: PageTransitionProps) => 
   }, { dependencies: [location.pathname] });
 
   return (
-    <div ref={containerRef} className={cn("w-full", className)}>
+    <div ref={containerRef} className={cn("min-h-full w-full", className)}>
       {children}
     </div>
   );

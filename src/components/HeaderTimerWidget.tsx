@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Book, Pause, Play, Square, Timer, Xmark } from "iconoir-react";
+import { Pause, Play, Square, Timer, Xmark } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -10,6 +10,7 @@ import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { useTimer } from "@/contexts/TimerContext";
 import { formatTime } from "@/utils";
 import { cn } from "@/lib/utils";
+import { APP_ICONS } from "@/config/iconography";
 
 export const HeaderTimerWidget = () => {
   const navigate = useNavigate();
@@ -65,7 +66,7 @@ export const HeaderTimerWidget = () => {
           align="end"
           sideOffset={10}
           collisionPadding={12}
-          className="max-h-[calc(100vh-7rem)] w-[22rem] overflow-hidden p-0"
+          className="max-h-[calc(var(--app-viewport-height,100dvh)-7rem)] w-[22rem] overflow-hidden p-0"
         >
           <TimerPickerContent
             loading={loading}
@@ -138,7 +139,7 @@ export const HeaderTimerWidget = () => {
         align="end"
         sideOffset={10}
         collisionPadding={12}
-        className="max-h-[calc(100vh-7rem)] w-[23rem] overflow-hidden p-0"
+        className="max-h-[calc(var(--app-viewport-height,100dvh)-7rem)] w-[23rem] overflow-hidden p-0"
       >
         <TimerControlsContent
           time={time}
@@ -192,7 +193,7 @@ const TimerPickerContent = ({
         <div className="h-14 rounded-md bg-muted animate-pulse" />
       </div>
     ) : readingBooks.length > 0 ? (
-      <ScrollArea className="h-[min(22rem,calc(100vh-13rem))] pr-2">
+      <ScrollArea className="h-[min(22rem,calc(var(--app-viewport-height,100dvh)-13rem))] pr-2">
         <div className="space-y-2">
           {readingBooks.map((book) => (
             <button
@@ -209,7 +210,7 @@ const TimerPickerContent = ({
                 />
               ) : (
                 <div className="flex h-14 w-10 shrink-0 items-center justify-center rounded bg-primary/10 text-primary">
-                  <Book className="h-5 w-5" />
+                  <APP_ICONS.dashboard.coverFallback className="h-5 w-5" />
                 </div>
               )}
               <span className="min-w-0 flex-1">

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { QuestionMark, Mail, ChatBubble, Notes } from "iconoir-react";
+import { APP_ICONS } from "@/config/iconography";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -36,7 +36,7 @@ export const SupportContact = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <QuestionMark className="h-5 w-5" />
+            <APP_ICONS.settings.faq className="h-5 w-5" />
             Frequently Asked Questions
           </CardTitle>
         </CardHeader>
@@ -68,7 +68,7 @@ export const SupportContact = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
+            <APP_ICONS.settings.contact className="h-5 w-5" />
             Contact Support
           </CardTitle>
           <CardDescription>
@@ -96,7 +96,7 @@ export const SupportContact = () => {
             />
           </div>
           <Button onClick={handleSubmitFeedback} className="w-full">
-            <ChatBubble className="h-4 w-4 mr-2" />
+            <APP_ICONS.settings.sendMessage className="h-4 w-4 mr-2" />
             Send Message
           </Button>
         </CardContent>
@@ -106,7 +106,7 @@ export const SupportContact = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Notes className="h-5 w-5" />
+            <APP_ICONS.settings.feedback className="h-5 w-5" />
             Share Feedback
           </CardTitle>
           <CardDescription>
@@ -134,7 +134,7 @@ export const SupportContact = () => {
             />
           </div>
           <Button onClick={handleSubmitFeedback} variant="outline" className="w-full">
-            <Notes className="h-4 w-4 mr-2" />
+            <APP_ICONS.settings.feedback className="h-4 w-4 mr-2" />
             Submit Feedback
           </Button>
         </CardContent>

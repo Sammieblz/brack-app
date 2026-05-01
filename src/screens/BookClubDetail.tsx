@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
+import { AppBackButton } from "@/components/AppBackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,9 +15,10 @@ import { DiscussionThread } from "@/components/clubs/DiscussionThread";
 import { supabase } from "@/integrations/supabase/client";
 import { BookClub, ClubMember } from "@/hooks/useBookClubs";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Group, ChatBubble, Book, Send, Crown } from "iconoir-react";
+import { Send, Crown } from "iconoir-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import { APP_ICONS } from "@/config/iconography";
 
 const BookClubDetail = () => {
   const { clubId } = useParams<{ clubId: string }>();
@@ -146,7 +148,12 @@ const BookClubDetail = () => {
   if (loading) {
     return (
       <MobileLayout>
-        {isMobile && <MobileHeader title="Book Club" showBack />}
+        {isMobile && (
+          <MobileHeader
+            title="Book Club"
+            back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/clubs" }}
+          />
+        )}
         <div className="flex justify-center items-center py-20">
           <LoadingSpinner />
         </div>
@@ -157,7 +164,12 @@ const BookClubDetail = () => {
   if (!club) {
     return (
       <MobileLayout>
-        {isMobile && <MobileHeader title="Book Club" showBack />}
+        {isMobile && (
+          <MobileHeader
+            title="Book Club"
+            back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/clubs" }}
+          />
+        )}
         <div className="app-page-narrow">
           <div className="text-center">
             <p className="font-sans text-muted-foreground">Club not found</p>
@@ -172,8 +184,23 @@ const BookClubDetail = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title={club.name} showBack />}
+      {isMobile && (
+        <MobileHeader
+          title={club.name}
+          back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/clubs" }}
+        />
+      )}
       <main className="app-page">
+        {!isMobile && (
+          <AppBackButton
+            label="Back"
+            ariaLabel="Go back"
+            fallbackPath="/clubs"
+            showLabel
+            variant="outline"
+            className="mb-4 border-border/70 bg-card/45 shadow-none hover:bg-accent"
+          />
+        )}
 
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <div className="md:col-span-2">
@@ -197,7 +224,7 @@ const BookClubDetail = () => {
                 <CardContent>
                   <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
                     <div className="flex items-center gap-2 mb-3">
-                      <Book className="h-5 w-5 text-primary" />
+                      <APP_ICONS.profile.booksTab className="h-5 w-5 text-primary" />
                       <span className="font-sans font-semibold">Currently Reading</span>
                     </div>
                     <div className="flex gap-4">
@@ -224,7 +251,7 @@ const BookClubDetail = () => {
           <Card className="border-border/50">
             <CardHeader>
               <CardTitle className="font-sans flex items-center gap-2">
-                <Group className="h-5 w-5" />
+                <APP_ICONS.readers.clubs className="h-5 w-5" />
                 Members ({members.length})
               </CardTitle>
             </CardHeader>
@@ -259,7 +286,7 @@ const BookClubDetail = () => {
         <Tabs defaultValue="discussions" className="space-y-6">
           <TabsList>
             <TabsTrigger value="discussions" className="flex items-center gap-2">
-              <ChatBubble className="h-4 w-4" />
+              <APP_ICONS.nav.messages className="h-4 w-4" />
               Discussions
             </TabsTrigger>
           </TabsList>

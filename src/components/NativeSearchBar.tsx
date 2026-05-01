@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Xmark, Clock, ArrowLeft } from 'iconoir-react';
+import { Search, Xmark, Clock, NavArrowLeft } from 'iconoir-react';
 import { cn } from '@/lib/utils';
 import { usePlatform } from '@/hooks/usePlatform';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
@@ -94,7 +94,7 @@ export const NativeSearchBar = ({
               onClick={handleCancel}
               className="absolute left-0 z-10 animate-in slide-in-from-left-5 duration-300"
             >
-              <ArrowLeft className="h-5 w-5 text-primary" />
+              <NavArrowLeft className="h-5 w-5 text-primary" />
             </Button>
           )}
 

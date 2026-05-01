@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, Timer, StatsReport } from "iconoir-react";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useGSAPTimeline } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
+import { APP_ICONS } from "@/config/iconography";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -163,14 +163,14 @@ const Index = () => {
   // ── Loading state ────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-background flex items-center justify-center">
+      <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background">
         <LoadingSpinner size="lg" text="Loading..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-background relative overflow-x-hidden overflow-y-auto">
+    <div className="relative min-h-app-viewport overflow-x-hidden overflow-y-auto bg-gradient-background">
       {/* Light / Dark toggle */}
       <ThemeToggle />
 
@@ -251,7 +251,7 @@ const Index = () => {
             <Card className="text-center bg-gradient-card shadow-soft border-0 p-4 md:p-6 hover:shadow-medium transition-all duration-300 group">
               <CardContent className="p-4 md:p-6">
                 <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6 group-hover:shadow-glow transition-all duration-300">
-                  <Trophy className="h-7 w-7 md:h-8 md:w-8 text-white" />
+                  <APP_ICONS.dashboard.goal className="h-7 w-7 md:h-8 md:w-8 text-white" />
                 </div>
                 <CardTitle className="font-display text-lg md:text-xl mb-3 md:mb-4 text-foreground">Set Goals</CardTitle>
                 <CardDescription className="font-serif text-muted-foreground leading-relaxed text-sm md:text-base">
@@ -263,7 +263,7 @@ const Index = () => {
             <Card className="text-center bg-gradient-card shadow-soft border-0 p-4 md:p-6 hover:shadow-medium transition-all duration-300 group">
               <CardContent className="p-4 md:p-6">
                 <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6 group-hover:shadow-glow transition-all duration-300">
-                  <Timer className="h-7 w-7 md:h-8 md:w-8 text-white" />
+                  <APP_ICONS.floatingAction.timer className="h-7 w-7 md:h-8 md:w-8 text-white" />
                 </div>
                 <CardTitle className="font-display text-lg md:text-xl mb-3 md:mb-4 text-foreground">Track Time</CardTitle>
                 <CardDescription className="font-serif text-muted-foreground leading-relaxed text-sm md:text-base">
@@ -275,7 +275,7 @@ const Index = () => {
             <Card className="text-center bg-gradient-card shadow-soft border-0 p-4 md:p-6 hover:shadow-medium transition-all duration-300 group">
               <CardContent className="p-4 md:p-6">
                 <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6 group-hover:shadow-glow transition-all duration-300">
-                  <StatsReport className="h-7 w-7 md:h-8 md:w-8 text-white" />
+                  <APP_ICONS.dashboard.insights className="h-7 w-7 md:h-8 md:w-8 text-white" />
                 </div>
                 <CardTitle className="font-display text-lg md:text-xl mb-3 md:mb-4 text-foreground">Analyze Progress</CardTitle>
                 <CardDescription className="font-serif text-muted-foreground leading-relaxed text-sm md:text-base">

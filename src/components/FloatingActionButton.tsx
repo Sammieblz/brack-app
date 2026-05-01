@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Book, Camera, Search, Timer, StatsReport, Clock, Plus as ListPlus, ScanBarcode } from "iconoir-react";
+import { Plus } from "iconoir-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FloatingQuickStatsWidget } from "./FloatingQuickStatsWidget";
+import { APP_ICONS } from "@/config/iconography";
 
 interface FABAction {
   icon: React.ElementType;
@@ -37,7 +38,7 @@ export const FloatingActionButton = () => {
 
   const actions: FABAction[] = [
     {
-      icon: StatsReport,
+      icon: APP_ICONS.floatingAction.quickStats,
       label: "Quick Stats",
       onClick: () => {
         triggerHaptic("light");
@@ -46,7 +47,7 @@ export const FloatingActionButton = () => {
       },
     },
     {
-      icon: Timer,
+      icon: APP_ICONS.floatingAction.timer,
       label: "Start Reading Time",
       onClick: () => {
         triggerHaptic("light");
@@ -55,7 +56,7 @@ export const FloatingActionButton = () => {
       },
     },
     {
-      icon: Book,
+      icon: APP_ICONS.floatingAction.addBook,
       label: "Add Book",
       onClick: () => {
         triggerHaptic("light");
@@ -64,7 +65,7 @@ export const FloatingActionButton = () => {
       },
     },
     {
-      icon: Camera,
+      icon: APP_ICONS.floatingAction.scanBarcode,
       label: "Scan Barcode",
       onClick: () => {
         triggerHaptic("light");
@@ -73,7 +74,7 @@ export const FloatingActionButton = () => {
       },
     },
     {
-      icon: ScanBarcode,
+      icon: APP_ICONS.floatingAction.scanCover,
       label: "Scan Cover",
       onClick: () => {
         triggerHaptic("light");
@@ -82,7 +83,7 @@ export const FloatingActionButton = () => {
       },
     },
     {
-      icon: Search,
+      icon: APP_ICONS.floatingAction.search,
       label: "Search Books",
       onClick: () => {
         triggerHaptic("light");
@@ -91,7 +92,7 @@ export const FloatingActionButton = () => {
       },
     },
     {
-      icon: Clock,
+      icon: APP_ICONS.floatingAction.history,
       label: "Reading History",
       onClick: () => {
         triggerHaptic("light");
@@ -177,7 +178,7 @@ export const FloatingActionButton = () => {
           <ScrollArea className="h-[calc(85vh-100px)] mt-4">
             {readingBooks.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <Timer className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <APP_ICONS.floatingAction.timer className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p className="font-sans">No books currently being read</p>
                 <p className="font-sans text-sm mt-2">Add books and mark them as "Reading" to start tracking time</p>
               </div>
@@ -198,7 +199,7 @@ export const FloatingActionButton = () => {
                       />
                     ) : (
                       <div className="w-12 h-16 bg-muted rounded flex items-center justify-center">
-                        <Book className="h-6 w-6 text-muted-foreground" />
+                        <APP_ICONS.floatingAction.bookFallback className="h-6 w-6 text-muted-foreground" />
                       </div>
                     )}
                     <div className="flex-1 text-left">

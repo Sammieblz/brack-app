@@ -17,7 +17,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Lock, User, ProfileCircle, Bell, Palette, PrivacyPolicy, HelpCircle, LogOut } from "iconoir-react";
+import { APP_ICONS, type AppIcon } from "@/config/iconography";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { cn } from "@/lib/utils";
 
@@ -33,56 +33,56 @@ type SettingsSection =
 const sections: Array<{
   id: SettingsSection;
   label: string;
-  icon: typeof Lock;
+  icon: AppIcon;
   description: string;
   component: (user: { id: string }) => React.ReactNode;
 }> = [
   { 
     id: 'account', 
     label: 'Account', 
-    icon: Lock,
+    icon: APP_ICONS.settings.account,
     description: 'Email, password, subscription',
     component: (user) => <AccountSettings user={user} />
   },
   { 
     id: 'profile', 
     label: 'Profile', 
-    icon: User, 
+    icon: APP_ICONS.settings.profile,
     description: 'Display name, bio, avatar',
     component: (user) => <ProfileSettings user={user} />
   },
   { 
     id: 'personal', 
     label: 'Personal Info', 
-    icon: ProfileCircle,
+    icon: APP_ICONS.settings.personal,
     description: 'Name, location, preferences',
     component: (user) => <PersonalInfo user={user} />
   },
   { 
     id: 'app', 
     label: 'App Preferences', 
-    icon: Palette, 
+    icon: APP_ICONS.settings.app,
     description: 'Theme, colors, behavior',
     component: () => <AppPreferences />
   },
   { 
     id: 'notifications', 
     label: 'Notifications', 
-    icon: Bell, 
+    icon: APP_ICONS.settings.notifications,
     description: 'Push notifications, quiet hours',
     component: (user) => <NotificationSettings user={user} />
   },
   { 
     id: 'privacy', 
     label: 'Privacy', 
-    icon: PrivacyPolicy,
+    icon: APP_ICONS.settings.privacy,
     description: 'Visibility, data sharing',
     component: (user) => <PrivacySettings user={user} />
   },
   { 
     id: 'support', 
     label: 'Support & Help', 
-    icon: HelpCircle, 
+    icon: APP_ICONS.settings.support,
     description: 'FAQs, contact, feedback',
     component: () => <SupportContact />
   },
@@ -159,7 +159,7 @@ const Settings = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Settings" showBack />}
+      {isMobile && <MobileHeader title="Settings" />}
       
       <div className="app-page-narrow">
         {!isMobile && (
@@ -257,7 +257,7 @@ const Settings = () => {
                 setShowSignOutDialog(true);
               }}
             >
-              <LogOut className="h-4 w-4 mr-2" />
+              <APP_ICONS.common.signOut className="h-4 w-4 mr-2" />
               Sign Out
             </Button>
           </CardContent>

@@ -1,5 +1,6 @@
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
+import { BRACK_LOGO_IMAGES } from "@/config/brackAssets";
 
 interface ThemeAwareLogoProps {
   /** "icon" = standalone icon mark, "full" = icon + "BRACK" text */
@@ -13,20 +14,6 @@ interface ThemeAwareLogoProps {
   tone?: "adaptive" | "theme";
 }
 
-const logoMap = {
-  icon: {
-    light: "/brack-icon-transparent-bg-dark.png",
-    dark: "/brack-icon-transparent-bg-light.png",
-    mask: "/brack-icon-transparent-bg-dark.png",
-  },
-  full: {
-    light: "/brack-logo-transparent-bg-dark-text.png",
-    dark: "/brack-logo-transparent-bg-white-text.png",
-    orange: "/brack-logo-transparent-bg-orange-text.png",
-    mask: "/brack-logo-transparent-bg-dark-text.png",
-  },
-};
-
 export const ThemeAwareLogo = ({
   variant,
   size,
@@ -39,7 +26,7 @@ export const ThemeAwareLogo = ({
   const defaultSize = variant === "icon" ? "h-16 w-16" : "h-12 md:h-14";
 
   if (tone === "theme") {
-    const maskSrc = variant === "icon" ? logoMap.icon.mask : logoMap.full.mask;
+    const maskSrc = variant === "icon" ? BRACK_LOGO_IMAGES.icon.mask : BRACK_LOGO_IMAGES.full.mask;
     const maskSize = variant === "icon" ? "130%" : "contain";
 
     return (
@@ -68,11 +55,11 @@ export const ThemeAwareLogo = ({
 
   let src: string;
   if (variant === "full" && useOrange) {
-    src = logoMap.full.orange;
+    src = BRACK_LOGO_IMAGES.full.orange;
   } else if (variant === "full") {
-    src = isDark ? logoMap.full.dark : logoMap.full.light;
+    src = isDark ? BRACK_LOGO_IMAGES.full.dark : BRACK_LOGO_IMAGES.full.light;
   } else {
-    src = isDark ? logoMap.icon.dark : logoMap.icon.light;
+    src = isDark ? BRACK_LOGO_IMAGES.icon.dark : BRACK_LOGO_IMAGES.icon.light;
   }
 
   return (
