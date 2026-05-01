@@ -1,0 +1,407 @@
+import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
+import type { OnboardingFormData, OnboardingStatus } from "@/types";
+
+export const ONBOARDING_VERSION = 1;
+
+export interface OnboardingAuthUser {
+  id: string;
+  email?: string;
+  user_metadata?: {
+    full_name?: unknown;
+    name?: unknown;
+    first_name?: unknown;
+    last_name?: unknown;
+    avatar_url?: unknown;
+    picture?: unknown;
+  } | null;
+}
+
+export const ONBOARDING_STEPS = [
+  "welcome",
+  "taste",
+  "pace",
+  "goal",
+  "review",
+] as const;
+
+export type OnboardingStepId = (typeof ONBOARDING_STEPS)[number];
+
+export const DEFAULT_ONBOARDING_FORM: OnboardingFormData = {
+  favoriteGenres: [],
+  slowestGenre: "",
+  preferredBookLength: "",
+  booksReadSixMonths: null,
+  booksReadYear: null,
+  averageDaysPerBook: null,
+  preferredSessionMinutes: 20,
+  preferredReadingTime: "",
+  readingFrequency: "",
+  motivation: "",
+  preferredBookFormat: "",
+  goalTargetBooks: 12,
+  goalStartDate: null,
+  goalEndDate: null,
+  reminderEnabled: false,
+  reminderTime: "19:00",
+};
+
+export interface OnboardingStatusRecord {
+  onboarding_status: OnboardingStatus;
+  onboarding_version: number;
+  onboarding_last_step: string | null;
+  onboarding_completed_at: string | null;
+  onboarding_skipped_at: string | null;
+}
+
+export const isIncompleteOnboardingStatus = (status?: OnboardingStatus | null) =>
+  status === "not_started" || status === "in_progress";
+
+export const needsSetupPrompt = (status?: OnboardingStatus | null) =>
+  status === "not_started" || status === "in_progress" || status === "skipped";
+
+const todayDate = () => new Date().toISOString().split("T")[0];
+
+const defaultGoalEndDate = () => {
+  const date = new Date();
+  date.setMonth(date.getMonth() + 12);
+  return date.toISOString().split("T")[0];
+};
+
+const clampNumber = (value: number | null | undefined, min: number, max: number) => {
+  if (value === null || value === undefined || Number.isNaN(value)) return null;
+  return Math.min(max, Math.max(min, Math.round(value)));
+};
+
+const normalizeStatus = (status: string | null | undefined): OnboardingStatus =>
+  status === "in_progress" || status === "completed" || status === "skipped"
+    ? status
+    : "not_started";
+
+export const getOnboardingErrorMessage = (
+  error: unknown,
+  fallback = "Unable to update onboarding.",
+) => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object" && error !== null && "message" in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string" && message.trim()) return message;
+  }
+  return fallback;
+};
+
+export const isOnboardingBackendUnavailable = (error: unknown) => {
+  if (typeof error !== "object" || error === null) return false;
+
+  const { code, message } = error as { code?: unknown; message?: unknown };
+  const errorCode = typeof code === "string" ? code : "";
+  const errorMessage = typeof message === "string" ? message.toLowerCase() : "";
+
+  return (
+    errorCode === "PGRST204" ||
+    errorCode === "PGRST205" ||
+    errorCode === "42703" ||
+    errorCode === "42P01" ||
+    errorMessage.includes("schema cache") ||
+    errorMessage.includes("could not find") ||
+    errorMessage.includes("does not exist")
+  );
+};
+
+const readMetadataString = (
+  metadata: OnboardingAuthUser["user_metadata"],
+  key: keyof NonNullable<OnboardingAuthUser["user_metadata"]>,
+) => {
+  const value = metadata?.[key];
+  return typeof value === "string" && value.trim() ? value : null;
+};
+
+export const ensureUserProfile = async (user: OnboardingAuthUser | SupabaseUser) => {
+  const { data: existing, error: selectError } = await supabase
+    .from("profiles")
+    .select(
+      "onboarding_status,onboarding_version,onboarding_last_step,onboarding_completed_at,onboarding_skipped_at",
+    )
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (selectError && selectError.code !== "PGRST116") {
+    throw selectError;
+  }
+
+  if (existing) {
+    return {
+      ...existing,
+      onboarding_status: normalizeStatus(existing.onboarding_status),
+    } as OnboardingStatusRecord;
+  }
+
+  const metadata = user.user_metadata ?? {};
+  const firstName = readMetadataString(metadata, "first_name");
+  const lastName = readMetadataString(metadata, "last_name");
+  const fullName =
+    readMetadataString(metadata, "full_name") ??
+    readMetadataString(metadata, "name") ??
+    ([firstName, lastName].filter(Boolean).join(" ") || user.email?.split("@")[0] || null);
+  const avatarUrl =
+    readMetadataString(metadata, "avatar_url") ??
+    readMetadataString(metadata, "picture");
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .upsert(
+      {
+        id: user.id,
+        display_name: fullName,
+        avatar_url: avatarUrl,
+        first_name: firstName,
+        last_name: lastName,
+        onboarding_status: "not_started",
+        onboarding_version: ONBOARDING_VERSION,
+      },
+      { onConflict: "id", ignoreDuplicates: true },
+    )
+    .select(
+      "onboarding_status,onboarding_version,onboarding_last_step,onboarding_completed_at,onboarding_skipped_at",
+    )
+    .maybeSingle();
+
+  if (error) throw error;
+
+  if (!data) {
+    const fallback = await getOnboardingStatus(user.id);
+    if (fallback) return fallback;
+    throw new Error("Unable to create onboarding profile.");
+  }
+
+  return {
+    ...data,
+    onboarding_status: normalizeStatus(data.onboarding_status),
+  } as OnboardingStatusRecord;
+};
+
+export const getOnboardingStatus = async (userId: string) => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select(
+      "onboarding_status,onboarding_version,onboarding_last_step,onboarding_completed_at,onboarding_skipped_at",
+    )
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error && error.code !== "PGRST116") throw error;
+
+  if (!data) {
+    return null;
+  }
+
+  return {
+    ...data,
+    onboarding_status: normalizeStatus(data.onboarding_status),
+  } as OnboardingStatusRecord;
+};
+
+export const markOnboardingInProgress = async (
+  userId: string,
+  lastStep: OnboardingStepId,
+) => {
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      onboarding_status: "in_progress",
+      onboarding_last_step: lastStep,
+      onboarding_skipped_at: null,
+    })
+    .eq("id", userId)
+    .in("onboarding_status", ["not_started", "in_progress", "skipped"]);
+
+  if (error) throw error;
+};
+
+export const skipOnboarding = async (
+  userId: string,
+  lastStep: OnboardingStepId = "welcome",
+) => {
+  const skippedAt = new Date().toISOString();
+
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({
+      onboarding_status: "skipped",
+      onboarding_version: ONBOARDING_VERSION,
+      onboarding_last_step: lastStep,
+      onboarding_skipped_at: skippedAt,
+      onboarding_completed_at: null,
+    })
+    .eq("id", userId);
+
+  if (profileError) throw profileError;
+
+  const { error: learningError } = await supabase
+    .from("user_learning_profiles")
+    .upsert(
+      {
+        user_id: userId,
+        onboarding_answers: {
+          skipped: true,
+          skippedAt,
+          lastStep,
+        } as Json,
+        derived_preferences: {
+          setupConfidence: "low",
+          shouldPromptForSetup: true,
+        } as Json,
+        signal_version: ONBOARDING_VERSION,
+      },
+      { onConflict: "user_id" },
+    );
+
+  if (learningError) throw learningError;
+};
+
+export const saveOnboardingProfile = async (
+  userId: string,
+  formData: OnboardingFormData,
+) => {
+  const favoriteGenres = formData.favoriteGenres.slice(0, 12);
+  const goalTargetBooks = clampNumber(formData.goalTargetBooks, 1, 365);
+  const averageDaysPerBook = clampNumber(formData.averageDaysPerBook, 1, 365);
+  const avgLength = (() => {
+    switch (formData.preferredBookLength) {
+      case "short":
+        return 180;
+      case "medium":
+        return 320;
+      case "long":
+        return 520;
+      default:
+        return null;
+    }
+  })();
+
+  if (favoriteGenres.length === 0) {
+    throw new Error("Choose at least one genre so Brack can personalize your experience.");
+  }
+
+  if (!goalTargetBooks) {
+    throw new Error("Add a positive book target before completing onboarding.");
+  }
+
+  const normalized: OnboardingFormData = {
+    ...formData,
+    favoriteGenres,
+    slowestGenre: formData.slowestGenre || "",
+    booksReadSixMonths: clampNumber(formData.booksReadSixMonths, 0, 500),
+    booksReadYear: clampNumber(formData.booksReadYear, 0, 1000),
+    averageDaysPerBook,
+    preferredSessionMinutes: clampNumber(formData.preferredSessionMinutes, 5, 300),
+    motivation: formData.motivation.trim().slice(0, 240),
+    goalTargetBooks,
+    goalStartDate: formData.goalStartDate || todayDate(),
+    goalEndDate: formData.goalEndDate || defaultGoalEndDate(),
+    reminderTime: formData.reminderEnabled ? formData.reminderTime || "19:00" : null,
+  };
+
+  const derivedPreferences = {
+    favoriteGenres,
+    slowestGenre: normalized.slowestGenre || null,
+    preferredBookLength: normalized.preferredBookLength || null,
+    preferredSessionMinutes: normalized.preferredSessionMinutes,
+    preferredReadingTime: normalized.preferredReadingTime || null,
+    readingFrequency: normalized.readingFrequency || null,
+    preferredBookFormat: normalized.preferredBookFormat || null,
+    goalTargetBooks,
+    estimatedMonthlyGoal: Math.max(1, Math.ceil(goalTargetBooks / 12)),
+    setupConfidence: "high",
+  };
+
+  const { error: habitsError } = await supabase
+    .from("reading_habits")
+    .upsert(
+      {
+        user_id: userId,
+        avg_time_per_book: normalized.averageDaysPerBook,
+        genres: favoriteGenres,
+        avg_length: avgLength,
+        books_6mo: normalized.booksReadSixMonths,
+        books_1yr: normalized.booksReadYear,
+        longest_genre: normalized.slowestGenre || null,
+        preferred_session_minutes: normalized.preferredSessionMinutes,
+        preferred_reading_time: normalized.preferredReadingTime || null,
+        reading_frequency: normalized.readingFrequency || null,
+        motivation: normalized.motivation || null,
+        book_format: normalized.preferredBookFormat || null,
+      },
+      { onConflict: "user_id" },
+    );
+
+  if (habitsError) throw habitsError;
+
+  await supabase
+    .from("goals")
+    .update({ is_active: false })
+    .eq("user_id", userId)
+    .eq("goal_type", "books_count")
+    .eq("is_active", true);
+
+  const { error: goalError } = await supabase.from("goals").insert({
+    user_id: userId,
+    target_books: goalTargetBooks,
+    start_date: normalized.goalStartDate,
+    end_date: normalized.goalEndDate,
+    reminder_time: normalized.reminderTime,
+    goal_type: "books_count",
+    period_type: "yearly",
+    is_active: true,
+    is_completed: false,
+  });
+
+  if (goalError) throw goalError;
+
+  const { error: notificationError } = await supabase
+    .from("notification_preferences")
+    .upsert(
+      {
+        user_id: userId,
+        reading_reminders_enabled: normalized.reminderEnabled,
+      },
+      { onConflict: "user_id" },
+    );
+
+  if (notificationError) throw notificationError;
+
+  const completedAt = new Date().toISOString();
+
+  const { error: learningError } = await supabase
+    .from("user_learning_profiles")
+    .upsert(
+      {
+        user_id: userId,
+        onboarding_answers: normalized as unknown as Json,
+        derived_preferences: derivedPreferences as Json,
+        signal_version: ONBOARDING_VERSION,
+      },
+      { onConflict: "user_id" },
+    );
+
+  if (learningError) throw learningError;
+
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({
+      onboarding_status: "completed",
+      onboarding_version: ONBOARDING_VERSION,
+      onboarding_last_step: "review",
+      onboarding_completed_at: completedAt,
+      onboarding_skipped_at: null,
+    })
+    .eq("id", userId);
+
+  if (profileError) throw profileError;
+
+  return {
+    normalized,
+    derivedPreferences,
+  };
+};

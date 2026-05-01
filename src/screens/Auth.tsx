@@ -11,6 +11,10 @@ import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
+import {
+  ensureUserProfile,
+  isIncompleteOnboardingStatus,
+} from "@/services/onboarding";
 
 type AuthTransition = {
   to: string;
@@ -29,6 +33,29 @@ const Auth = () => {
   const [transition, setTransition] = useState<AuthTransition | null>(null);
   const { toast } = useToast();
   const { resetToDefaultTheme } = useTheme();
+
+  const resolveSignedInTransition = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        to: "/dashboard",
+        message: "Opening your reading dashboard...",
+      };
+    }
+
+    const status = await ensureUserProfile(user);
+    const needsOnboarding = isIncompleteOnboardingStatus(status.onboarding_status);
+
+    return {
+      to: needsOnboarding ? "/onboarding" : "/dashboard",
+      message: needsOnboarding
+        ? "Setting up your Brack profile..."
+        : "Opening your reading dashboard...",
+    };
+  };
 
   // Force default theme on auth page (only if not authenticated)
   useEffect(() => {
@@ -59,10 +86,7 @@ const Auth = () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          setTransition({
-            to: "/dashboard",
-            message: "Opening your reading dashboard...",
-          });
+          setTransition(await resolveSignedInTransition());
           return;
         }
       } catch (error) {
@@ -78,7 +102,7 @@ const Auth = () => {
       (event, session) => {
         if (session && event === 'SIGNED_IN') {
           setTransition((current) => current ?? {
-            to: isSignUp ? "/welcome" : "/dashboard",
+            to: isSignUp ? "/onboarding" : "/dashboard",
             message: isSignUp ? "Creating your Brack space..." : "Welcome back to Brack...",
           });
         }
@@ -140,7 +164,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/welcome`,
+            emailRedirectTo: `${window.location.origin}/onboarding`,
             data: {
               first_name: firstName,
               last_name: lastName,
@@ -152,10 +176,7 @@ const Auth = () => {
         if (error) throw error;
 
         if (data.session) {
-          setTransition({
-            to: "/welcome",
-            message: "Creating your Brack space...",
-          });
+          setTransition(await resolveSignedInTransition());
           return;
         }
         
@@ -171,10 +192,7 @@ const Auth = () => {
         
         if (error) throw error;
 
-        setTransition({
-          to: "/dashboard",
-          message: "Welcome back to Brack...",
-        });
+        setTransition(await resolveSignedInTransition());
       }
     } catch (error: unknown) {
       toast({
@@ -194,7 +212,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/welcome`
+          redirectTo: `${window.location.origin}/onboarding`
         }
       });
       

@@ -12,17 +12,30 @@ export interface Profile {
   display_name: string | null;
   avatar_url: string | null;
   bio: string | null;
+  city: string | null;
+  country: string | null;
+  latitude: number | null;
+  longitude: number | null;
   phone_number: string | null;
   first_name: string | null;
   last_name: string | null;
   date_of_birth: string | null;
   color_theme: string | null;
   theme_mode: string | null;
+  profile_visibility: string | null;
+  show_reading_activity: boolean | null;
+  show_currently_reading: boolean | null;
+  allow_friend_requests: boolean | null;
   is_active: boolean;
   current_streak: number;
   longest_streak: number;
   last_reading_date: string | null;
   streak_freeze_used_at: string | null;
+  onboarding_status: OnboardingStatus;
+  onboarding_version: number;
+  onboarding_last_step: string | null;
+  onboarding_completed_at: string | null;
+  onboarding_skipped_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -71,7 +84,48 @@ export interface ReadingHabits {
   books_6mo: number | null;
   books_1yr: number | null;
   longest_genre: string | null;
+  preferred_session_minutes: number | null;
+  preferred_reading_time: string | null;
+  reading_frequency: string | null;
+  motivation: string | null;
+  book_format: string | null;
   created_at: string;
+  updated_at: string | null;
+}
+
+export type OnboardingStatus = 'not_started' | 'in_progress' | 'completed' | 'skipped';
+
+export type PreferredBookLength = 'short' | 'medium' | 'long' | 'varied';
+export type PreferredReadingTime = 'morning' | 'afternoon' | 'evening' | 'night' | 'mixed';
+export type ReadingFrequency = 'daily' | 'weekdays' | 'weekends' | 'few_weekly' | 'occasional';
+export type PreferredBookFormat = 'print' | 'ebook' | 'audio' | 'mixed';
+
+export interface OnboardingFormData {
+  favoriteGenres: string[];
+  slowestGenre: string;
+  preferredBookLength: PreferredBookLength | "";
+  booksReadSixMonths: number | null;
+  booksReadYear: number | null;
+  averageDaysPerBook: number | null;
+  preferredSessionMinutes: number | null;
+  preferredReadingTime: PreferredReadingTime | "";
+  readingFrequency: ReadingFrequency | "";
+  motivation: string;
+  preferredBookFormat: PreferredBookFormat | "";
+  goalTargetBooks: number | null;
+  goalStartDate: string | null;
+  goalEndDate: string | null;
+  reminderEnabled: boolean;
+  reminderTime: string | null;
+}
+
+export interface UserLearningProfile {
+  user_id: string;
+  onboarding_answers: Record<string, unknown>;
+  derived_preferences: Record<string, unknown>;
+  signal_version: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ReadingSession {

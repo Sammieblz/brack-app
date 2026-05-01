@@ -220,6 +220,15 @@ export const useChartData = (userId?: string) => {
         .eq('user_id', userId)
         .is('deleted_at', null);
 
+      const { data: activeGoals } = await supabase
+        .from('goals')
+        .select('target_books,start_date,end_date,period_type,goal_type,is_active,created_at')
+        .eq('user_id', userId)
+        .eq('goal_type', 'books_count')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
       // Calculate reading velocity (pages/hour over time)
       const velocityMap = new Map<string, { pages: number; hours: number }>();
       sessions?.forEach(session => {
@@ -320,7 +329,29 @@ export const useChartData = (userId?: string) => {
         }
       });
 
-      // Generate months array with goals (assuming 2 books/month goal)
+      const activeBookGoal = activeGoals?.[0];
+      const monthlyGoalTarget = (date: Date) => {
+        if (!activeBookGoal?.target_books) return 2;
+
+        const start = activeBookGoal.start_date ? new Date(activeBookGoal.start_date) : null;
+        const end = activeBookGoal.end_date ? new Date(activeBookGoal.end_date) : null;
+        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+        if ((start && monthEnd < start) || (end && monthStart > end)) return 0;
+        if (activeBookGoal.period_type === 'monthly') return activeBookGoal.target_books;
+
+        const rangeStart = start || new Date(date.getFullYear(), 0, 1);
+        const rangeEnd = end || new Date(date.getFullYear(), 11, 31);
+        const monthSpan =
+          (rangeEnd.getFullYear() - rangeStart.getFullYear()) * 12 +
+          (rangeEnd.getMonth() - rangeStart.getMonth()) +
+          1;
+
+        return Math.max(1, Math.ceil(activeBookGoal.target_books / Math.max(1, monthSpan)));
+      };
+
+      // Generate months array with goal targets from the user's active goal.
       const monthlyArray: MonthlyGoalData[] = [];
       for (let i = 5; i >= 0; i--) {
         const date = new Date();
@@ -329,7 +360,7 @@ export const useChartData = (userId?: string) => {
         const data = monthlyMap.get(monthKey) || { actual: 0 };
         monthlyArray.push({
           month: monthKey,
-          goal: 2, // Default goal
+          goal: monthlyGoalTarget(date),
           actual: data.actual
         });
       }

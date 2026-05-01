@@ -32,9 +32,7 @@ export const DEFAULT_REMINDER_TIME = '19:00'; // 7 PM
 export const ROUTES = {
   INDEX: '/',
   AUTH: '/auth',
-  WELCOME: '/welcome',
-  QUESTIONNAIRE: '/questionnaire',
-  GOALS: '/goals',
+  ONBOARDING: '/onboarding',
   DASHBOARD: '/dashboard',
   ADD_BOOK: '/add-book',
   BOOK_DETAIL: '/book/:id',

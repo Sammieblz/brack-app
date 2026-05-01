@@ -8,21 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Book, EditPencil, FloppyDisk, Xmark } from "iconoir-react";
+import type { ReadingHabits } from "@/types";
 
 const GENRES = [
   "Fiction", "Non-Fiction", "Mystery", "Thriller", "Science Fiction",
   "Fantasy", "Romance", "Biography", "History", "Self-Help",
   "Business", "Philosophy", "Poetry", "Young Adult", "Horror"
 ];
-
-interface ReadingHabits {
-  avg_time_per_book: number | null;
-  avg_length: number | null;
-  books_6mo: number | null;
-  books_1yr: number | null;
-  genres: string[] | null;
-  longest_genre: string | null;
-}
 
 interface ReadingHabitsSectionProps {
   userId: string;
@@ -42,6 +34,11 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
     books_1yr: "",
     genres: [] as string[],
     longest_genre: "",
+    preferred_session_minutes: "",
+    preferred_reading_time: "",
+    reading_frequency: "",
+    motivation: "",
+    book_format: "",
   });
 
   useEffect(() => {
@@ -60,7 +57,7 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
       if (error && error.code !== 'PGRST116') throw error;
 
       if (data) {
-        setHabits(data);
+        setHabits(data as ReadingHabits);
         setFormData({
           avg_time_per_book: data.avg_time_per_book?.toString() || "",
           avg_length: data.avg_length?.toString() || "",
@@ -68,6 +65,11 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
           books_1yr: data.books_1yr?.toString() || "",
           genres: data.genres || [],
           longest_genre: data.longest_genre || "",
+          preferred_session_minutes: data.preferred_session_minutes?.toString() || "",
+          preferred_reading_time: data.preferred_reading_time || "",
+          reading_frequency: data.reading_frequency || "",
+          motivation: data.motivation || "",
+          book_format: data.book_format || "",
         });
       }
     } catch (error: unknown) {
@@ -88,11 +90,16 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
         books_1yr: formData.books_1yr ? parseInt(formData.books_1yr) : null,
         genres: formData.genres,
         longest_genre: formData.longest_genre || null,
+        preferred_session_minutes: formData.preferred_session_minutes ? parseInt(formData.preferred_session_minutes) : null,
+        preferred_reading_time: formData.preferred_reading_time || null,
+        reading_frequency: formData.reading_frequency || null,
+        motivation: formData.motivation.trim() || null,
+        book_format: formData.book_format || null,
       };
 
       const { error } = await supabase
         .from('reading_habits')
-        .upsert(updateData);
+        .upsert(updateData, { onConflict: "user_id" });
 
       if (error) throw error;
 
@@ -277,6 +284,85 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="session_minutes">Preferred session length (minutes)</Label>
+                <Input
+                  id="session_minutes"
+                  type="number"
+                  value={formData.preferred_session_minutes}
+                  onChange={(e) => setFormData(prev => ({ ...prev, preferred_session_minutes: e.target.value }))}
+                  placeholder="e.g., 20"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="preferred_time">Preferred reading time</Label>
+                <Select
+                  value={formData.preferred_reading_time}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, preferred_reading_time: value }))}
+                >
+                  <SelectTrigger id="preferred_time">
+                    <SelectValue placeholder="Select a time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="morning">Morning</SelectItem>
+                    <SelectItem value="afternoon">Afternoon</SelectItem>
+                    <SelectItem value="evening">Evening</SelectItem>
+                    <SelectItem value="night">Night</SelectItem>
+                    <SelectItem value="mixed">Mixed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="reading_frequency">Reading frequency</Label>
+                <Select
+                  value={formData.reading_frequency}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, reading_frequency: value }))}
+                >
+                  <SelectTrigger id="reading_frequency">
+                    <SelectValue placeholder="Select cadence" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekdays">Weekdays</SelectItem>
+                    <SelectItem value="weekends">Weekends</SelectItem>
+                    <SelectItem value="few_weekly">A few times weekly</SelectItem>
+                    <SelectItem value="occasional">Occasional</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="book_format">Preferred format</Label>
+                <Select
+                  value={formData.book_format}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, book_format: value }))}
+                >
+                  <SelectTrigger id="book_format">
+                    <SelectValue placeholder="Select format" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="print">Print</SelectItem>
+                    <SelectItem value="ebook">Ebook</SelectItem>
+                    <SelectItem value="audio">Audio</SelectItem>
+                    <SelectItem value="mixed">Mixed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="motivation">Reading motivation</Label>
+              <Input
+                id="motivation"
+                value={formData.motivation}
+                onChange={(e) => setFormData(prev => ({ ...prev, motivation: e.target.value }))}
+                placeholder="Learning, focus, joy, school, career..."
+              />
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
@@ -297,6 +383,18 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
                 <p className="font-sans text-sm text-muted-foreground">Books (1 year)</p>
                 <p className="font-sans text-lg font-semibold">{habits?.books_1yr || 0}</p>
               </div>
+              <div>
+                <p className="font-sans text-sm text-muted-foreground">Session length</p>
+                <p className="font-sans text-lg font-semibold">
+                  {habits?.preferred_session_minutes ? `${habits.preferred_session_minutes} min` : "N/A"}
+                </p>
+              </div>
+              <div>
+                <p className="font-sans text-sm text-muted-foreground">Preferred time</p>
+                <p className="font-sans text-lg font-semibold capitalize">
+                  {habits?.preferred_reading_time?.replace("_", " ") || "N/A"}
+                </p>
+              </div>
             </div>
 
             {habits?.genres && habits.genres.length > 0 && (
@@ -314,6 +412,31 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
               <div>
                 <p className="font-sans text-sm text-muted-foreground">Takes longest to read</p>
                 <Badge variant="outline" className="mt-1">{habits.longest_genre}</Badge>
+              </div>
+            )}
+
+            {(habits?.reading_frequency || habits?.book_format || habits?.motivation) && (
+              <div className="grid gap-3 sm:grid-cols-3">
+                {habits.reading_frequency && (
+                  <div>
+                    <p className="font-sans text-sm text-muted-foreground">Cadence</p>
+                    <Badge variant="outline" className="mt-1 capitalize">
+                      {habits.reading_frequency.replace("_", " ")}
+                    </Badge>
+                  </div>
+                )}
+                {habits.book_format && (
+                  <div>
+                    <p className="font-sans text-sm text-muted-foreground">Format</p>
+                    <Badge variant="outline" className="mt-1 capitalize">{habits.book_format}</Badge>
+                  </div>
+                )}
+                {habits.motivation && (
+                  <div>
+                    <p className="font-sans text-sm text-muted-foreground">Motivation</p>
+                    <p className="font-sans text-sm">{habits.motivation}</p>
+                  </div>
+                )}
               </div>
             )}
           </div>

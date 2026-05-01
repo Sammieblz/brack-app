@@ -526,6 +526,62 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          book_clubs_enabled: boolean
+          created_at: string
+          followers_enabled: boolean
+          goals_enabled: boolean
+          id: string
+          messages_enabled: boolean
+          push_enabled: boolean
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          reading_reminders_enabled: boolean
+          streaks_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_clubs_enabled?: boolean
+          created_at?: string
+          followers_enabled?: boolean
+          goals_enabled?: boolean
+          id?: string
+          messages_enabled?: boolean
+          push_enabled?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          reading_reminders_enabled?: boolean
+          streaks_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_clubs_enabled?: boolean
+          created_at?: string
+          followers_enabled?: boolean
+          goals_enabled?: boolean
+          id?: string
+          messages_enabled?: boolean
+          push_enabled?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          reading_reminders_enabled?: boolean
+          streaks_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_comments: {
         Row: {
           content: string
@@ -651,6 +707,11 @@ export type Database = {
           latitude: number | null
           longest_streak: number | null
           longitude: number | null
+          onboarding_completed_at: string | null
+          onboarding_last_step: string | null
+          onboarding_skipped_at: string | null
+          onboarding_status: string
+          onboarding_version: number
           phone_number: string | null
           profile_visibility: string | null
           show_currently_reading: boolean | null
@@ -678,6 +739,11 @@ export type Database = {
           latitude?: number | null
           longest_streak?: number | null
           longitude?: number | null
+          onboarding_completed_at?: string | null
+          onboarding_last_step?: string | null
+          onboarding_skipped_at?: string | null
+          onboarding_status?: string
+          onboarding_version?: number
           phone_number?: string | null
           profile_visibility?: string | null
           show_currently_reading?: boolean | null
@@ -705,6 +771,11 @@ export type Database = {
           latitude?: number | null
           longest_streak?: number | null
           longitude?: number | null
+          onboarding_completed_at?: string | null
+          onboarding_last_step?: string | null
+          onboarding_skipped_at?: string | null
+          onboarding_status?: string
+          onboarding_version?: number
           phone_number?: string | null
           profile_visibility?: string | null
           show_currently_reading?: boolean | null
@@ -782,41 +853,59 @@ export type Database = {
         Row: {
           avg_length: number | null
           avg_time_per_book: number | null
+          book_format: string | null
           books_1yr: number | null
           books_6mo: number | null
           created_at: string | null
           genres: string[] | null
           id: string
           longest_genre: string | null
-          user_id: string | null
+          motivation: string | null
+          preferred_reading_time: string | null
+          preferred_session_minutes: number | null
+          reading_frequency: string | null
+          updated_at: string | null
+          user_id: string
         }
         Insert: {
           avg_length?: number | null
           avg_time_per_book?: number | null
+          book_format?: string | null
           books_1yr?: number | null
           books_6mo?: number | null
           created_at?: string | null
           genres?: string[] | null
           id?: string
           longest_genre?: string | null
-          user_id?: string | null
+          motivation?: string | null
+          preferred_reading_time?: string | null
+          preferred_session_minutes?: number | null
+          reading_frequency?: string | null
+          updated_at?: string | null
+          user_id: string
         }
         Update: {
           avg_length?: number | null
           avg_time_per_book?: number | null
+          book_format?: string | null
           books_1yr?: number | null
           books_6mo?: number | null
           created_at?: string | null
           genres?: string[] | null
           id?: string
           longest_genre?: string | null
-          user_id?: string | null
+          motivation?: string | null
+          preferred_reading_time?: string | null
+          preferred_session_minutes?: number | null
+          reading_frequency?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "reading_habits_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -934,6 +1023,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_learning_profiles: {
+        Row: {
+          created_at: string
+          derived_preferences: Json
+          onboarding_answers: Json
+          signal_version: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          derived_preferences?: Json
+          onboarding_answers?: Json
+          signal_version?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          derived_preferences?: Json
+          onboarding_answers?: Json
+          signal_version?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_learning_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       review_comments: {
         Row: {

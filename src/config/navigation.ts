@@ -53,7 +53,7 @@ export const NAV_ITEMS: NavItem[] = [
     path: "/goals-management",
     icon: APP_ICONS.nav.goals,
     section: "progress",
-    matchPaths: ["/goals-management", "/goals"],
+    matchPaths: ["/goals-management"],
   },
   {
     label: "Achievements",

@@ -24,6 +24,7 @@ import type { GoogleBookResult } from "@/types/googleBooks";
 import { SuccessCheckmark } from "@/components/animations/SuccessCheckmark";
 import { Confetti } from "@/components/animations/Confetti";
 import { APP_ICONS } from "@/config/iconography";
+import { useReadingProfile } from "@/hooks/useReadingProfile";
 
 const AddBook = () => {
   const [user, setUser] = useState<{ id: string } | null>(null);
@@ -34,6 +35,7 @@ const AddBook = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isFirstBook, setIsFirstBook] = useState(false);
+  const { habits } = useReadingProfile(user?.id);
   
   // Get ISBN from URL params if present
   const isbnFromUrl = searchParams.get('isbn') || '';
@@ -193,6 +195,10 @@ const AddBook = () => {
   };
 
   const isMobile = useIsMobile();
+  const suggestedGenres = [
+    ...(habits?.genres || []),
+    ...GENRES.filter((genre) => !(habits?.genres || []).includes(genre)),
+  ].slice(0, 8);
 
   return (
     <MobileLayout>
@@ -313,7 +319,7 @@ const AddBook = () => {
                     </Select>
                     {/* Quick Genre Actions */}
                     <div className="flex flex-wrap gap-2 mt-3">
-                      {GENRES.slice(0, 6).map((genre) => (
+                      {suggestedGenres.map((genre) => (
                         <Button
                           key={genre}
                           type="button"

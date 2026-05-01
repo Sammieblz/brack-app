@@ -20,9 +20,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 // Critical path screens - keep synchronous for instant loading
 import Index from "./screens/Index";
 import Auth from "./screens/Auth";
-import Welcome from "./screens/Welcome";
-import Questionnaire from "./screens/Questionnaire";
-import Goals from "./screens/Goals";
+import Onboarding from "./screens/Onboarding";
 import Dashboard from "./screens/Dashboard";
 import MyBooks from "./screens/MyBooks";
 import AddBook from "./screens/AddBook";
@@ -51,6 +49,8 @@ import { usePushNotifications } from "./hooks/usePushNotifications";
 import { LiveRegion } from "./components/ui/live-region";
 import { BadgeCelebrationProvider } from "./contexts/BadgeCelebrationContext";
 import { useAppViewportHeight } from "./hooks/useAppViewportHeight";
+import { OnboardingRouteGuard } from "./components/OnboardingRouteGuard";
+import { OnboardingEntryRedirect } from "./components/OnboardingEntryRedirect";
 
 // Initialize Sentry error tracking
 initSentry();
@@ -113,14 +113,16 @@ const App = () => {
                     <BrowserRouter>
                       <BadgeCelebrationProvider>
                         <DeepLinkHandler />
+                        <OnboardingRouteGuard />
                         <SwipeBackHandler>
                           <PageTransition>
                             <Routes>
                             <Route path="/" element={<Index />} />
                             <Route path="/auth" element={<Auth />} />
-                            <Route path="/welcome" element={<Welcome />} />
-                            <Route path="/questionnaire" element={<Questionnaire />} />
-                            <Route path="/goals" element={<Goals />} />
+                            <Route path="/onboarding" element={<Onboarding />} />
+                            <Route path="/welcome" element={<OnboardingEntryRedirect />} />
+                            <Route path="/questionnaire" element={<OnboardingEntryRedirect />} />
+                            <Route path="/goals" element={<OnboardingEntryRedirect />} />
                             <Route path="/dashboard" element={<Dashboard />} />
                             <Route path="/my-books" element={<MyBooks />} />
                             <Route path="/books" element={<MyBooks />} />
