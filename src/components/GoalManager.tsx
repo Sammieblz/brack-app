@@ -7,8 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DatePicker } from "@/components/ui/date-picker";
 import { useGoals } from "@/hooks/useGoals";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Calendar as CalendarIcon, CheckCircle, Trash } from "iconoir-react";
@@ -49,8 +48,8 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
     const goalData: Record<string, unknown> = {
       goal_type: goalType,
       period_type: periodType,
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0],
+      start_date: format(startDate, "yyyy-MM-dd"),
+      end_date: format(endDate, "yyyy-MM-dd"),
       is_active: true,
     };
 
@@ -183,35 +182,17 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Start Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {startDate ? format(startDate, "MMM dd, yyyy") : "Pick date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar mode="single" selected={startDate} onSelect={setStartDate} />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                <DatePicker
+                  label="Start Date"
+                  value={startDate}
+                  onChange={(_value, date) => setStartDate(date)}
+                />
 
-                <div className="space-y-2">
-                  <Label>End Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {endDate ? format(endDate, "MMM dd, yyyy") : "Pick date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar mode="single" selected={endDate} onSelect={setEndDate} />
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                <DatePicker
+                  label="End Date"
+                  value={endDate}
+                  onChange={(_value, date) => setEndDate(date)}
+                />
               </div>
 
               <Button onClick={handleCreate} className="w-full">Create Goal</Button>

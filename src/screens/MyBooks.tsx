@@ -27,11 +27,13 @@ import { toast } from "sonner";
 import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
 import { bookOperations } from "@/utils/offlineOperation";
 import { APP_ICONS } from "@/config/iconography";
+import { useReadingProfile } from "@/hooks/useReadingProfile";
 
 const MyBooks = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { books, loading, loadingMore, hasMore, loadMore, refetchBooks } = useBooks(user?.id);
+  const { habits } = useReadingProfile(user?.id);
   const navigate = useNavigate();
   const confirmDialog = useConfirmDialog();
   const [searchQuery, setSearchQuery] = useState("");
@@ -93,6 +95,7 @@ const MyBooks = () => {
   }, [books]);
 
   const shouldVirtualize = filteredBooks.length > 100 && !hasMore;
+  const favoriteGenreChips = (habits?.genres || []).slice(0, 6);
 
   const virtualizer = useVirtualizer({
     count: shouldVirtualize ? filteredBooks.length : 0,
@@ -345,6 +348,22 @@ const MyBooks = () => {
                   className="pl-10"
                 />
               </div>
+              {favoriteGenreChips.length > 0 && (
+                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                  {favoriteGenreChips.map((genre) => (
+                    <Button
+                      key={genre}
+                      type="button"
+                      variant={searchQuery === genre ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSearchQuery(searchQuery === genre ? "" : genre)}
+                      className="shrink-0"
+                    >
+                      {genre}
+                    </Button>
+                  ))}
+                </div>
+              )}
 
               {/* Books Grid */}
               <TabsContent value="all" className="mt-4">
@@ -380,6 +399,21 @@ const MyBooks = () => {
                   className="pl-10"
                 />
               </div>
+              {favoriteGenreChips.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {favoriteGenreChips.map((genre) => (
+                    <Button
+                      key={genre}
+                      type="button"
+                      variant={searchQuery === genre ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSearchQuery(searchQuery === genre ? "" : genre)}
+                    >
+                      {genre}
+                    </Button>
+                  ))}
+                </div>
+              )}
 
               {/* Desktop Filter */}
               <div className="flex items-center gap-2">

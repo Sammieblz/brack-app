@@ -9,6 +9,7 @@ import { AppPreferences } from "@/components/settings/AppPreferences";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { PrivacySettings } from "@/components/settings/PrivacySettings";
 import { SupportContact } from "@/components/settings/SupportContact";
+import { ReadingProfileSettings } from "@/components/settings/ReadingProfileSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -25,6 +26,7 @@ type SettingsSection =
   | 'account' 
   | 'profile' 
   | 'personal' 
+  | 'reading'
   | 'app' 
   | 'notifications' 
   | 'privacy' 
@@ -57,6 +59,13 @@ const sections: Array<{
     icon: APP_ICONS.settings.personal,
     description: 'Name, location, preferences',
     component: (user) => <PersonalInfo user={user} />
+  },
+  {
+    id: 'reading',
+    label: 'Reading Profile',
+    icon: APP_ICONS.settings.readingProfile,
+    description: 'Taste, pace, learning signals',
+    component: (user) => <ReadingProfileSettings user={user} />
   },
   { 
     id: 'app', 

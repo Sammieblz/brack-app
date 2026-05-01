@@ -17,7 +17,7 @@ import { useChartData } from "@/hooks/useChartData";
 import { ReadingHeatmap } from "@/components/charts/ReadingHeatmap";
 import { toast } from "sonner";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import type { Book as BookType, Goal } from "@/types";
+import type { Book as BookType, Goal, OnboardingStatus } from "@/types";
 import { DashboardCardSkeleton } from "@/components/skeletons/DashboardCardSkeleton";
 import { ActivityItemSkeleton } from "@/components/skeletons/ActivityItemSkeleton";
 import { PullToRefresh } from "@/components/PullToRefresh";
@@ -44,6 +44,8 @@ import {
   useDashboardHomeData,
 } from "@/hooks/useDashboardHomeData";
 import type { DayActivity, StreakData } from "@/utils/streakCalculation";
+import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
+import { needsSetupPrompt } from "@/services/onboarding";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -66,6 +68,7 @@ const Dashboard = () => {
     refetch: refetchDashboardHome,
   } = useDashboardHomeData(user?.id);
   const { profile } = useProfileContext();
+  const { status: onboardingStatus } = useOnboardingStatus(user?.id);
   const { withRetry } = useSupabaseRequest();
   const [goal, setGoal] = useState<Goal | null>(null);
   const [progressBook, setProgressBook] = useState<BookType | null>(null);
@@ -210,6 +213,13 @@ const Dashboard = () => {
             </div>
           )}
 
+          {needsSetupPrompt(onboardingStatus?.onboarding_status) && (
+            <SetupPromptCard
+              status={onboardingStatus?.onboarding_status}
+              onResume={() => navigate("/onboarding?from=dashboard")}
+            />
+          )}
+
           <ContinueReadingSection
             loading={dashboardHomeLoading || booksLoading}
             error={dashboardHomeError}
@@ -297,6 +307,46 @@ const Dashboard = () => {
 
       {isMobile && <FloatingActionButton />}
     </MobileLayout>
+  );
+};
+
+interface SetupPromptCardProps {
+  status?: OnboardingStatus;
+  onResume: () => void;
+}
+
+const SetupPromptCard = ({ status, onResume }: SetupPromptCardProps) => {
+  const isSkipped = status === "skipped";
+
+  return (
+    <Card className="overflow-hidden border-primary/35 bg-primary/8">
+      <CardContent className="p-4">
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_6rem] sm:items-center">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <APP_ICONS.dashboard.insights className="h-5 w-5 text-primary" />
+              <h2 className="font-display text-lg font-semibold">
+                {isSkipped ? "Finish your reading profile" : "Complete your setup"}
+              </h2>
+            </div>
+            <p className="font-sans text-sm text-muted-foreground">
+              Add taste, pace, and goal details so Brack can personalize your dashboard and discovery signals.
+            </p>
+            <Button size="sm" onClick={onResume}>
+              {isSkipped ? "Finish setup" : "Resume setup"}
+              <NavArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+          <img
+            src={BRACK_TROPHY_IMAGE}
+            alt=""
+            aria-hidden="true"
+            className="hidden h-24 w-24 rounded-md border border-border/70 object-cover sm:block"
+            draggable={false}
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

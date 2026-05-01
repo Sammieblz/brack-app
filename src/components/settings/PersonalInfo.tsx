@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Phone, Pin } from "iconoir-react";
+import { MapPin, Phone, Pin } from "iconoir-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { User, Profile } from "@/types";
@@ -201,18 +202,12 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
               placeholder="Enter your phone number"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="date_of_birth" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Date of Birth
-            </Label>
-            <Input
-              id="date_of_birth"
-              type="date"
-              value={formData.date_of_birth}
-              onChange={(e) => setFormData(prev => ({ ...prev, date_of_birth: e.target.value }))}
-            />
-          </div>
+          <DatePicker
+            id="date_of_birth"
+            label="Date of Birth"
+            value={formData.date_of_birth}
+            onChange={(value) => setFormData(prev => ({ ...prev, date_of_birth: value ?? "" }))}
+          />
         </CardContent>
       </Card>
 

@@ -88,6 +88,7 @@ export const APP_ICONS = {
     notifications: BellNotification,
     privacy: PrivacyPolicy,
     support: HeadsetHelp,
+    readingProfile: BookStack,
     profileVisibility: ShieldEye,
     dataSharing: DatabaseSettings,
     faq: ChatBubbleQuestion,
