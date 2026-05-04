@@ -1,32 +1,14 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { dataCache } from "@/services/dataCache";
+import {
+  getSocialFeed,
+  subscribeToSocialFeed,
+  type FeedActivity,
+} from "@/services/api";
 
 const CACHE_TTL = 1 * 60 * 1000; // 1 minute
 
-export interface FeedActivity {
-  id: string;
-  user_id: string;
-  activity_type: 'book_started' | 'book_completed' | 'book_reviewed' | 'followed_user' | 'created_list' | 'earned_badge' | 'post';
-  book_id?: string;
-  review_id?: string;
-  list_id?: string;
-  badge_id?: string;
-  metadata?: Record<string, unknown>;
-  visibility: string;
-  created_at: string;
-  user?: {
-    id: string;
-    display_name: string;
-    avatar_url?: string;
-  };
-  book?: {
-    id: string;
-    title: string;
-    author?: string;
-    cover_url?: string;
-  };
-}
+export type { FeedActivity };
 
 export const useSocialFeed = (limit: number = 20) => {
   const [activities, setActivities] = useState<FeedActivity[]>([]);
@@ -49,11 +31,7 @@ export const useSocialFeed = (limit: number = 20) => {
     
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('social-feed', {
-        body: { limit, offset },
-      });
-
-      if (error) throw error;
+      const data = await getSocialFeed(limit, offset);
       
       const activities = data.activities || [];
       const hasMoreData = data.has_more || false;
@@ -82,36 +60,23 @@ export const useSocialFeed = (limit: number = 20) => {
 
     // Only subscribe to real-time updates if page is visible
     // This reduces battery drain when app is in background
-    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cleanup: (() => void) | null = null;
 
     const setupSubscription = () => {
       if (document.hidden) return; // Don't subscribe if page is hidden
 
-      channel = supabase
-        .channel('social-feed-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'social_activities'
-          },
-          (payload) => {
-            console.log('New activity detected:', payload);
-            // Invalidate cache and refetch feed
-            dataCache.invalidate('social_feed');
-            fetchFeed(0, true);
-          }
-        )
-        .subscribe();
+      cleanup = subscribeToSocialFeed(() => {
+        dataCache.invalidate('social_feed');
+        fetchFeed(0, true);
+      });
     };
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
         // Page hidden - unsubscribe to save battery
-        if (channel) {
-          supabase.removeChannel(channel);
-          channel = null;
+        if (cleanup) {
+          cleanup();
+          cleanup = null;
         }
       } else {
         // Page visible - subscribe
@@ -124,9 +89,7 @@ export const useSocialFeed = (limit: number = 20) => {
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      cleanup?.();
     };
   }, [limit]);
 

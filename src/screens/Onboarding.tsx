@@ -7,6 +7,7 @@ import {
   Clock,
   NavArrowLeft,
   NavArrowRight,
+  Palette,
   Refresh,
   SkipNext,
   Xmark,
@@ -25,11 +26,13 @@ import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useGSAP } from "@/hooks/useGSAP";
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
 import { useReadingProfile } from "@/hooks/useReadingProfile";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { themes } from "@/lib/themes";
 import { GENRES } from "@/constants";
 import { APP_ICONS } from "@/config/iconography";
 import {
@@ -65,6 +68,11 @@ const STEP_META: Record<OnboardingStepId, { title: string; eyebrow: string; icon
     eyebrow: "Personalization",
     icon: APP_ICONS.profile.social,
   },
+  palette: {
+    title: "Choose your Brack palette",
+    eyebrow: "App color",
+    icon: Palette,
+  },
   taste: {
     title: "Tune your reading taste",
     eyebrow: "Reading taste",
@@ -89,6 +97,7 @@ const STEP_META: Record<OnboardingStepId, { title: string; eyebrow: string; icon
 
 const STEP_LABELS: Record<OnboardingStepId, string> = {
   welcome: "Welcome",
+  palette: "Palette",
   taste: "Taste",
   pace: "Pace",
   goal: "Goal",
@@ -144,6 +153,7 @@ const Onboarding = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { currentTheme, resolvedTheme, setTheme } = useTheme();
   const [stepIndex, setStepIndex] = useState(0);
   const [formData, setFormData] = useState<OnboardingFormData>(DEFAULT_ONBOARDING_FORM);
   const [saving, setSaving] = useState(false);
@@ -161,7 +171,11 @@ const Onboarding = () => {
 
   const currentStep = ONBOARDING_STEPS[stepIndex];
   const progress = Math.round(((stepIndex + 1) / ONBOARDING_STEPS.length) * 100);
-  const isCompletedEdit = status?.onboarding_status === "completed" && searchParams.get("edit") === "1";
+  const entrySource = searchParams.get("from");
+  const returnPath = entrySource === "settings" ? "/settings" : "/dashboard";
+  const isCompletedEdit =
+    status?.onboarding_status === "completed" &&
+    (searchParams.get("edit") === "1" || entrySource === "settings" || entrySource === "dashboard");
 
   useGSAP(() => {
     if (!rootRef.current) return;
@@ -226,6 +240,12 @@ const Onboarding = () => {
   }, [formData.goalTargetBooks, reducedMotion]);
 
   useEffect(() => {
+    setFormData((current) =>
+      current.colorTheme === currentTheme ? current : { ...current, colorTheme: currentTheme },
+    );
+  }, [currentTheme]);
+
+  useEffect(() => {
     if (!user && !authLoading) {
       navigate("/auth?mode=signup", { replace: true });
     }
@@ -234,9 +254,11 @@ const Onboarding = () => {
   useEffect(() => {
     if (
       !user?.id ||
+      saving ||
       isCompletedEdit ||
       !status?.onboarding_status ||
-      status.onboarding_status === "completed"
+      status.onboarding_status === "completed" ||
+      status.onboarding_status === "skipped"
     ) {
       return;
     }
@@ -244,7 +266,7 @@ const Onboarding = () => {
     markOnboardingInProgress(user.id, currentStep).catch((err) => {
       console.error("Failed to mark onboarding progress:", err);
     });
-  }, [currentStep, isCompletedEdit, status?.onboarding_status, user?.id]);
+  }, [currentStep, isCompletedEdit, saving, status?.onboarding_status, user?.id]);
 
   useEffect(() => {
     if (hydratedRef.current || profileLoading || !habits) return;
@@ -314,6 +336,19 @@ const Onboarding = () => {
     }
   };
 
+  const handlePaletteSelect = async (themeId: string) => {
+    try {
+      updateField("colorTheme", themeId);
+      await setTheme(themeId);
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Could not save palette",
+        description: getOnboardingErrorMessage(err, "Your previous palette is still active."),
+      });
+    }
+  };
+
   const handleNext = () => {
     if (stepIndex < ONBOARDING_STEPS.length - 1) {
       setStepIndex((index) => index + 1);
@@ -335,12 +370,13 @@ const Onboarding = () => {
   const handleSkip = async () => {
     try {
       setSaving(true);
-      await skipOnboarding(user.id, currentStep);
-      await refetchStatus();
-      setTransition({
-        to: "/dashboard",
-        message: "Opening your dashboard...",
-      });
+
+      if (!isCompletedEdit) {
+        await skipOnboarding(user.id, currentStep);
+        await refetchStatus();
+      }
+
+      navigate(returnPath, { replace: true });
     } catch (err) {
       toast({
         variant: "destructive",
@@ -430,7 +466,7 @@ const Onboarding = () => {
 
           <Button variant="ghost" size="sm" onClick={handleSkip} disabled={saving}>
             <SkipNext className="mr-2 h-4 w-4" />
-            Skip for now
+            {isCompletedEdit ? "Close" : "Skip for now"}
           </Button>
         </header>
 
@@ -552,6 +588,14 @@ const Onboarding = () => {
                     />
                   )}
 
+                  {currentStep === "palette" && (
+                    <PaletteStep
+                      selectedTheme={currentTheme}
+                      previewMode={resolvedTheme === "dark" ? "dark" : "light"}
+                      onSelectTheme={handlePaletteSelect}
+                    />
+                  )}
+
                   {currentStep === "pace" && (
                     <PaceStep
                       formData={formData}
@@ -580,7 +624,7 @@ const Onboarding = () => {
                     {stepIndex === 0 ? "Home" : "Back"}
                   </Button>
                   <Button variant="ghost" onClick={handleSkip} disabled={saving}>
-                    Skip
+                    {isCompletedEdit ? "Close" : "Skip"}
                   </Button>
                 </div>
 
@@ -633,8 +677,9 @@ const WelcomeStep = ({
           You can skip now and finish it later from Settings.
         </p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[
+          ["Palette", "The app color Brack should use", "palette"],
           ["Taste", "Favorite genres and format", "taste"],
           ["Pace", "How often and how long you read", "pace"],
           ["Goals", "A target your dashboard can use", "goal"],
@@ -659,6 +704,171 @@ const WelcomeStep = ({
         aria-hidden="true"
         className="aspect-square w-full object-contain drop-shadow-[0_18px_38px_hsl(var(--primary)/0.16)]"
       />
+    </div>
+  </div>
+);
+
+const PaletteStep = ({
+  selectedTheme,
+  previewMode,
+  onSelectTheme,
+}: {
+  selectedTheme: string;
+  previewMode: "light" | "dark";
+  onSelectTheme: (themeId: string) => Promise<void>;
+}) => (
+  <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_17rem]">
+    <div className="space-y-5">
+      <div>
+        <h2 className="font-display text-2xl font-bold">Pick the palette Brack should remember</h2>
+        <p className="font-sans text-sm text-muted-foreground">
+          This applies immediately across the app and is saved to your profile. You can change it later in Settings.
+        </p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 md:max-h-[22rem] md:overflow-y-auto md:overscroll-contain md:pr-1 lg:max-h-[24rem] xl:max-h-[31rem]">
+        {themes.map((theme) => {
+          const selected = selectedTheme === theme.id;
+          const previewColors = theme.colors[previewMode];
+
+          return (
+            <button
+              key={theme.id}
+              type="button"
+              onClick={() => void onSelectTheme(theme.id)}
+              className={cn(
+                "group relative overflow-hidden rounded-lg border p-3 text-left transition-all hover:-translate-y-0.5 hover:border-primary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                selected ? "border-primary bg-primary/10 shadow-sm" : "border-border bg-background/80",
+              )}
+            >
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-sans text-sm font-semibold">{theme.name}</p>
+                  <p className="font-sans text-xs text-muted-foreground">
+                    {theme.id === "default" ? "Brack classic" : "Custom app color"}
+                  </p>
+                </div>
+                <span
+                  className={cn(
+                    "flex h-7 w-7 items-center justify-center rounded-full border transition-transform group-hover:scale-110",
+                    selected ? "border-primary bg-primary text-primary-foreground" : "border-border bg-muted",
+                  )}
+                >
+                  {selected && <Check className="h-4 w-4" />}
+                </span>
+              </div>
+
+              <div className="mb-3 grid grid-cols-4 gap-1.5">
+                {theme.preview.map((color) => (
+                  <span
+                    key={color}
+                    className="h-5 rounded-sm border border-black/5 shadow-sm"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+
+              <div
+                className="overflow-hidden rounded-md border shadow-sm"
+                style={{
+                  backgroundColor: `hsl(${previewColors.background})`,
+                  borderColor: `hsl(${previewColors.border})`,
+                  color: `hsl(${previewColors.foreground})`,
+                }}
+              >
+                <div
+                  className="flex h-5 items-center gap-1 border-b px-2"
+                  style={{
+                    backgroundColor: `hsl(${previewColors.card})`,
+                    borderColor: `hsl(${previewColors.border})`,
+                  }}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: theme.preview[0] }} />
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: theme.preview[1] }} />
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: theme.preview[2] }} />
+                  <span
+                    className="ml-auto h-1.5 w-10 rounded-full"
+                    style={{ backgroundColor: `hsl(${previewColors.muted})` }}
+                  />
+                </div>
+                <div className="grid grid-cols-[2rem_minmax(0,1fr)]">
+                  <div
+                    className="space-y-1.5 border-r p-1.5"
+                    style={{
+                      backgroundColor: `hsl(${previewColors.muted})`,
+                      borderColor: `hsl(${previewColors.border})`,
+                    }}
+                  >
+                    <span
+                      className="block h-4 rounded-sm"
+                      style={{ backgroundColor: `hsl(${previewColors.primary})` }}
+                    />
+                    <span
+                      className="block h-4 rounded-sm opacity-65"
+                      style={{ backgroundColor: `hsl(${previewColors.card})` }}
+                    />
+                    <span
+                      className="block h-4 rounded-sm opacity-65"
+                      style={{ backgroundColor: `hsl(${previewColors.card})` }}
+                    />
+                  </div>
+                  <div className="space-y-2 p-2">
+                    <span
+                      className="block h-2 w-3/5 rounded-full"
+                      style={{ backgroundColor: `hsl(${previewColors.primary})` }}
+                    />
+                    <span
+                      className="block h-2 w-full rounded-full"
+                      style={{ backgroundColor: `hsl(${previewColors.muted})` }}
+                    />
+                    <span
+                      className="block h-2 w-4/5 rounded-full"
+                      style={{ backgroundColor: `hsl(${previewColors.secondary})` }}
+                    />
+                    <div className="grid grid-cols-3 gap-1.5 pt-1">
+                      <span className="h-7 rounded-sm" style={{ backgroundColor: theme.preview[0] }} />
+                      <span className="h-7 rounded-sm" style={{ backgroundColor: theme.preview[1] }} />
+                      <span className="h-7 rounded-sm" style={{ backgroundColor: theme.preview[2] }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+
+    <div className="rounded-lg bg-muted/30 p-4">
+      <div className="mb-4 flex items-center gap-2">
+        <Palette className="h-5 w-5 text-primary" />
+        <h3 className="font-display text-lg font-semibold">Live preview</h3>
+      </div>
+      <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+        <div className="flex items-center gap-3">
+          <ThemeAwareLogo variant="icon" tone="theme" size="h-10 w-10" />
+          <div>
+            <p className="font-display text-xl font-bold">Brack</p>
+            <p className="font-sans text-xs text-muted-foreground">Your palette follows you.</p>
+          </div>
+        </div>
+        <div className="h-2 rounded-full bg-muted">
+          <div className="h-full w-2/3 rounded-full bg-primary" />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-md border border-border bg-background p-3">
+            <p className="font-sans text-xs text-muted-foreground">Goal</p>
+            <p className="font-sans text-lg font-bold text-primary">12</p>
+          </div>
+          <div className="rounded-md border border-border bg-background p-3">
+            <p className="font-sans text-xs text-muted-foreground">Streak</p>
+            <p className="font-sans text-lg font-bold text-primary">3</p>
+          </div>
+        </div>
+      </div>
+      <p className="mt-3 font-sans text-xs text-muted-foreground">
+        Public pages stay on Brack's default palette. This palette starts after you choose it.
+      </p>
     </div>
   </div>
 );
@@ -960,6 +1170,11 @@ const ReviewStep = ({ formData }: { formData: OnboardingFormData }) => (
               <span className="text-muted-foreground">No genres selected</span>
             )}
           </div>
+        </SummaryCard>
+
+        <SummaryCard title="Palette" icon={Palette}>
+          <p>{themes.find((theme) => theme.id === formData.colorTheme)?.name ?? "Warm Sunset"}</p>
+          <p className="text-muted-foreground">Saved to your app appearance</p>
         </SummaryCard>
 
         <SummaryCard title="Pace" icon={Clock}>

@@ -11,9 +11,9 @@ import {
 import { Menu, Xmark } from "iconoir-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { APP_ICONS } from "@/config/iconography";
+import { fetchProfile } from "@/services/api";
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -26,11 +26,7 @@ export const Navbar = () => {
     const loadProfile = async () => {
       if (!user) return;
       
-      const { data } = await supabase
-        .from("profiles")
-        .select("avatar_url")
-        .eq("id", user.id)
-        .maybeSingle();
+      const data = await fetchProfile(user.id);
       
       if (data?.avatar_url) {
         setAvatarUrl(data.avatar_url);

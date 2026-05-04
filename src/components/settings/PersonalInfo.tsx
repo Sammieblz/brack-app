@@ -5,9 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Pin } from "iconoir-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { User, Profile } from "@/types";
+import { fetchProfile, upsertPersonalInfo } from "@/services/api";
 
 interface PersonalInfoProps {
   user: User;
@@ -38,16 +38,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-      
+      const data = await fetchProfile(user.id);
       if (data) {
         setProfile(data);
         setFormData({
@@ -73,19 +64,13 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
     
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          ...formData,
-          latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-          longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-          city: formData.city || null,
-          country: formData.country || null,
-          updated_at: new Date().toISOString(),
-        });
-
-      if (error) throw error;
+      await upsertPersonalInfo(user.id, {
+        ...formData,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+        city: formData.city || null,
+        country: formData.country || null,
+      });
 
       toast({
         title: "Personal information updated",

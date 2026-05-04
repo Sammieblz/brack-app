@@ -1,16 +1,13 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { sanitizeInput } from "@/utils/sanitize";
+import {
+  fetchMessages as fetchMessagesApi,
+  sendMessage as sendMessageApi,
+  subscribeToMessages,
+  type Message,
+} from "@/services/api";
 
-export interface Message {
-  id: string;
-  conversation_id: string;
-  sender_id: string;
-  content: string;
-  is_read: boolean;
-  created_at: string;
-}
+export type { Message } from "@/services/api";
 
 export const useMessages = (conversationId: string | null) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -25,26 +22,7 @@ export const useMessages = (conversationId: string | null) => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .eq("conversation_id", conversationId)
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
-
-      setMessages(data || []);
-
-      // Mark messages as read
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase
-          .from("messages")
-          .update({ is_read: true })
-          .eq("conversation_id", conversationId)
-          .neq("sender_id", user.id)
-          .eq("is_read", false);
-      }
+      setMessages(await fetchMessagesApi(conversationId));
     } catch (error: unknown) {
       console.error("Error fetching messages:", error);
       toast.error("Failed to load messages");
@@ -60,34 +38,20 @@ export const useMessages = (conversationId: string | null) => {
 
     // Only subscribe to real-time updates if page is visible
     // This reduces battery drain when app is in background
-    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cleanup: (() => void) | null = null;
 
     const setupSubscription = () => {
       if (document.hidden) return; // Don't subscribe if page is hidden
 
-      channel = supabase
-        .channel(`messages-${conversationId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "messages",
-            filter: `conversation_id=eq.${conversationId}`,
-          },
-          () => {
-            fetchMessages();
-          }
-        )
-        .subscribe();
+      cleanup = subscribeToMessages(conversationId, fetchMessages);
     };
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
         // Page hidden - unsubscribe to save battery
-        if (channel) {
-          supabase.removeChannel(channel);
-          channel = null;
+        if (cleanup) {
+          cleanup();
+          cleanup = null;
         }
       } else {
         // Page visible - subscribe
@@ -100,9 +64,7 @@ export const useMessages = (conversationId: string | null) => {
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      cleanup?.();
     };
   }, [conversationId]);
 
@@ -110,18 +72,7 @@ export const useMessages = (conversationId: string | null) => {
     if (!conversationId) return false;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      const sanitizedContent = sanitizeInput(content);
-
-      const { error } = await supabase.from("messages").insert({
-        conversation_id: conversationId,
-        sender_id: user.id,
-        content: sanitizedContent,
-      });
-
-      if (error) throw error;
+      await sendMessageApi(conversationId, content);
 
       return true;
     } catch (error: unknown) {

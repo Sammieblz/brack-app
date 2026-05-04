@@ -5,8 +5,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useBooks } from "@/hooks/useBooks";
 import { useToast } from "@/hooks/use-toast";
 import { Plus } from "iconoir-react";
-import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { addBooksToList, fetchBookIdsInList } from "@/services/api";
 
 interface AddBooksToListDialogProps {
   listId: string;
@@ -31,14 +31,7 @@ export const AddBooksToListDialog = ({ listId, userId, onBooksAdded }: AddBooksT
 
   const loadExistingBooks = async () => {
     try {
-      const { data } = await supabase
-        .from('book_list_items')
-        .select('book_id')
-        .eq('list_id', listId);
-      
-      if (data) {
-        setExistingBooks(new Set(data.map(item => item.book_id)));
-      }
+      setExistingBooks(new Set(await fetchBookIdsInList(listId)));
     } catch (error) {
       console.error('Error loading existing books:', error);
     }
@@ -49,28 +42,7 @@ export const AddBooksToListDialog = ({ listId, userId, onBooksAdded }: AddBooksT
 
     setLoading(true);
     try {
-      // Get current max position
-      const { data: items } = await supabase
-        .from('book_list_items')
-        .select('position')
-        .eq('list_id', listId)
-        .order('position', { ascending: false })
-        .limit(1);
-      
-      let position = items?.[0]?.position || 0;
-
-      // Add all selected books
-      const insertData = Array.from(selectedBooks).map(bookId => ({
-        list_id: listId,
-        book_id: bookId,
-        position: ++position
-      }));
-
-      const { error } = await supabase
-        .from('book_list_items')
-        .insert(insertData);
-
-      if (error) throw error;
+      await addBooksToList(listId, Array.from(selectedBooks));
 
       toast({
         title: "Books added",

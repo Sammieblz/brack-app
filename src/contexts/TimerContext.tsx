@@ -3,10 +3,9 @@ import { App } from "@capacitor/app";
 import { Capacitor, PluginListenerHandle } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { updateBookStatusIfNeeded } from "@/utils/bookStatus";
 import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
+import { createReadingSession } from "@/services/api";
 
 interface TimerState {
   time: number;
@@ -14,6 +13,7 @@ interface TimerState {
   startTime: Date | null;
   bookId: string | null;
   bookTitle: string | null;
+  clientSessionId: string | null;
   isVisible: boolean;
   isMinimized: boolean;
 }
@@ -32,6 +32,14 @@ const TimerContext = createContext<TimerContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'readingTimer';
 
+const createClientSessionId = (bookId: string) => {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `${bookId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
 export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const confirmDialog = useConfirmDialog();
   const queryClient = useQueryClient();
@@ -41,6 +49,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     startTime: null,
     bookId: null,
     bookTitle: null,
+    clientSessionId: null,
     isVisible: false,
     isMinimized: true,
   });
@@ -58,6 +67,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
         const restoredState = {
           ...parsed,
           startTime: parsed.startTime ? new Date(parsed.startTime) : null,
+          clientSessionId: parsed.clientSessionId || null,
         };
         
         // If timer was running, calculate elapsed time while app was backgrounded
@@ -260,6 +270,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
               startTime: null,
               bookId: null,
               bookTitle: null,
+              clientSessionId: null,
               isVisible: false,
               isMinimized: true,
             });
@@ -296,6 +307,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
         startTime: new Date(),
         bookId,
         bookTitle,
+        clientSessionId: createClientSessionId(bookId),
         isVisible: true,
         isMinimized: true,
       });
@@ -325,46 +337,50 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("You must be logged in to save sessions");
-        return;
-      }
-
       const endTime = new Date();
       const durationMinutes = Math.max(1, Math.round(state.time / 60));
+      const clientSessionId = state.clientSessionId || createClientSessionId(state.bookId);
 
-      const { data: session, error } = await supabase
-        .from('reading_sessions')
-        .insert({
-          user_id: user.id,
-          book_id: state.bookId,
-          start_time: state.startTime.toISOString(),
-          end_time: endTime.toISOString(),
-          duration: durationMinutes
-        })
-        .select('id, user_id, book_id, start_time, end_time, duration, created_at')
-        .single();
+      const result = await createReadingSession({
+        bookId: state.bookId,
+        startTime: state.startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        durationMinutes,
+        clientSessionId,
+      });
 
-      if (error) throw error;
+      const session = result.session;
+      const userId = session.user_id;
 
       const hours = Math.floor(durationMinutes / 60);
       const minutes = durationMinutes % 60;
       toast.success(`Reading session saved: ${hours}h ${minutes}m`);
 
-      // Update book status if needed
-      await updateBookStatusIfNeeded(state.bookId);
-      await queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+      if (userId) {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["profile", userId] }),
+          queryClient.invalidateQueries({ queryKey: ["books", userId] }),
+        ]);
+      }
 
       window.dispatchEvent(new CustomEvent('readingSessionSaved', {
         detail: {
-          userId: user.id,
+          userId,
           bookId: state.bookId,
           sessionId: session?.id,
           durationMinutes,
           activityDate: state.startTime.toISOString().split('T')[0],
         },
       }));
+
+      if (userId && result.awarded_badges && result.awarded_badges.length > 0) {
+        window.dispatchEvent(new CustomEvent('badgesAwarded', {
+          detail: {
+            userId,
+            badges: result.awarded_badges,
+          },
+        }));
+      }
 
       // Store session data temporarily for journal prompt
       const sessionData = {
@@ -380,6 +396,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
         startTime: null,
         bookId: null,
         bookTitle: null,
+        clientSessionId: null,
         isVisible: false,
         isMinimized: true,
       });
@@ -415,6 +432,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
         startTime: null,
         bookId: null,
         bookTitle: null,
+        clientSessionId: null,
         isVisible: false,
         isMinimized: true,
       });

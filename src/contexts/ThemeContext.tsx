@@ -1,8 +1,11 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { useTheme as useNextTheme } from 'next-themes';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { getTheme, type ThemeColors } from '@/lib/themes';
+import { fetchThemePreferences, upsertThemePreferences } from '@/services/api';
+
+const THEME_MODE_STORAGE_KEY = 'theme-mode';
+const PUBLIC_THEME_MODE_TOUCHED_KEY = 'brack_public_theme_mode_touched';
 
 interface ThemeContextType {
   currentTheme: string;
@@ -38,7 +41,7 @@ const applyThemeColors = (colors: ThemeColors) => {
 };
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { theme: themeMode, setTheme: setNextTheme, resolvedTheme } = useNextTheme();
   const [currentTheme, setCurrentTheme] = useState('default');
   const [isLoading, setIsLoading] = useState(true);
@@ -46,24 +49,39 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   // ── Reset to default theme (synchronous, no DB call) ────────────────
   const resetToDefaultTheme = useCallback(() => {
     localStorage.removeItem('color_theme');
+    const publicModeWasTouched = localStorage.getItem(PUBLIC_THEME_MODE_TOUCHED_KEY) === 'true';
+    const storedPublicMode = localStorage.getItem(THEME_MODE_STORAGE_KEY);
+    const mode =
+      publicModeWasTouched && (storedPublicMode === 'dark' || storedPublicMode === 'light')
+        ? storedPublicMode
+        : 'light';
+
+    if (!publicModeWasTouched) {
+      setNextTheme('light');
+    }
+
     const theme = getTheme('default');
-    const isDark = document.documentElement.classList.contains('dark');
+    const isDark = mode === 'dark';
     const colors = isDark ? theme.colors.dark : theme.colors.light;
     applyThemeColors(colors);
     setCurrentTheme('default');
-  }, []);
+  }, [setNextTheme]);
 
   // ── Auto-reset when user signs out (user becomes null) ──────────────
   useEffect(() => {
+    if (authLoading) return;
+
     if (!user) {
       resetToDefaultTheme();
       setIsLoading(false);
     }
-  }, [user, resetToDefaultTheme]);
+  }, [authLoading, user, resetToDefaultTheme]);
 
   // Load user's saved theme preference
   useEffect(() => {
     const loadTheme = async () => {
+      if (authLoading) return;
+
       if (!user) {
         // No user → ensure defaults are applied (handled by the auto-reset above)
         setIsLoading(false);
@@ -71,13 +89,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       }
 
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('color_theme, theme_mode')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (error) throw error;
+        const data = await fetchThemePreferences(user.id);
 
         // Determine theme to use: DB value, or 'default' for new users
         const themeId = data?.color_theme || 'default';
@@ -85,16 +97,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         
         // If new user (no color_theme or theme_mode in DB), save defaults to DB
         if (!data?.color_theme || !data?.theme_mode) {
-          await supabase
-            .from('profiles')
-            .upsert({ 
-              id: user.id,
-              color_theme: themeId,
-              theme_mode: themeModeToUse,
-              updated_at: new Date().toISOString()
-            }, {
-              onConflict: 'id'
-            });
+          await upsertThemePreferences(user.id, {
+            color_theme: themeId,
+            theme_mode: themeModeToUse,
+          });
         }
 
         // Apply theme mode first (so dark class is set correctly)
@@ -117,7 +123,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     };
 
     loadTheme();
-  }, [user, setNextTheme]);
+  }, [authLoading, user, setNextTheme]);
 
   useEffect(() => {
     // Wait for resolvedTheme to be available before applying colors
@@ -144,17 +150,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('color_theme', themeId);
 
       // Save to database (use upsert to ensure it's set even for new users)
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({ 
-          id: user.id,
-          color_theme: themeId,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'id'
-        });
-
-      if (error) throw error;
+      await upsertThemePreferences(user.id, { color_theme: themeId });
     } catch (error) {
       console.error('Error saving theme:', error);
       // Revert to previous theme on error
@@ -168,12 +164,18 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const setThemeMode = async (mode: 'light' | 'dark' | 'system') => {
+    if (!user) {
+      localStorage.setItem(PUBLIC_THEME_MODE_TOUCHED_KEY, 'true');
+    }
+
     setNextTheme(mode);
     
     // Wait for theme mode to apply, then re-apply color theme with correct variant
     setTimeout(() => {
-      const theme = getTheme(currentTheme);
-      const isDark = document.documentElement.classList.contains('dark');
+      const theme = getTheme(user ? currentTheme : 'default');
+      const isDark =
+        mode === 'dark' ||
+        (mode === 'system' && document.documentElement.classList.contains('dark'));
       const colors = isDark ? theme.colors.dark : theme.colors.light;
       applyThemeColors(colors);
     }, 0);
@@ -181,17 +183,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
       try {
         // Save to database (use upsert to ensure it's set even for new users)
-        const { error } = await supabase
-          .from('profiles')
-          .upsert({ 
-            id: user.id,
-            theme_mode: mode,
-            updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'id'
-          });
-
-        if (error) throw error;
+        await upsertThemePreferences(user.id, { theme_mode: mode });
       } catch (error) {
         console.error('Error saving theme mode:', error);
       }

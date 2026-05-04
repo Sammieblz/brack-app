@@ -1,4 +1,16 @@
-import { supabase } from "@/integrations/supabase/client";
+import {
+  createBook,
+  createJournalEntry,
+  createMessageRecord,
+  createPostRecord,
+  createReviewRecord,
+  deleteJournalEntry,
+  softDeleteBook,
+  updateBook,
+  updateJournalEntry,
+  updatePostRecord,
+  updateReviewRecord,
+} from "@/services/api";
 
 export type QueueAction = 
   | { type: 'create_book'; data: Record<string, unknown> }
@@ -137,96 +149,57 @@ class OfflineQueueService {
   private async executeAction(action: QueueAction): Promise<void> {
     switch (action.type) {
       case 'create_book': {
-        const { error: createBookError } = await supabase
-          .from('books')
-          .insert(action.data);
-        if (createBookError) throw createBookError;
+        await createBook(action.data);
         break;
       }
 
       case 'update_book': {
-        const { error: updateBookError } = await supabase
-          .from('books')
-          .update(action.data)
-          .eq('id', action.id);
-        if (updateBookError) throw updateBookError;
+        await updateBook(action.id, action.data);
         break;
       }
 
       case 'delete_book': {
-        const { error: deleteBookError } = await supabase
-          .from('books')
-          .update({ deleted_at: new Date().toISOString() })
-          .eq('id', action.id);
-        if (deleteBookError) throw deleteBookError;
+        await softDeleteBook(action.id);
         break;
       }
 
       case 'create_review': {
-        const { error: createReviewError } = await supabase
-          .from('book_reviews')
-          .insert(action.data);
-        if (createReviewError) throw createReviewError;
+        await createReviewRecord(action.data);
         break;
       }
 
       case 'update_review': {
-        const { error: updateReviewError } = await supabase
-          .from('book_reviews')
-          .update(action.data)
-          .eq('id', action.id);
-        if (updateReviewError) throw updateReviewError;
+        await updateReviewRecord(action.id, action.data);
         break;
       }
 
       case 'create_post': {
-        const { error: createPostError } = await supabase
-          .from('posts')
-          .insert(action.data);
-        if (createPostError) throw createPostError;
+        await createPostRecord(action.data);
         break;
       }
 
       case 'update_post': {
-        const { error: updatePostError } = await supabase
-          .from('posts')
-          .update(action.data)
-          .eq('id', action.id);
-        if (updatePostError) throw updatePostError;
+        await updatePostRecord(action.id, action.data);
         break;
       }
 
       case 'create_message': {
-        const { error: createMessageError } = await supabase
-          .from('messages')
-          .insert(action.data);
-        if (createMessageError) throw createMessageError;
+        await createMessageRecord(action.data);
         break;
       }
 
       case 'create_journal_entry': {
-        const { error: createJournalError } = await supabase
-          .from('journal_entries')
-          .insert(action.data);
-        if (createJournalError) throw createJournalError;
+        await createJournalEntry(action.data);
         break;
       }
 
       case 'update_journal_entry': {
-        const { error: updateJournalError } = await supabase
-          .from('journal_entries')
-          .update(action.data)
-          .eq('id', action.id);
-        if (updateJournalError) throw updateJournalError;
+        await updateJournalEntry(action.id, action.data);
         break;
       }
 
       case 'delete_journal_entry': {
-        const { error: deleteJournalError } = await supabase
-          .from('journal_entries')
-          .delete()
-          .eq('id', action.id);
-        if (deleteJournalError) throw deleteJournalError;
+        await deleteJournalEntry(action.id);
         break;
       }
 

@@ -1,8 +1,8 @@
 import { createContext, useContext, ReactNode, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { Profile } from "@/types";
+import { fetchProfile } from "@/services/api";
 
 interface ProfileContextValue {
   profile: Profile | null;
@@ -11,17 +11,6 @@ interface ProfileContextValue {
 }
 
 const ProfileContext = createContext<ProfileContextValue | undefined>(undefined);
-
-const fetchProfile = async (userId: string) => {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data as Profile | null;
-};
 
 export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();

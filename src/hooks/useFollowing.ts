@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-interface FollowStats {
-  followersCount: number;
-  followingCount: number;
-  isFollowing: boolean;
-}
+import {
+  fetchFollowStats as fetchFollowStatsApi,
+  followUser as followUserApi,
+  unfollowUser as unfollowUserApi,
+  type FollowStats,
+} from "@/services/api";
 
 export const useFollowing = (userId: string | null) => {
   const [stats, setStats] = useState<FollowStats>({
@@ -24,38 +23,7 @@ export const useFollowing = (userId: string | null) => {
     }
 
     try {
-      const currentUser = (await supabase.auth.getUser()).data.user;
-
-      // Get followers count
-      const { count: followersCount } = await supabase
-        .from("user_follows")
-        .select("*", { count: "exact", head: true })
-        .eq("following_id", userId);
-
-      // Get following count
-      const { count: followingCount } = await supabase
-        .from("user_follows")
-        .select("*", { count: "exact", head: true })
-        .eq("follower_id", userId);
-
-      // Check if current user is following this user
-      let isFollowing = false;
-      if (currentUser) {
-        const { data } = await supabase
-          .from("user_follows")
-          .select("id")
-          .eq("follower_id", currentUser.id)
-          .eq("following_id", userId)
-          .maybeSingle();
-
-        isFollowing = !!data;
-      }
-
-      setStats({
-        followersCount: followersCount || 0,
-        followingCount: followingCount || 0,
-        isFollowing,
-      });
+      setStats(await fetchFollowStatsApi(userId));
     } catch (error) {
       console.error("Error fetching follow stats:", error);
     } finally {
@@ -69,15 +37,8 @@ export const useFollowing = (userId: string | null) => {
 
   const followUser = async () => {
     try {
-      const currentUser = (await supabase.auth.getUser()).data.user;
-      if (!currentUser || !userId) return;
-
-      const { error } = await supabase.from("user_follows").insert({
-        follower_id: currentUser.id,
-        following_id: userId,
-      });
-
-      if (error) throw error;
+      if (!userId) return;
+      await followUserApi(userId);
 
       setStats((prev) => ({
         ...prev,
@@ -101,16 +62,8 @@ export const useFollowing = (userId: string | null) => {
 
   const unfollowUser = async () => {
     try {
-      const currentUser = (await supabase.auth.getUser()).data.user;
-      if (!currentUser || !userId) return;
-
-      const { error } = await supabase
-        .from("user_follows")
-        .delete()
-        .eq("follower_id", currentUser.id)
-        .eq("following_id", userId);
-
-      if (error) throw error;
+      if (!userId) return;
+      await unfollowUserApi(userId);
 
       setStats((prev) => ({
         ...prev,

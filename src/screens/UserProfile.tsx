@@ -17,7 +17,6 @@ import { PostCard } from "@/components/social/PostCard";
 import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
 import { PostCardSkeleton } from "@/components/skeletons/PostCardSkeleton";
 import { StatCardSkeleton } from "@/components/skeletons/StatCardSkeleton";
-import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
@@ -26,6 +25,7 @@ import { format } from "date-fns";
 import type { Book } from "@/types";
 import type { Post } from "@/hooks/usePosts";
 import type { BookClub } from "@/hooks/useBookClubs";
+import { fetchUserProfileTabData } from "@/services/api";
 
 // Type for Supabase post response with nested relations
 type PostWithRelations = Post & {
@@ -102,54 +102,10 @@ const UserProfile = () => {
       try {
         setDataLoading(true);
 
-        // Fetch user's books
-        const { data: books } = await supabase
-          .from("books")
-          .select("*")
-          .eq("user_id", resolvedUserId)
-          .order("created_at", { ascending: false })
-          .limit(10);
-
-        setUserBooks((books || []) as Book[]);
-
-        // Fetch user's posts
-        const { data: posts } = await supabase
-          .from("posts")
-          .select(`
-            *,
-            profiles:user_id (
-              id,
-              display_name,
-              avatar_url
-            ),
-            books:book_id (
-              id,
-              title,
-              author,
-              cover_url
-            )
-          `)
-          .eq("user_id", resolvedUserId)
-          .order("created_at", { ascending: false })
-          .limit(10);
-
-        setUserPosts((posts || []) as PostWithRelations[]);
-
-        // Fetch user's book clubs
-        const { data: clubs } = await supabase
-          .from("book_club_members")
-          .select(`
-            book_clubs (
-              id,
-              name,
-              description,
-              cover_image_url,
-              is_private
-            )
-          `)
-          .eq("user_id", resolvedUserId);
-
-        setUserClubs((clubs?.map(c => c.book_clubs).filter(Boolean) || []) as BookClub[]);
+        const data = await fetchUserProfileTabData(resolvedUserId);
+        setUserBooks(data.books);
+        setUserPosts(data.posts as PostWithRelations[]);
+        setUserClubs(data.clubs);
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {

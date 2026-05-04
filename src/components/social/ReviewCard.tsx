@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { useReviews } from "@/hooks/useReviews";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Heart, ChatBubble, Star, Eye, EyeClosed, Menu, Trash, EditPencil, ShareIos } from "iconoir-react";
 import { shareService } from "@/services/shareService";
 import { toast } from "sonner";
@@ -18,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { sanitizeText } from "@/utils/sanitize";
+import { fetchBookShareInfo } from "@/services/api";
 
 interface ReviewCardProps {
   review: {
@@ -35,6 +35,11 @@ interface ReviewCardProps {
       display_name: string | null;
       avatar_url: string | null;
     };
+    books?: {
+      title: string;
+      author: string | null;
+      cover_url: string | null;
+    } | null;
   };
   showBookInfo?: boolean;
   onEdit?: () => void;
@@ -55,7 +60,7 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
       setIsLiked(liked);
     };
     checkLiked();
-  }, [review.id]);
+  }, [checkUserLiked, review.id]);
 
   const handleLike = async () => {
     if (isLiked) {
@@ -76,11 +81,7 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
   const handleShare = async () => {
     try {
       // Fetch book info if not available
-      const { data: book } = await supabase
-        .from('books')
-        .select('title, author')
-        .eq('id', review.book_id)
-        .single();
+      const book = await fetchBookShareInfo(review.book_id);
 
       await shareService.shareBookReview({
         title: review.title || undefined,
@@ -146,6 +147,16 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
                   {formatDistanceToNow(new Date(review.created_at), { addSuffix: true })}
                 </span>
               </div>
+              {showBookInfo && review.books && (
+                <button
+                  type="button"
+                  onClick={() => navigate(`/book/${review.book_id}`)}
+                  className="mt-1 block max-w-full truncate text-left font-sans text-xs text-primary hover:underline"
+                >
+                  {review.books.title}
+                  {review.books.author ? ` by ${review.books.author}` : ""}
+                </button>
+              )}
             </div>
           </div>
 
@@ -178,7 +189,7 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
 
         {review.is_spoiler && !showSpoiler ? (
           <div className="bg-muted p-4 rounded-lg text-center">
-            <p className="font-sans text-sm font-medium mb-2">⚠️ This review contains spoilers</p>
+            <p className="font-sans text-sm font-medium mb-2">This review contains spoilers</p>
             <Button
               variant="outline"
               size="sm"
@@ -212,11 +223,11 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
             className={isLiked ? "text-primary" : ""}
           >
             <Heart className={`mr-2 h-4 w-4 ${isLiked ? "fill-primary" : ""}`} />
-            {review.likes_count}
+            {review.likes_count ?? 0}
           </Button>
           <Button variant="ghost" size="sm">
             <ChatBubble className="mr-2 h-4 w-4" />
-            {review.comments_count}
+            {review.comments_count ?? 0}
           </Button>
           <Button
             variant="ghost"

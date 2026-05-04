@@ -1,26 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  addBookToList as addBookToListApi,
+  createBookList,
+  deleteBookList,
+  duplicateBookList,
+  fetchBookListsPage,
+  removeBookFromList as removeBookFromListApi,
+  reorderBookListItems,
+  updateBookList,
+  type BookList,
+  type BookListItem,
+} from "@/services/api";
 
 const PAGE_SIZE = 15;
 
-export interface BookList {
-  id: string;
-  user_id: string;
-  name: string;
-  description: string | null;
-  created_at: string;
-  updated_at: string;
-  is_public: boolean;
-  book_count?: number;
-}
-
-export interface BookListItem {
-  id: string;
-  list_id: string;
-  book_id: string;
-  position: number;
-  added_at: string;
-}
+export type { BookList, BookListItem } from "@/services/api";
 
 export const useBookLists = (userId?: string) => {
   const [lists, setLists] = useState<BookList[]>([]);
@@ -43,24 +37,10 @@ export const useBookLists = (userId?: string) => {
 
       const currentOffset = isInitial ? 0 : offset;
       
-      const { data, error } = await supabase
-        .from('book_lists')
-        .select(`
-          *,
-          book_list_items(count)
-        `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .range(currentOffset, currentOffset + PAGE_SIZE - 1);
+      const { lists: listsWithCount, hasMore: hasMoreData } =
+        await fetchBookListsPage(userId, currentOffset, PAGE_SIZE);
       
-      if (error) throw error;
-      
-      const listsWithCount = data?.map(list => ({
-        ...list,
-        book_count: list.book_list_items?.[0]?.count || 0
-      })) || [];
-      
-      setHasMore(listsWithCount.length === PAGE_SIZE);
+      setHasMore(hasMoreData);
       
       if (isInitial) {
         setLists(listsWithCount);
@@ -91,13 +71,7 @@ export const useBookLists = (userId?: string) => {
     if (!userId) return null;
     
     try {
-      const { data, error } = await supabase
-        .from('book_lists')
-        .insert({ user_id: userId, name, description })
-        .select()
-        .single();
-      
-      if (error) throw error;
+      const data = await createBookList(userId, name, description);
       await fetchLists(true);
       return data;
     } catch (err: unknown) {
@@ -108,12 +82,7 @@ export const useBookLists = (userId?: string) => {
 
   const updateList = async (listId: string, updates: Partial<BookList>) => {
     try {
-      const { error } = await supabase
-        .from('book_lists')
-        .update(updates)
-        .eq('id', listId);
-      
-      if (error) throw error;
+      await updateBookList(listId, updates);
       await fetchLists(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -122,12 +91,7 @@ export const useBookLists = (userId?: string) => {
 
   const deleteList = async (listId: string) => {
     try {
-      const { error } = await supabase
-        .from('book_lists')
-        .delete()
-        .eq('id', listId);
-      
-      if (error) throw error;
+      await deleteBookList(listId);
       await fetchLists(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -136,21 +100,7 @@ export const useBookLists = (userId?: string) => {
 
   const addBookToList = async (listId: string, bookId: string) => {
     try {
-      // Get current max position
-      const { data: items } = await supabase
-        .from('book_list_items')
-        .select('position')
-        .eq('list_id', listId)
-        .order('position', { ascending: false })
-        .limit(1);
-      
-      const maxPosition = items?.[0]?.position || 0;
-      
-      const { error } = await supabase
-        .from('book_list_items')
-        .insert({ list_id: listId, book_id: bookId, position: maxPosition + 1 });
-      
-      if (error) throw error;
+      await addBookToListApi(listId, bookId);
       await fetchLists(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -159,13 +109,7 @@ export const useBookLists = (userId?: string) => {
 
   const removeBookFromList = async (listId: string, bookId: string) => {
     try {
-      const { error } = await supabase
-        .from('book_list_items')
-        .delete()
-        .eq('list_id', listId)
-        .eq('book_id', bookId);
-      
-      if (error) throw error;
+      await removeBookFromListApi(listId, bookId);
       await fetchLists(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -174,13 +118,7 @@ export const useBookLists = (userId?: string) => {
 
   const reorderBooks = async (listId: string, items: { book_id: string; position: number }[]) => {
     try {
-      for (const item of items) {
-        await supabase
-          .from('book_list_items')
-          .update({ position: item.position })
-          .eq('list_id', listId)
-          .eq('book_id', item.book_id);
-      }
+      await reorderBookListItems(listId, items);
       await fetchLists(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -191,53 +129,7 @@ export const useBookLists = (userId?: string) => {
     if (!userId) return null;
     
     try {
-      // Get the original list
-      const { data: originalList, error: listError } = await supabase
-        .from('book_lists')
-        .select('*')
-        .eq('id', listId)
-        .single();
-      
-      if (listError) throw listError;
-      
-      // Create new list with "(Copy)" suffix
-      const { data: newList, error: createError } = await supabase
-        .from('book_lists')
-        .insert({
-          user_id: userId,
-          name: `${originalList.name} (Copy)`,
-          description: originalList.description,
-          is_public: originalList.is_public
-        })
-        .select()
-        .single();
-      
-      if (createError) throw createError;
-      
-      // Get all books from the original list
-      const { data: books, error: booksError } = await supabase
-        .from('book_list_items')
-        .select('book_id, position')
-        .eq('list_id', listId)
-        .order('position', { ascending: true });
-      
-      if (booksError) throw booksError;
-      
-      // Copy books to the new list
-      if (books && books.length > 0) {
-        const bookItems = books.map(book => ({
-          list_id: newList.id,
-          book_id: book.book_id,
-          position: book.position
-        }));
-        
-        const { error: insertError } = await supabase
-          .from('book_list_items')
-          .insert(bookItems);
-        
-        if (insertError) throw insertError;
-      }
-      
+      const newList = await duplicateBookList(userId, listId);
       await fetchLists(true);
       return newList;
     } catch (err: unknown) {

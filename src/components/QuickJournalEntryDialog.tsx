@@ -9,11 +9,11 @@ import { useJournalEntries } from "@/hooks/useJournalEntries";
 import { useToast } from "@/hooks/use-toast";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
 import { useImagePicker } from "@/hooks/useImagePicker";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { SuccessCheckmark } from "@/components/animations/SuccessCheckmark";
 import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
+import { uploadPublicStorageFile } from "@/services/api";
 
 interface QuickJournalEntryDialogProps {
   open: boolean;
@@ -65,20 +65,14 @@ export const QuickJournalEntryDialog = ({
       const fileName = `journal-${Date.now()}.${image.format}`;
       const filePath = `${user.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('journal-photos')
-        .upload(filePath, blob, {
-          contentType: `image/${image.format}`,
-        });
+      const publicUrl = await uploadPublicStorageFile(
+        'journal-photos',
+        filePath,
+        blob,
+        { contentType: `image/${image.format}` }
+      );
 
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('journal-photos')
-        .getPublicUrl(filePath);
-
-      setPhotoUrl(urlData.publicUrl);
+      setPhotoUrl(publicUrl);
       setPhotoPreview(image.dataUrl);
     } catch (error: unknown) {
       toast({

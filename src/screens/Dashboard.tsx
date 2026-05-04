@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { supabase } from "@/integrations/supabase/client";
 import { NavArrowRight, Plus } from "iconoir-react";
 import { ProgressLogger } from "@/components/ProgressLogger";
 import { useAuth } from "@/hooks/useAuth";
@@ -30,7 +29,6 @@ import { SwipeableBookListsCarousel } from "@/components/SwipeableBookListsCarou
 import { NativeHeader } from "@/components/NativeHeader";
 import { NativeScrollView } from "@/components/NativeScrollView";
 import { useProfileContext } from "@/contexts/ProfileContext";
-import { useSupabaseRequest } from "@/hooks/useSupabaseRequest";
 import { ReadingStatsWidget } from "@/components/ReadingStatsWidget";
 import {
   BRACK_GOALS_IMAGE,
@@ -46,6 +44,7 @@ import {
 import type { DayActivity, StreakData } from "@/utils/streakCalculation";
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
 import { needsSetupPrompt } from "@/services/onboarding";
+import { fetchLatestGoal } from "@/services/api";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -69,7 +68,6 @@ const Dashboard = () => {
   } = useDashboardHomeData(user?.id);
   const { profile } = useProfileContext();
   const { status: onboardingStatus } = useOnboardingStatus(user?.id);
-  const { withRetry } = useSupabaseRequest();
   const [goal, setGoal] = useState<Goal | null>(null);
   const [progressBook, setProgressBook] = useState<BookType | null>(null);
   const navigate = useNavigate();
@@ -94,15 +92,7 @@ const Dashboard = () => {
     if (!user) return;
 
     try {
-      const { data: sessions } = await withRetry(
-        () => supabase
-          .from("reading_sessions")
-          .select("*")
-          .eq("user_id", user.id),
-        { toastOnError: true, toastMessage: "Unable to load reading sessions" }
-      );
-
-      await checkAndAwardBadges(books, sessions || []);
+      await checkAndAwardBadges();
     } catch (error) {
       console.error("Error checking badges:", error);
     }
@@ -112,21 +102,7 @@ const Dashboard = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await withRetry(
-        () => supabase
-          .from("goals")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .maybeSingle(),
-        { toastOnError: true, toastMessage: "Failed to load goal data" }
-      );
-
-      if (error && error.code !== "PGRST116") {
-        throw error;
-      }
-
-      setGoal(data);
+      setGoal(await fetchLatestGoal(user.id));
     } catch (error: unknown) {
       console.error("Error loading goal:", error);
       toast.error("Failed to load goal data");

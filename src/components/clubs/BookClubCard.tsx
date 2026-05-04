@@ -19,7 +19,7 @@ export const BookClubCard = ({ club, onJoin, onLeave }: BookClubCardProps) => {
   const isAdmin = club.user_role === 'admin';
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/30 bg-gradient-to-br from-card to-card/50 overflow-hidden">
+    <Card className="group overflow-hidden border-border/70 bg-card">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
@@ -63,7 +63,7 @@ export const BookClubCard = ({ club, onJoin, onLeave }: BookClubCardProps) => {
         </div>
 
         {club.current_book && (
-          <div className="mt-3 p-3 rounded-lg bg-muted/30 border border-border/40">
+          <div className="mt-3 rounded-md border border-border/60 bg-muted/30 p-3">
             <div className="flex items-center gap-2 mb-1">
               <APP_ICONS.profile.booksTab className="h-4 w-4 text-primary" />
               <span className="font-sans text-xs font-semibold text-muted-foreground">
@@ -98,7 +98,7 @@ export const BookClubCard = ({ club, onJoin, onLeave }: BookClubCardProps) => {
           <Button
             variant="default"
             size="sm"
-            className="flex-1 hover-scale"
+            className="flex-1"
             onClick={() => navigate(`/clubs/${club.id}`)}
           >
             View Club
@@ -108,7 +108,6 @@ export const BookClubCard = ({ club, onJoin, onLeave }: BookClubCardProps) => {
               variant="outline"
               size="sm"
               onClick={() => onJoin(club.id)}
-              className="hover-scale"
             >
               Join
             </Button>
@@ -118,7 +117,7 @@ export const BookClubCard = ({ club, onJoin, onLeave }: BookClubCardProps) => {
               variant="ghost"
               size="sm"
               onClick={() => onLeave(club.id)}
-              className="hover-scale text-destructive"
+              className="text-destructive"
             >
               Leave
             </Button>

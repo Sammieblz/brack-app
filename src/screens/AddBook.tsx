@@ -7,8 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookSearch } from "@/components/BookSearch";
-import { supabase } from "@/integrations/supabase/client";
-import type { Json } from "@/integrations/supabase/types";
+import { countUserBooks, getCurrentAuthUser, isBookAlreadyExistsError } from "@/services/api";
 import { Camera, Search, EditPencil, Refresh } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
@@ -19,12 +18,14 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { bookOperations } from "@/utils/offlineOperation";
 import { GENRES } from "@/constants";
-import type { Book } from "@/types";
 import type { GoogleBookResult } from "@/types/googleBooks";
 import { SuccessCheckmark } from "@/components/animations/SuccessCheckmark";
 import { Confetti } from "@/components/animations/Confetti";
 import { APP_ICONS } from "@/config/iconography";
 import { useReadingProfile } from "@/hooks/useReadingProfile";
+import { useBooks } from "@/hooks/useBooks";
+import { findExistingLibraryBook } from "@/utils/bookIdentity";
+import { normalizeGenre } from "@/utils/genres";
 
 const AddBook = () => {
   const [user, setUser] = useState<{ id: string } | null>(null);
@@ -36,6 +37,7 @@ const AddBook = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isFirstBook, setIsFirstBook] = useState(false);
   const { habits } = useReadingProfile(user?.id);
+  const { books } = useBooks(user?.id);
   
   // Get ISBN from URL params if present
   const isbnFromUrl = searchParams.get('isbn') || '';
@@ -50,11 +52,14 @@ const AddBook = () => {
     pages: "",
     chapters: "",
     cover_url: "",
+    description: "",
+    source_provider: null as string | null,
+    source_id: null as string | null,
   });
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentAuthUser();
       if (!user) {
         navigate("/auth");
         return;
@@ -87,38 +92,48 @@ const AddBook = () => {
     
     setLoading(true);
     try {
-      const bookData: Omit<Book, 'id' | 'created_at' | 'updated_at' | 'deleted_at'> = {
+      const localDuplicate = findExistingLibraryBook(
+        {
+          title: formData.title,
+          author: formData.author || null,
+          isbn: formData.isbn || null,
+        },
+        books
+      );
+
+      if (localDuplicate) {
+        toast.error("Book already exists in your library");
+        navigate(`/book/${localDuplicate.id}`);
+        return;
+      }
+
+      const bookData: Record<string, unknown> = {
         user_id: user.id,
         title: formData.title,
         author: formData.author || null,
         isbn: formData.isbn || null,
-        genre: formData.genre || null,
+        genre: normalizeGenre(formData.genre),
         pages: formData.pages ? parseInt(formData.pages) : null,
         chapters: formData.chapters ? parseInt(formData.chapters) : null,
         status: 'to_read',
         cover_url: formData.cover_url || null,
-        description: null,
+        description: formData.description || null,
         tags: null,
         metadata: null,
         current_page: 0,
         date_started: null,
         date_finished: null,
         rating: null,
-        notes: null
+        notes: null,
+        source_provider: formData.source_provider,
+        source_id: formData.source_id,
       };
 
-      await bookOperations.create(bookData);
+      const addedBook = await bookOperations.create(bookData);
 
       let firstBook = false;
       if (navigator.onLine) {
-        const { count, error: countError } = await supabase
-          .from('books')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .is('deleted_at', null);
-
-        if (countError) throw countError;
-        firstBook = (count || 0) <= 1;
+        firstBook = (await countUserBooks(user.id)) <= 1;
       }
       setIsFirstBook(firstBook);
 
@@ -131,11 +146,17 @@ const AddBook = () => {
 
       setTimeout(() => {
         setShowSuccess(false);
-        navigate("/dashboard");
+        navigate("/my-books", {
+          state: { highlightBookId: addedBook?.id },
+        });
       }, 1500);
     } catch (error: unknown) {
       console.error('Error adding book:', error);
-      toast.error(error instanceof Error ? error.message : "Failed to add book");
+      if (isBookAlreadyExistsError(error)) {
+        toast.error("Book already exists in your library");
+      } else {
+        toast.error(error instanceof Error ? error.message : "Failed to add book");
+      }
     } finally {
       setLoading(false);
     }
@@ -150,6 +171,9 @@ const AddBook = () => {
       pages: book.pages?.toString() || "",
       chapters: book.chapters?.toString() || "",
       cover_url: book.cover_url || "",
+      description: book.description || "",
+      source_provider: book.source_provider || "google_books",
+      source_id: book.source_id || book.googleBooksId,
     });
     setActiveTab("manual");
     toast.success("Book details loaded! Review and save.");
@@ -158,12 +182,19 @@ const AddBook = () => {
   const handleQuickAdd = async (book: GoogleBookResult) => {
     if (!user) return;
     
-    const bookData: Omit<Book, 'id' | 'created_at' | 'updated_at' | 'deleted_at'> = {
+    const existingBook = findExistingLibraryBook(book, books);
+    if (existingBook) {
+      toast.error("Book already exists in your library");
+      navigate(`/book/${existingBook.id}`);
+      return;
+    }
+
+    const bookData: Record<string, unknown> = {
       user_id: user.id,
       title: book.title,
       author: book.author,
       isbn: book.isbn,
-      genre: book.genre,
+      genre: normalizeGenre(book.genre),
       pages: book.pages,
       chapters: book.chapters,
       status: 'to_read',
@@ -175,15 +206,25 @@ const AddBook = () => {
       date_started: null,
       date_finished: null,
       rating: null,
-      notes: null
+      notes: null,
+      source_provider: book.source_provider || "google_books",
+      source_id: book.source_id || book.googleBooksId,
     };
 
-    await bookOperations.create({
-      ...bookData,
-      metadata: bookData.metadata as Json | null
-    });
+    try {
+      const addedBook = await bookOperations.create(bookData);
 
-    navigate("/dashboard");
+      toast.success(`${book.title} added to your library`);
+      navigate("/my-books", {
+        state: { highlightBookId: addedBook?.id },
+      });
+    } catch (error) {
+      if (isBookAlreadyExistsError(error)) {
+        toast.error("Book already exists in your library");
+        return;
+      }
+      throw error;
+    }
   };
 
   const handleScanISBN = () => {
@@ -258,6 +299,8 @@ const AddBook = () => {
                   onSelectBook={handleSelectBook}
                   onQuickAdd={handleQuickAdd}
                   initialQuery={searchFromUrl}
+                  existingBooks={books}
+                  onViewExisting={(book) => navigate(`/book/${book.id}`)}
                 />
               </TabsContent>
 

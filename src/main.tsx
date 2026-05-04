@@ -11,7 +11,7 @@ registerSW({
 createRoot(document.getElementById("root")!).render(
   <NextThemesProvider 
     attribute="class" 
-    defaultTheme="system" 
+    defaultTheme="light" 
     enableSystem
     storageKey="theme-mode"
   >

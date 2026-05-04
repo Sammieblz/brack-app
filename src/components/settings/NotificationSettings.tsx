@@ -5,11 +5,15 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Bell } from "iconoir-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import type { User } from "@/types";
+import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  fetchNotificationPreferences,
+  saveNotificationPreferences as saveNotificationPreferencesApi,
+} from "@/services/api";
 
 interface NotificationSettingsProps {
   user: User;
@@ -19,17 +23,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
   const { toast } = useToast();
   const { isRegistered, register, unregister, error: pushError } = usePushNotifications();
   const [loadingPrefs, setLoadingPrefs] = useState(true);
-  const [notificationPrefs, setNotificationPrefs] = useState({
-    push_enabled: true,
-    messages_enabled: true,
-    followers_enabled: true,
-    book_clubs_enabled: true,
-    goals_enabled: true,
-    streaks_enabled: true,
-    reading_reminders_enabled: false,
-    quiet_hours_start: null as string | null,
-    quiet_hours_end: null as string | null,
-  });
+  const [notificationPrefs, setNotificationPrefs] = useState(DEFAULT_NOTIFICATION_PREFERENCES);
 
   useEffect(() => {
     loadNotificationPreferences();
@@ -40,29 +34,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
     
     try {
       setLoadingPrefs(true);
-      const { data, error } = await supabase
-        .from("notification_preferences")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-
-      if (data) {
-        setNotificationPrefs({
-          push_enabled: data.push_enabled ?? true,
-          messages_enabled: data.messages_enabled ?? true,
-          followers_enabled: data.followers_enabled ?? true,
-          book_clubs_enabled: data.book_clubs_enabled ?? true,
-          goals_enabled: data.goals_enabled ?? true,
-          streaks_enabled: data.streaks_enabled ?? true,
-          reading_reminders_enabled: data.reading_reminders_enabled ?? false,
-          quiet_hours_start: data.quiet_hours_start || null,
-          quiet_hours_end: data.quiet_hours_end || null,
-        });
-      }
+      setNotificationPrefs(await fetchNotificationPreferences(user.id));
     } catch (error: unknown) {
       console.error("Error loading notification preferences:", error);
     } finally {
@@ -74,16 +46,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
-        .from("notification_preferences")
-        .upsert({
-          user_id: user.id,
-          ...notificationPrefs,
-        }, {
-          onConflict: "user_id",
-        });
-
-      if (error) throw error;
+      await saveNotificationPreferencesApi(user.id, notificationPrefs);
 
       toast({
         title: "Success",

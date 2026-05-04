@@ -21,9 +21,10 @@ interface CreateClubDialogProps {
     description?: string;
     is_private?: boolean;
   }) => Promise<void>;
+  compact?: boolean;
 }
 
-export const CreateClubDialog = ({ onCreateClub }: CreateClubDialogProps) => {
+export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDialogProps) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -55,12 +56,12 @@ export const CreateClubDialog = ({ onCreateClub }: CreateClubDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="hover-scale">
-          <Plus className="h-4 w-4 mr-2" />
-          Create Club
+        <Button size={compact ? "icon" : "default"} aria-label="Create club">
+          <Plus className={compact ? "h-4 w-4" : "h-4 w-4 mr-2"} />
+          {!compact && "Create Club"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-h-[min(42rem,calc(var(--app-viewport-height,100dvh)-2rem))] overflow-y-auto sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle className="font-display">Create Book Club</DialogTitle>
@@ -103,7 +104,7 @@ export const CreateClubDialog = ({ onCreateClub }: CreateClubDialogProps) => {
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
             <Button
               type="button"
               variant="outline"

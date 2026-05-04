@@ -1,11 +1,10 @@
 import { PushNotifications } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
-import { supabase } from '@/integrations/supabase/client';
-
-interface PushNotificationToken {
-  token: string;
-  platform: 'ios' | 'android' | 'web';
-}
+import {
+  deleteCurrentUserPushTokens,
+  savePushToken,
+  type PushNotificationToken,
+} from '@/services/api';
 
 /**
  * Push notifications service
@@ -71,25 +70,7 @@ export const pushNotificationsService = {
    */
   async saveTokenToDatabase(tokenData: PushNotificationToken): Promise<void> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Check if token already exists
-      const { data: existing } = await supabase
-        .from('push_tokens')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('token', tokenData.token)
-        .maybeSingle();
-
-      if (!existing) {
-        // Insert new token
-        await supabase.from('push_tokens').insert({
-          user_id: user.id,
-          token: tokenData.token,
-          platform: tokenData.platform,
-        });
-      }
+      await savePushToken(tokenData);
     } catch (error) {
       console.error('Error saving push token:', error);
     }
@@ -102,14 +83,7 @@ export const pushNotificationsService = {
     if (!Capacitor.isNativePlatform()) return;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Remove all tokens for this user
-      await supabase
-        .from('push_tokens')
-        .delete()
-        .eq('user_id', user.id);
+      await deleteCurrentUserPushTokens();
 
       // Unregister from push service
       await PushNotifications.unregister();

@@ -1,5 +1,7 @@
 export interface GoogleBookResult {
   googleBooksId: string;
+  source_provider?: string | null;
+  source_id?: string | null;
   title: string;
   author: string | null;
   isbn: string | null;

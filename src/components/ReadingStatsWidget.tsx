@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { supabase } from "@/integrations/supabase/client";
 import { NavArrowRight, ShareIos } from "iconoir-react";
 import { useToast } from "@/hooks/use-toast";
 import { shareService } from "@/services/shareService";
@@ -10,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { APP_ICONS } from "@/config/iconography";
 import type { Book } from "@/types";
+import { fetchUserReadingSessions } from "@/services/api";
 
 interface ReadingStatsWidgetProps {
   userId: string;
@@ -44,11 +44,7 @@ export const ReadingStatsWidget = ({
     try {
       setLoading(true);
       
-      // Get reading sessions
-      const { data: sessions } = await supabase
-        .from('reading_sessions')
-        .select('duration, book_id')
-        .eq('user_id', userId);
+      const sessions = await fetchUserReadingSessions(userId);
 
       // Calculate total reading time
       const totalMinutes = sessions?.reduce((sum, s) => sum + (s.duration || 0), 0) || 0;

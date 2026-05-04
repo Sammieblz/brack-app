@@ -3,18 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Quote, Book, ShareIos, Search } from "iconoir-react";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { shareService } from "@/services/shareService";
 import LoadingSpinner from "./LoadingSpinner";
-import type { JournalEntry } from "@/hooks/useJournalEntries";
+import { fetchUserQuoteEntries, type QuoteEntry } from "@/services/api";
 
 interface QuoteCollectionProps {
   userId: string;
 }
 
 export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
-  const [quotes, setQuotes] = useState<(JournalEntry & { book_title?: string; book_author?: string })[]>([]);
+  const [quotes, setQuotes] = useState<QuoteEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
@@ -26,28 +25,7 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
   const fetchQuotes = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('journal_entries')
-        .select(`
-          *,
-          books:book_id (
-            title,
-            author
-          )
-        `)
-        .eq('user_id', userId)
-        .eq('entry_type', 'quote')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      const quotesWithBooks = (data || []).map((entry: { books?: { title?: string; author?: string } }) => ({
-        ...entry,
-        book_title: entry.books?.title,
-        book_author: entry.books?.author,
-      }));
-
-      setQuotes(quotesWithBooks);
+      setQuotes(await fetchUserQuoteEntries(userId));
     } catch (error: unknown) {
       console.error('Error fetching quotes:', error);
       toast({

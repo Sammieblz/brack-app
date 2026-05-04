@@ -1,34 +1,16 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { dataCache } from "@/services/dataCache";
 import { toast } from "sonner";
+import {
+  fetchPosts as fetchPostsApi,
+  subscribeToPosts,
+  togglePostLike as togglePostLikeApi,
+  type Post,
+} from "@/services/api";
 
 const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 
-export interface Post {
-  id: string;
-  user_id: string;
-  book_id?: string;
-  title: string;
-  content: string;
-  genre?: string;
-  likes_count: number;
-  comments_count: number;
-  created_at: string;
-  updated_at: string;
-  user?: {
-    id: string;
-    display_name: string;
-    avatar_url?: string;
-  };
-  book?: {
-    id: string;
-    title: string;
-    author?: string;
-    cover_url?: string;
-  };
-  user_has_liked?: boolean;
-}
+export type { Post } from "@/services/api";
 
 export const usePosts = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -37,77 +19,7 @@ export const usePosts = () => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-
-      const { data: postsData, error: postsError } = await supabase
-        .from("posts")
-        .select(`
-          *,
-          profiles:user_id (
-            id,
-            display_name,
-            avatar_url
-          ),
-          books:book_id (
-            id,
-            title,
-            author,
-            cover_url
-          )
-        `)
-        .order("created_at", { ascending: false });
-
-      if (postsError) throw postsError;
-
-      // Check which posts the user has liked
-      let likedPostIds: string[] = [];
-      if (user) {
-        const { data: likesData } = await supabase
-          .from("post_likes")
-          .select("post_id")
-          .eq("user_id", user.id);
-
-        likedPostIds = likesData?.map(like => like.post_id) || [];
-      }
-
-      const enrichedPosts: Post[] = (postsData || []).map((post: {
-        id: string;
-        user_id: string;
-        book_id: string | null;
-        title: string;
-        content: string;
-        genre: string | null;
-        likes_count: number;
-        comments_count: number;
-        created_at: string;
-        updated_at: string;
-        profiles?: { id: string; display_name: string; avatar_url: string | null };
-        books?: { id: string; title: string; author: string; cover_url: string | null };
-      }) => ({
-        id: post.id,
-        user_id: post.user_id,
-        book_id: post.book_id,
-        title: post.title,
-        content: post.content,
-        genre: post.genre,
-        likes_count: post.likes_count,
-        comments_count: post.comments_count,
-        created_at: post.created_at,
-        updated_at: post.updated_at,
-        user: post.profiles ? {
-          id: post.profiles.id,
-          display_name: post.profiles.display_name,
-          avatar_url: post.profiles.avatar_url,
-        } : undefined,
-        book: post.books ? {
-          id: post.books.id,
-          title: post.books.title,
-          author: post.books.author,
-          cover_url: post.books.cover_url,
-        } : undefined,
-        user_has_liked: likedPostIds.includes(post.id),
-      }));
-
+      const enrichedPosts = await fetchPostsApi();
       setPosts(enrichedPosts);
       
       // Cache the result
@@ -135,35 +47,23 @@ export const usePosts = () => {
 
     // Only subscribe to real-time updates if page is visible
     // This reduces battery drain when app is in background
-    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cleanup: (() => void) | null = null;
 
     const setupSubscription = () => {
       if (document.hidden) return; // Don't subscribe if page is hidden
 
-      channel = supabase
-        .channel("posts-changes")
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "posts",
-          },
-          () => {
-            // Invalidate cache on changes
-            dataCache.invalidate('posts_all');
-            fetchPosts();
-          }
-        )
-        .subscribe();
+      cleanup = subscribeToPosts(() => {
+        dataCache.invalidate('posts_all');
+        fetchPosts();
+      });
     };
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
         // Page hidden - unsubscribe to save battery
-        if (channel) {
-          supabase.removeChannel(channel);
-          channel = null;
+        if (cleanup) {
+          cleanup();
+          cleanup = null;
         }
       } else {
         // Page visible - subscribe
@@ -176,37 +76,16 @@ export const usePosts = () => {
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      cleanup?.();
     };
   }, []);
 
   const toggleLike = async (postId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
       const post = posts.find(p => p.id === postId);
       if (!post) return;
 
-      if (post.user_has_liked) {
-        // Unlike
-        const { error } = await supabase
-          .from("post_likes")
-          .delete()
-          .eq("post_id", postId)
-          .eq("user_id", user.id);
-
-        if (error) throw error;
-      } else {
-        // Like
-        const { error } = await supabase
-          .from("post_likes")
-          .insert({ post_id: postId, user_id: user.id });
-
-        if (error) throw error;
-      }
+      await togglePostLikeApi(post);
 
       // Invalidate cache and refetch
       dataCache.invalidate('posts_all');

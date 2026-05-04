@@ -5,15 +5,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
 import {
+  getAuthSession,
+  getCurrentAuthUser,
+  onAuthStateChange,
+  signInWithEmailPassword,
+  signInWithOAuth,
+  signUpWithEmail,
+} from "@/services/api";
+import {
   ensureUserProfile,
-  isIncompleteOnboardingStatus,
+  shouldEnterFirstRunOnboarding,
 } from "@/services/onboarding";
 
 type AuthTransition = {
@@ -35,9 +42,7 @@ const Auth = () => {
   const { resetToDefaultTheme } = useTheme();
 
   const resolveSignedInTransition = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getCurrentAuthUser();
 
     if (!user) {
       return {
@@ -47,7 +52,7 @@ const Auth = () => {
     }
 
     const status = await ensureUserProfile(user);
-    const needsOnboarding = isIncompleteOnboardingStatus(status.onboarding_status);
+    const needsOnboarding = shouldEnterFirstRunOnboarding(user, status);
 
     return {
       to: needsOnboarding ? "/onboarding" : "/dashboard",
@@ -60,7 +65,7 @@ const Auth = () => {
   // Force default theme on auth page (only if not authenticated)
   useEffect(() => {
     const checkAndResetTheme = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const session = await getAuthSession();
       // Only reset theme if user is not authenticated
       if (!session) {
         resetToDefaultTheme();
@@ -84,7 +89,7 @@ const Auth = () => {
     // Check if user is already logged in
     const checkUser = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const session = await getAuthSession();
         if (session) {
           setTransition(await resolveSignedInTransition());
           return;
@@ -98,13 +103,20 @@ const Auth = () => {
     checkUser();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const subscription = onAuthStateChange(
       (event, session) => {
         if (session && event === 'SIGNED_IN') {
-          setTransition((current) => current ?? {
-            to: isSignUp ? "/onboarding" : "/dashboard",
-            message: isSignUp ? "Creating your Brack space..." : "Welcome back to Brack...",
-          });
+          resolveSignedInTransition()
+            .then((nextTransition) => {
+              setTransition((current) => current ?? nextTransition);
+            })
+            .catch((error) => {
+              console.error("Failed to resolve post-auth route:", error);
+              setTransition((current) => current ?? {
+                to: "/dashboard",
+                message: "Opening your reading dashboard...",
+              });
+            });
         }
       }
     );
@@ -160,20 +172,16 @@ const Auth = () => {
           return;
         }
 
-        const { data, error } = await supabase.auth.signUp({
+        const data = await signUpWithEmail({
           email,
           password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/onboarding`,
-            data: {
-              first_name: firstName,
-              last_name: lastName,
-              full_name: `${firstName} ${lastName}`.trim(),
-            }
-          }
+          redirectTo: `${window.location.origin}/onboarding`,
+          metadata: {
+            first_name: firstName,
+            last_name: lastName,
+            full_name: `${firstName} ${lastName}`.trim(),
+          },
         });
-        
-        if (error) throw error;
 
         if (data.session) {
           setTransition(await resolveSignedInTransition());
@@ -185,12 +193,10 @@ const Auth = () => {
           description: "We sent you a confirmation link to complete your signup.",
         });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        await signInWithEmailPassword({
           email,
           password,
         });
-        
-        if (error) throw error;
 
         setTransition(await resolveSignedInTransition());
       }
@@ -209,14 +215,10 @@ const Auth = () => {
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      await signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/onboarding`
-        }
+        redirectTo: `${window.location.origin}/onboarding`,
       });
-      
-      if (error) throw error;
     } catch (error: unknown) {
       toast({
         variant: "destructive",

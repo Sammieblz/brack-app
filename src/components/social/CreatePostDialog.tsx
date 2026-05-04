@@ -12,18 +12,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { createCommunityPost } from "@/services/api";
 import { toast } from "sonner";
 import { EditPencil } from "iconoir-react";
 import { GENRES } from "@/constants";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { sanitizeInput } from "@/utils/sanitize";
 
 interface CreatePostDialogProps {
   onPostCreated?: () => void;
+  compact?: boolean;
 }
 
-export const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
+export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostDialogProps) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -53,17 +53,7 @@ export const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
 
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      const { error } = await supabase.from("posts").insert({
-        user_id: user.id,
-        title: sanitizeInput(title),
-        content: sanitizeInput(content),
-        genre: genre || null,
-      });
-
-      if (error) throw error;
+      await createCommunityPost({ title, content, genre });
 
       triggerHaptic('success');
       toast.success("Post created successfully!");
@@ -84,12 +74,12 @@ export const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <EditPencil className="mr-2 h-4 w-4" />
-          Create Post
+        <Button size={compact ? "icon" : "default"} aria-label="Create post">
+          <EditPencil className={compact ? "h-4 w-4" : "mr-2 h-4 w-4"} />
+          {!compact && "Create Post"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-h-[min(44rem,calc(var(--app-viewport-height,100dvh)-2rem))] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display">Create a Post</DialogTitle>
           <DialogDescription className="font-sans">
@@ -135,7 +125,7 @@ export const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
             />
           </div>
 
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>

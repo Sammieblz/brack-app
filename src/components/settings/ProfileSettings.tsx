@@ -5,7 +5,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
 import { useFollowing } from "@/hooks/useFollowing";
@@ -13,6 +12,13 @@ import { useNavigate } from "react-router-dom";
 import { getInitials } from "@/lib/avatarUtils";
 import { APP_ICONS } from "@/config/iconography";
 import type { User as UserType, Profile } from "@/types";
+import {
+  fetchProfile,
+  removeStorageFiles,
+  updateProfileAvatar,
+  uploadPublicStorageFile,
+  upsertProfileBasics,
+} from "@/services/api";
 
 interface ProfileSettingsProps {
   user: UserType;
@@ -50,16 +56,7 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
-      
+      const data = await fetchProfile(user.id);
       if (data) {
         setProfile(data);
         setFormData({
@@ -79,16 +76,10 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
     
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          display_name: formData.display_name || null,
-          bio: formData.bio || null,
-          updated_at: new Date().toISOString(),
-        });
-
-      if (error) throw error;
+      await upsertProfileBasics(user.id, {
+        display_name: formData.display_name || null,
+        bio: formData.bio || null,
+      });
 
       toast({
         title: "Profile updated",
@@ -124,30 +115,20 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
 
       if (profile?.avatar_url) {
         const oldPath = profile.avatar_url.split('/').slice(-2).join('/');
-        await supabase.storage.from("avatars").remove([oldPath]);
+        await removeStorageFiles("avatars", [oldPath]);
       }
 
       const fileName = `${Date.now()}-avatar.${imageData.format}`;
       const filePath = `${user.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, blob, {
-          contentType: `image/${imageData.format}`,
-        });
+      const publicUrl = await uploadPublicStorageFile(
+        "avatars",
+        filePath,
+        blob,
+        { contentType: `image/${imageData.format}` }
+      );
 
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath);
-
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ avatar_url: urlData.publicUrl })
-        .eq("id", user.id);
-
-      if (updateError) throw updateError;
+      await updateProfileAvatar(user.id, publicUrl);
 
       toast({
         title: "Success",
@@ -265,12 +246,8 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
                     setUploading(true);
                     try {
                       const oldPath = profile.avatar_url.split('/').slice(-2).join('/');
-                      await supabase.storage.from("avatars").remove([oldPath]);
-                      const { error } = await supabase
-                        .from("profiles")
-                        .update({ avatar_url: null })
-                        .eq("id", user.id);
-                      if (error) throw error;
+                      await removeStorageFiles("avatars", [oldPath]);
+                      await updateProfileAvatar(user.id, null);
                       setPreviewUrl(null);
                       toast({
                         title: "Success",

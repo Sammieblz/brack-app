@@ -1,9 +1,22 @@
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
+import {
+  createOnboardingBookGoal,
+  createOnboardingProfile,
+  deactivateActiveBookCountGoals,
+  fetchOnboardingStatusRecord,
+  updateOnboardingCompleted,
+  updateOnboardingInProgress,
+  updateOnboardingSkipped,
+  upsertOnboardingLearningProfile,
+  upsertOnboardingNotificationPreferences,
+  upsertOnboardingReadingHabits,
+  type OnboardingStatusRecord,
+} from "@/services/api/onboarding";
 import type { OnboardingFormData, OnboardingStatus } from "@/types";
 
 export const ONBOARDING_VERSION = 1;
+const FIRST_RUN_ONBOARDING_CUTOFF_ISO = "2026-05-01T00:00:00.000Z";
 
 export interface OnboardingAuthUser {
   id: string;
@@ -20,6 +33,7 @@ export interface OnboardingAuthUser {
 
 export const ONBOARDING_STEPS = [
   "welcome",
+  "palette",
   "taste",
   "pace",
   "goal",
@@ -30,6 +44,7 @@ export type OnboardingStepId = (typeof ONBOARDING_STEPS)[number];
 
 export const DEFAULT_ONBOARDING_FORM: OnboardingFormData = {
   favoriteGenres: [],
+  colorTheme: "default",
   slowestGenre: "",
   preferredBookLength: "",
   booksReadSixMonths: null,
@@ -47,19 +62,41 @@ export const DEFAULT_ONBOARDING_FORM: OnboardingFormData = {
   reminderTime: "19:00",
 };
 
-export interface OnboardingStatusRecord {
-  onboarding_status: OnboardingStatus;
-  onboarding_version: number;
-  onboarding_last_step: string | null;
-  onboarding_completed_at: string | null;
-  onboarding_skipped_at: string | null;
-}
+export type { OnboardingStatusRecord };
 
 export const isIncompleteOnboardingStatus = (status?: OnboardingStatus | null) =>
   status === "not_started" || status === "in_progress";
 
 export const needsSetupPrompt = (status?: OnboardingStatus | null) =>
   status === "not_started" || status === "in_progress" || status === "skipped";
+
+const getTime = (date: string | null | undefined) => {
+  if (!date) return null;
+  const time = new Date(date).getTime();
+  return Number.isFinite(time) ? time : null;
+};
+
+export const isFirstRunOnboardingAccount = (
+  user: OnboardingAuthUser | SupabaseUser,
+  statusRecord?: OnboardingStatusRecord | null,
+) => {
+  const cutoff = getTime(FIRST_RUN_ONBOARDING_CUTOFF_ISO) ?? 0;
+  const authCreatedAt = getTime("created_at" in user ? user.created_at : null);
+  const profileCreatedAt = getTime(statusRecord?.profile_created_at);
+  const createdAt = authCreatedAt ?? profileCreatedAt;
+
+  return createdAt !== null && createdAt >= cutoff;
+};
+
+export const shouldEnterFirstRunOnboarding = (
+  user: OnboardingAuthUser | SupabaseUser,
+  statusRecord?: OnboardingStatusRecord | null,
+) => {
+  return (
+    isIncompleteOnboardingStatus(statusRecord?.onboarding_status) &&
+    isFirstRunOnboardingAccount(user, statusRecord)
+  );
+};
 
 const todayDate = () => new Date().toISOString().split("T")[0];
 
@@ -73,11 +110,6 @@ const clampNumber = (value: number | null | undefined, min: number, max: number)
   if (value === null || value === undefined || Number.isNaN(value)) return null;
   return Math.min(max, Math.max(min, Math.round(value)));
 };
-
-const normalizeStatus = (status: string | null | undefined): OnboardingStatus =>
-  status === "in_progress" || status === "completed" || status === "skipped"
-    ? status
-    : "not_started";
 
 export const getOnboardingErrorMessage = (
   error: unknown,
@@ -118,23 +150,9 @@ const readMetadataString = (
 };
 
 export const ensureUserProfile = async (user: OnboardingAuthUser | SupabaseUser) => {
-  const { data: existing, error: selectError } = await supabase
-    .from("profiles")
-    .select(
-      "onboarding_status,onboarding_version,onboarding_last_step,onboarding_completed_at,onboarding_skipped_at",
-    )
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (selectError && selectError.code !== "PGRST116") {
-    throw selectError;
-  }
-
+  const existing = await fetchOnboardingStatusRecord(user.id);
   if (existing) {
-    return {
-      ...existing,
-      onboarding_status: normalizeStatus(existing.onboarding_status),
-    } as OnboardingStatusRecord;
+    return existing;
   }
 
   const metadata = user.user_metadata ?? {};
@@ -148,75 +166,34 @@ export const ensureUserProfile = async (user: OnboardingAuthUser | SupabaseUser)
     readMetadataString(metadata, "avatar_url") ??
     readMetadataString(metadata, "picture");
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .upsert(
-      {
-        id: user.id,
-        display_name: fullName,
-        avatar_url: avatarUrl,
-        first_name: firstName,
-        last_name: lastName,
-        onboarding_status: "not_started",
-        onboarding_version: ONBOARDING_VERSION,
-      },
-      { onConflict: "id", ignoreDuplicates: true },
-    )
-    .select(
-      "onboarding_status,onboarding_version,onboarding_last_step,onboarding_completed_at,onboarding_skipped_at",
-    )
-    .maybeSingle();
+  const created = await createOnboardingProfile({
+    id: user.id,
+    display_name: fullName,
+    avatar_url: avatarUrl,
+    first_name: firstName,
+    last_name: lastName,
+    onboarding_status: "not_started",
+    onboarding_version: ONBOARDING_VERSION,
+  });
 
-  if (error) throw error;
-
-  if (!data) {
+  if (!created) {
     const fallback = await getOnboardingStatus(user.id);
     if (fallback) return fallback;
     throw new Error("Unable to create onboarding profile.");
   }
 
-  return {
-    ...data,
-    onboarding_status: normalizeStatus(data.onboarding_status),
-  } as OnboardingStatusRecord;
+  return created;
 };
 
 export const getOnboardingStatus = async (userId: string) => {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select(
-      "onboarding_status,onboarding_version,onboarding_last_step,onboarding_completed_at,onboarding_skipped_at",
-    )
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (error && error.code !== "PGRST116") throw error;
-
-  if (!data) {
-    return null;
-  }
-
-  return {
-    ...data,
-    onboarding_status: normalizeStatus(data.onboarding_status),
-  } as OnboardingStatusRecord;
+  return fetchOnboardingStatusRecord(userId);
 };
 
 export const markOnboardingInProgress = async (
   userId: string,
   lastStep: OnboardingStepId,
 ) => {
-  const { error } = await supabase
-    .from("profiles")
-    .update({
-      onboarding_status: "in_progress",
-      onboarding_last_step: lastStep,
-      onboarding_skipped_at: null,
-    })
-    .eq("id", userId)
-    .in("onboarding_status", ["not_started", "in_progress", "skipped"]);
-
-  if (error) throw error;
+  await updateOnboardingInProgress(userId, lastStep);
 };
 
 export const skipOnboarding = async (
@@ -225,39 +202,25 @@ export const skipOnboarding = async (
 ) => {
   const skippedAt = new Date().toISOString();
 
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({
-      onboarding_status: "skipped",
-      onboarding_version: ONBOARDING_VERSION,
-      onboarding_last_step: lastStep,
-      onboarding_skipped_at: skippedAt,
-      onboarding_completed_at: null,
-    })
-    .eq("id", userId);
+  await updateOnboardingSkipped(userId, ONBOARDING_VERSION, lastStep, skippedAt);
 
-  if (profileError) throw profileError;
-
-  const { error: learningError } = await supabase
-    .from("user_learning_profiles")
-    .upsert(
-      {
-        user_id: userId,
-        onboarding_answers: {
-          skipped: true,
-          skippedAt,
-          lastStep,
-        } as Json,
-        derived_preferences: {
-          setupConfidence: "low",
-          shouldPromptForSetup: true,
-        } as Json,
-        signal_version: ONBOARDING_VERSION,
-      },
-      { onConflict: "user_id" },
-    );
-
-  if (learningError) throw learningError;
+  try {
+    await upsertOnboardingLearningProfile({
+      user_id: userId,
+      onboarding_answers: {
+        skipped: true,
+        skippedAt,
+        lastStep,
+      } as Json,
+      derived_preferences: {
+        setupConfidence: "low",
+        shouldPromptForSetup: true,
+      } as Json,
+      signal_version: ONBOARDING_VERSION,
+    });
+  } catch (error) {
+    console.warn("Skipped onboarding status was saved, but learning-profile metadata was not saved:", error);
+  }
 };
 
 export const saveOnboardingProfile = async (
@@ -291,6 +254,7 @@ export const saveOnboardingProfile = async (
   const normalized: OnboardingFormData = {
     ...formData,
     favoriteGenres,
+    colorTheme: formData.colorTheme || "default",
     slowestGenre: formData.slowestGenre || "",
     booksReadSixMonths: clampNumber(formData.booksReadSixMonths, 0, 500),
     booksReadYear: clampNumber(formData.booksReadYear, 0, 1000),
@@ -305,6 +269,7 @@ export const saveOnboardingProfile = async (
 
   const derivedPreferences = {
     favoriteGenres,
+    colorTheme: normalized.colorTheme,
     slowestGenre: normalized.slowestGenre || null,
     preferredBookLength: normalized.preferredBookLength || null,
     preferredSessionMinutes: normalized.preferredSessionMinutes,
@@ -316,36 +281,24 @@ export const saveOnboardingProfile = async (
     setupConfidence: "high",
   };
 
-  const { error: habitsError } = await supabase
-    .from("reading_habits")
-    .upsert(
-      {
-        user_id: userId,
-        avg_time_per_book: normalized.averageDaysPerBook,
-        genres: favoriteGenres,
-        avg_length: avgLength,
-        books_6mo: normalized.booksReadSixMonths,
-        books_1yr: normalized.booksReadYear,
-        longest_genre: normalized.slowestGenre || null,
-        preferred_session_minutes: normalized.preferredSessionMinutes,
-        preferred_reading_time: normalized.preferredReadingTime || null,
-        reading_frequency: normalized.readingFrequency || null,
-        motivation: normalized.motivation || null,
-        book_format: normalized.preferredBookFormat || null,
-      },
-      { onConflict: "user_id" },
-    );
+  await upsertOnboardingReadingHabits({
+    user_id: userId,
+    avg_time_per_book: normalized.averageDaysPerBook,
+    genres: favoriteGenres,
+    avg_length: avgLength,
+    books_6mo: normalized.booksReadSixMonths,
+    books_1yr: normalized.booksReadYear,
+    longest_genre: normalized.slowestGenre || null,
+    preferred_session_minutes: normalized.preferredSessionMinutes,
+    preferred_reading_time: normalized.preferredReadingTime || null,
+    reading_frequency: normalized.readingFrequency || null,
+    motivation: normalized.motivation || null,
+    book_format: normalized.preferredBookFormat || null,
+  });
 
-  if (habitsError) throw habitsError;
+  await deactivateActiveBookCountGoals(userId);
 
-  await supabase
-    .from("goals")
-    .update({ is_active: false })
-    .eq("user_id", userId)
-    .eq("goal_type", "books_count")
-    .eq("is_active", true);
-
-  const { error: goalError } = await supabase.from("goals").insert({
+  await createOnboardingBookGoal({
     user_id: userId,
     target_books: goalTargetBooks,
     start_date: normalized.goalStartDate,
@@ -357,48 +310,18 @@ export const saveOnboardingProfile = async (
     is_completed: false,
   });
 
-  if (goalError) throw goalError;
-
-  const { error: notificationError } = await supabase
-    .from("notification_preferences")
-    .upsert(
-      {
-        user_id: userId,
-        reading_reminders_enabled: normalized.reminderEnabled,
-      },
-      { onConflict: "user_id" },
-    );
-
-  if (notificationError) throw notificationError;
+  await upsertOnboardingNotificationPreferences(userId, normalized.reminderEnabled);
 
   const completedAt = new Date().toISOString();
 
-  const { error: learningError } = await supabase
-    .from("user_learning_profiles")
-    .upsert(
-      {
-        user_id: userId,
-        onboarding_answers: normalized as unknown as Json,
-        derived_preferences: derivedPreferences as Json,
-        signal_version: ONBOARDING_VERSION,
-      },
-      { onConflict: "user_id" },
-    );
+  await upsertOnboardingLearningProfile({
+    user_id: userId,
+    onboarding_answers: normalized as unknown as Json,
+    derived_preferences: derivedPreferences as Json,
+    signal_version: ONBOARDING_VERSION,
+  });
 
-  if (learningError) throw learningError;
-
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({
-      onboarding_status: "completed",
-      onboarding_version: ONBOARDING_VERSION,
-      onboarding_last_step: "review",
-      onboarding_completed_at: completedAt,
-      onboarding_skipped_at: null,
-    })
-    .eq("id", userId);
-
-  if (profileError) throw profileError;
+  await updateOnboardingCompleted(userId, ONBOARDING_VERSION, completedAt);
 
   return {
     normalized,

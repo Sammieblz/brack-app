@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   ensureUserProfile,
   isOnboardingBackendUnavailable,
-  isIncompleteOnboardingStatus,
+  shouldEnterFirstRunOnboarding,
 } from "@/services/onboarding";
 
 const PUBLIC_ROUTES = new Set(["/", "/auth"]);
@@ -36,25 +36,28 @@ export const OnboardingRouteGuard = () => {
       if (cancelled) return;
 
       const status = statusRecord.onboarding_status;
+      const shouldForceOnboarding = shouldEnterFirstRunOnboarding(user, statusRecord);
       const isOnboardingRoute = location.pathname === "/onboarding";
       const allowCompletedEdit =
-        location.search.includes("edit=1") || location.search.includes("from=settings");
+        location.search.includes("edit=1") ||
+        location.search.includes("from=settings") ||
+        location.search.includes("from=dashboard");
 
       if (location.pathname === "/auth") {
-        navigate(isIncompleteOnboardingStatus(status) ? "/onboarding" : "/dashboard", {
+        navigate(shouldForceOnboarding ? "/onboarding" : "/dashboard", {
           replace: true,
         });
         return;
       }
 
       if (isOnboardingRoute) {
-        if (status === "completed" && !allowCompletedEdit) {
+        if ((status === "completed" || !shouldForceOnboarding) && !allowCompletedEdit) {
           navigate("/dashboard", { replace: true });
         }
         return;
       }
 
-      if (!PUBLIC_ROUTES.has(location.pathname) && isIncompleteOnboardingStatus(status)) {
+      if (!PUBLIC_ROUTES.has(location.pathname) && shouldForceOnboarding) {
         navigate("/onboarding", { replace: true });
       }
     };

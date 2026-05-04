@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Lock, Mail, Calendar, CardWallet } from "iconoir-react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchProfile, sendPasswordResetEmail } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import type { User, Profile } from "@/types";
 
@@ -24,11 +24,7 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
 
   const loadProfile = async () => {
     if (!user) return;
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle();
+    const data = await fetchProfile(user.id);
     if (data) setProfile(data);
   };
 
@@ -37,11 +33,10 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
     
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
-      });
-
-      if (error) throw error;
+      await sendPasswordResetEmail(
+        user.email,
+        `${window.location.origin}/auth/reset-password`
+      );
 
       toast({
         title: "Password reset email sent",

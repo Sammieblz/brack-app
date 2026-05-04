@@ -1,14 +1,11 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  fetchStreakHistory as fetchStreakHistoryApi,
+  type StreakMilestone,
+} from "@/services/api";
 
-export interface StreakMilestone {
-  id: string;
-  user_id: string;
-  streak_count: number;
-  achieved_at: string;
-  created_at: string;
-}
+export type { StreakMilestone } from "@/services/api";
 
 export const useStreakHistory = (userId?: string) => {
   const [milestones, setMilestones] = useState<StreakMilestone[]>([]);
@@ -26,16 +23,7 @@ export const useStreakHistory = (userId?: string) => {
       setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
-        .from("reading_streak_history")
-        .select("*")
-        .eq("user_id", userId)
-        .order("streak_count", { ascending: false })
-        .order("achieved_at", { ascending: false });
-
-      if (fetchError) throw fetchError;
-
-      setMilestones(data || []);
+      setMilestones(await fetchStreakHistoryApi(userId));
     } catch (err: unknown) {
       console.error("Error fetching streak history:", err);
       setError(err instanceof Error ? err.message : "Failed to load streak history");

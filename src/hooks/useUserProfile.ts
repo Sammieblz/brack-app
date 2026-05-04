@@ -1,25 +1,9 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-
-interface UserProfile {
-  id: string;
-  display_name: string | null;
-  avatar_url: string | null;
-  bio: string | null;
-  created_at: string;
-  profile_visibility: string;
-  show_reading_activity: boolean;
-  show_currently_reading: boolean;
-  current_streak: number;
-  longest_streak: number;
-}
-
-interface UserStats {
-  totalBooks: number;
-  booksRead: number;
-  currentlyReading: number;
-  badges: number;
-}
+import {
+  fetchUserProfileWithStats,
+  type UserProfile,
+  type UserStats,
+} from "@/services/api";
 
 export const useUserProfile = (userId: string | null) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -43,57 +27,9 @@ export const useUserProfile = (userId: string | null) => {
         setLoading(true);
         setError(null);
 
-        // Fetch profile
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userId)
-          .single();
-
-        if (profileError) throw profileError;
-
-        setProfile(profileData);
-
-        // Fetch user stats if profile is visible
-        const currentUser = (await supabase.auth.getUser()).data.user;
-        if (profileData.profile_visibility === "public" || profileData.id === currentUser?.id) {
-          // Run all count queries in parallel for better performance
-          const [
-            { count: totalBooks },
-            { count: booksRead },
-            { count: currentlyReading },
-            { count: badges }
-          ] = await Promise.all([
-            supabase
-              .from("books")
-              .select("*", { count: "exact", head: true })
-              .eq("user_id", userId)
-              .is("deleted_at", null),
-            supabase
-              .from("books")
-              .select("*", { count: "exact", head: true })
-              .eq("user_id", userId)
-              .eq("status", "completed")
-              .is("deleted_at", null),
-            supabase
-              .from("books")
-              .select("*", { count: "exact", head: true })
-              .eq("user_id", userId)
-              .eq("status", "reading")
-              .is("deleted_at", null),
-            supabase
-              .from("user_badges")
-              .select("*", { count: "exact", head: true })
-              .eq("user_id", userId)
-          ]);
-
-          setStats({
-            totalBooks: totalBooks || 0,
-            booksRead: booksRead || 0,
-            currentlyReading: currentlyReading || 0,
-            badges: badges || 0,
-          });
-        }
+        const data = await fetchUserProfileWithStats(userId);
+        setProfile(data.profile);
+        setStats(data.stats);
       } catch (err: unknown) {
         console.error("Error fetching user profile:", err);
         setError(err instanceof Error ? err.message : "Failed to load profile");

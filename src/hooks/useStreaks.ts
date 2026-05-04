@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { calculateStreakFromDays, getActivityCalendarFromDays } from "@/utils/streakCalculation";
-import type { ReadingStreakDay } from "@/types";
 import type { StreakData, DayActivity } from "@/utils/streakCalculation";
+import {
+  applyReadingStreakFreeze,
+  fetchStreakSummary,
+} from "@/services/api";
 
 export const useStreaks = (userId?: string) => {
   const [streakData, setStreakData] = useState<StreakData>({
@@ -27,62 +28,9 @@ export const useStreaks = (userId?: string) => {
 
     try {
       setLoading(true);
-
-      const { data: streakDays, error: streakDaysError } = await supabase
-        .from("reading_streak_days")
-        .select("*")
-        .eq("user_id", userId)
-        .order("activity_date", { ascending: false });
-
-      if (streakDaysError) throw streakDaysError;
-
-      // Fetch profile
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (profileError) throw profileError;
-
-      const calculatedStreak = calculateStreakFromDays(
-        (streakDays || []) as ReadingStreakDay[],
-        profile
-      );
-      setStreakData(calculatedStreak);
-
-      const calendar = getActivityCalendarFromDays(
-        (streakDays || []) as ReadingStreakDay[],
-        90
-      );
-      setActivityCalendar(calendar);
-
-      const profileCurrentStreak = profile.current_streak || 0;
-      const profileLongestStreak = profile.longest_streak || 0;
-
-      if (
-        calculatedStreak.currentStreak !== profileCurrentStreak ||
-        calculatedStreak.longestStreak !== profileLongestStreak ||
-        calculatedStreak.lastReadingDate !== profile.last_reading_date
-      ) {
-        await supabase
-          .from("profiles")
-          .update({
-            current_streak: calculatedStreak.currentStreak,
-            longest_streak: calculatedStreak.longestStreak,
-            last_reading_date: calculatedStreak.lastReadingDate,
-          })
-          .eq("id", userId);
-
-        // Record milestone if new longest streak
-        if (calculatedStreak.currentStreak > profileLongestStreak) {
-          await supabase.from("reading_streak_history").insert({
-            user_id: userId,
-            streak_count: calculatedStreak.currentStreak,
-            achieved_at: new Date().toISOString(),
-          });
-        }
-      }
+      const data = await fetchStreakSummary(userId);
+      setStreakData(data.streakData);
+      setActivityCalendar(data.activityCalendar);
     } catch (error: unknown) {
       console.error("Error fetching streak data:", error);
     } finally {
@@ -131,12 +79,7 @@ export const useStreaks = (userId?: string) => {
     try {
       const today = new Date().toISOString().split("T")[0];
 
-      const { error: freezeError } = await supabase.rpc("use_reading_streak_freeze", {
-        p_user_id: userId,
-        p_activity_date: today,
-      });
-
-      if (freezeError) throw freezeError;
+      await applyReadingStreakFreeze(userId, today);
 
       toast({
         title: "Streak Freeze Used!",
