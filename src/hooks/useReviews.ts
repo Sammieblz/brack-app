@@ -1,92 +1,58 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useCallback, useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { sanitizeInput } from "@/utils/sanitize";
+import {
+  addReviewComment,
+  checkBookReviewLiked,
+  createBookReview,
+  deleteBookReview,
+  deleteReviewComment,
+  fetchBookReviews,
+  fetchCommunityReviews,
+  fetchReviewComments,
+  fetchSingleReview,
+  likeBookReview,
+  unlikeBookReview,
+  updateBookReview,
+  type CreateReviewData,
+  type Review,
+  type ReviewComment,
+} from "@/services/api";
 
-interface Review {
-  id: string;
-  user_id: string;
-  book_id: string;
-  rating: number;
-  title: string | null;
-  content: string;
-  is_spoiler: boolean;
-  is_public: boolean;
-  likes_count: number;
-  comments_count: number;
-  created_at: string;
-  updated_at: string;
-  profiles: {
-    display_name: string | null;
-    avatar_url: string | null;
-  };
+interface UseReviewsOptions {
+  autoFetch?: boolean;
+  community?: boolean;
+  limit?: number;
 }
 
-interface ReviewComment {
-  id: string;
-  review_id: string;
-  user_id: string;
-  content: string;
-  created_at: string;
-  profiles: {
-    display_name: string | null;
-    avatar_url: string | null;
-  };
-}
-
-interface CreateReviewData {
-  book_id: string;
-  rating: number;
-  title?: string;
-  content: string;
-  is_spoiler?: boolean;
-  is_public?: boolean;
-}
-
-export const useReviews = (bookId?: string, reviewId?: string) => {
+export const useReviews = (
+  bookId?: string,
+  reviewId?: string,
+  options: UseReviewsOptions = {}
+) => {
+  const shouldAutoFetch = options.autoFetch ?? Boolean(bookId || reviewId || options.community);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [review, setReview] = useState<Review | null>(null);
   const [comments, setComments] = useState<ReviewComment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(shouldAutoFetch);
   const [userHasReviewed, setUserHasReviewed] = useState(false);
   const [averageRating, setAverageRating] = useState<number | null>(null);
   const { toast } = useToast();
 
-  const fetchReviews = async () => {
-    if (!bookId) return;
+  const fetchReviews = useCallback(async () => {
+    if (!bookId && !options.community) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
 
-      const { data, error } = await supabase
-        .from("book_reviews")
-        .select(`
-          *,
-          profiles (
-            display_name,
-            avatar_url
-          )
-        `)
-        .eq("book_id", bookId)
-        .eq("is_public", true)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      setReviews(data || []);
-
-      // Calculate average rating
-      if (data && data.length > 0) {
-        const avg = data.reduce((sum, r) => sum + r.rating, 0) / data.length;
-        setAverageRating(Math.round(avg * 10) / 10);
-      }
-
-      // Check if current user has reviewed
-      const currentUser = (await supabase.auth.getUser()).data.user;
-      if (currentUser) {
-        const hasReview = data?.some((r) => r.user_id === currentUser.id);
-        setUserHasReviewed(!!hasReview);
-      }
+      const data = options.community
+        ? await fetchCommunityReviews(options.limit)
+        : await fetchBookReviews(bookId as string);
+      setReviews(data.reviews);
+      setAverageRating(data.averageRating);
+      setUserHasReviewed(data.userHasReviewed);
     } catch (error: unknown) {
       console.error("Error fetching reviews:", error);
       toast({
@@ -97,88 +63,68 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [bookId, options.community, options.limit, toast]);
 
-  const fetchSingleReview = async () => {
-    if (!reviewId) return;
+  const fetchSingleReviewById = useCallback(async () => {
+    if (!reviewId) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
 
-      const { data, error } = await supabase
-        .from("book_reviews")
-        .select(`
-          *,
-          profiles (
-            display_name,
-            avatar_url
-          )
-        `)
-        .eq("id", reviewId)
-        .single();
-
-      if (error) throw error;
-
-      setReview(data);
+      setReview(await fetchSingleReview(reviewId));
     } catch (error: unknown) {
       console.error("Error fetching review:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [reviewId]);
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     if (!reviewId) return;
 
     try {
-      const { data, error } = await supabase
-        .from("review_comments")
-        .select(`
-          *,
-          profiles (
-            display_name,
-            avatar_url
-          )
-        `)
-        .eq("review_id", reviewId)
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
-
-      setComments(data || []);
+      setComments(await fetchReviewComments(reviewId));
     } catch (error: unknown) {
       console.error("Error fetching comments:", error);
     }
-  };
+  }, [reviewId]);
 
   useEffect(() => {
-    if (bookId) {
-      fetchReviews();
+    if (!shouldAutoFetch) {
+      setLoading(false);
+      return;
+    }
+
+    if (bookId || options.community) {
+      void fetchReviews();
     }
     if (reviewId) {
-      fetchSingleReview();
-      fetchComments();
+      void fetchSingleReviewById();
+      void fetchComments();
     }
-  }, [bookId, reviewId]);
+  }, [
+    bookId,
+    fetchComments,
+    fetchReviews,
+    fetchSingleReviewById,
+    options.community,
+    reviewId,
+    shouldAutoFetch,
+  ]);
 
-  const createReview = async (data: CreateReviewData) => {
+  const createReview = useCallback(async (data: CreateReviewData) => {
     try {
-      const currentUser = (await supabase.auth.getUser()).data.user;
-      if (!currentUser) throw new Error("Not authenticated");
-
-      const { error } = await supabase.from("book_reviews").insert({
-        user_id: currentUser.id,
-        ...data,
-      });
-
-      if (error) throw error;
+      await createBookReview(data);
 
       toast({
         title: "Success",
         description: "Review created successfully",
       });
 
-      fetchReviews();
+      void fetchReviews();
       return { success: true };
     } catch (error: unknown) {
       console.error("Error creating review:", error);
@@ -189,23 +135,18 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
       });
       return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
     }
-  };
+  }, [fetchReviews, toast]);
 
-  const updateReview = async (reviewId: string, data: Partial<CreateReviewData>) => {
+  const updateReview = useCallback(async (reviewId: string, data: Partial<CreateReviewData>) => {
     try {
-      const { error } = await supabase
-        .from("book_reviews")
-        .update(data)
-        .eq("id", reviewId);
-
-      if (error) throw error;
+      await updateBookReview(reviewId, data);
 
       toast({
         title: "Success",
         description: "Review updated successfully",
       });
 
-      fetchReviews();
+      void fetchReviews();
       return { success: true };
     } catch (error: unknown) {
       console.error("Error updating review:", error);
@@ -216,23 +157,18 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
       });
       return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
     }
-  };
+  }, [fetchReviews, toast]);
 
-  const deleteReview = async (reviewId: string) => {
+  const deleteReview = useCallback(async (reviewId: string) => {
     try {
-      const { error } = await supabase
-        .from("book_reviews")
-        .delete()
-        .eq("id", reviewId);
-
-      if (error) throw error;
+      await deleteBookReview(reviewId);
 
       toast({
         title: "Success",
         description: "Review deleted successfully",
       });
 
-      fetchReviews();
+      void fetchReviews();
       return { success: true };
     } catch (error: unknown) {
       console.error("Error deleting review:", error);
@@ -243,21 +179,13 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
       });
       return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
     }
-  };
+  }, [fetchReviews, toast]);
 
-  const likeReview = async (reviewId: string) => {
+  const likeReview = useCallback(async (reviewId: string) => {
     try {
-      const currentUser = (await supabase.auth.getUser()).data.user;
-      if (!currentUser) throw new Error("Not authenticated");
+      await likeBookReview(reviewId);
 
-      const { error } = await supabase.from("review_likes").insert({
-        review_id: reviewId,
-        user_id: currentUser.id,
-      });
-
-      if (error) throw error;
-
-      fetchReviews();
+      void fetchReviews();
     } catch (error: unknown) {
       console.error("Error liking review:", error);
       toast({
@@ -266,22 +194,13 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
         variant: "destructive",
       });
     }
-  };
+  }, [fetchReviews, toast]);
 
-  const unlikeReview = async (reviewId: string) => {
+  const unlikeReview = useCallback(async (reviewId: string) => {
     try {
-      const currentUser = (await supabase.auth.getUser()).data.user;
-      if (!currentUser) throw new Error("Not authenticated");
+      await unlikeBookReview(reviewId);
 
-      const { error } = await supabase
-        .from("review_likes")
-        .delete()
-        .eq("review_id", reviewId)
-        .eq("user_id", currentUser.id);
-
-      if (error) throw error;
-
-      fetchReviews();
+      void fetchReviews();
     } catch (error: unknown) {
       console.error("Error unliking review:", error);
       toast({
@@ -290,47 +209,26 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
         variant: "destructive",
       });
     }
-  };
+  }, [fetchReviews, toast]);
 
-  const checkUserLiked = async (reviewId: string) => {
+  const checkUserLiked = useCallback(async (reviewId: string) => {
     try {
-      const currentUser = (await supabase.auth.getUser()).data.user;
-      if (!currentUser) return false;
-
-      const { data } = await supabase
-        .from("review_likes")
-        .select("id")
-        .eq("review_id", reviewId)
-        .eq("user_id", currentUser.id)
-        .maybeSingle();
-
-      return !!data;
+      return await checkBookReviewLiked(reviewId);
     } catch (error) {
       return false;
     }
-  };
+  }, []);
 
-  const addComment = async (reviewId: string, content: string) => {
+  const addComment = useCallback(async (reviewId: string, content: string) => {
     try {
-      const currentUser = (await supabase.auth.getUser()).data.user;
-      if (!currentUser) throw new Error("Not authenticated");
-
-      const sanitizedContent = sanitizeInput(content);
-
-      const { error } = await supabase.from("review_comments").insert({
-        review_id: reviewId,
-        user_id: currentUser.id,
-        content: sanitizedContent,
-      });
-
-      if (error) throw error;
+      await addReviewComment(reviewId, content);
 
       toast({
         title: "Success",
         description: "Comment added successfully",
       });
 
-      fetchComments();
+      void fetchComments();
     } catch (error: unknown) {
       console.error("Error adding comment:", error);
       toast({
@@ -339,23 +237,18 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
         variant: "destructive",
       });
     }
-  };
+  }, [fetchComments, toast]);
 
-  const deleteComment = async (commentId: string) => {
+  const deleteComment = useCallback(async (commentId: string) => {
     try {
-      const { error } = await supabase
-        .from("review_comments")
-        .delete()
-        .eq("id", commentId);
-
-      if (error) throw error;
+      await deleteReviewComment(commentId);
 
       toast({
         title: "Success",
         description: "Comment deleted successfully",
       });
 
-      fetchComments();
+      void fetchComments();
     } catch (error: unknown) {
       console.error("Error deleting comment:", error);
       toast({
@@ -364,7 +257,7 @@ export const useReviews = (bookId?: string, reviewId?: string) => {
         variant: "destructive",
       });
     }
-  };
+  }, [fetchComments, toast]);
 
   return {
     reviews,

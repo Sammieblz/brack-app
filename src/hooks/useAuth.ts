@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getAuthSession, onAuthStateChange, signOut as signOutUser } from "@/services/api";
 import type { User } from "@/types";
 
 export const useAuth = () => {
@@ -9,7 +9,7 @@ export const useAuth = () => {
   useEffect(() => {
     // Get initial session
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const session = await getAuthSession();
       setUser(session?.user || null);
       setLoading(false);
     };
@@ -17,8 +17,8 @@ export const useAuth = () => {
     getSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+    const subscription = onAuthStateChange(
+      async (_event, session) => {
         setUser(session?.user || null);
         setLoading(false);
       }
@@ -30,7 +30,9 @@ export const useAuth = () => {
   const signOut = async () => {
     // Clear cached color theme so auth/landing pages show defaults
     localStorage.removeItem('color_theme');
-    await supabase.auth.signOut();
+    localStorage.removeItem('theme-mode');
+    localStorage.removeItem('brack_public_theme_mode_touched');
+    await signOutUser();
   };
 
   return {

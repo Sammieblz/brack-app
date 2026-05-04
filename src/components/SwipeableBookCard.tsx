@@ -97,6 +97,12 @@ export const SwipeableBookCard = ({
     setSwipeOffset(0);
   };
 
+  const handleCardClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest("button,a,input,select,textarea,[role='button']")) return;
+    onView?.(book.id);
+  };
+
   return (
     <div className="relative overflow-hidden" {...handlers}>
       {/* Action Buttons (revealed on swipe) */}
@@ -141,7 +147,7 @@ export const SwipeableBookCard = ({
           transition: isSwiping ? 'none' : 'transform 0.3s ease-out',
         }}
         className="relative z-20 bg-background"
-        onClick={() => onView?.(book.id)}
+        onClick={handleCardClick}
       >
         {children}
       </div>

@@ -1,14 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-
-interface MonthlyStats {
-  month: string;
-  books_completed: number;
-  total_pages: number;
-  total_reading_minutes: number;
-  avg_daily_minutes: number;
-  most_read_genre: string | null;
-}
+import { getMonthlyStats, type MonthlyStats } from "@/services/api";
 
 export const useMonthlyStats = (months: number = 12) => {
   const [stats, setStats] = useState<MonthlyStats[]>([]);
@@ -17,11 +8,7 @@ export const useMonthlyStats = (months: number = 12) => {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('monthly-stats', {
-        body: { months },
-      });
-
-      if (error) throw error;
+      const data = await getMonthlyStats({ months });
       setStats(data.months || []);
     } catch (error) {
       console.error('Error fetching monthly stats:', error);

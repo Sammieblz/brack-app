@@ -12,7 +12,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useClubDiscussions } from "@/hooks/useClubDiscussions";
 import { DiscussionThread } from "@/components/clubs/DiscussionThread";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  fetchBookClubDetails,
+  fetchBookClubMembers,
+  getCurrentAuthUser,
+} from "@/services/api";
 import { BookClub, ClubMember } from "@/hooks/useBookClubs";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Send, Crown } from "iconoir-react";
@@ -41,7 +45,7 @@ const BookClubDetail = () => {
   }, [clubId]);
 
   const getCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCurrentAuthUser();
     setCurrentUserId(user?.id);
   };
 
@@ -49,26 +53,7 @@ const BookClubDetail = () => {
     if (!clubId) return;
 
     try {
-      const { data, error } = await supabase
-        .from('book_clubs')
-        .select('*')
-        .eq('id', clubId)
-        .single();
-
-      if (error) throw error;
-
-      // Fetch current book if exists
-      if (data.current_book_id) {
-        const { data: bookData } = await supabase
-          .from('books')
-          .select('id, title, author, cover_url')
-          .eq('id', data.current_book_id)
-          .single();
-
-        setClub({ ...data, current_book: bookData });
-      } else {
-        setClub(data);
-      }
+      setClub(await fetchBookClubDetails(clubId));
     } catch (error) {
       console.error('Error fetching club:', error);
       toast.error('Failed to load club details');
@@ -81,30 +66,7 @@ const BookClubDetail = () => {
     if (!clubId) return;
 
     try {
-      const { data, error } = await supabase
-        .from('book_club_members')
-        .select('*')
-        .eq('club_id', clubId)
-        .order('joined_at', { ascending: true });
-
-      if (error) throw error;
-
-      // Fetch user profiles
-      const userIds = data?.map(m => m.user_id) || [];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, display_name, avatar_url')
-        .in('id', userIds);
-
-      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
-
-      const enrichedMembers = (data?.map(member => ({
-        ...member,
-        role: member.role as 'admin' | 'moderator' | 'member',
-        user: profileMap.get(member.user_id),
-      })) || []) as ClubMember[];
-
-      setMembers(enrichedMembers);
+      setMembers(await fetchBookClubMembers(clubId));
     } catch (error) {
       console.error('Error fetching members:', error);
     }

@@ -32,6 +32,60 @@ const limiterConfig = {
   windowMs: 60_000, // per minute
 };
 
+const normalizeGenre = (value?: string | null): string | null => {
+  const raw = value?.trim();
+  if (!raw) return null;
+
+  const normalized = raw.toLowerCase().replace(/\s+/g, " ");
+  const firstSegment = normalized.split("/")[0]?.trim();
+
+  const aliases: Record<string, string> = {
+    "art": "Art & Photography",
+    "biography": "Biography & Memoir",
+    "biography & autobiography": "Biography & Memoir",
+    "business": "Business & Economics",
+    "business & economics": "Business & Economics",
+    "comics & graphic novels": "Comics & Graphic Novels",
+    "computers": "Computers & Technology",
+    "cooking": "Cooking & Food",
+    "drama": "Drama",
+    "education": "Education",
+    "fantasy": "Fantasy",
+    "fiction": "Fiction",
+    "graphic novels": "Graphic Novels",
+    "health": "Health & Wellness",
+    "health & fitness": "Health & Wellness",
+    "history": "History",
+    "horror": "Horror",
+    "humor": "Humor",
+    "juvenile fiction": "Juvenile Fiction",
+    "juvenile nonfiction": "Juvenile Nonfiction",
+    "mystery": "Mystery",
+    "non-fiction": "Non-Fiction",
+    "nonfiction": "Non-Fiction",
+    "performing arts": "Drama",
+    "philosophy": "Philosophy",
+    "poetry": "Poetry",
+    "political science": "Politics & Social Sciences",
+    "psychology": "Psychology",
+    "reference": "Reference",
+    "religion": "Religion & Spirituality",
+    "romance": "Romance",
+    "science": "Science & Nature",
+    "science fiction": "Science Fiction",
+    "self-help": "Self-Help",
+    "social science": "Politics & Social Sciences",
+    "sports & recreation": "Sports & Outdoors",
+    "technology": "Computers & Technology",
+    "thriller": "Thriller",
+    "travel": "Travel",
+    "young adult fiction": "Young Adult",
+    "young adult nonfiction": "Young Adult",
+  };
+
+  return aliases[normalized] || aliases[firstSegment] || "Other";
+};
+
 serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
@@ -111,10 +165,12 @@ serve(async (req) => {
 
       return {
         googleBooksId: item.id,
+        source_provider: "google_books",
+        source_id: item.id,
         title: volumeInfo.title,
         author: volumeInfo.authors?.join(", ") || null,
         isbn: isbn13 || isbn10 || null,
-        genre: volumeInfo.categories?.[0] || null,
+        genre: normalizeGenre(volumeInfo.categories?.[0] || null),
         pages: volumeInfo.pageCount || null,
         chapters: null, // Google Books API doesn't provide chapter count
         cover_url: volumeInfo.imageLinks?.thumbnail?.replace("http://", "https://") || 
@@ -133,7 +189,7 @@ serve(async (req) => {
       });
     } catch (fetchError) {
       clearTimeout(timeoutId);
-      if (fetchError.name === 'AbortError') {
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
         throw new Error('Request timeout - Google Books API took too long to respond');
       }
       throw fetchError;

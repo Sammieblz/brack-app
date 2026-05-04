@@ -1,23 +1,14 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  completeGoal as completeGoalApi,
+  createGoal as createGoalApi,
+  deleteGoal as deleteGoalApi,
+  fetchGoals as fetchGoalsApi,
+  updateGoal as updateGoalApi,
+  type Goal,
+} from "@/services/api";
 
-export interface Goal {
-  id: string;
-  user_id: string;
-  target_books: number | null;
-  target_pages: number | null;
-  target_minutes: number | null;
-  start_date: string | null;
-  end_date: string | null;
-  reminder_time: string | null;
-  created_at: string;
-  is_completed: boolean;
-  goal_type: 'books_count' | 'pages_count' | 'reading_time';
-  period_type: 'monthly' | 'quarterly' | 'yearly' | 'custom';
-  is_active: boolean;
-  completed_at: string | null;
-  updated_at: string | null;
-}
+export type { Goal } from "@/services/api";
 
 export const useGoals = (userId?: string) => {
   const [goals, setGoals] = useState<Goal[]>([]);
@@ -30,16 +21,9 @@ export const useGoals = (userId?: string) => {
     
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('goals')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      setGoals(data as Goal[] || []);
-      setActiveGoals((data as Goal[])?.filter(g => g.is_active) || []);
+      const data = await fetchGoalsApi(userId);
+      setGoals(data);
+      setActiveGoals(data.filter(g => g.is_active));
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -55,13 +39,7 @@ export const useGoals = (userId?: string) => {
     if (!userId) return null;
     
     try {
-      const { data, error } = await supabase
-        .from('goals')
-        .insert({ user_id: userId, ...goal })
-        .select()
-        .single();
-      
-      if (error) throw error;
+      const data = await createGoalApi(userId, goal);
       await fetchGoals();
       return data;
     } catch (err: unknown) {
@@ -72,12 +50,7 @@ export const useGoals = (userId?: string) => {
 
   const updateGoal = async (goalId: string, updates: Partial<Goal>) => {
     try {
-      const { error } = await supabase
-        .from('goals')
-        .update(updates)
-        .eq('id', goalId);
-      
-      if (error) throw error;
+      await updateGoalApi(goalId, updates);
       await fetchGoals();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -86,12 +59,7 @@ export const useGoals = (userId?: string) => {
 
   const deleteGoal = async (goalId: string) => {
     try {
-      const { error } = await supabase
-        .from('goals')
-        .delete()
-        .eq('id', goalId);
-      
-      if (error) throw error;
+      await deleteGoalApi(goalId);
       await fetchGoals();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -100,12 +68,7 @@ export const useGoals = (userId?: string) => {
 
   const completeGoal = async (goalId: string) => {
     try {
-      const { error } = await supabase
-        .from('goals')
-        .update({ is_completed: true, completed_at: new Date().toISOString(), is_active: false })
-        .eq('id', goalId);
-      
-      if (error) throw error;
+      await completeGoalApi(goalId);
       await fetchGoals();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');

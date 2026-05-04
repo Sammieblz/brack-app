@@ -59,6 +59,8 @@ export interface Book {
   date_finished: string | null;
   rating: number | null;
   notes: string | null;
+  source_provider: string | null;
+  source_id: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -102,6 +104,7 @@ export type PreferredBookFormat = 'print' | 'ebook' | 'audio' | 'mixed';
 
 export interface OnboardingFormData {
   favoriteGenres: string[];
+  colorTheme: string;
   slowestGenre: string;
   preferredBookLength: PreferredBookLength | "";
   booksReadSixMonths: number | null;
@@ -135,6 +138,7 @@ export interface ReadingSession {
   start_time: string | null;
   end_time: string | null;
   duration: number | null; // in minutes
+  client_session_id: string | null;
   created_at: string;
 }
 

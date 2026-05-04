@@ -301,6 +301,8 @@ export type Database = {
           notes: string | null
           pages: number | null
           rating: number | null
+          source_id: string | null
+          source_provider: string | null
           status: string | null
           tags: string[] | null
           title: string
@@ -324,6 +326,8 @@ export type Database = {
           notes?: string | null
           pages?: number | null
           rating?: number | null
+          source_id?: string | null
+          source_provider?: string | null
           status?: string | null
           tags?: string[] | null
           title: string
@@ -347,6 +351,8 @@ export type Database = {
           notes?: string | null
           pages?: number | null
           rating?: number | null
+          source_id?: string | null
+          source_provider?: string | null
           status?: string | null
           tags?: string[] | null
           title?: string
@@ -914,6 +920,7 @@ export type Database = {
       reading_sessions: {
         Row: {
           book_id: string | null
+          client_session_id: string | null
           created_at: string | null
           duration: number | null
           end_time: string | null
@@ -923,6 +930,7 @@ export type Database = {
         }
         Insert: {
           book_id?: string | null
+          client_session_id?: string | null
           created_at?: string | null
           duration?: number | null
           end_time?: string | null
@@ -932,6 +940,7 @@ export type Database = {
         }
         Update: {
           book_id?: string | null
+          client_session_id?: string | null
           created_at?: string | null
           duration?: number | null
           end_time?: string | null
@@ -1292,6 +1301,25 @@ export type Database = {
       calculate_distance: {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
+      }
+      award_badges: {
+        Args: { p_event?: string | null; p_user_id: string }
+        Returns: Json
+      }
+      create_reading_session: {
+        Args: {
+          p_book_id: string
+          p_client_session_id?: string | null
+          p_duration_minutes: number
+          p_end_time: string
+          p_start_time: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      get_user_dashboard_stats: {
+        Args: { p_recent_limit?: number; p_user_id: string }
+        Returns: Json
       }
       is_club_admin: {
         Args: { club_id: string; user_id: string }

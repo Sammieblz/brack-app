@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +23,7 @@ import { useImagePicker } from "@/hooks/useImagePicker";
 import { bookOperations } from "@/utils/offlineOperation";
 import { validateBookForm, type ValidationError } from "@/utils/formValidation";
 import type { Book } from "@/types";
+import { fetchBookById, uploadPublicStorageFile } from "@/services/api";
 
 export default function EditBook() {
   const { id } = useParams<{ id: string }>();
@@ -46,14 +46,7 @@ export default function EditBook() {
     if (!id) return;
     
     try {
-      const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-      setBook(data);
+      setBook(await fetchBookById(id));
     } catch (error: unknown) {
       toast({
         title: "Error",
@@ -138,17 +131,12 @@ export default function EditBook() {
 
       // Upload to storage
       const fileName = `${user.id}/${Date.now()}.${imageData.format}`;
-      const { error: uploadError } = await supabase.storage
-        .from('book-covers')
-        .upload(fileName, blob, {
-          contentType: `image/${imageData.format}`,
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('book-covers')
-        .getPublicUrl(fileName);
+      const publicUrl = await uploadPublicStorageFile(
+        'book-covers',
+        fileName,
+        blob,
+        { contentType: `image/${imageData.format}` }
+      );
 
       setBook({ ...book!, cover_url: publicUrl });
       

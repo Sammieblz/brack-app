@@ -2,3 +2,39 @@ project_id = "waftnaqgkcgufzapcihe"
 
 [functions.search-books]
 verify_jwt = false
+
+[functions.add-book]
+verify_jwt = true
+
+[functions.dashboard-home]
+verify_jwt = true
+
+[functions.create-reading-session]
+verify_jwt = true
+
+[functions.award-badges]
+verify_jwt = true
+
+[functions.log-progress]
+verify_jwt = true
+
+[functions.calculate-book-progress]
+verify_jwt = true
+
+[functions.monthly-stats]
+verify_jwt = true
+
+[functions.enhanced-activity]
+verify_jwt = true
+
+[functions.social-feed]
+verify_jwt = true
+
+[functions.discover-readers]
+verify_jwt = true
+
+[functions.compute-analytics]
+verify_jwt = true
+
+[functions.send-push-notification]
+verify_jwt = true

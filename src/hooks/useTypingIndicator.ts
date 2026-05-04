@@ -1,56 +1,31 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import type { RealtimeChannel } from "@supabase/supabase-js";
-
-interface TypingState {
-  userId: string;
-  isTyping: boolean;
-  timestamp: number;
-}
+import {
+  subscribeToTypingIndicator,
+  type TypingIndicatorSubscription,
+} from "@/services/api";
 
 export const useTypingIndicator = (conversationId: string | null, currentUserId: string | undefined) => {
   const [otherUserTyping, setOtherUserTyping] = useState(false);
-  const [channel, setChannel] = useState<RealtimeChannel | null>(null);
+  const [typingSubscription, setTypingSubscription] =
+    useState<TypingIndicatorSubscription | null>(null);
 
   useEffect(() => {
     if (!conversationId || !currentUserId) return;
 
-    const typingChannel = supabase.channel(`typing:${conversationId}`, {
-      config: {
-        presence: {
-          key: currentUserId,
-        },
-      },
-    });
-
-    typingChannel
-      .on("presence", { event: "sync" }, () => {
-        const state = typingChannel.presenceState<TypingState>();
-        const typingUsers = Object.values(state).flat();
-        
-        // Check if any other user is typing
-        const someoneTyping = typingUsers.some(
-          (user) => user.userId !== currentUserId && user.isTyping
-        );
-        setOtherUserTyping(someoneTyping);
-      })
-      .subscribe();
-
-    setChannel(typingChannel);
+    const subscription = subscribeToTypingIndicator(
+      conversationId,
+      currentUserId,
+      setOtherUserTyping
+    );
+    setTypingSubscription(subscription);
 
     return () => {
-      supabase.removeChannel(typingChannel);
+      subscription.cleanup();
     };
   }, [conversationId, currentUserId]);
 
   const setTyping = async (isTyping: boolean) => {
-    if (!channel || !currentUserId) return;
-
-    await channel.track({
-      userId: currentUserId,
-      isTyping,
-      timestamp: Date.now(),
-    });
+    await typingSubscription?.setTyping(isTyping);
   };
 
   return {

@@ -1,33 +1,15 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-
-interface Activity {
-  id: string;
-  type: 'book_completed' | 'book_started' | 'progress_logged' | 'reading_session';
-  description: string;
-  timestamp: string;
-  book?: {
-    id: string;
-    title: string;
-    author?: string;
-    cover_url?: string;
-  };
-  details?: Record<string, unknown>;
-}
+import { getEnhancedActivity, type EnhancedActivity } from "@/services/api";
 
 export const useEnhancedActivity = (limit: number = 20) => {
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activities, setActivities] = useState<EnhancedActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
 
   const fetchActivity = async (offset: number = 0) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('enhanced-activity', {
-        body: { limit, offset },
-      });
-
-      if (error) throw error;
+      const data = await getEnhancedActivity(limit, offset);
       
       if (offset === 0) {
         setActivities(data.activities || []);

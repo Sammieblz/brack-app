@@ -1,7 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { dataCache } from "@/services/dataCache";
 import type { Book } from "@/types";
+import {
+  BOOKS_CHANGED_EVENT,
+  fetchUserBooksPage,
+  invalidateBooksCache,
+  type BooksChangedDetail,
+} from "@/services/api";
 
 const PAGE_SIZE = 20;
 const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
@@ -14,7 +19,7 @@ export const useBooks = (userId?: string) => {
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
 
-  const fetchBooks = async (isInitial = true, forceRefresh = false) => {
+  const fetchBooks = async (isInitial = true, forceRefresh = false, silent = false) => {
     if (!userId) return;
     
     const cacheKey = `books_${userId}_${isInitial ? 0 : offset}`;
@@ -33,7 +38,7 @@ export const useBooks = (userId?: string) => {
     
     try {
       if (isInitial) {
-        setLoading(true);
+        if (!silent) setLoading(true);
         setOffset(0);
       } else {
         setLoadingMore(true);
@@ -41,18 +46,8 @@ export const useBooks = (userId?: string) => {
 
       const currentOffset = isInitial ? 0 : offset;
       
-      const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .eq('user_id', userId)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
-        .range(currentOffset, currentOffset + PAGE_SIZE - 1);
-      
-      if (error) throw error;
-      
-      const newBooks = data || [];
-      const hasMoreData = newBooks.length === PAGE_SIZE;
+      const { books: newBooks, hasMore: hasMoreData } =
+        await fetchUserBooksPage(userId, currentOffset, PAGE_SIZE);
       
       // Cache the result (only for initial load)
       if (isInitial) {
@@ -80,6 +75,41 @@ export const useBooks = (userId?: string) => {
     fetchBooks(true);
   }, [userId]);
 
+  useEffect(() => {
+    if (!userId || typeof window === "undefined") return;
+
+    const handleBooksChanged = (event: Event) => {
+      const detail = (event as CustomEvent<BooksChangedDetail>).detail;
+      if (!detail || (detail.userId && detail.userId !== userId)) return;
+
+      if (detail.type === "upsert") {
+        setBooks((prev) => {
+          const existingIndex = prev.findIndex((book) => book.id === detail.book.id);
+          if (existingIndex === -1) return [detail.book, ...prev];
+
+          const next = [...prev];
+          next[existingIndex] = detail.book;
+          return next;
+        });
+        setError(null);
+        return;
+      }
+
+      if (detail.type === "remove") {
+        setBooks((prev) => prev.filter((book) => book.id !== detail.bookId));
+        setError(null);
+        return;
+      }
+
+      if (detail.type === "refresh") {
+        void fetchBooks(true, true, true);
+      }
+    };
+
+    window.addEventListener(BOOKS_CHANGED_EVENT, handleBooksChanged);
+    return () => window.removeEventListener(BOOKS_CHANGED_EVENT, handleBooksChanged);
+  }, [userId]);
+
   const loadMore = useCallback(() => {
     if (!loadingMore && hasMore) {
       fetchBooks(false);
@@ -88,10 +118,24 @@ export const useBooks = (userId?: string) => {
 
   const refetchBooks = () => {
     // Invalidate cache and force refresh
-    if (userId) {
-      dataCache.invalidate(`books_${userId}`);
-    }
+    invalidateBooksCache(userId);
     fetchBooks(true, true);
+  };
+
+  const removeBookLocally = (bookId: string) => {
+    let removedBook: Book | null = null;
+    setBooks((prev) => {
+      removedBook = prev.find((book) => book.id === bookId) ?? null;
+      return prev.filter((book) => book.id !== bookId);
+    });
+    if (userId) dataCache.invalidate(`books_${userId}`);
+    return () => {
+      if (!removedBook) return;
+      setBooks((prev) => {
+        if (prev.some((book) => book.id === removedBook?.id)) return prev;
+        return [removedBook as Book, ...prev];
+      });
+    };
   };
 
   return {
@@ -101,6 +145,7 @@ export const useBooks = (userId?: string) => {
     error,
     hasMore,
     loadMore,
-    refetchBooks
+    refetchBooks,
+    removeBookLocally,
   };
 };

@@ -11,9 +11,9 @@ import { ReadingVelocityChart } from "@/components/charts/ReadingVelocityChart";
 import { DailyPagesChart } from "@/components/charts/DailyPagesChart";
 import { CompletionForecastChart } from "@/components/charts/CompletionForecastChart";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { APP_ICONS } from "@/config/iconography";
 import type { Book } from "@/types";
+import { fetchBookById } from "@/services/api";
 
 const ProgressTracking = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,15 +27,7 @@ const ProgressTracking = () => {
     if (!id) return;
     
     const fetchBook = async () => {
-      const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (!error && data) {
-        setBook(data);
-      }
+      setBook(await fetchBookById(id));
     };
     
     fetchBook();

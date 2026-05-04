@@ -8,11 +8,11 @@ import { Heart, ChatBubble, Trash, EditPencil, WarningTriangle, ShareIos } from 
 import { HeartLike } from "@/components/animations/HeartLike";
 import { Post } from "@/hooks/usePosts";
 import { usePostComments, PostComment } from "@/hooks/usePostComments";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { ContextMenuNative } from "@/components/ui/context-menu-native";
 import { sanitizeText } from "@/utils/sanitize";
+import { deletePost } from "@/services/api";
 
 interface PostCardProps {
   post: Post;
@@ -143,12 +143,7 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
 
   const handleDeletePost = async () => {
     try {
-      const { error } = await supabase
-        .from("posts")
-        .delete()
-        .eq("id", post.id);
-
-      if (error) throw error;
+      await deletePost(post.id);
 
       toast.success("Post deleted");
       onDelete?.(post.id);

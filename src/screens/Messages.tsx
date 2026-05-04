@@ -8,11 +8,13 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useLocation } from "react-router-dom";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
+import { NativeHeader } from "@/components/NativeHeader";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { APP_ICONS } from "@/config/iconography";
+import { Card, CardContent } from "@/components/ui/card";
 
 const Messages = () => {
   const location = useLocation();
@@ -99,26 +101,15 @@ const Messages = () => {
       {isMobile && (
         <MobileHeader title="Messages" />
       )}
+      {!isMobile && (
+        <NativeHeader
+          title="Messages"
+          subtitle="Private conversations with readers"
+          showUtilityActions
+        />
+      )}
       
       <main className={isMobile ? "" : "app-page"}>
-        {!isMobile && (
-          <div className="mb-8 animate-fade-in">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
-                <APP_ICONS.nav.messages className="h-7 w-7 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-display text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  Messages
-                </h1>
-                <p className="font-sans text-muted-foreground mt-1">
-                  Connect with other readers
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {isMobile ? (
           <PullToRefresh onRefresh={refetchConversations}>
             <div className="min-h-full bg-background pb-4">
@@ -131,17 +122,32 @@ const Messages = () => {
             </div>
           </PullToRefresh>
         ) : (
-          <div className="grid h-[calc(var(--app-viewport-height,100dvh)-16rem)] min-h-[24rem] grid-cols-1 gap-6 md:grid-cols-3">
-            <div className="md:col-span-1 overflow-y-auto">
-              <ConversationsList
-                conversations={conversations}
-                selectedConversationId={selectedConversationId}
-                onSelectConversation={setSelectedConversationId}
-                currentUserId={user?.id}
-              />
-            </div>
+          <div className="grid h-[calc(var(--app-viewport-height,100dvh)-11rem)] min-h-[28rem] grid-cols-[22rem_minmax(0,1fr)] gap-5 xl:grid-cols-[25rem_minmax(0,1fr)]">
+            <Card className="min-h-0 overflow-hidden">
+              <CardContent className="flex h-full flex-col p-0">
+                <div className="border-b border-border/70 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h2 className="font-display text-lg font-semibold">Inbox</h2>
+                      <p className="font-sans text-sm text-muted-foreground">
+                        {conversations.length} conversation{conversations.length === 1 ? "" : "s"}
+                      </p>
+                    </div>
+                    <APP_ICONS.nav.messages className="h-5 w-5 text-primary" />
+                  </div>
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto p-3">
+                  <ConversationsList
+                    conversations={conversations}
+                    selectedConversationId={selectedConversationId}
+                    onSelectConversation={setSelectedConversationId}
+                    currentUserId={user?.id}
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
-            <div className="md:col-span-2 border rounded-lg bg-card">
+            <div className="min-h-0 overflow-hidden rounded-lg border border-border bg-card">
               {selectedConversationId ? (
                 messagesLoading ? (
                   <LoadingSpinner />
@@ -156,9 +162,16 @@ const Messages = () => {
                 )
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
-                  <div className="text-center">
-                    <APP_ICONS.nav.messages className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p className="font-sans">Select a conversation to start messaging</p>
+                  <div className="max-w-sm text-center">
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-md bg-primary/10 text-primary">
+                      <APP_ICONS.nav.messages className="h-7 w-7" />
+                    </div>
+                    <h2 className="font-display text-xl font-semibold text-foreground">
+                      Choose a conversation
+                    </h2>
+                    <p className="mt-2 font-sans text-sm">
+                      Pick a reader from the inbox to continue the thread.
+                    </p>
                   </div>
                 </div>
               )}

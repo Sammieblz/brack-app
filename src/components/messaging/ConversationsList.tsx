@@ -7,9 +7,9 @@ import { EmptyMessages } from "@/components/empty/EmptyMessages";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { hapticToast } from "@/utils/hapticToast";
 import { sanitizeText } from "@/utils/sanitize";
+import { deleteConversation, markConversationRead } from "@/services/api";
 
 interface ConversationsListProps {
   conversations: Conversation[];
@@ -53,12 +53,7 @@ export const ConversationsList = ({
     triggerHaptic('medium');
     
     try {
-      const { error } = await supabase
-        .from('conversations')
-        .delete()
-        .eq('id', conversationId);
-      
-      if (error) throw error;
+      await deleteConversation(conversationId);
       
       hapticToast.success('Conversation deleted');
       setSwipedId(null);
@@ -72,11 +67,7 @@ export const ConversationsList = ({
     triggerHaptic('light');
     
     try {
-      await supabase
-        .from('messages')
-        .update({ is_read: true })
-        .eq('conversation_id', conversationId)
-        .neq('sender_id', currentUserId);
+      await markConversationRead(conversationId, currentUserId);
       
       hapticToast.success('Marked as read');
       setSwipedId(null);

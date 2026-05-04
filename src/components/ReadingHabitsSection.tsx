@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { Book, EditPencil, FloppyDisk, Xmark } from "iconoir-react";
 import type { ReadingHabits } from "@/types";
+import { fetchReadingProfile, upsertReadingHabits } from "@/services/api";
 
 const GENRES = [
   "Fiction", "Non-Fiction", "Mystery", "Thriller", "Science Fiction",
@@ -48,13 +48,7 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
   const loadHabits = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('reading_habits')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') throw error;
+      const { habits: data } = await fetchReadingProfile(userId);
 
       if (data) {
         setHabits(data as ReadingHabits);
@@ -97,11 +91,7 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
         book_format: formData.book_format || null,
       };
 
-      const { error } = await supabase
-        .from('reading_habits')
-        .upsert(updateData, { onConflict: "user_id" });
-
-      if (error) throw error;
+      await upsertReadingHabits(updateData);
 
       toast({
         title: "Reading habits updated",

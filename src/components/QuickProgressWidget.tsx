@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { APP_ICONS } from "@/config/iconography";
 import type { Book } from "@/types";
+import { updateBookQuickProgress } from "@/services/api";
 
 interface QuickProgressWidgetProps {
   book: Book;
@@ -22,32 +22,7 @@ export const QuickProgressWidget = ({ book, onUpdate }: QuickProgressWidgetProps
     setUpdating(true);
     try {
       const pageNum = parseInt(currentPage) || 0;
-      const updates: Record<string, unknown> = {
-        current_page: pageNum,
-        updated_at: new Date().toISOString(),
-      };
-      
-      // Auto-mark as completed if reached last page
-      if (book.pages && pageNum >= book.pages && book.status !== 'completed') {
-        updates.status = 'completed';
-        updates.date_finished = new Date().toISOString().split('T')[0];
-      }
-      
-      // Auto-set date_started if not set
-      if (!book.date_started && pageNum > 0) {
-        updates.date_started = new Date().toISOString().split('T')[0];
-      }
-
-      if (book.status === 'to_read' && pageNum > 0 && (!book.pages || pageNum < book.pages)) {
-        updates.status = 'reading';
-      }
-
-      const { error } = await supabase
-        .from('books')
-        .update(updates)
-        .eq('id', book.id);
-
-      if (error) throw error;
+      await updateBookQuickProgress(book, pageNum);
 
       toast({
         title: "Progress updated",

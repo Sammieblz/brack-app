@@ -2,18 +2,21 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useBookLists } from "@/hooks/useBookLists";
 import { useToast } from "@/hooks/use-toast";
 import { Plus } from "iconoir-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { fetchListIdsContainingBook } from "@/services/api";
 
 interface AddToListDialogProps {
   bookId: string;
   userId: string;
   trigger?: React.ReactNode;
+  triggerTooltip?: string;
 }
 
-export const AddToListDialog = ({ bookId, userId, trigger }: AddToListDialogProps) => {
+export const AddToListDialog = ({ bookId, userId, trigger, triggerTooltip }: AddToListDialogProps) => {
   const { lists, addBookToList, removeBookFromList } = useBookLists(userId);
   const { toast } = useToast();
   const { triggerHaptic } = useHapticFeedback();
@@ -24,15 +27,7 @@ export const AddToListDialog = ({ bookId, userId, trigger }: AddToListDialogProp
   const loadBookLists = async () => {
     setLoading(true);
     try {
-      const { data } = await import("@/integrations/supabase/client").then(m => m.supabase
-        .from('book_list_items')
-        .select('list_id')
-        .eq('book_id', bookId)
-      );
-      
-      if (data) {
-        setBookLists(new Set(data.map(item => item.list_id)));
-      }
+      setBookLists(new Set(await fetchListIdsContainingBook(bookId)));
     } catch (error) {
       console.error('Error loading book lists:', error);
     } finally {
@@ -82,14 +77,30 @@ export const AddToListDialog = ({ bookId, userId, trigger }: AddToListDialogProp
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button variant="outline" size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Add to List
-          </Button>
-        )}
-      </DialogTrigger>
+      {triggerTooltip ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              {trigger || (
+                <Button variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add to List
+                </Button>
+              )}
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent>{triggerTooltip}</TooltipContent>
+        </Tooltip>
+      ) : (
+        <DialogTrigger asChild>
+          {trigger || (
+            <Button variant="outline" size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add to List
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="font-display">Add to Lists</DialogTitle>

@@ -4,9 +4,9 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
 import { updateBookStatusIfNeeded } from "@/utils/bookStatus";
 import { toast } from "@/hooks/use-toast";
+import { logProgress, uploadPublicStorageFile } from "@/services/api";
 import { Refresh, Camera, Xmark } from "iconoir-react";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
 import { useImagePicker } from "@/hooks/useImagePicker";
@@ -60,20 +60,14 @@ export const ProgressLogger = ({
       const fileName = `progress-${Date.now()}.${image.format}`;
       const filePath = `${user.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('progress-photos')
-        .upload(filePath, blob, {
-          contentType: `image/${image.format}`,
-        });
+      const publicUrl = await uploadPublicStorageFile(
+        "progress-photos",
+        filePath,
+        blob,
+        { contentType: `image/${image.format}` }
+      );
 
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('progress-photos')
-        .getPublicUrl(filePath);
-
-      setPhotoUrl(urlData.publicUrl);
+      setPhotoUrl(publicUrl);
       setPhotoPreview(image.dataUrl);
     } catch (error: unknown) {
       toast({
@@ -105,20 +99,16 @@ export const ProgressLogger = ({
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('log-progress', {
-        body: {
-          book_id: bookId,
-          page_number: pageNumber,
-          chapter_number: chapterNumber || null,
-          paragraph_number: paragraphNumber || null,
-          notes: notes || null,
-          log_type: 'manual',
-          time_spent_minutes: timeSpent || null,
-          photo_url: photoUrl || null,
-        },
+      const data = await logProgress({
+        book_id: bookId,
+        page_number: pageNumber,
+        chapter_number: chapterNumber || null,
+        paragraph_number: paragraphNumber || null,
+        notes: notes || null,
+        log_type: 'manual',
+        time_spent_minutes: timeSpent || null,
+        photo_url: photoUrl || null,
       });
-
-      if (error) throw error;
 
       toast({
         title: "Progress logged!",

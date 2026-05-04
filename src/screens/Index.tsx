@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -10,6 +9,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useGSAPTimeline } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
 import { APP_ICONS } from "@/config/iconography";
+import { getAuthSession } from "@/services/api";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ const Index = () => {
   // Force default theme on landing page (only if not authenticated)
   useEffect(() => {
     const checkAndResetTheme = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const session = await getAuthSession();
       // Only reset theme if user is not authenticated
       if (!session) {
         resetToDefaultTheme();
@@ -38,7 +38,7 @@ const Index = () => {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const session = await getAuthSession();
         if (session) {
           navigate("/dashboard");
           return;

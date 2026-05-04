@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle, EditPencil, Trash, Star, Bookmark, ShareIos } from "iconoir-react";
 import { shareService } from "@/services/shareService";
 import { toast } from "sonner";
@@ -28,6 +27,12 @@ import { AppBackButton } from "@/components/AppBackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { APP_ICONS } from "@/config/iconography";
 import type { Book, ReadingSession } from "@/types";
+import {
+  fetchActiveBookById,
+  fetchBookReadingSessions,
+  softDeleteBook,
+  updateBookStatus,
+} from "@/services/api";
 
 const BookDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -53,15 +58,7 @@ const BookDetail = () => {
     if (!id) return;
     
     try {
-      // Get book details
-      const { data: bookData, error: bookError } = await supabase
-        .from('books')
-        .select('*')
-        .eq('id', id)
-        .is('deleted_at', null)
-        .maybeSingle();
-
-      if (bookError) throw bookError;
+      const bookData = await fetchActiveBookById(id);
       if (!bookData) {
         toast.error("Book not found");
         navigate("/dashboard");
@@ -70,15 +67,7 @@ const BookDetail = () => {
 
       setBook(bookData);
 
-      // Get reading sessions
-      const { data: sessionData, error: sessionError } = await supabase
-        .from('reading_sessions')
-        .select('*')
-        .eq('book_id', id)
-        .order('created_at', { ascending: false });
-
-      if (sessionError) throw sessionError;
-      setSessions(sessionData || []);
+      setSessions(await fetchBookReadingSessions(id));
     } catch (error: unknown) {
       console.error('Error loading book:', error);
       toast.error("Failed to load book details");
@@ -91,27 +80,7 @@ const BookDetail = () => {
     if (!book) return;
 
     try {
-      const updateData: Record<string, unknown> = { 
-        status: newStatus, 
-        updated_at: new Date().toISOString() 
-      };
-
-      // Set date_finished when marking as completed
-      if (newStatus === 'completed' && !book.date_finished) {
-        updateData.date_finished = new Date().toISOString();
-      }
-
-      // Set date_started when starting to read
-      if (newStatus === 'reading' && !book.date_started) {
-        updateData.date_started = new Date().toISOString();
-      }
-
-      const { error } = await supabase
-        .from('books')
-        .update(updateData)
-        .eq('id', book.id);
-
-      if (error) throw error;
+      const updateData = await updateBookStatus(book, newStatus);
 
       setBook({ ...book, ...updateData, status: newStatus });
       toast.success(`Book marked as ${newStatus.replace('_', ' ')}`);
@@ -127,12 +96,7 @@ const BookDetail = () => {
     if (!confirm("Are you sure you want to delete this book?")) return;
 
     try {
-      const { error } = await supabase
-        .from('books')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', book.id);
-
-      if (error) throw error;
+      await softDeleteBook(book.id);
 
       toast.success("Book deleted successfully");
       navigate("/dashboard");

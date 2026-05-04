@@ -1,138 +1,142 @@
-import { useBookClubs } from "@/hooks/useBookClubs";
 import { BookClubCard } from "@/components/clubs/BookClubCard";
 import { CreateClubDialog } from "@/components/clubs/CreateClubDialog";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PullToRefresh } from "@/components/PullToRefresh";
-import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileLayout } from "@/components/MobileLayout";
+import { NativeHeader } from "@/components/NativeHeader";
+import { PullToRefresh } from "@/components/PullToRefresh";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { APP_ICONS } from "@/config/iconography";
+import { useBookClubs } from "@/hooks/useBookClubs";
+import { useIsMobile } from "@/hooks/use-mobile";
+import type { ComponentType } from "react";
 
 const BookClubs = () => {
   const { clubs, loading, createClub, joinClub, leaveClub, fetchClubs } = useBookClubs();
   const isMobile = useIsMobile();
 
-  const myClubs = clubs.filter(club => club.user_role);
-  const publicClubs = clubs.filter(club => !club.is_private && !club.user_role);
-
-  if (loading) {
-    return (
-      <MobileLayout>
-        {isMobile && <MobileHeader title="Book Clubs" />}
-        <div className="flex justify-center items-center py-20">
-          <LoadingSpinner />
-        </div>
-      </MobileLayout>
-    );
-  }
-
-  const handleRefresh = async () => {
-    await fetchClubs();
-  };
+  const myClubs = clubs.filter((club) => club.user_role);
+  const publicClubs = clubs.filter((club) => !club.is_private && !club.user_role);
+  const createAction = <CreateClubDialog compact={isMobile} onCreateClub={createClub} />;
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Book Clubs" />}
-      <PullToRefresh onRefresh={handleRefresh}>
-      <main className="app-page">
-        <div className="mb-8 animate-fade-in">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
-                  <APP_ICONS.readers.clubs className="h-7 w-7 text-primary" />
-                </div>
-                <h1 className="font-display text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  Book Clubs
-                </h1>
-              </div>
-              <p className="font-sans text-muted-foreground">
-                Join reading communities and discuss books together
-              </p>
-            </div>
-            <CreateClubDialog onCreateClub={createClub} />
-          </div>
-        </div>
+      {isMobile ? (
+        <MobileHeader title="Book Clubs" action={createAction} />
+      ) : (
+        <NativeHeader
+          title="Book Clubs"
+          subtitle="Organize conversations around shared reading"
+          action={createAction}
+          showUtilityActions
+        />
+      )}
 
-        <Tabs defaultValue="my-clubs" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="my-clubs" className="flex items-center gap-2">
-              <APP_ICONS.readers.myClubs className="h-4 w-4" />
-              My Clubs ({myClubs.length})
-            </TabsTrigger>
-            <TabsTrigger value="discover" className="flex items-center gap-2">
-              <APP_ICONS.readers.discoverClubs className="h-4 w-4" />
-              Discover ({publicClubs.length})
-            </TabsTrigger>
-          </TabsList>
+      <PullToRefresh onRefresh={fetchClubs}>
+        <main className="app-page">
+          <section className="grid grid-cols-3 gap-2 sm:gap-3">
+            <SummaryCard icon={APP_ICONS.readers.myClubs} label="My clubs" value={myClubs.length} />
+            <SummaryCard icon={APP_ICONS.readers.discoverClubs} label="Discover" value={publicClubs.length} />
+            <SummaryCard icon={APP_ICONS.readers.clubs} label="Total clubs" value={clubs.length} />
+          </section>
 
-          <TabsContent value="my-clubs" className="space-y-4">
-            {myClubs.length === 0 ? (
-              <div className="text-center py-16 animate-fade-in">
-                <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 max-w-md mx-auto">
-                  <div className="p-4 rounded-full bg-primary/20 w-fit mx-auto mb-4">
-                    <APP_ICONS.readers.clubs className="h-8 w-8 text-primary" />
-                  </div>
-                  <h3 className="font-display text-lg font-semibold mb-2">No clubs yet</h3>
-                  <p className="font-sans text-muted-foreground mb-6">
-                    Create your first book club or join existing ones to start discussions!
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {myClubs.map((club, index) => (
-                  <div
-                    key={club.id}
-                    className="animate-fade-in"
-                    style={{ animationDelay: `${index * 0.05}s` }}
-                  >
-                    <BookClubCard
-                      club={club}
-                      onLeave={leaveClub}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
+          {loading ? (
+            <Card className="mt-5">
+              <CardContent className="flex min-h-[18rem] items-center justify-center">
+                <LoadingSpinner />
+              </CardContent>
+            </Card>
+          ) : (
+            <Tabs defaultValue="my-clubs" className="mt-5">
+              <TabsList className="w-full sm:w-auto">
+                <TabsTrigger value="my-clubs" className="gap-2">
+                  <APP_ICONS.readers.myClubs className="h-4 w-4" />
+                  My Clubs ({myClubs.length})
+                </TabsTrigger>
+                <TabsTrigger value="discover" className="gap-2">
+                  <APP_ICONS.readers.discoverClubs className="h-4 w-4" />
+                  Discover ({publicClubs.length})
+                </TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="discover" className="space-y-4">
-            {publicClubs.length === 0 ? (
-              <div className="text-center py-16 animate-fade-in">
-                <div className="p-6 rounded-2xl bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/20 max-w-md mx-auto">
-                  <div className="p-4 rounded-full bg-secondary/20 w-fit mx-auto mb-4">
-                    <APP_ICONS.readers.discoverClubs className="h-8 w-8 text-secondary" />
+              <TabsContent value="my-clubs" className="mt-4">
+                {myClubs.length === 0 ? (
+                  <EmptyClubState
+                    icon={APP_ICONS.readers.clubs}
+                    title="No clubs yet"
+                    description="Create a focused reading group or join a public club from Discover."
+                  />
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {myClubs.map((club) => (
+                      <BookClubCard key={club.id} club={club} onLeave={leaveClub} />
+                    ))}
                   </div>
-                  <h3 className="font-display text-lg font-semibold mb-2">No public clubs</h3>
-                  <p className="font-sans text-muted-foreground">
-                    Be the first to create a public book club!
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {publicClubs.map((club, index) => (
-                  <div
-                    key={club.id}
-                    className="animate-fade-in"
-                    style={{ animationDelay: `${index * 0.05}s` }}
-                  >
-                    <BookClubCard
-                      club={club}
-                      onJoin={joinClub}
-                    />
+                )}
+              </TabsContent>
+
+              <TabsContent value="discover" className="mt-4">
+                {publicClubs.length === 0 ? (
+                  <EmptyClubState
+                    icon={APP_ICONS.readers.discoverClubs}
+                    title="No public clubs"
+                    description="Create a public club so other readers can find and join the conversation."
+                  />
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {publicClubs.map((club) => (
+                      <BookClubCard key={club.id} club={club} onJoin={joinClub} />
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </main>
+                )}
+              </TabsContent>
+            </Tabs>
+          )}
+        </main>
       </PullToRefresh>
     </MobileLayout>
   );
 };
+
+const SummaryCard = ({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  value: number;
+}) => (
+  <Card>
+    <CardContent className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:gap-3 sm:p-4">
+      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary sm:h-10 sm:w-10">
+        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+      </div>
+      <div className="min-w-0">
+        <p className="font-sans text-lg font-semibold leading-none sm:text-2xl">{value}</p>
+        <p className="mt-1 truncate font-sans text-xs text-muted-foreground sm:text-sm">{label}</p>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const EmptyClubState = ({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+}) => (
+  <Card>
+    <CardContent className="flex min-h-[18rem] flex-col items-center justify-center p-8 text-center">
+      <Icon className="mb-4 h-10 w-10 text-muted-foreground" />
+      <h2 className="font-display text-xl font-semibold">{title}</h2>
+      <p className="mt-2 max-w-sm font-sans text-sm text-muted-foreground">{description}</p>
+    </CardContent>
+  </Card>
+);
 
 export default BookClubs;

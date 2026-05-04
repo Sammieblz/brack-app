@@ -10,9 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Xmark, Camera, MediaImage } from "iconoir-react";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
 import { useImagePicker } from "@/hooks/useImagePicker";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { removeStorageFiles, uploadPublicStorageFile } from "@/services/api";
 
 interface JournalEntryDialogProps {
   open: boolean;
@@ -85,27 +85,21 @@ export const JournalEntryDialog = ({
       // Delete old photo if editing
       if (editEntry?.photo_url) {
         const oldPath = editEntry.photo_url.split('/').slice(-2).join('/');
-        await supabase.storage.from('journal-photos').remove([oldPath]);
+        await removeStorageFiles('journal-photos', [oldPath]);
       }
 
       // Upload to storage
       const fileName = `journal-${Date.now()}.${image.format}`;
       const filePath = `${user.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('journal-photos')
-        .upload(filePath, blob, {
-          contentType: `image/${image.format}`,
-        });
+      const publicUrl = await uploadPublicStorageFile(
+        'journal-photos',
+        filePath,
+        blob,
+        { contentType: `image/${image.format}` }
+      );
 
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('journal-photos')
-        .getPublicUrl(filePath);
-
-      setPhotoUrl(urlData.publicUrl);
+      setPhotoUrl(publicUrl);
       setPhotoPreview(image.dataUrl);
     } catch (error: unknown) {
       toast({

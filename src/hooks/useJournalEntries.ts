@@ -1,22 +1,11 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getCurrentAuthUser } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { updateBookStatusIfNeeded } from "@/utils/bookStatus";
 import { journalOperations } from "@/utils/offlineOperation";
+import { fetchJournalEntries, type JournalEntry } from "@/services/api";
 
-export interface JournalEntry {
-  id: string;
-  user_id: string;
-  book_id: string;
-  entry_type: 'note' | 'quote' | 'reflection';
-  title?: string;
-  content: string;
-  page_reference?: number;
-  tags?: string[];
-  photo_url?: string;
-  created_at: string;
-  updated_at: string;
-}
+export type { JournalEntry } from "@/services/api";
 
 export const useJournalEntries = (bookId: string) => {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
@@ -26,14 +15,7 @@ export const useJournalEntries = (bookId: string) => {
   const fetchEntries = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('journal_entries')
-        .select('*')
-        .eq('book_id', bookId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setEntries((data as JournalEntry[]) || []);
+      setEntries(await fetchJournalEntries(bookId));
     } catch (error) {
       console.error('Error fetching journal entries:', error);
       toast({
@@ -48,7 +30,7 @@ export const useJournalEntries = (bookId: string) => {
 
   const addEntry = async (entry: Omit<JournalEntry, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCurrentAuthUser();
       if (!user) throw new Error('No user found');
 
       await journalOperations.create({

@@ -1,28 +1,7 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { discoverReaders, type DiscoverResults, type UserSearchResult } from "@/services/api";
 
-export interface UserSearchResult {
-  id: string;
-  display_name: string | null;
-  avatar_url: string | null;
-  bio: string | null;
-  current_streak: number;
-  books_read_count: number;
-  distance_km?: number;
-  mutual_follows?: number;
-  genre_overlap?: number;
-  recent_activity?: number;
-  recommendation_reason: string;
-  recommendation_score: number;
-}
-
-export interface DiscoverResults {
-  all: UserSearchResult[];
-  nearby: UserSearchResult[];
-  socialConnections: UserSearchResult[];
-  similarTaste: UserSearchResult[];
-  activeReaders: UserSearchResult[];
-}
+export type { DiscoverResults, UserSearchResult };
 
 export const useUserSearch = (searchQuery: string = "", maxDistance: number = 50) => {
   const [results, setResults] = useState<DiscoverResults>({
@@ -41,15 +20,7 @@ export const useUserSearch = (searchQuery: string = "", maxDistance: number = 50
         setLoading(true);
         setError(null);
 
-        const { data, error: functionError } = await supabase.functions.invoke(
-          'discover-readers',
-          {
-            body: { searchQuery, maxDistance },
-          }
-        );
-
-        if (functionError) throw functionError;
-
+        const data = await discoverReaders(searchQuery, maxDistance);
         setResults(data);
       } catch (err: unknown) {
         console.error("Error discovering users:", err);

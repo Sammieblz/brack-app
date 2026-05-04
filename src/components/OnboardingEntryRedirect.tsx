@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { supabase } from "@/integrations/supabase/client";
+import { getAuthSession } from "@/services/api";
 import {
   ensureUserProfile,
   isOnboardingBackendUnavailable,
+  shouldEnterFirstRunOnboarding,
 } from "@/services/onboarding";
 
 export const OnboardingEntryRedirect = () => {
@@ -14,9 +15,7 @@ export const OnboardingEntryRedirect = () => {
 
   useEffect(() => {
     const resolveTarget = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const session = await getAuthSession();
       const user = session?.user;
 
       if (!user) {
@@ -25,7 +24,7 @@ export const OnboardingEntryRedirect = () => {
       }
 
       const status = await ensureUserProfile(user);
-      setTarget(status.onboarding_status === "completed" ? "/dashboard" : "/onboarding");
+      setTarget(shouldEnterFirstRunOnboarding(user, status) ? "/onboarding" : "/dashboard");
     };
 
     resolveTarget().catch((err) => {

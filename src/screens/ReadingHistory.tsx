@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
@@ -13,46 +12,18 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { Book, Calendar, Clock, Notes, Search } from "iconoir-react";
 import { format } from "date-fns";
-
-interface ProgressLog {
-  id: string;
-  book_id: string;
-  page_number: number;
-  chapter_number: number | null;
-  paragraph_number: number | null;
-  notes: string | null;
-  logged_at: string;
-  log_type: 'manual' | 'timer_based' | 'automatic';
-  time_spent_minutes: number | null;
-  books: {
-    title: string;
-    author: string | null;
-    cover_url: string | null;
-  };
-}
-
-interface JournalEntry {
-  id: string;
-  book_id: string;
-  entry_type: 'note' | 'quote' | 'reflection';
-  title: string | null;
-  content: string;
-  page_reference: number | null;
-  tags: string[] | null;
-  created_at: string;
-  books: {
-    title: string;
-    author: string | null;
-    cover_url: string | null;
-  };
-}
+import {
+  fetchReadingHistory,
+  type ReadingHistoryJournalEntry,
+  type ReadingHistoryProgressLog,
+} from "@/services/api";
 
 export default function ReadingHistory() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [progressLogs, setProgressLogs] = useState<ProgressLog[]>([]);
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [progressLogs, setProgressLogs] = useState<ReadingHistoryProgressLog[]>([]);
+  const [journalEntries, setJournalEntries] = useState<ReadingHistoryJournalEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const isMobile = useIsMobile();
 
@@ -75,59 +46,9 @@ export default function ReadingHistory() {
     try {
       setLoading(true);
 
-      // Fetch progress logs with book details
-      const { data: logsData, error: logsError } = await supabase
-        .from('progress_logs')
-        .select(`
-          id,
-          book_id,
-          page_number,
-          chapter_number,
-          paragraph_number,
-          notes,
-          logged_at,
-          log_type,
-          time_spent_minutes,
-          books (
-            title,
-            author,
-            cover_url
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('logged_at', { ascending: false });
-
-      if (logsError) {
-        console.error('Error fetching logs:', logsError);
-      }
-
-      // Fetch journal entries with book details
-      const { data: journalData, error: journalError } = await supabase
-        .from('journal_entries')
-        .select(`
-          id,
-          book_id,
-          entry_type,
-          title,
-          content,
-          page_reference,
-          tags,
-          created_at,
-          books (
-            title,
-            author,
-            cover_url
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (journalError) {
-        console.error('Error fetching journals:', journalError);
-      }
-
-      setProgressLogs((logsData as Array<{ id: string; page_number: number }>) || []);
-      setJournalEntries((journalData as Array<{ id: string; content: string }>) || []);
+      const data = await fetchReadingHistory(user.id);
+      setProgressLogs(data.progressLogs);
+      setJournalEntries(data.journalEntries);
     } catch (error) {
       console.error('Error fetching history:', error);
     } finally {
