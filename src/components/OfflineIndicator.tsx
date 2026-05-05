@@ -1,50 +1,61 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { WifiOff, Wifi, Refresh, CheckCircle } from "iconoir-react";
+import { WifiOff, Refresh, CheckCircle, WarningTriangle } from "iconoir-react";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
-import { offlineQueue } from "@/services/offlineQueue";
+import { readingCoreSync, SYNC_STATUS_EVENT, type SyncStatusDetail } from "@/services/sync/engine";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { SyncReviewDialog } from "@/components/SyncReviewDialog";
 
 export const OfflineIndicator = () => {
   const isOnline = useNetworkStatus();
-  const [queueSize, setQueueSize] = useState(0);
+  const [status, setStatus] = useState<SyncStatusDetail>({
+    pending: 0,
+    failed: 0,
+    syncing: 0,
+  });
   const [syncing, setSyncing] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    const updateQueueSize = () => {
-      setQueueSize(offlineQueue.getQueueSize());
+    let mounted = true;
+
+    readingCoreSync.getStatus().then((nextStatus) => {
+      if (mounted) setStatus(nextStatus);
+    });
+
+    const handleStatus = (event: Event) => {
+      setStatus((event as CustomEvent<SyncStatusDetail>).detail);
     };
 
-    updateQueueSize();
-    const unsubscribe = offlineQueue.subscribe(updateQueueSize);
+    window.addEventListener(SYNC_STATUS_EVENT, handleStatus);
+    return () => {
+      mounted = false;
+      window.removeEventListener(SYNC_STATUS_EVENT, handleStatus);
+    };
+  }, []);
 
-    // Auto-sync when coming back online
-    if (isOnline && queueSize > 0) {
-      handleSync();
-    }
-
-    return unsubscribe;
-  }, [isOnline, queueSize]);
-
-  const handleSync = async () => {
+  const handleSync = useCallback(async () => {
     if (syncing || !isOnline) return;
 
     setSyncing(true);
     try {
-      await offlineQueue.sync();
-      const remaining = offlineQueue.getQueueSize();
+      const nextStatus = await readingCoreSync.syncCurrentUser();
+      setStatus(nextStatus);
       
-      if (remaining === 0) {
+      if (nextStatus.pending === 0 && nextStatus.failed === 0) {
         toast({
           title: "Sync complete",
-          description: "All pending changes have been synced",
+          description: "All pending reading changes have been synced",
         });
       } else {
         toast({
-          title: "Sync in progress",
-          description: `${remaining} items remaining`,
+          title: "Some changes need attention",
+          description: `${nextStatus.pending + nextStatus.failed} reading change${
+            nextStatus.pending + nextStatus.failed === 1 ? "" : "s"
+          } remaining`,
         });
       }
     } catch (error) {
@@ -56,70 +67,104 @@ export const OfflineIndicator = () => {
     } finally {
       setSyncing(false);
     }
-  };
+  }, [isOnline, syncing, toast]);
 
-  if (isOnline && queueSize === 0) {
+  useEffect(() => {
+    if (isOnline && (status.pending > 0 || status.failed > 0)) {
+      void handleSync();
+    }
+  }, [handleSync, isOnline, status.failed, status.pending]);
+
+  const pendingCount = status.pending + status.failed + status.syncing;
+
+  if (isOnline && pendingCount === 0) {
     return null;
   }
 
+  const hasFailures = status.failed > 0;
+
   return (
-    <Alert
-      className={`fixed left-1/2 top-16 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 border shadow-lg backdrop-blur ${
-        isOnline
-          ? 'border-blue-500/30 bg-blue-500/10 text-blue-900 dark:text-blue-100'
-          : 'border-orange-500/30 bg-orange-500/10 text-orange-900 dark:text-orange-100'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          {isOnline ? (
-            <>
-              <Wifi className="h-4 w-4 text-blue-600 dark:text-blue-300" />
-              <AlertDescription className="font-sans text-current">
-                {queueSize > 0 ? (
-                  <>
-                    {queueSize} pending change{queueSize > 1 ? 's' : ''} to sync
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-4 w-4 inline mr-1" />
-                    All changes synced
-                  </>
-                )}
-              </AlertDescription>
-            </>
-          ) : (
-            <>
-              <WifiOff className="h-4 w-4 text-orange-600 dark:text-orange-300" />
-              <AlertDescription className="font-sans text-current">
-                You're offline. {queueSize > 0 && `${queueSize} change${queueSize > 1 ? 's' : ''} queued`}
-              </AlertDescription>
-            </>
-          )}
-        </div>
-        
-        {isOnline && queueSize > 0 && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleSync}
-            disabled={syncing}
-            className="h-8 bg-background/80"
-          >
-            {syncing ? (
+    <>
+      <Alert
+        className={cn(
+          "fixed left-1/2 top-16 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 border border-primary/25 bg-background/90 text-foreground shadow-lg backdrop-blur",
+          !isOnline && "border-primary/35",
+          hasFailures && "border-destructive/40"
+        )}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            {isOnline ? (
               <>
-                <Refresh className="h-3 w-3 mr-1 animate-spin" />
-                Syncing...
+                {hasFailures ? (
+                  <WarningTriangle className="h-4 w-4 text-destructive" />
+                ) : (
+                  <Refresh className="h-4 w-4 text-primary" />
+                )}
+                <AlertDescription className="font-sans text-current">
+                  {pendingCount > 0 ? (
+                    <>
+                      {pendingCount} reading change{pendingCount > 1 ? "s" : ""} to sync
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 inline mr-1" />
+                      All reading changes synced
+                    </>
+                  )}
+                </AlertDescription>
               </>
             ) : (
               <>
-                <Refresh className="h-3 w-3 mr-1" />
-                Sync Now
+                <WifiOff className="h-4 w-4 text-primary" />
+                <AlertDescription className="font-sans text-current">
+                  You're offline. Reading changes save locally{pendingCount > 0 ? ` (${pendingCount} pending)` : ""}.
+                </AlertDescription>
               </>
             )}
-          </Button>
-        )}
-      </div>
-    </Alert>
+          </div>
+          
+          {isOnline && pendingCount > 0 && (
+            <div className="flex shrink-0 items-center gap-2">
+              {hasFailures && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setReviewOpen(true)}
+                  className="h-8"
+                >
+                  Review
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleSync}
+                disabled={syncing}
+                className="h-8 bg-background/80"
+              >
+                {syncing ? (
+                  <>
+                    <Refresh className="h-3 w-3 mr-1 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <Refresh className="h-3 w-3 mr-1" />
+                    Sync Now
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+      </Alert>
+
+      <SyncReviewDialog
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+        onResolved={async () => setStatus(await readingCoreSync.getStatus())}
+      />
+    </>
   );
 };

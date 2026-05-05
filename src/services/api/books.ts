@@ -1,6 +1,7 @@
 import { invokeFunction } from "./client";
 import { supabase } from "@/integrations/supabase/client";
 import { dataCache } from "@/services/dataCache";
+import { booksRepo } from "@/services/local";
 import type { Book } from "@/types";
 
 export interface SearchBooksRequest {
@@ -159,6 +160,7 @@ export const addBookToLibrary = async (
   }
 
   if (data?.book) {
+    await booksRepo.upsertRemote(data.book.user_id, data.book);
     invalidateBooksCache(data.book.user_id);
     emitBooksChanged({ type: "upsert", userId: data.book.user_id, book: data.book });
   }
@@ -180,6 +182,7 @@ export const updateBook = async (
   if (error) throw error;
 
   const book = data as Book;
+  await booksRepo.upsertRemote(book.user_id, book);
   invalidateBooksCache(book.user_id);
   emitBooksChanged({ type: "upsert", userId: book.user_id, book });
 };
@@ -207,6 +210,11 @@ export const updateBookStatus = async (
     .eq("id", book.id);
 
   if (error) throw error;
+  await booksRepo.upsertRemote(book.user_id, {
+    ...book,
+    ...updateData,
+    updated_at: new Date().toISOString(),
+  } as Book);
   invalidateBooksCache(book.user_id);
   emitBooksChanged({ type: "refresh", userId: book.user_id });
   return updateData as Partial<Book>;
@@ -221,6 +229,15 @@ export const softDeleteBook = async (bookId: string): Promise<void> => {
     .single();
 
   if (error) throw error;
+
+  const existing = await booksRepo.get(bookId);
+  if (existing && data?.user_id) {
+    await booksRepo.upsertRemote(data.user_id, {
+      ...existing,
+      deleted_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+  }
 
   invalidateBooksCache(data?.user_id);
   emitBooksChanged({ type: "remove", userId: data?.user_id, bookId });
@@ -276,12 +293,19 @@ export const updateBookQuickProgress = async (
     updates.status = "reading";
   }
 
+  if (!navigator.onLine) {
+    await booksRepo.upsertLocal(book.user_id, { ...book, ...updates } as Book, "update");
+    emitBooksChanged({ type: "upsert", userId: book.user_id, book: { ...book, ...updates } as Book });
+    return;
+  }
+
   const { error } = await supabase
     .from("books")
     .update(updates)
     .eq("id", book.id);
 
   if (error) throw error;
+  await booksRepo.upsertRemote(book.user_id, { ...book, ...updates } as Book);
   invalidateBooksCache(book.user_id);
   emitBooksChanged({ type: "refresh", userId: book.user_id });
 };

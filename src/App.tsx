@@ -85,6 +85,7 @@ const App = () => {
   // Register for push notifications on app start (native only)
   useEffect(() => {
     registerPushNotifications().catch(console.error);
+    syncService.manualSync().catch(console.error);
   }, [registerPushNotifications]);
 
   const persister = useMemo(

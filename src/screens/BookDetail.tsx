@@ -30,9 +30,10 @@ import type { Book, ReadingSession } from "@/types";
 import {
   fetchActiveBookById,
   fetchBookReadingSessions,
-  softDeleteBook,
   updateBookStatus,
 } from "@/services/api";
+import { booksRepo, sessionsRepo } from "@/services/local";
+import { bookOperations } from "@/utils/offlineOperation";
 
 const BookDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -58,6 +59,20 @@ const BookDetail = () => {
     if (!id) return;
     
     try {
+      if (!navigator.onLine) {
+        const localBook = await booksRepo.get(id);
+        if (!localBook) {
+          toast.error("Book is not available offline yet");
+          navigate("/dashboard");
+          return;
+        }
+        setBook(localBook);
+        const localSessions = (await sessionsRepo.list(user?.id || ""))
+          .filter((session) => session.book_id === id);
+        setSessions(localSessions);
+        return;
+      }
+
       const bookData = await fetchActiveBookById(id);
       if (!bookData) {
         toast.error("Book not found");
@@ -66,6 +81,7 @@ const BookDetail = () => {
       }
 
       setBook(bookData);
+      if (bookData.user_id) await booksRepo.upsertRemote(bookData.user_id, bookData);
 
       setSessions(await fetchBookReadingSessions(id));
     } catch (error: unknown) {
@@ -80,6 +96,13 @@ const BookDetail = () => {
     if (!book) return;
 
     try {
+      if (!navigator.onLine) {
+        await bookOperations.update(book.id, { status: newStatus });
+        setBook({ ...book, status: newStatus, updated_at: new Date().toISOString() });
+        toast.success(`Book marked as ${newStatus.replace('_', ' ')}`);
+        return;
+      }
+
       const updateData = await updateBookStatus(book, newStatus);
 
       setBook({ ...book, ...updateData, status: newStatus });
@@ -96,7 +119,7 @@ const BookDetail = () => {
     if (!confirm("Are you sure you want to delete this book?")) return;
 
     try {
-      await softDeleteBook(book.id);
+      await bookOperations.delete(book.id);
 
       toast.success("Book deleted successfully");
       navigate("/dashboard");

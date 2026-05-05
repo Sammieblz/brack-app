@@ -11,6 +11,7 @@ import { Refresh, Camera, Xmark } from "iconoir-react";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
 import { useImagePicker } from "@/hooks/useImagePicker";
 import { useAuth } from "@/hooks/useAuth";
+import { booksRepo, createLocalId, progressRepo } from "@/services/local";
 
 interface ProgressLoggerProps {
   bookId: string;
@@ -99,7 +100,58 @@ export const ProgressLogger = ({
 
     setLoading(true);
     try {
+      if (!navigator.onLine) {
+        if (!user) throw new Error("Not authenticated");
+
+        await progressRepo.createPending(user.id, {
+          id: createLocalId(),
+          user_id: user.id,
+          book_id: bookId,
+          page_number: pageNumber,
+          chapter_number: chapterNumber || null,
+          paragraph_number: paragraphNumber || null,
+          notes: notes || null,
+          log_type: "manual",
+          time_spent_minutes: timeSpent || null,
+          photo_url: photoUrl || null,
+          logged_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+        });
+
+        const localBook = await booksRepo.get(bookId);
+        if (localBook) {
+          await booksRepo.upsertLocal(user.id, {
+            ...localBook,
+            current_page: Math.max(localBook.current_page || 0, pageNumber),
+            status:
+              localBook.pages && pageNumber >= localBook.pages
+                ? "completed"
+                : localBook.status === "to_read"
+                  ? "reading"
+                  : localBook.status,
+            updated_at: new Date().toISOString(),
+          }, "update");
+        }
+
+        toast({
+          title: "Progress saved offline",
+          description: `Page ${pageNumber} will sync when you're back online`,
+        });
+
+        setPageNumber(currentPage || 0);
+        setChapterNumber(undefined);
+        setParagraphNumber(undefined);
+        setTimeSpent(undefined);
+        setNotes("");
+        setPhotoUrl(null);
+        setPhotoPreview(null);
+        onOpenChange(false);
+        onSuccess?.();
+        return;
+      }
+
       const data = await logProgress({
+        id: createLocalId(),
         book_id: bookId,
         page_number: pageNumber,
         chapter_number: chapterNumber || null,

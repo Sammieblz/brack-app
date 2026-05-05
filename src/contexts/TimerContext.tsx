@@ -5,7 +5,8 @@ import { LocalNotifications } from "@capacitor/local-notifications";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
-import { createReadingSession } from "@/services/api";
+import { createReadingSession, getCurrentAuthUser } from "@/services/api";
+import { booksRepo, sessionsRepo } from "@/services/local";
 
 interface TimerState {
   time: number;
@@ -340,6 +341,71 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       const endTime = new Date();
       const durationMinutes = Math.max(1, Math.round(state.time / 60));
       const clientSessionId = state.clientSessionId || createClientSessionId(state.bookId);
+
+      if (!navigator.onLine) {
+        const user = await getCurrentAuthUser();
+        if (!user) throw new Error("Not authenticated");
+
+        const session = {
+          id: clientSessionId,
+          user_id: user.id,
+          book_id: state.bookId,
+          start_time: state.startTime.toISOString(),
+          end_time: endTime.toISOString(),
+          duration: durationMinutes,
+          client_session_id: clientSessionId,
+          created_at: endTime.toISOString(),
+        };
+
+        await sessionsRepo.createPending(user.id, session);
+
+        const localBook = await booksRepo.get(state.bookId);
+        if (localBook) {
+          await booksRepo.upsertLocal(user.id, {
+            ...localBook,
+            status: localBook.status === "to_read" ? "reading" : localBook.status,
+            date_started: localBook.date_started || state.startTime.toISOString().split("T")[0],
+            updated_at: endTime.toISOString(),
+          }, "update");
+        }
+
+        toast.success("Reading session saved offline");
+
+        window.dispatchEvent(new CustomEvent('readingSessionSaved', {
+          detail: {
+            userId: user.id,
+            bookId: state.bookId,
+            sessionId: session.id,
+            durationMinutes,
+            activityDate: state.startTime.toISOString().split('T')[0],
+            pendingSync: true,
+          },
+        }));
+
+        const sessionData = {
+          bookId: state.bookId,
+          bookTitle: state.bookTitle,
+          durationMinutes,
+        };
+
+        setState({
+          time: 0,
+          isRunning: false,
+          startTime: null,
+          bookId: null,
+          bookTitle: null,
+          clientSessionId: null,
+          isVisible: false,
+          isMinimized: true,
+        });
+
+        if (showJournalPrompt && durationMinutes >= 5) {
+          window.dispatchEvent(new CustomEvent('showJournalPrompt', {
+            detail: sessionData
+          }));
+        }
+        return;
+      }
 
       const result = await createReadingSession({
         bookId: state.bookId,
