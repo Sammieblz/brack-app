@@ -17,7 +17,7 @@ type RatingFilter = "all" | "5" | "4" | "3" | "2" | "1";
 const ratingFilters: RatingFilter[] = ["all", "5", "4", "3", "2", "1"];
 
 const Reviews = () => {
-  const { reviews, loading, averageRating } = useReviews(undefined, undefined, {
+  const { reviews, loading, averageRating, refetch: refetchReviews } = useReviews(undefined, undefined, {
     community: true,
     limit: 80,
   });
@@ -142,7 +142,12 @@ const Reviews = () => {
             ) : (
               <div className="space-y-3">
                 {filteredReviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} showBookInfo />
+                  <ReviewCard
+                    key={review.id}
+                    review={review}
+                    showBookInfo
+                    onChanged={refetchReviews}
+                  />
                 ))}
               </div>
             )}

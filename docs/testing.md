@@ -244,13 +244,15 @@ npx cap run android
 - [ ] Pull-to-refresh on all screens
 
 ### Offline
-- [ ] Actions queue when offline
+- [ ] Reading-core changes persist while offline
 - [ ] Offline indicator shows
-- [ ] Queue size displays
+- [ ] Pending and failed outbox counts display
 - [ ] Actions sync on reconnect
 - [ ] Manual sync works
-- [ ] Failed actions retry
-- [ ] Data cache works
+- [ ] Failed actions can be retried or discarded
+- [ ] Book, progress, timer, journal, goal, and theme preference changes sync
+- [ ] Journal and goal deletes appear as tombstones remotely
+- [ ] Local reading-core cache works after restart
 - [ ] Image cache works
 
 ### Performance

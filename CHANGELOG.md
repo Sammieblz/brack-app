@@ -8,7 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Comprehensive documentation in `/docs` directory (22 documents)
+- Local-first reading-core sync documentation covering IndexedDB/SQLite storage, outbox behavior, `sync-pull`, `sync-push`, and delete tombstones.
+- API documentation for `add-book`, `dashboard-home`, `create-reading-session`, `award-badges`, `compute-analytics`, `sync-pull`, and `sync-push`.
+- Database schema documentation for journal and goal `deleted_at` tombstones.
+- Comprehensive documentation in `/docs` directory (23 documents)
   - Getting Started guides
   - Architecture documentation
   - API reference
@@ -19,6 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Enhanced README with better structure and quick start guide
+- Updated deployment documentation to reflect current Supabase function JWT settings and CLI deployment commands.
+- Updated offline, mobile, testing, troubleshooting, and quick-reference docs from the old localStorage queue model to the current durable outbox model.
+- Updated feature and project statistics for 15 Edge Functions, 41 migrations, and the ApexCharts `apex-vendor` chunk.
+
+### Fixed
+- Corrected stale documentation references to `DENO_ENV`, old function counts, old migration counts, and the retired `offlineQueue` service path.
+- Restricted `compute-analytics` to the authenticated user's analytics snapshot instead of accepting a caller-provided user ID.
 
 ## [1.0.0] - 2026-02-04
 
@@ -37,7 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Barcode scanning (ISBN)
 - ✅ Book cover OCR scanning
 - ✅ Push notifications infrastructure
-- ✅ Offline support with sync queue
+- ✅ Offline support with durable outbox sync
 - ✅ Data and image caching
 - ✅ Dark mode support
 - ✅ PWA support
@@ -47,8 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Pull-to-refresh
 - ✅ Swipe gestures
 - ✅ 27 database tables with RLS
-- ✅ 8 Supabase Edge Functions
-- ✅ 31 database migrations
+- ✅ 15 Supabase Edge Functions
+- ✅ 41 database migrations
 - ✅ Error tracking (Sentry integration)
 
 ### Security

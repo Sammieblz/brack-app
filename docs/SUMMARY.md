@@ -110,7 +110,7 @@ This documentation provides comprehensive coverage of:
 | ...the file structure? | [File Structure](./file-structure.md) |
 | ...Row Level Security? | [Authentication](./authentication.md#row-level-security-rls) |
 | ...TanStack Query? | [State Management](./state-management.md#tanstack-query-react-query) |
-| ...the offline queue? | [Offline Support](./offline-support.md#offline-queue) |
+| ...offline sync? | [Offline Support](./offline-support.md) |
 | ...Capacitor? | [Mobile Features](./mobile-features.md) |
 
 ### "Where is...?"

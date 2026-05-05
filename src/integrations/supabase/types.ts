@@ -397,6 +397,7 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string | null
+          deleted_at: string | null
           end_date: string | null
           goal_type: string | null
           id: string
@@ -414,6 +415,7 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           end_date?: string | null
           goal_type?: string | null
           id?: string
@@ -431,6 +433,7 @@ export type Database = {
         Update: {
           completed_at?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           end_date?: string | null
           goal_type?: string | null
           id?: string
@@ -460,6 +463,7 @@ export type Database = {
           book_id: string
           content: string
           created_at: string
+          deleted_at: string | null
           entry_type: string
           id: string
           page_reference: number | null
@@ -472,6 +476,7 @@ export type Database = {
           book_id: string
           content: string
           created_at?: string
+          deleted_at?: string | null
           entry_type: string
           id?: string
           page_reference?: number | null
@@ -484,6 +489,7 @@ export type Database = {
           book_id?: string
           content?: string
           created_at?: string
+          deleted_at?: string | null
           entry_type?: string
           id?: string
           page_reference?: number | null

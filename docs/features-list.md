@@ -57,7 +57,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - `SwipeableBookCard` - Book card with swipe actions
 - `BadgeDisplay` - Achievement badges
 - `StreakDisplay` - Streak counter
-- `StreakCalendar` - Activity heatmap
+- `ReadingHeatmap` - ApexCharts reading activity heatmap
 - `StreakHistoryTimeline` - Streak milestones
 - `QuoteCollection` - Quote collection view
 
@@ -142,7 +142,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 ### Streaks & Goals ✅
 - ✅ Daily reading streaks
 - ✅ Current and longest streak
-- ✅ Streak calendar (90 days)
+- ✅ Reading activity heatmap
 - ✅ Streak freeze (once/week)
 - ✅ Streak milestones
 - ✅ Streak history timeline
@@ -238,11 +238,13 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Device information
 
 ### Offline Capabilities ✅
-- ✅ Offline action queue
-- ✅ Data caching (2-min TTL)
+- ✅ Local-first reading core
+- ✅ Durable outbox sync
+- ✅ IndexedDB on web/PWA
+- ✅ SQLite driver path for native apps
 - ✅ Image caching (7-day TTL)
 - ✅ Background sync
-- ✅ Retry logic
+- ✅ Retry and failed-sync review
 - ✅ Sync progress indicator
 
 ---
@@ -318,7 +320,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Debounced operations
 - ✅ Batch operations
 - ✅ Query caching (TanStack Query)
-- ✅ Data caching (custom)
+- ✅ Durable local cache for reading-core data
 - ✅ Image caching (filesystem)
 
 ### PWA ✅
@@ -372,7 +374,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ **Supabase REST API** - Database operations
 - ✅ **Supabase Realtime** - Live updates
 - ✅ **Supabase Storage** - Image storage
-- ✅ **Edge Functions** - Serverless backend (8 functions)
+- ✅ **Edge Functions** - Serverless backend (15 functions)
 
 ---
 
@@ -564,9 +566,9 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 ## 📈 Performance Metrics
 
 ### Bundle Size
-- **Main**: ~300KB gzipped
-- **Chunks**: Code-split by route
-- **Total**: ~500KB gzipped
+- **Main**: above current 1 MB warning threshold before gzip
+- **Chunks**: Code-split by route and heavy vendors
+- **ApexCharts**: split into `apex-vendor`
 
 ### Loading Times
 - **Initial**: < 3 seconds
@@ -609,7 +611,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 ## 📊 Database Statistics
 
 - **Total Tables**: 27
-- **Total Migrations**: 31
+- **Total Migrations**: 41
 - **RLS Policies**: 100+ (all tables protected)
 - **Indexes**: 50+ (optimized queries)
 - **Functions**: 3 (helpers for RLS and calculations)
@@ -619,13 +621,20 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 ## 🔄 API Endpoints (Edge Functions)
 
 1. **search-books** - Search Google Books API
-2. **discover-readers** - Find similar readers
-3. **enhanced-activity** - Generate activity feed
-4. **log-progress** - Atomic progress logging
-5. **monthly-stats** - Calculate statistics
-6. **social-feed** - Aggregate social posts
-7. **send-push-notification** - FCM integration
-8. **calculate-book-progress** - Progress analytics
+2. **add-book** - Protected library insert and duplicate handling
+3. **dashboard-home** - Dashboard aggregate data
+4. **create-reading-session** - Timer session persistence
+5. **award-badges** - Badge awarding
+6. **log-progress** - Atomic progress logging
+7. **monthly-stats** - Calculate statistics
+8. **social-feed** - Aggregate social posts
+9. **send-push-notification** - FCM integration
+10. **calculate-book-progress** - Progress analytics
+11. **discover-readers** - Find similar readers
+12. **enhanced-activity** - Generate activity feed
+13. **compute-analytics** - Daily analytics snapshots
+14. **sync-pull** - Pull reading-core changes
+15. **sync-push** - Push reading-core outbox mutations
 
 ---
 

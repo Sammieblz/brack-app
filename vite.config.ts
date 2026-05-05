@@ -110,6 +110,7 @@ export default defineConfig(({ mode }) => ({
           'query-vendor': ['@tanstack/react-query', '@tanstack/react-query-persist-client'],
           'supabase-vendor': ['@supabase/supabase-js'],
           'chart-vendor': ['recharts'],
+          'apex-vendor': ['apexcharts', 'react-apexcharts'],
           'animation-vendor': ['gsap', '@gsap/react', 'framer-motion'],
         },
       },

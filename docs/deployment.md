@@ -230,20 +230,32 @@ Output:
 Deploy all functions:
 
 ```bash
-npx supabase functions deploy
+npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api
 ```
 
 Deploy specific function:
 
 ```bash
-npx supabase functions deploy search-books
+npx supabase functions deploy search-books --project-ref waftnaqgkcgufzapcihe --use-api
 ```
+
+Function JWT settings are controlled in `supabase/config.toml`. The current intended state is:
+
+- `search-books`: `verify_jwt = false` because it is public book search.
+- All other functions: `verify_jwt = true`.
+
+After deployment, verify remote drift with the Supabase dashboard, MCP, or CLI before relying on protected user data.
+
+The remote project currently still lists legacy functions from 2025 (`get-book-details`, `update-reading-progress`, `daily-summary`) that are not maintained in this repo. Review or remove them separately when cleaning the production function surface.
 
 ### Environment Secrets
 
 Set production secrets:
 
 ```bash
+npx supabase secrets set SUPABASE_URL=https://your-project.supabase.co
+npx supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+npx supabase secrets set ENVIRONMENT=production
 npx supabase secrets set GOOGLE_BOOKS_API_KEY=your-key
 npx supabase secrets set FCM_SERVER_KEY=your-fcm-key
 npx supabase secrets set ALLOWED_ORIGINS=https://yourdomain.com
@@ -275,21 +287,21 @@ npx supabase db push
 
 ```env
 VITE_SUPABASE_URL=https://dev-project.supabase.co
-DENO_ENV=development
+ENVIRONMENT=development
 ```
 
 ### Staging
 
 ```env
 VITE_SUPABASE_URL=https://staging-project.supabase.co
-DENO_ENV=production
+ENVIRONMENT=production
 ```
 
 ### Production
 
 ```env
 VITE_SUPABASE_URL=https://prod-project.supabase.co
-DENO_ENV=production
+ENVIRONMENT=production
 VITE_SENTRY_DSN=your-production-sentry-dsn
 ```
 
@@ -531,9 +543,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
-      - run: npx supabase functions deploy
+      - run: npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_TOKEN }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 ```
 
 ## Monitoring
@@ -703,7 +715,7 @@ npx supabase functions serve function-name
 npx supabase secrets list
 
 # Re-deploy
-npx supabase functions deploy function-name
+npx supabase functions deploy function-name --project-ref waftnaqgkcgufzapcihe --use-api
 ```
 
 ## Further Reading

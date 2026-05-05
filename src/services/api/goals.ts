@@ -18,6 +18,7 @@ export interface Goal {
   is_active: boolean;
   completed_at: string | null;
   updated_at: string | null;
+  deleted_at: string | null;
 }
 
 export const fetchGoals = async (userId: string): Promise<Goal[]> => {
@@ -28,6 +29,7 @@ export const fetchGoals = async (userId: string): Promise<Goal[]> => {
     .from("goals")
     .select("*")
     .eq("user_id", userId)
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -45,6 +47,7 @@ export const fetchLatestGoal = async (userId: string): Promise<Goal | null> => {
     .from("goals")
     .select("*")
     .eq("user_id", userId)
+    .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .maybeSingle();
 
@@ -74,6 +77,7 @@ export const createGoal = async (
       is_active: goal.is_active ?? true,
       completed_at: goal.completed_at ?? null,
       updated_at: timestamp,
+      deleted_at: null,
     } as Goal;
     await goalsRepo.upsertLocal(userId, localGoal, "create");
     return localGoal;
@@ -110,6 +114,14 @@ export const updateGoal = async (
     .eq("id", goalId);
 
   if (error) throw error;
+  const existing = await goalsRepo.get(goalId);
+  if (existing) {
+    await goalsRepo.upsertRemote(user.id, {
+      ...existing,
+      ...updates,
+      updated_at: new Date().toISOString(),
+    } as Goal);
+  }
 };
 
 export const deleteGoal = async (goalId: string): Promise<void> => {
@@ -123,9 +135,15 @@ export const deleteGoal = async (goalId: string): Promise<void> => {
     return;
   }
 
-  const { error } = await supabase.from("goals").delete().eq("id", goalId);
+  const deletedAt = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("goals")
+    .update({ deleted_at: deletedAt, updated_at: deletedAt, is_active: false })
+    .eq("id", goalId)
+    .select()
+    .single();
   if (error) throw error;
-  await goalsRepo.remove(goalId);
+  await goalsRepo.upsertRemote(user.id, data as Goal);
 };
 
 export const completeGoal = async (goalId: string): Promise<void> => {
@@ -151,4 +169,8 @@ export const completeGoal = async (goalId: string): Promise<void> => {
     .eq("id", goalId);
 
   if (error) throw error;
+  const existing = await goalsRepo.get(goalId);
+  if (existing) {
+    await goalsRepo.upsertRemote(user.id, { ...existing, ...updates } as Goal);
+  }
 };

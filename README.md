@@ -61,8 +61,10 @@ VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
 GOOGLE_BOOKS_API_KEY=your-google-books-api-key
 VITE_SENTRY_DSN=your-sentry-dsn
 ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com
-DENO_ENV=development
+ENVIRONMENT=development
 FCM_SERVER_KEY=your-fcm-server-key
+SUPABASE_ACCESS_TOKEN=your-supabase-cli-token
+SUPABASE_DB_PASSWORD=your-linked-project-db-password
 ```
 
 See [Getting Started Guide](./docs/getting-started.md) for detailed setup instructions.
@@ -85,7 +87,7 @@ Comprehensive documentation is available in the `/docs` directory:
 
 ### Features & Guides
 - **[Mobile Features](./docs/mobile-features.md)** - Native mobile capabilities
-- **[Offline Support](./docs/offline-support.md)** - Offline queue and caching
+- **[Offline Support](./docs/offline-support.md)** - Local-first reading core, outbox sync, and offline caveats
 - **[Authentication](./docs/authentication.md)** - User auth and security
 - **[State Management](./docs/state-management.md)** - Data flow and caching
 - **[Hooks Reference](./docs/hooks.md)** - Custom React hooks

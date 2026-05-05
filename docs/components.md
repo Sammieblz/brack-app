@@ -146,7 +146,7 @@ Guide to key components in Brack and their usage.
 
 **Location**: `src/components/StreakCalendar.tsx`
 
-**Purpose**: Activity heatmap calendar
+**Purpose**: Lightweight 90-day streak activity calendar
 
 ```tsx
 <StreakCalendar activityCalendar={activityCalendar} />
@@ -157,6 +157,22 @@ Guide to key components in Brack and their usage.
 - Color-coded by activity level
 - Tooltips with details
 - Mobile-optimized
+
+#### ReadingHeatmap
+
+**Location**: `src/components/charts/ReadingHeatmap.tsx`
+
+**Purpose**: ApexCharts heatmap for dashboard and analytics reading activity
+
+```tsx
+<ReadingHeatmap data={activityData} />
+```
+
+**Features**:
+- Lazy-loads `react-apexcharts`
+- Uses the `apex-vendor` build chunk
+- Supports pages, minutes, sessions, and streak views
+- Height-stable loading state
 
 ### Interactive Components
 
@@ -420,7 +436,7 @@ Guide to key components in Brack and their usage.
 
 **Location**: `src/components/OfflineIndicator.tsx`
 
-**Purpose**: Show offline status and queue
+**Purpose**: Show offline status and reading-core sync state
 
 ```tsx
 <OfflineIndicator />
@@ -428,7 +444,7 @@ Guide to key components in Brack and their usage.
 
 **Features**:
 - Shows when offline
-- Queue size display
+- Pending and failed outbox counts
 - Manual sync button
 - Auto-hides when online
 

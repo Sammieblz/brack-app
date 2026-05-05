@@ -43,9 +43,10 @@ interface ReviewCardProps {
   };
   showBookInfo?: boolean;
   onEdit?: () => void;
+  onChanged?: () => void | Promise<void>;
 }
 
-export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardProps) => {
+export const ReviewCard = ({ review, showBookInfo = false, onEdit, onChanged }: ReviewCardProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { likeReview, unlikeReview, checkUserLiked, deleteReview } = useReviews();
@@ -70,11 +71,13 @@ export const ReviewCard = ({ review, showBookInfo = false, onEdit }: ReviewCardP
       await likeReview(review.id);
       setIsLiked(true);
     }
+    await onChanged?.();
   };
 
   const handleDelete = async () => {
     if (confirm("Are you sure you want to delete this review?")) {
       await deleteReview(review.id);
+      await onChanged?.();
     }
   };
 

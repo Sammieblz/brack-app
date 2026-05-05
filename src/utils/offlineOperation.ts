@@ -13,10 +13,8 @@ import type { Book } from "@/types";
 import type { JournalEntry } from "@/services/api/journal";
 
 /**
- * Wraps a Supabase operation to automatically queue it when offline
- * @param operation - The async function that performs the Supabase operation
- * @param queueAction - The action to queue if offline
- * @returns Promise that resolves when operation completes or is queued
+ * Legacy compatibility wrapper for simple network-only operations.
+ * Prefer the domain operations below for durable offline sync.
  */
 export async function executeWithOfflineQueue<T>(
   operation: () => Promise<T>,
@@ -27,7 +25,8 @@ export async function executeWithOfflineQueue<T>(
     return await operation();
   }
 
-  // If offline and queue action provided, queue it
+  // Legacy callers may still pass a queue descriptor; durable sync is handled
+  // by the domain repositories below, not by this wrapper.
   if (queueAction) {
     toast.info("You're offline. This action will sync when you're back online.");
     return Promise.resolve() as T;
@@ -67,7 +66,7 @@ const asBook = (bookData: Record<string, unknown>, userId: string): Book => {
 };
 
 /**
- * Helper to create book operations with offline queue support
+ * Book operations with durable local repository + outbox support.
  */
 export const bookOperations = {
   async create(bookData: Record<string, unknown>) {
@@ -150,7 +149,7 @@ const asJournalEntry = (
 };
 
 /**
- * Helper to create journal entry operations with offline queue support
+ * Journal operations with durable local repository + outbox support.
  */
 export const journalOperations = {
   async create(entryData: Record<string, unknown>) {
@@ -205,6 +204,13 @@ export const journalOperations = {
     }
 
     await deleteJournalEntry(entryId);
-    await journalRepo.remove(entryId);
+    if (existing) {
+      const deletedAt = new Date().toISOString();
+      await journalRepo.upsertRemote(user.id, {
+        ...existing,
+        deleted_at: deletedAt,
+        updated_at: deletedAt,
+      } as JournalEntry & { deleted_at: string });
+    }
   },
 };

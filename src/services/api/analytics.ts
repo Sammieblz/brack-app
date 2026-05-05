@@ -250,6 +250,7 @@ export const getAnalyticsChartData = async (
     .eq("user_id", userId)
     .eq("goal_type", "books_count")
     .eq("is_active", true)
+    .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(1);
 

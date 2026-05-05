@@ -9,7 +9,7 @@ Edge Functions are serverless TypeScript/Deno functions deployed on Supabase's g
 **Runtime**: Deno 1.x  
 **Language**: TypeScript  
 **Location**: `supabase/functions/`  
-**Deployment**: `npx supabase functions deploy`
+**Deployment**: `npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api`
 
 ## Shared Utilities
 
@@ -71,6 +71,30 @@ export function requireFields(
 
 ## Functions
 
+Current maintained local function catalog:
+
+| Function | Purpose | JWT |
+| --- | --- | --- |
+| `search-books` | Google Books search | No |
+| `add-book` | Protected library insert with duplicate handling | Yes |
+| `dashboard-home` | Dashboard aggregate payload | Yes |
+| `create-reading-session` | Persist timer reading sessions | Yes |
+| `award-badges` | Award badges for a user event | Yes |
+| `log-progress` | Atomic progress logging | Yes |
+| `calculate-book-progress` | Book-level progress analytics | Yes |
+| `monthly-stats` | Monthly reading statistics | Yes |
+| `enhanced-activity` | Enriched activity feed | Yes |
+| `social-feed` | Aggregated social feed | Yes |
+| `discover-readers` | Reader discovery | Yes |
+| `compute-analytics` | Daily analytics snapshot generation | Yes |
+| `send-push-notification` | Firebase Cloud Messaging delivery | Yes |
+| `sync-pull` | Pull reading-core sync changes | Yes |
+| `sync-push` | Push reading-core outbox mutations | Yes |
+
+Local JWT settings live in `supabase/config.toml`. Remote deployment was verified on May 5, 2026: every maintained function except public `search-books` is deployed with `verify_jwt = true`.
+
+The remote project also still lists legacy functions from 2025 (`get-book-details`, `update-reading-progress`, `daily-summary`). They are not present in `supabase/functions/` and should be reviewed or removed before being treated as supported API surface.
+
 ### search-books
 
 Search for books using Google Books API.
@@ -108,6 +132,8 @@ Search for books using Google Books API.
 
 **Rate Limit**: 30 requests per minute
 
+**Auth**: Public function (`verify_jwt = false`). The app may still call it through the Supabase client, but a user JWT is not required.
+
 **Example**:
 ```typescript
 const response = await fetch(`${SUPABASE_URL}/functions/v1/search-books`, {
@@ -124,6 +150,100 @@ const { books } = await response.json();
 
 **Environment Variables**:
 - `GOOGLE_BOOKS_API_KEY` (optional) - Increases rate limits
+
+### add-book
+
+Add a book to the authenticated user's library through the `add_library_book` RPC.
+
+**Endpoint**: `POST /add-book`
+
+**Request**: book payload containing at least `title`. Optional fields include `author`, `isbn`, `genre`, `pages`, `cover_url`, `description`, and reading status fields.
+
+**Response**:
+```typescript
+{
+  success?: boolean;
+  book_id?: string;
+  book?: Record<string, unknown>;
+}
+```
+
+If the book already exists, the function returns `409`:
+
+```typescript
+{
+  code: 'book_exists';
+  message: string;
+  book_id: string;
+  book: Record<string, unknown>;
+}
+```
+
+**Notes**:
+- ISBN is the primary duplicate key.
+- Title + author is used as a fallback when ISBN is missing.
+- Re-adding a soft-deleted book restores the existing row instead of creating a duplicate.
+
+### dashboard-home
+
+Load dashboard aggregate data for the authenticated user.
+
+**Endpoint**: `GET /dashboard-home?recent_limit=10` or `POST /dashboard-home`
+
+**Request**:
+```typescript
+{
+  recent_limit?: number; // 1-30, default 10
+}
+```
+
+**Response**: payload returned by the `get_user_dashboard_stats` RPC.
+
+### create-reading-session
+
+Persist a completed timer session through the `create_reading_session` RPC.
+
+**Endpoint**: `POST /create-reading-session`
+
+**Request**:
+```typescript
+{
+  book_id: string;
+  start_time: string;
+  end_time: string;
+  duration_minutes: number;
+  client_session_id?: string;
+}
+```
+
+**Response**:
+```typescript
+{
+  success: boolean;
+  session?: Record<string, unknown>;
+}
+```
+
+### award-badges
+
+Evaluate and award badges for the authenticated user.
+
+**Endpoint**: `GET /award-badges?event=event-name` or `POST /award-badges`
+
+**Request**:
+```typescript
+{
+  event?: string;
+}
+```
+
+**Response**:
+```typescript
+{
+  success: boolean;
+  awarded_badges: Array<Record<string, unknown>>;
+}
+```
 
 ### discover-readers
 
@@ -267,6 +387,8 @@ Log reading progress with atomic transaction.
   notes?: string;
   log_type: 'manual' | 'timer' | 'quick';
   time_spent_minutes?: number;
+  photo_url?: string;
+  client_log_id?: string;
 }
 ```
 
@@ -298,6 +420,7 @@ Log reading progress with atomic transaction.
 - Atomic transaction (log + book update)
 - Auto-update book's current_page
 - Calculate progress percentage
+- Idempotent offline sync support through `client_log_id`
 
 **Example**:
 ```typescript
@@ -538,9 +661,115 @@ const response = await fetch(`${SUPABASE_URL}/functions/v1/calculate-book-progre
 const { progress } = await response.json();
 ```
 
+### compute-analytics
+
+Compute and store a daily analytics snapshot for the authenticated user.
+
+**Endpoint**: `POST /compute-analytics`
+
+**Request**:
+```typescript
+{
+  date?: string; // YYYY-MM-DD, defaults to today
+}
+```
+
+**Response**:
+```typescript
+{
+  success: boolean;
+  snapshot: Record<string, unknown>;
+}
+```
+
+### sync-pull
+
+Pull reading-core records changed since the client's cursor.
+
+**Endpoint**: `POST /sync-pull`
+
+**Request**:
+```typescript
+{
+  cursor?: string | null;
+}
+```
+
+**Response**:
+```typescript
+{
+  success: boolean;
+  cursor: string;
+  records: {
+    books: unknown[];
+    reading_sessions: unknown[];
+    progress_logs: unknown[];
+    journal_entries: unknown[];
+    goals: unknown[];
+    profile_preferences: unknown[];
+  };
+}
+```
+
+**Notes**:
+- Uses the authenticated user ID only.
+- Includes soft-delete tombstones for books, journal entries, and goals.
+- Cursor-based filtering uses `updated_at` for mutable entities and `created_at` for immutable session/log history.
+
+### sync-push
+
+Push reading-core outbox mutations from the local device.
+
+**Endpoint**: `POST /sync-push`
+
+**Request**:
+```typescript
+{
+  items: Array<{
+    id: string;
+    client_mutation_id: string;
+    client_entity_id: string;
+    user_id: string;
+    entity: 'books' | 'reading_sessions' | 'progress_logs' | 'journal_entries' | 'goals' | 'profile_preferences';
+    operation: 'create' | 'update' | 'delete' | 'restore';
+    payload: Record<string, unknown>;
+  }>;
+}
+```
+
+**Response**:
+```typescript
+{
+  success: boolean;
+  accepted: Array<{
+    id: string;
+    client_mutation_id: string;
+    entity: string;
+    client_entity_id: string;
+    server_entity_id?: string;
+    record?: unknown;
+  }>;
+  failed: Array<{
+    id: string;
+    client_mutation_id: string;
+    entity: string;
+    client_entity_id: string;
+    error: string;
+    retryable: boolean;
+  }>;
+  cursor: string;
+}
+```
+
+**Notes**:
+- The server rejects items whose `user_id` does not match the authenticated user.
+- Book creates/restores route through `add_library_book`.
+- Progress logs route through `log_progress_transaction` with client log IDs.
+- Journal and goal deletes are soft deletes, not hard deletes.
+
 ## Authentication
 
-All functions require a valid Supabase JWT token in the `Authorization` header:
+All protected functions require a valid Supabase JWT token in the `Authorization` header. `search-books` is intentionally public and has `verify_jwt = false`.
 
 ```typescript
 headers: {
@@ -588,13 +817,13 @@ All functions return errors in a consistent format:
 ### Deploy All Functions
 
 ```bash
-npx supabase functions deploy
+npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api
 ```
 
 ### Deploy Specific Function
 
 ```bash
-npx supabase functions deploy search-books
+npx supabase functions deploy search-books --project-ref waftnaqgkcgufzapcihe --use-api
 ```
 
 ### Environment Variables
@@ -602,6 +831,10 @@ npx supabase functions deploy search-books
 Set in Supabase Dashboard or via CLI:
 
 ```bash
+npx supabase secrets set SUPABASE_URL=https://your-project.supabase.co
+npx supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+npx supabase secrets set ALLOWED_ORIGINS=https://yourdomain.com
+npx supabase secrets set ENVIRONMENT=production
 npx supabase secrets set GOOGLE_BOOKS_API_KEY=your-key
 npx supabase secrets set FCM_SERVER_KEY=your-fcm-key
 ```

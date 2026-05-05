@@ -336,17 +336,20 @@ const mutation = useMutation({
 
 #### Actions not syncing when back online
 
-**Cause**: Offline queue service not running
+**Cause**: Reading-core sync did not run, is offline, or has failed outbox items
 
 **Solution**:
 ```typescript
-// Check offline queue
-import { offlineQueue } from '@/services/offlineQueue';
+import { readingCoreSync } from '@/services/sync/engine';
 
-console.log('Queue size:', offlineQueue.getQueueSize());
+const status = await readingCoreSync.getStatus();
+console.log(status.pending, status.failed, status.syncing);
 
 // Manually trigger sync
-await offlineQueue.sync();
+await readingCoreSync.syncCurrentUser();
+
+// Inspect failed items
+console.table(await readingCoreSync.listFailedCurrentUser());
 ```
 
 #### "Offline" banner stuck

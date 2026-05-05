@@ -92,6 +92,7 @@ export const fetchRecentActivity = async (
     .from("goals")
     .select("id, created_at, target_books")
     .eq("user_id", userId)
+    .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .limit(5);
 
@@ -197,6 +198,7 @@ export const fetchReadingHistory = async (
     `
     )
     .eq("user_id", userId)
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
   if (journalError) throw journalError;

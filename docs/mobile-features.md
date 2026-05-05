@@ -288,7 +288,7 @@ const isOnline = useNetworkStatus();
 
 if (!isOnline) {
   // Show offline message
-  // Queue actions for sync
+  // Save supported reading-core changes locally for sync
 }
 ```
 
@@ -365,7 +365,7 @@ import { App } from '@capacitor/app';
 App.addListener('appStateChange', ({ isActive }) => {
   if (isActive) {
     // App came to foreground
-    // Sync offline queue
+    // Sync reading-core outbox
   } else {
     // App went to background
     // Save state
@@ -420,25 +420,22 @@ Android (`AndroidManifest.xml`):
 
 ### Features
 
-1. **Offline Queue** - Actions queued when offline
+1. **Durable Outbox** - Reading-core mutations queued when offline
 2. **Data Caching** - Frequently accessed data cached
 3. **Image Caching** - Book covers and images cached
 4. **Background Sync** - Auto-sync on reconnect
 
 ### Implementation
 
-**Offline Queue**:
+**Reading-Core Sync**:
 ```typescript
-import { offlineQueue } from '@/services/offlineQueue';
+import { readingCoreSync } from '@/services/sync/engine';
 
-// Queue action when offline
-offlineQueue.enqueue({
-  type: 'create_book',
-  data: bookData,
-});
+// Check current sync state
+const status = await readingCoreSync.getStatus();
 
 // Sync when online
-await offlineQueue.sync();
+await readingCoreSync.syncCurrentUser();
 ```
 
 **Data Cache**:

@@ -178,7 +178,8 @@ export const deactivateActiveBookCountGoals = async (
     .update({ is_active: false })
     .eq("user_id", userId)
     .eq("goal_type", "books_count")
-    .eq("is_active", true);
+    .eq("is_active", true)
+    .is("deleted_at", null);
 
   if (error) throw error;
 };

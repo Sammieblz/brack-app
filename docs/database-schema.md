@@ -8,7 +8,7 @@ Complete database schema documentation for Brack.
 - **Total Tables**: 27
 - **Schema**: `public`
 - **Row Level Security**: Enabled on all tables
-- **Migrations**: 31 SQL files in `supabase/migrations/`
+- **Migrations**: 41 SQL files in `supabase/migrations/`
 
 ## Entity Relationship Diagram
 
@@ -245,12 +245,21 @@ CREATE TABLE goals (
   completed_at TIMESTAMP WITH TIME ZONE,
   
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  deleted_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE INDEX idx_goals_user_id ON goals(user_id);
 CREATE INDEX idx_goals_active ON goals(user_id, is_active);
+CREATE INDEX idx_goals_user_updated_deleted ON goals(user_id, updated_at DESC, deleted_at);
+CREATE INDEX idx_goals_user_active_not_deleted ON goals(user_id, is_active, created_at DESC)
+  WHERE deleted_at IS NULL;
 ```
+
+**Sync behavior**:
+- Goals are soft-deleted with `deleted_at`
+- Deleted goals are also marked `is_active = false`
+- Active goal queries filter `deleted_at IS NULL`
 
 ## Journaling Tables
 
@@ -272,12 +281,18 @@ CREATE TABLE journal_entries (
   photo_url TEXT,
   
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  deleted_at TIMESTAMP WITH TIME ZONE
 );
 
 CREATE INDEX idx_journal_entries_user_book ON journal_entries(user_id, book_id, created_at DESC);
 CREATE INDEX idx_journal_entries_type ON journal_entries(entry_type, created_at DESC) 
   WHERE entry_type = 'quote';
+CREATE INDEX idx_journal_entries_user_updated_deleted
+  ON journal_entries(user_id, updated_at DESC, deleted_at);
+CREATE INDEX idx_journal_entries_book_active
+  ON journal_entries(book_id, created_at DESC)
+  WHERE deleted_at IS NULL;
 ```
 
 **Features**:
@@ -285,6 +300,7 @@ CREATE INDEX idx_journal_entries_type ON journal_entries(entry_type, created_at 
 - Photo attachments
 - Page references for quotes
 - Searchable tags
+- Soft-delete tombstones for cross-device sync
 
 ## Social Tables
 

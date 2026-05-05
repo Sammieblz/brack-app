@@ -75,6 +75,8 @@ export interface Goal {
   reminder_time: string | null;
   is_completed: boolean;
   created_at: string;
+  updated_at?: string | null;
+  deleted_at?: string | null;
 }
 
 export interface ReadingHabits {
