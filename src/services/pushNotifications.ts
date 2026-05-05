@@ -11,6 +11,10 @@ import {
  * Handles registration, token management, and notification events
  */
 export const pushNotificationsService = {
+  isNative(): boolean {
+    return Capacitor.isNativePlatform();
+  },
+
   /**
    * Register for push notifications
    */

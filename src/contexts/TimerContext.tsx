@@ -1,12 +1,10 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
-import { App } from "@capacitor/app";
-import { Capacitor, PluginListenerHandle } from "@capacitor/core";
-import { LocalNotifications } from "@capacitor/local-notifications";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
 import { createReadingSession, getCurrentAuthUser } from "@/services/api";
 import { booksRepo, sessionsRepo } from "@/services/local";
+import { timerNativeService } from "@/services/timerNative";
 
 interface TimerState {
   time: number;
@@ -56,8 +54,8 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const notificationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const backgroundTimeRef = useRef<Date | null>(null);
+  const notificationMinute = Math.floor(state.time / 60);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -88,11 +86,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
 
   // Handle app state changes (background/foreground)
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) {
-      return; // Only needed for native apps
-    }
-
-    const handleAppStateChange = async ({ isActive }: { isActive: boolean }) => {
+    return timerNativeService.onAppStateChange(({ isActive }) => {
       if (!isActive) {
         // App going to background - save current state
         backgroundTimeRef.current = new Date();
@@ -109,13 +103,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
           setState(prev => ({ ...prev, time: elapsed, isRunning: true }));
         }
       }
-    };
-
-    const listener = App.addListener('appStateChange', handleAppStateChange);
-
-    return () => {
-      listener.remove();
-    };
+    });
   }, [state.isRunning, state.isVisible, state.startTime]);
 
   // Save to localStorage whenever state changes
@@ -149,145 +137,42 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
 
   // Background notification for timer
   useEffect(() => {
-    const updateTimerNotification = async () => {
-      if (!Capacitor.isNativePlatform()) return;
-
-      if (state.isRunning && state.isVisible && state.bookTitle) {
-        const hours = Math.floor(state.time / 3600);
-        const minutes = Math.floor((state.time % 3600) / 60);
-        const seconds = state.time % 60;
-        
-        const timeString = hours > 0 
-          ? `${hours}h ${minutes}m`
-          : minutes > 0
-          ? `${minutes}m ${seconds}s`
-          : `${seconds}s`;
-
-        try {
-          await LocalNotifications.schedule({
-            notifications: [
-              {
-                title: `Reading: ${state.bookTitle}`,
-                body: `Timer running: ${timeString}`,
-                id: 1,
-                schedule: { at: new Date(Date.now() + 1000) },
-                ongoing: true,
-                sound: undefined,
-                attachments: undefined,
-                actionTypeId: 'TIMER_ACTION',
-                extra: {
-                  bookId: state.bookId,
-                  action: 'stop',
-                },
-              },
-            ],
-          });
-
-          // Update notification every minute
-          if (notificationIntervalRef.current) {
-            clearInterval(notificationIntervalRef.current);
-          }
-          
-          notificationIntervalRef.current = setInterval(async () => {
-            if (state.isRunning && state.isVisible) {
-              const hours = Math.floor(state.time / 3600);
-              const minutes = Math.floor((state.time % 3600) / 60);
-              const timeString = hours > 0 
-                ? `${hours}h ${minutes}m`
-                : `${minutes}m`;
-              
-              try {
-                await LocalNotifications.schedule({
-                  notifications: [
-                    {
-                      title: `Reading: ${state.bookTitle}`,
-                      body: `Timer running: ${timeString}`,
-                      id: 1,
-                      schedule: { at: new Date(Date.now() + 1000) },
-                      ongoing: true,
-                      sound: undefined,
-                      attachments: undefined,
-                      actionTypeId: 'TIMER_ACTION',
-                      extra: {
-                        bookId: state.bookId,
-                        action: 'stop',
-                      },
-                    },
-                  ],
-                });
-              } catch (error) {
-                console.error('Error updating timer notification:', error);
-              }
-            }
-          }, 60000); // Update every minute
-        } catch (error) {
-          console.error('Error showing timer notification:', error);
-        }
-      } else {
-        // Clear notification when timer stops
-        if (notificationIntervalRef.current) {
-          clearInterval(notificationIntervalRef.current);
-          notificationIntervalRef.current = null;
-        }
-        try {
-          await LocalNotifications.cancel({ notifications: [{ id: 1 }] });
-        } catch (error) {
-          console.error('Error clearing timer notification:', error);
-        }
-      }
-    };
-
-    updateTimerNotification();
-
-    return () => {
-      if (notificationIntervalRef.current) {
-        clearInterval(notificationIntervalRef.current);
-      }
-    };
-  }, [state.isRunning, state.isVisible, state.time, state.bookTitle, state.bookId]);
+    timerNativeService
+      .syncTimerNotification({
+        isRunning: state.isRunning,
+        isVisible: state.isVisible,
+        elapsedSeconds: notificationMinute * 60,
+        bookId: state.bookId,
+        bookTitle: state.bookTitle,
+      })
+      .catch((error) => {
+        console.error("Error syncing timer notification:", error);
+      });
+  }, [state.isRunning, state.isVisible, notificationMinute, state.bookTitle, state.bookId]);
 
   // Request notification permissions on mount
   useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
-      LocalNotifications.requestPermissions().catch(console.error);
-    }
+    timerNativeService.requestNotificationPermissions().catch(console.error);
   }, []);
 
   // Handle notification actions (stop timer from notification)
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
-
-    let listener: PluginListenerHandle | null = null;
-
-    const setupListener = async () => {
-      listener = await LocalNotifications.addListener(
-        'localNotificationActionPerformed',
-        (notification) => {
-          if (notification.notification.extra?.action === 'stop' && state.isRunning) {
-            // Cancel the timer
-            setState({
-              time: 0,
-              isRunning: false,
-              startTime: null,
-              bookId: null,
-              bookTitle: null,
-              clientSessionId: null,
-              isVisible: false,
-              isMinimized: true,
-            });
-            toast.info("Timer stopped from notification");
-          }
-        }
-      );
-    };
-
-    setupListener();
-
-    return () => {
-      if (listener) {
-        listener.remove();
+    return timerNativeService.onTimerAction((action) => {
+      if (action === "stop" && state.isRunning) {
+        // Cancel the timer
+        setState({
+          time: 0,
+          isRunning: false,
+          startTime: null,
+          bookId: null,
+          bookTitle: null,
+          clientSessionId: null,
+          isVisible: false,
+          isMinimized: true,
+        });
+        toast.info("Timer stopped from notification");
       }
-    };
+    });
   }, [state.isRunning]);
 
   const startTimer = (bookId: string, bookTitle: string) => {
@@ -416,6 +301,10 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       });
 
       const session = result.session;
+      if (!session) {
+        throw new Error("Reading session was not returned");
+      }
+
       const userId = session.user_id;
 
       const hours = Math.floor(durationMinutes / 60);

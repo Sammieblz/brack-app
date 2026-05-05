@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
-import { rateLimit } from "../_shared/rateLimit.ts";
+import { createServiceClient } from "../_shared/appEndpoint.ts";
+import { enforceRateLimit } from "../_shared/rateLimit.ts";
 import { parseJsonBody, requireFields } from "../_shared/validation.ts";
 
 interface GoogleBooksVolume {
@@ -94,10 +95,10 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const limited = rateLimit(req, limiterConfig);
-  if (limited) return limited;
-
   try {
+    const limited = await enforceRateLimit(req, createServiceClient(), limiterConfig);
+    if (limited) return limited;
+
     const parsed = await parseJsonBody<{ query?: string; maxResults?: number }>(
       req,
     );

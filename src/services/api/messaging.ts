@@ -34,50 +34,13 @@ export const fetchConversations = async (): Promise<Conversation[]> => {
   const user = await getCurrentAuthUser();
   if (!user) return [];
 
-  const { data: convData, error } = await supabase
-    .from("conversations")
-    .select("*")
-    .or(`participant_one_id.eq.${user.id},participant_two_id.eq.${user.id}`)
-    .order("updated_at", { ascending: false });
+  const { data, error } = await supabase.rpc("get_conversation_summaries", {
+    p_user_id: user.id,
+  });
 
   if (error) throw error;
 
-  return Promise.all(
-    (convData || []).map(async (conv) => {
-      const otherUserId =
-        conv.participant_one_id === user.id
-          ? conv.participant_two_id
-          : conv.participant_one_id;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id, display_name, avatar_url")
-        .eq("id", otherUserId)
-        .single();
-
-      const { data: lastMsg } = await supabase
-        .from("messages")
-        .select("content, created_at, sender_id")
-        .eq("conversation_id", conv.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      const { count } = await supabase
-        .from("messages")
-        .select("*", { count: "exact", head: true })
-        .eq("conversation_id", conv.id)
-        .eq("is_read", false)
-        .neq("sender_id", user.id);
-
-      return {
-        ...conv,
-        other_user: profile || undefined,
-        last_message: lastMsg || undefined,
-        unread_count: count || 0,
-      };
-    })
-  );
+  return Array.isArray(data) ? (data as Conversation[]) : [];
 };
 
 export const getOrCreateConversation = async (

@@ -5,6 +5,7 @@ import {
   optionsResponse,
   parseJsonBody,
 } from "../_shared/appEndpoint.ts";
+import { enforceRateLimit } from "../_shared/rateLimit.ts";
 
 interface DashboardHomeBody {
   recent_limit?: unknown;
@@ -22,6 +23,14 @@ Deno.serve(async (req) => {
     const authResult = await getAuthenticatedUser(req, supabaseClient, origin);
     if ("response" in authResult) return authResult.response;
 
+    const limited = await enforceRateLimit(req, supabaseClient, {
+      name: "dashboard-home",
+      identifier: authResult.user.id,
+      limit: 120,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
+
     const url = new URL(req.url);
     const body = req.method === "GET" ? {} : await parseJsonBody<DashboardHomeBody>(req);
     const requestedLimit = Number.parseInt(
@@ -34,9 +43,10 @@ Deno.serve(async (req) => {
       ? Math.min(Math.max(requestedLimit, 1), 30)
       : 10;
 
-    const { data, error } = await supabaseClient.rpc("get_user_dashboard_stats", {
+    const { data, error } = await supabaseClient.rpc("get_dashboard_home_snapshot", {
       p_user_id: authResult.user.id,
       p_recent_limit: recentLimit,
+      p_max_age_seconds: 300,
     });
 
     if (error) throw error;

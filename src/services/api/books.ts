@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { dataCache } from "@/services/dataCache";
 import { booksRepo } from "@/services/local";
 import type { Book } from "@/types";
+import { completeReading } from "./reading";
 
 export interface SearchBooksRequest {
   query: string;
@@ -191,14 +192,29 @@ export const updateBookStatus = async (
   book: Book,
   newStatus: "reading" | "completed" | "to_read"
 ): Promise<Partial<Book>> => {
+  if (newStatus === "completed") {
+    const result = await completeReading({
+      bookId: book.id,
+      markComplete: true,
+    });
+
+    const updatedBook = result.book ?? {
+      ...book,
+      status: "completed",
+      date_finished: book.date_finished || new Date().toISOString().split("T")[0],
+      updated_at: new Date().toISOString(),
+    };
+
+    await booksRepo.upsertRemote(updatedBook.user_id, updatedBook);
+    invalidateBooksCache(updatedBook.user_id);
+    emitBooksChanged({ type: "upsert", userId: updatedBook.user_id, book: updatedBook });
+    return updatedBook;
+  }
+
   const updateData: Record<string, unknown> = {
     status: newStatus,
     updated_at: new Date().toISOString(),
   };
-
-  if (newStatus === "completed" && !book.date_finished) {
-    updateData.date_finished = new Date().toISOString();
-  }
 
   if (newStatus === "reading" && !book.date_started) {
     updateData.date_started = new Date().toISOString();

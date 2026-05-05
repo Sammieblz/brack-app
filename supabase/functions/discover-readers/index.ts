@@ -1,5 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
+import { createServiceClient } from '../_shared/appEndpoint.ts';
 import { getCorsHeaders } from '../_shared/cors.ts';
+import { enforceRateLimit } from '../_shared/rateLimit.ts';
 
 interface ReaderRecommendation {
   id: string;
@@ -42,6 +44,14 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    const limited = await enforceRateLimit(req, createServiceClient(), {
+      name: 'discover-readers',
+      identifier: user.id,
+      limit: 60,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const { searchQuery, maxDistance } = await req.json();
 

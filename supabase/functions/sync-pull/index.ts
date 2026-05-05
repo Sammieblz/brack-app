@@ -5,6 +5,7 @@ import {
   optionsResponse,
   parseJsonBody,
 } from "../_shared/appEndpoint.ts";
+import { enforceRateLimit } from "../_shared/rateLimit.ts";
 
 type CursorQuery<T> = T & {
   gt: (column: string, value: string) => T;
@@ -31,6 +32,14 @@ Deno.serve(async (req) => {
     const supabaseClient = createServiceClient();
     const authResult = await getAuthenticatedUser(req, supabaseClient, origin);
     if ("response" in authResult) return authResult.response;
+
+    const limited = await enforceRateLimit(req, supabaseClient, {
+      name: "sync-pull",
+      identifier: authResult.user.id,
+      limit: 120,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const body = await parseJsonBody<SyncPullBody>(req);
     const cursor = typeof body.cursor === "string" && body.cursor ? body.cursor : null;

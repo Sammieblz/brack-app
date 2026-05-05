@@ -5,6 +5,7 @@ import {
   optionsResponse,
   parseJsonBody,
 } from "../_shared/appEndpoint.ts";
+import { enforceRateLimit } from "../_shared/rateLimit.ts";
 
 interface CreateReadingSessionBody {
   book_id?: unknown;
@@ -29,6 +30,14 @@ Deno.serve(async (req) => {
     const supabaseClient = createServiceClient();
     const authResult = await getAuthenticatedUser(req, supabaseClient, origin);
     if ("response" in authResult) return authResult.response;
+
+    const limited = await enforceRateLimit(req, supabaseClient, {
+      name: "create-reading-session",
+      identifier: authResult.user.id,
+      limit: 60,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const body = await parseJsonBody<CreateReadingSessionBody>(req);
     const bookId = typeof body.book_id === "string" ? body.book_id : "";

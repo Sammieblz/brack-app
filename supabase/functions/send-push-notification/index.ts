@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { enforceRateLimit } from "../_shared/rateLimit.ts";
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
@@ -58,6 +59,14 @@ interface NotificationPayload {
       );
     }
 
+    const limited = await enforceRateLimit(req, supabaseClient, {
+      name: "send-push-notification",
+      identifier: user.id,
+      limit: 20,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
+
     // Parse request body
     const body = await req.json();
     const { user_ids, notification, platform } = body;
@@ -67,6 +76,17 @@ interface NotificationPayload {
         JSON.stringify({ error: "user_ids array is required" }),
         {
           status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const targetUserIds = [...new Set(user_ids.filter((id) => typeof id === "string"))];
+    if (targetUserIds.length === 0 || targetUserIds.some((id) => id !== user.id)) {
+      return new Response(
+        JSON.stringify({ error: "Push notifications can only target the authenticated user" }),
+        {
+          status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
@@ -86,7 +106,7 @@ interface NotificationPayload {
     let query = supabaseClient
       .from("push_tokens")
       .select("token, platform")
-      .in("user_id", user_ids);
+      .in("user_id", targetUserIds);
 
     if (platform) {
       query = query.eq("platform", platform);

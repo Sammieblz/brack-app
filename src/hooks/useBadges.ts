@@ -1,16 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Capacitor } from "@capacitor/core";
 import { useToast } from "@/hooks/use-toast";
 import type { Badge, UserBadge } from "@/types";
-import { getAbsoluteBadgeImageUrl } from "@/lib/badgeImages";
 import { NewBadgeToast } from "@/components/NewBadgeToast";
 import { useBadgeCelebration } from "@/contexts/BadgeCelebrationContext";
 import {
   awardBadges,
   fetchUserBadges,
-  sendPushNotification,
   type AwardedBadge,
 } from "@/services/api";
+import { badgeNotificationService } from "@/services/badgeNotifications";
 
 interface BadgesAwardedEventDetail {
   userId?: string;
@@ -52,26 +50,11 @@ export const useBadges = (userId?: string) => {
           description: React.createElement(NewBadgeToast, { badge }),
         });
 
-        if (Capacitor.isNativePlatform()) {
-          const imageUrl = getAbsoluteBadgeImageUrl(badge);
-          sendPushNotification({
-            user_ids: [userId],
-            notification: {
-              title: "New Badge Earned!",
-              body: `${badge.title}${badge.description ? ` - ${badge.description}` : ""}`,
-              image: imageUrl ?? undefined,
-              data: {
-                type: "badge_earned",
-                badgeId: badge.id,
-                badgeTitle: badge.title,
-                badgeDescription: badge.description,
-                badgeImageUrl: imageUrl ?? null,
-              },
-            },
-          }).catch((error) => {
+        badgeNotificationService
+          .notifyBadgeEarned(userId, badge)
+          .catch((error) => {
             console.error("Error sending badge push notification:", error);
           });
-        }
 
         showCelebration(badge);
       }

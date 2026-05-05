@@ -12,6 +12,9 @@ verify_jwt = true
 [functions.create-reading-session]
 verify_jwt = true
 
+[functions.complete-reading]
+verify_jwt = true
+
 [functions.award-badges]
 verify_jwt = true
 

@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { getCorsHeaders } from '../_shared/cors.ts';
+import { enforceRateLimit } from '../_shared/rateLimit.ts';
 
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
@@ -35,6 +36,14 @@ Deno.serve(async (req) => {
       });
     }
     userId = user.id;
+
+    const limited = await enforceRateLimit(req, supabaseClient, {
+      name: 'log-progress',
+      identifier: user.id,
+      limit: 60,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const { book_id, page_number, chapter_number, paragraph_number, notes, log_type, time_spent_minutes, photo_url, client_log_id } = await req.json();
 

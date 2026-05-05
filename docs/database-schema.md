@@ -5,10 +5,12 @@ Complete database schema documentation for Brack.
 ## Overview
 
 - **Database**: PostgreSQL 15 (via Supabase)
-- **Total Tables**: 27
+- **Total Tables**: 32
 - **Schema**: `public`
 - **Row Level Security**: Enabled on all tables
-- **Migrations**: 41 SQL files in `supabase/migrations/`
+- **Migrations**: 53 SQL files in `supabase/migrations/`
+
+For the current audit-grade inventory, use [Table Catalog](./schema/table-catalog.md), [Functions and Triggers](./schema/functions-and-triggers.md), and [RLS Matrix](./security/rls-matrix.md). This page is a high-level schema overview.
 
 ## Entity Relationship Diagram
 

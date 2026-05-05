@@ -1,5 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
+import { createServiceClient } from '../_shared/appEndpoint.ts';
 import { getCorsHeaders } from '../_shared/cors.ts';
+import { enforceRateLimit } from '../_shared/rateLimit.ts';
 
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
@@ -28,6 +30,14 @@ Deno.serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const limited = await enforceRateLimit(req, createServiceClient(), {
+      name: 'social-feed',
+      identifier: user.id,
+      limit: 120,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const { limit = 20, offset = 0 } = await req.json();
 

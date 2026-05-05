@@ -11,8 +11,8 @@ This documentation provides comprehensive coverage of:
 - **Deployment** - Ship to production
 - **Troubleshooting** - Solve common issues
 
-**Total Documents**: 20  
-**Last Updated**: February 4, 2026
+**Total Documents**: 55  
+**Last Updated**: May 5, 2026
 
 ---
 
@@ -32,6 +32,8 @@ This documentation provides comprehensive coverage of:
 2. **[Database Schema](./database-schema.md)** - Review data model
 3. **[API Reference](./api-reference.md)** - Edge Functions documentation
 4. **[Hooks Reference](./hooks.md)** - Custom hooks API
+5. **[Sprint Backlog](./backlog.md)** - Current implementation checklist and ticket statuses
+6. **[Table Catalog](./schema/table-catalog.md)** - Remote public schema inventory
 
 ### Mobile Developers
 
@@ -45,6 +47,10 @@ This documentation provides comprehensive coverage of:
 2. **[Database Schema](./database-schema.md)** - Database management
 3. **[Troubleshooting](./troubleshooting.md)** - Common issues
 4. **[API Reference](./api-reference.md)** - Backend services
+5. **[Edge Function Catalog](./backend/edge-functions.md)** - Active maintained and retired functions
+6. **[RLS Matrix](./security/rls-matrix.md)** - Public table permission matrix
+7. **[Scale Readiness](./performance/scale-readiness.md)** - Supabase hardening and scale-prep status
+8. **[Observability](./operations/observability.md)** - Alerts, monitoring, and operational SQL checks
 
 ---
 
@@ -66,6 +72,38 @@ This documentation provides comprehensive coverage of:
 - [State Management](./state-management.md) - State patterns
 - [Database Schema](./database-schema.md) - Data model
 - [API Reference](./api-reference.md) - Backend API
+- [Sprint Backlog](./backlog.md) - Ticket checklist and implementation status
+- [Table Catalog](./schema/table-catalog.md) - Public schema catalog
+- [Functions and Triggers](./schema/functions-and-triggers.md) - Database function/trigger catalog
+- [Domain Map](./architecture/domain-map.md) - Domain ownership boundaries
+- [Edge Function Catalog](./backend/edge-functions.md) - Edge Function inventory
+- [RLS Matrix](./security/rls-matrix.md) - Row Level Security matrix
+- [Onboarding/Auth Audit](./security/onboarding-auth-audit.md) - Signup/profile/onboarding audit
+- [Visibility Semantics](./security/visibility-semantics.md) - Shared visibility model
+- [Reading Write-Path Audit](./reading/write-path-audit.md) - Reading workflow write paths
+- [Reading Completion Transaction](./reading/completion-transaction.md) - Consolidated reading completion backend path
+- [Dashboard Query Audit](./performance/dashboard-query-audit.md) - Dashboard round trips and aggregation review
+- [Index Audit](./performance/index-audit.md) - Hot-path index coverage and migration notes
+- [Dashboard Read Model](./performance/dashboard-read-model.md) - Snapshot-backed dashboard response model
+- [Scale Readiness](./performance/scale-readiness.md) - Supabase hardening and scale-prep status
+- [Observability](./operations/observability.md) - Alerts, monitoring, and operational SQL checks
+- [Books Schema Review](./data/books-schema-review.md) - Current book metadata/user-state assessment
+- [Books/User Books Migration Plan](./data/books-user-books-migration-plan.md) - Future canonical/user split plan
+- [Activity Generation Audit](./social/activity-generation-audit.md) - Social activity producer review
+- [Activity Types](./social/activity-types.md) - Canonical feed event names
+- [Feed Policy](./social/feed-policy.md) - Feed inclusion and fanout rules
+- [Club Roles and Permissions](./clubs/roles-and-permissions.md) - Club role policy and RLS alignment
+- [Messaging Permissions Audit](./messaging/permissions-audit.md) - Conversation/message access and unread strategy
+- [Conversation Summary](./messaging/conversation-summary.md) - Efficient conversation list read model
+- [Frontend Service Boundaries](./architecture/frontend-service-boundaries.md) - Domain API access rules
+- [Mobile Device Boundaries](./architecture/mobile-device-boundaries.md) - Capacitor/plugin ownership and fallbacks
+- [Product KPIs](./analytics/kpis.md) - Primary and secondary success metrics
+- [In-Product Analytics](./analytics/in-product-analytics.md) - User-facing analytics review
+- [Analytics Snapshot Strategy](./analytics/snapshot-strategy.md) - Snapshot generation and consumption plan
+- [Progress Model](./product/progress-model.md) - Progress and completion rules
+- [Streak Rules](./product/streak-rules.md) - Streak calculation and ownership
+- [Reading Loop Friction Audit](./product/reading-loop-friction-audit.md) - Core reading-loop UX notes
+- [Must-Win Screens](./product/must-win-screens.md) - Retention-critical surfaces and quality bars
 
 ### Features
 - [Mobile Features](./mobile-features.md) - Native capabilities
@@ -95,6 +133,21 @@ This documentation provides comprehensive coverage of:
 | ...deploy to mobile? | [Deployment](./deployment.md#mobile-deployment) |
 | ...add a new feature? | [Contributing](./contributing.md#adding-new-features) |
 | ...create a database table? | [Database Schema](./database-schema.md), [FAQ](./faq.md#how-do-i-add-a-new-database-table) |
+| ...check backlog status? | [Sprint Backlog](./backlog.md) |
+| ...review RLS coverage? | [RLS Matrix](./security/rls-matrix.md) |
+| ...find database triggers? | [Functions and Triggers](./schema/functions-and-triggers.md) |
+| ...understand reading progress rules? | [Progress Model](./product/progress-model.md) |
+| ...audit reading writes? | [Reading Write-Path Audit](./reading/write-path-audit.md) |
+| ...understand reading completion side effects? | [Reading Completion Transaction](./reading/completion-transaction.md) |
+| ...audit dashboard performance? | [Dashboard Query Audit](./performance/dashboard-query-audit.md) |
+| ...understand the dashboard read model? | [Dashboard Read Model](./performance/dashboard-read-model.md) |
+| ...check scale readiness? | [Scale Readiness](./performance/scale-readiness.md) |
+| ...configure observability? | [Observability](./operations/observability.md) |
+| ...review book schema split risks? | [Books Schema Review](./data/books-schema-review.md) |
+| ...review feed activity types? | [Activity Types](./social/activity-types.md) |
+| ...check message permissions? | [Messaging Permissions Audit](./messaging/permissions-audit.md) |
+| ...review product KPIs? | [Product KPIs](./analytics/kpis.md) |
+| ...check service boundaries? | [Frontend Service Boundaries](./architecture/frontend-service-boundaries.md) |
 | ...create a new component? | [Components](./components.md#creating-new-components) |
 | ...create a custom hook? | [Quick Reference](./quick-reference.md#create-new-hook) |
 | ...handle offline mode? | [Offline Support](./offline-support.md) |
@@ -107,6 +160,8 @@ This documentation provides comprehensive coverage of:
 | ...the architecture? | [Architecture](./architecture.md) |
 | ...the tech stack? | [Tech Stack](./tech-stack.md) |
 | ...the database schema? | [Database Schema](./database-schema.md) |
+| ...the source-of-truth table catalog? | [Table Catalog](./schema/table-catalog.md) |
+| ...domain ownership boundaries? | [Domain Map](./architecture/domain-map.md) |
 | ...the file structure? | [File Structure](./file-structure.md) |
 | ...Row Level Security? | [Authentication](./authentication.md#row-level-security-rls) |
 | ...TanStack Query? | [State Management](./state-management.md#tanstack-query-react-query) |
@@ -139,15 +194,18 @@ This documentation provides comprehensive coverage of:
 ### Documents by Category
 
 - **Getting Started**: 3 documents
-- **Architecture**: 4 documents
-- **Development**: 7 documents
-- **Operations**: 3 documents
+- **Architecture and Schema**: 8 documents
+- **Security/Audit**: 4 documents
+- **Performance/Data**: 6 documents
+- **Development/API/Features**: 24 documents
+- **Operations**: 4 documents
 - **Community**: 2 documents
-- **Index/Summary**: 1 document
+- **Backlog/Audit**: 1 document
+- **Index/Summary**: 2 documents
 
 ### Total Content
 
-- **~20,000 words** across all documents
+- **~20,000+ words** across all documents
 - **100+ code examples**
 - **50+ diagrams** (ASCII art)
 - **Comprehensive coverage** of all features
