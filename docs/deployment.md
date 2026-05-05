@@ -246,7 +246,7 @@ Function JWT settings are controlled in `supabase/config.toml`. The current inte
 
 After deployment, verify remote drift with the Supabase dashboard, MCP, or CLI before relying on protected user data.
 
-The remote project currently still lists legacy functions from 2025 (`get-book-details`, `update-reading-progress`, `daily-summary`) that are not maintained in this repo. Review or remove them separately when cleaning the production function surface.
+The legacy 2025 functions (`get-book-details`, `update-reading-progress`, `daily-summary`) were removed from the remote project on May 5, 2026 after confirming there are no local consumers.
 
 ### Environment Secrets
 

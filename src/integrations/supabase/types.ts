@@ -1312,6 +1312,26 @@ export type Database = {
         Args: { p_event?: string | null; p_user_id: string }
         Returns: Json
       }
+      complete_reading_transaction: {
+        Args: {
+          p_book_id: string
+          p_chapter_number?: number | null
+          p_client_log_id?: string | null
+          p_client_session_id?: string | null
+          p_duration_minutes?: number | null
+          p_end_time?: string | null
+          p_log_type?: string | null
+          p_mark_complete?: boolean | null
+          p_notes?: string | null
+          p_page_number?: number | null
+          p_paragraph_number?: number | null
+          p_photo_url?: string | null
+          p_start_time?: string | null
+          p_time_spent_minutes?: number | null
+          p_user_id: string
+        }
+        Returns: Json
+      }
       create_reading_session: {
         Args: {
           p_book_id: string
@@ -1325,6 +1345,18 @@ export type Database = {
       }
       get_user_dashboard_stats: {
         Args: { p_recent_limit?: number; p_user_id: string }
+        Returns: Json
+      }
+      get_conversation_summaries: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
+      get_dashboard_home_snapshot: {
+        Args: {
+          p_max_age_seconds?: number
+          p_recent_limit?: number
+          p_user_id: string
+        }
         Returns: Json
       }
       is_club_admin: {

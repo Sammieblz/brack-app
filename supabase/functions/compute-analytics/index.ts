@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { createErrorResponse } from "../_shared/errorHandler.ts";
+import { enforceRateLimit } from "../_shared/rateLimit.ts";
 
 serve(async (req) => {
   // Handle CORS
@@ -46,6 +47,14 @@ serve(async (req) => {
         origin
       );
     }
+
+    const limited = await enforceRateLimit(req, supabaseClient, {
+      name: "compute-analytics",
+      identifier: user.id,
+      limit: 20,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     // Parse request body
     const { date } = await req.json();

@@ -44,13 +44,14 @@ export function createErrorResponse(
 
 ### rateLimit.ts
 
-Simple in-memory rate limiting.
+Distributed Edge Function rate limiting backed by the `api_rate_limits` table and `check_api_rate_limit` RPC. An in-memory limiter remains as a fallback if the distributed RPC is temporarily unavailable.
 
 ```typescript
-export function rateLimit(
+export function enforceRateLimit(
   req: Request,
+  supabaseClient: { rpc: Function },
   config: { name: string; limit: number; windowMs: number }
-): Response | null;
+): Promise<Response | null>;
 ```
 
 ### validation.ts
@@ -77,10 +78,11 @@ Current maintained local function catalog:
 | --- | --- | --- |
 | `search-books` | Google Books search | No |
 | `add-book` | Protected library insert with duplicate handling | Yes |
-| `dashboard-home` | Dashboard aggregate payload | Yes |
+| `dashboard-home` | Snapshot-backed dashboard payload | Yes |
+| `complete-reading` | Consolidated reading completion transaction | Yes |
 | `create-reading-session` | Persist timer reading sessions | Yes |
 | `award-badges` | Award badges for a user event | Yes |
-| `log-progress` | Atomic progress logging | Yes |
+| `log-progress` | Progress logging through completion transaction | Yes |
 | `calculate-book-progress` | Book-level progress analytics | Yes |
 | `monthly-stats` | Monthly reading statistics | Yes |
 | `enhanced-activity` | Enriched activity feed | Yes |
@@ -91,9 +93,7 @@ Current maintained local function catalog:
 | `sync-pull` | Pull reading-core sync changes | Yes |
 | `sync-push` | Push reading-core outbox mutations | Yes |
 
-Local JWT settings live in `supabase/config.toml`. Remote deployment was verified on May 5, 2026: every maintained function except public `search-books` is deployed with `verify_jwt = true`.
-
-The remote project also still lists legacy functions from 2025 (`get-book-details`, `update-reading-progress`, `daily-summary`). They are not present in `supabase/functions/` and should be reviewed or removed before being treated as supported API surface.
+Local JWT settings live in `supabase/config.toml`. Remote deployment was verified on May 5, 2026: every maintained function except public `search-books` is deployed with `verify_jwt = true`. The legacy 2025 functions `get-book-details`, `update-reading-progress`, and `daily-summary` were deleted remotely after confirming there are no local consumers.
 
 ### search-books
 
@@ -130,7 +130,7 @@ Search for books using Google Books API.
 }
 ```
 
-**Rate Limit**: 30 requests per minute
+**Rate Limit**: 30 requests per minute per client IP
 
 **Auth**: Public function (`verify_jwt = false`). The app may still call it through the Supabase client, but a user JWT is not required.
 
@@ -197,11 +197,56 @@ Load dashboard aggregate data for the authenticated user.
 }
 ```
 
-**Response**: payload returned by the `get_user_dashboard_stats` RPC.
+**Response**: dashboard home payload returned by `get_dashboard_home_snapshot`. Fresh snapshots are read from `dashboard_home_snapshots`; stale or missing snapshots refresh through `get_user_dashboard_stats`.
+
+### complete-reading
+
+Run the consolidated reading completion transaction.
+
+**Endpoint**: `POST /complete-reading`
+
+**Request**:
+```typescript
+{
+  book_id: string;
+  start_time?: string;
+  end_time?: string;
+  duration_minutes?: number;
+  client_session_id?: string;
+  page_number?: number;
+  chapter_number?: number;
+  paragraph_number?: number;
+  notes?: string;
+  log_type?: string;
+  time_spent_minutes?: number;
+  photo_url?: string;
+  client_log_id?: string;
+  mark_complete?: boolean;
+}
+```
+
+**Response**:
+```typescript
+{
+  success: boolean;
+  idempotent?: boolean;
+  session?: Record<string, unknown> | null;
+  progress_log?: Record<string, unknown> | null;
+  book?: Record<string, unknown>;
+  progress?: Record<string, unknown>;
+  streak?: Record<string, unknown>;
+  goal_progress?: unknown[];
+  activity?: Record<string, unknown> | null;
+  awarded_badges?: unknown[];
+  awarded_count?: number;
+}
+```
+
+This is the canonical backend path for online reading completion. It can persist a session, persist progress, update book state, refresh streaks, complete active goals, create deduped book activity, and award badges.
 
 ### create-reading-session
 
-Persist a completed timer session through the `create_reading_session` RPC.
+Persist a completed timer session through `create_reading_session`, which delegates to `complete_reading_transaction`.
 
 **Endpoint**: `POST /create-reading-session`
 
@@ -373,7 +418,7 @@ const { activities, total } = await response.json();
 
 ### log-progress
 
-Log reading progress with atomic transaction.
+Log reading progress through the consolidated completion transaction.
 
 **Endpoint**: `POST /log-progress`
 
@@ -417,7 +462,7 @@ Log reading progress with atomic transaction.
 ```
 
 **Features**:
-- Atomic transaction (log + book update)
+- Atomic transaction for progress, book update, streak refresh, goal completion, activity, and badges when applicable
 - Auto-update book's current_page
 - Calculate progress percentage
 - Idempotent offline sync support through `client_log_id`
@@ -564,10 +609,14 @@ Send push notifications via Firebase Cloud Messaging.
 **Request**:
 ```typescript
 {
-  user_id: string;          // Target user
-  title: string;            // Notification title
-  body: string;             // Notification body
-  data?: Record<string, string>; // Custom data
+  user_ids: string[];       // Must contain only the authenticated user
+  notification: {
+    title: string;
+    body: string;
+    data?: Record<string, string>;
+    image?: string;
+  };
+  platform?: 'ios' | 'android';
 }
 ```
 
@@ -575,7 +624,10 @@ Send push notifications via Firebase Cloud Messaging.
 ```typescript
 {
   success: boolean;
-  sent_count: number;  // Number of tokens notified
+  results: {
+    ios: { tokens: number; sent: number; failed: number };
+    android: { tokens: number; sent: number; failed: number };
+  };
 }
 ```
 
@@ -588,14 +640,16 @@ const response = await fetch(`${SUPABASE_URL}/functions/v1/send-push-notificatio
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    user_id: 'user-uuid',
-    title: 'New follower',
-    body: 'John Doe started following you',
-    data: { type: 'follower', user_id: 'john-uuid' },
+    user_ids: ['current-user-uuid'],
+    notification: {
+      title: 'New badge earned',
+      body: 'You unlocked a new badge',
+      data: { type: 'badge_earned' },
+    },
   }),
 });
 
-const { success, sent_count } = await response.json();
+const { success, results } = await response.json();
 ```
 
 **Environment Variables**:
@@ -868,7 +922,7 @@ curl -i --location --request POST \
 1. **Always validate input** - Use `requireFields` helper
 2. **Handle errors gracefully** - Use `createErrorResponse`
 3. **Set CORS headers** - Use `getCorsHeaders`
-4. **Implement rate limiting** - Use `rateLimit` helper
+4. **Implement rate limiting** - Use `enforceRateLimit` with a service client
 5. **Keep functions small** - Single responsibility
 6. **Use TypeScript** - Type safety and better DX
 7. **Log errors** - Use `console.error` for debugging

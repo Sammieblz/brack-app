@@ -5,6 +5,7 @@ import {
   optionsResponse,
   parseJsonBody,
 } from "../_shared/appEndpoint.ts";
+import { enforceRateLimit } from "../_shared/rateLimit.ts";
 
 interface AwardBadgesBody {
   event?: unknown;
@@ -21,6 +22,14 @@ Deno.serve(async (req) => {
     const supabaseClient = createServiceClient();
     const authResult = await getAuthenticatedUser(req, supabaseClient, origin);
     if ("response" in authResult) return authResult.response;
+
+    const limited = await enforceRateLimit(req, supabaseClient, {
+      name: "award-badges",
+      identifier: authResult.user.id,
+      limit: 60,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     let event: string | null = null;
     if (req.method !== "GET") {

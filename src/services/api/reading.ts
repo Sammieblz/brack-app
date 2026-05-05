@@ -12,15 +12,48 @@ export interface CreateReadingSessionRequest {
   clientSessionId?: string | null;
 }
 
-export interface CreateReadingSessionResponse {
+export interface CompleteReadingRequest {
+  bookId: string;
+  startTime?: string | null;
+  endTime?: string | null;
+  durationMinutes?: number | null;
+  clientSessionId?: string | null;
+  pageNumber?: number | null;
+  chapterNumber?: number | null;
+  paragraphNumber?: number | null;
+  notes?: string | null;
+  logType?: string | null;
+  timeSpentMinutes?: number | null;
+  photoUrl?: string | null;
+  clientLogId?: string | null;
+  markComplete?: boolean;
+}
+
+export interface CompleteReadingResponse {
   success: boolean;
   idempotent?: boolean;
-  session: ReadingSession;
+  session_idempotent?: boolean;
+  progress_idempotent?: boolean;
+  session: ReadingSession | null;
+  progress_log?: unknown;
+  log_id?: string | null;
   book?: Book | null;
   streak?: unknown;
+  goal_progress?: unknown;
+  activity?: unknown;
   awarded_badges?: AwardedBadge[];
   awarded_count?: number;
+  progress?: {
+    current_page: number;
+    total_pages: number | null;
+    progress_percentage: number;
+    pages_per_hour: number;
+    total_time_hours: number;
+    status: string;
+  };
 }
+
+export type CreateReadingSessionResponse = CompleteReadingResponse;
 
 export interface LogProgressRequest {
   id?: string;
@@ -86,6 +119,41 @@ export const createReadingSession = async (
     await sessionsRepo.upsertRemote(response.session.user_id, response.session);
     if (response.book) {
       await booksRepo.upsertRemote(response.session.user_id, response.book);
+    }
+  }
+
+  return response;
+};
+
+export const completeReading = async (
+  request: CompleteReadingRequest
+): Promise<CompleteReadingResponse> => {
+  const response = await invokeFunction<CompleteReadingResponse>("complete-reading", {
+    body: {
+      book_id: request.bookId,
+      start_time: request.startTime ?? null,
+      end_time: request.endTime ?? null,
+      duration_minutes: request.durationMinutes ?? null,
+      client_session_id: request.clientSessionId ?? null,
+      page_number: request.pageNumber ?? null,
+      chapter_number: request.chapterNumber ?? null,
+      paragraph_number: request.paragraphNumber ?? null,
+      notes: request.notes ?? null,
+      log_type: request.logType ?? "manual",
+      time_spent_minutes: request.timeSpentMinutes ?? null,
+      photo_url: request.photoUrl ?? null,
+      client_log_id: request.clientLogId ?? null,
+      mark_complete: request.markComplete ?? false,
+    },
+  });
+
+  const userId = response.session?.user_id || response.book?.user_id;
+  if (userId) {
+    if (response.session) {
+      await sessionsRepo.upsertRemote(userId, response.session);
+    }
+    if (response.book) {
+      await booksRepo.upsertRemote(userId, response.book);
     }
   }
 

@@ -4,7 +4,6 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
-import { updateBookStatusIfNeeded } from "@/utils/bookStatus";
 import { toast } from "@/hooks/use-toast";
 import { logProgress, uploadPublicStorageFile } from "@/services/api";
 import { Refresh, Camera, Xmark } from "iconoir-react";
@@ -166,9 +165,6 @@ export const ProgressLogger = ({
         title: "Progress logged!",
         description: `Updated to page ${pageNumber}${data.progress.status === 'completed' ? ' - Book completed!' : ''}`,
       });
-
-      // Update book status if needed
-      await updateBookStatusIfNeeded(bookId);
 
       // Reset form
       setPageNumber(currentPage || 0);

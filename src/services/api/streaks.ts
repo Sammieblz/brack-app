@@ -42,31 +42,6 @@ export const fetchStreakSummary = async (
   const days = (streakDays || []) as ReadingStreakDay[];
   const calculatedStreak = calculateStreakFromDays(days, profile);
   const activityCalendar = getActivityCalendarFromDays(days, 90);
-  const profileCurrentStreak = profile.current_streak || 0;
-  const profileLongestStreak = profile.longest_streak || 0;
-
-  if (
-    calculatedStreak.currentStreak !== profileCurrentStreak ||
-    calculatedStreak.longestStreak !== profileLongestStreak ||
-    calculatedStreak.lastReadingDate !== profile.last_reading_date
-  ) {
-    await supabase
-      .from("profiles")
-      .update({
-        current_streak: calculatedStreak.currentStreak,
-        longest_streak: calculatedStreak.longestStreak,
-        last_reading_date: calculatedStreak.lastReadingDate,
-      })
-      .eq("id", userId);
-
-    if (calculatedStreak.currentStreak > profileLongestStreak) {
-      await supabase.from("reading_streak_history").insert({
-        user_id: userId,
-        streak_count: calculatedStreak.currentStreak,
-        achieved_at: new Date().toISOString(),
-      });
-    }
-  }
 
   return {
     streakData: calculatedStreak,

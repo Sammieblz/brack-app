@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { pushNotificationsService } from '@/services/pushNotifications';
-import { Capacitor } from '@capacitor/core';
 import { toast } from "sonner";
 import { NewBadgeToast } from "@/components/NewBadgeToast";
 
@@ -18,7 +17,7 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
   const [error, setError] = useState<string | null>(null);
 
   const register = useCallback(async () => {
-    if (!Capacitor.isNativePlatform()) {
+    if (!pushNotificationsService.isNative()) {
       setError('Push notifications only available on native platforms');
       return;
     }
@@ -51,7 +50,7 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
 
   // Set up notification listeners
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
+    if (!pushNotificationsService.isNative()) return;
 
     const cleanup = pushNotificationsService.setupListeners((notification) => {
       console.log('Notification received:', notification);

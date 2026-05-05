@@ -296,6 +296,8 @@ services/
 ├── local/                 # IndexedDB/SQLite local repositories
 ├── sync/                  # Reading-core sync engine and types
 ├── syncService.ts         # Background sync facade
+├── timerNative.ts         # Native timer notifications/app state
+├── badgeNotifications.ts  # Badge push orchestration
 ├── deepLinkService.ts     # Deep link handling
 ├── pushNotifications.ts   # Push notification management
 ├── shareService.ts        # Native sharing
@@ -388,13 +390,13 @@ Backend configuration and code.
 ```
 supabase/
 ├── config.toml                # Supabase CLI configuration
-├── migrations/                # Database migrations (41 files)
+├── migrations/                # Database migrations (53 files)
 │   ├── 20250731180820_...sql # Enable RLS
 │   ├── 20260109044500_...sql # Add push tokens
 │   ├── 20260109044600_...sql # Add notification prefs
 │   ├── 20260204013937_...sql # Fix relationships
 │   ├── 20260204020000_...sql # Add journal photos
-│   └── ... (36 more)
+│   └── ... (42 more)
 │
 └── functions/                 # Edge Functions (Deno)
     ├── _shared/              # Shared utilities
@@ -406,6 +408,7 @@ supabase/
     ├── add-book/             # Protected library insert + duplicate handling
     ├── search-books/         # Public Google Books search
     ├── dashboard-home/       # Dashboard aggregate data
+    ├── complete-reading/     # Consolidated reading completion transaction
     ├── create-reading-session/ # Timer session persistence
     ├── award-badges/         # Badge awarding
     ├── compute-analytics/    # Daily analytics snapshots
@@ -456,11 +459,56 @@ Developer documentation (this directory).
 ```
 docs/
 ├── README.md              # Documentation index
+├── analytics/             # Analytics and KPI strategy
+│   ├── in-product-analytics.md
+│   ├── kpis.md
+│   └── snapshot-strategy.md
+├── backlog.md             # Sprint backlog and ticket status ledger
 ├── getting-started.md     # Setup guide
 ├── tech-stack.md          # Technologies used
 ├── architecture.md        # System architecture
+├── architecture/          # Domain ownership docs
+│   ├── domain-map.md
+│   ├── frontend-service-boundaries.md
+│   └── mobile-device-boundaries.md
+├── backend/               # Edge Function catalogs
+│   └── edge-functions.md
+├── clubs/                 # Club policy docs
+│   └── roles-and-permissions.md
+├── data/                  # Data model reviews and migration plans
+│   ├── books-schema-review.md
+│   └── books-user-books-migration-plan.md
 ├── file-structure.md      # This file
 ├── database-schema.md     # Database design
+├── performance/           # Query/index/read-model audits
+│   ├── dashboard-query-audit.md
+│   ├── dashboard-read-model.md
+│   ├── index-audit.md
+│   └── scale-readiness.md
+├── operations/            # Runtime monitoring and alerting
+│   └── observability.md
+├── messaging/             # Messaging permission docs
+│   ├── conversation-summary.md
+│   └── permissions-audit.md
+├── product/               # Product rules and UX audits
+│   ├── progress-model.md
+│   ├── reading-loop-friction-audit.md
+│   ├── streak-rules.md
+│   └── must-win-screens.md
+├── reading/               # Reading workflow audits
+│   ├── completion-transaction.md
+│   └── write-path-audit.md
+├── schema/                # Public schema audit catalogs
+│   ├── table-catalog.md
+│   └── functions-and-triggers.md
+├── security/              # Security audit docs
+│   ├── onboarding-auth-audit.md
+│   ├── visibility-semantics.md
+│   └── rls-matrix.md
+├── social/                # Social feed/activity docs
+│   ├── activity-generation-audit.md
+│   ├── activity-types.md
+│   └── feed-policy.md
 ├── api-reference.md       # Edge Functions
 ├── mobile-features.md     # Native features
 ├── troubleshooting.md     # Common issues

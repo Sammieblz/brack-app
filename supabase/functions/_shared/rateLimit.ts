@@ -16,21 +16,21 @@ type Bucket = {
   resetAt: number;
 };
 
-/**
- * Rate limiting implementation
- * 
- * NOTE: This uses in-memory storage which has limitations:
- * - Only works within a single edge function instance
- * - Rate limits reset when the instance restarts
- * - Multiple instances don't share rate limit state
- * 
- * For production use, consider:
- * - Using Supabase's built-in rate limiting (if available)
- * - Implementing distributed rate limiting with Supabase Storage or external Redis
- * - Using a third-party rate limiting service
- * 
- * TODO: Implement distributed rate limiting for production
- */
+type DistributedRateLimitResult = {
+  allowed?: boolean;
+  limit?: number;
+  remaining?: number;
+  reset_at?: string;
+  retry_after_seconds?: number;
+};
+
+type RateLimitClient = {
+  rpc: (
+    fn: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ data: unknown; error: unknown }>;
+};
+
 // Simple in-memory store scoped to the function instance.
 const buckets = new Map<string, Bucket>();
 
@@ -52,6 +52,32 @@ const getClientIdentifier = (req: Request) => {
   return "anonymous";
 };
 
+const rateLimitResponse = (
+  req: Request,
+  limit: number,
+  remaining: number,
+  resetAt: string,
+  retryAfterSeconds: number,
+): Response => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+
+  return new Response(
+    JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+    {
+      status: 429,
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "application/json",
+        "Retry-After": retryAfterSeconds.toString(),
+        "X-RateLimit-Limit": limit.toString(),
+        "X-RateLimit-Remaining": Math.max(0, remaining).toString(),
+        "X-RateLimit-Reset": resetAt,
+      },
+    },
+  );
+};
+
 export const rateLimit = (
   req: Request,
   options: RateLimitOptions,
@@ -69,22 +95,12 @@ export const rateLimit = (
 
   if (existing.count >= limit) {
     const retryAfter = Math.ceil((existing.resetAt - now) / 1000);
-    const origin = req.headers.get('origin');
-    const corsHeaders = getCorsHeaders(origin);
-
-    return new Response(
-      JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-      {
-        status: 429,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json",
-          "Retry-After": retryAfter.toString(),
-          "X-RateLimit-Limit": limit.toString(),
-          "X-RateLimit-Remaining": "0",
-          "X-RateLimit-Reset": existing.resetAt.toString(),
-        },
-      },
+    return rateLimitResponse(
+      req,
+      limit,
+      0,
+      existing.resetAt.toString(),
+      retryAfter,
     );
   }
 
@@ -92,4 +108,42 @@ export const rateLimit = (
   buckets.set(key, existing);
 
   return null;
+};
+
+export const enforceRateLimit = async (
+  req: Request,
+  supabaseClient: RateLimitClient,
+  options: RateLimitOptions,
+): Promise<Response | null> => {
+  const { limit, windowMs, name = "global", identifier } = options;
+  const bucketKey = `${name}:${identifier || getClientIdentifier(req)}`;
+
+  try {
+    const { data, error } = await supabaseClient.rpc("check_api_rate_limit", {
+      p_bucket_key: bucketKey,
+      p_limit: limit,
+      p_window_seconds: Math.ceil(windowMs / 1000),
+    });
+
+    if (error) throw error;
+
+    const result = (data ?? {}) as DistributedRateLimitResult;
+    if (result.allowed === false) {
+      return rateLimitResponse(
+        req,
+        Number(result.limit ?? limit),
+        Number(result.remaining ?? 0),
+        String(result.reset_at ?? Date.now() + windowMs),
+        Number(result.retry_after_seconds ?? Math.ceil(windowMs / 1000)),
+      );
+    }
+
+    return null;
+  } catch (error) {
+    console.warn("Distributed rate limit unavailable; falling back to instance limiter", {
+      bucketKey,
+      error: error instanceof Error ? error.message : error,
+    });
+    return rateLimit(req, options);
+  }
 };

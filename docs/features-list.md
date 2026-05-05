@@ -374,7 +374,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ **Supabase REST API** - Database operations
 - ✅ **Supabase Realtime** - Live updates
 - ✅ **Supabase Storage** - Image storage
-- ✅ **Edge Functions** - Serverless backend (15 functions)
+- ✅ **Edge Functions** - Serverless backend (16 maintained local functions)
 
 ---
 
@@ -468,6 +468,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - **StreakHistory** - Streak milestones
 - **SocialActivity** - Activity feed entries
 - **Badge** - Achievement badges
+- **DashboardHomeSnapshot** - Snapshot-backed dashboard read model
 
 ### System Entities
 - **PushToken** - Push notification tokens
@@ -610,11 +611,11 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 
 ## 📊 Database Statistics
 
-- **Total Tables**: 27
-- **Total Migrations**: 41
+- **Total Tables**: 31
+- **Total Migrations**: 47
 - **RLS Policies**: 100+ (all tables protected)
 - **Indexes**: 50+ (optimized queries)
-- **Functions**: 3 (helpers for RLS and calculations)
+- **Functions**: 30+ (RPCs, helpers, triggers, and read models)
 
 ---
 
@@ -622,19 +623,22 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 
 1. **search-books** - Search Google Books API
 2. **add-book** - Protected library insert and duplicate handling
-3. **dashboard-home** - Dashboard aggregate data
-4. **create-reading-session** - Timer session persistence
-5. **award-badges** - Badge awarding
-6. **log-progress** - Atomic progress logging
-7. **monthly-stats** - Calculate statistics
-8. **social-feed** - Aggregate social posts
-9. **send-push-notification** - FCM integration
-10. **calculate-book-progress** - Progress analytics
-11. **discover-readers** - Find similar readers
-12. **enhanced-activity** - Generate activity feed
-13. **compute-analytics** - Daily analytics snapshots
-14. **sync-pull** - Pull reading-core changes
-15. **sync-push** - Push reading-core outbox mutations
+3. **dashboard-home** - Snapshot-backed dashboard data
+4. **complete-reading** - Consolidated reading completion transaction
+5. **create-reading-session** - Timer session persistence
+6. **award-badges** - Badge awarding
+7. **log-progress** - Progress logging through completion transaction
+8. **monthly-stats** - Calculate statistics
+9. **social-feed** - Aggregate social posts
+10. **send-push-notification** - FCM integration
+11. **calculate-book-progress** - Progress analytics
+12. **discover-readers** - Find similar readers
+13. **enhanced-activity** - Generate activity feed
+14. **compute-analytics** - Daily analytics snapshots
+15. **sync-pull** - Pull reading-core changes
+16. **sync-push** - Push reading-core outbox mutations
+
+All maintained Edge Functions use distributed rate limiting through `api_rate_limits`; every maintained function except public `search-books` requires JWT verification.
 
 ---
 

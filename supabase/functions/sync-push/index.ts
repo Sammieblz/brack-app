@@ -5,6 +5,7 @@ import {
   optionsResponse,
   parseJsonBody,
 } from "../_shared/appEndpoint.ts";
+import { enforceRateLimit } from "../_shared/rateLimit.ts";
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.53.0";
 
 interface OutboxItem {
@@ -45,6 +46,14 @@ Deno.serve(async (req) => {
     const supabaseClient = createServiceClient();
     const authResult = await getAuthenticatedUser(req, supabaseClient, origin);
     if ("response" in authResult) return authResult.response;
+
+    const limited = await enforceRateLimit(req, supabaseClient, {
+      name: "sync-push",
+      identifier: authResult.user.id,
+      limit: 60,
+      windowMs: 60_000,
+    });
+    if (limited) return limited;
 
     const body = await parseJsonBody<SyncPushBody>(req);
     const items = Array.isArray(body.items) ? (body.items as OutboxItem[]) : [];
