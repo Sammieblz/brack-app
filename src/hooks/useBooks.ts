@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { dataCache } from "@/services/dataCache";
 import type { Book } from "@/types";
 import {
   BOOKS_CHANGED_EVENT,
@@ -7,9 +6,10 @@ import {
   invalidateBooksCache,
   type BooksChangedDetail,
 } from "@/services/api";
+import { booksRepo } from "@/services/local";
+import { readingCoreSync } from "@/services/sync/engine";
 
 const PAGE_SIZE = 20;
-const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 
 export const useBooks = (userId?: string) => {
   const [books, setBooks] = useState<Book[]>([]);
@@ -21,17 +21,20 @@ export const useBooks = (userId?: string) => {
 
   const fetchBooks = async (isInitial = true, forceRefresh = false, silent = false) => {
     if (!userId) return;
-    
-    const cacheKey = `books_${userId}_${isInitial ? 0 : offset}`;
-    
-    // Check cache first (only for initial load, not pagination)
-    if (isInitial && !forceRefresh) {
-      const cached = dataCache.get<{ books: Book[]; hasMore: boolean }>(cacheKey);
-      if (cached) {
-        setBooks(cached.books);
-        setHasMore(cached.hasMore);
+
+    if (isInitial) {
+      const localBooks = await booksRepo.list(userId);
+      if (localBooks.length > 0 && !forceRefresh) {
+        setBooks(localBooks);
+        setHasMore(navigator.onLine);
         setLoading(false);
-        setOffset(PAGE_SIZE);
+        setOffset(localBooks.length);
+      }
+
+      if (!navigator.onLine) {
+        setBooks(localBooks);
+        setHasMore(false);
+        setLoading(false);
         return;
       }
     }
@@ -48,11 +51,8 @@ export const useBooks = (userId?: string) => {
       
       const { books: newBooks, hasMore: hasMoreData } =
         await fetchUserBooksPage(userId, currentOffset, PAGE_SIZE);
-      
-      // Cache the result (only for initial load)
-      if (isInitial) {
-        dataCache.set(cacheKey, { books: newBooks, hasMore: hasMoreData }, CACHE_TTL);
-      }
+
+      await booksRepo.upsertRemoteMany(userId, newBooks);
       
       setHasMore(hasMoreData);
       
@@ -117,8 +117,10 @@ export const useBooks = (userId?: string) => {
   }, [loadingMore, hasMore, offset]);
 
   const refetchBooks = () => {
-    // Invalidate cache and force refresh
     invalidateBooksCache(userId);
+    if (navigator.onLine && userId) {
+      readingCoreSync.syncUser(userId).catch(console.error);
+    }
     fetchBooks(true, true);
   };
 
@@ -128,7 +130,6 @@ export const useBooks = (userId?: string) => {
       removedBook = prev.find((book) => book.id === bookId) ?? null;
       return prev.filter((book) => book.id !== bookId);
     });
-    if (userId) dataCache.invalidate(`books_${userId}`);
     return () => {
       if (!removedBook) return;
       setBooks((prev) => {

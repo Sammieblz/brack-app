@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { updateBookStatusIfNeeded } from "@/utils/bookStatus";
 import { journalOperations } from "@/utils/offlineOperation";
 import { fetchJournalEntries, type JournalEntry } from "@/services/api";
+import { journalRepo } from "@/services/local";
 
 export type { JournalEntry } from "@/services/api";
 
@@ -15,7 +16,27 @@ export const useJournalEntries = (bookId: string) => {
   const fetchEntries = async () => {
     try {
       setLoading(true);
-      setEntries(await fetchJournalEntries(bookId));
+      const user = await getCurrentAuthUser();
+      const localEntries = user
+        ? (await journalRepo.listRecords(user.id, { includeDeleted: false }))
+            .filter((record) => record.data.book_id === bookId)
+            .map((record) => record.data)
+        : [];
+
+      if (localEntries.length > 0) {
+        setEntries(localEntries);
+      }
+
+      if (!navigator.onLine) {
+        setEntries(localEntries);
+        return;
+      }
+
+      const remoteEntries = await fetchJournalEntries(bookId);
+      setEntries(remoteEntries);
+      for (const entry of remoteEntries) {
+        await journalRepo.upsertRemote(entry.user_id, entry);
+      }
     } catch (error) {
       console.error('Error fetching journal entries:', error);
       toast({

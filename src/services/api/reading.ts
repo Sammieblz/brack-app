@@ -2,6 +2,7 @@ import type { Book, ReadingSession } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeFunction } from "./client";
 import type { AwardedBadge } from "./badges";
+import { booksRepo, sessionsRepo } from "@/services/local";
 
 export interface CreateReadingSessionRequest {
   bookId: string;
@@ -22,6 +23,7 @@ export interface CreateReadingSessionResponse {
 }
 
 export interface LogProgressRequest {
+  id?: string;
   book_id: string;
   page_number: number;
   chapter_number?: number | null;
@@ -30,6 +32,7 @@ export interface LogProgressRequest {
   log_type?: string;
   time_spent_minutes?: number | null;
   photo_url?: string | null;
+  client_log_id?: string | null;
 }
 
 export interface LogProgressResponse {
@@ -69,7 +72,7 @@ export interface BookProgressResponse {
 export const createReadingSession = async (
   request: CreateReadingSessionRequest
 ): Promise<CreateReadingSessionResponse> => {
-  return invokeFunction<CreateReadingSessionResponse>("create-reading-session", {
+  const response = await invokeFunction<CreateReadingSessionResponse>("create-reading-session", {
     body: {
       book_id: request.bookId,
       start_time: request.startTime,
@@ -78,6 +81,15 @@ export const createReadingSession = async (
       client_session_id: request.clientSessionId ?? null,
     },
   });
+
+  if (response.session?.user_id) {
+    await sessionsRepo.upsertRemote(response.session.user_id, response.session);
+    if (response.book) {
+      await booksRepo.upsertRemote(response.session.user_id, response.book);
+    }
+  }
+
+  return response;
 };
 
 export const logProgress = async (
@@ -87,6 +99,7 @@ export const logProgress = async (
     body: {
       log_type: "manual",
       ...request,
+      client_log_id: request.client_log_id ?? request.id ?? null,
     },
   });
 };

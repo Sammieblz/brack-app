@@ -1,7 +1,6 @@
 import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
-import { offlineQueue } from "./offlineQueue";
-import { dataCache } from "./dataCache";
+import { readingCoreSync } from "@/services/sync/engine";
 
 interface SyncProgress {
   total: number;
@@ -54,14 +53,7 @@ class SyncService {
 
     this.lastSyncTime = now;
 
-    // Sync offline queue
-    const queueSize = offlineQueue.getQueueSize();
-    if (queueSize > 0) {
-      await this.syncOfflineQueue();
-    }
-
-    // Refresh critical cached data
-    await this.refreshCriticalData();
+    await this.syncOfflineQueue();
   }
 
   async syncOfflineQueue(): Promise<void> {
@@ -70,48 +62,37 @@ class SyncService {
     }
 
     this.syncInProgress = true;
-    const queue = offlineQueue.getQueue();
+    const before = await readingCoreSync.getStatus();
     
     this.updateProgress({
-      total: queue.length,
+      total: before.pending + before.failed,
       completed: 0,
-      failed: 0,
+      failed: before.failed,
       inProgress: true,
     });
 
     try {
-      await offlineQueue.sync();
-      
-      // Get final queue size after sync
-      const remaining = offlineQueue.getQueueSize();
-      const completed = queue.length - remaining;
+      const after = await readingCoreSync.syncCurrentUser();
+      const remaining = after.pending + after.failed;
+      const completed = Math.max(0, before.pending + before.failed - remaining);
       
       this.updateProgress({
-        total: queue.length,
+        total: before.pending + before.failed,
         completed,
-        failed: remaining,
+        failed: after.failed,
         inProgress: false,
       });
     } catch (error) {
       console.error('Sync error:', error);
       this.updateProgress({
-        total: queue.length,
+        total: before.pending + before.failed,
         completed: 0,
-        failed: queue.length,
+        failed: before.pending + before.failed,
         inProgress: false,
       });
     } finally {
       this.syncInProgress = false;
     }
-  }
-
-  private async refreshCriticalData() {
-    // Refresh frequently accessed data that might be stale
-    // This is incremental - only refresh if cache is expired or missing
-    
-    // Invalidate and let hooks refetch naturally
-    // We don't force refresh here to avoid unnecessary network calls
-    // The hooks will check cache and fetch if needed
   }
 
   async incrementalSync(): Promise<void> {

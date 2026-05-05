@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavArrowDown, Refresh, Search, Xmark } from "iconoir-react";
 import { Button } from "@/components/ui/button";
@@ -97,6 +97,7 @@ const MyBooks = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const highlightBookId = (location.state as { highlightBookId?: string } | null)?.highlightBookId;
+  const initialSearchQuery = useMemo(() => new URLSearchParams(location.search).get("q") || "", [location.search]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [genreFilters, setGenreFilters] = useState<string[]>([]);
@@ -109,6 +110,12 @@ const MyBooks = () => {
     loading: loadingMore,
     onLoadMore: loadMore,
   });
+
+  useEffect(() => {
+    if (initialSearchQuery) {
+      setSearchQuery(initialSearchQuery);
+    }
+  }, [initialSearchQuery]);
 
   const libraryGenres = useMemo(
     () => getCuratedGenres([...(habits?.genres || []), ...books.map((book) => book.genre)]),

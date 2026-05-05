@@ -38,3 +38,9 @@ verify_jwt = true
 
 [functions.send-push-notification]
 verify_jwt = true
+
+[functions.sync-pull]
+verify_jwt = true
+
+[functions.sync-push]
+verify_jwt = true

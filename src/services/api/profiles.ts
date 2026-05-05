@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/types";
 import { getCurrentAuthUser } from "./auth";
+import { profilePreferencesRepo } from "@/services/local";
 
 export interface FollowStats {
   followersCount: number;
@@ -77,6 +78,12 @@ export const followUser = async (userId: string): Promise<void> => {
   });
 
   if (error) throw error;
+  await profilePreferencesRepo.upsertRemote(userId, {
+    id: userId,
+    color_theme: preferences.color_theme ?? null,
+    theme_mode: preferences.theme_mode ?? null,
+    updated_at: new Date().toISOString(),
+  });
 };
 
 export const unfollowUser = async (userId: string): Promise<void> => {
@@ -227,6 +234,11 @@ export interface ThemePreferences {
 export const fetchThemePreferences = async (
   userId: string
 ): Promise<ThemePreferences | null> => {
+  if (!navigator.onLine) {
+    const local = await profilePreferencesRepo.get(userId);
+    return local ? { color_theme: local.color_theme ?? null, theme_mode: local.theme_mode ?? null } : null;
+  }
+
   const { data, error } = await supabase
     .from("profiles")
     .select("color_theme, theme_mode")
@@ -234,6 +246,13 @@ export const fetchThemePreferences = async (
     .maybeSingle();
 
   if (error && error.code !== "PGRST116") throw error;
+  if (data) {
+    await profilePreferencesRepo.upsertRemote(userId, {
+      id: userId,
+      color_theme: data.color_theme ?? null,
+      theme_mode: data.theme_mode ?? null,
+    });
+  }
   return data ?? null;
 };
 
@@ -241,6 +260,16 @@ export const upsertThemePreferences = async (
   userId: string,
   preferences: Partial<ThemePreferences>
 ): Promise<void> => {
+  if (!navigator.onLine) {
+    await profilePreferencesRepo.upsertLocal(userId, {
+      id: userId,
+      color_theme: preferences.color_theme ?? null,
+      theme_mode: preferences.theme_mode ?? null,
+      updated_at: new Date().toISOString(),
+    });
+    return;
+  }
+
   const { error } = await supabase
     .from("profiles")
     .upsert(
