@@ -48,10 +48,7 @@ serve(async (req) => {
     }
 
     // Parse request body
-    const { date, userId } = await req.json();
-
-    // Use provided userId or default to authenticated user
-    const targetUserId = userId || user.id;
+    const { date } = await req.json();
 
     // Validate date (default to today if not provided)
     const snapshotDate = date ? new Date(date) : new Date();
@@ -59,7 +56,7 @@ serve(async (req) => {
 
     // Call the database function to compute analytics
     const { data, error } = await supabaseClient.rpc("compute_daily_analytics", {
-      p_user_id: targetUserId,
+      p_user_id: user.id,
       p_date: snapshotDate.toISOString().split("T")[0],
     });
 

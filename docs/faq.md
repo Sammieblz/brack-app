@@ -66,10 +66,11 @@ npx supabase gen types typescript --project-id your-project-id > src/integration
 ### How does offline mode work?
 
 When offline:
-1. User actions are queued in `offlineQueue`
-2. Stored in localStorage
-3. When back online, queue is synced automatically
-4. Failed actions retry up to 3 times
+1. Reading-core changes are written to local repositories.
+2. A durable outbox item is created in IndexedDB on web or SQLite on native.
+3. When back online, `readingCoreSync` pushes pending mutations through `sync-push`.
+4. The app then pulls remote changes through `sync-pull`.
+5. Failed items can be retried or discarded from the sync review UI.
 
 See [Offline Support](./offline-support.md) for details.
 
@@ -318,7 +319,7 @@ npm install
 1. Check network connection
 2. Verify Supabase URL and keys
 3. Check browser console for errors
-4. Look at offline queue: `offlineQueue.getQueue()`
+4. Check the sync status in `OfflineIndicator` or inspect the local outbox through `readingCoreSync`
 
 ## Getting Help
 

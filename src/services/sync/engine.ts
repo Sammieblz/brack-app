@@ -98,7 +98,7 @@ const applyAcceptedRecord = async (userId: string, accepted: SyncPushAcceptedIte
     }
     case "journal_entries": {
       const entry = accepted.record as JournalEntry;
-      if ("deleted_at" in entry) {
+      if (entry.deleted_at) {
         await journalRepo.remove(accepted.client_entity_id);
         break;
       }
@@ -107,7 +107,7 @@ const applyAcceptedRecord = async (userId: string, accepted: SyncPushAcceptedIte
     }
     case "goals": {
       const goal = accepted.record as Goal;
-      if ("deleted_at" in goal) {
+      if (goal.deleted_at) {
         await goalsRepo.remove(accepted.client_entity_id);
         break;
       }

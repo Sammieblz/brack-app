@@ -17,11 +17,11 @@ Brack is a comprehensive book tracking application that combines personal librar
 ## Key Statistics
 
 - **27 Database Tables** - Comprehensive data model
-- **235 Source Files** - Well-organized codebase
-- **42 Custom Hooks** - Reusable business logic
-- **126 Components** - Modular UI architecture
-- **8 Edge Functions** - Serverless backend
-- **31 Migrations** - Evolved database schema
+- **356 Source Files** - Well-organized codebase
+- **59 Custom Hooks** - Reusable business logic
+- **192 Components** - Modular UI architecture
+- **15 Edge Functions** - Serverless backend
+- **41 Migrations** - Evolved database schema
 
 ## Target Users
 
@@ -106,8 +106,8 @@ Brack is a comprehensive book tracking application that combines personal librar
 ┌──────────────────▼──────────────────────────┐
 │            Services Layer                   │
 │                                             │
-│  Services (7)                               │
-│  ├── offlineQueue - Offline sync            │
+│  Services                                   │
+│  ├── local/ + sync/ - Offline reading core  │
 │  ├── syncService - Background sync          │
 │  ├── dataCache - Data caching               │
 │  ├── imageCache - Image caching             │
@@ -120,10 +120,10 @@ Brack is a comprehensive book tracking application that combines personal librar
 │            Data Layer                       │
 │                                             │
 │  ┌─────────────────┐  ┌─────────────────┐  │
-│  │    Supabase     │  │  Local Storage  │  │
+│  │    Supabase     │  │ Local Durable DB│  │
 │  │                 │  │                 │  │
 │  │ - PostgreSQL    │  │ - Query Cache   │  │
-│  │ - Storage       │  │ - Offline Queue │  │
+│  │ - Storage       │  │ - Outbox sync   │  │
 │  │ - Auth          │  │ - Preferences   │  │
 │  │ - Realtime      │  │ - Image Cache   │  │
 │  │ - Edge Functions│  │                 │  │
@@ -221,7 +221,7 @@ Brack is a comprehensive book tracking application that combines personal librar
 ### Performance
 - **Initial Load**: < 3 seconds
 - **Time to Interactive**: < 5 seconds
-- **Bundle Size**: ~500KB gzipped
+- **Bundle Size**: main bundle is still above the target, with ApexCharts split into an `apex-vendor` chunk
 - **Lighthouse Score**: 85+ (estimated)
 
 ## Scalability
@@ -281,7 +281,7 @@ Brack is a comprehensive book tracking application that combines personal librar
 ### Short Term (1-3 months)
 - [ ] Automated testing (Vitest + Playwright)
 - [ ] Performance improvements (bundle splitting)
-- [ ] More chart types (genre trends, reading heatmap)
+- [ ] Further chart/bundle optimization beyond the ApexCharts split
 - [ ] Export features (journal PDF, statistics CSV)
 
 ### Medium Term (3-6 months)

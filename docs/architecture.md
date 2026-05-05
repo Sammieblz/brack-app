@@ -23,13 +23,13 @@ This document describes the high-level architecture and design patterns used in 
 │  └─────────────┘  └──────────────┘  └──────────────────┘  │
 └────────┬───────────────────────┬──────────────────────────┘
          │                       │
-         │ REST/WebSocket        │ Local Storage
+         │ REST/WebSocket        │ Local durable storage
          │                       │
          ▼                       ▼
 ┌──────────────────┐    ┌─────────────────────┐
-│    Supabase      │    │   Browser Storage   │
+│    Supabase      │    │ Durable Local Store  │
 │  ┌────────────┐  │    │  ┌───────────────┐ │
-│  │ PostgreSQL │  │    │  │ LocalStorage  │ │
+│  │ PostgreSQL │  │    │  │ IndexedDB/Web │ │
 │  │  Database  │  │    │  ├───────────────┤ │
 │  ├────────────┤  │    │  │ IndexedDB     │ │
 │  │  Storage   │  │    │  ├───────────────┤ │
@@ -124,8 +124,11 @@ function useBook(bookId: string) {
 - Error handling
 
 **Services**:
-- `offlineQueue.ts` - Offline action queue
-- `syncService.ts` - Background synchronization
+- `local/driver.ts` - Durable IndexedDB/SQLite local storage driver
+- `local/repositories.ts` - Local-first repositories and outbox creation
+- `sync/engine.ts` - Reading-core push/pull sync engine
+- `syncService.ts` - App-level background synchronization facade
+- `api/` - Backend API module layer
 - `deepLinkService.ts` - Deep link handling
 - `pushNotifications.ts` - Push notification management
 - `shareService.ts` - Native sharing
@@ -201,9 +204,9 @@ User Action → Component → Hook → Mutation
               ┌────────────────────┴────────────────────┐
               │ Online                       │ Offline  │
               ▼                              ▼          │
-         Service Layer                 Offline Queue    │
+         Service Layer                 Local Outbox     │
               ▼                              ▼          │
-       Supabase Client                LocalStorage     │
+       Supabase Client                IndexedDB/SQLite │
               ▼                              │          │
         PostgreSQL                           │          │
               ▼                              │          │
@@ -213,22 +216,22 @@ User Action → Component → Hook → Mutation
               ▼                                         │
       Update Component                                  │
                                                         │
-      On Reconnect: Sync Offline Queue ────────────────┘
+      On Reconnect: Push outbox, then pull latest ─────┘
 ```
 
 ## Offline Architecture
 
-### Offline Queue System
+### Local-First Sync System
 
 ```
 User Action (Offline)
        ↓
 Check Network Status
        ↓
-Enqueue Action
+Persist local record and enqueue outbox item
        ↓
 ┌─────────────────────────────┐
-│   LocalStorage Queue        │
+│   Durable local outbox      │
 │  ┌────────────────────────┐ │
 │  │ Action 1 (create_book) │ │
 │  │ Action 2 (update_book) │ │
@@ -236,11 +239,11 @@ Enqueue Action
 │  └────────────────────────┘ │
 └─────────────────────────────┘
        ↓ (on reconnect)
-Sync Service Processes Queue
+readingCoreSync processes outbox
        ↓
-Execute Actions with Retry Logic
+Push to sync-push with retry metadata
        ↓
-Remove Successful Actions
+Pull latest server records from sync-pull
        ↓
 Update UI with Fresh Data
 ```
@@ -514,7 +517,7 @@ Submit to App Stores
 
 ### Service Patterns
 
-1. **Singleton** - Service instances (offlineQueue, syncService)
+1. **Singleton** - Service instances (`readingCoreSync`, `syncService`)
 2. **Factory** - Creating similar objects
 3. **Strategy** - Different implementations (online/offline)
 4. **Observer** - Event subscriptions

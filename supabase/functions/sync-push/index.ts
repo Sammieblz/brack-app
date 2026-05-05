@@ -201,13 +201,16 @@ const processProgressLog = async (supabaseClient: SupabaseClient, userId: string
 
 const processJournalEntry = async (supabaseClient: SupabaseClient, userId: string, item: OutboxItem) => {
   if (item.operation === "delete") {
-    const { error } = await supabaseClient
+    const deletedAt = new Date().toISOString();
+    const { data, error } = await supabaseClient
       .from("journal_entries")
-      .delete()
+      .update({ deleted_at: deletedAt, updated_at: deletedAt })
       .eq("id", item.client_entity_id)
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .select()
+      .single();
     if (error) throw error;
-    return { server_entity_id: item.client_entity_id, record: { id: item.client_entity_id, deleted_at: new Date().toISOString() } };
+    return { server_entity_id: item.client_entity_id, record: data };
   }
 
   if (item.operation === "create" || item.operation === "restore") {
@@ -236,13 +239,16 @@ const processJournalEntry = async (supabaseClient: SupabaseClient, userId: strin
 
 const processGoal = async (supabaseClient: SupabaseClient, userId: string, item: OutboxItem) => {
   if (item.operation === "delete") {
-    const { error } = await supabaseClient
+    const deletedAt = new Date().toISOString();
+    const { data, error } = await supabaseClient
       .from("goals")
-      .delete()
+      .update({ deleted_at: deletedAt, updated_at: deletedAt, is_active: false })
       .eq("id", item.client_entity_id)
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .select()
+      .single();
     if (error) throw error;
-    return { server_entity_id: item.client_entity_id, record: { id: item.client_entity_id, deleted_at: new Date().toISOString() } };
+    return { server_entity_id: item.client_entity_id, record: data };
   }
 
   if (item.operation === "create" || item.operation === "restore") {

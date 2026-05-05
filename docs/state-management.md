@@ -428,8 +428,8 @@ const useLocalStorage = <T>(key: string, defaultValue: T) => {
                               Yes  │       │ No
                                    │       │
                          ┌─────────▼─┐   ┌─▼────────┐
-                         │  Offline  │   │ Supabase │
-                         │   Queue   │   │   API    │
+                         │  Local    │   │ Supabase │
+                         │  Outbox   │   │   API    │
                          └─────┬─────┘   └────┬─────┘
                                │              │
                                │              ▼
@@ -682,7 +682,7 @@ Component calls mutation
   └────┬────┘
        │
    Yes │ No
-       │ └──────► Offline Queue ──► LocalStorage
+       │ └──────► Local Outbox ──► IndexedDB/SQLite
        │                 │
        ▼                 │ (on reconnect)
   API Call               │

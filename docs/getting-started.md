@@ -59,8 +59,12 @@ VITE_SENTRY_DSN=your-sentry-dsn
 
 # For Edge Functions
 ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com
-DENO_ENV=development
+ENVIRONMENT=development
 FCM_SERVER_KEY=your-fcm-server-key
+
+# For Supabase CLI automation
+SUPABASE_ACCESS_TOKEN=your-supabase-cli-token
+SUPABASE_DB_PASSWORD=your-linked-project-db-password
 ```
 
 ### 4. Set Up Supabase
@@ -281,7 +285,7 @@ npx supabase start      # Start local Supabase
 npx supabase stop       # Stop local Supabase
 npx supabase db push    # Apply migrations
 npx supabase db reset   # Reset database
-npx supabase functions deploy # Deploy Edge Functions
+npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api # Deploy Edge Functions
 ```
 
 ## Getting Help

@@ -1,501 +1,218 @@
 # Offline Support
 
-Comprehensive guide to Brack's offline capabilities and caching strategies.
+Comprehensive guide to Brack's local-first reading core, durable offline storage, and sync behavior.
 
 ## Overview
 
-Brack provides robust offline support to ensure users can read and track their progress even without an internet connection.
+Brack supports offline-first reading workflows for the data users are most likely to change while reading:
 
-**Key Features**:
-- ✅ Offline action queue
-- ✅ Data caching (2-minute TTL)
-- ✅ Image caching (7-day TTL)
-- ✅ Background sync on reconnect
-- ✅ Retry logic for failed operations
-- ✅ User feedback on sync status
+- Library books
+- Reading sessions
+- Progress logs
+- Journal entries
+- Goals
+- Profile theme preferences
 
-## Architecture
+Social, discovery, clubs, messages, reviews, search, push notifications, and image uploads are still online-first unless a specific screen adds its own cache.
+
+## Current Architecture
 
 ```
-User Action (Offline)
-       ↓
-Check navigator.onLine
-       ↓
-┌──────────────────────┐
-│   Offline Queue      │
-│  (LocalStorage)      │
-│                      │
-│  [Action 1]          │
-│  [Action 2]          │
-│  [Action 3]          │
-└──────────────────────┘
-       ↓ (on reconnect)
-Background Sync Service
-       ↓
-Execute Actions Sequentially
-       ↓ (retry on failure)
-Remove from Queue
-       ↓
-Invalidate Cache
-       ↓
-Refresh UI
+User action
+    |
+    v
+API wrapper / hook
+    |
+    +-- online: write through Supabase, then mirror into local storage
+    |
+    +-- offline: write into local repository and enqueue an outbox item
+                    |
+                    v
+             readingCoreSync
+                    |
+                    +-- push pending outbox items to sync-push
+                    |
+                    +-- pull remote changes from sync-pull
+                    |
+                    v
+             update local repositories and notify UI
 ```
 
-## Offline Queue
-
-### Service
-
-**Location**: `src/services/offlineQueue.ts`
-
-**Supported Actions**:
-- `create_book` - Add new book
-- `update_book` - Update book details
-- `delete_book` - Soft delete book
-- `create_review` - Post review
-- `update_review` - Update review
-- `create_post` - Create social post
-- `update_post` - Update post
-- `create_message` - Send message
-- `create_journal_entry` - Add journal entry
-- `update_journal_entry` - Update entry
-- `delete_journal_entry` - Delete entry
-
-### Usage
-
-**Manual Queueing**:
-```typescript
-import { offlineQueue } from '@/services/offlineQueue';
-
-// Queue an action
-offlineQueue.enqueue({
-  type: 'create_book',
-  data: {
-    user_id: userId,
-    title: 'Book Title',
-    author: 'Author Name',
-    status: 'to_read',
-  },
-});
-```
-
-**With Offline Operation Wrapper** (Recommended):
-```typescript
-import { bookOperations } from '@/utils/offlineOperation';
-
-// Automatically queues if offline, executes if online
-await bookOperations.create({
-  user_id: userId,
-  title: 'Book Title',
-  author: 'Author Name',
-  status: 'to_read',
-});
-```
-
-### Monitoring Queue
-
-```typescript
-// Check queue size
-const size = offlineQueue.getQueueSize();
-
-// Get all queued actions
-const queue = offlineQueue.getQueue();
-
-// Manually trigger sync
-await offlineQueue.sync();
-
-// Clear queue (use with caution)
-offlineQueue.clearQueue();
-```
-
-### Queue Persistence
-
-- **Storage**: localStorage
-- **Key**: `offline_queue`
-- **Format**: JSON array of queued actions
-- **Persistence**: Survives page refresh and app restart
-
-### Retry Logic
-
-Failed actions are retried with:
-- **Max Retries**: 3
-- **Retry Delay**: 5 seconds
-- **Exponential Backoff**: Not implemented (could be added)
-
-After max retries, action is removed from queue and logged as error.
-
-## Data Caching
-
-### Service
-
-**Location**: `src/services/dataCache.ts`
-
-**Features**:
-- Time-To-Live (TTL) based expiration
-- Automatic cleanup of expired entries
-- Namespace support for organization
-- Manual invalidation
-
-### Usage
-
-```typescript
-import { dataCache } from '@/services/dataCache';
-
-// Set cache (2-minute TTL)
-const TTL = 2 * 60 * 1000;
-dataCache.set('books_user_123', books, TTL);
-
-// Get from cache
-const cached = dataCache.get('books_user_123');
-if (cached) {
-  // Use cached data
-} else {
-  // Fetch from API
-}
-
-// Invalidate cache
-dataCache.invalidate('books_user_123');
-
-// Invalidate by prefix (all user's books)
-dataCache.invalidateByPrefix('books_user_');
-
-// Clear all cache
-dataCache.clear();
-```
-
-### Cached Data
-
-| Data Type | Cache Key Pattern | TTL |
-|-----------|------------------|-----|
-| Books | `books_{userId}_{offset}` | 2 minutes |
-| Posts | `posts_all` | 2 minutes |
-| Social Feed | `social_feed_{userId}` | 2 minutes |
-| User Profile | Managed by TanStack Query | 5 minutes |
-
-### Cache Invalidation
-
-**Automatic**:
-- On mutation success
-- On manual refresh (pull-to-refresh)
-- On TTL expiration
-
-**Manual**:
-```typescript
-// Invalidate specific cache
-dataCache.invalidate(cacheKey);
-
-// Invalidate all books caches for user
-dataCache.invalidateByPrefix(`books_${userId}`);
-```
-
-## Image Caching
-
-### Service
-
-**Location**: `src/services/imageCache.ts`
-
-**Features**:
-- Filesystem storage on native (Capacitor)
-- Browser cache on web
-- Size limit (100MB)
-- Automatic cleanup of old images
-- LRU eviction policy
-
-### Usage
-
-```typescript
-import { imageCache } from '@/services/imageCache';
-
-// Cache image
-await imageCache.cache('book-cover-123', imageDataUrl);
-
-// Get cached image
-const cachedUrl = await imageCache.get('book-cover-123');
-
-// Check if cached
-const exists = await imageCache.has('book-cover-123');
-
-// Clear old cache
-await imageCache.cleanup();
-
-// Clear all cache
-await imageCache.clear();
-```
-
-### Optimized Image Component
-
-**Component**: `src/components/OptimizedImage.tsx`
-
-Automatically handles:
-- Image caching
-- Lazy loading
-- Error states
-- Placeholder images
-
-```tsx
-<OptimizedImage
-  src={book.cover_url}
-  alt={book.title}
-  cacheKey={`book-${book.id}`}
-  className="w-full h-auto"
-/>
-```
-
-## Background Sync
-
-### Service
-
-**Location**: `src/services/syncService.ts`
-
-**Features**:
-- Automatic sync on app foreground
-- Sync cooldown (5 seconds between syncs)
-- Progress tracking
-- Event subscriptions
-
-### Usage
-
-```typescript
-import { syncService } from '@/services/syncService';
-
-// Manual sync
-await syncService.manualSync();
-
-// Get sync progress
-const progress = syncService.getProgress();
-console.log(progress.completed, '/', progress.total);
-
-// Subscribe to sync events
-const unsubscribe = syncService.subscribe((progress) => {
-  console.log('Sync progress:', progress);
-});
-
-// Cleanup
-unsubscribe();
-```
-
-### Auto-Sync Triggers
-
-1. **App comes to foreground** (App plugin)
-2. **Network reconnects** (Network plugin)
-3. **User manually refreshes** (pull-to-refresh)
-4. **After successful offline action** (immediate sync attempt)
-
-## Network Status
-
-### Hook
-
-**Location**: `src/hooks/useNetworkStatus.ts`
-
-```typescript
-import { useNetworkStatus } from '@/hooks/useNetworkStatus';
-
-const MyComponent = () => {
-  const isOnline = useNetworkStatus();
-  
-  if (!isOnline) {
-    return <OfflineBanner />;
-  }
-  
-  return <NormalContent />;
-};
-```
-
-### Features
-
-- Detects online/offline transitions
-- Shows toast notifications on status change
-- Displays pending action count when offline
-- Automatically triggers sync on reconnect
-
-## Offline Indicator
-
-### Component
-
-**Location**: `src/components/OfflineIndicator.tsx`
-
-**Features**:
-- Shows when offline
-- Displays queued action count
-- Manual sync button
-- Auto-hides when online
-
-**Usage**: Automatically added in `src/App.tsx`
-
-## Best Practices
-
-### 1. Always Use Offline Wrappers
-
-```typescript
-// ✅ DO: Use offline operation wrapper
-import { bookOperations } from '@/utils/offlineOperation';
-await bookOperations.create(bookData);
-
-// ❌ DON'T: Call Supabase directly for mutable operations
-await supabase.from('books').insert(bookData);
-```
-
-### 2. Handle Both States
-
-```typescript
-// ✅ DO: Handle online and offline
-const saveBook = async (book: Book) => {
-  if (navigator.onLine) {
-    // Save immediately
-    await api.saveBook(book);
-  } else {
-    // Queue for later
-    offlineQueue.enqueue({ type: 'create_book', data: book });
-    toast.info('Saved offline. Will sync when online.');
-  }
-};
-```
-
-### 3. Invalidate Cache After Mutations
-
-```typescript
-// ✅ DO: Invalidate cache after successful mutation
-const mutation = useMutation({
-  mutationFn: createBook,
-  onSuccess: () => {
-    dataCache.invalidate(`books_${userId}`);
-    queryClient.invalidateQueries(['books', userId]);
-  },
-});
-```
-
-### 4. Show Loading States
-
-```typescript
-// ✅ DO: Show appropriate loading states
-if (loading) return <Skeleton />;
-if (syncing) return <SyncingBanner />;
-if (error) return <ErrorMessage />;
-```
-
-### 5. Provide User Feedback
-
-```typescript
-// ✅ DO: Inform users about offline status
-if (!navigator.onLine) {
-  toast.info('You are offline. Changes will sync when online.');
-}
-
-// After successful sync
-toast.success('Changes synced successfully!');
-```
-
-## PWA Service Worker
-
-### Configuration
-
-**Location**: `vite.config.ts` - VitePWA plugin
-
-**Caching Strategy**:
-
-1. **Static Assets**: Cache-first
-   - HTML, CSS, JS, images
-   - 7-day expiration
-
-2. **Supabase Public Storage**: Cache-first
-   - Book covers, avatars
-   - 7-day expiration, 60 max entries
-
-3. **Google Books API**: Stale-while-revalidate
-   - 5-minute expiration, 30 max entries
-
-### Registration
-
-**Location**: `src/main.tsx`
-
-```typescript
-import { registerSW } from 'virtual:pwa-register';
-
-registerSW({ immediate: true });
-```
-
-### Update Strategy
-
-- **Auto-update**: Service worker updates automatically
-- **Prompt**: Can be configured to prompt user for updates
-
-## Testing Offline Mode
+The old localStorage-only `offlineQueue` service has been replaced by durable local repositories plus an outbox.
+
+## Key Files
+
+| Area | Files |
+| --- | --- |
+| Local driver | `src/services/local/driver.ts` |
+| Local repositories | `src/services/local/repositories.ts`, `src/services/local/index.ts` |
+| Sync engine | `src/services/sync/engine.ts` |
+| Sync types | `src/services/sync/types.ts` |
+| Sync API wrappers | `src/services/api/sync.ts` |
+| App sync facade | `src/services/syncService.ts` |
+| Offline wrappers | `src/utils/offlineOperation.ts` |
+| Status UI | `src/components/OfflineIndicator.tsx` |
+| Failed sync review | `src/components/SyncReviewDialog.tsx` |
+| Edge Functions | `supabase/functions/sync-pull/index.ts`, `supabase/functions/sync-push/index.ts` |
+| Database migrations | `supabase/migrations/20260505010000_offline_reading_core_sync.sql`, `supabase/migrations/20260505070118_journal_goal_delete_tombstones.sql` |
+
+## Local Storage Layers
 
 ### Web
 
-1. Open DevTools → Network
-2. Select "Offline" from throttling dropdown
-3. Perform actions (add book, create post)
-4. Check offline queue: `offlineQueue.getQueueSize()`
-5. Go back online
-6. Verify actions sync automatically
+Web uses Dexie/IndexedDB through the local driver. This keeps local records and outbox items durable across refreshes and PWA restarts.
 
-### Mobile
+### Native
 
-1. Enable Airplane Mode on device
-2. Use app (add books, log progress)
-3. Disable Airplane Mode
-4. Verify sync happens
+iOS and Android use `@capacitor-community/sqlite` through the same driver interface. Native validation still needs to be completed on macOS/iOS, but the JavaScript side is wired for Capacitor SQLite.
 
-### Simulating Poor Connection
+### Outbox Records
 
-1. DevTools → Network → "Slow 3G"
-2. Test with intermittent connectivity
-3. Verify retry logic works
+Outbox items use these fields:
 
-## Limitations
+- `client_mutation_id` for idempotent mutation tracking
+- `client_entity_id` for local entity identity before or during sync
+- `entity` for the synced table/domain
+- `operation` as `create`, `update`, `delete`, or `restore`
+- `status` as `pending`, `syncing`, `failed`, or `synced`
+- retry metadata such as `attempt_count`, `last_error`, and `next_attempt_at`
 
-### What Works Offline?
+Supported entities are:
 
-✅ Add/edit/delete books  
-✅ Log reading progress  
-✅ Create journal entries  
-✅ Create reviews  
-✅ Create posts  
-✅ View cached data  
-✅ Use reading timer  
+- `books`
+- `reading_sessions`
+- `progress_logs`
+- `journal_entries`
+- `goals`
+- `profile_preferences`
 
-### What Doesn't Work Offline?
+## Sync Functions
 
-❌ Search books (requires Google Books API)  
-❌ Discover readers (requires server function)  
-❌ Real-time updates  
-❌ Push notifications  
-❌ Image uploads (queued but not uploaded until online)  
-❌ Following/unfollowing users  
+### sync-push
 
-### Known Issues
+`sync-push` accepts pending outbox items for the authenticated user and applies them server-side.
 
-1. **Large images** may cause queue to grow large
-2. **Complex operations** (multi-table updates) may fail partially
-3. **Conflicts** not automatically resolved (last-write-wins)
+Important behavior:
 
-## Future Improvements
+- Rejects outbox items for any user other than the authenticated user.
+- Uses `add_library_book` for book creates/restores so duplicate prevention stays centralized.
+- Uses `create_reading_session` for timer sessions.
+- Uses `log_progress_transaction` for progress logs.
+- Soft-deletes books, journal entries, and goals by setting `deleted_at`.
+- Marks deleted goals inactive with `is_active = false`.
+- Returns accepted and failed item lists so the client can clear, retry, or review failures.
 
-### Potential Enhancements
+### sync-pull
 
-1. **Conflict Resolution**:
-   - Detect conflicting changes
-   - Allow user to choose which version to keep
+`sync-pull` returns records changed since the client's `reading_core` cursor.
 
-2. **Optimistic UI Updates**:
-   - Show changes immediately
-   - Rollback if sync fails
+Pulled data includes:
 
-3. **IndexedDB Storage**:
-   - Store more data offline
-   - Better performance than localStorage
+- Books
+- Reading sessions
+- Progress logs
+- Journal entries
+- Goals
+- Profile theme preferences
 
-4. **Background Sync API**:
-   - Browser-native background sync
-   - More reliable than custom implementation
+Deleted books, journal entries, and goals are included as tombstones so other devices can remove or hide them locally.
 
-5. **Differential Sync**:
-   - Only sync changed data
-   - Reduce bandwidth usage
+## Delete Consistency
 
-## Further Reading
+Books, journal entries, and goals use soft deletes for cross-device consistency.
 
-- [Architecture Overview](./architecture.md)
-- [Services Documentation](./services.md)
-- [Getting Started](./getting-started.md)
+| Entity | Delete marker | Active UI behavior |
+| --- | --- | --- |
+| Books | `books.deleted_at` | Hidden from library and search unless explicitly included |
+| Journal entries | `journal_entries.deleted_at` | Hidden from journal and quote queries |
+| Goals | `goals.deleted_at` plus `is_active = false` | Hidden from active/current goal queries |
+
+The migration `20260505070118_journal_goal_delete_tombstones.sql` adds `deleted_at` to `journal_entries` and `goals` plus indexes for active and cursor-based sync queries.
+
+## Conflict Handling
+
+Current conflict handling is intentionally lightweight:
+
+- Remote pull applies newer remote rows into local repositories.
+- Push failures stay in the outbox as `failed`.
+- `SyncReviewDialog` lets users retry or discard failed local changes.
+- There is not yet a full field-by-field manual merge UI.
+
+## Sync Triggers
+
+Sync can run when:
+
+- The app starts or regains focus.
+- Network connectivity returns.
+- A screen or user action explicitly requests sync.
+- `OfflineIndicator` triggers manual sync.
+
+The sync engine skips work while another sync is already running or while `navigator.onLine` is false.
+
+## Status UI
+
+`OfflineIndicator` listens for `brack:sync-status-changed` events from `readingCoreSync`.
+
+It displays:
+
+- Online/offline state
+- Pending outbox count
+- Failed outbox count
+- Manual sync actions
+- Access to `SyncReviewDialog` for failed items
+
+## Developer Guidance
+
+Use the domain API layer and existing offline wrappers instead of writing directly to Supabase for reading-core mutations.
+
+Preferred paths:
+
+- Books: `src/hooks/useBooks.ts` and `src/services/api/books.ts`
+- Progress: `src/components/ProgressLogger.tsx`, `src/hooks/useProgressLogs.ts`, `src/services/api/progress.ts`
+- Timer sessions: `src/contexts/TimerContext.tsx`, `src/services/api/reading.ts`
+- Journals: `src/hooks/useJournalEntries.ts`, `src/services/api/journal.ts`
+- Goals: `src/services/api/goals.ts`
+- Profile preferences: `src/services/api/profiles.ts`
+
+Do not add a new localStorage queue. Extend `SyncEntity`, local repositories, `sync-push`, and `sync-pull` when a new domain needs durable offline sync.
+
+## Testing Offline Mode
+
+### Web/PWA
+
+1. Open the app online and load the library once.
+2. Use browser DevTools Network settings to go offline.
+3. Restart the PWA/browser tab.
+4. Add/edit/delete a book.
+5. Log progress.
+6. Finish a timer session.
+7. Create/edit/delete a journal entry.
+8. Create/update/delete a goal.
+9. Return online and confirm `OfflineIndicator` reaches zero pending/failed items.
+10. Confirm Supabase has the expected records and tombstones.
+
+### Android
+
+1. Run `npm run build`.
+2. Run `npx cap sync android`.
+3. Test airplane-mode workflows on an emulator or physical device.
+4. Reconnect and verify local changes sync to Supabase.
+
+### iOS
+
+iOS requires macOS, CocoaPods, and Xcode. JavaScript sync behavior is implemented, but native SQLite/iOS behavior still needs device or simulator validation.
+
+## Known Limitations
+
+- Feed, clubs, messages, reviews, follows, discovery, push notifications, book search, and image uploads remain online-first.
+- `SyncReviewDialog` supports retry/discard, not full manual merge resolution.
+- Hard-delete semantics are avoided for reading-core entities that must sync across devices.
+- Native SQLite behavior still needs real-device validation, especially iOS.
+
+## Related Docs
+
+- [Architecture](./architecture.md)
+- [Database Schema](./database-schema.md)
+- [API Reference](./api-reference.md)
+- [Testing](./testing.md)
 - [Troubleshooting](./troubleshooting.md)

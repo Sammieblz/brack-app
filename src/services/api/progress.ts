@@ -180,7 +180,12 @@ export const updateBookStatusForActivity = async (
   const [progressLogs, readingSessions, journalEntries] = await Promise.all([
     supabase.from("progress_logs").select("id").eq("book_id", bookId).limit(1),
     supabase.from("reading_sessions").select("id").eq("book_id", bookId).limit(1),
-    supabase.from("journal_entries").select("id").eq("book_id", bookId).limit(1),
+    supabase
+      .from("journal_entries")
+      .select("id")
+      .eq("book_id", bookId)
+      .is("deleted_at", null)
+      .limit(1),
   ]);
 
   const hasActivity =

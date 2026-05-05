@@ -79,6 +79,12 @@ Brack uses modern, production-ready technologies for web and mobile development.
 - **Language**: TypeScript
 - **Functions**:
   - `search-books` - Google Books API integration
+  - `add-book` - Protected library insertion and duplicate handling
+  - `dashboard-home` - Dashboard aggregate data
+  - `create-reading-session` - Timer session persistence
+  - `award-badges` - Badge awarding
+  - `compute-analytics` - Daily analytics snapshots
+  - `sync-pull` / `sync-push` - Reading-core offline sync
   - `discover-readers` - Reader recommendations
   - `enhanced-activity` - Activity feed generation
   - `log-progress` - Progress tracking with transactions
@@ -224,6 +230,8 @@ Brack uses modern, production-ready technologies for web and mobile development.
 ### Caching Strategy
 - React Query cache (in-memory)
 - localStorage persistence
+- IndexedDB/Dexie for web reading-core local storage
+- Capacitor SQLite for native reading-core local storage
 - Service worker cache (static assets)
 - Filesystem cache (mobile images)
 

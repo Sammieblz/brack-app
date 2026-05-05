@@ -165,8 +165,8 @@ User Input
        │
    Yes │ No
        │ └────────► ┌──────────────┐
-       │            │Offline Queue │
-       │            │(LocalStorage)│
+       │            │Local Outbox  │
+       │            │(IDB/SQLite)  │
        │            └──────────────┘
        │                   │
        ▼                   │ (on reconnect)
@@ -238,7 +238,7 @@ Page Hidden
 
 ## Architecture Diagrams
 
-### Offline Queue Architecture
+### Local-First Sync Architecture
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -256,7 +256,7 @@ Page Hidden
               │                │
               ▼                ▼
     ┌──────────────┐  ┌──────────────────┐
-    │   Execute    │  │   Add to Queue   │
+    │   Execute    │  │   Add to Outbox  │
     │ Immediately  │  │                  │
     └──────┬───────┘  │  ┌─────────────┐ │
            │          │  │  Action 1   │ │
@@ -267,7 +267,7 @@ Page Hidden
            │          │  └─────────────┘ │
            │          └──────────────────┘
            │                   │
-           │                   │ (store in localStorage)
+           │                   │ (store in IndexedDB/SQLite)
            │                   │
            │          ┌────────▼─────────┐
            │          │  Wait for Online │
@@ -477,8 +477,8 @@ Floating:
 ┌────────────────────▼────────────────────────┐
 │           Service Layer                      │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
-│  │Supabase  │  │dataCache │  │offline   │  │
-│  │ Client   │  │          │  │Queue     │  │
+│  │Supabase  │  │dataCache │  │sync/local│  │
+│  │ Client   │  │          │  │outbox    │  │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘  │
 └───────┼─────────────┼─────────────┼─────────┘
         │             │             │
@@ -487,10 +487,10 @@ Floating:
 ┌─────────────────────▼─────────────────────────┐
 │              Data Layer                        │
 │  ┌──────────────┐  ┌───────────────────────┐  │
-│  │  PostgreSQL  │  │   Local Storage       │  │
+│  │  PostgreSQL  │  │ Durable Local Store   │  │
 │  │  (Supabase)  │  │  ┌─────────────────┐  │  │
 │  │              │  │  │ Query Persist   │  │  │
-│  │ - 27 Tables  │  │  │ Offline Queue   │  │  │
+│  │ - 27 Tables  │  │  │ Local Outbox    │  │  │
 │  │ - RLS        │  │  │ Data Cache      │  │  │
 │  │ - Indexes    │  │  │ Image Cache     │  │  │
 │  └──────────────┘  │  └─────────────────┘  │  │
@@ -677,7 +677,7 @@ SignUp    SignIn   MagicLink
 ```
 1. User Creates Book (Offline)
    ↓
-   Queue Action in localStorage
+   Store local record and outbox item
    
 2. App Reconnects
    ↓
@@ -686,7 +686,7 @@ SignUp    SignIn   MagicLink
    syncService.sync() Called
    ↓
    
-3. Process Queue
+3. Push Outbox and Pull Latest
    ┌─────────────────────────┐
    │ For each queued action: │
    │                         │

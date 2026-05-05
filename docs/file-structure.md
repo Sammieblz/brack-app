@@ -39,13 +39,13 @@ brack-app/
 
 ```
 src/
-├── components/           # 126 React components
-├── contexts/            # 4 React contexts (global state)
-├── hooks/               # 42 custom hooks
+├── components/           # 192 React components
+├── contexts/            # React contexts (global state)
+├── hooks/               # 59 custom hooks
 ├── integrations/        # External service integrations
 ├── lib/                 # Library configurations
 ├── screens/             # 27 page components
-├── services/            # 7 business logic services
+├── services/            # API, local storage, sync, and platform services
 ├── types/               # TypeScript type definitions
 ├── utils/               # 9 utility functions
 ├── App.css              # Global app styles
@@ -79,6 +79,7 @@ components/
 │   ├── ReadingVelocityChart.tsx
 │   ├── GoalProgressChart.tsx
 │   ├── StreakTrendChart.tsx
+│   ├── ReadingHeatmap.tsx
 │   └── YearInReviewChart.tsx
 │
 ├── social/              # Social feature components
@@ -291,8 +292,10 @@ Business logic and external integrations.
 
 ```
 services/
-├── offlineQueue.ts        # Offline action queue
-├── syncService.ts         # Background sync
+├── api/                   # Backend API service modules
+├── local/                 # IndexedDB/SQLite local repositories
+├── sync/                  # Reading-core sync engine and types
+├── syncService.ts         # Background sync facade
 ├── deepLinkService.ts     # Deep link handling
 ├── pushNotifications.ts   # Push notification management
 ├── shareService.ts        # Native sharing
@@ -385,13 +388,13 @@ Backend configuration and code.
 ```
 supabase/
 ├── config.toml                # Supabase CLI configuration
-├── migrations/                # Database migrations (31 files)
+├── migrations/                # Database migrations (41 files)
 │   ├── 20250731180820_...sql # Enable RLS
 │   ├── 20260109044500_...sql # Add push tokens
 │   ├── 20260109044600_...sql # Add notification prefs
 │   ├── 20260204013937_...sql # Fix relationships
 │   ├── 20260204020000_...sql # Add journal photos
-│   └── ... (26 more)
+│   └── ... (36 more)
 │
 └── functions/                 # Edge Functions (Deno)
     ├── _shared/              # Shared utilities
@@ -400,7 +403,14 @@ supabase/
     │   ├── rateLimit.ts
     │   └── validation.ts
     │
-    ├── search-books/         # Google Books search
+    ├── add-book/             # Protected library insert + duplicate handling
+    ├── search-books/         # Public Google Books search
+    ├── dashboard-home/       # Dashboard aggregate data
+    ├── create-reading-session/ # Timer session persistence
+    ├── award-badges/         # Badge awarding
+    ├── compute-analytics/    # Daily analytics snapshots
+    ├── sync-pull/            # Pull reading-core sync changes
+    ├── sync-push/            # Push reading-core outbox mutations
     ├── discover-readers/     # Reader recommendations
     ├── enhanced-activity/    # Activity feed
     ├── log-progress/         # Progress logging

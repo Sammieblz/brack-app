@@ -78,12 +78,6 @@ export const followUser = async (userId: string): Promise<void> => {
   });
 
   if (error) throw error;
-  await profilePreferencesRepo.upsertRemote(userId, {
-    id: userId,
-    color_theme: preferences.color_theme ?? null,
-    theme_mode: preferences.theme_mode ?? null,
-    updated_at: new Date().toISOString(),
-  });
 };
 
 export const unfollowUser = async (userId: string): Promise<void> => {

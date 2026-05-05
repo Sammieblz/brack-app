@@ -1,10 +1,11 @@
-import { useMemo } from "react";
-import Chart from "react-apexcharts";
+import { Suspense, lazy, useMemo } from "react";
 import type { ApexOptions } from "apexcharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { APP_ICONS } from "@/config/iconography";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
+
+const ApexChart = lazy(() => import("react-apexcharts"));
 
 interface HeatmapData {
   date: string;
@@ -274,14 +275,27 @@ export const ReadingHeatmap = ({
       <CardContent className="px-2 sm:px-6">
         <div className="native-scroll overflow-x-auto">
           <div className="min-w-[44rem] md:min-w-0">
-            <Chart
-              key={`${currentTheme}-${resolvedTheme}-${weeks}-${compact ? "compact" : "full"}`}
-              options={options}
-              series={series}
-              type="heatmap"
-              height={compact ? 260 : 340}
-              width="100%"
-            />
+            <Suspense
+              fallback={
+                <div
+                  className={cn(
+                    "flex items-center justify-center rounded-md bg-muted/35 text-sm text-muted-foreground",
+                    compact ? "h-[260px]" : "h-[340px]"
+                  )}
+                >
+                  Loading heatmap...
+                </div>
+              }
+            >
+              <ApexChart
+                key={`${currentTheme}-${resolvedTheme}-${weeks}-${compact ? "compact" : "full"}`}
+                options={options}
+                series={series}
+                type="heatmap"
+                height={compact ? 260 : 340}
+                width="100%"
+              />
+            </Suspense>
           </div>
         </div>
       </CardContent>

@@ -64,10 +64,10 @@ npx supabase db reset
 npx supabase migration new migration_name
 
 # Deploy Edge Functions
-npx supabase functions deploy
+npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api
 
 # Deploy specific function
-npx supabase functions deploy function-name
+npx supabase functions deploy function-name --project-ref waftnaqgkcgufzapcihe --use-api
 
 # Set secrets
 npx supabase secrets set KEY=value
@@ -532,8 +532,10 @@ VITE_SUPABASE_PUBLISHABLE_KEY=xxx
 GOOGLE_BOOKS_API_KEY=xxx
 VITE_SENTRY_DSN=xxx
 ALLOWED_ORIGINS=http://localhost:8080
-DENO_ENV=development
+ENVIRONMENT=development
 FCM_SERVER_KEY=xxx
+SUPABASE_ACCESS_TOKEN=xxx
+SUPABASE_DB_PASSWORD=xxx
 ```
 
 ## Git Workflow
@@ -572,9 +574,9 @@ useEffect(() => {
 // Check query cache
 console.log(queryClient.getQueryData(['books']));
 
-// Check offline queue
-console.log('Queue size:', offlineQueue.getQueueSize());
-console.log('Queue:', offlineQueue.getQueue());
+// Check reading-core sync status
+const syncStatus = await readingCoreSync.getStatus();
+console.log(syncStatus.pending, syncStatus.failed, syncStatus.syncing);
 ```
 
 ## Common Fixes
@@ -647,7 +649,7 @@ import { BookCard } from '@/components/BookCard';
 import { useAuth } from '@/hooks/useAuth';
 
 // Services
-import { offlineQueue } from '@/services/offlineQueue';
+import { readingCoreSync } from '@/services/sync/engine';
 
 // Utils
 import { formatDate } from '@/utils';
@@ -686,15 +688,14 @@ const mutation = useMutation({
 mutation.mutate(data);
 ```
 
-### Offline Operation
+### Offline Reading-Core Sync
 
 ```typescript
-import { executeWithOfflineQueue } from '@/utils/offlineOperation';
+import { readingCoreSync } from '@/services/sync/engine';
+import { bookOperations } from '@/utils/offlineOperation';
 
-await executeWithOfflineQueue(
-  () => supabase.from('table').insert(data),
-  { type: 'create_item', data }
-);
+await bookOperations.create(bookData);
+await readingCoreSync.syncCurrentUser();
 ```
 
 ### Real-time Subscription
@@ -723,7 +724,7 @@ useEffect(() => {
 | Auth issues | Check .env, restart server |
 | Mobile crash | `npx cap sync` |
 | Database error | Check RLS policies |
-| Offline sync stuck | `offlineQueue.sync()` |
+| Offline sync stuck | `readingCoreSync.syncCurrentUser()` |
 
 ## Resources
 

@@ -12,6 +12,7 @@ export interface JournalEntry {
   photo_url?: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
 }
 
 export const fetchJournalEntries = async (
@@ -21,6 +22,7 @@ export const fetchJournalEntries = async (
     .from("journal_entries")
     .select("*")
     .eq("book_id", bookId)
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -48,6 +50,7 @@ export const fetchUserQuoteEntries = async (
     )
     .eq("user_id", userId)
     .eq("entry_type", "quote")
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -85,9 +88,10 @@ export const updateJournalEntry = async (
 };
 
 export const deleteJournalEntry = async (entryId: string): Promise<void> => {
+  const deletedAt = new Date().toISOString();
   const { error } = await supabase
     .from("journal_entries")
-    .delete()
+    .update({ deleted_at: deletedAt, updated_at: deletedAt })
     .eq("id", entryId);
 
   if (error) throw error;
