@@ -42,6 +42,8 @@ npm run desktop:pack
 npm run desktop:dist
 npm run desktop:dist:win
 npm run desktop:dist:mac
+npm run desktop:dist:mac:arm64
+npm run desktop:dist:mac:x64
 npm run desktop:dist:linux
 ```
 
@@ -75,6 +77,8 @@ Unsigned internal artifacts are built with `electron-builder`:
 
 Artifacts are written to `release/desktop/`.
 
+Linux `.deb` artifacts require package maintainer metadata. Brack sets this through both `package.json` author metadata and `linux.maintainer` in `electron-builder.yml`.
+
 ## CI
 
 The `build-desktop` GitHub Actions job builds unsigned artifacts on:
@@ -84,7 +88,14 @@ The `build-desktop` GitHub Actions job builds unsigned artifacts on:
 - `macos-latest`
 - `macos-15-intel`
 
-The job runs `npm ci`, `npm run desktop:typecheck`, and the platform-specific desktop distribution script, then uploads `release/desktop/**/*`.
+The job runs `npm ci`, `npm run desktop:typecheck`, and one explicit architecture script per matrix entry:
+
+- Windows x64: `npm run desktop:dist:win`
+- Linux x64: `npm run desktop:dist:linux`
+- macOS Apple Silicon: `npm run desktop:dist:mac:arm64`
+- macOS Intel: `npm run desktop:dist:mac:x64`
+
+It then uploads `release/desktop/**/*`.
 
 ## Supabase Configuration
 

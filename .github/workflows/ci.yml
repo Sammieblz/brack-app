@@ -186,18 +186,22 @@ jobs:
             os: windows-latest
             target: win
             arch: x64
+            script: desktop:dist:win
           - name: Linux x64
             os: ubuntu-22.04
             target: linux
             arch: x64
+            script: desktop:dist:linux
           - name: macOS Apple Silicon
             os: macos-latest
             target: mac
             arch: arm64
+            script: desktop:dist:mac:arm64
           - name: macOS Intel
             os: macos-15-intel
             target: mac
             arch: x64
+            script: desktop:dist:mac:x64
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: false
     steps:
@@ -217,7 +221,7 @@ jobs:
         run: npm run desktop:typecheck
 
       - name: Build desktop artifact
-        run: npm run desktop:dist:${{ matrix.target }}
+        run: npm run ${{ matrix.script }}
 
       - name: Upload desktop artifact
         uses: actions/upload-artifact@v4

@@ -121,6 +121,8 @@ Build unsigned desktop artifacts:
 ```bash
 npm run desktop:dist:win
 npm run desktop:dist:mac
+npm run desktop:dist:mac:arm64
+npm run desktop:dist:mac:x64
 npm run desktop:dist:linux
 ```
 

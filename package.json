@@ -3,7 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "description": "Brack reading tracker app for web, mobile, and desktop.",
-  "author": "Brack",
+  "author": {
+    "name": "Brack",
+    "email": "support@brack.app",
+    "url": "https://brack.app"
+  },
+  "homepage": "https://brack.app",
+  "license": "UNLICENSED",
   "main": "desktop/dist/main.cjs",
   "type": "module",
   "scripts": {
@@ -19,9 +25,11 @@
     "desktop:dev": "npm run desktop:build && npm run desktop:rebuild && concurrently -k -s first -n vite,electron \"vite\" \"wait-on http://127.0.0.1:8080 && cross-env BRACK_ELECTRON_DEV_SERVER_URL=http://127.0.0.1:8080 electron .\"",
     "desktop:pack": "npm run build && npm run desktop:build && electron-builder --dir --publish=never",
     "desktop:dist": "npm run build && npm run desktop:build && electron-builder --publish=never",
-    "desktop:dist:win": "npm run build && npm run desktop:build && electron-builder --win --publish=never",
+    "desktop:dist:win": "npm run build && npm run desktop:build && electron-builder --win --x64 --publish=never",
     "desktop:dist:mac": "npm run build && npm run desktop:build && electron-builder --mac --publish=never",
-    "desktop:dist:linux": "npm run build && npm run desktop:build && electron-builder --linux --publish=never",
+    "desktop:dist:mac:arm64": "npm run build && npm run desktop:build && electron-builder --mac --arm64 --publish=never",
+    "desktop:dist:mac:x64": "npm run build && npm run desktop:build && electron-builder --mac --x64 --publish=never",
+    "desktop:dist:linux": "npm run build && npm run desktop:build && electron-builder --linux --x64 --publish=never",
     "cap:sync": "npm run build && npx cap sync",
     "cap:open:ios": "npx cap open ios",
     "cap:open:android": "npx cap open android"

@@ -231,6 +231,8 @@ Desktop packaging uses Electron and `electron-builder`. The first release path b
 npm run desktop:typecheck
 npm run desktop:dist:win
 npm run desktop:dist:mac
+npm run desktop:dist:mac:arm64
+npm run desktop:dist:mac:x64
 npm run desktop:dist:linux
 ```
 
@@ -242,6 +244,8 @@ Targets:
 - macOS Apple Silicon: dmg and zip.
 - macOS Intel: dmg and zip.
 - Linux/Ubuntu x64: AppImage and deb.
+
+Linux `.deb` builds require package maintainer metadata. Brack declares this in `package.json` and `electron-builder.yml`, so CI can create AppImage and deb artifacts without interactive packaging prompts.
 
 Desktop auth requires `brack://auth/callback` and `brack://auth/reset-password` in Supabase Auth redirect URLs. Web auth uses `/auth/callback` and `/auth/reset-password`, so production and local callback/reset URLs should also be listed. If Edge Function CORS is restricted, include `brack-app://brack` in `ALLOWED_ORIGINS`.
 
@@ -430,10 +434,17 @@ The CI pipeline is defined in `.github/workflows/ci.yml`:
 2. Setup Node.js 20
 3. Install npm dependencies
 4. Typecheck the Electron shell (`npm run desktop:typecheck`)
-5. Build unsigned desktop artifacts with the platform-specific `desktop:dist:*` script
+5. Build unsigned desktop artifacts with the platform-specific and architecture-specific `desktop:dist:*` script
 6. Upload `release/desktop/**/*` as GitHub Actions artifacts
 
 **Purpose**: Ensure the desktop shell packages for Windows x64, Linux x64, macOS Apple Silicon, and macOS Intel.
+
+The CI matrix maps each platform to an explicit script:
+
+- Windows x64: `npm run desktop:dist:win`
+- Linux x64: `npm run desktop:dist:linux`
+- macOS Apple Silicon: `npm run desktop:dist:mac:arm64`
+- macOS Intel: `npm run desktop:dist:mac:x64`
 
 #### Tests Job
 
