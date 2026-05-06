@@ -1,6 +1,7 @@
 import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { readingCoreSync } from "@/services/sync/engine";
+import { isDesktopRuntime, onDesktopForeground } from "@/services/platform";
 
 interface SyncProgress {
   total: number;
@@ -26,6 +27,12 @@ class SyncService {
   }
 
   private setupAppStateListener() {
+    if (isDesktopRuntime()) {
+      onDesktopForeground(() => {
+        this.syncOnForeground();
+      });
+    }
+
     if (!Capacitor.isNativePlatform()) {
       // Web: use visibility API
       document.addEventListener('visibilitychange', () => {

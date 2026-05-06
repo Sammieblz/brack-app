@@ -7,7 +7,7 @@ import {
   shouldEnterFirstRunOnboarding,
 } from "@/services/onboarding";
 
-const PUBLIC_ROUTES = new Set(["/", "/auth"]);
+const PUBLIC_ROUTES = new Set(["/", "/auth", "/auth/callback", "/auth/reset-password"]);
 
 export const OnboardingRouteGuard = () => {
   const { user, loading } = useAuth();

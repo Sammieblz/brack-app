@@ -2,6 +2,7 @@ import { Capacitor } from "@capacitor/core";
 import Dexie, { type Table } from "dexie";
 import type { SQLiteConnection, SQLiteDBConnection } from "@capacitor-community/sqlite";
 import type { LocalRecord, OutboxItem, SyncState } from "@/services/sync/types";
+import { isDesktopRuntime } from "@/services/platform";
 
 export type LocalTableName =
   | "books"
@@ -388,7 +389,93 @@ class SQLiteLocalDriver implements LocalDriver {
   }
 }
 
+type DesktopLocalDbRequest = Parameters<
+  NonNullable<Window["brackDesktop"]>["localDb"]["invoke"]
+>[0];
+
+class ElectronSQLiteLocalDriver implements LocalDriver {
+  private initialized = false;
+
+  async init() {
+    if (this.initialized) return;
+    if (!window.brackDesktop) {
+      throw new Error("Brack desktop bridge is not available");
+    }
+    await window.brackDesktop.platform.getInfo();
+    this.initialized = true;
+  }
+
+  private async invoke<T>(request: DesktopLocalDbRequest): Promise<T> {
+    await this.init();
+    if (!window.brackDesktop) {
+      throw new Error("Brack desktop bridge is not available");
+    }
+    return window.brackDesktop.localDb.invoke<T>(request);
+  }
+
+  async upsertRecord<T>(table: LocalTableName, record: LocalRecord<T>) {
+    await this.invoke({ operation: "upsertRecord", table, record });
+  }
+
+  async upsertRecords<T>(table: LocalTableName, records: LocalRecord<T>[]) {
+    await this.invoke({ operation: "upsertRecords", table, records });
+  }
+
+  async getRecord<T>(table: LocalTableName, id: string) {
+    return this.invoke<LocalRecord<T> | null>({ operation: "getRecord", table, id });
+  }
+
+  async listRecords<T>(
+    table: LocalTableName,
+    userId: string,
+    options: { includeDeleted?: boolean } = {}
+  ) {
+    return this.invoke<LocalRecord<T>[]>({
+      operation: "listRecords",
+      table,
+      userId,
+      options,
+    });
+  }
+
+  async removeRecord(table: LocalTableName, id: string) {
+    await this.invoke({ operation: "removeRecord", table, id });
+  }
+
+  async enqueueOutbox(item: OutboxItem) {
+    await this.invoke({ operation: "enqueueOutbox", item });
+  }
+
+  async listOutbox(userId: string, statuses: OutboxItem["status"][] = ["pending", "failed"]) {
+    return this.invoke<OutboxItem[]>({ operation: "listOutbox", userId, statuses });
+  }
+
+  async updateOutbox(id: string, updates: Partial<OutboxItem>) {
+    await this.invoke({ operation: "updateOutbox", id, updates });
+  }
+
+  async deleteOutbox(id: string) {
+    await this.invoke({ operation: "deleteOutbox", id });
+  }
+
+  async getOutboxCounts(userId: string) {
+    return this.invoke<OutboxCounts>({ operation: "getOutboxCounts", userId });
+  }
+
+  async getSyncState(userId: string, scope: string) {
+    return this.invoke<SyncState | null>({ operation: "getSyncState", userId, scope });
+  }
+
+  async setSyncState(state: SyncState) {
+    await this.invoke({ operation: "setSyncState", state });
+  }
+}
+
 const driver: LocalDriver =
-  Capacitor.isNativePlatform() ? new SQLiteLocalDriver() : new DexieLocalDriver();
+  isDesktopRuntime()
+    ? new ElectronSQLiteLocalDriver()
+    : Capacitor.isNativePlatform()
+      ? new SQLiteLocalDriver()
+      : new DexieLocalDriver();
 
 export const localDriver = driver;

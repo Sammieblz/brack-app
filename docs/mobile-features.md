@@ -378,6 +378,17 @@ App.addListener('appStateChange', ({ isActive }) => {
 - `src/services/syncService.ts` - Background sync
 - `src/services/deepLinkService.ts` - Deep links
 
+## App Icons
+
+Capacitor launcher icons use the fixed Brack `B` mark on the orange app field:
+
+- iOS source icon: `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`
+- Android adaptive icon layers: `android/app/src/main/res/mipmap-*/ic_launcher_background.png` and `ic_launcher_foreground.png`
+- Android legacy launcher icons: `android/app/src/main/res/mipmap-*/ic_launcher.png` and `ic_launcher_round.png`
+- Reusable source layers: `assets/icon-only.png`, `assets/icon-background.png`, and `assets/icon-foreground.png`
+
+Run `npm run brand:icons` after changing Brack app icon artwork. Android adaptive icons include a monochrome layer through `ic_launcher_foreground` for themed launcher support. Runtime UI logos remain theme-aware through `src/components/ThemeAwareLogo.tsx`.
+
 ## Deep Linking
 
 **URL Scheme**: `brack://`
@@ -388,6 +399,8 @@ App.addListener('appStateChange', ({ isActive }) => {
 - `brack://message/789?conversationId=abc` - Open message
 - `brack://club/101` - Open book club
 - `brack://list/202` - Open book list
+- `brack://auth/callback` - Complete Supabase Auth callbacks
+- `brack://auth/reset-password` - Complete password recovery and open the reset screen
 
 **Configuration**:
 
@@ -414,7 +427,10 @@ Android (`AndroidManifest.xml`):
 </intent-filter>
 ```
 
-**Service**: `src/services/deepLinkService.ts`
+**Services**:
+- `src/services/deepLinkService.ts` routes content deep links and forwards auth callbacks.
+- `src/components/DeepLinkHandler.tsx` completes `brack://auth/callback` and `brack://auth/reset-password` by exchanging the Supabase code/session and routing to onboarding, dashboard, or password reset.
+- `@capacitor/browser` opens OAuth providers outside the WebView and closes on return where supported.
 
 ## Offline Support
 

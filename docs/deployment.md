@@ -223,6 +223,30 @@ Output:
 - [Google Play Guidelines](https://play.google.com/about/developer-content-policy/)
 - [Android App Signing](https://developer.android.com/studio/publish/app-signing)
 
+## Desktop Deployment
+
+Desktop packaging uses Electron and `electron-builder`. The first release path builds unsigned internal artifacts for manual QA.
+
+```bash
+npm run desktop:typecheck
+npm run desktop:dist:win
+npm run desktop:dist:mac
+npm run desktop:dist:linux
+```
+
+Outputs are written to `release/desktop/`.
+
+Targets:
+
+- Windows 10/11 x64: NSIS installer.
+- macOS Apple Silicon: dmg and zip.
+- macOS Intel: dmg and zip.
+- Linux/Ubuntu x64: AppImage and deb.
+
+Desktop auth requires `brack://auth/callback` and `brack://auth/reset-password` in Supabase Auth redirect URLs. Web auth uses `/auth/callback` and `/auth/reset-password`, so production and local callback/reset URLs should also be listed. If Edge Function CORS is restricted, include `brack-app://brack` in `ALLOWED_ORIGINS`.
+
+Signing, notarization, auto-update, and store/repository publishing are intentionally deferred until the internal artifacts pass QA.
+
 ## Supabase Deployment
 
 ### Edge Functions
@@ -311,13 +335,14 @@ Brack uses GitHub Actions for continuous integration. The CI pipeline automatica
 
 ### Pipeline Overview
 
-The CI pipeline consists of 5 jobs that run quality checks and validate builds:
+The CI pipeline consists of 6 jobs that run quality checks and validate builds:
 
 1. **Quality Checks** - ESLint and TypeScript validation
 2. **Build Web** - Production web build validation
 3. **Validate Android** - Capacitor Android sync validation
 4. **Validate iOS** - Capacitor iOS sync validation
-5. **Tests** - Test execution (disabled until tests are added)
+5. **Build Desktop** - Electron desktop artifact builds for Windows, Linux, and macOS
+6. **Tests** - Test execution (disabled until tests are added)
 
 ### Workflow File
 
@@ -393,6 +418,22 @@ The CI pipeline is defined in `.github/workflows/ci.yml`:
 **Purpose**: Ensure iOS project can be synced and is properly configured.
 
 **Note**: This job uses macOS runners which are more expensive. Consider making it conditional if cost is a concern.
+
+#### Build Desktop Job
+
+**Runners**: `windows-latest`, `ubuntu-22.04`, `macos-latest`, and `macos-15-intel`
+
+**Dependencies**: Requires `quality-checks` and `build-web` to succeed first
+
+**Steps**:
+1. Checkout code
+2. Setup Node.js 20
+3. Install npm dependencies
+4. Typecheck the Electron shell (`npm run desktop:typecheck`)
+5. Build unsigned desktop artifacts with the platform-specific `desktop:dist:*` script
+6. Upload `release/desktop/**/*` as GitHub Actions artifacts
+
+**Purpose**: Ensure the desktop shell packages for Windows x64, Linux x64, macOS Apple Silicon, and macOS Intel.
 
 #### Tests Job
 
@@ -507,7 +548,7 @@ Potential additions to the CI pipeline:
 1. **Bundle size analysis**: Check bundle size on PRs
 2. **Code coverage**: Report test coverage when tests are added
 3. **Security scanning**: Dependabot or Snyk integration
-4. **Artifact uploads**: Upload build artifacts for releases
+4. **Signed desktop releases**: Add Apple notarization and Windows signing secrets after unsigned QA passes
 5. **Deployment jobs**: Auto-deploy to staging/production
 6. **Matrix testing**: Test against multiple Node.js versions
 

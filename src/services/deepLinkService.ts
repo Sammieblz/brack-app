@@ -1,6 +1,10 @@
 import { App, AppUrlOpen } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
-import { useNavigate } from "react-router-dom";
+import {
+  isAuthRouteUrl,
+  isDesktopRuntime,
+  onDesktopDeepLink,
+} from "@/services/platform";
 
 export interface DeepLinkParams {
   type: 'book' | 'user' | 'message' | 'club' | 'list';
@@ -16,30 +20,53 @@ class DeepLinkService {
    * Initialize the deep link service
    * Should be called once when the app starts
    */
-  async initialize(navigate: (path: string, options?: { state?: unknown }) => void) {
+  async initialize(
+    navigate: (path: string, options?: { state?: unknown }) => void,
+    options: { onAuthCallback?: (url: string) => void | Promise<void> } = {}
+  ) {
     this.navigateCallback = navigate;
+
+    const routeIncomingUrl = (url: string) => {
+      if (isAuthRouteUrl(url)) {
+        void options.onAuthCallback?.(url);
+        return;
+      }
+
+      this.handleDeepLink(url);
+    };
 
     // Handle pending link if app was opened via deep link
     if (this.pendingLink) {
-      this.handleDeepLink(this.pendingLink);
+      routeIncomingUrl(this.pendingLink);
       this.pendingLink = null;
     }
 
+    if (isDesktopRuntime()) {
+      return onDesktopDeepLink((url) => {
+        routeIncomingUrl(url);
+      });
+    }
+
     if (Capacitor.isNativePlatform()) {
+      const launchUrl = await App.getLaunchUrl().catch(() => null);
+      if (launchUrl?.url) {
+        routeIncomingUrl(launchUrl.url);
+      }
+
       // Listen for app URL open events (native)
-      App.addListener('appUrlOpen', (event: AppUrlOpen) => {
+      const listener = await App.addListener('appUrlOpen', (event: AppUrlOpen) => {
         console.log('Deep link received:', event.url);
-        this.handleDeepLink(event.url);
+        routeIncomingUrl(event.url);
       });
 
-      // Return cleanup function that does nothing (listener auto-cleans)
       return () => {
-        // Capacitor listeners are automatically cleaned up
+        listener.remove();
       };
     } else {
       // Web: handle URL changes
       const handleUrlChange = () => {
         const url = window.location.href;
+        if (isAuthRouteUrl(url)) return;
         if (url.includes('brack://') || url.includes('brack.app')) {
           this.handleDeepLink(url);
         }
@@ -62,9 +89,6 @@ class DeepLinkService {
    */
   parseDeepLink(url: string): DeepLinkParams | null {
     try {
-      // Remove protocol and domain
-      const path = url.replace(/^.*?:\/\//, '').replace(/^[^/]+/, '');
-      
       // Handle different URL formats
       // brack://book/123
       // brack://user/456
@@ -73,7 +97,10 @@ class DeepLinkService {
       // https://brack.app/user/456
 
       const urlObj = new URL(url.includes('://') ? url : `https://${url}`);
-      const pathParts = urlObj.pathname.split('/').filter(Boolean);
+      const pathParts =
+        urlObj.protocol === "brack:" && urlObj.hostname
+          ? [urlObj.hostname, ...urlObj.pathname.split('/').filter(Boolean)]
+          : urlObj.pathname.split('/').filter(Boolean);
 
       if (pathParts.length < 2) {
         return null;
@@ -116,6 +143,10 @@ class DeepLinkService {
     }
 
     this.navigateToRoute(params);
+  }
+
+  open(url: string) {
+    this.handleDeepLink(url);
   }
 
   /**

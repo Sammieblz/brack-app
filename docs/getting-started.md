@@ -22,6 +22,12 @@ This guide will help you set up Brack for local development.
   - Android SDK (API 24+)
   - Java JDK 17+
 
+### For Desktop Development (Optional)
+
+- Windows, macOS, or Linux host for local Electron runs
+- Platform-specific OS runners for distributable artifacts
+- Supabase Auth redirect URLs for `/auth/callback`, `/auth/reset-password`, `brack://auth/callback`, and `brack://auth/reset-password`
+
 ## Installation
 
 ### 1. Clone the Repository
@@ -58,7 +64,7 @@ GOOGLE_BOOKS_API_KEY=your-google-books-api-key
 VITE_SENTRY_DSN=your-sentry-dsn
 
 # For Edge Functions
-ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com
+ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com,brack-app://brack
 ENVIRONMENT=development
 FCM_SERVER_KEY=your-fcm-server-key
 
@@ -101,6 +107,30 @@ npm run dev
 ```
 
 The app will be available at `http://localhost:8080`
+
+## Desktop Development Setup
+
+Run the Electron desktop shell with Vite:
+
+```bash
+npm run desktop:dev
+```
+
+Build unsigned desktop artifacts:
+
+```bash
+npm run desktop:dist:win
+npm run desktop:dist:mac
+npm run desktop:dist:linux
+```
+
+Desktop uses `brack://auth/callback` for sign-in callbacks, `brack://auth/reset-password` for password recovery, and native SQLite through Electron IPC for reading-core offline storage. Web uses `/auth/callback` and `/auth/reset-password`; Capacitor mobile uses the same `brack://` auth routes as desktop.
+
+Regenerate Electron and Capacitor launcher icons after changing Brack app icon artwork:
+
+```bash
+npm run brand:icons
+```
 
 ## Mobile Development Setup
 

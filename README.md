@@ -87,6 +87,7 @@ Comprehensive documentation is available in the `/docs` directory:
 
 ### Features & Guides
 - **[Mobile Features](./docs/mobile-features.md)** - Native mobile capabilities
+- **[Desktop Packaging](./docs/desktop.md)** - Electron desktop runtime, SQLite storage, and CI artifacts
 - **[Offline Support](./docs/offline-support.md)** - Local-first reading core, outbox sync, and offline caveats
 - **[Authentication](./docs/authentication.md)** - User auth and security
 - **[State Management](./docs/state-management.md)** - Data flow and caching
@@ -118,12 +119,18 @@ npm run preview         # Preview production build
 npm run cap:sync        # Build & sync to native projects
 npm run cap:open:ios    # Open Xcode
 npm run cap:open:android # Open Android Studio
+
+# Desktop Development
+npm run desktop:dev         # Run Vite with Electron
+npm run desktop:typecheck   # Typecheck Electron main/preload code
+npm run desktop:dist        # Build unsigned desktop artifacts
 ```
 
 ### Tech Stack
 
 - **Frontend**: React 18 + TypeScript + Vite
 - **Mobile**: Capacitor 7 (iOS & Android)
+- **Desktop**: Electron + electron-builder
 - **Backend**: Supabase (PostgreSQL + Edge Functions)
 - **UI**: Tailwind CSS + shadcn/ui
 - **State**: TanStack Query (React Query)
@@ -199,6 +206,18 @@ npm run build
 1. Build and sync: `npm run build && npx cap sync`
 2. Open in native IDE: `npx cap open ios` or `npx cap open android`
 3. Build and submit to App Store / Play Store
+
+### Desktop
+
+Build unsigned internal artifacts with Electron:
+
+```bash
+npm run desktop:dist:win
+npm run desktop:dist:mac
+npm run desktop:dist:linux
+```
+
+Supabase Auth must allow `brack://auth/callback` for desktop/mobile sign-in and `/auth/callback` for web sign-in. Desktop Edge Function CORS deployments should include `brack-app://brack` in `ALLOWED_ORIGINS` when origin checks are restricted.
 
 See [Deployment Guide](./docs/deployment.md) for detailed deployment instructions.
 

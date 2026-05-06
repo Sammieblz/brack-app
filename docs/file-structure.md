@@ -6,6 +6,7 @@ Complete guide to the Brack project organization.
 
 ```
 brack-app/
+|-- desktop/              # Electron desktop main/preload source
 ├── android/              # Android native project (Capacitor)
 ├── ios/                  # iOS native project (Capacitor)
 ├── dist/                 # Production build output
@@ -514,6 +515,21 @@ docs/
 ├── troubleshooting.md     # Common issues
 └── ... (more docs)
 ```
+
+## Desktop Directory (`desktop/`)
+
+Electron desktop packaging source.
+
+```
+desktop/
+|-- tsconfig.json          # TypeScript config for Electron main/preload
+`-- src/
+    |-- main.cts           # Window, protocol, deep link, and IPC setup
+    |-- preload.cts        # Secure window.brackDesktop bridge
+    `-- sqliteLocalDb.cts  # Native SQLite local driver behind IPC
+```
+
+Desktop packaging is configured by `electron-builder.yml`, and renderer bridge types live in `src/types/desktop.d.ts`.
 
 ## Best Practices
 

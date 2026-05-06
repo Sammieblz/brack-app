@@ -41,6 +41,11 @@ This documentation provides comprehensive coverage of:
 2. **[Getting Started](./getting-started.md#mobile-development-setup)** - iOS/Android setup
 3. **[Deployment](./deployment.md#mobile-deployment)** - Deploy to app stores
 
+### Desktop Developers
+
+1. **[Desktop Packaging](./desktop.md)** - Electron runtime, SQLite storage, and CI artifacts
+2. **[Deployment](./deployment.md#desktop-deployment)** - Desktop artifact build process
+
 ### DevOps/Platform Engineers
 
 1. **[Deployment](./deployment.md)** - Production deployment
@@ -107,6 +112,7 @@ This documentation provides comprehensive coverage of:
 
 ### Features
 - [Mobile Features](./mobile-features.md) - Native capabilities
+- [Desktop Packaging](./desktop.md) - Electron desktop runtime
 - [Offline Support](./offline-support.md) - Offline architecture
 - [Authentication](./authentication.md) - Auth system
 
@@ -131,6 +137,7 @@ This documentation provides comprehensive coverage of:
 | ...run the app locally? | [Getting Started](./getting-started.md#run-development-server) |
 | ...build for production? | [Deployment](./deployment.md) |
 | ...deploy to mobile? | [Deployment](./deployment.md#mobile-deployment) |
+| ...package desktop apps? | [Desktop Packaging](./desktop.md), [Deployment](./deployment.md#desktop-deployment) |
 | ...add a new feature? | [Contributing](./contributing.md#adding-new-features) |
 | ...create a database table? | [Database Schema](./database-schema.md), [FAQ](./faq.md#how-do-i-add-a-new-database-table) |
 | ...check backlog status? | [Sprint Backlog](./backlog.md) |
@@ -234,6 +241,15 @@ This documentation provides comprehensive coverage of:
 5. [Troubleshooting](./troubleshooting.md#mobile-development-issues) - Common issues
 
 **Estimated Time**: 3-4 hours
+
+### Path 3: Desktop Developer
+
+1. [Project Overview](./project-overview.md) - Understand the app
+2. [Desktop Packaging](./desktop.md) - Electron runtime and local SQLite
+3. [Offline Support](./offline-support.md) - Sync and outbox behavior
+4. [Deployment](./deployment.md#desktop-deployment) - Build unsigned artifacts
+
+**Estimated Time**: 2-3 hours
 
 ### Path 3: Backend Developer
 
@@ -371,9 +387,10 @@ When making changes:
 | Components | Hooks, State Management |
 | Hooks | Components, State Management |
 | Mobile Features | Getting Started, Deployment |
+| Desktop Packaging | Deployment, Offline Support |
 | Offline Support | State Management, Architecture |
 | Authentication | Database Schema, API Reference |
-| Deployment | Getting Started, Mobile Features |
+| Deployment | Getting Started, Mobile Features, Desktop Packaging |
 | Testing | Contributing, Deployment |
 
 ---

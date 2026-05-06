@@ -43,6 +43,7 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 - [Conversation Summary](./messaging/conversation-summary.md) - Efficient conversation list read model
 - [Frontend Service Boundaries](./architecture/frontend-service-boundaries.md) - Domain API access rules
 - [Mobile Device Boundaries](./architecture/mobile-device-boundaries.md) - Capacitor/plugin ownership and fallbacks
+- [Desktop Packaging](./desktop.md) - Electron packaging, desktop SQLite, and desktop CI artifacts
 - [Product KPIs](./analytics/kpis.md) - Primary and secondary success metrics
 - [In-Product Analytics](./analytics/in-product-analytics.md) - User-facing analytics review
 - [Analytics Snapshot Strategy](./analytics/snapshot-strategy.md) - Snapshot generation and consumption plan
@@ -51,6 +52,7 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 - [Reading Loop Friction Audit](./product/reading-loop-friction-audit.md) - Core reading UX review
 - [Must-Win Screens](./product/must-win-screens.md) - Retention-critical surfaces and quality bars
 - [Mobile Features](./mobile-features.md) - Native mobile capabilities
+- [Desktop Packaging](./desktop.md) - Electron desktop runtime and packaging
 
 ### Reference
 - [Components Guide](./components.md) - UI components and patterns

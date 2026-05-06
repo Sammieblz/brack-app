@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => ({
         start_url: "/",
         scope: "/",
         display: "standalone",
-        theme_color: "#6366f1",
+        theme_color: "#F97316",
         background_color: "#0b1021",
         description: "Track your reading progress, discover new books, connect with readers, and achieve your reading goals.",
         icons: [
