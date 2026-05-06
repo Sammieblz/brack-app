@@ -1,0 +1,58 @@
+appId: com.brack.desktop
+productName: Brack
+copyright: Copyright © 2026 Brack
+
+directories:
+  output: release/desktop
+
+files:
+  - dist/**/*
+  - desktop/dist/**/*
+  - package.json
+
+extraResources:
+  - from: resources/icon.png
+    to: icon.png
+
+asar: true
+asarUnpack:
+  - node_modules/better-sqlite3/build/Release/*.node
+
+npmRebuild: true
+buildDependenciesFromSource: false
+
+publish: null
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: resources/icon.ico
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+
+mac:
+  target:
+    - target: dmg
+    - target: zip
+  category: public.app-category.productivity
+  icon: resources/icon.icns
+  identity: null
+
+linux:
+  maintainer: Brack <support@brack.app>
+  target:
+    - target: AppImage
+      arch:
+        - x64
+    - target: deb
+      arch:
+        - x64
+  category: Office
+  icon: resources/linux-icons
+
+artifactName: Brack-${version}-${os}-${arch}.${ext}

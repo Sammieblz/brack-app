@@ -109,8 +109,44 @@ const { data, error } = await supabase.auth.signInWithOtp({
 ```typescript
 const { data, error } = await supabase.auth.signInWithOAuth({
   provider: 'google', // or 'github', 'apple', etc.
+  options: {
+    redirectTo: getAuthRedirectUrl(),
+  },
 });
 ```
+
+## Auth Callback URLs
+
+Brack uses explicit callback URLs for all redirect-based auth methods.
+
+| Runtime | Callback URL | Handler |
+| --- | --- | --- |
+| Web/PWA | `https://brack.app/auth/callback` | React route `/auth/callback` |
+| Local web | `http://localhost:8080/auth/callback` | React route `/auth/callback` |
+| Electron desktop | `brack://auth/callback` | Electron protocol callback through preload |
+| Capacitor iOS/Android | `brack://auth/callback` | Capacitor `App.appUrlOpen` deep link |
+
+Supabase Auth redirect URLs should include:
+
+```text
+https://brack.app/auth/callback
+http://localhost:8080/auth/callback
+http://127.0.0.1:8080/auth/callback
+http://127.0.0.1:8081/auth/callback
+brack://auth/callback
+```
+
+Password recovery uses a dedicated reset route so users land on the password update screen instead of the normal post-login route:
+
+```text
+https://brack.app/auth/reset-password
+http://localhost:8080/auth/reset-password
+http://127.0.0.1:8080/auth/reset-password
+http://127.0.0.1:8081/auth/reset-password
+brack://auth/reset-password
+```
+
+For preview deployments, add the hosting provider's exact preview pattern if needed. Keep production URLs exact rather than broad wildcard patterns.
 
 ## Sign Out
 
@@ -307,18 +343,26 @@ if (user) {
 
 ## Password Reset
 
-### Request Reset
+Brack supports password reset from the signed-out auth screen and from Account Settings. The reset request uses the platform-aware `getPasswordResetRedirectUrl()` helper:
+
+- Web/PWA: `/auth/reset-password`
+- Electron desktop: `brack://auth/reset-password`
+- Capacitor iOS/Android: `brack://auth/reset-password`
+
+### Request Reset Email
 
 ```typescript
 const { error } = await supabase.auth.resetPasswordForEmail(
   'user@example.com',
   {
-    redirectTo: 'https://brack.app/auth/reset-password',
+    redirectTo: getPasswordResetRedirectUrl(),
   }
 );
 ```
 
 ### Update Password
+
+`src/screens/ResetPassword.tsx` handles Supabase recovery callback parameters, confirms an active recovery session, validates the new password, and updates the logged-in recovery user:
 
 ```typescript
 const { error } = await supabase.auth.updateUser({

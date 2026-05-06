@@ -57,6 +57,14 @@ Brack uses modern, production-ready technologies for web and mobile development.
 | @capacitor/push-notifications | 7.0.4 | Push alerts |
 | @capacitor/share | 7.0.3 | Native sharing |
 
+## Desktop Framework
+
+### Electron
+- **Why**: Desktop packaging for the existing Vite/React app with one renderer codebase.
+- **Platform Support**: Windows 10/11, macOS Intel/Apple Silicon, Linux/Ubuntu.
+- **Packaging**: `electron-builder` creates unsigned internal artifacts in `release/desktop/`.
+- **Local Storage**: `better-sqlite3` runs in the Electron main process behind a restricted preload bridge.
+
 ## Backend & Database
 
 ### Supabase
@@ -220,6 +228,12 @@ Brack uses modern, production-ready technologies for web and mobile development.
 - **Android**: Google Play Store
 - **Build Tools**: Xcode, Android Studio
 
+### Desktop
+- **Windows**: NSIS installer
+- **macOS**: dmg and zip for Intel and Apple Silicon
+- **Linux**: AppImage and deb for x64 Ubuntu-compatible environments
+- **Build Tools**: Electron, electron-builder, @electron/rebuild
+
 ## Performance Features
 
 ### Code Splitting
@@ -232,6 +246,7 @@ Brack uses modern, production-ready technologies for web and mobile development.
 - localStorage persistence
 - IndexedDB/Dexie for web reading-core local storage
 - Capacitor SQLite for native reading-core local storage
+- Electron SQLite for desktop reading-core local storage
 - Service worker cache (static assets)
 - Filesystem cache (mobile images)
 
@@ -343,3 +358,4 @@ Recommended for production:
 - [Database Schema](./database-schema.md)
 - [API Reference](./api-reference.md)
 - [Mobile Features](./mobile-features.md)
+- [Desktop Packaging](./desktop.md)

@@ -128,6 +128,7 @@ function useBook(bookId: string) {
 - `local/repositories.ts` - Local-first repositories and outbox creation
 - `sync/engine.ts` - Reading-core push/pull sync engine
 - `syncService.ts` - App-level background synchronization facade
+- `platform.ts` - Runtime helpers for web, iOS, Android, and desktop
 - `api/` - Backend API module layer
 - `deepLinkService.ts` - Deep link handling
 - `pushNotifications.ts` - Push notification management
@@ -294,6 +295,22 @@ if (Capacitor.isNativePlatform()) {
   // Web fallback
 }
 ```
+
+## Desktop Architecture
+
+Desktop uses Electron as a shell around the same React renderer.
+
+```text
+Electron main process
+    |
+    v
+Secure preload bridge
+    |
+    v
+React renderer services
+```
+
+The renderer does not access Node or Electron APIs directly. `window.brackDesktop` exposes platform info, auth/deep-link callbacks, app foreground events, and whitelisted local database operations. Desktop offline storage uses native SQLite in the main process while preserving the existing `LocalDriver` interface used by web Dexie and Capacitor SQLite.
 
 ## Security Architecture
 

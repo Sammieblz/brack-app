@@ -20,6 +20,8 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 // Critical path screens - keep synchronous for instant loading
 import Index from "./screens/Index";
 import Auth from "./screens/Auth";
+import AuthCallback from "./screens/AuthCallback";
+import ResetPassword from "./screens/ResetPassword";
 import Onboarding from "./screens/Onboarding";
 import Dashboard from "./screens/Dashboard";
 import MyBooks from "./screens/MyBooks";
@@ -120,6 +122,8 @@ const App = () => {
                             <Routes>
                             <Route path="/" element={<Index />} />
                             <Route path="/auth" element={<Auth />} />
+                            <Route path="/auth/callback" element={<AuthCallback />} />
+                            <Route path="/auth/reset-password" element={<ResetPassword />} />
                             <Route path="/onboarding" element={<Onboarding />} />
                             <Route path="/welcome" element={<OnboardingEntryRedirect />} />
                             <Route path="/questionnaire" element={<OnboardingEntryRedirect />} />

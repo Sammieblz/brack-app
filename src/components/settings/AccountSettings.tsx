@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Lock, Mail, Calendar, CardWallet } from "iconoir-react";
 import { fetchProfile, sendPasswordResetEmail } from "@/services/api";
+import { getPasswordResetRedirectUrl } from "@/services/platform";
 import { useToast } from "@/hooks/use-toast";
 import type { User, Profile } from "@/types";
 
@@ -33,10 +34,7 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
     
     setLoading(true);
     try {
-      await sendPasswordResetEmail(
-        user.email,
-        `${window.location.origin}/auth/reset-password`
-      );
+      await sendPasswordResetEmail(user.email, getPasswordResetRedirectUrl());
 
       toast({
         title: "Password reset email sent",

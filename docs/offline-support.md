@@ -66,6 +66,10 @@ Web uses Dexie/IndexedDB through the local driver. This keeps local records and 
 
 iOS and Android use `@capacitor-community/sqlite` through the same driver interface. Native validation still needs to be completed on macOS/iOS, but the JavaScript side is wired for Capacitor SQLite.
 
+### Desktop
+
+Electron desktop uses native SQLite through the preload bridge and Electron IPC. The database is stored as `brack_offline.sqlite` under Electron `app.getPath("userData")`, so it follows each desktop OS's normal per-user app data location. The renderer still talks to the same `LocalDriver` interface and cannot execute arbitrary SQL.
+
 ### Outbox Records
 
 Outbox items use these fields:
@@ -202,12 +206,26 @@ Do not add a new localStorage queue. Extend `SyncEntity`, local repositories, `s
 
 iOS requires macOS, CocoaPods, and Xcode. JavaScript sync behavior is implemented, but native SQLite/iOS behavior still needs device or simulator validation.
 
+### Desktop
+
+1. Run `npm run desktop:dist:win`, `npm run desktop:dist:mac`, or `npm run desktop:dist:linux` on the matching OS.
+2. Install or launch the unsigned artifact from `release/desktop/`.
+3. Sign in and load the library once.
+4. Disconnect from the network.
+5. Restart the desktop app.
+6. Add/edit/delete a book.
+7. Log progress and finish a timer session.
+8. Create/edit/delete a journal entry.
+9. Create/update/delete a goal.
+10. Reconnect and confirm `OfflineIndicator` reaches zero pending/failed items.
+
 ## Known Limitations
 
 - Feed, clubs, messages, reviews, follows, discovery, push notifications, book search, and image uploads remain online-first.
 - `SyncReviewDialog` supports retry/discard, not full manual merge resolution.
 - Hard-delete semantics are avoided for reading-core entities that must sync across devices.
 - Native SQLite behavior still needs real-device validation, especially iOS.
+- Desktop packaging is unsigned in the first pass; signing and notarization are separate release hardening work.
 
 ## Related Docs
 
