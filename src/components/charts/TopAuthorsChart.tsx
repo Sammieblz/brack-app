@@ -1,7 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { User } from "iconoir-react";
+import { useMemo } from "react";
+import type { ApexOptions } from "apexcharts";
+import { UserCircle } from "iconoir-react";
+import { ApexChartCard, ApexChartFrame } from "./ApexChartCard";
+import { useApexTheme } from "./apexTheme";
 
 interface AuthorData {
   author: string;
@@ -13,115 +14,111 @@ interface TopAuthorsChartProps {
   data: AuthorData[];
 }
 
-const chartConfig = {
-  count: {
-    label: "Books",
-  },
-};
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
 export const TopAuthorsChart = ({ data }: TopAuthorsChartProps) => {
-  if (!data || data.length === 0) {
-    return null;
-  }
+  const { baseOptions, colors, currentTheme, resolvedTheme } = useApexTheme();
 
-  const totalBooks = data.reduce((sum, item) => sum + item.count, 0);
+  const totalBooks = useMemo(
+    () => data.reduce((sum, item) => sum + item.count, 0),
+    [data]
+  );
+  const labels = useMemo(() => data.map((item) => item.author), [data]);
+  const series = useMemo(() => data.map((item) => item.count), [data]);
   const topAuthor = data[0];
 
+  const options = useMemo<ApexOptions>(
+    () => ({
+      ...baseOptions,
+      chart: {
+        ...baseOptions.chart,
+        type: "donut",
+      },
+      colors: data.map((_, index) => colors.chart[index % colors.chart.length]),
+      labels,
+      legend: {
+        ...baseOptions.legend,
+        position: "bottom",
+        horizontalAlign: "center",
+      },
+      plotOptions: {
+        pie: {
+          expandOnClick: false,
+          donut: {
+            size: "68%",
+            labels: {
+              show: true,
+              name: {
+                color: colors.mutedForeground,
+                fontFamily: "Inter, system-ui, sans-serif",
+                fontSize: "12px",
+              },
+              value: {
+                color: colors.foreground,
+                fontFamily: "Inter, system-ui, sans-serif",
+                fontSize: "22px",
+                fontWeight: 700,
+                formatter: () => getInitials(topAuthor?.author || "NA"),
+              },
+              total: {
+                show: true,
+                label: topAuthor?.author || "Top author",
+                color: colors.mutedForeground,
+                fontFamily: "Inter, system-ui, sans-serif",
+                formatter: () => `${totalBooks} books`,
+              },
+            },
+          },
+        },
+      },
+      stroke: {
+        colors: [colors.card],
+        width: 3,
+      },
+      tooltip: {
+        ...baseOptions.tooltip,
+        y: {
+          formatter: (value) => {
+            const share = totalBooks > 0 ? (Number(value) / totalBooks) * 100 : 0;
+            return `${value} books - ${share.toFixed(1)}%`;
+          },
+        },
+      },
+      responsive: [
+        {
+          breakpoint: 640,
+          options: {
+            legend: { show: false },
+            plotOptions: { pie: { donut: { size: "72%" } } },
+          },
+        },
+      ],
+    }),
+    [baseOptions, colors, data, labels, topAuthor?.author, totalBooks]
+  );
+
+  if (!data || data.length === 0) return null;
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center text-base md:text-lg">
-          <User className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-          Top Authors
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-2 sm:px-6">
-        <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={90}
-                paddingAngle={2}
-                dataKey="count"
-                animationDuration={750}
-              >
-                {data.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.color}
-                    stroke="hsl(var(--background))"
-                    strokeWidth={2}
-                  />
-                ))}
-              </Pie>
-              {/* Center stats */}
-              <text
-                x="50%"
-                y="45%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="font-sans text-xl md:text-2xl font-bold fill-foreground"
-              >
-                {topAuthor?.author.split(' ').map(n => n[0]).join('').slice(0, 2) || 'N/A'}
-              </text>
-              <text
-                x="50%"
-                y="55%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="font-serif text-xs md:text-sm fill-muted-foreground"
-              >
-                {topAuthor?.author || 'No Author'}
-              </text>
-              <text
-                x="50%"
-                y="65%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="font-sans text-xs fill-muted-foreground"
-              >
-                {totalBooks} books
-              </text>
-              <ChartTooltip 
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    const data = payload[0].payload as AuthorData;
-                    const percentage = ((data.count / totalBooks) * 100).toFixed(1);
-                    return (
-                      <div className="rounded-lg border bg-background p-3 shadow-lg">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <div 
-                              className="w-3 h-3 rounded-full" 
-                              style={{ backgroundColor: data.color }}
-                            />
-                            <span className="font-serif font-semibold text-sm">
-                              {data.author}
-                            </span>
-                          </div>
-                          <div className="font-sans flex justify-between gap-4 text-xs">
-                            <span className="text-muted-foreground">Books:</span>
-                            <span className="font-bold">{data.count}</span>
-                          </div>
-                          <div className="font-sans flex justify-between gap-4 text-xs">
-                            <span className="text-muted-foreground">Share:</span>
-                            <span className="font-bold">{percentage}%</span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+    <ApexChartCard
+      title="Top Authors"
+      subtitle={topAuthor ? `${topAuthor.author} leads your shelf` : undefined}
+      icon={<UserCircle className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
+    >
+      <ApexChartFrame
+        chartKey={`top-authors-${currentTheme}-${resolvedTheme}`}
+        options={options}
+        series={series}
+        type="donut"
+        height={320}
+      />
+    </ApexChartCard>
   );
 };
+

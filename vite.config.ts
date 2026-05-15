@@ -109,7 +109,6 @@ export default defineConfig(({ mode }) => ({
           'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
           'query-vendor': ['@tanstack/react-query', '@tanstack/react-query-persist-client'],
           'supabase-vendor': ['@supabase/supabase-js'],
-          'chart-vendor': ['recharts'],
           'apex-vendor': ['apexcharts', 'react-apexcharts'],
           'animation-vendor': ['gsap', '@gsap/react', 'framer-motion'],
         },

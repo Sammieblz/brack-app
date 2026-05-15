@@ -1,7 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { useMemo } from "react";
+import type { ApexOptions } from "apexcharts";
 import { APP_ICONS } from "@/config/iconography";
+import { ApexChartCard, ApexChartFrame } from "./ApexChartCard";
+import { useApexTheme } from "./apexTheme";
 
 interface ReadingVelocityData {
   date: string;
@@ -12,63 +13,95 @@ interface ReadingVelocityChartProps {
   data: ReadingVelocityData[];
 }
 
-const chartConfig = {
-  pagesPerHour: {
-    label: "Pages/Hour",
-    color: "hsl(var(--chart-1))",
-  },
-};
-
 export const ReadingVelocityChart = ({ data }: ReadingVelocityChartProps) => {
-  if (!data || data.length === 0) {
-    return null;
-  }
+  const { baseOptions, colors, currentTheme, resolvedTheme } = useApexTheme();
+
+  const categories = useMemo(() => data.map((item) => item.date), [data]);
+  const averagePace = useMemo(() => {
+    if (data.length === 0) return 0;
+    return data.reduce((sum, item) => sum + item.pagesPerHour, 0) / data.length;
+  }, [data]);
+  const series = useMemo(
+    () => [{ name: "Pages per hour", data: data.map((item) => item.pagesPerHour) }],
+    [data]
+  );
+
+  const options = useMemo<ApexOptions>(
+    () => ({
+      ...baseOptions,
+      chart: {
+        ...baseOptions.chart,
+        type: "line",
+      },
+      colors: [colors.chart[0]],
+      markers: {
+        size: 4,
+        strokeColors: colors.card,
+        strokeWidth: 2,
+        hover: { size: 6 },
+      },
+      stroke: {
+        curve: "smooth",
+        lineCap: "round",
+        width: 3,
+      },
+      tooltip: {
+        ...baseOptions.tooltip,
+        y: {
+          formatter: (value) => `${Number(value).toFixed(1)} pages/hour`,
+        },
+      },
+      xaxis: {
+        ...baseOptions.xaxis,
+        categories,
+        tickAmount: Math.min(categories.length, 6),
+      },
+      yaxis: {
+        ...baseOptions.yaxis,
+        labels: {
+          style: { colors: colors.mutedForeground },
+          formatter: (value) => `${Number(value).toFixed(0)}`,
+        },
+      },
+      annotations: averagePace > 0
+        ? {
+            yaxis: [
+              {
+                y: averagePace,
+                borderColor: colors.border,
+                strokeDashArray: 5,
+                label: {
+                  text: "Average",
+                  borderColor: colors.border,
+                  style: {
+                    background: colors.popover,
+                    color: colors.popoverForeground,
+                  },
+                },
+              },
+            ],
+          }
+        : undefined,
+    }),
+    [averagePace, baseOptions, categories, colors]
+  );
+
+  if (!data || data.length === 0) return null;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center text-base md:text-lg">
-          <APP_ICONS.stats.pace className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-          Reading Velocity Over Time
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-2 sm:px-6">
-        <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px] w-full">
-          <LineChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-            <defs>
-              <linearGradient id="colorVelocity" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.1} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-            <XAxis 
-              dataKey="date" 
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={11}
-              tick={{ fontSize: 11 }}
-            />
-            <YAxis 
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={11}
-              tick={{ fontSize: 11 }}
-              width={40}
-            />
-            <ChartTooltip 
-              content={<ChartTooltipContent />}
-              cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "5 5" }}
-            />
-            <Line
-              type="monotone"
-              dataKey="pagesPerHour"
-              stroke="hsl(var(--chart-1))"
-              strokeWidth={2}
-              fill="url(#colorVelocity)"
-              animationDuration={750}
-            />
-          </LineChart>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+    <ApexChartCard
+      title="Reading Velocity"
+      subtitle={`Average ${averagePace.toFixed(1)} pages/hour`}
+      icon={<APP_ICONS.stats.pace className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
+    >
+      <ApexChartFrame
+        chartKey={`reading-velocity-${currentTheme}-${resolvedTheme}`}
+        options={options}
+        series={series}
+        type="line"
+        height={320}
+        minWidth={480}
+      />
+    </ApexChartCard>
   );
 };

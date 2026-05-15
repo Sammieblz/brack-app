@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { useTheme as useNextTheme } from 'next-themes';
 import { useAuth } from '@/hooks/useAuth';
-import { getTheme, type ThemeColors } from '@/lib/themes';
+import { getTheme, type ThemeColors, type ThemeSurfaceStyle } from '@/lib/themes';
 import { fetchThemePreferences, upsertThemePreferences } from '@/services/api';
 
 const THEME_MODE_STORAGE_KEY = 'theme-mode';
@@ -28,6 +28,23 @@ export const useTheme = () => {
   return context;
 };
 
+const THEME_STYLE_CLASSES: ThemeSurfaceStyle[] = [
+  'standard',
+  'paper',
+  'glass',
+  'comic',
+  'coloring-book',
+];
+
+const applyThemeStyle = (surfaceStyle: ThemeSurfaceStyle = 'standard') => {
+  const root = document.documentElement;
+
+  root.dataset.brackThemeStyle = surfaceStyle;
+  THEME_STYLE_CLASSES.forEach((style) => {
+    root.classList.toggle(`brack-theme-${style}`, style === surfaceStyle);
+  });
+};
+
 const applyThemeColors = (colors: ThemeColors) => {
   const root = document.documentElement;
   
@@ -38,6 +55,23 @@ const applyThemeColors = (colors: ThemeColors) => {
     cssVar = cssVar.replace(/chart(\d+)/g, 'chart-$1');
     root.style.setProperty(`--${cssVar}`, value);
   });
+
+  root.style.setProperty('--sidebar-background', colors.card);
+  root.style.setProperty('--sidebar-foreground', colors.cardForeground);
+  root.style.setProperty('--sidebar-primary', colors.primary);
+  root.style.setProperty('--sidebar-primary-foreground', colors.primaryForeground);
+  root.style.setProperty('--sidebar-accent', colors.accent);
+  root.style.setProperty('--sidebar-accent-foreground', colors.accentForeground);
+  root.style.setProperty('--sidebar-border', colors.border);
+  root.style.setProperty('--sidebar-ring', colors.ring);
+};
+
+const applyTheme = (themeId: string, isDark: boolean) => {
+  const theme = getTheme(themeId);
+  const colors = isDark ? theme.colors.dark : theme.colors.light;
+
+  applyThemeStyle(theme.surfaceStyle ?? 'standard');
+  applyThemeColors(colors);
 };
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
@@ -60,10 +94,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       setNextTheme('light');
     }
 
-    const theme = getTheme('default');
     const isDark = mode === 'dark';
-    const colors = isDark ? theme.colors.dark : theme.colors.light;
-    applyThemeColors(colors);
+    applyTheme('default', isDark);
     setCurrentTheme('default');
   }, [setNextTheme]);
 
@@ -112,10 +144,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error('Error loading theme:', error);
         // Fallback to default theme on error
-        const theme = getTheme('default');
         const isDark = document.documentElement.classList.contains('dark');
-        const colors = isDark ? theme.colors.dark : theme.colors.light;
-        applyThemeColors(colors);
+        applyTheme('default', isDark);
         setCurrentTheme('default');
       } finally {
         setIsLoading(false);
@@ -131,8 +161,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
     const theme = getTheme(user ? currentTheme : 'default');
     const isDark = resolvedTheme === 'dark';
-    const colors = isDark ? theme.colors.dark : theme.colors.light;
-    applyThemeColors(colors);
+    applyTheme(theme.id, isDark);
   }, [currentTheme, user, resolvedTheme]);
 
   const setTheme = async (themeId: string) => {
@@ -140,10 +169,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       // Apply theme immediately, respecting current theme mode (light/dark)
-      const theme = getTheme(themeId);
       const isDark = document.documentElement.classList.contains('dark');
-      const colors = isDark ? theme.colors.dark : theme.colors.light;
-      applyThemeColors(colors);
+      applyTheme(themeId, isDark);
       setCurrentTheme(themeId);
       
       // Cache in localStorage for instant load on next visit
@@ -155,10 +182,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       console.error('Error saving theme:', error);
       // Revert to previous theme on error
       const previousTheme = localStorage.getItem('color_theme') || 'default';
-      const theme = getTheme(previousTheme);
       const isDark = document.documentElement.classList.contains('dark');
-      const colors = isDark ? theme.colors.dark : theme.colors.light;
-      applyThemeColors(colors);
+      applyTheme(previousTheme, isDark);
       setCurrentTheme(previousTheme);
     }
   };
@@ -172,12 +197,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     
     // Wait for theme mode to apply, then re-apply color theme with correct variant
     setTimeout(() => {
-      const theme = getTheme(user ? currentTheme : 'default');
       const isDark =
         mode === 'dark' ||
         (mode === 'system' && document.documentElement.classList.contains('dark'));
-      const colors = isDark ? theme.colors.dark : theme.colors.light;
-      applyThemeColors(colors);
+      applyTheme(user ? currentTheme : 'default', isDark);
     }, 0);
     
     if (user) {

@@ -254,12 +254,22 @@ export const upsertThemePreferences = async (
   userId: string,
   preferences: Partial<ThemePreferences>
 ): Promise<void> => {
+  const updatedAt = new Date().toISOString();
+
   if (!navigator.onLine) {
+    const existing = await profilePreferencesRepo.get(userId);
+
     await profilePreferencesRepo.upsertLocal(userId, {
       id: userId,
-      color_theme: preferences.color_theme ?? null,
-      theme_mode: preferences.theme_mode ?? null,
-      updated_at: new Date().toISOString(),
+      color_theme:
+        preferences.color_theme !== undefined
+          ? preferences.color_theme
+          : existing?.color_theme ?? null,
+      theme_mode:
+        preferences.theme_mode !== undefined
+          ? preferences.theme_mode
+          : existing?.theme_mode ?? null,
+      updated_at: updatedAt,
     });
     return;
   }
@@ -270,7 +280,7 @@ export const upsertThemePreferences = async (
       {
         id: userId,
         ...preferences,
-        updated_at: new Date().toISOString(),
+        updated_at: updatedAt,
       },
       { onConflict: "id" }
     );

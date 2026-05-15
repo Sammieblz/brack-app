@@ -1,7 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
-import { Filter } from "iconoir-react";
+import { useMemo } from "react";
+import type { ApexOptions } from "apexcharts";
+import { FilterList } from "iconoir-react";
+import { ApexChartCard, ApexChartFrame } from "./ApexChartCard";
+import { useApexTheme } from "./apexTheme";
 
 interface FunnelData {
   status: string;
@@ -13,112 +14,95 @@ interface StatusFunnelChartProps {
   data: FunnelData[];
 }
 
-const chartConfig = {
-  count: {
-    label: "Books",
-    color: "hsl(var(--chart-1))",
-  },
-};
-
-const statusColors: { [key: string]: string } = {
-  'to_read': 'hsl(var(--chart-1))',
-  'reading': 'hsl(var(--chart-2))',
-  'completed': 'hsl(var(--chart-3))',
+const statusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    to_read: "To Read",
+    reading: "Reading",
+    completed: "Completed",
+  };
+  return labels[status] || status.replace("_", " ");
 };
 
 export const StatusFunnelChart = ({ data }: StatusFunnelChartProps) => {
-  if (!data || data.length === 0) {
-    return null;
-  }
+  const { baseOptions, colors, currentTheme, resolvedTheme } = useApexTheme();
+
+  const categories = useMemo(() => data.map((item) => statusLabel(item.status)), [data]);
+  const series = useMemo(
+    () => [{ name: "Books", data: data.map((item) => item.count) }],
+    [data]
+  );
+
+  const statusColors = useMemo(
+    () => [colors.chart[0], colors.chart[1], colors.chart[2]],
+    [colors.chart]
+  );
+
+  const options = useMemo<ApexOptions>(
+    () => ({
+      ...baseOptions,
+      chart: {
+        ...baseOptions.chart,
+        type: "bar",
+      },
+      colors: statusColors,
+      fill: {
+        opacity: 0.95,
+      },
+      legend: { show: false },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          distributed: true,
+          borderRadius: 8,
+          barHeight: "58%",
+        },
+      },
+      tooltip: {
+        ...baseOptions.tooltip,
+        custom: ({ dataPointIndex }) => {
+          const item = data[dataPointIndex];
+          if (!item) return "";
+          return `
+            <div class="apexcharts-tooltip-title">${statusLabel(item.status)}</div>
+            <div style="padding: 8px 10px;">
+              <strong>${item.count}</strong> books
+              <span style="color:${colors.mutedForeground}; margin-left: 6px;">${item.percentage.toFixed(1)}%</span>
+            </div>
+          `;
+        },
+      },
+      xaxis: {
+        ...baseOptions.xaxis,
+        labels: {
+          style: { colors: colors.mutedForeground },
+          formatter: (value) => `${Math.round(Number(value))}`,
+        },
+      },
+      yaxis: {
+        labels: {
+          style: { colors: categories.map(() => colors.mutedForeground) },
+        },
+      },
+    }),
+    [baseOptions, categories, colors.mutedForeground, data, statusColors]
+  );
+
+  if (!data || data.length === 0) return null;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center text-base md:text-lg">
-          <Filter className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-          Book Status Funnel
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-2 sm:px-6">
-        <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px] w-full">
-          <BarChart data={data} layout="vertical" margin={{ top: 10, right: 10, left: 60, bottom: 5 }}>
-            <defs>
-              {data.map((item, index) => (
-                <linearGradient key={`gradient-${index}`} id={`color${item.status}`} x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor={statusColors[item.status] || 'hsl(var(--chart-1))'} stopOpacity={1} />
-                  <stop offset="100%" stopColor={statusColors[item.status] || 'hsl(var(--chart-1))'} stopOpacity={0.6} />
-                </linearGradient>
-              ))}
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-            <XAxis 
-              type="number"
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={11}
-              tick={{ fontSize: 11 }}
-            />
-            <YAxis 
-              type="category"
-              dataKey="status" 
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={11}
-              tick={{ fontSize: 11 }}
-              width={50}
-              tickFormatter={(value) => {
-                const labels: { [key: string]: string } = {
-                  'to_read': 'To Read',
-                  'reading': 'Reading',
-                  'completed': 'Completed',
-                };
-                return labels[value] || value;
-              }}
-            />
-            <ChartTooltip 
-              content={({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  const data = payload[0].payload as FunnelData;
-                  return (
-                    <div className="rounded-lg border bg-background p-3 shadow-lg">
-                      <div className="space-y-1">
-                        <div className="font-sans font-semibold text-sm capitalize">
-                          {data.status.replace('_', ' ')}
-                        </div>
-                        <div className="font-sans flex items-center gap-2">
-                          <div 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: statusColors[data.status] || 'hsl(var(--chart-1))' }}
-                          />
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-lg font-bold">{data.count}</span>
-                            <span className="text-xs text-muted-foreground">books</span>
-                          </div>
-                        </div>
-                        <div className="font-sans text-xs text-muted-foreground">
-                          {data.percentage.toFixed(1)}% of total
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-                return null;
-              }}
-              cursor={{ fill: "hsl(var(--chart-1) / 0.1)" }}
-            />
-            <Bar 
-              dataKey="count" 
-              radius={[0, 6, 6, 0]}
-              animationDuration={750}
-            >
-              {data.map((item, index) => (
-                <Cell 
-                  key={`cell-${index}`}
-                  fill={`url(#color${item.status})`}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+    <ApexChartCard
+      title="Book Status Flow"
+      subtitle="How your library is distributed right now"
+      icon={<FilterList className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
+    >
+      <ApexChartFrame
+        chartKey={`status-funnel-${currentTheme}-${resolvedTheme}`}
+        options={options}
+        series={series}
+        type="bar"
+        height={260}
+      />
+    </ApexChartCard>
   );
 };
+

@@ -158,6 +158,39 @@ All colors MUST be HSL.
     letter-spacing: -0.01em; /* Slight tightening for better readability */
   }
 
+  html[data-brack-theme-style="paper"] body {
+    background-color: hsl(var(--background));
+    background-image:
+      linear-gradient(90deg, transparent 0, transparent 3.2rem, hsl(var(--destructive) / 0.055) 3.24rem, transparent 3.3rem),
+      repeating-linear-gradient(0deg, transparent 0 1.8rem, hsl(var(--primary) / 0.06) 1.86rem, transparent 1.92rem),
+      radial-gradient(circle at 1px 1px, hsl(var(--foreground) / 0.035) 1px, transparent 0),
+      linear-gradient(90deg, hsl(var(--primary) / 0.035), transparent 30%, transparent 70%, hsl(var(--primary) / 0.03)),
+      var(--gradient-background);
+    background-size: 100% 100%, 100% 1.92rem, 18px 18px, 100% 100%, 100% 100%;
+    background-attachment: local;
+  }
+
+  html[data-brack-theme-style="glass"] body {
+    background-color: hsl(var(--background));
+    background-image: var(--gradient-background);
+    background-attachment: fixed;
+  }
+
+  html[data-brack-theme-style="comic"] body {
+    background-color: hsl(var(--background));
+    background-image: var(--gradient-background);
+    background-size: 14px 14px, 100% 100%;
+  }
+
+  html[data-brack-theme-style="coloring-book"] body {
+    background-color: hsl(var(--background));
+    background-image:
+      linear-gradient(0deg, hsl(var(--border) / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.03) 1px, transparent 1px),
+      var(--gradient-background);
+    background-size: 28px 28px, 28px 28px, 100% 100%;
+  }
+
   /* Book content uses serif font */
   .book-content,
   .book-title,
@@ -206,6 +239,10 @@ All colors MUST be HSL.
   /* UI elements use sans-serif */
   button, input, select, label, nav, textarea {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  html[data-brack-theme-style="comic"] :is(h1, h2, h3, h4, .font-display) {
+    text-shadow: 1px 1px 0 hsl(var(--background));
   }
 
   /* Optimal line length for readability (45-75 characters) */
@@ -380,6 +417,174 @@ All colors MUST be HSL.
     background:
       radial-gradient(circle at 0% 0%, hsl(var(--primary) / 0.18), transparent 38%),
       linear-gradient(180deg, hsl(var(--sidebar-background)), hsl(var(--sidebar-background)));
+  }
+
+  html[data-brack-theme-style="paper"] :is([class*="bg-card"], [class*="bg-popover"], .app-sidebar-surface) {
+    background-image:
+      linear-gradient(120deg, hsl(0 0% 100% / 0.44), transparent 38%),
+      repeating-linear-gradient(5deg, hsl(var(--foreground) / 0.028) 0 1px, transparent 1px 0.48rem),
+      radial-gradient(circle at 1px 1px, hsl(var(--foreground) / 0.028) 1px, transparent 0),
+      var(--gradient-card);
+    background-size: 100% 100%, 100% 100%, 15px 15px, 100% 100%;
+    border-color: hsl(var(--border) / 0.86);
+    box-shadow:
+      var(--shadow-soft),
+      inset 0 1px 0 hsl(0 0% 100% / 0.52),
+      inset 0 -1px 0 hsl(var(--foreground) / 0.035);
+  }
+
+  html[data-brack-theme-style="paper"] :is(input, textarea, select, [role="combobox"]) {
+    background-color: hsl(var(--card) / 0.8);
+    background-image:
+      linear-gradient(180deg, hsl(0 0% 100% / 0.45), transparent),
+      repeating-linear-gradient(0deg, transparent 0 1.55rem, hsl(var(--primary) / 0.055) 1.6rem, transparent 1.65rem);
+    border-color: hsl(var(--border) / 0.9);
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.48),
+      0 1px 0 hsl(var(--foreground) / 0.045);
+  }
+
+  html[data-brack-theme-style="paper"] :is(button, [role="button"]) {
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.42),
+      0 3px 0 hsl(var(--border) / 0.22);
+  }
+
+  html[data-brack-theme-style="paper"] :is(button, [role="button"]):active {
+    transform: translateY(1px);
+    box-shadow:
+      0 1px 0 hsl(0 0% 100% / 0.38),
+      0 1px 0 hsl(var(--border) / 0.22);
+  }
+
+  html[data-brack-theme-style="paper"] .app-sidebar-surface {
+    background:
+      linear-gradient(90deg, hsl(var(--primary) / 0.16), transparent 0.85rem),
+      repeating-linear-gradient(0deg, hsl(var(--foreground) / 0.035) 0 1px, transparent 1px 0.85rem),
+      linear-gradient(180deg, hsl(var(--sidebar-background)), hsl(var(--secondary)));
+    box-shadow:
+      inset -1px 0 0 hsl(var(--sidebar-border)),
+      inset 0 1px 0 hsl(0 0% 100% / 0.32),
+      0.5rem 0 1.25rem -1.1rem hsl(var(--foreground) / 0.45);
+  }
+
+  html[data-brack-theme-style="paper"] :is(.rounded-full, [class*="rounded-full"]) {
+    box-shadow: inset 0 -1px 0 hsl(var(--foreground) / 0.06);
+  }
+
+  html[data-brack-theme-style="glass"] :is([class*="bg-card"], [class*="bg-popover"], [class*="bg-background/"], .app-sidebar-surface) {
+    background-color: hsl(var(--card) / 0.68);
+    background-image:
+      linear-gradient(145deg, hsl(0 0% 100% / 0.24), transparent 44%),
+      var(--gradient-card);
+    border-color: hsl(var(--border) / 0.62);
+    box-shadow:
+      0 18px 52px -28px hsl(var(--foreground) / 0.36),
+      inset 0 1px 0 hsl(0 0% 100% / 0.18);
+    -webkit-backdrop-filter: blur(18px) saturate(1.22);
+    backdrop-filter: blur(18px) saturate(1.22);
+  }
+
+  html[data-brack-theme-style="glass"] :is(input, textarea, select, [role="combobox"]) {
+    background-color: hsl(var(--background) / 0.54);
+    border-color: hsl(var(--border) / 0.66);
+    -webkit-backdrop-filter: blur(14px) saturate(1.18);
+    backdrop-filter: blur(14px) saturate(1.18);
+  }
+
+  html[data-brack-theme-style="glass"] .app-sidebar-surface {
+    background:
+      radial-gradient(circle at 0% 0%, hsl(var(--primary) / 0.22), transparent 34%),
+      linear-gradient(180deg, hsl(var(--sidebar-background) / 0.74), hsl(var(--sidebar-background) / 0.56));
+  }
+
+  html[data-brack-theme-style="comic"] :is([class*="bg-card"], [class*="bg-popover"], .rounded-lg.border, .rounded-md.border, .rounded-xl.border) {
+    border-color: hsl(var(--border));
+    border-width: 2px;
+    box-shadow: var(--shadow-soft);
+  }
+
+  html[data-brack-theme-style="comic"] :is(input, textarea, select, [role="combobox"], button.border, [role="button"].border, a.border) {
+    border-width: 2px;
+    border-color: hsl(var(--border) / 0.86);
+  }
+
+  html[data-brack-theme-style="comic"] :is(button:not(:disabled), a) {
+    text-decoration-thickness: 2px;
+  }
+
+  html[data-brack-theme-style="comic"] .app-sidebar-surface {
+    background:
+      radial-gradient(circle at 1px 1px, hsl(var(--border) / 0.16) 1px, transparent 0),
+      linear-gradient(180deg, hsl(var(--sidebar-background)), hsl(var(--secondary)));
+    background-size: 12px 12px, 100% 100%;
+    border-width: 0;
+    box-shadow: none;
+  }
+
+  html[data-brack-theme-style="comic"] :is([data-sidebar="trigger"], [data-sidebar="rail"]) {
+    border-width: 0;
+    box-shadow: none;
+  }
+
+  html[data-brack-theme-style="comic"] .app-sidebar-surface :is(button, a, [role="button"]) {
+    border-color: transparent;
+    border-width: 0;
+    box-shadow: none;
+    text-decoration: none;
+  }
+
+  html[data-brack-theme-style="comic"] .app-sidebar-surface [data-sidebar="menu-button"] {
+    border: 1px solid transparent;
+    border-radius: 0.625rem;
+  }
+
+  html[data-brack-theme-style="comic"] .app-sidebar-surface [data-sidebar="menu-button"]:is(:hover, :focus-visible) {
+    border-color: hsl(var(--sidebar-border) / 0.52);
+    background-color: hsl(var(--sidebar-accent) / 0.76);
+    box-shadow: 2px 2px 0 hsl(var(--sidebar-border) / 0.16);
+  }
+
+  html[data-brack-theme-style="comic"] .app-sidebar-surface [data-sidebar="menu-button"][data-active="true"] {
+    border-color: hsl(var(--primary) / 0.78);
+    background-color: hsl(var(--sidebar-accent));
+    box-shadow: inset 3px 0 0 hsl(var(--primary));
+  }
+
+  html[data-brack-theme-style="comic"] .app-sidebar-surface [data-sidebar="separator"] {
+    background-color: hsl(var(--sidebar-border) / 0.32);
+  }
+
+  html[data-brack-theme-style="comic"] .app-sidebar-surface [data-sidebar="footer"] [data-sidebar="menu"] {
+    gap: 0.375rem;
+  }
+
+  html[data-brack-theme-style="coloring-book"] :is([class*="bg-card"], [class*="bg-popover"], .rounded-lg.border, .rounded-md.border, .rounded-xl.border, .app-sidebar-surface) {
+    border-color: hsl(var(--border) / 0.82);
+    border-width: 2px;
+    box-shadow: none;
+  }
+
+  html[data-brack-theme-style="coloring-book"] :is(input, textarea, select, [role="combobox"]) {
+    background-color: hsl(var(--card));
+    border-color: hsl(var(--border) / 0.78);
+    border-width: 2px;
+  }
+
+  html[data-brack-theme-style="coloring-book"] :is([class*="bg-card"], [class*="bg-popover"]) {
+    background-image:
+      linear-gradient(0deg, hsl(var(--border) / 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.025) 1px, transparent 1px),
+      var(--gradient-card);
+    background-size: 20px 20px, 20px 20px, 100% 100%;
+  }
+
+  html[data-brack-theme-style="coloring-book"] .app-sidebar-surface {
+    background:
+      linear-gradient(0deg, hsl(var(--border) / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.035) 1px, transparent 1px),
+      linear-gradient(180deg, hsl(var(--sidebar-background)), hsl(var(--background)));
+    background-size: 20px 20px, 20px 20px, 100% 100%;
   }
 
   /* Native scroll styles */

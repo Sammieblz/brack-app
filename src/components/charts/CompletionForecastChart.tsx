@@ -1,7 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Line, LineChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, ReferenceLine } from "recharts";
-import { Calendar } from "iconoir-react";
+import { useMemo } from "react";
+import type { ApexOptions } from "apexcharts";
+import { CalendarCheck } from "iconoir-react";
+import { ApexChartCard, ApexChartFrame, ApexEmptyState } from "./ApexChartCard";
+import { formatShortDate, useApexTheme } from "./apexTheme";
 
 interface CompletionForecast {
   date: string;
@@ -14,94 +15,129 @@ interface CompletionForecastChartProps {
   totalPages: number;
 }
 
-const chartConfig = {
-  actual: {
-    label: "Actual Progress",
-    color: "hsl(var(--chart-1))",
-  },
-  predicted: {
-    label: "Predicted Progress",
-    color: "hsl(var(--chart-3))",
-  },
-};
+export const CompletionForecastChart = ({
+  data,
+  totalPages,
+}: CompletionForecastChartProps) => {
+  const { baseOptions, colors, currentTheme, resolvedTheme } = useApexTheme();
 
-export const CompletionForecastChart = ({ data, totalPages }: CompletionForecastChartProps) => {
-  const chartData = data.map(item => ({
-    date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    actual: item.actual_page,
-    predicted: item.predicted_page
-  }));
-
-  const completionDate = data.find(d => d.predicted_page >= totalPages);
-  const completionDateStr = completionDate 
-    ? new Date(completionDate.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  const categories = useMemo(
+    () => data.map((item) => formatShortDate(item.date)),
+    [data]
+  );
+  const completionDate = data.find((item) => item.predicted_page >= totalPages);
+  const completionLabel = completionDate
+    ? new Date(completionDate.date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
     : "Unknown";
 
+  const series = useMemo(
+    () => [
+      {
+        name: "Actual",
+        data: data.map((item) =>
+          typeof item.actual_page === "number" ? item.actual_page : null
+        ),
+      },
+      {
+        name: "Predicted",
+        data: data.map((item) => item.predicted_page),
+      },
+    ],
+    [data]
+  );
+
+  const options = useMemo<ApexOptions>(
+    () => ({
+      ...baseOptions,
+      chart: {
+        ...baseOptions.chart,
+        type: "line",
+      },
+      colors: [colors.chart[0], colors.chart[2]],
+      markers: {
+        size: [4, 2],
+        strokeColors: colors.card,
+        strokeWidth: 2,
+      },
+      stroke: {
+        curve: "smooth",
+        lineCap: "round",
+        width: [3, 2],
+        dashArray: [0, 6],
+      },
+      legend: {
+        ...baseOptions.legend,
+        position: "top",
+        horizontalAlign: "left",
+      },
+      tooltip: {
+        ...baseOptions.tooltip,
+        shared: true,
+        y: {
+          formatter: (value) =>
+            value === null || typeof value === "undefined"
+              ? "No logged page"
+              : `${Math.round(Number(value))} pages`,
+        },
+      },
+      annotations: {
+        yaxis: [
+          {
+            y: totalPages,
+            borderColor: colors.primary,
+            strokeDashArray: 5,
+            label: {
+              text: "Target",
+              borderColor: colors.primary,
+              style: {
+                background: colors.popover,
+                color: colors.popoverForeground,
+              },
+            },
+          },
+        ],
+      },
+      xaxis: {
+        ...baseOptions.xaxis,
+        categories,
+        tickAmount: Math.min(categories.length, 6),
+      },
+      yaxis: {
+        ...baseOptions.yaxis,
+        min: 0,
+        max: Math.max(totalPages, ...data.map((item) => item.predicted_page)),
+        labels: {
+          style: { colors: colors.mutedForeground },
+          formatter: (value) => `${Math.round(value)}`,
+        },
+      },
+    }),
+    [baseOptions, categories, colors, data, totalPages]
+  );
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-display flex items-center justify-between">
-          <span className="flex items-center">
-            <Calendar className="h-5 w-5 mr-2" />
-            Completion Forecast
-          </span>
-          <span className="font-sans text-sm font-normal text-muted-foreground">
-            Est: {completionDateStr}
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {data.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <p className="font-sans">No forecast data available yet</p>
-          </div>
-        ) : (
-          <ChartContainer config={chartConfig} className="h-[250px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis 
-                  dataKey="date" 
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                  tickLine={false}
-                />
-                <YAxis 
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                  tickLine={false}
-                  domain={[0, totalPages]}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <ReferenceLine 
-                  y={totalPages} 
-                  stroke="hsl(var(--primary))" 
-                  strokeDasharray="3 3"
-                  label={{ value: 'Target', position: 'right', fill: 'hsl(var(--primary))', style: { fontFamily: 'Inter, system-ui, sans-serif' } }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="actual" 
-                  stroke="hsl(var(--chart-1))" 
-                  strokeWidth={2}
-                  dot={{ fill: "hsl(var(--chart-1))", r: 4 }}
-                  name="Actual"
-                  connectNulls={false}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="predicted" 
-                  stroke="hsl(var(--chart-3))" 
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={{ fill: "hsl(var(--chart-3))", r: 3 }}
-                  name="Predicted"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        )}
-      </CardContent>
-    </Card>
+    <ApexChartCard
+      title="Completion Forecast"
+      subtitle={`Estimated finish: ${completionLabel}`}
+      icon={<CalendarCheck className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
+    >
+      {data.length === 0 ? (
+        <ApexEmptyState message="No forecast data available yet" />
+      ) : (
+        <ApexChartFrame
+          chartKey={`completion-forecast-${currentTheme}-${resolvedTheme}`}
+          options={options}
+          series={series}
+          type="line"
+          height={300}
+          minWidth={520}
+        />
+      )}
+    </ApexChartCard>
   );
 };
+

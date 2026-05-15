@@ -1,89 +1,140 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { useMemo } from "react";
+import type { ApexOptions } from "apexcharts";
 import { APP_ICONS } from "@/config/iconography";
 import type { ReadingProgressData } from "@/hooks/useChartData";
+import { ApexChartCard, ApexChartFrame } from "./ApexChartCard";
+import { formatChartMinutes, useApexTheme } from "./apexTheme";
 
 interface ReadingProgressChartProps {
   data: ReadingProgressData[];
 }
 
-const chartConfig = {
-  books: {
-    label: "Books Completed",
-    color: "hsl(var(--chart-1))",
-  },
-  minutes: {
-    label: "Reading Time (min)",
-    color: "hsl(var(--chart-2))",
-  },
-};
-
 export const ReadingProgressChart = ({ data }: ReadingProgressChartProps) => {
+  const { baseOptions, colors, currentTheme, resolvedTheme } = useApexTheme();
+
+  const categories = useMemo(() => data.map((item) => item.date), [data]);
+  const totalMinutes = useMemo(
+    () => data.reduce((sum, item) => sum + item.minutes, 0),
+    [data]
+  );
+
+  const series = useMemo(
+    () => [
+      {
+        name: "Reading Time",
+        type: "area",
+        data: data.map((item) => item.minutes),
+      },
+      {
+        name: "Books Completed",
+        type: "line",
+        data: data.map((item) => item.books),
+      },
+    ],
+    [data]
+  );
+
+  const options = useMemo<ApexOptions>(
+    () => ({
+      ...baseOptions,
+      chart: {
+        ...baseOptions.chart,
+        type: "line",
+        stacked: false,
+      },
+      colors: [colors.chart[1], colors.chart[0]],
+      fill: {
+        type: ["gradient", "solid"],
+        gradient: {
+          shadeIntensity: 0.75,
+          opacityFrom: 0.42,
+          opacityTo: 0.06,
+          stops: [0, 90, 100],
+        },
+      },
+      labels: categories,
+      legend: {
+        ...baseOptions.legend,
+        position: "top",
+        horizontalAlign: "left",
+      },
+      stroke: {
+        curve: "smooth",
+        lineCap: "round",
+        width: [3, 3],
+      },
+      tooltip: {
+        ...baseOptions.tooltip,
+        y: [
+          {
+            formatter: (value) => formatChartMinutes(Number(value)),
+            title: { formatter: () => "Time" },
+          },
+          {
+            formatter: (value) => `${Number(value)} books`,
+            title: { formatter: () => "Completed" },
+          },
+        ],
+      },
+      xaxis: {
+        ...baseOptions.xaxis,
+        categories,
+        tickAmount: Math.min(categories.length, 7),
+      },
+      yaxis: [
+        {
+          labels: {
+            style: { colors: colors.mutedForeground },
+            formatter: (value) => `${Math.round(value)}`,
+          },
+          title: {
+            text: "Minutes",
+            style: { color: colors.mutedForeground },
+          },
+        },
+        {
+          opposite: true,
+          labels: {
+            style: { colors: colors.mutedForeground },
+            formatter: (value) => `${Math.round(value)}`,
+          },
+          title: {
+            text: "Books",
+            style: { color: colors.mutedForeground },
+          },
+        },
+      ],
+      responsive: [
+        {
+          breakpoint: 640,
+          options: {
+            legend: { show: false },
+            yaxis: [
+              { labels: { show: true }, title: { text: undefined } },
+              { labels: { show: false }, title: { text: undefined } },
+            ],
+          },
+        },
+      ],
+    }),
+    [baseOptions, categories, colors]
+  );
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center text-base md:text-lg">
-          <APP_ICONS.bookDetail.detailedAnalytics className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-          Reading Progress (Last 14 Days)
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-2 sm:px-6">
-        <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px] w-full">
-          <AreaChart data={data} margin={{ top: 20, right: 10, left: -10, bottom: 5 }}>
-            <defs>
-              <linearGradient id="colorMinutes" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0.1} />
-              </linearGradient>
-              <linearGradient id="colorBooks" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.1} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-            <XAxis 
-              dataKey="date" 
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={11}
-              tick={{ fontSize: 11 }}
-              tickFormatter={(value) => {
-                // Format date to show day/month
-                const date = new Date(value);
-                return `${date.getDate()}/${date.getMonth() + 1}`;
-              }}
-            />
-            <YAxis 
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={11}
-              tick={{ fontSize: 11 }}
-              width={35}
-            />
-            <ChartTooltip 
-              content={<ChartTooltipContent />}
-              cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "5 5" }}
-            />
-            <Area
-              type="monotone"
-              dataKey="minutes"
-              stackId="1"
-              stroke="hsl(var(--chart-2))"
-              fill="url(#colorMinutes)"
-              strokeWidth={2}
-              animationDuration={750}
-            />
-            <Area
-              type="monotone"
-              dataKey="books"
-              stackId="2"
-              stroke="hsl(var(--chart-1))"
-              fill="url(#colorBooks)"
-              strokeWidth={2}
-              animationDuration={750}
-            />
-          </AreaChart>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+    <ApexChartCard
+      title="Reading Progress"
+      subtitle={`Last 14 days - ${formatChartMinutes(totalMinutes)} tracked`}
+      icon={<APP_ICONS.bookDetail.detailedAnalytics className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
+    >
+      <ApexChartFrame
+        chartKey={`reading-progress-${currentTheme}-${resolvedTheme}`}
+        options={options}
+        series={series}
+        type="line"
+        height={320}
+        minWidth={520}
+      />
+    </ApexChartCard>
   );
 };
+
