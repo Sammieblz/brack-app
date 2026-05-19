@@ -788,6 +788,49 @@ All colors MUST be HSL.
     pointer-events: none;
   }
 
+  .library-shelf-book-selecting {
+    cursor: pointer;
+  }
+
+  .library-shelf-select-indicator {
+    position: absolute;
+    z-index: 6;
+    right: 50%;
+    top: 0.35rem;
+    display: grid;
+    height: 1.75rem;
+    width: 1.75rem;
+    transform: translateX(50%);
+    place-items: center;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--border) / 0.72);
+    background: hsl(var(--background) / 0.92);
+    color: hsl(var(--muted-foreground));
+    box-shadow: 0 0.5rem 1rem -0.75rem hsl(var(--foreground) / 0.32);
+    pointer-events: none;
+    transition:
+      background 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      transform 180ms ease;
+  }
+
+  .library-shelf-book-selected .library-shelf-select-indicator {
+    border-color: hsl(var(--primary));
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    transform: translateX(50%) scale(1.06);
+  }
+
+  .library-shelf-book-selected .library-shelf-cover {
+    outline: 2px solid hsl(var(--primary) / 0.72);
+    outline-offset: 0.28rem;
+    border-radius: 0.34rem;
+    filter:
+      drop-shadow(0 0 0.6rem hsl(var(--primary) / 0.32))
+      drop-shadow(0.46rem 0.88rem 0.5rem var(--library-cover-shadow));
+  }
+
   .library-shelf-book-shadow {
     position: absolute;
     left: 50%;

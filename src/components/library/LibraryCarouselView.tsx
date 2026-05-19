@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { CheckCircle } from "iconoir-react";
 import {
   Carousel,
   CarouselContent,
@@ -25,6 +26,9 @@ interface LibraryCarouselViewProps {
   onView: (bookId: string) => void;
   onEdit: (bookId: string) => void;
   onDelete: (bookId: string) => Promise<void> | void;
+  selectMode?: boolean;
+  selectedBookIds?: string[];
+  onToggleSelect?: (bookId: string) => void;
 }
 
 export const LibraryCarouselView = ({
@@ -34,10 +38,14 @@ export const LibraryCarouselView = ({
   onView,
   onEdit,
   onDelete,
+  selectMode = false,
+  selectedBookIds = [],
+  onToggleSelect,
 }: LibraryCarouselViewProps) => {
   const [api, setApi] = useState<CarouselApi>();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const selectedBookIdSet = new Set(selectedBookIds);
 
   useEffect(() => {
     if (!api) return;
@@ -67,6 +75,7 @@ export const LibraryCarouselView = ({
               const progress = getProgressPercentage(book);
               const isSelected = index === selectedIndex;
               const highlighted = book.id === highlightedBookId;
+              const selectedForBulk = selectedBookIdSet.has(book.id);
 
               return (
                 <CarouselItem
@@ -75,16 +84,36 @@ export const LibraryCarouselView = ({
                 >
                   <article
                     className={cn(
-                      "library-carousel-card flex h-full min-h-[24rem] flex-col rounded-xl border border-border/70 bg-background/80 p-4 shadow-sm transition-all duration-300",
+                      "library-carousel-card relative flex h-full min-h-[24rem] flex-col rounded-xl border border-border/70 bg-background/80 p-4 shadow-sm transition-all duration-300",
                       isSelected && "border-primary/55 shadow-medium",
-                      highlighted && "ring-2 ring-primary/70 shadow-glow"
+                      highlighted && "ring-2 ring-primary/70 shadow-glow",
+                      selectMode && "cursor-pointer",
+                      selectedForBulk && "border-primary/70 ring-2 ring-primary/65"
                     )}
                   >
+                    {selectMode && (
+                      <span
+                        className={cn(
+                          "absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border/70 bg-background/90 text-muted-foreground shadow-sm transition-colors",
+                          selectedForBulk && "border-primary bg-primary text-primary-foreground"
+                        )}
+                        aria-hidden="true"
+                      >
+                        <CheckCircle className="h-5 w-5" />
+                      </span>
+                    )}
                     <button
                       type="button"
-                      onClick={() => setSelectedBook(book)}
+                      onClick={() => {
+                        if (selectMode) {
+                          onToggleSelect?.(book.id);
+                          return;
+                        }
+                        setSelectedBook(book);
+                      }}
                       className="group flex flex-1 flex-col text-left"
-                      aria-label={`Open ${book.title}`}
+                      aria-label={selectMode ? `Select ${book.title}` : `Open ${book.title}`}
+                      aria-pressed={selectMode ? selectedForBulk : undefined}
                     >
                       <LibraryPhysicalBookCover
                         book={book}
@@ -125,16 +154,18 @@ export const LibraryCarouselView = ({
                       )}
                     </button>
 
-                    <div className="mt-4 border-t border-border/60 pt-3">
-                      <LibraryBookActions
-                        book={book}
-                        userId={userId}
-                        onView={onView}
-                        onEdit={onEdit}
-                        onDelete={onDelete}
-                        className="justify-center"
-                      />
-                    </div>
+                    {!selectMode && (
+                      <div className="mt-4 border-t border-border/60 pt-3">
+                        <LibraryBookActions
+                          book={book}
+                          userId={userId}
+                          onView={onView}
+                          onEdit={onEdit}
+                          onDelete={onDelete}
+                          className="justify-center"
+                        />
+                      </div>
+                    )}
                   </article>
                 </CarouselItem>
               );

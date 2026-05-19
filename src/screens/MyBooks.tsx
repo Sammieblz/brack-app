@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Drag, NavArrowDown, Refresh, Search, Xmark } from "iconoir-react";
+import { CheckSquare, Drag, NavArrowDown, Refresh, Search, Trash, Xmark } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -26,6 +26,7 @@ import { MobileLayout } from "@/components/MobileLayout";
 import { NativeHeader } from "@/components/NativeHeader";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { SwipeableBookCard } from "@/components/SwipeableBookCard";
+import { MobileAlertDialog } from "@/components/ui/mobile-dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
@@ -133,6 +134,9 @@ const MyBooks = () => {
   const [sortKey, setSortKey] = useState<SortKey>("updated_desc");
   const [viewMode, setViewMode] = useState<LibraryViewMode>("flat");
   const [reorderMode, setReorderMode] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedBookIds, setSelectedBookIds] = useState<string[]>([]);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
 
@@ -227,6 +231,10 @@ const MyBooks = () => {
     return sortBooks(next, sortKey);
   }, [books, genreFilters, searchQuery, sortKey, statusFilter]);
 
+  const selectedBookIdSet = useMemo(() => new Set(selectedBookIds), [selectedBookIds]);
+  const allVisibleSelected =
+    filteredBooks.length > 0 && filteredBooks.every((book) => selectedBookIdSet.has(book.id));
+
   const defaultSortKey: SortKey = viewMode === "bookshelf" ? "shelf_order" : "updated_desc";
   const hasContentFilters =
     Boolean(searchQuery.trim()) ||
@@ -260,6 +268,50 @@ const MyBooks = () => {
     }
   }, [canReorderShelf]);
 
+  useEffect(() => {
+    const availableBookIds = new Set(books.map((book) => book.id));
+    setSelectedBookIds((current) => current.filter((bookId) => availableBookIds.has(bookId)));
+  }, [books]);
+
+  useEffect(() => {
+    if (selectMode && selectedBookIds.length === 0) {
+      setBulkDeleteOpen(false);
+    }
+  }, [selectMode, selectedBookIds.length]);
+
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setSelectedBookIds([]);
+    setBulkDeleteOpen(false);
+  };
+
+  const clearSelectionForContextChange = () => {
+    if (!selectMode && selectedBookIds.length === 0) return;
+    exitSelectMode();
+  };
+
+  const toggleSelectedBook = (bookId: string) => {
+    setSelectedBookIds((current) =>
+      current.includes(bookId)
+        ? current.filter((selectedBookId) => selectedBookId !== bookId)
+        : [...current, bookId]
+    );
+  };
+
+  const selectAllVisible = () => {
+    setSelectedBookIds(filteredBooks.map((book) => book.id));
+  };
+
+  const handleSelectModeToggle = () => {
+    if (selectMode) {
+      exitSelectMode();
+      return;
+    }
+
+    setReorderMode(false);
+    setSelectMode(true);
+  };
+
   const handleBookClick = (bookId: string) => {
     navigate(`/book/${bookId}`);
   };
@@ -279,6 +331,69 @@ const MyBooks = () => {
     }
   };
 
+  const handleBulkDeleteBooks = async () => {
+    const selectedIds = selectedBookIds.filter((bookId) => books.some((book) => book.id === bookId));
+    if (selectedIds.length === 0) return;
+
+    setBulkDeleteOpen(false);
+
+    const selectedIdSet = new Set(selectedIds);
+    const originalBooks = books;
+
+    updateBooksLocally((currentBooks) =>
+      currentBooks.filter((book) => !selectedIdSet.has(book.id))
+    );
+
+    const results = await Promise.allSettled(
+      selectedIds.map(async (bookId) => {
+        await bookOperations.delete(bookId);
+        return bookId;
+      })
+    );
+
+    const failedIds = results.flatMap((result, index) =>
+      result.status === "rejected" ? [selectedIds[index]] : []
+    );
+
+    if (failedIds.length === 0) {
+      exitSelectMode();
+      toast.success(`Removed ${selectedIds.length} ${selectedIds.length === 1 ? "book" : "books"}`);
+      return;
+    }
+
+    const failedIdSet = new Set(failedIds);
+    updateBooksLocally((currentBooks) => {
+      const currentIds = new Set(currentBooks.map((book) => book.id));
+      const nextBooks = [...currentBooks];
+
+      originalBooks
+        .filter((book) => failedIdSet.has(book.id) && !currentIds.has(book.id))
+        .forEach((book) => {
+          const originalIndex = originalBooks.findIndex((item) => item.id === book.id);
+          const insertIndex = nextBooks.findIndex((item) => {
+            const itemOriginalIndex = originalBooks.findIndex((original) => original.id === item.id);
+            return itemOriginalIndex > originalIndex;
+          });
+
+          if (insertIndex === -1) {
+            nextBooks.push(book);
+          } else {
+            nextBooks.splice(insertIndex, 0, book);
+          }
+        });
+
+      return nextBooks;
+    });
+
+    setSelectMode(true);
+    setSelectedBookIds(failedIds);
+    toast.error(
+      failedIds.length === selectedIds.length
+        ? "Failed to remove selected books"
+        : `${failedIds.length} ${failedIds.length === 1 ? "book" : "books"} could not be removed`
+    );
+  };
+
   const handleStatusChange = async (bookId: string, status: string) => {
     try {
       await bookOperations.update(bookId, { status });
@@ -290,6 +405,7 @@ const MyBooks = () => {
   };
 
   const clearFilters = () => {
+    clearSelectionForContextChange();
     setSearchQuery("");
     setStatusFilter("all");
     setGenreFilters([]);
@@ -297,6 +413,7 @@ const MyBooks = () => {
   };
 
   const toggleGenre = (genre: string) => {
+    clearSelectionForContextChange();
     setGenreFilters((prev) =>
       prev.includes(genre) ? prev.filter((item) => item !== genre) : [...prev, genre]
     );
@@ -304,6 +421,8 @@ const MyBooks = () => {
 
   const handleViewModeChange = (mode: LibraryViewMode) => {
     if (mode === viewMode) return;
+
+    clearSelectionForContextChange();
 
     if (mode === "bookshelf") {
       setSortKey("shelf_order");
@@ -371,7 +490,10 @@ const MyBooks = () => {
               size="sm"
               variant={reorderMode ? "default" : "outline"}
               disabled={!canReorderShelf}
-              onClick={() => setReorderMode((current) => !current)}
+              onClick={() => {
+                if (!reorderMode) exitSelectMode();
+                setReorderMode((current) => !current);
+              }}
               className="rounded-full"
             >
               <Drag className="mr-2 h-4 w-4" />
@@ -380,6 +502,33 @@ const MyBooks = () => {
           </span>
         </TooltipTrigger>
         <TooltipContent>{tooltip}</TooltipContent>
+      </Tooltip>
+    );
+  };
+
+  const renderSelectControl = () => {
+    const disabled = loading || filteredBooks.length === 0;
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex">
+            <Button
+              type="button"
+              size="sm"
+              variant={selectMode ? "default" : "outline"}
+              disabled={disabled}
+              onClick={handleSelectModeToggle}
+              className="rounded-full"
+            >
+              <CheckSquare className="mr-2 h-4 w-4" />
+              {selectMode ? "Done" : "Select"}
+            </Button>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          {disabled ? "No visible books to select" : selectMode ? "Finish selecting" : "Select multiple books"}
+        </TooltipContent>
       </Tooltip>
     );
   };
@@ -426,7 +575,10 @@ const MyBooks = () => {
           type="button"
           size="sm"
           variant={statusFilter === option.value ? "default" : "outline"}
-          onClick={() => setStatusFilter(option.value)}
+          onClick={() => {
+            clearSelectionForContextChange();
+            setStatusFilter(option.value);
+          }}
           className="shrink-0 rounded-full"
         >
           {option.label}
@@ -483,7 +635,13 @@ const MyBooks = () => {
 
           <section className="space-y-2">
             <h3 className="font-sans text-sm font-semibold">Sort</h3>
-            <Select value={sortKey} onValueChange={(value) => setSortKey(value as SortKey)}>
+            <Select
+              value={sortKey}
+              onValueChange={(value) => {
+                clearSelectionForContextChange();
+                setSortKey(value as SortKey);
+              }}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -510,22 +668,81 @@ const MyBooks = () => {
 
   const renderSummaryChips = () => {
     const chips = [
-      { label: "Total", value: bookStats.total, className: "text-primary" },
-      { label: "Reading", value: bookStats.reading, className: "text-blue-500" },
-      { label: "Done", value: bookStats.completed, className: "text-green-500" },
-      { label: "To Read", value: bookStats.toRead, className: "text-orange-500" },
+      {
+        label: "All",
+        detail: "Books",
+        value: bookStats.total,
+        status: "all" as StatusFilter,
+        icon: APP_ICONS.stats.library,
+        className: "text-primary",
+      },
+      {
+        label: "Reading",
+        detail: "In progress",
+        value: bookStats.reading,
+        status: "reading" as StatusFilter,
+        icon: APP_ICONS.dashboard.continueReading,
+        className: "text-blue-500",
+      },
+      {
+        label: "Finished",
+        detail: "Completed",
+        value: bookStats.completed,
+        status: "completed" as StatusFilter,
+        icon: APP_ICONS.stats.completed,
+        className: "text-green-500",
+      },
+      {
+        label: "Queued",
+        detail: "To read",
+        value: bookStats.toRead,
+        status: "to_read" as StatusFilter,
+        icon: APP_ICONS.dashboard.emptyNoBooks,
+        className: "text-orange-500",
+      },
     ];
 
     return (
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div
+        className="flex gap-2 overflow-x-auto rounded-xl border border-border/60 bg-card/55 p-2"
+        aria-label="Library snapshot"
+      >
         {chips.map((chip) => (
-          <div
+          <button
             key={chip.label}
-            className="flex items-center justify-between rounded-lg border border-border/60 bg-card/70 px-3 py-2"
+            type="button"
+            onClick={() => {
+              clearSelectionForContextChange();
+              setStatusFilter(chip.status);
+            }}
+            className={cn(
+              "flex min-w-[9.5rem] flex-1 items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors",
+              statusFilter === chip.status
+                ? "border-primary/50 bg-primary/10"
+                : "border-border/45 bg-background/45 hover:border-primary/35 hover:bg-primary/5"
+            )}
+            aria-pressed={statusFilter === chip.status}
           >
-            <span className="font-sans text-xs text-muted-foreground">{chip.label}</span>
-            <span className={cn("font-sans text-lg font-bold", chip.className)}>{chip.value}</span>
-          </div>
+            <span
+              className={cn(
+                "grid h-9 w-9 shrink-0 place-items-center rounded-full bg-background/70",
+                statusFilter === chip.status && "bg-primary text-primary-foreground"
+              )}
+            >
+              <chip.icon className="h-4 w-4" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-sans text-sm font-semibold text-foreground">
+                {chip.label}
+              </span>
+              <span className="block truncate font-sans text-xs text-muted-foreground">
+                {chip.detail}
+              </span>
+            </span>
+            <span className={cn("font-sans text-lg font-bold tabular-nums", chip.className)}>
+              {chip.value}
+            </span>
+          </button>
         ))}
       </div>
     );
@@ -540,13 +757,19 @@ const MyBooks = () => {
             type="search"
             placeholder="Search title, author, ISBN, genre, tags..."
             value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
+            onChange={(event) => {
+              clearSelectionForContextChange();
+              setSearchQuery(event.target.value);
+            }}
             className="min-h-[44px] rounded-full pl-10 pr-10"
           />
           {searchQuery && (
             <button
               type="button"
-              onClick={() => setSearchQuery("")}
+              onClick={() => {
+                clearSelectionForContextChange();
+                setSearchQuery("");
+              }}
               className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               aria-label="Clear search"
             >
@@ -559,13 +782,21 @@ const MyBooks = () => {
           <div className="flex items-center justify-between gap-2">
             {renderViewSwitcher()}
             {renderReorderControl()}
+            {renderSelectControl()}
             {renderFilterSheet()}
           </div>
         ) : (
           <div className="flex items-center gap-2">
             {renderViewSwitcher()}
             {renderReorderControl()}
-            <Select value={sortKey} onValueChange={(value) => setSortKey(value as SortKey)}>
+            {renderSelectControl()}
+            <Select
+              value={sortKey}
+              onValueChange={(value) => {
+                clearSelectionForContextChange();
+                setSortKey(value as SortKey);
+              }}
+            >
               <SelectTrigger className="h-11 w-[180px] rounded-full">
                 <SelectValue />
               </SelectTrigger>
@@ -652,6 +883,57 @@ const MyBooks = () => {
     </div>
   );
 
+  const renderBulkSelectionBar = () => {
+    if (!selectMode) return null;
+
+    return (
+      <div className="flex flex-col gap-3 rounded-xl border border-primary/35 bg-primary/10 p-3 text-primary shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <p className="font-sans text-sm font-semibold">
+            {selectedBookIds.length} {selectedBookIds.length === 1 ? "book" : "books"} selected
+          </p>
+          <p className="font-sans text-xs text-muted-foreground">
+            Bulk delete only applies to selected books currently loaded in your Library.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={selectAllVisible}
+            disabled={filteredBooks.length === 0 || allVisibleSelected}
+            className="rounded-full"
+          >
+            Select all shown
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedBookIds([])}
+            disabled={selectedBookIds.length === 0}
+            className="rounded-full"
+          >
+            Clear
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            onClick={() => setBulkDeleteOpen(true)}
+            disabled={selectedBookIds.length === 0}
+            className="rounded-full"
+          >
+            <Trash className="mr-2 h-4 w-4" />
+            Delete
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   const renderBooksList = () => {
     if (loading) {
       return (
@@ -707,6 +989,9 @@ const MyBooks = () => {
             onDelete={handleDeleteBook}
             reorderMode={reorderMode}
             onReorder={handleShelfReorder}
+            selectMode={selectMode}
+            selectedBookIds={selectedBookIds}
+            onToggleSelect={toggleSelectedBook}
           />
           {loadMoreMarker}
         </>
@@ -723,6 +1008,9 @@ const MyBooks = () => {
             onView={handleBookClick}
             onEdit={handleEditBook}
             onDelete={handleDeleteBook}
+            selectMode={selectMode}
+            selectedBookIds={selectedBookIds}
+            onToggleSelect={toggleSelectedBook}
           />
           {loadMoreMarker}
         </>
@@ -742,10 +1030,13 @@ const MyBooks = () => {
                 onView={handleBookClick}
                 onEdit={handleEditBook}
                 onDelete={handleDeleteBook}
+                selectMode={selectMode}
+                selected={selectedBookIdSet.has(book.id)}
+                onToggleSelect={toggleSelectedBook}
               />
             );
 
-            if (!isMobile) return card;
+            if (!isMobile || selectMode) return card;
 
             return (
               <SwipeableBookCard
@@ -806,9 +1097,21 @@ const MyBooks = () => {
         <main id="library-scroll" className="app-page space-y-4 md:space-y-6">
           {renderSummaryChips()}
           {renderToolbar()}
+          {renderBulkSelectionBar()}
           {renderBooksList()}
         </main>
       </PullToRefresh>
+
+      <MobileAlertDialog
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        title={`Delete ${selectedBookIds.length} selected books?`}
+        description="This removes the selected books from your library. You can re-add them later."
+        cancelText="Keep books"
+        confirmText="Delete"
+        variant="destructive"
+        onConfirm={handleBulkDeleteBooks}
+      />
 
       {isMobile && <FloatingActionButton />}
     </MobileLayout>

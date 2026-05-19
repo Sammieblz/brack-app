@@ -1,6 +1,6 @@
 import { type CSSProperties, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Drag, Plus } from "iconoir-react";
+import { CheckCircle, Drag, Plus } from "iconoir-react";
 import { gsap } from "gsap";
 import {
   closestCenter,
@@ -37,6 +37,9 @@ interface LibraryBookshelfViewProps {
   onDelete: (bookId: string) => Promise<void> | void;
   reorderMode?: boolean;
   onReorder?: (books: Book[]) => Promise<void> | void;
+  selectMode?: boolean;
+  selectedBookIds?: string[];
+  onToggleSelect?: (bookId: string) => void;
 }
 
 const chunkBooks = (books: Book[], chunkSize: number) => {
@@ -70,7 +73,10 @@ interface SortableShelfBookProps {
   rowIndex: number;
   highlighted: boolean;
   reorderMode: boolean;
+  selectMode: boolean;
+  selected: boolean;
   onSelect: (book: Book) => void;
+  onToggleSelect?: (bookId: string) => void;
 }
 
 const SortableShelfBook = ({
@@ -79,7 +85,10 @@ const SortableShelfBook = ({
   rowIndex,
   highlighted,
   reorderMode,
+  selectMode,
+  selected,
   onSelect,
+  onToggleSelect,
 }: SortableShelfBookProps) => {
   const {
     attributes,
@@ -108,25 +117,32 @@ const SortableShelfBook = ({
         "library-shelf-book group",
         highlighted && "library-shelf-book-highlighted",
         reorderMode && "library-shelf-book-reordering",
+        selectMode && "library-shelf-book-selecting",
+        selected && "library-shelf-book-selected",
         isDragging && "library-shelf-book-dragging"
       )}
       style={bookStyle}
       onClick={() => {
+        if (selectMode) {
+          onToggleSelect?.(book.id);
+          return;
+        }
         if (!reorderMode) onSelect(book);
       }}
       onMouseEnter={(event) => {
-        if (!reorderMode) animateBook(event.currentTarget, true);
+        if (!reorderMode && !selectMode) animateBook(event.currentTarget, true);
       }}
       onMouseLeave={(event) => {
-        if (!reorderMode) animateBook(event.currentTarget, false);
+        if (!reorderMode && !selectMode) animateBook(event.currentTarget, false);
       }}
       onFocus={(event) => {
-        if (!reorderMode) animateBook(event.currentTarget, true);
+        if (!reorderMode && !selectMode) animateBook(event.currentTarget, true);
       }}
       onBlur={(event) => {
-        if (!reorderMode) animateBook(event.currentTarget, false);
+        if (!reorderMode && !selectMode) animateBook(event.currentTarget, false);
       }}
-      aria-label={reorderMode ? `Move ${book.title}` : `Open ${book.title}`}
+      aria-label={selectMode ? `Select ${book.title}` : reorderMode ? `Move ${book.title}` : `Open ${book.title}`}
+      aria-pressed={selectMode ? selected : undefined}
       {...(reorderMode ? attributes : {})}
       {...(reorderMode ? listeners : {})}
     >
@@ -134,6 +150,11 @@ const SortableShelfBook = ({
       {reorderMode && (
         <span className="library-shelf-drag-handle" aria-hidden="true">
           <Drag className="h-3.5 w-3.5" />
+        </span>
+      )}
+      {selectMode && (
+        <span className="library-shelf-select-indicator" aria-hidden="true">
+          <CheckCircle className="h-4 w-4" />
         </span>
       )}
       <span className="library-shelf-cover">
@@ -176,6 +197,9 @@ export const LibraryBookshelfView = ({
   onDelete,
   reorderMode = false,
   onReorder,
+  selectMode = false,
+  selectedBookIds = [],
+  onToggleSelect,
 }: LibraryBookshelfViewProps) => {
   const navigate = useNavigate();
   const { isPhone, isTablet, isDesktop } = useBreakpoint();
@@ -192,6 +216,7 @@ export const LibraryBookshelfView = ({
   const rowSize = isPhone ? 3 : isTablet ? 5 : isDesktop ? 7 : 9;
   const rows = useMemo(() => chunkBooks(books, rowSize), [books, rowSize]);
   const bookIds = useMemo(() => books.map((book) => book.id), [books]);
+  const selectedBookIdSet = useMemo(() => new Set(selectedBookIds), [selectedBookIds]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     if (!reorderMode || !onReorder) return;
@@ -226,10 +251,13 @@ export const LibraryBookshelfView = ({
                       rowIndex={rowIndex}
                       highlighted={book.id === highlightedBookId}
                       reorderMode={reorderMode}
+                      selectMode={selectMode}
+                      selected={selectedBookIdSet.has(book.id)}
                       onSelect={setSelectedBook}
+                      onToggleSelect={onToggleSelect}
                     />
                   ))}
-                  {!reorderMode && row.length < rowSize && (
+                  {!reorderMode && !selectMode && row.length < rowSize && (
                     <button
                       key={`add-book-slot-${rowIndex}`}
                       type="button"
