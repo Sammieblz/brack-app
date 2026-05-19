@@ -62,6 +62,7 @@ export interface Book {
   notes: string | null;
   source_provider: string | null;
   source_id: string | null;
+  shelf_position: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;

@@ -745,6 +745,49 @@ All colors MUST be HSL.
     touch-action: manipulation;
   }
 
+  .library-bookshelf-reordering .library-shelf-book {
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .library-bookshelf-reordering .library-shelf-book:active,
+  .library-shelf-book-dragging {
+    cursor: grabbing;
+  }
+
+  .library-shelf-book-reordering .library-shelf-cover {
+    outline: 1px solid hsl(var(--primary) / 0.22);
+    outline-offset: 0.2rem;
+  }
+
+  .library-shelf-book-dragging {
+    opacity: 0.76;
+  }
+
+  .library-shelf-book-dragging .library-shelf-cover {
+    filter:
+      drop-shadow(0 0 0.55rem hsl(var(--primary) / 0.26))
+      drop-shadow(0.62rem 1rem 0.55rem var(--library-cover-hover-shadow));
+  }
+
+  .library-shelf-drag-handle {
+    position: absolute;
+    z-index: 5;
+    right: 50%;
+    top: 0.35rem;
+    display: grid;
+    height: 1.55rem;
+    width: 1.55rem;
+    transform: translateX(50%);
+    place-items: center;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--border) / 0.72);
+    background: hsl(var(--background) / 0.92);
+    color: hsl(var(--primary));
+    box-shadow: 0 0.5rem 1rem -0.75rem hsl(var(--foreground) / 0.32);
+    pointer-events: none;
+  }
+
   .library-shelf-book-shadow {
     position: absolute;
     left: 50%;
@@ -1424,6 +1467,12 @@ All colors MUST be HSL.
     border-color: hsl(var(--foreground));
   }
 
+  html[data-brack-theme-style="comic"] .library-shelf-drag-handle {
+    border-width: 2px;
+    border-color: hsl(var(--foreground));
+    box-shadow: 2px 2px 0 hsl(var(--foreground));
+  }
+
   html[data-brack-theme-style="comic"] .library-physical-book-face,
   html[data-brack-theme-style="comic"] .library-physical-book-pages {
     border-width: 2px;
@@ -1474,6 +1523,11 @@ All colors MUST be HSL.
       hsl(var(--card));
     box-shadow: none;
     filter: drop-shadow(0.24rem 0.44rem 0 hsl(var(--primary) / 0.12));
+  }
+
+  html[data-brack-theme-style="coloring-book"] .library-shelf-drag-handle {
+    border-width: 2px;
+    box-shadow: none;
   }
 
   html[data-brack-theme-style="coloring-book"] .library-physical-book-face,
@@ -1557,6 +1611,11 @@ All colors MUST be HSL.
     background:
       repeating-linear-gradient(0deg, hsl(var(--primary) / 0.06) 0 1px, transparent 1px 6px),
       linear-gradient(90deg, hsl(var(--card) / 0.54), hsl(var(--muted) / 0.42));
+  }
+
+  .dark .library-shelf-drag-handle {
+    background: hsl(var(--background) / 0.88);
+    box-shadow: 0 0.45rem 0.8rem -0.6rem hsl(0 0% 0% / 0.6);
   }
 
   .dark .library-shelf-cover,

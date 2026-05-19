@@ -59,6 +59,7 @@ const asBook = (bookData: Record<string, unknown>, userId: string): Book => {
     notes: (bookData.notes as string | null) ?? null,
     source_provider: (bookData.source_provider as string | null) ?? null,
     source_id: (bookData.source_id as string | null) ?? null,
+    shelf_position: (bookData.shelf_position as number | null) ?? null,
     created_at: (bookData.created_at as string | null) ?? timestamp,
     updated_at: (bookData.updated_at as string | null) ?? timestamp,
     deleted_at: (bookData.deleted_at as string | null) ?? null,

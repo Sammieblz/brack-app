@@ -139,6 +139,17 @@ export const useBooks = (userId?: string) => {
     };
   };
 
+  const updateBooksLocally = (updater: (books: Book[]) => Book[]) => {
+    let previousBooks: Book[] = [];
+
+    setBooks((prev) => {
+      previousBooks = prev;
+      return updater(prev);
+    });
+
+    return () => setBooks(previousBooks);
+  };
+
   return {
     books,
     loading,
@@ -148,5 +159,6 @@ export const useBooks = (userId?: string) => {
     loadMore,
     refetchBooks,
     removeBookLocally,
+    updateBooksLocally,
   };
 };

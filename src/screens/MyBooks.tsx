@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { NavArrowDown, Refresh, Search, Xmark } from "iconoir-react";
+import { Drag, NavArrowDown, Refresh, Search, Xmark } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -34,6 +34,7 @@ import { useReadingProfile } from "@/hooks/useReadingProfile";
 import { APP_ICONS } from "@/config/iconography";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { reorderLibraryShelf } from "@/services/api/books";
 import { fetchThemePreferences, upsertThemePreferences } from "@/services/api/profiles";
 import { bookOperations } from "@/utils/offlineOperation";
 import { getProgressPercentage } from "@/utils/bookProgress";
@@ -41,7 +42,14 @@ import { getCuratedGenres, normalizeGenre } from "@/utils/genres";
 import type { Book, LibraryViewMode } from "@/types";
 
 type StatusFilter = "all" | "reading" | "completed" | "to_read";
-type SortKey = "created_desc" | "updated_desc" | "title_asc" | "author_asc" | "progress_desc" | "pages_desc";
+type SortKey =
+  | "shelf_order"
+  | "created_desc"
+  | "updated_desc"
+  | "title_asc"
+  | "author_asc"
+  | "progress_desc"
+  | "pages_desc";
 
 const STATUS_OPTIONS: Array<{ value: StatusFilter; label: string }> = [
   { value: "all", label: "All" },
@@ -78,6 +86,12 @@ const sortBooks = (books: Book[], sortKey: SortKey) => {
     switch (sortKey) {
       case "updated_desc":
         return timestamp(b.updated_at) - timestamp(a.updated_at);
+      case "shelf_order": {
+        const aPosition = a.shelf_position ?? Number.MAX_SAFE_INTEGER;
+        const bPosition = b.shelf_position ?? Number.MAX_SAFE_INTEGER;
+        if (aPosition !== bPosition) return aPosition - bPosition;
+        return timestamp(b.updated_at) - timestamp(a.updated_at) || timestamp(b.created_at) - timestamp(a.created_at);
+      }
       case "title_asc":
         return a.title.localeCompare(b.title);
       case "author_asc":
@@ -106,6 +120,7 @@ const MyBooks = () => {
     loadMore,
     refetchBooks,
     removeBookLocally,
+    updateBooksLocally,
   } = useBooks(user?.id);
   const { habits } = useReadingProfile(user?.id);
   const navigate = useNavigate();
@@ -117,6 +132,7 @@ const MyBooks = () => {
   const [genreFilters, setGenreFilters] = useState<string[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>("updated_desc");
   const [viewMode, setViewMode] = useState<LibraryViewMode>("flat");
+  const [reorderMode, setReorderMode] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
 
@@ -154,6 +170,16 @@ const MyBooks = () => {
       cancelled = true;
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (viewMode === "bookshelf") {
+      setSortKey((current) => (current === "updated_desc" ? "shelf_order" : current));
+      return;
+    }
+
+    setReorderMode(false);
+    setSortKey((current) => (current === "shelf_order" ? "updated_desc" : current));
+  }, [viewMode]);
 
   const libraryGenres = useMemo(
     () => getCuratedGenres([...(habits?.genres || []), ...books.map((book) => book.genre)]),
@@ -201,11 +227,38 @@ const MyBooks = () => {
     return sortBooks(next, sortKey);
   }, [books, genreFilters, searchQuery, sortKey, statusFilter]);
 
-  const hasActiveFilters =
+  const defaultSortKey: SortKey = viewMode === "bookshelf" ? "shelf_order" : "updated_desc";
+  const hasContentFilters =
     Boolean(searchQuery.trim()) ||
     statusFilter !== "all" ||
-    genreFilters.length > 0 ||
-    sortKey !== "updated_desc";
+    genreFilters.length > 0;
+  const hasActiveFilters =
+    hasContentFilters ||
+    sortKey !== defaultSortKey;
+  const canReorderShelf =
+    viewMode === "bookshelf" &&
+    sortKey === "shelf_order" &&
+    !hasContentFilters &&
+    !loading &&
+    !loadingMore &&
+    !hasMore &&
+    filteredBooks.length > 1;
+  const reorderUnavailableReason =
+    hasMore || loadingMore
+      ? "Load all books before rearranging"
+      : filteredBooks.length <= 1
+        ? "Add more books to rearrange your shelf"
+        : "Clear filters and use Shelf order to rearrange";
+  const sortOptions: Array<{ value: SortKey; label: string }> =
+    viewMode === "bookshelf"
+      ? [{ value: "shelf_order", label: "Shelf order" }, ...SORT_OPTIONS]
+      : SORT_OPTIONS;
+
+  useEffect(() => {
+    if (!canReorderShelf) {
+      setReorderMode(false);
+    }
+  }, [canReorderShelf]);
 
   const handleBookClick = (bookId: string) => {
     navigate(`/book/${bookId}`);
@@ -240,7 +293,7 @@ const MyBooks = () => {
     setSearchQuery("");
     setStatusFilter("all");
     setGenreFilters([]);
-    setSortKey("updated_desc");
+    setSortKey(defaultSortKey);
   };
 
   const toggleGenre = (genre: string) => {
@@ -252,6 +305,12 @@ const MyBooks = () => {
   const handleViewModeChange = (mode: LibraryViewMode) => {
     if (mode === viewMode) return;
 
+    if (mode === "bookshelf") {
+      setSortKey("shelf_order");
+    } else if (sortKey === "shelf_order") {
+      setSortKey("updated_desc");
+    }
+
     setViewMode(mode);
     if (!user?.id) return;
 
@@ -259,6 +318,70 @@ const MyBooks = () => {
       console.error("Failed to save library view preference:", error);
       toast.error("Could not save Library view preference");
     });
+  };
+
+  const handleShelfReorder = async (nextOrder: Book[]) => {
+    if (!user?.id) return;
+
+    const timestamp = new Date().toISOString();
+    const nextPositions = new Map(nextOrder.map((book, index) => [book.id, index + 1]));
+    const rollback = updateBooksLocally((currentBooks) =>
+      currentBooks.map((book) => {
+        const shelfPosition = nextPositions.get(book.id);
+        if (!shelfPosition) return book;
+        return {
+          ...book,
+          shelf_position: shelfPosition,
+          updated_at: timestamp,
+        };
+      })
+    );
+
+    try {
+      await reorderLibraryShelf(
+        nextOrder.map((book, index) => ({
+          ...book,
+          shelf_position: index + 1,
+          updated_at: timestamp,
+        }))
+      );
+      toast.success(navigator.onLine ? "Shelf order updated" : "Shelf order saved offline");
+    } catch (error: unknown) {
+      rollback();
+      console.error("Failed to reorder shelf:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update shelf order");
+    }
+  };
+
+  const renderReorderControl = () => {
+    if (viewMode !== "bookshelf") return null;
+
+    const tooltip = canReorderShelf
+      ? reorderMode
+        ? "Finish rearranging"
+        : "Rearrange shelf books"
+      : reorderUnavailableReason;
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex">
+            <Button
+              type="button"
+              size="sm"
+              variant={reorderMode ? "default" : "outline"}
+              disabled={!canReorderShelf}
+              onClick={() => setReorderMode((current) => !current)}
+              className="rounded-full"
+            >
+              <Drag className="mr-2 h-4 w-4" />
+              {reorderMode ? "Done" : "Reorder"}
+            </Button>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>{tooltip}</TooltipContent>
+      </Tooltip>
+    );
   };
 
   const renderViewSwitcher = () => (
@@ -365,7 +488,7 @@ const MyBooks = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SORT_OPTIONS.map((option) => (
+                {sortOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
@@ -435,17 +558,19 @@ const MyBooks = () => {
         {isMobile ? (
           <div className="flex items-center justify-between gap-2">
             {renderViewSwitcher()}
+            {renderReorderControl()}
             {renderFilterSheet()}
           </div>
         ) : (
           <div className="flex items-center gap-2">
             {renderViewSwitcher()}
+            {renderReorderControl()}
             <Select value={sortKey} onValueChange={(value) => setSortKey(value as SortKey)}>
               <SelectTrigger className="h-11 w-[180px] rounded-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SORT_OPTIONS.map((option) => (
+                {sortOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
@@ -580,6 +705,8 @@ const MyBooks = () => {
             onView={handleBookClick}
             onEdit={handleEditBook}
             onDelete={handleDeleteBook}
+            reorderMode={reorderMode}
+            onReorder={handleShelfReorder}
           />
           {loadMoreMarker}
         </>
