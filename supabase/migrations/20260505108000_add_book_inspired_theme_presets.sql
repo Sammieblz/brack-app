@@ -6,7 +6,7 @@ ALTER TABLE profiles
 ADD CONSTRAINT valid_color_theme
 CHECK (color_theme IN (
   'default',
-  'purple-sage',7pre
+  'purple-sage',
   'nature-green',
   'earth-brown',
   'ocean-blue',

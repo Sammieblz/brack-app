@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
       applyCursor(
         supabaseClient
           .from("profiles")
-          .select("id, color_theme, theme_mode, updated_at")
+          .select("id, color_theme, theme_mode, library_view_mode, updated_at")
           .eq("id", userId),
         "updated_at",
         cursor

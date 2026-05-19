@@ -1,4 +1,4 @@
-import type { Book, Goal, Profile, ReadingSession } from "@/types";
+import type { Book, Goal, LibraryViewMode, Profile, ReadingSession } from "@/types";
 import type { JournalEntry } from "@/services/api/journal";
 
 export type LocalEntityStatus = "synced" | "pending" | "failed" | "deleted";
@@ -67,6 +67,7 @@ export interface ProfilePreferencesPayload {
   id: string;
   color_theme?: string | null;
   theme_mode?: string | null;
+  library_view_mode?: LibraryViewMode | null;
   updated_at?: string | null;
 }
 

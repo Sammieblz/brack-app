@@ -1,38 +1,19 @@
-import { useState, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Calendar,
-  EditPencil,
-  JournalPage,
-  NavArrowRight,
-  Trash,
-} from "iconoir-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { AddToListDialog } from "@/components/AddToListDialog";
-import { OptimizedImage } from "@/components/OptimizedImage";
+import {
+  LibraryBookActions,
+  LibraryBookDateLine,
+  LibraryStatusBadge,
+} from "@/components/library/LibraryBookActions";
+import { LibraryPhysicalBookCover } from "@/components/library/LibraryPhysicalBookCover";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
-import { APP_ICONS } from "@/config/iconography";
 import { cn } from "@/lib/utils";
 import { getProgressPercentage } from "@/utils/bookProgress";
 import type { Book } from "@/types";
@@ -46,49 +27,6 @@ interface LibraryBookCardProps {
   onDelete: (bookId: string) => Promise<void> | void;
 }
 
-const statusStyles: Record<string, string> = {
-  completed: "bg-green-500 text-white",
-  reading: "bg-orange-500 text-white",
-  to_read: "bg-blue-500 text-white",
-};
-
-const formatStatus = (status: string) => status.replace("_", " ");
-
-const formatDate = (date?: string | null) => {
-  if (!date) return null;
-  return new Date(date).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
-interface IconActionProps {
-  label: string;
-  className?: string;
-  onClick?: () => void;
-  children: ReactNode;
-}
-
-const IconAction = ({ label, className, onClick, children }: IconActionProps) => (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        aria-label={label}
-        title={label}
-        onClick={onClick}
-        className={cn("h-10 w-10 rounded-full", className)}
-      >
-        {children}
-      </Button>
-    </TooltipTrigger>
-    <TooltipContent>{label}</TooltipContent>
-  </Tooltip>
-);
-
 export const LibraryBookCard = ({
   book,
   userId,
@@ -97,90 +35,9 @@ export const LibraryBookCard = ({
   onEdit,
   onDelete,
 }: LibraryBookCardProps) => {
-  const navigate = useNavigate();
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const progress = getProgressPercentage(book);
   const hasProgress = book.status === "reading" && Boolean(book.pages);
-
-  const handleDelete = async () => {
-    setDeleteOpen(false);
-    await onDelete(book.id);
-  };
-
-  const actionControls = (
-    <div className="flex flex-wrap items-center gap-2">
-      <IconAction label="View details" onClick={() => onView(book.id)}>
-        <NavArrowRight className="h-4 w-4" />
-      </IconAction>
-      <IconAction
-        label="Log progress"
-        onClick={() => navigate(`/book/${book.id}/progress`)}
-      >
-        <JournalPage className="h-4 w-4" />
-      </IconAction>
-      <IconAction label="Edit book" onClick={() => onEdit(book.id)}>
-        <EditPencil className="h-4 w-4" />
-      </IconAction>
-      {userId && (
-        <AddToListDialog
-          bookId={book.id}
-          userId={userId}
-          triggerTooltip="Add to list"
-          trigger={
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Add to list"
-              title="Add to list"
-              className="h-10 w-10 rounded-full"
-            >
-              <APP_ICONS.library.bookLists className="h-4 w-4" />
-            </Button>
-          }
-        />
-      )}
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogTrigger asChild>
-          <span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  aria-label="Delete book"
-                  title="Delete book"
-                  className="h-10 w-10 rounded-full border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                >
-                  <Trash className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Delete book</TooltipContent>
-            </Tooltip>
-          </span>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this book?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This removes "{book.title}" from your library. You can re-add it later.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Keep book</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
 
   return (
     <Card
@@ -196,7 +53,7 @@ export const LibraryBookCard = ({
             <div className="flex min-h-[8.75rem] gap-3 p-3 sm:p-4">
               <button
                 type="button"
-                className="shrink-0"
+                className="group shrink-0"
                 onClick={(event) => {
                   event.stopPropagation();
                   if (book.cover_url) setLightboxOpen(true);
@@ -210,16 +67,10 @@ export const LibraryBookCard = ({
                     isOpen={lightboxOpen}
                     onClose={() => setLightboxOpen(false)}
                   >
-                    <OptimizedImage
-                      src={book.cover_url}
-                      alt={book.title}
-                      className="h-24 w-16 rounded-md object-cover shadow-sm sm:h-28 sm:w-[4.5rem]"
-                    />
+                    <LibraryPhysicalBookCover book={book} variant="card" />
                   </ImageLightbox>
                 ) : (
-                  <div className="flex h-24 w-16 items-center justify-center rounded-md bg-primary/10 text-primary sm:h-28 sm:w-[4.5rem]">
-                    <APP_ICONS.dashboard.coverFallback className="h-7 w-7" />
-                  </div>
+                  <LibraryPhysicalBookCover book={book} variant="card" />
                 )}
               </button>
 
@@ -249,14 +100,7 @@ export const LibraryBookCard = ({
                 </div>
 
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <Badge
-                    className={cn(
-                      "px-2 py-0.5 text-[11px] capitalize",
-                      statusStyles[book.status] || "bg-muted text-muted-foreground"
-                    )}
-                  >
-                    {formatStatus(book.status)}
-                  </Badge>
+                  <LibraryStatusBadge status={book.status} />
                   {book.pages && (
                     <span className="font-sans text-xs text-muted-foreground">
                       {book.pages} pages
@@ -301,16 +145,10 @@ export const LibraryBookCard = ({
 
                 <div className="grid gap-2 font-sans text-xs text-muted-foreground sm:grid-cols-2">
                   {book.date_started && (
-                    <span className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-primary" />
-                      Started {formatDate(book.date_started)}
-                    </span>
+                    <LibraryBookDateLine label="Started" date={book.date_started} />
                   )}
                   {book.date_finished && (
-                    <span className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-primary" />
-                      Finished {formatDate(book.date_finished)}
-                    </span>
+                    <LibraryBookDateLine label="Finished" date={book.date_finished} />
                   )}
                   {book.isbn && <span>ISBN {book.isbn}</span>}
                   {book.tags && book.tags.length > 0 && <span>{book.tags.join(", ")}</span>}
@@ -320,7 +158,13 @@ export const LibraryBookCard = ({
             </AccordionContent>
 
             <div className="border-t border-border/60 px-3 pb-3 pt-3 sm:px-4 sm:pb-4">
-              {actionControls}
+              <LibraryBookActions
+                book={book}
+                userId={userId}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
             </div>
           </CardContent>
         </AccordionItem>

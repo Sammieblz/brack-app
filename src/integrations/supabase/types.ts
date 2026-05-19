@@ -717,6 +717,7 @@ export type Database = {
           last_name: string | null
           last_reading_date: string | null
           latitude: number | null
+          library_view_mode: string
           longest_streak: number | null
           longitude: number | null
           onboarding_completed_at: string | null
@@ -749,6 +750,7 @@ export type Database = {
           last_name?: string | null
           last_reading_date?: string | null
           latitude?: number | null
+          library_view_mode?: string
           longest_streak?: number | null
           longitude?: number | null
           onboarding_completed_at?: string | null
@@ -781,6 +783,7 @@ export type Database = {
           last_name?: string | null
           last_reading_date?: string | null
           latitude?: number | null
+          library_view_mode?: string
           longest_streak?: number | null
           longitude?: number | null
           onboarding_completed_at?: string | null

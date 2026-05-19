@@ -22,6 +22,7 @@ export interface Profile {
   date_of_birth: string | null;
   color_theme: string | null;
   theme_mode: string | null;
+  library_view_mode: LibraryViewMode | null;
   profile_visibility: string | null;
   show_reading_activity: boolean | null;
   show_currently_reading: boolean | null;
@@ -172,6 +173,7 @@ export interface UserBadge {
 }
 
 export type BookStatus = 'reading' | 'completed' | 'to_read';
+export type LibraryViewMode = 'flat' | 'bookshelf' | 'carousel';
 
 export interface TimerState {
   isRunning: boolean;

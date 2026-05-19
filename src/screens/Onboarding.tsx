@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, ElementType, ReactNode, RefObject } from "react";
+import type { ElementType, ReactNode, RefObject } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { gsap } from "gsap";
 import {
@@ -22,6 +22,7 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { TimePicker } from "@/components/ui/time-picker";
+import { ThemePaletteCarousel } from "@/components/ThemePaletteCarousel";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -32,7 +33,7 @@ import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
 import { useReadingProfile } from "@/hooks/useReadingProfile";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { themes, type Theme, type ThemeColors } from "@/lib/themes";
+import { themes } from "@/lib/themes";
 import { GENRES } from "@/constants";
 import { APP_ICONS } from "@/config/iconography";
 import {
@@ -708,71 +709,6 @@ const WelcomeStep = ({
   </div>
 );
 
-const paletteSurfaceLabels: Record<NonNullable<Theme["surfaceStyle"]>, string> = {
-  standard: "Classic color",
-  paper: "Paper texture",
-  glass: "Glass surfaces",
-  comic: "Panel outlines",
-  "coloring-book": "Outlined pages",
-};
-
-const previewHsl = (value: string, alpha?: number) =>
-  alpha === undefined ? `hsl(${value})` : `hsl(${value} / ${alpha})`;
-
-const getPalettePreviewStyle = (theme: Theme, colors: ThemeColors): CSSProperties => {
-  const surfaceStyle = theme.surfaceStyle ?? "standard";
-  const base: CSSProperties = {
-    backgroundColor: previewHsl(colors.background),
-    borderColor: previewHsl(colors.border),
-    color: previewHsl(colors.foreground),
-  };
-
-  if (surfaceStyle === "paper") {
-    return {
-      ...base,
-      backgroundImage: `linear-gradient(90deg, transparent 0, transparent 26%, ${previewHsl(colors.destructive, 0.08)} 27%, transparent 28%), repeating-linear-gradient(0deg, transparent 0 17px, ${previewHsl(colors.primary, 0.08)} 18px, transparent 19px), radial-gradient(circle at 1px 1px, ${previewHsl(colors.foreground, 0.05)} 1px, transparent 0), ${colors.gradientCard}`,
-      backgroundSize: "100% 100%, 100% 19px, 12px 12px, 100% 100%",
-      boxShadow: colors.shadowSoft,
-    };
-  }
-
-  if (surfaceStyle === "glass") {
-    return {
-      ...base,
-      backgroundColor: previewHsl(colors.card, 0.62),
-      backgroundImage: `linear-gradient(145deg, hsl(0 0% 100% / 0.22), transparent 44%), ${colors.gradientCard}`,
-      backdropFilter: "blur(10px) saturate(1.2)",
-      boxShadow: colors.shadowSoft,
-    };
-  }
-
-  if (surfaceStyle === "comic") {
-    return {
-      ...base,
-      borderColor: previewHsl(colors.border),
-      borderWidth: 2,
-      boxShadow: colors.shadowSoft,
-    };
-  }
-
-  if (surfaceStyle === "coloring-book") {
-    return {
-      ...base,
-      backgroundImage: `linear-gradient(0deg, ${previewHsl(colors.border, 0.04)} 1px, transparent 1px), linear-gradient(90deg, ${previewHsl(colors.border, 0.04)} 1px, transparent 1px), ${colors.gradientCard}`,
-      backgroundSize: "14px 14px, 14px 14px, 100% 100%",
-      borderColor: previewHsl(colors.border, 0.82),
-      borderWidth: 2,
-      boxShadow: "none",
-    };
-  }
-
-  return {
-    ...base,
-    backgroundImage: colors.gradientCard,
-    boxShadow: colors.shadowSoft,
-  };
-};
-
 const PaletteStep = ({
   selectedTheme,
   previewMode,
@@ -791,114 +727,12 @@ const PaletteStep = ({
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 md:max-h-[22rem] md:overflow-y-auto md:overscroll-contain md:pr-1 lg:max-h-[24rem] xl:max-h-[31rem]">
-        {themes.map((theme) => {
-          const selected = selectedTheme === theme.id;
-          const previewColors = theme.colors[previewMode];
-          const surfaceStyle = theme.surfaceStyle ?? "standard";
-
-          return (
-            <button
-              key={theme.id}
-              type="button"
-              onClick={() => void onSelectTheme(theme.id)}
-              className={cn(
-                "group relative overflow-hidden rounded-lg border p-3 text-left transition-all hover:-translate-y-0.5 hover:border-primary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                selected ? "border-primary bg-primary/10 shadow-sm" : "border-border bg-background/80",
-              )}
-            >
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div>
-                  <p className="font-sans text-sm font-semibold">{theme.name}</p>
-                  <p className="font-sans text-xs text-muted-foreground">
-                    {theme.id === "default" ? "Brack classic" : paletteSurfaceLabels[surfaceStyle]}
-                  </p>
-                </div>
-                <span
-                  className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-full border transition-transform group-hover:scale-110",
-                    selected ? "border-primary bg-primary text-primary-foreground" : "border-border bg-muted",
-                  )}
-                >
-                  {selected && <Check className="h-4 w-4" />}
-                </span>
-              </div>
-
-              <div className="mb-3 grid grid-cols-4 gap-1.5">
-                {theme.preview.map((color) => (
-                  <span
-                    key={color}
-                    className="h-5 rounded-sm border border-black/5 shadow-sm"
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-              </div>
-
-              <div
-                className="overflow-hidden rounded-md border shadow-sm"
-                style={getPalettePreviewStyle(theme, previewColors)}
-              >
-                <div
-                  className="flex h-5 items-center gap-1 border-b px-2"
-                  style={{
-                    backgroundColor: previewHsl(previewColors.card, surfaceStyle === "glass" ? 0.62 : 1),
-                    borderColor: previewHsl(previewColors.border),
-                  }}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: theme.preview[0] }} />
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: theme.preview[1] }} />
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: theme.preview[2] }} />
-                  <span
-                    className="ml-auto h-1.5 w-10 rounded-full"
-                    style={{ backgroundColor: previewHsl(previewColors.muted) }}
-                  />
-                </div>
-                <div className="grid grid-cols-[2rem_minmax(0,1fr)]">
-                  <div
-                    className="space-y-1.5 border-r p-1.5"
-                    style={{
-                      backgroundColor: previewHsl(previewColors.muted, surfaceStyle === "glass" ? 0.58 : 1),
-                      borderColor: previewHsl(previewColors.border),
-                    }}
-                  >
-                    <span
-                      className="block h-4 rounded-sm"
-                      style={{ backgroundColor: previewHsl(previewColors.primary) }}
-                    />
-                    <span
-                      className="block h-4 rounded-sm opacity-65"
-                      style={{ backgroundColor: previewHsl(previewColors.card) }}
-                    />
-                    <span
-                      className="block h-4 rounded-sm opacity-65"
-                      style={{ backgroundColor: previewHsl(previewColors.card) }}
-                    />
-                  </div>
-                  <div className="space-y-2 p-2">
-                    <span
-                      className="block h-2 w-3/5 rounded-full"
-                      style={{ backgroundColor: previewHsl(previewColors.primary) }}
-                    />
-                    <span
-                      className="block h-2 w-full rounded-full"
-                      style={{ backgroundColor: previewHsl(previewColors.muted) }}
-                    />
-                    <span
-                      className="block h-2 w-4/5 rounded-full"
-                      style={{ backgroundColor: previewHsl(previewColors.secondary) }}
-                    />
-                    <div className="grid grid-cols-3 gap-1.5 pt-1">
-                      <span className="h-7 rounded-sm" style={{ backgroundColor: theme.preview[0] }} />
-                      <span className="h-7 rounded-sm" style={{ backgroundColor: theme.preview[1] }} />
-                      <span className="h-7 rounded-sm" style={{ backgroundColor: theme.preview[2] }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+      <ThemePaletteCarousel
+        selectedTheme={selectedTheme}
+        previewMode={previewMode}
+        onSelectTheme={onSelectTheme}
+        ariaLabel="Onboarding theme palette options"
+      />
     </div>
 
     <div className="rounded-lg bg-muted/30 p-4">

@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import {
   Activity,
+  AlbumCarousel,
   BadgeCheck,
   BellNotification,
   Bin,
@@ -61,6 +62,8 @@ import {
   UserCircle,
   UserPlus,
   UserSquare,
+  ViewGrid,
+  ViewStructureUp,
 } from "iconoir-react";
 
 export type AppIcon = ComponentType<{ className?: string }>;
@@ -113,6 +116,9 @@ export const APP_ICONS = {
     addBook: MultiplePagesPlus,
     emptyResults: EmptyPage,
     filter: FilterList,
+    flatView: ViewGrid,
+    bookshelfView: ViewStructureUp,
+    carouselView: AlbumCarousel,
   },
   analytics: {
     header: StatsReport,

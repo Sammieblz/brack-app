@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Sheet,
   SheetContent,
@@ -17,6 +18,8 @@ import {
 import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
 import { EmptyBooks } from "@/components/empty/EmptyBooks";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
+import { LibraryBookshelfView } from "@/components/library/LibraryBookshelfView";
+import { LibraryCarouselView } from "@/components/library/LibraryCarouselView";
 import { LibraryBookCard } from "@/components/LibraryBookCard";
 import { MobileHeader } from "@/components/MobileHeader";
 import { MobileLayout } from "@/components/MobileLayout";
@@ -31,10 +34,11 @@ import { useReadingProfile } from "@/hooks/useReadingProfile";
 import { APP_ICONS } from "@/config/iconography";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { fetchThemePreferences, upsertThemePreferences } from "@/services/api/profiles";
 import { bookOperations } from "@/utils/offlineOperation";
 import { getProgressPercentage } from "@/utils/bookProgress";
 import { getCuratedGenres, normalizeGenre } from "@/utils/genres";
-import type { Book } from "@/types";
+import type { Book, LibraryViewMode } from "@/types";
 
 type StatusFilter = "all" | "reading" | "completed" | "to_read";
 type SortKey = "created_desc" | "updated_desc" | "title_asc" | "author_asc" | "progress_desc" | "pages_desc";
@@ -53,6 +57,16 @@ const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   { value: "author_asc", label: "Author" },
   { value: "progress_desc", label: "Progress" },
   { value: "pages_desc", label: "Page count" },
+];
+
+const VIEW_OPTIONS: Array<{
+  value: LibraryViewMode;
+  label: string;
+  icon: typeof APP_ICONS.library.flatView;
+}> = [
+  { value: "flat", label: "Flat view", icon: APP_ICONS.library.flatView },
+  { value: "bookshelf", label: "Bookshelf view", icon: APP_ICONS.library.bookshelfView },
+  { value: "carousel", label: "Carousel view", icon: APP_ICONS.library.carouselView },
 ];
 
 const timestamp = (value?: string | null) => (value ? new Date(value).getTime() : 0);
@@ -102,6 +116,7 @@ const MyBooks = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [genreFilters, setGenreFilters] = useState<string[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>("updated_desc");
+  const [viewMode, setViewMode] = useState<LibraryViewMode>("flat");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
 
@@ -116,6 +131,29 @@ const MyBooks = () => {
       setSearchQuery(initialSearchQuery);
     }
   }, [initialSearchQuery]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!user?.id) {
+      setViewMode("flat");
+      return;
+    }
+
+    fetchThemePreferences(user.id)
+      .then((preferences) => {
+        if (!cancelled) {
+          setViewMode(preferences?.library_view_mode ?? "flat");
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to load library view preference:", error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   const libraryGenres = useMemo(
     () => getCuratedGenres([...(habits?.genres || []), ...books.map((book) => book.genre)]),
@@ -210,6 +248,52 @@ const MyBooks = () => {
       prev.includes(genre) ? prev.filter((item) => item !== genre) : [...prev, genre]
     );
   };
+
+  const handleViewModeChange = (mode: LibraryViewMode) => {
+    if (mode === viewMode) return;
+
+    setViewMode(mode);
+    if (!user?.id) return;
+
+    upsertThemePreferences(user.id, { library_view_mode: mode }).catch((error) => {
+      console.error("Failed to save library view preference:", error);
+      toast.error("Could not save Library view preference");
+    });
+  };
+
+  const renderViewSwitcher = () => (
+    <div
+      className="flex shrink-0 items-center rounded-full border border-border/60 bg-background/70 p-1"
+      role="group"
+      aria-label="Library view"
+    >
+      {VIEW_OPTIONS.map((option) => {
+        const Icon = option.icon;
+        const active = viewMode === option.value;
+
+        return (
+          <Tooltip key={option.value}>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                size="icon"
+                variant={active ? "default" : "ghost"}
+                aria-label={option.label}
+                className={cn(
+                  "h-9 w-9 rounded-full",
+                  active ? "shadow-sm" : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => handleViewModeChange(option.value)}
+              >
+                <Icon className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{option.label}</TooltipContent>
+          </Tooltip>
+        );
+      })}
+    </div>
+  );
 
   const renderStatusControls = (compact = false) => (
     <div className={cn("flex gap-2 overflow-x-auto pb-1", compact ? "-mx-1 px-1" : "flex-wrap")}>
@@ -349,9 +433,13 @@ const MyBooks = () => {
         </div>
 
         {isMobile ? (
-          renderFilterSheet()
+          <div className="flex items-center justify-between gap-2">
+            {renderViewSwitcher()}
+            {renderFilterSheet()}
+          </div>
         ) : (
           <div className="flex items-center gap-2">
+            {renderViewSwitcher()}
             <Select value={sortKey} onValueChange={(value) => setSortKey(value as SortKey)}>
               <SelectTrigger className="h-11 w-[180px] rounded-full">
                 <SelectValue />
@@ -471,48 +559,83 @@ const MyBooks = () => {
       );
     }
 
-    return (
-      <div className={cn("grid gap-4", isMobile ? "grid-cols-1" : "md:grid-cols-2 2xl:grid-cols-3")}>
-        {filteredBooks.map((book) => {
-          const card = (
-            <LibraryBookCard
-              key={book.id}
-              book={book}
-              userId={user?.id}
-              highlighted={book.id === highlightBookId}
-              onView={handleBookClick}
-              onEdit={handleEditBook}
-              onDelete={handleDeleteBook}
-            />
-          );
-
-          if (!isMobile) return card;
-
-          return (
-            <SwipeableBookCard
-              key={book.id}
-              book={book}
-              onView={handleBookClick}
-              onEdit={handleEditBook}
-              onDelete={handleDeleteBook}
-              onStatusChange={handleStatusChange}
-            >
-              {card}
-            </SwipeableBookCard>
-          );
-        })}
-
-        {hasMore && (
-          <div ref={loadMoreRef} className="py-8 flex justify-center md:col-span-2 2xl:col-span-3">
-            {loadingMore && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Refresh className="h-5 w-5 animate-spin" />
-                <span>Loading more...</span>
-              </div>
-            )}
+    const loadMoreMarker = hasMore ? (
+      <div ref={loadMoreRef} className="py-8 flex justify-center md:col-span-2 2xl:col-span-3">
+        {loadingMore && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Refresh className="h-5 w-5 animate-spin" />
+            <span>Loading more...</span>
           </div>
         )}
       </div>
+    ) : null;
+
+    if (viewMode === "bookshelf") {
+      return (
+        <>
+          <LibraryBookshelfView
+            books={filteredBooks}
+            userId={user?.id}
+            highlightedBookId={highlightBookId}
+            onView={handleBookClick}
+            onEdit={handleEditBook}
+            onDelete={handleDeleteBook}
+          />
+          {loadMoreMarker}
+        </>
+      );
+    }
+
+    if (viewMode === "carousel") {
+      return (
+        <>
+          <LibraryCarouselView
+            books={filteredBooks}
+            userId={user?.id}
+            highlightedBookId={highlightBookId}
+            onView={handleBookClick}
+            onEdit={handleEditBook}
+            onDelete={handleDeleteBook}
+          />
+          {loadMoreMarker}
+        </>
+      );
+    }
+
+    return (
+      <>
+        <div className={cn("grid gap-4", isMobile ? "grid-cols-1" : "md:grid-cols-2 2xl:grid-cols-3")}>
+          {filteredBooks.map((book) => {
+            const card = (
+              <LibraryBookCard
+                key={book.id}
+                book={book}
+                userId={user?.id}
+                highlighted={book.id === highlightBookId}
+                onView={handleBookClick}
+                onEdit={handleEditBook}
+                onDelete={handleDeleteBook}
+              />
+            );
+
+            if (!isMobile) return card;
+
+            return (
+              <SwipeableBookCard
+                key={book.id}
+                book={book}
+                onView={handleBookClick}
+                onEdit={handleEditBook}
+                onDelete={handleDeleteBook}
+                onStatusChange={handleStatusChange}
+              >
+                {card}
+              </SwipeableBookCard>
+            );
+          })}
+        </div>
+        {loadMoreMarker}
+      </>
     );
   };
 
