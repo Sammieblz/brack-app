@@ -170,7 +170,7 @@ const Settings = () => {
     <MobileLayout>
       {isMobile && <MobileHeader title="Settings" />}
       
-      <div className="app-page-narrow">
+      <div className="app-page-narrow min-w-0 overflow-x-hidden">
         {!isMobile && (
           <div className="mb-6">
             <h1 className="font-display text-3xl font-bold">Settings</h1>
@@ -217,9 +217,9 @@ const Settings = () => {
             })}
           </Accordion>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-            <Card className="self-start">
-              <CardContent className="p-2">
+          <div className="app-equal-panel-grid grid min-w-0 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+            <Card className="app-equal-panel lg:self-stretch">
+              <CardContent className="app-equal-panel-scroll p-2">
                 {sections.map((section) => {
                   const Icon = section.icon;
                   const active = activeSection === section.id;
@@ -247,8 +247,8 @@ const Settings = () => {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className="p-6">
+            <Card className="app-equal-panel min-w-0 overflow-hidden">
+              <CardContent className="app-equal-panel-scroll min-w-0 p-6">
                 {sections.find((section) => section.id === activeSection)?.component(user)}
               </CardContent>
             </Card>
@@ -256,11 +256,11 @@ const Settings = () => {
         )}
 
         {/* Sign Out Button */}
-        <Card className="mt-6 border-destructive/50">
+        <Card className="mt-6 border-primary/25 bg-primary/[0.03]">
           <CardContent className="p-4">
             <Button
-              variant="destructive"
-              className="w-full"
+              variant="outline"
+              className="w-full border-primary/35 bg-primary/10 text-primary hover:border-primary/50 hover:bg-primary/15 hover:text-primary focus-visible:ring-primary/40"
               onClick={() => {
                 triggerHaptic("medium");
                 setShowSignOutDialog(true);

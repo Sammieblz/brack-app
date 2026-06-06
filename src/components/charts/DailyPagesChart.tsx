@@ -1,7 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { useMemo } from "react";
+import type { ApexOptions } from "apexcharts";
 import { APP_ICONS } from "@/config/iconography";
+import { ApexChartCard, ApexChartFrame, ApexEmptyState } from "./ApexChartCard";
+import { formatShortDate, useApexTheme } from "./apexTheme";
 
 interface DailyProgress {
   date: string;
@@ -13,68 +14,87 @@ interface DailyPagesChartProps {
   data: DailyProgress[];
 }
 
-const chartConfig = {
-  pages: {
-    label: "Pages Read",
-    color: "hsl(var(--chart-2))",
-  },
-};
-
 export const DailyPagesChart = ({ data }: DailyPagesChartProps) => {
-  const chartData = data.map(item => ({
-    date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    pages: item.pages_read
-  }));
+  const { baseOptions, colors, currentTheme, resolvedTheme } = useApexTheme();
 
-  const totalPages = data.reduce((sum, d) => sum + d.pages_read, 0);
-  const avgPages = data.length > 0 ? (totalPages / data.length).toFixed(1) : "0";
+  const categories = useMemo(
+    () => data.map((item) => formatShortDate(item.date)),
+    [data]
+  );
+  const totalPages = useMemo(
+    () => data.reduce((sum, item) => sum + item.pages_read, 0),
+    [data]
+  );
+  const avgPages = data.length > 0 ? totalPages / data.length : 0;
+  const series = useMemo(
+    () => [{ name: "Pages", data: data.map((item) => item.pages_read) }],
+    [data]
+  );
+
+  const options = useMemo<ApexOptions>(
+    () => ({
+      ...baseOptions,
+      chart: {
+        ...baseOptions.chart,
+        type: "bar",
+      },
+      colors: [colors.chart[1]],
+      fill: {
+        type: "gradient",
+        gradient: {
+          opacityFrom: 0.95,
+          opacityTo: 0.58,
+          shadeIntensity: 0.45,
+        },
+      },
+      legend: { show: false },
+      plotOptions: {
+        bar: {
+          borderRadius: 7,
+          columnWidth: "52%",
+        },
+      },
+      tooltip: {
+        ...baseOptions.tooltip,
+        y: {
+          formatter: (value) => `${Math.round(Number(value))} pages`,
+        },
+      },
+      xaxis: {
+        ...baseOptions.xaxis,
+        categories,
+        tickAmount: Math.min(categories.length, 7),
+      },
+      yaxis: {
+        ...baseOptions.yaxis,
+        labels: {
+          style: { colors: colors.mutedForeground },
+          formatter: (value) => `${Math.round(value)}`,
+        },
+      },
+    }),
+    [baseOptions, categories, colors]
+  );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-display flex items-center justify-between">
-          <span className="flex items-center">
-            <APP_ICONS.stats.pagesRead className="h-5 w-5 mr-2" />
-            Daily Pages Read
-          </span>
-          <span className="font-sans text-sm font-normal text-muted-foreground">
-            Avg: {avgPages} pages/day
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {data.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <p className="font-sans">No daily progress data available yet</p>
-          </div>
-        ) : (
-          <ChartContainer config={chartConfig} className="h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis 
-                  dataKey="date" 
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                  tickLine={false}
-                />
-                <YAxis 
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                  tickLine={false}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar 
-                  dataKey="pages" 
-                  fill="hsl(var(--chart-2))" 
-                  radius={[4, 4, 0, 0]}
-                  name="Pages"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        )}
-      </CardContent>
-    </Card>
+    <ApexChartCard
+      title="Daily Pages Read"
+      subtitle={`Average ${avgPages.toFixed(1)} pages/day`}
+      icon={<APP_ICONS.stats.pagesRead className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
+    >
+      {data.length === 0 ? (
+        <ApexEmptyState message="No daily progress data available yet" />
+      ) : (
+        <ApexChartFrame
+          chartKey={`daily-pages-${currentTheme}-${resolvedTheme}`}
+          options={options}
+          series={series}
+          type="bar"
+          height={260}
+          minWidth={480}
+        />
+      )}
+    </ApexChartCard>
   );
 };
+

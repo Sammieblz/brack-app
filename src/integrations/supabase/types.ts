@@ -301,6 +301,7 @@ export type Database = {
           notes: string | null
           pages: number | null
           rating: number | null
+          shelf_position: number | null
           source_id: string | null
           source_provider: string | null
           status: string | null
@@ -326,6 +327,7 @@ export type Database = {
           notes?: string | null
           pages?: number | null
           rating?: number | null
+          shelf_position?: number | null
           source_id?: string | null
           source_provider?: string | null
           status?: string | null
@@ -351,6 +353,7 @@ export type Database = {
           notes?: string | null
           pages?: number | null
           rating?: number | null
+          shelf_position?: number | null
           source_id?: string | null
           source_provider?: string | null
           status?: string | null
@@ -717,6 +720,7 @@ export type Database = {
           last_name: string | null
           last_reading_date: string | null
           latitude: number | null
+          library_view_mode: string
           longest_streak: number | null
           longitude: number | null
           onboarding_completed_at: string | null
@@ -749,6 +753,7 @@ export type Database = {
           last_name?: string | null
           last_reading_date?: string | null
           latitude?: number | null
+          library_view_mode?: string
           longest_streak?: number | null
           longitude?: number | null
           onboarding_completed_at?: string | null
@@ -781,6 +786,7 @@ export type Database = {
           last_name?: string | null
           last_reading_date?: string | null
           latitude?: number | null
+          library_view_mode?: string
           longest_streak?: number | null
           longitude?: number | null
           onboarding_completed_at?: string | null
@@ -1369,6 +1375,10 @@ export type Database = {
       }
       recalculate_user_reading_streak: {
         Args: { p_user_id: string }
+        Returns: Json
+      }
+      reorder_library_shelf: {
+        Args: { p_book_ids: string[]; p_user_id: string }
         Returns: Json
       }
       use_reading_streak_freeze: {

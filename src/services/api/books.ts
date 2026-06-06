@@ -4,6 +4,7 @@ import { dataCache } from "@/services/dataCache";
 import { booksRepo } from "@/services/local";
 import type { Book } from "@/types";
 import { completeReading } from "./reading";
+import { getCurrentAuthUser } from "./auth";
 
 export interface SearchBooksRequest {
   query: string;
@@ -41,6 +42,17 @@ export interface AddLibraryBookResponse {
   message?: string;
   book_id?: string;
   book?: Book;
+}
+
+export interface ShelfPositionUpdate {
+  id: string;
+  shelf_position: number | null;
+  updated_at?: string | null;
+}
+
+export interface ReorderLibraryShelfResponse {
+  success: boolean;
+  books: ShelfPositionUpdate[];
 }
 
 export class BookAlreadyExistsError extends Error {
@@ -186,6 +198,69 @@ export const updateBook = async (
   await booksRepo.upsertRemote(book.user_id, book);
   invalidateBooksCache(book.user_id);
   emitBooksChanged({ type: "upsert", userId: book.user_id, book });
+};
+
+export const reorderLibraryShelf = async (
+  orderedBooks: Book[]
+): Promise<ReorderLibraryShelfResponse> => {
+  const user = await getCurrentAuthUser();
+  if (!user) throw new Error("Not authenticated");
+
+  const timestamp = new Date().toISOString();
+  const positionedBooks = orderedBooks.map((book, index) => ({
+    ...book,
+    shelf_position: index + 1,
+    updated_at: timestamp,
+  }));
+
+  if (!navigator.onLine) {
+    await Promise.all(
+      positionedBooks.map(async (book) => {
+        await booksRepo.upsertLocal(user.id, book, "update");
+        emitBooksChanged({ type: "upsert", userId: user.id, book });
+      })
+    );
+
+    invalidateBooksCache(user.id);
+    return {
+      success: true,
+      books: positionedBooks.map((book) => ({
+        id: book.id,
+        shelf_position: book.shelf_position,
+        updated_at: book.updated_at,
+      })),
+    };
+  }
+
+  const { data, error } = await supabase.rpc("reorder_library_shelf", {
+    p_user_id: user.id,
+    p_book_ids: orderedBooks.map((book) => book.id),
+  });
+
+  if (error) throw error;
+
+  const response = (data ?? { success: true, books: [] }) as ReorderLibraryShelfResponse;
+  const returnedPositions = Array.isArray(response.books) ? response.books : [];
+
+  await Promise.all(
+    returnedPositions.map(async (position) => {
+      const existing =
+        orderedBooks.find((book) => book.id === position.id) ?? (await booksRepo.get(position.id));
+      if (!existing) return;
+
+      const updatedBook = {
+        ...existing,
+        shelf_position: position.shelf_position,
+        updated_at: position.updated_at || timestamp,
+      } as Book;
+
+      await booksRepo.upsertRemote(user.id, updatedBook);
+      emitBooksChanged({ type: "upsert", userId: user.id, book: updatedBook });
+    })
+  );
+
+  invalidateBooksCache(user.id);
+  return { success: Boolean(response.success), books: returnedPositions };
 };
 
 export const updateBookStatus = async (

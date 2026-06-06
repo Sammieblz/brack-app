@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Profile } from "@/types";
+import type { LibraryViewMode, Profile } from "@/types";
 import { getCurrentAuthUser } from "./auth";
 import { profilePreferencesRepo } from "@/services/local";
 
@@ -223,6 +223,7 @@ export const updateProfileAvatar = async (
 export interface ThemePreferences {
   color_theme: string | null;
   theme_mode: string | null;
+  library_view_mode: LibraryViewMode | null;
 }
 
 export const fetchThemePreferences = async (
@@ -230,12 +231,18 @@ export const fetchThemePreferences = async (
 ): Promise<ThemePreferences | null> => {
   if (!navigator.onLine) {
     const local = await profilePreferencesRepo.get(userId);
-    return local ? { color_theme: local.color_theme ?? null, theme_mode: local.theme_mode ?? null } : null;
+    return local
+      ? {
+          color_theme: local.color_theme ?? null,
+          theme_mode: local.theme_mode ?? null,
+          library_view_mode: local.library_view_mode ?? "flat",
+        }
+      : null;
   }
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("color_theme, theme_mode")
+    .select("color_theme, theme_mode, library_view_mode, updated_at")
     .eq("id", userId)
     .maybeSingle();
 
@@ -245,37 +252,70 @@ export const fetchThemePreferences = async (
       id: userId,
       color_theme: data.color_theme ?? null,
       theme_mode: data.theme_mode ?? null,
+      library_view_mode: (data.library_view_mode as LibraryViewMode | null) ?? "flat",
+      updated_at: data.updated_at ?? null,
     });
   }
-  return data ?? null;
+  return data
+    ? {
+        color_theme: data.color_theme ?? null,
+        theme_mode: data.theme_mode ?? null,
+        library_view_mode: (data.library_view_mode as LibraryViewMode | null) ?? "flat",
+      }
+    : null;
 };
 
 export const upsertThemePreferences = async (
   userId: string,
   preferences: Partial<ThemePreferences>
 ): Promise<void> => {
+  const updatedAt = new Date().toISOString();
+
   if (!navigator.onLine) {
+    const existing = await profilePreferencesRepo.get(userId);
+
     await profilePreferencesRepo.upsertLocal(userId, {
       id: userId,
-      color_theme: preferences.color_theme ?? null,
-      theme_mode: preferences.theme_mode ?? null,
-      updated_at: new Date().toISOString(),
+      color_theme:
+        preferences.color_theme !== undefined
+          ? preferences.color_theme
+          : existing?.color_theme ?? null,
+      theme_mode:
+        preferences.theme_mode !== undefined
+          ? preferences.theme_mode
+          : existing?.theme_mode ?? null,
+      library_view_mode:
+        preferences.library_view_mode !== undefined
+          ? preferences.library_view_mode
+          : existing?.library_view_mode ?? "flat",
+      updated_at: updatedAt,
     });
     return;
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("profiles")
     .upsert(
       {
         id: userId,
         ...preferences,
-        updated_at: new Date().toISOString(),
+        updated_at: updatedAt,
       },
       { onConflict: "id" }
-    );
+    )
+    .select("id, color_theme, theme_mode, library_view_mode, updated_at")
+    .single();
 
   if (error) throw error;
+  if (data) {
+    await profilePreferencesRepo.upsertRemote(userId, {
+      id: userId,
+      color_theme: data.color_theme ?? null,
+      theme_mode: data.theme_mode ?? null,
+      library_view_mode: (data.library_view_mode as LibraryViewMode | null) ?? "flat",
+      updated_at: data.updated_at ?? updatedAt,
+    });
+  }
 };
 
 export interface UserProfileTabData {

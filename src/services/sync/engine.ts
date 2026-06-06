@@ -57,6 +57,7 @@ const applyPulledRecords = async (userId: string, response: SyncPullResponse) =>
       id: preferences.id,
       color_theme: preferences.color_theme ?? null,
       theme_mode: preferences.theme_mode ?? null,
+      library_view_mode: preferences.library_view_mode ?? "flat",
       updated_at: preferences.updated_at ?? null,
     });
   }
@@ -115,11 +116,18 @@ const applyAcceptedRecord = async (userId: string, accepted: SyncPushAcceptedIte
       break;
     }
     case "profile_preferences": {
-      const preferences = accepted.record as { id: string; color_theme?: string | null; theme_mode?: string | null; updated_at?: string | null };
+      const preferences = accepted.record as {
+        id: string;
+        color_theme?: string | null;
+        theme_mode?: string | null;
+        library_view_mode?: "flat" | "bookshelf" | "carousel" | null;
+        updated_at?: string | null;
+      };
       await profilePreferencesRepo.upsertRemote(preferences.id || userId, {
         id: preferences.id || userId,
         color_theme: preferences.color_theme ?? null,
         theme_mode: preferences.theme_mode ?? null,
+        library_view_mode: preferences.library_view_mode ?? "flat",
         updated_at: preferences.updated_at ?? null,
       });
       break;

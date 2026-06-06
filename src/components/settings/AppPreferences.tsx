@@ -6,7 +6,7 @@ import { DarkModeToggle } from "@/components/DarkModeToggle";
 
 export const AppPreferences = () => {
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       <div>
         <h2 className="font-display text-2xl font-bold">App Preferences</h2>
         <p className="font-sans text-muted-foreground mt-1">
@@ -15,7 +15,7 @@ export const AppPreferences = () => {
       </div>
 
       {/* Theme */}
-      <Card>
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Palette className="h-5 w-5" />
@@ -25,8 +25,8 @@ export const AppPreferences = () => {
             Choose between light mode, dark mode, or follow your system preference
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
+        <CardContent className="min-w-0 space-y-6">
+          <div className="min-w-0">
             <Label className="text-sm font-medium mb-2 block">Theme Mode</Label>
             <DarkModeToggle />
           </div>

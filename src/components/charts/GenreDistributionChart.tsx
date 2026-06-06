@@ -1,118 +1,108 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { useMemo } from "react";
+import type { ApexOptions } from "apexcharts";
 import { APP_ICONS } from "@/config/iconography";
 import type { GenreData } from "@/hooks/useChartData";
+import { ApexChartCard, ApexChartFrame } from "./ApexChartCard";
+import { useApexTheme } from "./apexTheme";
 
 interface GenreDistributionChartProps {
   data: GenreData[];
 }
 
-const chartConfig = {
-  count: {
-    label: "Books",
-  },
-};
-
 export const GenreDistributionChart = ({ data }: GenreDistributionChartProps) => {
-  const totalBooks = data.reduce((sum, item) => sum + item.count, 0);
-  const topGenres = data.length;
+  const { baseOptions, colors, currentTheme, resolvedTheme } = useApexTheme();
+
+  const totalBooks = useMemo(
+    () => data.reduce((sum, item) => sum + item.count, 0),
+    [data]
+  );
+  const labels = useMemo(() => data.map((item) => item.genre), [data]);
+  const series = useMemo(() => data.map((item) => item.count), [data]);
+
+  const options = useMemo<ApexOptions>(
+    () => ({
+      ...baseOptions,
+      chart: {
+        ...baseOptions.chart,
+        type: "donut",
+      },
+      colors: data.map((_, index) => colors.chart[index % colors.chart.length]),
+      labels,
+      legend: {
+        ...baseOptions.legend,
+        position: "bottom",
+        horizontalAlign: "center",
+      },
+      plotOptions: {
+        pie: {
+          expandOnClick: false,
+          donut: {
+            size: "68%",
+            labels: {
+              show: true,
+              name: {
+                color: colors.mutedForeground,
+                fontFamily: "Inter, system-ui, sans-serif",
+                fontSize: "12px",
+              },
+              value: {
+                color: colors.foreground,
+                fontFamily: "Inter, system-ui, sans-serif",
+                fontSize: "26px",
+                fontWeight: 700,
+                formatter: (value) => `${value}`,
+              },
+              total: {
+                show: true,
+                label: "Books",
+                color: colors.mutedForeground,
+                fontFamily: "Inter, system-ui, sans-serif",
+                formatter: () => `${totalBooks}`,
+              },
+            },
+          },
+        },
+      },
+      stroke: {
+        colors: [colors.card],
+        width: 3,
+      },
+      tooltip: {
+        ...baseOptions.tooltip,
+        y: {
+          formatter: (value) => {
+            const share = totalBooks > 0 ? (Number(value) / totalBooks) * 100 : 0;
+            return `${value} books - ${share.toFixed(1)}%`;
+          },
+        },
+      },
+      responsive: [
+        {
+          breakpoint: 640,
+          options: {
+            legend: { show: false },
+            plotOptions: { pie: { donut: { size: "72%" } } },
+          },
+        },
+      ],
+    }),
+    [baseOptions, colors, data, labels, totalBooks]
+  );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center text-base md:text-lg">
-          <APP_ICONS.analytics.favoriteGenre className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-          Books by Genre
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-2 sm:px-6">
-        <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={90}
-                paddingAngle={2}
-                dataKey="count"
-                animationDuration={750}
-              >
-                {data.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.color}
-                    stroke="hsl(var(--background))"
-                    strokeWidth={2}
-                  />
-                ))}
-              </Pie>
-              {/* Center stats */}
-              <text
-                x="50%"
-                y="45%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="font-sans text-2xl md:text-3xl font-bold fill-foreground"
-              >
-                {totalBooks}
-              </text>
-              <text
-                x="50%"
-                y="55%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="font-sans text-xs md:text-sm fill-muted-foreground"
-              >
-                Total Books
-              </text>
-              <text
-                x="50%"
-                y="65%"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="font-sans text-xs fill-muted-foreground"
-              >
-                {topGenres} Genres
-              </text>
-              <ChartTooltip 
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    const data = payload[0].payload;
-                    const percentage = ((data.count / totalBooks) * 100).toFixed(1);
-                    return (
-                      <div className="rounded-lg border bg-background p-3 shadow-lg">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <div 
-                              className="w-3 h-3 rounded-full" 
-                              style={{ backgroundColor: data.color }}
-                            />
-                            <span className="font-sans font-semibold text-sm">
-                              {data.genre}
-                            </span>
-                          </div>
-                          <div className="font-sans flex justify-between gap-4 text-xs">
-                            <span className="text-muted-foreground">Books:</span>
-                            <span className="font-bold">{data.count}</span>
-                          </div>
-                          <div className="font-sans flex justify-between gap-4 text-xs">
-                            <span className="text-muted-foreground">Share:</span>
-                            <span className="font-bold">{percentage}%</span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+    <ApexChartCard
+      title="Books by Genre"
+      subtitle={`${totalBooks} books across ${data.length} genres`}
+      icon={<APP_ICONS.analytics.favoriteGenre className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
+    >
+      <ApexChartFrame
+        chartKey={`genre-distribution-${currentTheme}-${resolvedTheme}`}
+        options={options}
+        series={series}
+        type="donut"
+        height={320}
+      />
+    </ApexChartCard>
   );
 };
+

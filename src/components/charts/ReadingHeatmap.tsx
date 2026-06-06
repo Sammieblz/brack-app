@@ -1,11 +1,9 @@
-import { Suspense, lazy, useMemo } from "react";
+import { useMemo } from "react";
 import type { ApexOptions } from "apexcharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { APP_ICONS } from "@/config/iconography";
-import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
-
-const ApexChart = lazy(() => import("react-apexcharts"));
+import { ApexChartCard, ApexChartFrame } from "./ApexChartCard";
+import { formatChartMinutes, useApexTheme } from "./apexTheme";
 
 interface HeatmapData {
   date: string;
@@ -52,13 +50,6 @@ const formatTooltipDate = (dateKey: string) =>
     year: "numeric",
   });
 
-const formatMinutes = (minutes: number) => {
-  if (minutes < 60) return `${minutes} min`;
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
-};
-
 export const ReadingHeatmap = ({
   data,
   title = "Reading Activity Heatmap",
@@ -67,7 +58,7 @@ export const ReadingHeatmap = ({
   compact = false,
   className,
 }: ReadingHeatmapProps) => {
-  const { currentTheme, resolvedTheme } = useTheme();
+  const { baseOptions, colors, currentTheme, resolvedTheme } = useApexTheme();
 
   const { series, maxValue, totalMinutes } = useMemo(() => {
     const valueByDate = new Map(data.map((item) => [item.date, item.value]));
@@ -116,19 +107,10 @@ export const ReadingHeatmap = ({
     const high = Math.max(medium + 1, Math.ceil(maxValue * 0.75));
 
     return {
+      ...baseOptions,
       chart: {
+        ...baseOptions.chart,
         type: "heatmap",
-        background: "transparent",
-        toolbar: { show: false },
-        animations: {
-          enabled: true,
-          speed: 350,
-        },
-        fontFamily: "Inter, system-ui, sans-serif",
-        foreColor: "hsl(var(--muted-foreground))",
-      },
-      theme: {
-        mode: resolvedTheme === "dark" ? "dark" : "light",
       },
       dataLabels: {
         enabled: false,
@@ -143,18 +125,10 @@ export const ReadingHeatmap = ({
         },
       },
       legend: {
+        ...baseOptions.legend,
         show: true,
         position: "bottom",
         horizontalAlign: "center",
-        fontFamily: "Inter, system-ui, sans-serif",
-        labels: {
-          colors: "hsl(var(--muted-foreground))",
-        },
-        markers: {
-          width: 10,
-          height: 10,
-          radius: 3,
-        },
       },
       plotOptions: {
         heatmap: {
@@ -166,32 +140,32 @@ export const ReadingHeatmap = ({
                 from: 0,
                 to: 0,
                 name: "None",
-                color: "hsl(var(--muted) / 0.45)",
-                foreColor: "hsl(var(--muted-foreground))",
+                color: colors.mutedSoft,
+                foreColor: colors.mutedForeground,
               },
               {
                 from: 1,
                 to: low,
                 name: "Light",
-                color: "hsl(var(--primary) / 0.28)",
+                color: colors.chart[0],
               },
               {
                 from: low + 1,
                 to: medium,
                 name: "Steady",
-                color: "hsl(var(--primary) / 0.5)",
+                color: colors.chart[1],
               },
               {
                 from: medium + 1,
                 to: high,
                 name: "Strong",
-                color: "hsl(var(--primary) / 0.72)",
+                color: colors.chart[2],
               },
               {
                 from: high + 1,
                 to: Math.max(high + 1, maxValue),
                 name: "Deep",
-                color: "hsl(var(--primary))",
+                color: colors.primary,
               },
             ],
           },
@@ -199,18 +173,18 @@ export const ReadingHeatmap = ({
       },
       stroke: {
         width: 3,
-        colors: ["hsl(var(--card))"],
+        colors: [colors.card],
       },
       tooltip: {
-        theme: resolvedTheme === "dark" ? "dark" : "light",
+        ...baseOptions.tooltip,
         custom: ({ seriesIndex, dataPointIndex }) => {
           const point = series[seriesIndex]?.data[dataPointIndex] as HeatmapPoint | undefined;
           if (!point) return "";
 
           return `
-            <div style="border: 1px solid hsl(var(--border)); border-radius: 0.375rem; background: hsl(var(--popover)); color: hsl(var(--popover-foreground)); padding: 0.5rem 0.75rem; box-shadow: 0 10px 30px hsl(var(--foreground) / 0.14);">
+            <div style="border: 1px solid ${colors.border}; border-radius: 0.375rem; background: ${colors.popover}; color: ${colors.popoverForeground}; padding: 0.5rem 0.75rem; box-shadow: 0 10px 30px rgba(0,0,0,0.14);">
               <div style="font-family: Inter, system-ui, sans-serif; font-size: 0.75rem; font-weight: 600;">${formatTooltipDate(point.date)}</div>
-              <div style="font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 700;">${formatMinutes(point.y)}</div>
+              <div style="font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 700;">${formatChartMinutes(point.y)}</div>
             </div>
           `;
         },
@@ -221,7 +195,7 @@ export const ReadingHeatmap = ({
           rotate: -35,
           trim: false,
           style: {
-            colors: "hsl(var(--muted-foreground))",
+            colors: colors.mutedForeground,
             fontFamily: "Inter, system-ui, sans-serif",
             fontSize: "11px",
           },
@@ -233,7 +207,7 @@ export const ReadingHeatmap = ({
       yaxis: {
         labels: {
           style: {
-            colors: "hsl(var(--muted-foreground))",
+            colors: colors.mutedForeground,
             fontFamily: "Inter, system-ui, sans-serif",
             fontSize: "11px",
           },
@@ -253,52 +227,30 @@ export const ReadingHeatmap = ({
         },
       },
     };
-  }, [maxValue, resolvedTheme, series]);
+  }, [baseOptions, colors, maxValue, series]);
 
   if (!data || data.length === 0) {
     return null;
   }
 
   return (
-    <Card className={className}>
-      <CardHeader className={cn(compact && "pb-2")}>
-        <CardTitle className="flex items-center text-base md:text-lg">
-          <APP_ICONS.dashboard.today className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-          {title}
-        </CardTitle>
-        {!compact && (
-          <p className="font-sans text-sm text-muted-foreground">
-            {subtitle} - {formatMinutes(totalMinutes)} total
-          </p>
-        )}
-      </CardHeader>
-      <CardContent className="px-2 sm:px-6">
-        <div className="native-scroll overflow-x-auto">
-          <div className="min-w-[44rem] md:min-w-0">
-            <Suspense
-              fallback={
-                <div
-                  className={cn(
-                    "flex items-center justify-center rounded-md bg-muted/35 text-sm text-muted-foreground",
-                    compact ? "h-[260px]" : "h-[340px]"
-                  )}
-                >
-                  Loading heatmap...
-                </div>
-              }
-            >
-              <ApexChart
-                key={`${currentTheme}-${resolvedTheme}-${weeks}-${compact ? "compact" : "full"}`}
-                options={options}
-                series={series}
-                type="heatmap"
-                height={compact ? 260 : 340}
-                width="100%"
-              />
-            </Suspense>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <ApexChartCard
+      className={className}
+      compact={compact}
+      title={title}
+      subtitle={!compact ? `${subtitle} - ${formatChartMinutes(totalMinutes)} total` : undefined}
+      icon={<APP_ICONS.dashboard.today className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
+    >
+      <ApexChartFrame
+        chartKey={`${currentTheme}-${resolvedTheme}-${weeks}-${compact ? "compact" : "full"}`}
+        options={options}
+        series={series}
+        type="heatmap"
+        height={compact ? 260 : 340}
+        minWidth={compact ? 600 : 704}
+        fallbackLabel="Loading heatmap..."
+        className={cn(compact && "md:overflow-x-visible")}
+      />
+    </ApexChartCard>
   );
 };

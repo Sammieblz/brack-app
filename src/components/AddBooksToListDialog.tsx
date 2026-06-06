@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { type ReactNode, useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,9 +12,10 @@ interface AddBooksToListDialogProps {
   listId: string;
   userId: string;
   onBooksAdded?: () => void;
+  trigger?: ReactNode;
 }
 
-export const AddBooksToListDialog = ({ listId, userId, onBooksAdded }: AddBooksToListDialogProps) => {
+export const AddBooksToListDialog = ({ listId, userId, onBooksAdded, trigger }: AddBooksToListDialogProps) => {
   const { books } = useBooks(userId);
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -80,10 +81,12 @@ export const AddBooksToListDialog = ({ listId, userId, onBooksAdded }: AddBooksT
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Books
-        </Button>
+        {trigger || (
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Books
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>

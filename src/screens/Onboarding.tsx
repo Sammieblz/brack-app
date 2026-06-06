@@ -22,6 +22,7 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { TimePicker } from "@/components/ui/time-picker";
+import { ThemePaletteCarousel } from "@/components/ThemePaletteCarousel";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -726,117 +727,12 @@ const PaletteStep = ({
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 md:max-h-[22rem] md:overflow-y-auto md:overscroll-contain md:pr-1 lg:max-h-[24rem] xl:max-h-[31rem]">
-        {themes.map((theme) => {
-          const selected = selectedTheme === theme.id;
-          const previewColors = theme.colors[previewMode];
-
-          return (
-            <button
-              key={theme.id}
-              type="button"
-              onClick={() => void onSelectTheme(theme.id)}
-              className={cn(
-                "group relative overflow-hidden rounded-lg border p-3 text-left transition-all hover:-translate-y-0.5 hover:border-primary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                selected ? "border-primary bg-primary/10 shadow-sm" : "border-border bg-background/80",
-              )}
-            >
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div>
-                  <p className="font-sans text-sm font-semibold">{theme.name}</p>
-                  <p className="font-sans text-xs text-muted-foreground">
-                    {theme.id === "default" ? "Brack classic" : "Custom app color"}
-                  </p>
-                </div>
-                <span
-                  className={cn(
-                    "flex h-7 w-7 items-center justify-center rounded-full border transition-transform group-hover:scale-110",
-                    selected ? "border-primary bg-primary text-primary-foreground" : "border-border bg-muted",
-                  )}
-                >
-                  {selected && <Check className="h-4 w-4" />}
-                </span>
-              </div>
-
-              <div className="mb-3 grid grid-cols-4 gap-1.5">
-                {theme.preview.map((color) => (
-                  <span
-                    key={color}
-                    className="h-5 rounded-sm border border-black/5 shadow-sm"
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-              </div>
-
-              <div
-                className="overflow-hidden rounded-md border shadow-sm"
-                style={{
-                  backgroundColor: `hsl(${previewColors.background})`,
-                  borderColor: `hsl(${previewColors.border})`,
-                  color: `hsl(${previewColors.foreground})`,
-                }}
-              >
-                <div
-                  className="flex h-5 items-center gap-1 border-b px-2"
-                  style={{
-                    backgroundColor: `hsl(${previewColors.card})`,
-                    borderColor: `hsl(${previewColors.border})`,
-                  }}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: theme.preview[0] }} />
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: theme.preview[1] }} />
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: theme.preview[2] }} />
-                  <span
-                    className="ml-auto h-1.5 w-10 rounded-full"
-                    style={{ backgroundColor: `hsl(${previewColors.muted})` }}
-                  />
-                </div>
-                <div className="grid grid-cols-[2rem_minmax(0,1fr)]">
-                  <div
-                    className="space-y-1.5 border-r p-1.5"
-                    style={{
-                      backgroundColor: `hsl(${previewColors.muted})`,
-                      borderColor: `hsl(${previewColors.border})`,
-                    }}
-                  >
-                    <span
-                      className="block h-4 rounded-sm"
-                      style={{ backgroundColor: `hsl(${previewColors.primary})` }}
-                    />
-                    <span
-                      className="block h-4 rounded-sm opacity-65"
-                      style={{ backgroundColor: `hsl(${previewColors.card})` }}
-                    />
-                    <span
-                      className="block h-4 rounded-sm opacity-65"
-                      style={{ backgroundColor: `hsl(${previewColors.card})` }}
-                    />
-                  </div>
-                  <div className="space-y-2 p-2">
-                    <span
-                      className="block h-2 w-3/5 rounded-full"
-                      style={{ backgroundColor: `hsl(${previewColors.primary})` }}
-                    />
-                    <span
-                      className="block h-2 w-full rounded-full"
-                      style={{ backgroundColor: `hsl(${previewColors.muted})` }}
-                    />
-                    <span
-                      className="block h-2 w-4/5 rounded-full"
-                      style={{ backgroundColor: `hsl(${previewColors.secondary})` }}
-                    />
-                    <div className="grid grid-cols-3 gap-1.5 pt-1">
-                      <span className="h-7 rounded-sm" style={{ backgroundColor: theme.preview[0] }} />
-                      <span className="h-7 rounded-sm" style={{ backgroundColor: theme.preview[1] }} />
-                      <span className="h-7 rounded-sm" style={{ backgroundColor: theme.preview[2] }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+      <ThemePaletteCarousel
+        selectedTheme={selectedTheme}
+        previewMode={previewMode}
+        onSelectTheme={onSelectTheme}
+        ariaLabel="Onboarding theme palette options"
+      />
     </div>
 
     <div className="rounded-lg bg-muted/30 p-4">

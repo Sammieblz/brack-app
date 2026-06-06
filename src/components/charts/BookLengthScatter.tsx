@@ -1,7 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Scatter, ScatterChart, CartesianGrid, XAxis, YAxis, Cell } from "recharts";
+import { useMemo } from "react";
+import type { ApexOptions } from "apexcharts";
 import { APP_ICONS } from "@/config/iconography";
+import { ApexChartCard, ApexChartFrame } from "./ApexChartCard";
+import { useApexTheme } from "./apexTheme";
 
 interface ScatterData {
   pages: number;
@@ -13,82 +14,107 @@ interface BookLengthScatterProps {
   data: ScatterData[];
 }
 
-const chartConfig = {
-  completionDays: {
-    label: "Days to Complete",
-    color: "hsl(var(--chart-3))",
-  },
-};
-
 export const BookLengthScatter = ({ data }: BookLengthScatterProps) => {
-  if (!data || data.length === 0) {
-    return null;
-  }
+  const { baseOptions, colors, currentTheme, resolvedTheme } = useApexTheme();
+
+  const series = useMemo(
+    () => [
+      {
+        name: "Books",
+        data: data.map((item) => ({
+          x: item.pages,
+          y: item.completionDays,
+          title: item.title,
+        })),
+      },
+    ],
+    [data]
+  );
+
+  const options = useMemo<ApexOptions>(
+    () => ({
+      ...baseOptions,
+      chart: {
+        ...baseOptions.chart,
+        type: "scatter",
+      },
+      colors: [colors.chart[2]],
+      markers: {
+        size: 6,
+        strokeColors: colors.card,
+        strokeWidth: 2,
+        hover: { size: 8 },
+      },
+      tooltip: {
+        ...baseOptions.tooltip,
+        custom: ({ seriesIndex, dataPointIndex, w }) => {
+          const point = w.config.series?.[seriesIndex]?.data?.[dataPointIndex] as
+            | { x: number; y: number; title?: string }
+            | undefined;
+          if (!point) return "";
+
+          return `
+            <div class="apexcharts-tooltip-title">${point.title || "Book"}</div>
+            <div style="padding: 8px 10px;">
+              <div><strong>${point.x}</strong> pages</div>
+              <div style="color:${colors.mutedForeground};">${point.y} days to complete</div>
+            </div>
+          `;
+        },
+      },
+      xaxis: {
+        ...baseOptions.xaxis,
+        type: "numeric",
+        title: {
+          text: "Pages",
+          style: { color: colors.mutedForeground },
+        },
+        labels: {
+          style: { colors: colors.mutedForeground },
+          formatter: (value) => `${Math.round(Number(value))}`,
+        },
+      },
+      yaxis: {
+        ...baseOptions.yaxis,
+        title: {
+          text: "Days",
+          style: { color: colors.mutedForeground },
+        },
+        labels: {
+          style: { colors: colors.mutedForeground },
+          formatter: (value) => `${Math.round(value)}`,
+        },
+      },
+      responsive: [
+        {
+          breakpoint: 640,
+          options: {
+            xaxis: { title: { text: undefined } },
+            yaxis: { title: { text: undefined } },
+          },
+        },
+      ],
+    }),
+    [baseOptions, colors]
+  );
+
+  if (!data || data.length === 0) return null;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center text-base md:text-lg">
-          <APP_ICONS.stats.longestBook className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-          Book Length vs Completion Time
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-2 sm:px-6">
-        <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px] w-full">
-          <ScatterChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.2)" />
-            <XAxis 
-              type="number"
-              dataKey="pages" 
-              name="Pages"
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={11}
-              tick={{ fontSize: 11 }}
-              label={{ value: 'Pages', position: 'insideBottom', offset: -5, style: { fontFamily: 'Inter, system-ui, sans-serif' } }}
-            />
-            <YAxis 
-              type="number"
-              dataKey="completionDays" 
-              name="Days"
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={11}
-              tick={{ fontSize: 11 }}
-              width={40}
-              label={{ value: 'Days', angle: -90, position: 'insideLeft', style: { fontFamily: 'Inter, system-ui, sans-serif' } }}
-            />
-            <ChartTooltip 
-              content={({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  const data = payload[0].payload as ScatterData;
-                  return (
-                    <div className="rounded-lg border bg-background p-3 shadow-lg">
-                      <div className="space-y-1">
-                        <div className="font-serif font-semibold text-sm">{data.title}</div>
-                        <div className="font-sans text-xs text-muted-foreground">
-                          {data.pages} pages
-                        </div>
-                        <div className="font-sans text-xs text-muted-foreground">
-                          {data.completionDays} days to complete
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-                return null;
-              }}
-              cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
-            />
-            <Scatter
-              dataKey="completionDays"
-              fill="hsl(var(--chart-3))"
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill="hsl(var(--chart-3))" />
-              ))}
-            </Scatter>
-          </ScatterChart>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+    <ApexChartCard
+      title="Book Length vs Completion"
+      subtitle="How page count affects your finish time"
+      icon={<APP_ICONS.stats.longestBook className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
+    >
+      <ApexChartFrame
+        chartKey={`book-length-scatter-${currentTheme}-${resolvedTheme}`}
+        options={options}
+        series={series}
+        type="scatter"
+        height={320}
+        minWidth={500}
+      />
+    </ApexChartCard>
   );
 };
+

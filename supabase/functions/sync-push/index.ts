@@ -291,7 +291,7 @@ const processProfilePreferences = async (supabaseClient: SupabaseClient, userId:
     .from("profiles")
     .update(updates)
     .eq("id", userId)
-    .select("id, color_theme, theme_mode, updated_at")
+    .select("id, color_theme, theme_mode, library_view_mode, updated_at")
     .single();
   if (error) throw error;
   return { server_entity_id: data.id, record: data };

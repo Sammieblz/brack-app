@@ -146,7 +146,7 @@ Brack uses modern, production-ready technologies for web and mobile development.
 | Library | Purpose |
 |---------|---------|
 | iconoir-react | Icon system (1000+ icons) |
-| recharts | Data visualization |
+| apexcharts / react-apexcharts | Data visualization |
 | date-fns | Date formatting |
 | embla-carousel-react | Carousels |
 | react-day-picker | Date picker |

@@ -257,12 +257,13 @@ const Dashboard = () => {
             </div>
           </section>
 
-          <section className="space-y-4">
+          <section className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <SwipeableBookListsCarousel />
             <RecentActivityCard
               activities={activities}
               loading={activitiesLoading}
               formatTimeAgo={formatTimeAgo}
+              onViewHistory={() => navigate("/history")}
             />
           </section>
         </NativeScrollView>
@@ -821,25 +822,47 @@ const AchievementsPreview = ({
 };
 
 interface RecentActivityCardProps {
-  activities: Array<{ id: string; description: string; timestamp: string }>;
+  activities: Array<{ id: string; type?: string; description: string; timestamp: string; book_title?: string }>;
   loading: boolean;
   formatTimeAgo: (timestamp: string) => string;
+  onViewHistory: () => void;
 }
 
 const RecentActivityCard = ({
   activities,
   loading,
   formatTimeAgo,
+  onViewHistory,
 }: RecentActivityCardProps) => {
+  const visibleActivities = activities.slice(0, 5);
+  const latestActivity = visibleActivities[0];
+
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="font-display flex items-center text-base md:text-lg">
-          <APP_ICONS.dashboard.recentActivity className="mr-2 h-5 w-5 text-primary" />
-          Recent Activity
-        </CardTitle>
+    <Card className="h-full overflow-hidden">
+      <CardHeader className="border-b border-border/55 pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+              <APP_ICONS.dashboard.recentActivity className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <CardTitle className="font-display text-base md:text-lg">
+                Recent Activity
+              </CardTitle>
+              <p className="font-sans text-sm text-muted-foreground">
+                {latestActivity
+                  ? `Latest update ${formatTimeAgo(latestActivity.timestamp)}`
+                  : "Your reading trail will appear here"}
+              </p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={onViewHistory} className="shrink-0 rounded-full">
+            History
+            <NavArrowRight className="ml-1 h-4 w-4" />
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         {loading ? (
           <div className="space-y-3">
             <ActivityItemSkeleton />
@@ -847,30 +870,63 @@ const RecentActivityCard = ({
             <ActivityItemSkeleton />
           </div>
         ) : activities.length === 0 ? (
-          <div className="py-6 text-center">
-            <APP_ICONS.dashboard.recentActivity className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
-            <p className="font-sans text-sm text-muted-foreground">
+          <div className="rounded-xl border border-dashed border-border/70 bg-background/45 px-4 py-8 text-center">
+            <APP_ICONS.dashboard.recentActivity className="mx-auto mb-3 h-10 w-10 text-primary/70" />
+            <p className="font-display text-base font-semibold">No activity yet</p>
+            <p className="font-sans mt-1 text-sm text-muted-foreground">
               Start reading to see your progress here.
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {activities.slice(0, 5).map((activity) => (
-              <div key={activity.id} className="font-sans flex items-center gap-3 text-sm">
-                <div className="h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
-                <span className="min-w-0 flex-1 truncate text-muted-foreground">
-                  {activity.description}
-                </span>
-                <span className="whitespace-nowrap text-xs text-muted-foreground">
-                  {formatTimeAgo(activity.timestamp)}
-                </span>
-              </div>
+          <ol className="relative space-y-1">
+            {visibleActivities.map((activity, index) => (
+              <li
+                key={activity.id}
+                className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-3"
+              >
+                <div className="relative flex justify-center">
+                  {index < visibleActivities.length - 1 && (
+                    <span className="absolute bottom-0 top-8 w-px bg-border" aria-hidden="true" />
+                  )}
+                  <span className="z-10 grid h-8 w-8 place-items-center rounded-full border border-border/70 bg-card text-primary shadow-sm">
+                    <ActivityIcon type={activity.type} />
+                  </span>
+                </div>
+                <div className="rounded-xl px-1 pb-4">
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <p className="font-sans text-sm leading-relaxed text-foreground">
+                      {activity.description}
+                    </p>
+                    <span className="whitespace-nowrap rounded-full bg-muted px-2 py-0.5 font-sans text-[11px] text-muted-foreground">
+                      {formatTimeAgo(activity.timestamp)}
+                    </span>
+                  </div>
+                  {activity.book_title && (
+                    <p className="mt-1 truncate font-serif text-xs text-muted-foreground">
+                      {activity.book_title}
+                    </p>
+                  )}
+                </div>
+              </li>
             ))}
-          </div>
+          </ol>
         )}
       </CardContent>
     </Card>
   );
+};
+
+const ActivityIcon = ({ type }: { type?: string }) => {
+  const Icon =
+    type === "goal_set"
+      ? APP_ICONS.dashboard.goal
+      : type === "book_completed"
+      ? APP_ICONS.stats.completed
+      : type === "book_started"
+      ? APP_ICONS.dashboard.continueReading
+      : APP_ICONS.dashboard.recentActivity;
+
+  return <Icon className="h-4 w-4" />;
 };
 
 interface SectionHeaderProps {
