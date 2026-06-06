@@ -1,6 +1,6 @@
 import { type CSSProperties, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, Drag, Plus } from "iconoir-react";
+import { Drag, Plus } from "iconoir-react";
 import { gsap } from "gsap";
 import {
   closestCenter,
@@ -22,6 +22,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import { LibraryBookshelfSelection } from "@/components/library/LibraryBookshelfSelection";
 import { LibraryStatusBadge } from "@/components/library/LibraryBookActions";
+import { Checkbox } from "@/components/ui/checkbox";
 import { APP_ICONS } from "@/config/iconography";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { cn } from "@/lib/utils";
@@ -109,10 +110,17 @@ const SortableShelfBook = ({
     zIndex: isDragging ? 40 : undefined,
   } as CSSProperties;
 
+  const handleActivate = () => {
+    if (selectMode) {
+      onToggleSelect?.(book.id);
+      return;
+    }
+    if (!reorderMode) onSelect(book);
+  };
+
   return (
-    <button
+    <div
       ref={setNodeRef}
-      type="button"
       className={cn(
         "library-shelf-book group",
         highlighted && "library-shelf-book-highlighted",
@@ -122,12 +130,12 @@ const SortableShelfBook = ({
         isDragging && "library-shelf-book-dragging"
       )}
       style={bookStyle}
-      onClick={() => {
-        if (selectMode) {
-          onToggleSelect?.(book.id);
-          return;
-        }
-        if (!reorderMode) onSelect(book);
+      onClick={handleActivate}
+      onKeyDown={(event) => {
+        if (reorderMode) return;
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        handleActivate();
       }}
       onMouseEnter={(event) => {
         if (!reorderMode && !selectMode) animateBook(event.currentTarget, true);
@@ -143,7 +151,7 @@ const SortableShelfBook = ({
       }}
       aria-label={selectMode ? `Select ${book.title}` : reorderMode ? `Move ${book.title}` : `Open ${book.title}`}
       aria-pressed={selectMode ? selected : undefined}
-      {...(reorderMode ? attributes : {})}
+      {...(reorderMode ? attributes : { role: "button", tabIndex: 0 })}
       {...(reorderMode ? listeners : {})}
     >
       <span className="library-shelf-book-shadow" aria-hidden="true" />
@@ -152,12 +160,20 @@ const SortableShelfBook = ({
           <Drag className="h-3.5 w-3.5" />
         </span>
       )}
-      {selectMode && (
-        <span className="library-shelf-select-indicator" aria-hidden="true">
-          <CheckCircle className="h-4 w-4" />
-        </span>
-      )}
       <span className="library-shelf-cover">
+        {selectMode && (
+          <span
+            className="library-shelf-select-checkbox"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <Checkbox
+              checked={selected}
+              onCheckedChange={() => onToggleSelect?.(book.id)}
+              aria-label={`Select ${book.title}`}
+              className="h-5 w-5 rounded-full"
+            />
+          </span>
+        )}
         <span className="library-shelf-cover-pages" aria-hidden="true" />
         <span className="library-shelf-cover-face">
           {book.cover_url ? (
@@ -184,7 +200,7 @@ const SortableShelfBook = ({
       <span className="mt-2 line-clamp-2 font-serif text-xs font-semibold text-foreground transition-colors group-hover:text-primary">
         {book.title}
       </span>
-    </button>
+    </div>
   );
 };
 

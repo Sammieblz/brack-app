@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { CheckCircle } from "iconoir-react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Carousel,
   CarouselContent,
@@ -14,6 +13,7 @@ import {
   LibraryStatusBadge,
 } from "@/components/library/LibraryBookActions";
 import { LibraryPhysicalBookCover } from "@/components/library/LibraryPhysicalBookCover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { getProgressPercentage } from "@/utils/bookProgress";
@@ -45,7 +45,7 @@ export const LibraryCarouselView = ({
   const [api, setApi] = useState<CarouselApi>();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const selectedBookIdSet = new Set(selectedBookIds);
+  const selectedBookIdSet = useMemo(() => new Set(selectedBookIds), [selectedBookIds]);
 
   useEffect(() => {
     if (!api) return;
@@ -94,12 +94,17 @@ export const LibraryCarouselView = ({
                     {selectMode && (
                       <span
                         className={cn(
-                          "absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border/70 bg-background/90 text-muted-foreground shadow-sm transition-colors",
-                          selectedForBulk && "border-primary bg-primary text-primary-foreground"
+                          "absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-border/75 bg-background/95 shadow-sm backdrop-blur transition-colors",
+                          selectedForBulk && "border-primary bg-primary/10"
                         )}
-                        aria-hidden="true"
+                        onClick={(event) => event.stopPropagation()}
                       >
-                        <CheckCircle className="h-5 w-5" />
+                        <Checkbox
+                          checked={selectedForBulk}
+                          onCheckedChange={() => onToggleSelect?.(book.id)}
+                          aria-label={`Select ${book.title}`}
+                          className="h-5 w-5 rounded-full"
+                        />
                       </span>
                     )}
                     <button

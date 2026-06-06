@@ -7,14 +7,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
 import { EmptyBooks } from "@/components/empty/EmptyBooks";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
@@ -28,6 +20,7 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { SwipeableBookCard } from "@/components/SwipeableBookCard";
 import { MobileAlertDialog } from "@/components/ui/mobile-dialog";
 import { useAuth } from "@/hooks/useAuth";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { useBooks } from "@/hooks/useBooks";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -113,6 +106,7 @@ const sortBooks = (books: Book[], sortKey: SortKey) => {
 const MyBooks = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const { width } = useBreakpoint();
   const {
     books,
     loading,
@@ -137,7 +131,6 @@ const MyBooks = () => {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedBookIds, setSelectedBookIds] = useState<string[]>([]);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
 
   const loadMoreRef = useInfiniteScroll({
@@ -232,6 +225,7 @@ const MyBooks = () => {
   }, [books, genreFilters, searchQuery, sortKey, statusFilter]);
 
   const selectedBookIdSet = useMemo(() => new Set(selectedBookIds), [selectedBookIds]);
+  const compactToolbar = width < 1280;
   const allVisibleSelected =
     filteredBooks.length > 0 && filteredBooks.every((book) => selectedBookIdSet.has(book.id));
 
@@ -604,67 +598,130 @@ const MyBooks = () => {
     </div>
   );
 
-  const renderFilterSheet = () => (
-    <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
-      <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="rounded-full">
-          <APP_ICONS.library.filter className="mr-2 h-4 w-4" />
-          Filters
-          {genreFilters.length > 0 && (
-            <span className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] text-primary-foreground">
-              {genreFilters.length}
-            </span>
-          )}
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-2xl">
-        <SheetHeader>
-          <SheetTitle>Library filters</SheetTitle>
-          <SheetDescription>Refine by status, genre, and sort order.</SheetDescription>
-        </SheetHeader>
-        <div className="mt-5 space-y-5">
-          <section className="space-y-2">
-            <h3 className="font-sans text-sm font-semibold">Status</h3>
-            {renderStatusControls(true)}
-          </section>
-
-          <section className="space-y-2">
-            <h3 className="font-sans text-sm font-semibold">Genres</h3>
-            {renderGenreFilters()}
-          </section>
-
-          <section className="space-y-2">
-            <h3 className="font-sans text-sm font-semibold">Sort</h3>
-            <Select
-              value={sortKey}
-              onValueChange={(value) => {
-                clearSelectionForContextChange();
-                setSortKey(value as SortKey);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {sortOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </section>
-
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" onClick={clearFilters} disabled={!hasActiveFilters}>
-              Clear
-            </Button>
-            <Button onClick={() => setFiltersOpen(false)}>Apply</Button>
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+  const renderSortSelect = (className = "h-11 w-full rounded-full") => (
+    <Select
+      value={sortKey}
+      onValueChange={(value) => {
+        clearSelectionForContextChange();
+        setSortKey(value as SortKey);
+      }}
+    >
+      <SelectTrigger className={className}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {sortOptions.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
+
+  const renderCompactControls = () => {
+    const activeCount =
+      (viewMode !== "flat" ? 1 : 0) +
+      (reorderMode ? 1 : 0) +
+      (selectMode ? 1 : 0) +
+      (sortKey !== defaultSortKey ? 1 : 0) +
+      genreFilters.length;
+
+    return (
+      <Collapsible open={advancedFiltersOpen} onOpenChange={setAdvancedFiltersOpen}>
+        <CollapsibleTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-[46px] w-full justify-between rounded-xl px-3 text-left"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <APP_ICONS.library.filter className="h-4 w-4 shrink-0" />
+              <span className="min-w-0">
+                <span className="block font-sans text-sm font-semibold">Library controls</span>
+                <span className="block truncate font-sans text-xs text-muted-foreground">
+                  {VIEW_OPTIONS.find((option) => option.value === viewMode)?.label.replace(" view", "")} ·{" "}
+                  {sortOptions.find((option) => option.value === sortKey)?.label}
+                </span>
+              </span>
+            </span>
+            <span className="flex shrink-0 items-center gap-2">
+              {activeCount > 0 && (
+                <span className="rounded-full bg-primary px-2 py-0.5 font-sans text-[11px] font-semibold text-primary-foreground">
+                  {activeCount}
+                </span>
+              )}
+              <NavArrowDown
+                className={cn(
+                  "h-4 w-4 text-muted-foreground transition-transform",
+                  advancedFiltersOpen && "rotate-180"
+                )}
+              />
+            </span>
+          </Button>
+        </CollapsibleTrigger>
+
+        <CollapsibleContent className="pt-3 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+          <div className="grid gap-4 rounded-xl border border-border/55 bg-background/45 p-3">
+            <section className="space-y-2">
+              <h3 className="font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                View
+              </h3>
+              {renderViewSwitcher()}
+            </section>
+
+            <section className="space-y-2">
+              <h3 className="font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Actions
+              </h3>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                {renderReorderControl()}
+                {renderSelectControl()}
+              </div>
+            </section>
+
+            <section className="space-y-2">
+              <h3 className="font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Sort
+              </h3>
+              {renderSortSelect()}
+            </section>
+
+            <section className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Genres
+                </h3>
+                {genreFilters.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setGenreFilters([])}
+                    className="h-7 px-2 text-xs"
+                  >
+                    Clear genres
+                  </Button>
+                )}
+              </div>
+              {renderGenreFilters()}
+            </section>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={clearFilters}
+              disabled={!hasActiveFilters}
+              className="rounded-full"
+            >
+              Clear filters
+            </Button>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    );
+  };
 
   const renderSummaryChips = () => {
     const chips = [
@@ -750,7 +807,7 @@ const MyBooks = () => {
 
   const renderToolbar = () => (
     <div className="space-y-3 rounded-xl border border-border/60 bg-card/60 p-3">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+      <div className={cn("flex flex-col gap-3", !compactToolbar && "xl:flex-row xl:items-center")}>
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -778,36 +835,12 @@ const MyBooks = () => {
           )}
         </div>
 
-        {isMobile ? (
-          <div className="flex items-center justify-between gap-2">
-            {renderViewSwitcher()}
-            {renderReorderControl()}
-            {renderSelectControl()}
-            {renderFilterSheet()}
-          </div>
-        ) : (
+        {!compactToolbar && (
           <div className="flex items-center gap-2">
             {renderViewSwitcher()}
             {renderReorderControl()}
             {renderSelectControl()}
-            <Select
-              value={sortKey}
-              onValueChange={(value) => {
-                clearSelectionForContextChange();
-                setSortKey(value as SortKey);
-              }}
-            >
-              <SelectTrigger className="h-11 w-[180px] rounded-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {sortOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {renderSortSelect("h-11 w-[180px] rounded-full")}
             <Button variant="outline" size="sm" onClick={clearFilters} disabled={!hasActiveFilters}>
               Clear
             </Button>
@@ -815,9 +848,11 @@ const MyBooks = () => {
         )}
       </div>
 
-      {renderStatusControls(isMobile)}
+      {renderStatusControls(compactToolbar || isMobile)}
 
-      {!isMobile && (
+      {compactToolbar && renderCompactControls()}
+
+      {!compactToolbar && (
         <Collapsible open={advancedFiltersOpen} onOpenChange={setAdvancedFiltersOpen}>
           <div className="flex flex-wrap items-center gap-2">
             <CollapsibleTrigger asChild>
