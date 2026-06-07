@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   addPostComment as addPostCommentApi,
@@ -10,35 +10,60 @@ import {
 
 export type { PostComment } from "@/services/api";
 
-export const usePostComments = (postId: string) => {
+export const usePostComments = (
+  postId: string,
+  parentId?: string | null,
+  enabled = true
+) => {
   const [comments, setComments] = useState<PostComment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
 
-  const fetchComments = async () => {
-    try {
-      setLoading(true);
-      setComments(await fetchPostComments(postId));
-    } catch (error: unknown) {
-      console.error("Error fetching comments:", error);
-      toast.error("Failed to load comments");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchComments = useCallback(
+    async (cursor: string | null = null, append = false) => {
+      if (!postId || !enabled) return;
+
+      try {
+        if (append) {
+          setLoadingMore(true);
+        } else {
+          setLoading(true);
+        }
+        const response = await fetchPostComments(postId, parentId, cursor);
+        setComments((current) => {
+          const combined = append ? [...current, ...response.comments] : response.comments;
+          const seen = new Set<string>();
+          return combined.filter((comment) => {
+            if (seen.has(comment.id)) return false;
+            seen.add(comment.id);
+            return true;
+          });
+        });
+        setNextCursor(response.next_cursor ?? null);
+        setHasMore(response.has_more);
+      } catch (error: unknown) {
+        console.error("Error fetching comments:", error);
+        toast.error("Failed to load comments");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [enabled, parentId, postId]
+  );
 
   useEffect(() => {
-    if (postId) {
-      fetchComments();
+    if (!enabled) return;
+    fetchComments();
+    return subscribeToPostComments(postId, () => fetchComments());
+  }, [enabled, fetchComments, postId]);
 
-      return subscribeToPostComments(postId, fetchComments);
-    }
-  }, [postId]);
-
-  const addComment = async (content: string, parentId?: string) => {
+  const addComment = async (content: string, replyParentId?: string) => {
     try {
-      await addPostCommentApi(postId, content, parentId);
-
-      toast.success(parentId ? "Reply added!" : "Comment added!");
+      await addPostCommentApi(postId, content, replyParentId || parentId || undefined);
+      toast.success(replyParentId || parentId ? "Reply added" : "Comment added");
       await fetchComments();
       return true;
     } catch (error: unknown) {
@@ -51,7 +76,6 @@ export const usePostComments = (postId: string) => {
   const deleteComment = async (commentId: string) => {
     try {
       await deletePostCommentApi(commentId);
-
       toast.success("Comment deleted");
       await fetchComments();
     } catch (error: unknown) {
@@ -60,5 +84,20 @@ export const usePostComments = (postId: string) => {
     }
   };
 
-  return { comments, loading, addComment, deleteComment, refetchComments: fetchComments };
+  const loadMore = () => {
+    if (!loadingMore && hasMore && nextCursor) {
+      fetchComments(nextCursor, true);
+    }
+  };
+
+  return {
+    comments,
+    loading,
+    loadingMore,
+    hasMore,
+    addComment,
+    deleteComment,
+    loadMore,
+    refetchComments: () => fetchComments(),
+  };
 };

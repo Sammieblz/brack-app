@@ -601,27 +601,39 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          deleted_at: string | null
+          depth: number
           id: string
           parent_id: string | null
           post_id: string
+          reply_count: number
+          root_comment_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           content: string
           created_at?: string
+          deleted_at?: string | null
+          depth?: number
           id?: string
           parent_id?: string | null
           post_id: string
+          reply_count?: number
+          root_comment_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           content?: string
           created_at?: string
+          deleted_at?: string | null
+          depth?: number
           id?: string
           parent_id?: string | null
           post_id?: string
+          reply_count?: number
+          root_comment_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -651,39 +663,57 @@ export type Database = {
       posts: {
         Row: {
           book_id: string | null
+          club_id: string | null
           comments_count: number | null
           content: string
           created_at: string
+          deleted_at: string | null
           genre: string | null
           id: string
           likes_count: number | null
+          metadata: Json
+          post_type: string
+          share_count: number
           title: string
           updated_at: string
           user_id: string
+          visibility: string
         }
         Insert: {
           book_id?: string | null
+          club_id?: string | null
           comments_count?: number | null
           content: string
           created_at?: string
+          deleted_at?: string | null
           genre?: string | null
           id?: string
           likes_count?: number | null
+          metadata?: Json
+          post_type?: string
+          share_count?: number
           title: string
           updated_at?: string
           user_id: string
+          visibility?: string
         }
         Update: {
           book_id?: string | null
+          club_id?: string | null
           comments_count?: number | null
           content?: string
           created_at?: string
+          deleted_at?: string | null
           genre?: string | null
           id?: string
           likes_count?: number | null
+          metadata?: Json
+          post_type?: string
+          share_count?: number
           title?: string
           updated_at?: string
           user_id?: string
+          visibility?: string
         }
         Relationships: [
           {
@@ -719,6 +749,7 @@ export type Database = {
           is_active: boolean | null
           last_name: string | null
           last_reading_date: string | null
+          last_seen_at: string | null
           latitude: number | null
           library_view_mode: string
           longest_streak: number | null
@@ -731,7 +762,9 @@ export type Database = {
           phone_number: string | null
           profile_visibility: string | null
           show_currently_reading: boolean | null
+          show_online_status: boolean
           show_reading_activity: boolean | null
+          reader_status: string
           streak_freeze_used_at: string | null
           theme_mode: string | null
           updated_at: string | null
@@ -752,6 +785,7 @@ export type Database = {
           is_active?: boolean | null
           last_name?: string | null
           last_reading_date?: string | null
+          last_seen_at?: string | null
           latitude?: number | null
           library_view_mode?: string
           longest_streak?: number | null
@@ -764,7 +798,9 @@ export type Database = {
           phone_number?: string | null
           profile_visibility?: string | null
           show_currently_reading?: boolean | null
+          show_online_status?: boolean
           show_reading_activity?: boolean | null
+          reader_status?: string
           streak_freeze_used_at?: string | null
           theme_mode?: string | null
           updated_at?: string | null
@@ -785,6 +821,7 @@ export type Database = {
           is_active?: boolean | null
           last_name?: string | null
           last_reading_date?: string | null
+          last_seen_at?: string | null
           latitude?: number | null
           library_view_mode?: string
           longest_streak?: number | null
@@ -797,7 +834,9 @@ export type Database = {
           phone_number?: string | null
           profile_visibility?: string | null
           show_currently_reading?: boolean | null
+          show_online_status?: boolean
           show_reading_activity?: boolean | null
+          reader_status?: string
           streak_freeze_used_at?: string | null
           theme_mode?: string | null
           updated_at?: string | null
@@ -1263,6 +1302,42 @@ export type Database = {
           {
             foreignKeyName: "user_badges_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_blocks_blocked_id_fkey"
+            columns: ["blocked_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_blocks_blocker_id_fkey"
+            columns: ["blocker_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

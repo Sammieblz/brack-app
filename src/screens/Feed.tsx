@@ -7,6 +7,7 @@ import { PostCard } from "@/components/social/PostCard";
 import { PostCardSkeleton } from "@/components/skeletons/PostCardSkeleton";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { APP_ICONS } from "@/config/iconography";
@@ -18,7 +19,17 @@ import type { ComponentType } from "react";
 const Feed = () => {
   const isMobile = useIsMobile();
   const { activities, loading: activityLoading, refetchFeed } = useSocialFeed();
-  const { posts, loading: postsLoading, refetchPosts, toggleLike } = usePosts();
+  const {
+    posts,
+    loading: postsLoading,
+    loadingMore: postsLoadingMore,
+    hasMore: postsHasMore,
+    caughtUp,
+    feedMode,
+    refetchPosts,
+    loadMore,
+    toggleLike,
+  } = usePosts();
 
   const handleRefresh = async () => {
     await Promise.all([refetchFeed(), refetchPosts()]);
@@ -95,8 +106,19 @@ const Feed = () => {
                         post={post}
                         onLike={toggleLike}
                         onDelete={refetchPosts}
+                        onBlocked={refetchPosts}
                       />
                     ))
+                  )}
+
+                  {!postsLoading && posts.length > 0 && (
+                    <FeedPaginationState
+                      hasMore={postsHasMore}
+                      loading={postsLoadingMore}
+                      caughtUp={caughtUp}
+                      feedMode={feedMode}
+                      onLoadMore={loadMore}
+                    />
                   )}
                 </TabsContent>
 
@@ -146,6 +168,46 @@ const Feed = () => {
         </main>
       </PullToRefresh>
     </MobileLayout>
+  );
+};
+
+const FeedPaginationState = ({
+  hasMore,
+  loading,
+  caughtUp,
+  feedMode,
+  onLoadMore,
+}: {
+  hasMore: boolean;
+  loading: boolean;
+  caughtUp: boolean;
+  feedMode: string;
+  onLoadMore: () => void;
+}) => {
+  if (hasMore) {
+    return (
+      <div className="flex justify-center py-4">
+        <Button variant="outline" onClick={onLoadMore} disabled={loading}>
+          {loading ? "Loading..." : "Load more posts"}
+        </Button>
+      </div>
+    );
+  }
+
+  if (!caughtUp) return null;
+
+  return (
+    <Card className="border-dashed">
+      <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+        <APP_ICONS.dashboard.recentActivity className="mb-3 h-8 w-8 text-primary" />
+        <h2 className="font-display text-lg font-semibold">You're caught up</h2>
+        <p className="mt-1 max-w-md font-sans text-sm text-muted-foreground">
+          {feedMode === "discovery"
+            ? "You've reached the end of current discovery posts. Follow more readers or start a new conversation."
+            : "No more posts from your network right now. Brack will surface discovery posts when there is more to explore."}
+        </p>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -22,14 +22,16 @@ Rules:
 
 | Table | Current model | Status |
 | --- | --- | --- |
-| `profiles` | `profile_visibility`, `show_reading_activity`, `show_currently_reading` | Keep, but align names with feed rules. |
+| `profiles` | `profile_visibility`, `show_reading_activity`, `show_currently_reading`, `show_online_status`, `reader_status`, `last_seen_at` | Discovery uses profile visibility plus presence visibility. |
 | `social_activities` | `visibility` text with public/followers/owner behavior | Keep, but rename owner semantics to `private` in future migration or normalize in API. |
 | `book_reviews` | `is_public` boolean | Keep short-term; future migration can replace with `visibility`. |
 | `book_clubs` | `is_private` boolean plus membership helpers | Keep; maps to `public` or `club`. |
 | `book_club_discussions` | Club membership RLS | Keep as `club`. |
-| `posts` | Public table; no visibility column | Needs migration. |
-| `post_comments` | Public through parent post | Needs parent-post visibility after `posts.visibility`. |
-| `post_likes` | Public rows | Needs parent-post visibility after `posts.visibility`. |
+| `posts` | `visibility` with public/followers/private plus `deleted_at` | Enforced by RLS and Edge Functions. |
+| `post_comments` | Read/write through parent post visibility | Enforced by RLS and Edge Functions. |
+| `post_likes` | Read/write through parent post visibility | Enforced by RLS and Edge Functions. |
+| `post_media` | Private Storage objects with signed read URLs | Bucket is private; no public listing/read URL. |
+| `user_blocks` | Owner-managed block list | Blocks hide posts, profiles, media, comments, and activity in both directions. |
 | `book_lists` | `is_public` exists, but RLS is owner-only | Needs RLS/policy migration. |
 | `book_list_items` | Owner-only through parent list | Needs public-list read behavior if lists are shareable. |
 | `user_follows` | Public follow graph | Product decision needed: public graph or follower-count-only public surface. |
@@ -39,10 +41,9 @@ Rules:
 ## Migration Plan
 
 Phase 1:
-- Add `posts.visibility TEXT NOT NULL DEFAULT 'public'` with a check constraint for `private`, `followers`, and `public`.
-- Backfill all existing posts to `public`.
-- Update post/comment/like RLS to read through parent post visibility.
-- Update `src/services/api/social.ts` create/update paths to accept visibility, defaulting to `public`.
+- Completed 2026-06-06 for posts, comments, likes, media, shares, blocks, and feed fanout.
+- Post creation, feed reads, likes, comments, shares, and block management are now Edge-owned social APIs.
+- Reader discovery excludes blocked users from search, suggestions, nearby, active friends, and profile links. Online presence is hidden when `show_online_status` is false.
 
 Phase 2:
 - Make `book_lists.is_public = true` readable by authenticated users.
@@ -62,4 +63,5 @@ Phase 4:
 - RLS must be the final access-control layer.
 - Feed functions should pass through visibility decisions instead of widening access with service-role queries.
 - Any Edge Function that enriches rows should preserve the visibility rule of the root row.
+- Service-role Edge Functions must explicitly filter blocked users before returning enriched social data or signed media URLs.
 

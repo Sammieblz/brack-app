@@ -88,6 +88,7 @@ Current maintained local function catalog:
 | `enhanced-activity` | Enriched activity feed | Yes |
 | `social-feed` | Aggregated social feed | Yes |
 | `discover-readers` | Reader discovery | Yes |
+| `update-presence` | Reader online/status heartbeat | Yes |
 | `compute-analytics` | Daily analytics snapshot generation | Yes |
 | `send-push-notification` | Firebase Cloud Messaging delivery | Yes |
 | `sync-pull` | Pull reading-core sync changes | Yes |
@@ -292,42 +293,57 @@ Evaluate and award badges for the authenticated user.
 
 ### discover-readers
 
-Find readers with similar interests and reading habits.
+Load smart reader discovery sections and ranked reader search.
 
 **Endpoint**: `POST /discover-readers`
 
 **Request**:
 ```typescript
 {
-  limit?: number;  // Max readers to return (default 20)
+  searchQuery?: string; // Optional reader-name search
+  maxDistance?: number; // Nearby radius in km, default 50
+  limit?: number;       // Max readers per section, default 24
 }
 ```
 
 **Response**:
 ```typescript
 {
-  readers: Array<{
+  suggestions: ReaderRecommendation[];
+  nearby: ReaderRecommendation[];
+  connections: ReaderRecommendation[];
+  friendsOfFriends: ReaderRecommendation[];
+  activeFriends: ReaderRecommendation[];
+  searchResults: ReaderRecommendation[];
+}
+
+type ReaderRecommendation = {
     id: string;
-    display_name: string;
+    display_name: string | null;
     avatar_url: string | null;
     bio: string | null;
-    city: string | null;
-    country: string | null;
-    distance: number | null;  // km, if location available
-    score: number;            // Match score (0-100)
-    common_genres: string[];  // Shared genres
+    relationship: 'none' | 'following' | 'follower' | 'friend';
+    badges: string[];
+    status_badge: string;
+    is_online: boolean;
+    last_seen_at: string | null;
+    distance_km?: number;
+    mutual_friend_count: number;
+    shared_club_count: number;
+    genre_overlap?: number;
+    recommendation_score: number;
+    recommendation_reason: string;
     current_streak: number;
-    books_read: number;
-    is_following: boolean;
-  }>;
-}
+    books_read_count: number;
+  };
 ```
 
-**Matching Algorithm**:
-- Genre overlap: +20 points per genre
-- Similar reading pace: +10 points
-- Same favorite genre: +15 points
-- Nearby location: +5 points
+**Discovery Rules**:
+- The default response does not include an all-users directory.
+- Suggestions are ranked from relationship, friends-of-friends, taste overlap, nearby, shared clubs, and activity.
+- `activeFriends` includes mutual follows with online status enabled and recent presence only.
+- Blocked users are excluded in both directions.
+- Private profiles are excluded unless profile visibility allows the authenticated user to view them.
 
 **Example**:
 ```typescript
@@ -337,11 +353,35 @@ const response = await fetch(`${SUPABASE_URL}/functions/v1/discover-readers`, {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json',
   },
-  body: JSON.stringify({ limit: 20 }),
+  body: JSON.stringify({ searchQuery: 'sam', limit: 20 }),
 });
 
-const { readers } = await response.json();
+const { suggestions, searchResults } = await response.json();
 ```
+
+### update-presence
+
+Update the authenticated reader's lightweight presence heartbeat and optional reader status badge.
+
+**Endpoint**: `POST /update-presence`
+
+**Request**:
+```typescript
+{
+  reader_status?: 'available' | 'reading_now' | 'buddy_reads' | 'looking_for_club' | 'taking_recommendations' | 'quiet';
+}
+```
+
+**Response**:
+```typescript
+{
+  online_enabled: boolean;
+  reader_status: string;
+  last_seen_at: string | null;
+}
+```
+
+If `profiles.show_online_status` is false, the endpoint does not refresh `last_seen_at`.
 
 ### enhanced-activity
 

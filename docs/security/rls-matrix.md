@@ -32,10 +32,12 @@ Legend:
 | `journal_entries` | Owner | Owner | Owner | Owner | Private with soft deletes. |
 | `messages` | Participant | Sender and participant | Sender | None | No delete policy. |
 | `notification_preferences` | Owner | Owner | Owner | None | No delete policy. |
-| `post_comments` | Public | Owner | Owner | Owner | Feed visibility is public today. |
-| `post_likes` | Public | Owner | None | Owner | Like rows are public today. |
-| `posts` | Public | Owner | Owner | Owner | No private/followers visibility field today. |
-| `profiles` | Owner plus public/followers visibility | Owner | Owner | None | `profile_visibility` supports public/followers/private. |
+| `post_comments` | Parent post visibility | Visible post commenter | Owner | Owner | Thread metadata supports root/reply pagination. |
+| `post_likes` | Parent post visibility | Visible post liker | None | Owner | Like rows are no longer broadly public. |
+| `post_media` | Parent post visibility | Owner | None | Owner | Private Storage read uses signed URLs from Edge Functions. |
+| `post_shares` | Owner | Owner | None | None | Share count is denormalized onto posts. |
+| `posts` | Public/followers/private plus block filters | Owner | Owner | Owner | `deleted_at` hides posts without hard delete. |
+| `profiles` | Owner plus public/followers visibility | Owner | Owner | None | `profile_visibility` supports public/followers/private; presence fields are filtered by discovery APIs. |
 | `progress_logs` | Owner | Owner | Owner | Owner | Private reading data. |
 | `push_tokens` | Owner | Owner | Owner | Owner | Private device state. |
 | `reading_habits` | Owner | Owner | Owner | Owner | Duplicate all/manage-specific policies exist. |
@@ -46,6 +48,7 @@ Legend:
 | `review_likes` | Public | Owner | None | Owner | Like rows are public today. |
 | `social_activities` | Public/followers/owner | Owner | Owner | Owner | Trigger-created activities use security definer functions. |
 | `user_badges` | Owner | Owner | None | None | Award RPC also inserts; no update/delete. |
+| `user_blocks` | Blocker | Blocker | None | Blocker | Block relationships hide social/profile surfaces both directions. |
 | `user_follows` | Public | Follower | None | Follower | Follow graph is public today. |
 | `user_learning_profiles` | Owner | Owner | Owner | Owner | Private onboarding/personalization data. |
 
@@ -57,4 +60,4 @@ Legend:
 - Anonymous direct table privileges were revoked from the public schema on 2026-05-05. Authenticated clients still rely on RLS for app data access through `src/services/api/*`.
 - Public storage bucket listing policies for `avatars` and `book-covers` were removed. Direct public object URLs still work through public buckets; Storage API listing is blocked.
 - `get_conversation_summaries`, `use_reading_streak_freeze`, `is_club_member`, and `is_club_admin` remain callable by authenticated clients by design and include `auth.uid()` guards. Backend-only security-definer RPCs are service-role-only.
-- Social public surfaces are intentionally permissive today but should be reviewed before feed growth: posts, comments, likes, follows, review likes, and public activities.
+- Social posts/comments/likes were tightened on 2026-06-06. Smart discovery now excludes blocked/private readers and hides online presence when disabled. Remaining broad social surfaces to review are follows, review likes, and public review comments.

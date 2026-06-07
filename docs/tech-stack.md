@@ -93,11 +93,17 @@ Brack uses modern, production-ready technologies for web and mobile development.
   - `award-badges` - Badge awarding
   - `compute-analytics` - Daily analytics snapshots
   - `sync-pull` / `sync-push` - Reading-core offline sync
-  - `discover-readers` - Reader recommendations
-  - `enhanced-activity` - Activity feed generation
+  - `discover-readers` - Smart reader discovery sections and ranked search
+  - `update-presence` - Lightweight reader online/status heartbeat
+  - `enhanced-activity` - Personal activity aggregation
+  - `posts-feed` - Cursor-paginated social posts feed
+  - `create-post` - Transactional post and media metadata creation
+  - `post-comments` / `create-post-comment` - Threaded comment reads and writes
+  - `toggle-post-like` / `share-post` - Post engagement endpoints
+  - `block-user` / `unblock-user` / `blocked-users` - Social blocking endpoints
   - `log-progress` - Progress tracking with transactions
   - `monthly-stats` - Statistics calculation
-  - `social-feed` - Social feed aggregation
+  - `social-feed` - Mutual-friend reading activity feed
   - `send-push-notification` - FCM integration
   - `calculate-book-progress` - Progress analytics
 
@@ -166,9 +172,11 @@ Brack uses modern, production-ready technologies for web and mobile development.
 - **@dnd-kit** 6.3.1 - Drag and drop
 - **react-simple-pull-to-refresh** 1.3.3 - Pull to refresh
 
-### Image Processing
+### Image and Media Processing
 - **tesseract.js** 7.0.0 - OCR for cover scanning
 - **@zxing/library** 0.21.3 - Barcode scanning
+- **Supabase Storage** - Private `post-media` bucket for social images/videos with signed read URLs
+- **Capacitor Share / navigator.share** - Native social post sharing with copy-link fallback
 
 ### Security
 - **dompurify** 3.3.1 - XSS prevention

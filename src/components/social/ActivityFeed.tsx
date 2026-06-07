@@ -6,7 +6,16 @@ import { Refresh } from "iconoir-react";
 import { EmptyActivity } from "@/components/empty/EmptyActivity";
 
 export const ActivityFeed = () => {
-  const { activities, loading, hasMore, loadMore, formatTimeAgo, refetchFeed } = useSocialFeed();
+  const {
+    activities,
+    loading,
+    loadingMore,
+    hasMore,
+    caughtUp,
+    loadMore,
+    formatTimeAgo,
+    refetchFeed,
+  } = useSocialFeed();
 
   if (loading && activities.length === 0) {
     return (
@@ -20,7 +29,16 @@ export const ActivityFeed = () => {
   }
 
   if (activities.length === 0) {
-    return <EmptyActivity />;
+    return (
+      <div className="space-y-4">
+        <EmptyActivity />
+        <div className="rounded-md border border-dashed border-border/70 p-4 text-center">
+          <p className="font-sans text-sm text-muted-foreground">
+            Activity now only shows mutual-follow friends who have reading activity enabled.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -64,10 +82,10 @@ export const ActivityFeed = () => {
           <Button
             variant="outline"
             onClick={loadMore}
-            disabled={loading}
+            disabled={loadingMore}
             className="hover-scale"
           >
-            {loading ? (
+            {loadingMore ? (
               <>
                 <Refresh className="h-4 w-4 mr-2 animate-spin" />
                 Loading...
@@ -76,6 +94,14 @@ export const ActivityFeed = () => {
               'Load More Activities'
             )}
           </Button>
+        </div>
+      )}
+
+      {!hasMore && caughtUp && (
+        <div className="rounded-md border border-dashed border-border/70 p-4 text-center">
+          <p className="font-sans text-sm text-muted-foreground">
+            You're caught up with friend activity.
+          </p>
         </div>
       )}
     </div>

@@ -1,149 +1,113 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
-import { createServiceClient } from '../_shared/appEndpoint.ts';
-import { getCorsHeaders } from '../_shared/cors.ts';
-import { enforceRateLimit } from '../_shared/rateLimit.ts';
+import {
+  createServiceClient,
+  getAuthenticatedUser,
+  jsonResponse,
+  optionsResponse,
+  parseJsonBody,
+} from "../_shared/appEndpoint.ts";
+import { enforceRateLimit } from "../_shared/rateLimit.ts";
+import {
+  applyCursor,
+  clampLimit,
+  decodeCursor,
+  encodeCursor,
+  enrichActivities,
+  getBlockedUserIds,
+  type FeedCursor,
+} from "../_shared/social.ts";
+
+interface SocialFeedBody {
+  cursor?: unknown;
+  limit?: unknown;
+}
+
+const ACTIVITY_SELECT =
+  "id,user_id,activity_type,book_id,review_id,list_id,badge_id,metadata,visibility,created_at";
 
 Deno.serve(async (req) => {
-  const origin = req.headers.get('origin');
-  const corsHeaders = getCorsHeaders(origin);
-  
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  const origin = req.headers.get("origin");
+
+  if (req.method === "OPTIONS") {
+    return optionsResponse(origin);
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    );
+    const supabaseClient = createServiceClient();
+    const authResult = await getAuthenticatedUser(req, supabaseClient, origin);
+    if ("response" in authResult) return authResult.response;
 
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    
-    if (!user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const limited = await enforceRateLimit(req, createServiceClient(), {
-      name: 'social-feed',
-      identifier: user.id,
-      limit: 120,
+    const limited = await enforceRateLimit(req, supabaseClient, {
+      name: "social-feed",
+      identifier: authResult.user.id,
+      limit: 180,
       windowMs: 60_000,
     });
     if (limited) return limited;
 
-    const { limit = 20, offset = 0 } = await req.json();
+    const body = req.method === "GET" ? {} : await parseJsonBody<SocialFeedBody>(req);
+    const url = new URL(req.url);
+    const limit = clampLimit(url.searchParams.get("limit") ?? body.limit, 20, 50);
+    const cursor = decodeCursor(url.searchParams.get("cursor") ?? body.cursor);
+    const blockedIds = await getBlockedUserIds(supabaseClient, authResult.user.id);
 
-    console.log('Fetching social feed for user:', user.id, { limit, offset });
+    let feedQuery = supabaseClient
+      .from("activity_feed_items")
+      .select("activity_id,actor_id,item_created_at")
+      .eq("viewer_id", authResult.user.id)
+      .order("item_created_at", { ascending: false })
+      .order("activity_id", { ascending: false })
+      .limit(limit);
 
-    // Get users that the current user is following
-    const { data: following, error: followError } = await supabaseClient
-      .from('user_follows')
-      .select('following_id')
-      .eq('follower_id', user.id);
+    feedQuery = applyCursor(feedQuery, "item_created_at", "activity_id", cursor);
 
-    if (followError) {
-      console.error('Error fetching following:', followError);
-      throw followError;
-    }
+    const { data: feedItems, error: feedError } = await feedQuery;
+    if (feedError) throw feedError;
 
-    const followingIds = following?.map(f => f.following_id) || [];
-    console.log('Following users:', followingIds.length);
-
-    // Include user's own activities
-    const userIds = [...followingIds, user.id];
-
-    // Fetch activities from followed users and self
-    const { data: activities, error: activitiesError } = await supabaseClient
-      .from('social_activities')
-      .select(`
-        id,
-        user_id,
-        activity_type,
-        book_id,
-        review_id,
-        list_id,
-        badge_id,
-        metadata,
-        visibility,
-        created_at
-      `)
-      .in('user_id', userIds)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    if (activitiesError) {
-      console.error('Error fetching activities:', activitiesError);
-      throw activitiesError;
-    }
-
-    console.log('Fetched activities:', activities?.length || 0);
-
-    // Enrich activities with user profiles
-    const userProfileIds = [...new Set(activities?.map(a => a.user_id) || [])];
-    
-    const { data: profiles, error: profilesError } = await supabaseClient
-      .from('profiles')
-      .select('id, display_name, avatar_url')
-      .in('id', userProfileIds);
-
-    if (profilesError) {
-      console.error('Error fetching profiles:', profilesError);
-    }
-
-    // Enrich activities with book details where applicable
-    const bookIds = [...new Set(
-      activities
-        ?.filter(a => a.book_id)
-        .map(a => a.book_id as string) || []
-    )];
-
-    const { data: books, error: booksError } = await supabaseClient
-      .from('books')
-      .select('id, title, author, cover_url')
-      .in('id', bookIds);
-
-    if (booksError) {
-      console.error('Error fetching books:', booksError);
-    }
-
-    // Create lookup maps
-    const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
-    const bookMap = new Map(books?.map(b => [b.id, b]) || []);
-
-    // Enrich activities
-    const enrichedActivities = activities?.map(activity => ({
-      ...activity,
-      user: profileMap.get(activity.user_id),
-      book: activity.book_id ? bookMap.get(activity.book_id) : null,
-    })) || [];
-
-    const hasMore = activities?.length === limit;
-
-    console.log('Returning enriched activities:', enrichedActivities.length);
-
-    return new Response(
-      JSON.stringify({ 
-        activities: enrichedActivities,
-        has_more: hasMore 
-      }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+    const visibleFeedItems = (feedItems || []).filter(
+      (item) => !blockedIds.has(item.actor_id as string)
     );
+    const activityIds = visibleFeedItems.map((item) => item.activity_id as string);
 
+    let activities: Array<Record<string, unknown>> = [];
+    if (activityIds.length > 0) {
+      const { data, error } = await supabaseClient
+        .from("social_activities")
+        .select(ACTIVITY_SELECT)
+        .in("id", activityIds);
+      if (error) throw error;
+      const activityMap = new Map((data || []).map((activity) => [activity.id, activity]));
+      activities = activityIds.map((id) => activityMap.get(id)).filter(Boolean) as Array<
+        Record<string, unknown>
+      >;
+    }
+
+    const enriched = await enrichActivities(supabaseClient, activities);
+    const last = visibleFeedItems[visibleFeedItems.length - 1];
+    const nextCursor: FeedCursor | null =
+      visibleFeedItems.length === limit && last
+        ? {
+            source: "activity",
+            created_at: last.item_created_at,
+            id: last.activity_id,
+          }
+        : null;
+
+    return jsonResponse(
+      {
+        activities: enriched,
+        next_cursor: encodeCursor(nextCursor),
+        has_more: nextCursor !== null,
+        caught_up: enriched.length === 0 || nextCursor === null,
+      },
+      200,
+      origin
+    );
   } catch (error) {
-    const { createErrorResponse } = await import("../_shared/errorHandler.ts");
-    return createErrorResponse(error, 500, req.headers.get('origin'), {
-      function: "social-feed",
-    });
+    console.error("social-feed failed", error);
+    return jsonResponse(
+      { error: error instanceof Error ? error.message : "Failed to load social feed" },
+      500,
+      origin
+    );
   }
 });

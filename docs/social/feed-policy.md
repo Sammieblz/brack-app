@@ -1,9 +1,26 @@
 # Feed Inclusion Policy
 
-Source date: 2026-05-05  
-Scope: ticket 6.3, reduce feed noise and define public/private behavior.
+Source date: 2026-06-06  
+Scope: scalable social posts and mutual-friend activity feeds.
 
-## Main Feed Includes
+## Posts Feed
+
+- Served through the protected `posts-feed` Edge Function.
+- Uses opaque cursor pagination based on timestamp plus row id; no offset pagination.
+- Shows followed/self timeline content first, then discovery posts from non-followed readers.
+- Does not loop when content runs out. The app shows a caught-up state with follow/create/discovery prompts.
+- Excludes deleted posts, blocked users in either direction, private posts, and follower-only posts when the viewer is not allowed.
+- Direct broad table subscriptions are intentionally avoided; the client refreshes on demand.
+
+## Activity Feed
+
+- Served through the protected `social-feed` Edge Function.
+- Uses `activity_feed_items` as a read-optimized fanout table.
+- Includes only mutual-follow friends.
+- Respects `profiles.show_reading_activity`; disabling it removes/hides that user from friend activity feeds.
+- Excludes blocked users in either direction.
+
+## Main Activity Types
 
 | Event | Include? | Reason |
 | --- | --- | --- |
@@ -11,45 +28,24 @@ Scope: ticket 6.3, reduce feed noise and define public/private behavior.
 | `book_reviewed` | Yes | Useful community content. |
 | `earned_badge` | Yes | Motivational milestone. |
 | `post` | Yes | Explicit community contribution. |
-| `book_started` | Yes, but lower priority | Good signal but can be noisy for frequent status changes. |
-| `created_list` | Yes after public-list read policies are fixed | Useful curation event, but currently can point to owner-only list data. |
-| `followed_user` | Limited | Good for social graph discovery but noisy at scale. |
+| `book_started` | Yes, lower priority | Good signal but noisier for frequent readers. |
+| `created_list` | Yes when list visibility allows it | Useful curation event. |
+| `followed_user` | Limited | Useful for social discovery but noisy at scale. |
 
-## Main Feed Excludes
+## Media Posts
 
-- Direct page progress logs.
-- Timer sessions.
-- Journal entries.
-- Goal creation/edits.
-- Quick progress corrections.
-- Book edits that do not change reading status.
-- Private or owner-only list data.
+- Stored in the private `post-media` Supabase Storage bucket.
+- Clients upload only to their own user-id folder.
+- Feed/detail endpoints return short-lived signed read URLs.
+- Limits for this Supabase V1 pass:
+  - Images: up to 4 per post, 10 MB each, JPEG/PNG/WebP.
+  - Video: 1 per post, 60 MB, 90 seconds, MP4/WebM/QuickTime.
+- No external transcoding is used in this pass.
 
-## Visibility Rules
+## Fanout Tables
 
-- `public` activity can appear in the main community/following feed.
-- `followers` activity appears only to the owner and followers.
-- `private`/owner-only activity appears only to the owner.
-- Club activity should use club-scoped feeds unless a club explicitly publishes a public event.
+- `post_feed_items`: read-optimized followed/self post timeline.
+- `activity_feed_items`: read-optimized mutual-friend activity timeline.
+- `social_activities`: canonical event log remains the source of activity truth.
 
-## Ordering and Fanout
-
-Current model:
-- Query follow graph.
-- Query `social_activities` for followed users plus self.
-- Sort by `created_at`.
-
-Fanout is deferred. Add `activity_fanout` only when:
-- Feed latency is proven high with production-sized data.
-- The follow graph makes `.in(user_id, followedIds)` inefficient.
-- Notification-style unread feed state is needed.
-
-Future fanout table shape:
-- `id`
-- `viewer_id`
-- `activity_id`
-- `actor_id`
-- `created_at`
-- `seen_at`
-- indexes on `(viewer_id, created_at desc)` and `(viewer_id, seen_at)`.
-
+Both fanout tables are safe to rebuild from source tables if needed.

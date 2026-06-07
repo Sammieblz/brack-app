@@ -39,6 +39,7 @@ import GoalsManagement from "./screens/GoalsManagement";
 import UserProfile from "./screens/UserProfile";
 import Reviews from "./screens/Reviews";
 import Feed from "./screens/Feed";
+import PostDetail from "./screens/PostDetail";
 import Readers from "./screens/Readers";
 import NotFound from "./screens/NotFound";
 
@@ -48,6 +49,7 @@ import { useNetworkStatus } from "./hooks/useNetworkStatus";
 import { ConfirmDialogProvider } from "./contexts/ConfirmDialogContext";
 import { initSentry } from "./lib/sentry";
 import { usePushNotifications } from "./hooks/usePushNotifications";
+import { usePresenceHeartbeat } from "./hooks/usePresenceHeartbeat";
 import { LiveRegion } from "./components/ui/live-region";
 import { BadgeCelebrationProvider } from "./contexts/BadgeCelebrationContext";
 import { useAppViewportHeight } from "./hooks/useAppViewportHeight";
@@ -82,6 +84,7 @@ const queryClient = new QueryClient({
 const App = () => {
   useAppViewportHeight();
   useNetworkStatus();
+  usePresenceHeartbeat();
   const { register: registerPushNotifications } = usePushNotifications();
   
   // Register for push notifications on app start (native only)
@@ -150,6 +153,7 @@ const App = () => {
                             <Route path="/users/:userId" element={<UserProfile />} />
                             <Route path="/reviews" element={<Reviews />} />
                             <Route path="/feed" element={<Feed />} />
+                            <Route path="/posts/:postId" element={<PostDetail />} />
                             <Route path="/clubs" element={<BookClubs />} />
                             <Route path="/clubs/:clubId" element={<BookClubDetail />} />
                             <Route path="/readers" element={<Readers />} />

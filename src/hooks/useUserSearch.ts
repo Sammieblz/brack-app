@@ -5,11 +5,12 @@ export type { DiscoverResults, UserSearchResult };
 
 export const useUserSearch = (searchQuery: string = "", maxDistance: number = 50) => {
   const [results, setResults] = useState<DiscoverResults>({
-    all: [],
+    suggestions: [],
     nearby: [],
-    socialConnections: [],
-    similarTaste: [],
-    activeReaders: [],
+    connections: [],
+    friendsOfFriends: [],
+    activeFriends: [],
+    searchResults: [],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

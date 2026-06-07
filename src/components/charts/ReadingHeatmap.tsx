@@ -58,7 +58,7 @@ export const ReadingHeatmap = ({
   compact = false,
   className,
 }: ReadingHeatmapProps) => {
-  const { baseOptions, colors, currentTheme, resolvedTheme } = useApexTheme();
+  const { baseOptions, colors, currentTheme, mode, resolvedTheme, themeRevision } = useApexTheme();
 
   const { series, maxValue, totalMinutes } = useMemo(() => {
     const valueByDate = new Map(data.map((item) => [item.date, item.value]));
@@ -105,11 +105,17 @@ export const ReadingHeatmap = ({
     const low = Math.max(1, Math.ceil(maxValue * 0.25));
     const medium = Math.max(low + 1, Math.ceil(maxValue * 0.5));
     const high = Math.max(medium + 1, Math.ceil(maxValue * 0.75));
+    const isDark = mode === "dark";
+    const emptyCellColor = isDark ? colors.backgroundSoft : colors.mutedFaint;
+    const subtleCellColor = isDark ? colors.primarySoft : colors.chart[0];
 
     return {
       ...baseOptions,
       chart: {
         ...baseOptions.chart,
+        id: `reading-heatmap-${currentTheme}-${resolvedTheme}-${themeRevision}`,
+        redrawOnParentResize: true,
+        redrawOnWindowResize: true,
         type: "heatmap",
       },
       dataLabels: {
@@ -118,10 +124,10 @@ export const ReadingHeatmap = ({
       grid: {
         show: false,
         padding: {
-          top: -8,
-          right: 0,
-          bottom: -6,
-          left: 0,
+          top: 4,
+          right: 10,
+          bottom: 10,
+          left: compact ? 18 : 26,
         },
       },
       legend: {
@@ -129,10 +135,15 @@ export const ReadingHeatmap = ({
         show: true,
         position: "bottom",
         horizontalAlign: "center",
+        fontSize: "11px",
+        itemMargin: {
+          horizontal: 8,
+          vertical: 2,
+        },
       },
       plotOptions: {
         heatmap: {
-          radius: 5,
+          radius: isDark ? 4 : 5,
           enableShades: false,
           colorScale: {
             ranges: [
@@ -140,14 +151,14 @@ export const ReadingHeatmap = ({
                 from: 0,
                 to: 0,
                 name: "None",
-                color: colors.mutedSoft,
+                color: emptyCellColor,
                 foreColor: colors.mutedForeground,
               },
               {
                 from: 1,
                 to: low,
                 name: "Light",
-                color: colors.chart[0],
+                color: subtleCellColor,
               },
               {
                 from: low + 1,
@@ -172,8 +183,8 @@ export const ReadingHeatmap = ({
         },
       },
       stroke: {
-        width: 3,
-        colors: [colors.card],
+        width: 0,
+        colors: ["transparent"],
       },
       tooltip: {
         ...baseOptions.tooltip,
@@ -192,8 +203,9 @@ export const ReadingHeatmap = ({
       xaxis: {
         type: "category",
         labels: {
-          rotate: -35,
+          rotate: 0,
           trim: false,
+          hideOverlappingLabels: false,
           style: {
             colors: colors.mutedForeground,
             fontFamily: "Inter, system-ui, sans-serif",
@@ -206,6 +218,10 @@ export const ReadingHeatmap = ({
       },
       yaxis: {
         labels: {
+          align: "right",
+          minWidth: compact ? 48 : 58,
+          maxWidth: compact ? 56 : 68,
+          offsetX: 0,
           style: {
             colors: colors.mutedForeground,
             fontFamily: "Inter, system-ui, sans-serif",
@@ -217,7 +233,7 @@ export const ReadingHeatmap = ({
         hover: {
           filter: {
             type: "lighten",
-            value: 0.08,
+            value: isDark ? 0.05 : 0.08,
           },
         },
         active: {
@@ -227,7 +243,17 @@ export const ReadingHeatmap = ({
         },
       },
     };
-  }, [baseOptions, colors, maxValue, series]);
+  }, [
+    baseOptions,
+    colors,
+    compact,
+    currentTheme,
+    maxValue,
+    mode,
+    resolvedTheme,
+    series,
+    themeRevision,
+  ]);
 
   if (!data || data.length === 0) {
     return null;
@@ -242,12 +268,26 @@ export const ReadingHeatmap = ({
       icon={<APP_ICONS.dashboard.today className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
     >
       <ApexChartFrame
-        chartKey={`${currentTheme}-${resolvedTheme}-${weeks}-${compact ? "compact" : "full"}`}
+        chartKey={[
+          "reading-heatmap",
+          currentTheme,
+          resolvedTheme,
+          mode,
+          themeRevision,
+          colors.background,
+          colors.card,
+          colors.primary,
+          colors.muted,
+          weeks,
+          compact ? "compact" : "full",
+          data.length,
+          totalMinutes,
+        ].join("|")}
         options={options}
         series={series}
         type="heatmap"
-        height={compact ? 260 : 340}
-        minWidth={compact ? 600 : 704}
+        height={compact ? 276 : 356}
+        minWidth={compact ? 620 : 760}
         fallbackLabel="Loading heatmap..."
         className={cn(compact && "md:overflow-x-visible")}
       />
