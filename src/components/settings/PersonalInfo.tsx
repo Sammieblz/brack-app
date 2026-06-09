@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Pin } from "iconoir-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User, Profile } from "@/types";
-import { fetchProfile, upsertPersonalInfo } from "@/services/api";
+import { fetchProfile, type PersonalInfoUpdate, upsertPersonalInfo } from "@/services/api";
 
 interface PersonalInfoProps {
   user: User;
@@ -17,7 +17,9 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [locating, setLocating] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [locationAccuracy, setLocationAccuracy] = useState<number | null>(null);
   
   const [formData, setFormData] = useState({
     first_name: "",
@@ -29,6 +31,105 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
     latitude: "",
     longitude: "",
   });
+
+  const locationIsHidden = profile?.show_location === false;
+
+  const parseCoordinate = (value: string, label: string, min: number, max: number) => {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    const parsed = Number(trimmed);
+    if (!Number.isFinite(parsed) || parsed < min || parsed > max) {
+      throw new Error(`${label} must be between ${min} and ${max}.`);
+    }
+
+    return parsed;
+  };
+
+  const buildPayload = (data = formData): PersonalInfoUpdate => ({
+    ...data,
+    latitude: parseCoordinate(data.latitude, "Latitude", -90, 90),
+    longitude: parseCoordinate(data.longitude, "Longitude", -180, 180),
+    city: data.city.trim() || null,
+    country: data.country.trim() || null,
+  });
+
+  const reverseGeocode = async (latitude: number, longitude: number) => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 7000);
+
+    try {
+      const params = new URLSearchParams({
+        format: "jsonv2",
+        lat: String(latitude),
+        lon: String(longitude),
+        zoom: "10",
+        addressdetails: "1",
+      });
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${params}`, {
+        signal: controller.signal,
+      });
+
+      if (!response.ok) return {};
+
+      const result = await response.json();
+      const address = result?.address ?? {};
+      return {
+        city:
+          address.city ||
+          address.town ||
+          address.village ||
+          address.municipality ||
+          address.county ||
+          address.state ||
+          "",
+        country: address.country || "",
+      };
+    } catch (error) {
+      console.warn("Reverse geocoding failed", error);
+      return {};
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  };
+
+  const getCurrentPosition = () =>
+    new Promise<GeolocationPosition>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        maximumAge: 60_000,
+        timeout: 15_000,
+      });
+    });
+
+  const savePersonalInfo = async (
+    data = formData,
+    success = {
+      title: "Personal information updated",
+      description: "Your personal information has been saved.",
+    }
+  ): Promise<boolean> => {
+    if (!user) return false;
+
+    setSaving(true);
+    try {
+      await upsertPersonalInfo(user.id, buildPayload(data));
+
+      toast(success);
+
+      loadProfile();
+      return true;
+    } catch (error: unknown) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update personal information",
+      });
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  };
 
   useEffect(() => {
     loadProfile();
@@ -60,36 +161,10 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
   };
 
   const handleSave = async () => {
-    if (!user) return;
-    
-    setSaving(true);
-    try {
-      await upsertPersonalInfo(user.id, {
-        ...formData,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
-        city: formData.city || null,
-        country: formData.country || null,
-      });
-
-      toast({
-        title: "Personal information updated",
-        description: "Your personal information has been saved.",
-      });
-      
-      loadProfile();
-    } catch (error: unknown) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update personal information",
-      });
-    } finally {
-      setSaving(false);
-    }
+    await savePersonalInfo();
   };
 
-  const handleGetCurrentLocation = () => {
+  const handleGetCurrentLocation = async () => {
     if (!navigator.geolocation) {
       toast({
         variant: "destructive",
@@ -99,31 +174,49 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
       return;
     }
 
-    toast({
-      title: "Getting location...",
-      description: "Please allow location access",
-    });
+    setLocating(true);
+    try {
+      toast({
+        title: "Getting location...",
+        description: "Please allow location access",
+      });
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setFormData(prev => ({
-          ...prev,
-          latitude: position.coords.latitude.toFixed(6),
-          longitude: position.coords.longitude.toFixed(6),
-        }));
-        toast({
-          title: "Location retrieved",
-          description: "Your coordinates have been updated",
-        });
-      },
-      (error) => {
-        toast({
-          variant: "destructive",
-          title: "Location error",
-          description: error.message,
-        });
-      }
-    );
+      const position = await getCurrentPosition();
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      const resolvedLocation = await reverseGeocode(latitude, longitude);
+      const nextFormData = {
+        ...formData,
+        latitude: latitude.toFixed(6),
+        longitude: longitude.toFixed(6),
+        city: resolvedLocation.city || formData.city,
+        country: resolvedLocation.country || formData.country,
+      };
+
+      setLocationAccuracy(position.coords.accuracy ?? null);
+      setFormData(nextFormData);
+
+      await savePersonalInfo(nextFormData, {
+        title: "Location updated",
+        description: resolvedLocation.city
+          ? `Saved near ${resolvedLocation.city}${resolvedLocation.country ? `, ${resolvedLocation.country}` : ""}.`
+          : "Saved your current coordinates for nearby reader discovery.",
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === "object" && error !== null && "message" in error
+            ? String(error.message)
+            : "Could not get your location.";
+      toast({
+        variant: "destructive",
+        title: "Location error",
+        description: message,
+      });
+    } finally {
+      setLocating(false);
+    }
   };
 
   if (loading) {
@@ -254,20 +347,32 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
             </div>
           </div>
 
+          {locationAccuracy !== null && (
+            <p className="font-sans text-xs text-muted-foreground">
+              Browser accuracy estimate: within {Math.round(locationAccuracy)} meters.
+            </p>
+          )}
+
           <Button
             type="button"
             variant="outline"
             onClick={handleGetCurrentLocation}
+            disabled={locating || saving}
             className="flex items-center gap-2"
           >
             <MapPin className="h-4 w-4" />
-            Use Current Location
+            {locating ? "Getting location..." : "Use Current Location"}
           </Button>
 
-          <div className="bg-muted/50 p-3 rounded-lg">
+          <div className="bg-muted/50 p-3 rounded-lg space-y-1">
             <p className="font-sans text-xs text-muted-foreground">
               <strong>Privacy Note:</strong> Your location data is used only for reader discovery features.
             </p>
+            {locationIsHidden && (
+              <p className="font-sans text-xs text-muted-foreground">
+                Nearby discovery is currently hidden. Turn it back on in Privacy Settings when you want readers near you to find you.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

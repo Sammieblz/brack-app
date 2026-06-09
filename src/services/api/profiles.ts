@@ -18,6 +18,7 @@ export interface UserProfile {
   profile_visibility: string;
   show_reading_activity: boolean;
   show_currently_reading: boolean;
+  show_location: boolean;
   show_online_status: boolean;
   reader_status: string;
   last_seen_at: string | null;

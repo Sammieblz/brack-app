@@ -22,7 +22,14 @@ const Messages = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
-  const { messages, loading: messagesLoading, sendMessage } = useMessages(selectedConversationId);
+  const {
+    messages,
+    detail,
+    loading: messagesLoading,
+    sendMessage,
+    toggleReaction,
+    deleteMessage,
+  } = useMessages(selectedConversationId);
   const { triggerHaptic } = useHapticFeedback();
 
   const swipeHandlers = useSwipeable({
@@ -56,7 +63,9 @@ const Messages = () => {
     startConversationWith();
   }, [location.state, getOrCreateConversation]);
 
-  const selectedConversation = conversations.find(c => c.id === selectedConversationId);
+  const selectedConversation = conversations.find((c) => c.id === selectedConversationId);
+  const selectedOtherUser = detail?.other_user || selectedConversation?.other_user;
+  const selectedIsBlocked = Boolean(detail?.is_blocked || selectedConversation?.is_blocked);
 
   if (loading) {
     return (
@@ -71,7 +80,7 @@ const Messages = () => {
     return (
       <MobileLayout showBottomNav={false}>
         <MobileHeader 
-          title={selectedConversation?.other_user?.display_name || "Message"}
+          title={selectedOtherUser?.display_name || "Message"}
           back={{
             label: "Messages",
             ariaLabel: "Back to messages",
@@ -85,9 +94,12 @@ const Messages = () => {
             <MessageThread
               messages={messages}
               onSendMessage={sendMessage}
+              onToggleReaction={toggleReaction}
+              onDeleteMessage={deleteMessage}
               currentUserId={user?.id}
               conversationId={selectedConversationId}
-              otherUser={selectedConversation?.other_user}
+              otherUser={selectedOtherUser}
+              isBlocked={selectedIsBlocked}
               onBack={() => setSelectedConversationId(null)}
             />
           )}
@@ -155,9 +167,12 @@ const Messages = () => {
                   <MessageThread
                     messages={messages}
                     onSendMessage={sendMessage}
+                    onToggleReaction={toggleReaction}
+                    onDeleteMessage={deleteMessage}
                     currentUserId={user?.id}
                     conversationId={selectedConversationId}
-                    otherUser={selectedConversation?.other_user}
+                    otherUser={selectedOtherUser}
+                    isBlocked={selectedIsBlocked}
                   />
                 )
               ) : (

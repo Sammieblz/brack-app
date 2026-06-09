@@ -41,6 +41,7 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
   const [readerStatus, setReaderStatus] = useState<ReaderStatusBadge>("available");
   const [showLocation, setShowLocation] = useState(true);
+  const [hasSavedLocation, setHasSavedLocation] = useState(false);
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,7 +51,7 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
       const [{ data: profile, error }, blocks] = await Promise.all([
         supabase
           .from("profiles")
-          .select("profile_visibility, show_reading_activity, show_online_status, reader_status, latitude, longitude")
+          .select("profile_visibility, show_reading_activity, show_online_status, reader_status, show_location, latitude, longitude")
           .eq("id", user.id)
           .maybeSingle(),
         getBlockedUsers(),
@@ -61,7 +62,8 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
       setShowReadingActivity(profile?.show_reading_activity ?? true);
       setShowOnlineStatus(profile?.show_online_status ?? true);
       setReaderStatus((profile?.reader_status as ReaderStatusBadge | null) ?? "available");
-      setShowLocation(Boolean(profile?.latitude && profile?.longitude));
+      setShowLocation(profile?.show_location ?? true);
+      setHasSavedLocation(profile?.latitude != null && profile?.longitude != null);
       setBlockedUsers(blocks);
     } catch (error) {
       console.error("Failed to load privacy settings", error);
@@ -137,14 +139,15 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
   };
 
   const toggleLocation = async (checked: boolean) => {
-    if (checked) {
-      toast.info("Location can be added from Personal Info");
-      return;
-    }
     const previous = showLocation;
-    setShowLocation(false);
+    setShowLocation(checked);
     try {
-      await updateProfilePrivacy({ latitude: null, longitude: null });
+      await updateProfilePrivacy({ show_location: checked });
+      if (checked && !hasSavedLocation) {
+        toast.info("Add your city or current location from Personal Info to appear nearby.");
+      } else {
+        toast.success(checked ? "Nearby discovery enabled" : "Nearby discovery hidden");
+      }
     } catch (error) {
       setShowLocation(previous);
       toast.error("Failed to update location privacy");
@@ -215,8 +218,13 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
             <div className="space-y-0.5">
               <Label>Show Location</Label>
               <p className="font-sans text-sm text-muted-foreground">
-                Use location for nearby reader discovery.
+                Allow your saved location to be used for nearby reader discovery.
               </p>
+              {!hasSavedLocation && showLocation && (
+                <p className="font-sans text-xs text-muted-foreground">
+                  No saved coordinates yet. Add them from Personal Info.
+                </p>
+              )}
             </div>
             <Switch checked={showLocation} disabled={loading} onCheckedChange={toggleLocation} />
           </div>

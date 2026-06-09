@@ -89,6 +89,27 @@ Current maintained local function catalog:
 | `social-feed` | Aggregated social feed | Yes |
 | `discover-readers` | Reader discovery | Yes |
 | `update-presence` | Reader online/status heartbeat | Yes |
+| `clubs-home` | Smart club discovery sections and member/invite/request summaries | Yes |
+| `club-detail` | Full club home or private limited preview | Yes |
+| `create-club` | Create public/private clubs with discovery metadata | Yes |
+| `join-club` | Join public clubs | Yes |
+| `leave-club` | Leave joined clubs with last-admin protection | Yes |
+| `request-club-join` | Request access to private clubs | Yes |
+| `review-club-join-request` | Admin approve/decline private club requests | Yes |
+| `invite-club-member` | Admin invite readers to private/public clubs | Yes |
+| `respond-club-invite` | Invitee accept/decline club invites | Yes |
+| `create-club-discussion` | Member discussion/reply and admin announcement creation | Yes |
+| `moderate-club-discussion` | Author/moderator/admin discussion moderation | Yes |
+| `manage-club-member` | Admin member role and removal controls | Yes |
+| `conversations-home` | Direct-message inbox summaries, read cursors, and settings | Yes |
+| `conversation-detail` | Selected direct-message thread with signed media URLs | Yes |
+| `get-or-create-conversation` | Start or reopen a one-to-one conversation | Yes |
+| `send-message` | Send text, uploaded image/GIF, or Tenor GIF messages | Yes |
+| `mark-conversation-read` | Update per-user read cursor | Yes |
+| `toggle-message-reaction` | Add, replace, or remove fixed message reactions | Yes |
+| `update-conversation-settings` | Mute, pin, archive, or hide a conversation for one user | Yes |
+| `delete-message` | Sender soft-delete/unsend for a message | Yes |
+| `search-message-gifs` | Authenticated Tenor GIF search for messages | Yes |
 | `compute-analytics` | Daily analytics snapshot generation | Yes |
 | `send-push-notification` | Firebase Cloud Messaging delivery | Yes |
 | `sync-pull` | Pull reading-core sync changes | Yes |
@@ -199,6 +220,103 @@ Load dashboard aggregate data for the authenticated user.
 ```
 
 **Response**: dashboard home payload returned by `get_dashboard_home_snapshot`. Fresh snapshots are read from `dashboard_home_snapshots`; stale or missing snapshots refresh through `get_user_dashboard_stats`.
+
+### clubs-home
+
+Load the clubs discovery dashboard for the authenticated user.
+
+**Endpoint**: `POST /clubs-home`
+
+**Request**:
+```typescript
+{
+  searchQuery?: string;
+  limit?: number;
+  maxDistance?: number;
+}
+```
+
+**Response**:
+```typescript
+{
+  myClubs: ClubPreview[];
+  suggested: ClubPreview[];
+  nearby: ClubPreview[];
+  popular: ClubPreview[];
+  newest: ClubPreview[];
+  invites: ClubPreview[];
+  pendingRequests: ClubPreview[];
+  searchResults: ClubPreview[];
+  summary: {
+    my_clubs: number;
+    suggested: number;
+    nearby: number;
+    invites: number;
+    pending_requests: number;
+  };
+}
+```
+
+Private clubs are returned as limited previews for non-members. Preview payloads hide discussions, members, current book details, and precise coordinates until the viewer is accepted.
+Club image fields are stored as private `club-media` paths and returned as signed `banner_image_url` / `avatar_image_url` values by club Edge Functions.
+
+### club-detail
+
+Load the club home. Public clubs and member/private clubs return full detail. Private non-member clubs return only limited preview metadata.
+
+**Endpoint**: `POST /club-detail`
+
+**Request**:
+```typescript
+{ clubId: string }
+```
+
+**Response**:
+```typescript
+{
+  club: ClubPreview;
+  user_role: "admin" | "moderator" | "member" | null;
+  members: ClubMember[];
+  discussions: ClubDiscussion[];
+  announcements: ClubDiscussion[];
+  admin?: {
+    pending_requests: ClubJoinRequest[];
+    pending_invites: ClubInvite[];
+  } | null;
+}
+```
+
+### Club Commands
+
+Protected club command functions:
+
+- `create-club`: creates a club with `name`, optional `description`, `is_private`, `genres`, `tags`, `member_limit`, and optional region fields.
+- `join-club`: joins public clubs; private clubs require request or invite.
+- `leave-club`: removes the current user, but rejects leaving if they are the last admin.
+- `request-club-join`: creates an idempotent pending request for private clubs.
+- `review-club-join-request`: admin-only approve/decline.
+- `invite-club-member`: admin-only invite by reader id; blocked relationships are rejected.
+- `respond-club-invite`: invited user accepts/declines.
+- `create-club-discussion`: members create discussions/replies with optional media; admins can create announcements and pinned posts. `club-detail` returns discussions as nested tree payloads.
+- `update-club-media`: admin-only banner/profile image updates using private `club-media` storage paths.
+- `moderate-club-discussion`: author can delete own posts; moderators/admins can moderate; admins can pin.
+- `manage-club-member`: admin-only role changes and removals.
+
+### Direct Messaging
+
+Protected one-to-one messaging functions:
+
+- `conversations-home`: returns searchable inbox summaries with unread counts from `conversation_reads`, last message previews, per-user mute/pin/archive state, and block-disabled history.
+- `conversation-detail`: returns a selected thread, the other reader profile summary, current user settings, reactions, and signed private media URLs when the pair is not blocked.
+- `get-or-create-conversation`: creates or restores a direct conversation with another reader; blocked pairs and self-conversations are rejected.
+- `send-message`: accepts text, uploaded image/GIF metadata, or a normalized Tenor GIF; inserts the message, registers media, and updates the sender read cursor.
+- `mark-conversation-read`: updates the authenticated user's read cursor without mutating another participant's state.
+- `toggle-message-reaction`: fixed reactions are `like`, `dislike`, `heart`, `laugh`, `wow`, and `thanks`; each user has at most one reaction per message.
+- `update-conversation-settings`: per-user mute, pin, archive, and hidden inbox state. Inbox delete is a hide/archive action, not shared conversation deletion.
+- `delete-message`: sender-only soft delete. Deleted messages remain as tombstones when needed for chronology.
+- `search-message-gifs`: Tenor v2 search with safe-content filtering. Requires `TENOR_API_KEY` in deployed Edge Function secrets.
+
+Message media uses the private `message-media` bucket. Uploads are JPEG, PNG, WebP, or GIF only, max 8 MB each, max 4 attachments per message. Reads use signed URLs returned by messaging Edge Functions.
 
 ### complete-reading
 
@@ -342,6 +460,7 @@ type ReaderRecommendation = {
 - The default response does not include an all-users directory.
 - Suggestions are ranked from relationship, friends-of-friends, taste overlap, nearby, shared clubs, and activity.
 - `activeFriends` includes mutual follows with online status enabled and recent presence only.
+- `nearby` and distance scoring require saved coordinates and `show_location = true` for both readers.
 - Blocked users are excluded in both directions.
 - Private profiles are excluded unless profile visibility allows the authenticated user to view them.
 
@@ -931,6 +1050,7 @@ npx supabase secrets set ALLOWED_ORIGINS=https://yourdomain.com
 npx supabase secrets set ENVIRONMENT=production
 npx supabase secrets set GOOGLE_BOOKS_API_KEY=your-key
 npx supabase secrets set FCM_SERVER_KEY=your-fcm-key
+npx supabase secrets set TENOR_API_KEY=your-tenor-key
 ```
 
 ## Local Development

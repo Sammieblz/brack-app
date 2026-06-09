@@ -22,11 +22,13 @@ Rules:
 
 | Table | Current model | Status |
 | --- | --- | --- |
-| `profiles` | `profile_visibility`, `show_reading_activity`, `show_currently_reading`, `show_online_status`, `reader_status`, `last_seen_at` | Discovery uses profile visibility plus presence visibility. |
+| `profiles` | `profile_visibility`, `show_reading_activity`, `show_currently_reading`, `show_location`, `show_online_status`, `reader_status`, `last_seen_at` | Discovery uses profile visibility plus location and presence visibility. |
 | `social_activities` | `visibility` text with public/followers/owner behavior | Keep, but rename owner semantics to `private` in future migration or normalize in API. |
 | `book_reviews` | `is_public` boolean | Keep short-term; future migration can replace with `visibility`. |
-| `book_clubs` | `is_private` boolean plus membership helpers | Keep; maps to `public` or `club`. |
-| `book_club_discussions` | Club membership RLS | Keep as `club`. |
+| `book_clubs` | `is_private` boolean plus membership helpers | Keep; public clubs are fully discoverable, private clubs expose limited preview metadata only. |
+| `book_club_discussions` | Club membership RLS | Keep as `club`; announcements and pinned posts remain member-only for private clubs. |
+| `book_club_join_requests` | Requester plus club admin | Private-club access workflow. |
+| `book_club_invites` | Invited user plus club admin | Private/public invite workflow. |
 | `posts` | `visibility` with public/followers/private plus `deleted_at` | Enforced by RLS and Edge Functions. |
 | `post_comments` | Read/write through parent post visibility | Enforced by RLS and Edge Functions. |
 | `post_likes` | Read/write through parent post visibility | Enforced by RLS and Edge Functions. |
@@ -43,7 +45,7 @@ Rules:
 Phase 1:
 - Completed 2026-06-06 for posts, comments, likes, media, shares, blocks, and feed fanout.
 - Post creation, feed reads, likes, comments, shares, and block management are now Edge-owned social APIs.
-- Reader discovery excludes blocked users from search, suggestions, nearby, active friends, and profile links. Online presence is hidden when `show_online_status` is false.
+- Reader discovery excludes blocked users from search, suggestions, nearby, active friends, and profile links. Online presence is hidden when `show_online_status` is false. Nearby discovery uses saved coordinates only when `show_location` is true for both readers.
 
 Phase 2:
 - Make `book_lists.is_public = true` readable by authenticated users.

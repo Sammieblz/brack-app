@@ -60,10 +60,76 @@ verify_jwt = true
 [functions.blocked-users]
 verify_jwt = true
 
+[functions.conversations-home]
+verify_jwt = true
+
+[functions.conversation-detail]
+verify_jwt = true
+
+[functions.get-or-create-conversation]
+verify_jwt = true
+
+[functions.send-message]
+verify_jwt = true
+
+[functions.mark-conversation-read]
+verify_jwt = true
+
+[functions.toggle-message-reaction]
+verify_jwt = true
+
+[functions.update-conversation-settings]
+verify_jwt = true
+
+[functions.delete-message]
+verify_jwt = true
+
+[functions.search-message-gifs]
+verify_jwt = true
+
 [functions.discover-readers]
 verify_jwt = true
 
 [functions.update-presence]
+verify_jwt = true
+
+[functions.clubs-home]
+verify_jwt = true
+
+[functions.club-detail]
+verify_jwt = true
+
+[functions.create-club]
+verify_jwt = true
+
+[functions.join-club]
+verify_jwt = true
+
+[functions.leave-club]
+verify_jwt = true
+
+[functions.request-club-join]
+verify_jwt = true
+
+[functions.review-club-join-request]
+verify_jwt = true
+
+[functions.invite-club-member]
+verify_jwt = true
+
+[functions.respond-club-invite]
+verify_jwt = true
+
+[functions.create-club-discussion]
+verify_jwt = true
+
+[functions.moderate-club-discussion]
+verify_jwt = true
+
+[functions.manage-club-member]
+verify_jwt = true
+
+[functions.update-club-media]
 verify_jwt = true
 
 [functions.compute-analytics]

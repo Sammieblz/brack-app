@@ -24,6 +24,7 @@ interface ProfileRow {
   current_streak: number | null;
   latitude: number | null;
   longitude: number | null;
+  show_location: boolean | null;
   profile_visibility: string | null;
   show_online_status: boolean | null;
   reader_status: string | null;
@@ -152,7 +153,7 @@ Deno.serve(async (req) => {
     ] = await Promise.all([
       supabaseClient
         .from("profiles")
-        .select("id, latitude, longitude")
+        .select("id, latitude, longitude, show_location")
         .eq("id", userId)
         .maybeSingle(),
       supabaseClient
@@ -242,7 +243,7 @@ Deno.serve(async (req) => {
     let profilesQuery = supabaseClient
       .from("profiles")
       .select(
-        "id, display_name, avatar_url, bio, current_streak, latitude, longitude, profile_visibility, show_online_status, reader_status, last_seen_at",
+        "id, display_name, avatar_url, bio, current_streak, latitude, longitude, show_location, profile_visibility, show_online_status, reader_status, last_seen_at",
       )
       .neq("id", userId)
       .limit(searchQuery ? 80 : 250);
@@ -363,8 +364,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    const currentLat = currentProfileResult.data?.latitude;
-    const currentLon = currentProfileResult.data?.longitude;
+    const currentLocationEnabled = currentProfileResult.data?.show_location !== false;
+    const currentLat = currentLocationEnabled ? currentProfileResult.data?.latitude : null;
+    const currentLon = currentLocationEnabled ? currentProfileResult.data?.longitude : null;
     const now = Date.now();
 
     const recommendations: ReaderRecommendation[] = profiles
@@ -399,6 +401,7 @@ Deno.serve(async (req) => {
         if (
           typeof currentLat === "number" &&
           typeof currentLon === "number" &&
+          profile.show_location !== false &&
           typeof profile.latitude === "number" &&
           typeof profile.longitude === "number"
         ) {

@@ -1,13 +1,13 @@
 # Conversation Summary Model
 
-Source date: 2026-05-05  
-Scope: ticket 7.3, efficient conversation list summaries.
+Source date: 2026-06-08
+Scope: modern one-to-one messaging inbox summaries.
 
 ## Implemented Path
 
-Migration: `supabase/migrations/20260505095000_conversation_summary_rpc.sql`
+Primary migration: `supabase/migrations/20260506170000_modern_direct_messaging.sql`
 
-RPC: `get_conversation_summaries(p_user_id uuid)`
+Primary Edge Function: `conversations-home`
 
 Frontend service: `fetchConversations` in `src/services/api/messaging.ts`
 
@@ -19,18 +19,22 @@ Each summary contains:
 - created/updated timestamps
 - other participant profile
 - latest message preview
-- unread count for the current user
+- unread count for the current user, based on `conversation_reads`
+- per-user mute, pin, archive, and hidden inbox state
+- blocked-pair disabled state
 
 ## Query Behavior
 
-The RPC:
-- Verifies `auth.uid() = p_user_id`.
+The Edge Function:
+- Authenticates the caller from the Supabase JWT.
 - Reads conversations where the user is either participant.
-- Uses lateral joins for latest message and unread count.
-- Joins the other user's profile.
-- Returns one ordered JSON array.
+- Joins the other user's profile summary.
+- Reads the latest non-deleted message and registered media count.
+- Computes unread counts by comparing message timestamps to the caller's read cursor.
+- Applies per-user settings, hiding conversations with `hidden_at`.
+- Returns blocked conversations as disabled history rather than signing media or allowing sends.
 
-This replaces the previous N+1 pattern where the app loaded conversations, then fetched profile/latest message/unread count per conversation.
+This replaces both the old N+1 client query pattern and the intermediate `get_conversation_summaries` RPC as the app-facing inbox boundary.
 
 ## Index Support
 
@@ -40,8 +44,7 @@ Existing indexes:
 - `idx_messages_conversation_created`
 - `idx_messages_conversation_id`
 - `idx_messages_sender_id`
-
-Future optimization, if unread counts become hot:
-- Add partial index on `messages(conversation_id, sender_id) WHERE is_read = false`.
-- Consider `conversation_reads` if group conversations are added.
+- `idx_messages_conversation_active_created`
+- `idx_conversation_reads_user`
+- `idx_conversation_user_settings_user`
 

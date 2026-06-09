@@ -101,6 +101,10 @@ Brack uses modern, production-ready technologies for web and mobile development.
   - `post-comments` / `create-post-comment` - Threaded comment reads and writes
   - `toggle-post-like` / `share-post` - Post engagement endpoints
   - `block-user` / `unblock-user` / `blocked-users` - Social blocking endpoints
+  - `conversations-home` / `conversation-detail` - Direct-message inbox and selected thread reads
+  - `send-message` / `delete-message` - Direct-message writes, media registration, and soft delete
+  - `toggle-message-reaction` - Fixed direct-message reactions
+  - `search-message-gifs` - Authenticated Tenor GIF search
   - `log-progress` - Progress tracking with transactions
   - `monthly-stats` - Statistics calculation
   - `social-feed` - Mutual-friend reading activity feed
@@ -176,6 +180,8 @@ Brack uses modern, production-ready technologies for web and mobile development.
 - **tesseract.js** 7.0.0 - OCR for cover scanning
 - **@zxing/library** 0.21.3 - Barcode scanning
 - **Supabase Storage** - Private `post-media` bucket for social images/videos with signed read URLs
+- **Supabase Storage** - Private `message-media` bucket for direct-message images/GIFs with signed read URLs
+- **Tenor API** - Authenticated direct-message GIF search through Edge Functions
 - **Capacitor Share / navigator.share** - Native social post sharing with copy-link fallback
 
 ### Security

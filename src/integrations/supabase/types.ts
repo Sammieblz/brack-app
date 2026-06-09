@@ -43,8 +43,13 @@ export type Database = {
           club_id: string
           content: string
           created_at: string
+          deleted_at: string | null
+          discussion_type: string
           id: string
+          is_pinned: boolean
+          media: Json
           parent_id: string | null
+          reply_count: number
           title: string | null
           updated_at: string
           user_id: string
@@ -53,8 +58,13 @@ export type Database = {
           club_id: string
           content: string
           created_at?: string
+          deleted_at?: string | null
+          discussion_type?: string
           id?: string
+          is_pinned?: boolean
+          media?: Json
           parent_id?: string | null
+          reply_count?: number
           title?: string | null
           updated_at?: string
           user_id: string
@@ -63,8 +73,13 @@ export type Database = {
           club_id?: string
           content?: string
           created_at?: string
+          deleted_at?: string | null
+          discussion_type?: string
           id?: string
+          is_pinned?: boolean
+          media?: Json
           parent_id?: string | null
+          reply_count?: number
           title?: string | null
           updated_at?: string
           user_id?: string
@@ -118,38 +133,168 @@ export type Database = {
           },
         ]
       }
+      book_club_invites: {
+        Row: {
+          club_id: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          invited_by: string
+          invited_user_id: string
+          message: string | null
+          responded_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          invited_by: string
+          invited_user_id: string
+          message?: string | null
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          invited_by?: string
+          invited_user_id?: string
+          message?: string | null
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_club_invites_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "book_clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_club_join_requests: {
+        Row: {
+          club_id: string
+          created_at: string
+          id: string
+          message: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_club_join_requests_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "book_clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       book_clubs: {
         Row: {
+          announcement_count: number
+          avatar_image_path: string | null
+          banner_image_path: string | null
+          city: string | null
+          country: string | null
           cover_image_url: string | null
           created_at: string
           created_by: string
           current_book_id: string | null
           description: string | null
+          discussion_count: number
+          genres: string[]
           id: string
           is_private: boolean | null
+          last_activity_at: string
+          latitude: number | null
+          longitude: number | null
+          member_count: number
+          member_limit: number | null
           name: string
+          tags: string[]
           updated_at: string
         }
         Insert: {
+          announcement_count?: number
+          avatar_image_path?: string | null
+          banner_image_path?: string | null
+          city?: string | null
+          country?: string | null
           cover_image_url?: string | null
           created_at?: string
           created_by: string
           current_book_id?: string | null
           description?: string | null
+          discussion_count?: number
+          genres?: string[]
           id?: string
           is_private?: boolean | null
+          last_activity_at?: string
+          latitude?: number | null
+          longitude?: number | null
+          member_count?: number
+          member_limit?: number | null
           name: string
+          tags?: string[]
           updated_at?: string
         }
         Update: {
+          announcement_count?: number
+          avatar_image_path?: string | null
+          banner_image_path?: string | null
+          city?: string | null
+          country?: string | null
           cover_image_url?: string | null
           created_at?: string
           created_by?: string
           current_book_id?: string | null
           description?: string | null
+          discussion_count?: number
+          genres?: string[]
           id?: string
           is_private?: boolean | null
+          last_activity_at?: string
+          latitude?: number | null
+          longitude?: number | null
+          member_count?: number
+          member_limit?: number | null
           name?: string
+          tags?: string[]
           updated_at?: string
         }
         Relationships: []
@@ -513,33 +658,299 @@ export type Database = {
       }
       messages: {
         Row: {
-          content: string
+          client_message_id: string | null
+          content: string | null
           conversation_id: string
           created_at: string
+          deleted_at: string | null
+          edited_at: string | null
           id: string
           is_read: boolean | null
+          message_type: string
+          metadata: Json
+          reply_to_message_id: string | null
           sender_id: string
           updated_at: string
         }
         Insert: {
-          content: string
+          client_message_id?: string | null
+          content?: string | null
           conversation_id: string
           created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
           id?: string
           is_read?: boolean | null
+          message_type?: string
+          metadata?: Json
+          reply_to_message_id?: string | null
           sender_id: string
           updated_at?: string
         }
         Update: {
-          content?: string
+          client_message_id?: string | null
+          content?: string | null
           conversation_id?: string
           created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
           id?: string
           is_read?: boolean | null
+          message_type?: string
+          metadata?: Json
+          reply_to_message_id?: string | null
           sender_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "messages_reply_to_message_id_fkey"
+            columns: ["reply_to_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_reads: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          last_read_message_id: string | null
+          read_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          last_read_message_id?: string | null
+          read_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          last_read_message_id?: string | null
+          read_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_reads_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_reads_last_read_message_id_fkey"
+            columns: ["last_read_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_reads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_user_settings: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          hidden_at: string | null
+          is_archived: boolean
+          is_muted: boolean
+          is_pinned: boolean
+          last_opened_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          hidden_at?: string | null
+          is_archived?: boolean
+          is_muted?: boolean
+          is_pinned?: boolean
+          last_opened_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          hidden_at?: string | null
+          is_archived?: boolean
+          is_muted?: boolean
+          is_pinned?: boolean
+          last_opened_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_user_settings_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_user_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_media: {
+        Row: {
+          bucket_id: string
+          conversation_id: string
+          created_at: string
+          external_url: string | null
+          height: number | null
+          id: string
+          media_source: string
+          media_type: string
+          message_id: string
+          metadata: Json
+          mime_type: string
+          position: number
+          preview_url: string | null
+          provider: string | null
+          provider_id: string | null
+          size_bytes: number | null
+          storage_path: string | null
+          user_id: string
+          width: number | null
+        }
+        Insert: {
+          bucket_id?: string
+          conversation_id: string
+          created_at?: string
+          external_url?: string | null
+          height?: number | null
+          id?: string
+          media_source?: string
+          media_type: string
+          message_id: string
+          metadata?: Json
+          mime_type: string
+          position?: number
+          preview_url?: string | null
+          provider?: string | null
+          provider_id?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          user_id: string
+          width?: number | null
+        }
+        Update: {
+          bucket_id?: string
+          conversation_id?: string
+          created_at?: string
+          external_url?: string | null
+          height?: number | null
+          id?: string
+          media_source?: string
+          media_type?: string
+          message_id?: string
+          metadata?: Json
+          mime_type?: string
+          position?: number
+          preview_url?: string | null
+          provider?: string | null
+          provider_id?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          user_id?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_media_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_media_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_media_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_reactions: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          message_id: string
+          reaction_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          id?: string
+          message_id: string
+          reaction_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          message_id?: string
+          reaction_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notification_preferences: {
         Row: {
@@ -762,6 +1173,7 @@ export type Database = {
           phone_number: string | null
           profile_visibility: string | null
           show_currently_reading: boolean | null
+          show_location: boolean
           show_online_status: boolean
           show_reading_activity: boolean | null
           reader_status: string
@@ -798,6 +1210,7 @@ export type Database = {
           phone_number?: string | null
           profile_visibility?: string | null
           show_currently_reading?: boolean | null
+          show_location?: boolean
           show_online_status?: boolean
           show_reading_activity?: boolean | null
           reader_status?: string
@@ -834,6 +1247,7 @@ export type Database = {
           phone_number?: string | null
           profile_visibility?: string | null
           show_currently_reading?: boolean | null
+          show_location?: boolean
           show_online_status?: boolean
           show_reading_activity?: boolean | null
           reader_status?: string
