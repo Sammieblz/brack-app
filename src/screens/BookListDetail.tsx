@@ -5,18 +5,20 @@ import { useBookLists } from "@/hooks/useBookLists";
 import { useListBooks } from "@/hooks/useListBooks";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
-import { Drag, NavArrowRight, Plus, Trash } from "iconoir-react";
+import { NavArrowRight } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { AppBackButton } from "@/components/AppBackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AddBooksToListDialog } from "@/components/AddBooksToListDialog";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import { APP_ICONS } from "@/config/iconography";
+import { AppIcon } from "@/components/ui/app-icon";
 import { cn } from "@/lib/utils";
 import { getProgressPercentage } from "@/utils/bookProgress";
 import {
@@ -95,11 +97,11 @@ const SortableBookItem = ({ book, onRemove, onNavigate }: SortableBookItemProps)
                 variant="ghost"
                 size="icon"
                 aria-label={`Move ${book.title}`}
-                className="mt-1 h-10 w-10 shrink-0 touch-none cursor-grab rounded-full border border-border/60 bg-background/60 text-muted-foreground active:cursor-grabbing"
+                className="mt-1 h-10 w-10 shrink-0 touch-none cursor-grab rounded-full text-muted-foreground active:cursor-grabbing"
                 {...attributes}
                 {...listeners}
               >
-                <Drag className="h-4 w-4" />
+                <AppIcon icon={APP_ICONS.common.drag} variant="action" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Drag to reorder</TooltipContent>
@@ -118,8 +120,8 @@ const SortableBookItem = ({ book, onRemove, onNavigate }: SortableBookItemProps)
                 className="h-24 w-16 rounded-md object-cover shadow-sm transition-transform group-hover/cover:-translate-y-0.5 sm:h-28 sm:w-[4.5rem]"
               />
             ) : (
-              <span className="grid h-24 w-16 place-items-center rounded-md bg-primary/10 text-primary shadow-sm sm:h-28 sm:w-[4.5rem]">
-                <APP_ICONS.dashboard.coverFallback className="h-6 w-6" />
+              <span className="grid h-24 w-16 place-items-center rounded-md bg-muted/40 text-muted-foreground sm:h-28 sm:w-[4.5rem]">
+                <AppIcon icon={APP_ICONS.dashboard.coverFallback} variant="empty" size="md" />
               </span>
             )}
           </button>
@@ -150,7 +152,7 @@ const SortableBookItem = ({ book, onRemove, onNavigate }: SortableBookItemProps)
                     aria-label={`Remove ${book.title} from list`}
                     className="h-9 w-9 shrink-0 rounded-full border-destructive/45 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                   >
-                    <Trash className="h-4 w-4" />
+                    <AppIcon icon={APP_ICONS.common.delete} variant="action" />
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -355,7 +357,7 @@ const BookListDetail = () => {
             onBooksAdded={refetch}
             trigger={
               <Button className="w-full rounded-full sm:w-auto">
-                <Plus className="mr-2 h-4 w-4" />
+                <AppIcon icon={APP_ICONS.common.add} variant="action" className="mr-2" />
                 Add Books
               </Button>
             }
@@ -363,22 +365,22 @@ const BookListDetail = () => {
         </div>
 
         {sortableBooks.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="font-sans text-muted-foreground mb-4">
-              No books in this list yet
-            </p>
+          <PremiumEmptyState
+            asset="emptyLists"
+            title="No books in this list yet"
+            description="Add books to turn this into a useful collection."
+            size="compact"
+            action={
             <AddBooksToListDialog
               listId={listId!}
               userId={user.id}
               onBooksAdded={refetch}
             />
-          </div>
+            }
+          />
         ) : (
           <>
             <div className="flex items-start gap-3 rounded-xl border border-border/60 bg-card/60 p-3 text-sm text-muted-foreground">
-              <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-                <Drag className="h-4 w-4" />
-              </span>
               <div>
                 <p className="font-sans font-semibold text-foreground">Arrange this list</p>
                 <p className="font-sans">

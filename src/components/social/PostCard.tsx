@@ -7,19 +7,13 @@ import { Card } from "@/components/ui/card";
 import { ActionSheet } from "@/components/ui/action-sheet";
 import { HeartLike } from "@/components/animations/HeartLike";
 import { CommentThread } from "./CommentThread";
+import { AppIcon } from "@/components/ui/app-icon";
 import type { Post } from "@/hooks/usePosts";
 import { useAuth } from "@/hooks/useAuth";
 import { blockUser, deletePost, sharePost } from "@/services/api";
 import { APP_ICONS } from "@/config/iconography";
 import { cn } from "@/lib/utils";
 import { sanitizeText } from "@/utils/sanitize";
-import {
-  ChatBubble,
-  Menu,
-  ShareIos,
-  Trash,
-  WarningTriangle,
-} from "iconoir-react";
 import { toast } from "sonner";
 
 interface PostCardProps {
@@ -120,14 +114,14 @@ export const PostCard = ({ post, onLike, onDelete, onBlocked, compact }: PostCar
   const actions = [
     {
       label: "Share",
-      icon: <ShareIos className="h-5 w-5" />,
+      icon: <AppIcon icon={APP_ICONS.common.share} variant="inline" size="md" />,
       onClick: handleShare,
     },
     ...(isOwner
       ? [
           {
             label: "Delete Post",
-            icon: <Trash className="h-5 w-5" />,
+            icon: <AppIcon icon={APP_ICONS.common.delete} variant="inline" size="md" />,
             variant: "destructive" as const,
             onClick: handleDeletePost,
           },
@@ -135,13 +129,13 @@ export const PostCard = ({ post, onLike, onDelete, onBlocked, compact }: PostCar
       : [
           {
             label: "Report",
-            icon: <WarningTriangle className="h-5 w-5" />,
+            icon: <AppIcon icon={APP_ICONS.common.warning} variant="inline" size="md" />,
             variant: "destructive" as const,
             onClick: () => toast.success("Post reported. Thank you for keeping Brack safe."),
           },
           {
             label: "Block Reader",
-            icon: <WarningTriangle className="h-5 w-5" />,
+            icon: <AppIcon icon={APP_ICONS.common.warning} variant="inline" size="md" />,
             variant: "destructive" as const,
             onClick: handleBlock,
           },
@@ -187,7 +181,7 @@ export const PostCard = ({ post, onLike, onDelete, onBlocked, compact }: PostCar
                 aria-label="Post options"
                 onClick={() => setActionsOpen(true)}
               >
-                <Menu className="h-4 w-4" />
+                <AppIcon icon={APP_ICONS.common.more} variant="action" />
               </Button>
             </div>
           </header>
@@ -228,7 +222,7 @@ export const PostCard = ({ post, onLike, onDelete, onBlocked, compact }: PostCar
                 onClick={() => setShowComments((value) => !value)}
                 className="gap-2 rounded-full"
               >
-                <ChatBubble className="h-4 w-4" />
+                <AppIcon icon={APP_ICONS.common.chat} variant="inline" size="sm" />
                 {post.comments_count || 0}
               </Button>
               <Button
@@ -237,7 +231,7 @@ export const PostCard = ({ post, onLike, onDelete, onBlocked, compact }: PostCar
                 onClick={handleShare}
                 className="gap-2 rounded-full"
               >
-                <ShareIos className="h-4 w-4" />
+                <AppIcon icon={APP_ICONS.common.share} variant="inline" size="sm" />
                 {shareCount}
               </Button>
             </div>
@@ -313,8 +307,8 @@ const PostAttachment = ({ post }: { post: Post }) => {
             className="h-16 w-11 rounded object-cover"
           />
         ) : (
-          <div className="flex h-16 w-11 items-center justify-center rounded bg-primary/10 text-primary">
-            <APP_ICONS.dashboard.coverFallback className="h-5 w-5" />
+          <div className="flex h-16 w-11 items-center justify-center rounded bg-muted/50 text-muted-foreground">
+            <AppIcon icon={APP_ICONS.dashboard.coverFallback} variant="empty" size="md" />
           </div>
         )}
         <span className="min-w-0">
@@ -338,9 +332,7 @@ const PostAttachment = ({ post }: { post: Post }) => {
         onClick={() => navigate(`/clubs/${post.club_id}`)}
         className="flex w-full items-center gap-3 rounded-md border border-border/70 bg-muted/25 p-3 text-left transition-colors hover:border-primary/40"
       >
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-          <APP_ICONS.nav.clubs className="h-5 w-5" />
-        </div>
+        <AppIcon icon={APP_ICONS.nav.clubs} variant="inline" size="md" className="shrink-0 text-muted-foreground" />
         <span className="min-w-0">
           <span className="block truncate font-display text-base font-semibold">
             {post.club.name}

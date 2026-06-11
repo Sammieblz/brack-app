@@ -1,16 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  BellNotification,
   Crown,
   Lock,
   MapPin,
   MediaImage,
   NavArrowRight,
   Send,
-  ShieldCheck,
   Trash,
-  UserPlus,
 } from "iconoir-react";
 import { formatDistanceToNow } from "date-fns";
 import { AppBackButton } from "@/components/AppBackButton";
@@ -18,6 +15,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { MobileHeader } from "@/components/MobileHeader";
 import { MobileLayout } from "@/components/MobileLayout";
 import { DiscussionThread } from "@/components/clubs/DiscussionThread";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -549,7 +547,13 @@ const OverviewTab = ({ detail }: { detail: ClubDetailResponse }) => {
         </CardHeader>
         <CardContent className="space-y-3">
           {recent.length === 0 ? (
-            <p className="font-sans text-sm text-muted-foreground">No recent club posts yet.</p>
+            <PremiumEmptyState
+              asset="emptyComments"
+              title="No recent club posts yet"
+              description="Discussions and announcements will appear here once members start posting."
+              variant="plain"
+              size="compact"
+            />
           ) : (
             recent.map((item) => (
               <div key={item.id} className="rounded-lg border border-border/70 p-3">
@@ -676,11 +680,12 @@ const DiscussionList = ({
 }) => {
   if (discussions.length === 0) {
     return (
-      <Card>
-        <CardContent className="flex min-h-40 items-center justify-center p-8 text-center font-sans text-muted-foreground">
-          {emptyLabel}
-        </CardContent>
-      </Card>
+      <PremiumEmptyState
+        asset="emptyComments"
+        title={emptyLabel}
+        description="Start a thread to give members something to respond to."
+        size="compact"
+      />
     );
   }
 
@@ -844,10 +849,7 @@ const AdminTab = ({
     <div className="grid gap-5 lg:grid-cols-[1fr_22rem]">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-display">
-            <ShieldCheck className="h-5 w-5 text-primary" />
-            Pending Requests
-          </CardTitle>
+          <CardTitle className="font-display">Pending Requests</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {requests.length === 0 ? (
@@ -884,10 +886,7 @@ const AdminTab = ({
       <div className="space-y-5">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-display">
-              <MediaImage className="h-5 w-5 text-primary" />
-              Club Media
-            </CardTitle>
+            <CardTitle className="font-display">Club Media</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="overflow-hidden rounded-2xl border border-border/70 bg-muted/20">
@@ -963,10 +962,7 @@ const AdminTab = ({
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-display">
-              <UserPlus className="h-5 w-5 text-primary" />
-              Invite Reader
-            </CardTitle>
+            <CardTitle className="font-display">Invite Reader</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
@@ -1076,10 +1072,7 @@ const AdminTab = ({
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 font-display">
-              <BellNotification className="h-5 w-5 text-primary" />
-              Pending Invites
-            </CardTitle>
+            <CardTitle className="font-display">Pending Invites</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {invites.length === 0 ? (

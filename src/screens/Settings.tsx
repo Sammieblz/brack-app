@@ -18,6 +18,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { AppIcon } from "@/components/ui/app-icon";
 import { APP_ICONS, type AppIcon } from "@/config/iconography";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { cn } from "@/lib/utils";
@@ -196,9 +197,7 @@ const Settings = () => {
                     onClick={() => triggerHaptic("light")}
                   >
                     <div className="flex items-center gap-3 flex-1">
-                      <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                        <Icon className="h-5 w-5" />
-                      </div>
+                      <AppIcon icon={Icon} variant="inline" size="md" className="text-primary" />
                       <div className="flex-1 text-left">
                         <div className="font-sans font-medium">{section.label}</div>
                         <div className="font-sans text-xs text-muted-foreground mt-0.5">
@@ -236,7 +235,7 @@ const Settings = () => {
                           : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                       )}
                     >
-                      <Icon className="h-5 w-5 shrink-0" />
+                      <AppIcon icon={Icon} variant="inline" size="md" className="shrink-0" />
                       <span className="min-w-0">
                         <span className="block font-sans text-sm font-medium">{section.label}</span>
                         <span className="block truncate font-sans text-xs opacity-80">{section.description}</span>
@@ -266,7 +265,7 @@ const Settings = () => {
                 setShowSignOutDialog(true);
               }}
             >
-              <APP_ICONS.common.signOut className="h-4 w-4 mr-2" />
+              <AppIcon icon={APP_ICONS.common.signOut} variant="action" className="mr-2" />
               Sign Out
             </Button>
           </CardContent>

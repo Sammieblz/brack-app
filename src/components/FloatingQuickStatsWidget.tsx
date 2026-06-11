@@ -3,6 +3,7 @@ import { Xmark } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { APP_ICONS } from "@/config/iconography";
+import { AppIcon } from "@/components/ui/app-icon";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
@@ -92,10 +93,7 @@ export const FloatingQuickStatsWidget = ({ isVisible, onClose }: FloatingQuickSt
       <Card className="w-[300px] border-0 bg-gradient-card shadow-glow backdrop-blur-sm">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="font-display flex items-center gap-2 text-base font-bold">
-              <APP_ICONS.floatingAction.quickStats className="h-4 w-4 text-primary" />
-              Quick Stats
-            </CardTitle>
+            <CardTitle className="font-display text-base font-bold">Quick Stats</CardTitle>
             <Button
               size="sm"
               variant="ghost"
@@ -103,15 +101,12 @@ export const FloatingQuickStatsWidget = ({ isVisible, onClose }: FloatingQuickSt
               className="h-8 w-8 p-0"
               disableHaptic
             >
-              <Xmark className="h-4 w-4" />
+              <AppIcon icon={APP_ICONS.common.close} variant="action" />
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center gap-3 rounded-lg bg-background/50 p-3">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
-              <APP_ICONS.stats.completed className="h-5 w-5 text-primary" />
-            </div>
             <div className="min-w-0 flex-1">
               <div className="font-sans text-2xl font-bold text-foreground">{booksReadThisMonth}</div>
               <div className="font-sans text-xs text-muted-foreground">Books this month</div>
@@ -119,9 +114,6 @@ export const FloatingQuickStatsWidget = ({ isVisible, onClose }: FloatingQuickSt
           </div>
 
           <div className="flex items-center gap-3 rounded-lg bg-background/50 p-3">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-orange-500/10">
-              <APP_ICONS.stats.streak className="h-5 w-5 text-orange-500" />
-            </div>
             <div className="min-w-0 flex-1">
               <div className="font-sans text-2xl font-bold text-foreground">{streakData.currentStreak}</div>
               <div className="font-sans text-xs text-muted-foreground">Day streak</div>
@@ -129,9 +121,6 @@ export const FloatingQuickStatsWidget = ({ isVisible, onClose }: FloatingQuickSt
           </div>
 
           <div className="flex items-center gap-3 rounded-lg bg-background/50 p-3">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/10">
-              <APP_ICONS.stats.readingTime className="h-5 w-5 text-blue-500" />
-            </div>
             <div className="min-w-0 flex-1">
               <div className="font-sans text-2xl font-bold text-foreground">
                 {readingHours > 0 ? `${readingHours}h` : `${readingMinutes}m`}

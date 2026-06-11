@@ -94,8 +94,8 @@ export const LibraryCarouselView = ({
                     {selectMode && (
                       <span
                         className={cn(
-                          "absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-border/75 bg-background/95 shadow-sm backdrop-blur transition-colors",
-                          selectedForBulk && "border-primary bg-primary/10"
+                          "absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-background/95 backdrop-blur transition-colors",
+                          selectedForBulk && "bg-primary/10"
                         )}
                         onClick={(event) => event.stopPropagation()}
                       >

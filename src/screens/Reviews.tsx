@@ -1,14 +1,16 @@
-import { type ComponentType, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { MobileHeader } from "@/components/MobileHeader";
 import { MobileLayout } from "@/components/MobileLayout";
 import { NativeHeader } from "@/components/NativeHeader";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { ReviewCard } from "@/components/social/ReviewCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { APP_ICONS } from "@/config/iconography";
+import { AppIcon } from "@/components/ui/app-icon";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useReviews } from "@/hooks/useReviews";
 
@@ -79,17 +81,14 @@ const Reviews = () => {
       <main className="app-page">
         <section className="grid grid-cols-3 gap-2 sm:gap-3">
           <MetricCard
-            icon={APP_ICONS.nav.reviews}
             label="Reviews"
             value={reviews.length.toString()}
           />
           <MetricCard
-            icon={APP_ICONS.analytics.favoriteGenre}
             label="Average rating"
             value={averageRating ? averageRating.toFixed(1) : "-"}
           />
           <MetricCard
-            icon={APP_ICONS.stats.longestBook}
             label="Books reviewed"
             value={booksReviewed.toString()}
           />
@@ -100,7 +99,11 @@ const Reviews = () => {
             <div className="rounded-lg border border-border bg-card p-3 sm:p-4">
               <div className="flex flex-col gap-3 md:flex-row md:items-center">
                 <div className="relative flex-1">
-                  <APP_ICONS.common.search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <AppIcon
+                    icon={APP_ICONS.common.search}
+                    variant="inline"
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
                   <Input
                     type="search"
                     value={query}
@@ -115,14 +118,7 @@ const Reviews = () => {
                     <TabsList className="min-w-max shadow-none">
                       {ratingFilters.map((rating) => (
                         <TabsTrigger key={rating} value={rating} className="gap-1.5 px-3">
-                          {rating === "all" ? (
-                            "All"
-                          ) : (
-                            <>
-                              <APP_ICONS.nav.reviews className="h-3.5 w-3.5" />
-                              {rating}
-                            </>
-                          )}
+                          {rating === "all" ? "All" : rating}
                         </TabsTrigger>
                       ))}
                     </TabsList>
@@ -167,7 +163,6 @@ const Reviews = () => {
                     <div key={item.rating} className="grid grid-cols-[2.5rem_1fr_2rem] items-center gap-3">
                       <div className="flex items-center gap-1 font-sans text-sm font-medium">
                         {item.rating}
-                        <APP_ICONS.nav.reviews className="h-3.5 w-3.5 text-primary" />
                       </div>
                       <div className="h-2 rounded-full bg-muted">
                         <div
@@ -203,19 +198,14 @@ const Reviews = () => {
 };
 
 const MetricCard = ({
-  icon: Icon,
   label,
   value,
 }: {
-  icon: ComponentType<{ className?: string }>;
   label: string;
   value: string;
 }) => (
   <Card>
     <CardContent className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:gap-3 sm:p-4">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary sm:h-10 sm:w-10">
-        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-      </div>
       <div className="min-w-0">
         <p className="font-sans text-lg font-semibold leading-none sm:text-2xl">{value}</p>
         <p className="mt-1 truncate font-sans text-[11px] text-muted-foreground sm:text-sm">{label}</p>
@@ -225,19 +215,15 @@ const MetricCard = ({
 );
 
 const EmptyReviews = ({ query, filter }: { query: string; filter: RatingFilter }) => (
-  <Card>
-    <CardContent className="flex min-h-[18rem] flex-col items-center justify-center p-8 text-center">
-      <APP_ICONS.nav.reviews className="mb-4 h-10 w-10 text-muted-foreground" />
-      <h2 className="font-display text-xl font-semibold">
-        {query || filter !== "all" ? "No matching reviews" : "No public reviews yet"}
-      </h2>
-      <p className="mt-2 max-w-sm font-sans text-sm text-muted-foreground">
-        {query || filter !== "all"
-          ? "Try a different search or rating filter."
-          : "Reviews will appear here once readers share public feedback from book pages."}
-      </p>
-    </CardContent>
-  </Card>
+  <PremiumEmptyState
+    asset={query || filter !== "all" ? "noResults" : "emptyReviews"}
+    title={query || filter !== "all" ? "No matching reviews" : "No public reviews yet"}
+    description={
+      query || filter !== "all"
+        ? "Try a different search or rating filter."
+        : "Reviews will appear here once readers share public feedback from book pages."
+    }
+  />
 );
 
 export default Reviews;

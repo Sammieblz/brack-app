@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { HalfMoon, LogOut, SunLight } from "iconoir-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
+import { AppIcon } from "@/components/ui/app-icon";
 import {
   Sidebar,
   SidebarContent,
@@ -23,6 +23,7 @@ import { useProfileContext } from "@/contexts/ProfileContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { getInitials } from "@/lib/avatarUtils";
 import { NAV_GROUPS, getNavItemsBySection, isNavItemActive, type NavItem } from "@/config/navigation";
+import { APP_ICONS } from "@/config/iconography";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 
 const renderNavGroup = (label: string, items: NavItem[], pathname: string) => (
@@ -89,12 +90,11 @@ export const AppSidebar = () => {
             className="min-w-0 flex-1 rounded-lg group-data-[collapsible=icon]:hidden"
           >
             <Link to="/dashboard" className="min-w-0">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 p-1.5 shadow-sm ring-1 ring-primary/25">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md p-1.5 text-primary">
                 <ThemeAwareLogo
                   variant="icon"
                   tone="theme"
                   size="h-full w-full"
-                  className="drop-shadow-sm"
                 />
               </div>
               <div className="min-w-0">
@@ -109,7 +109,7 @@ export const AppSidebar = () => {
             aria-label="Open sidebar"
             title="Open sidebar"
             onClick={() => setOpen(true)}
-            className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 p-1.5 shadow-sm ring-1 ring-primary/25 transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:flex"
+            className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-md p-1.5 text-primary transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:flex"
           >
             <ThemeAwareLogo
               variant="icon"
@@ -173,9 +173,9 @@ export const AppSidebar = () => {
               aria-pressed={isDarkMode}
             >
               {isDarkMode ? (
-                <SunLight className="h-4 w-4 text-primary" />
+                <AppIcon icon={APP_ICONS.common.themeLight} variant="action" className="text-primary" />
               ) : (
-                <HalfMoon className="h-4 w-4 text-primary" />
+                <AppIcon icon={APP_ICONS.common.themeDark} variant="action" className="text-primary" />
               )}
               <span>{isDarkMode ? "Light mode" : "Dark mode"}</span>
             </SidebarMenuButton>
@@ -183,7 +183,7 @@ export const AppSidebar = () => {
 
           <SidebarMenuItem>
             <SidebarMenuButton tooltip="Sign out" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4" />
+              <AppIcon icon={APP_ICONS.common.signOut} variant="action" />
               <span>Sign out</span>
             </SidebarMenuButton>
           </SidebarMenuItem>

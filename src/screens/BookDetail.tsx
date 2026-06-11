@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTimer } from "@/contexts/TimerContext";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, EditPencil, Trash, Star, Bookmark, ShareIos } from "iconoir-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Star } from "iconoir-react";
 import { shareService } from "@/services/shareService";
 import { toast } from "sonner";
 import { formatDuration } from "@/utils";
@@ -16,6 +27,7 @@ import { ProgressLogItem } from "@/components/ProgressLogItem";
 import { useProgressLogs } from "@/hooks/useProgressLogs";
 import { useBookProgress } from "@/hooks/useBookProgress";
 import { JournalEntriesList } from "@/components/JournalEntriesList";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { AddToListDialog } from "@/components/AddToListDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { ReviewCard } from "@/components/social/ReviewCard";
@@ -23,9 +35,11 @@ import { ReviewForm } from "@/components/social/ReviewForm";
 import { useReviews } from "@/hooks/useReviews";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
-import { AppBackButton } from "@/components/AppBackButton";
+import { NativeHeader } from "@/components/NativeHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { APP_ICONS } from "@/config/iconography";
+import { AppIcon } from "@/components/ui/app-icon";
+import { cn } from "@/lib/utils";
 import type { Book, ReadingSession } from "@/types";
 import {
   fetchActiveBookById,
@@ -34,6 +48,74 @@ import {
 } from "@/services/api";
 import { booksRepo, sessionsRepo } from "@/services/local";
 import { bookOperations } from "@/utils/offlineOperation";
+
+const formatStatus = (status: string) => status.replace("_", " ");
+
+const getStatusClassName = (status: string) => {
+  switch (status) {
+    case "reading":
+      return "bg-primary text-primary-foreground";
+    case "completed":
+      return "bg-emerald-500 text-white";
+    case "to_read":
+      return "bg-blue-500 text-white";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+};
+
+const formatDate = (date?: string | null) => {
+  if (!date) return null;
+  return new Date(date).toLocaleDateString();
+};
+
+const DetailRow = ({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | number | null;
+}) => {
+  if (value === null || value === undefined || value === "") return null;
+
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-border/50 py-3 last:border-0">
+      <span className="font-sans text-sm text-muted-foreground">{label}</span>
+      <span className="min-w-0 text-right font-sans text-sm font-medium text-foreground">
+        {value}
+      </span>
+    </div>
+  );
+};
+
+const IconAction = ({
+  label,
+  className,
+  onClick,
+  children,
+}: {
+  label: string;
+  className?: string;
+  onClick?: () => void;
+  children: ReactNode;
+}) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        aria-label={label}
+        title={label}
+        onClick={onClick}
+        className={cn("h-10 w-10 rounded-full border-border/70 bg-card/60 shadow-none", className)}
+      >
+        {children}
+      </Button>
+    </TooltipTrigger>
+    <TooltipContent>{label}</TooltipContent>
+  </Tooltip>
+);
 
 const BookDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -48,6 +130,7 @@ const BookDetail = () => {
   const { user } = useAuth();
   const { reviews, averageRating, userHasReviewed, refetch: refetchReviews } = useReviews(id);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -115,14 +198,12 @@ const BookDetail = () => {
 
   const handleDeleteBook = async () => {
     if (!book) return;
-    
-    if (!confirm("Are you sure you want to delete this book?")) return;
 
     try {
       await bookOperations.delete(book.id);
 
       toast.success("Book deleted successfully");
-      navigate("/dashboard");
+      navigate("/my-books");
     } catch (error: unknown) {
       console.error('Error deleting book:', error);
       toast.error("Failed to delete book");
@@ -156,411 +237,523 @@ const BookDetail = () => {
     );
   }
 
+  const currentPage = book.current_page || 0;
+  const totalPages = book.pages || 0;
+  const bookProgressPercent = totalPages
+    ? Math.min(100, Math.round((currentPage / totalPages) * 100))
+    : 0;
+  const remainingPages = totalPages ? Math.max(totalPages - currentPage, 0) : null;
+  const startedDate = formatDate(book.date_started);
+  const finishedDate = formatDate(book.date_finished);
+  const progressValue = progress?.progress_percentage ?? bookProgressPercent;
+  const statusLabel = formatStatus(book.status);
+
+  const handleShareBook = async () => {
+    try {
+      await shareService.shareBook({
+        title: book.title,
+        author: book.author || undefined,
+        isbn: book.isbn || undefined,
+        coverUrl: book.cover_url || undefined,
+      });
+    } catch (error: unknown) {
+      if (error instanceof Error && !error.message?.includes("cancelled")) {
+        toast.error("Failed to share book");
+      }
+    }
+  };
+
   return (
     <MobileLayout>
-      {isMobile && (
+      {isMobile ? (
         <MobileHeader
           title={book.title}
           back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/my-books" }}
         />
+      ) : (
+        <NativeHeader
+          title="Book Details"
+          subtitle="Reading progress, notes, reviews, and actions"
+          back={{ label: "Library", ariaLabel: "Back to library", fallbackPath: "/my-books" }}
+          showUtilityActions
+        />
       )}
-      <div className="app-page-narrow">
-        {!isMobile && (
-          <div className="mb-6 flex items-center gap-4">
-            <AppBackButton
-              label="Back"
-              ariaLabel="Go back"
-              fallbackPath="/my-books"
-              showLabel
-              variant="outline"
-              className="border-border/70 bg-card/45 shadow-none hover:bg-accent"
-            />
-            <div>
-              <h1 className="font-display text-2xl font-bold">{book.title}</h1>
-              {book.author && (
-                <p className="font-serif text-muted-foreground mt-1">by {book.author}</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Book Details Tabs */}
-        <Card className="mb-6 animate-scale-in">
-          <Tabs defaultValue="overview" className="w-full">
-            <div className="overflow-x-auto px-1 pt-1">
-              <TabsList className="grid min-w-[640px] w-full grid-cols-5 md:min-w-0">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="progress">Progress</TabsTrigger>
-                <TabsTrigger value="reviews">Reviews</TabsTrigger>
-                <TabsTrigger value="journal">Journal</TabsTrigger>
-                <TabsTrigger value="logs">Logs</TabsTrigger>
-              </TabsList>
-            </div>
-
-            <TabsContent value="overview" className="p-6 space-y-4">
-              <div className="text-center mb-4">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <h2 className="font-serif text-xl font-bold text-foreground">{book.title}</h2>
-                  {user && (
-                    <AddToListDialog 
-                      bookId={book.id} 
-                      userId={user.id}
-                      trigger={
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          title="Add to list"
-                        >
-                          <Bookmark className="h-4 w-4" />
-                        </Button>
-                      }
-                    />
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={async () => {
-                      try {
-                        await shareService.shareBook({
-                          title: book.title,
-                          author: book.author || undefined,
-                          isbn: book.isbn || undefined,
-                          coverUrl: book.cover_url || undefined,
-                        });
-                      } catch (error: unknown) {
-                        if (error instanceof Error && !error.message?.includes('cancelled')) {
-                          toast.error('Failed to share book');
-                        }
-                      }
-                    }}
-                    title="Share book"
-                  >
-                    <ShareIos className="h-4 w-4" />
-                  </Button>
-                </div>
-                {book.author && <p className="font-serif text-muted-foreground">by {book.author}</p>}
-              </div>
-
-              {book.description && (
-                <div className="pb-4 border-b space-y-2">
-                  <span className="font-sans text-sm text-muted-foreground font-medium flex items-center gap-1">
-                    <APP_ICONS.bookDetail.description className="h-4 w-4" />
-                    Description
-                  </span>
-                  <p className="font-serif text-sm text-foreground/80 leading-relaxed">{book.description}</p>
-                </div>
-              )}
-
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Genre:</span>
-                <Badge variant="secondary">{book.genre || "Unknown"}</Badge>
-              </div>
-              
-              {book.pages && (
-                <>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Pages:</span>
-                    <span className="font-medium">{book.pages}</span>
-                  </div>
-                  
-                  {book.current_page !== null && (
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Progress:</span>
-                        <span className="font-medium">
-                          {book.current_page} / {book.pages} ({Math.round((book.current_page / book.pages) * 100)}%)
-                        </span>
+      <main className="app-page space-y-5 md:space-y-6">
+        <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[minmax(0,1fr)_24rem]">
+          <div className="min-w-0 space-y-5">
+            <Card className="overflow-hidden border-border/70 bg-card/80 shadow-sm animate-scale-in">
+              <CardContent className="p-4 sm:p-5 md:p-6">
+                <div className="grid gap-5 sm:grid-cols-[9rem_minmax(0,1fr)] md:gap-6">
+                  <div className="mx-auto w-32 sm:mx-0 sm:w-36">
+                    {book.cover_url ? (
+                      <div className="book-3d-cover mx-auto aspect-[2/3] w-full max-w-36">
+                        <img
+                          src={book.cover_url}
+                          alt={book.title}
+                          className="h-full w-full rounded-md object-cover"
+                        />
                       </div>
-                      <Progress value={(book.current_page / book.pages) * 100} />
-                    </div>
-                  )}
-                </>
-              )}
+                    ) : (
+                      <div className="flex aspect-[2/3] w-full items-center justify-center rounded-md border border-border/70 bg-muted/40 text-muted-foreground">
+                        <AppIcon icon={APP_ICONS.dashboard.coverFallback} variant="empty" size="xl" />
+                      </div>
+                    )}
+                  </div>
 
-              {book.rating && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Rating:</span>
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${i < book.rating! ? 'fill-primary text-primary' : 'text-muted'}`}
-                      />
-                    ))}
+                  <div className="min-w-0 space-y-4">
+                    <div className="space-y-2 text-center sm:text-left">
+                      <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                        <Badge className={cn("capitalize", getStatusClassName(book.status))}>
+                          {statusLabel}
+                        </Badge>
+                        {book.genre && <Badge variant="outline">{book.genre}</Badge>}
+                        {totalPages > 0 && (
+                          <span className="font-sans text-sm text-muted-foreground">
+                            {totalPages} pages
+                          </span>
+                        )}
+                      </div>
+                      <h1 className="font-display text-3xl font-bold leading-tight text-foreground md:text-4xl">
+                        {book.title}
+                      </h1>
+                      {book.author && (
+                        <p className="font-serif text-lg text-muted-foreground">by {book.author}</p>
+                      )}
+                    </div>
+
+                    <div className="rounded-lg border border-border/70 bg-background/45 p-4">
+                      <div className="mb-2 flex items-center justify-between gap-3 font-sans text-sm">
+                        <span className="text-muted-foreground">
+                          {totalPages ? `Page ${currentPage} of ${totalPages}` : "Progress"}
+                        </span>
+                        <span className="font-semibold text-foreground">{Math.round(progressValue)}%</span>
+                      </div>
+                      <Progress value={progressValue} className="h-2" />
+                      <div className="mt-3 grid grid-cols-3 gap-3 text-center font-sans text-xs text-muted-foreground">
+                        <div>
+                          <span className="block text-base font-semibold text-foreground">{currentPage}</span>
+                          Current
+                        </div>
+                        <div>
+                          <span className="block text-base font-semibold text-foreground">
+                            {remainingPages ?? "—"}
+                          </span>
+                          Remaining
+                        </div>
+                        <div>
+                          <span className="block text-base font-semibold text-foreground">
+                            {sessions.length}
+                          </span>
+                          Sessions
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              )}
+              </CardContent>
+            </Card>
 
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Status:</span>
-                <Badge 
-                  variant={book.status === 'completed' ? 'default' : 'secondary'}
-                  className={book.status === 'reading' ? 'bg-orange-500 text-white' : ''}
-                >
-                  {book.status.replace('_', ' ')}
-                </Badge>
+            <Tabs defaultValue="overview" className="w-full">
+              <div className="-mx-1 overflow-x-auto px-1 pb-1">
+                <TabsList className="w-max min-w-full justify-start gap-1 shadow-none md:grid md:w-full md:grid-cols-5">
+                  <TabsTrigger value="overview" className="flex-none px-4 md:flex-1">
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger value="progress" className="flex-none px-4 md:flex-1">
+                    Progress
+                  </TabsTrigger>
+                  <TabsTrigger value="reviews" className="flex-none px-4 md:flex-1">
+                    Reviews
+                  </TabsTrigger>
+                  <TabsTrigger value="journal" className="flex-none px-4 md:flex-1">
+                    Journal
+                  </TabsTrigger>
+                  <TabsTrigger value="logs" className="flex-none px-4 md:flex-1">
+                    Logs
+                  </TabsTrigger>
+                </TabsList>
               </div>
 
-              {book.date_started && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Started:</span>
-                  <span className="font-medium">{new Date(book.date_started).toLocaleDateString()}</span>
-                </div>
-              )}
+              <TabsContent value="overview" className="mt-4 space-y-4">
+                <Card className="border-border/70 bg-card/80 shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="font-display text-xl">Overview</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    <div className="rounded-lg border border-border/60 bg-background/45 p-4">
+                      {book.description ? (
+                        <p className="font-serif text-sm leading-7 text-foreground/80">
+                          {book.description}
+                        </p>
+                      ) : (
+                        <p className="font-sans text-sm text-muted-foreground">
+                          No description has been added for this book yet.
+                        </p>
+                      )}
+                    </div>
 
-              {book.date_finished && (
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Finished:</span>
-                  <span className="font-medium">{new Date(book.date_finished).toLocaleDateString()}</span>
-                </div>
-              )}
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="rounded-lg border border-border/60 bg-background/45 p-4">
+                        <DetailRow label="Status" value={statusLabel} />
+                        <DetailRow label="Genre" value={book.genre || "Unknown"} />
+                        <DetailRow label="Pages" value={totalPages || null} />
+                        <DetailRow label="ISBN" value={book.isbn} />
+                      </div>
 
-              {book.tags && book.tags.length > 0 && (
-                <div className="pt-2 border-t space-y-2">
-                  <span className="text-sm text-muted-foreground block">Tags:</span>
-                  <div className="flex flex-wrap gap-2">
-                    {book.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
+                      <div className="rounded-lg border border-border/60 bg-background/45 p-4">
+                        <DetailRow label="Started" value={startedDate} />
+                        <DetailRow label="Finished" value={finishedDate} />
+                        {book.rating && (
+                          <div className="flex items-center justify-between gap-4 border-b border-border/50 py-3 last:border-0">
+                            <span className="font-sans text-sm text-muted-foreground">Rating</span>
+                            <div className="flex">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={cn(
+                                    "h-4 w-4",
+                                    i < book.rating! ? "fill-primary text-primary" : "text-muted"
+                                  )}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-              {book.notes && (
-                <div className="pt-2 border-t space-y-2">
-                  <span className="text-sm text-muted-foreground block">Book Notes:</span>
-                  <p className="text-sm whitespace-pre-wrap">{book.notes}</p>
-                </div>
-              )}
-            </TabsContent>
+                    {book.tags && book.tags.length > 0 && (
+                      <div className="space-y-2">
+                        <h3 className="font-sans text-sm font-medium">Tags</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {book.tags.map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-            <TabsContent value="progress" className="p-6 space-y-4">
-              {progress ? (
-                <>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Card className="p-4">
-                      <div className="font-sans text-sm text-muted-foreground mb-1">Current Page</div>
-                      <div className="font-sans text-2xl font-bold">{progress.current_page}</div>
-                      <div className="font-sans text-xs text-muted-foreground">of {progress.total_pages}</div>
-                    </Card>
-                    <Card className="p-4">
-                      <div className="font-sans text-sm text-muted-foreground mb-1">Progress</div>
-                      <div className="font-sans text-2xl font-bold">{progress.progress_percentage.toFixed(1)}%</div>
-                      <Progress value={progress.progress_percentage} className="mt-2" />
-                    </Card>
-                  </div>
+                    {book.notes && (
+                      <div className="space-y-2 rounded-lg border border-border/60 bg-background/45 p-4">
+                        <h3 className="font-sans text-sm font-medium">Book Notes</h3>
+                        <p className="whitespace-pre-wrap font-sans text-sm leading-6 text-muted-foreground">
+                          {book.notes}
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <Card className="p-4">
-                      <div className="font-sans text-sm text-muted-foreground mb-1">Reading Velocity</div>
-                      <div className="font-sans text-xl font-bold">{progress.reading_velocity.overall.toFixed(1)}</div>
-                      <div className="font-sans text-xs text-muted-foreground">pages/hour</div>
-                    </Card>
-                    <Card className="p-4">
-                      <div className="font-sans text-sm text-muted-foreground mb-1">Total Time</div>
-                      <div className="font-sans text-xl font-bold">{progress.total_time_hours.toFixed(1)}h</div>
-                      <div className="font-sans text-xs text-muted-foreground">{progress.statistics.total_sessions} sessions</div>
-                    </Card>
-                  </div>
+              <TabsContent value="progress" className="mt-4 space-y-4">
+                {book.status === "reading" && (
+                  <QuickProgressWidget book={book} onUpdate={loadBookData} />
+                )}
 
-                  {progress.estimated_completion_date && (
-                    <Card className="p-4 border-primary/20 bg-primary/5">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-sans text-sm text-muted-foreground mb-1">Estimated Completion</div>
-                          <div className="font-sans text-lg font-bold">{new Date(progress.estimated_completion_date).toLocaleDateString()}</div>
+                {progress ? (
+                  <Card className="border-border/70 bg-card/80 shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="font-display text-xl">Reading Progress</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="rounded-lg border border-border/60 bg-background/45 p-4">
+                          <div className="font-sans text-sm text-muted-foreground">Current Page</div>
+                          <div className="font-sans text-2xl font-bold">{progress.current_page}</div>
+                          <div className="font-sans text-xs text-muted-foreground">of {progress.total_pages}</div>
+                        </div>
+                        <div className="rounded-lg border border-border/60 bg-background/45 p-4">
+                          <div className="font-sans text-sm text-muted-foreground">Progress</div>
+                          <div className="font-sans text-2xl font-bold">{progress.progress_percentage.toFixed(1)}%</div>
+                          <Progress value={progress.progress_percentage} className="mt-2 h-1.5" />
+                        </div>
+                        <div className="rounded-lg border border-border/60 bg-background/45 p-4">
+                          <div className="font-sans text-sm text-muted-foreground">Reading Velocity</div>
+                          <div className="font-sans text-2xl font-bold">{progress.reading_velocity.overall.toFixed(1)}</div>
+                          <div className="font-sans text-xs text-muted-foreground">pages/hour</div>
+                        </div>
+                        <div className="rounded-lg border border-border/60 bg-background/45 p-4">
+                          <div className="font-sans text-sm text-muted-foreground">Total Time</div>
+                          <div className="font-sans text-2xl font-bold">{progress.total_time_hours.toFixed(1)}h</div>
+                          <div className="font-sans text-xs text-muted-foreground">{progress.statistics.total_sessions} sessions</div>
+                        </div>
+                      </div>
+
+                      {progress.estimated_completion_date && (
+                        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                          <div className="font-sans text-sm text-muted-foreground">Estimated Completion</div>
+                          <div className="font-sans text-lg font-bold">
+                            {new Date(progress.estimated_completion_date).toLocaleDateString()}
+                          </div>
                           <div className="font-sans text-xs text-muted-foreground">
                             in ~{progress.estimated_days_to_completion} days
                           </div>
                         </div>
-                        <APP_ICONS.bookDetail.progressDate className="h-8 w-8 text-primary" />
-                      </div>
-                    </Card>
-                  )}
+                      )}
 
-                  <div className="pt-4 space-y-2">
-                    <h3 className="text-sm font-medium">Statistics</h3>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="flex justify-between p-2 bg-muted/30 rounded">
-                        <span className="text-muted-foreground">Total Logs:</span>
-                        <span className="font-medium">{progress.statistics.total_logs}</span>
+                      <div className="grid gap-2 font-sans text-sm sm:grid-cols-2">
+                        <div className="flex justify-between rounded-md bg-muted/30 p-3">
+                          <span className="text-muted-foreground">Total Logs</span>
+                          <span className="font-medium">{progress.statistics.total_logs}</span>
+                        </div>
+                        <div className="flex justify-between rounded-md bg-muted/30 p-3">
+                          <span className="text-muted-foreground">Avg Session</span>
+                          <span className="font-medium">{formatDuration(progress.statistics.avg_session_duration)}</span>
+                        </div>
+                        <div className="flex justify-between rounded-md bg-muted/30 p-3">
+                          <span className="text-muted-foreground">Longest Session</span>
+                          <span className="font-medium">{formatDuration(progress.statistics.longest_session)}</span>
+                        </div>
+                        <div className="flex justify-between rounded-md bg-muted/30 p-3">
+                          <span className="text-muted-foreground">Recent Velocity</span>
+                          <span className="font-medium">{progress.reading_velocity.recent.toFixed(1)} p/h</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between p-2 bg-muted/30 rounded">
-                        <span className="text-muted-foreground">Avg Session:</span>
-                        <span className="font-medium">{formatDuration(progress.statistics.avg_session_duration)}</span>
-                      </div>
-                      <div className="flex justify-between p-2 bg-muted/30 rounded">
-                        <span className="text-muted-foreground">Longest Session:</span>
-                        <span className="font-medium">{formatDuration(progress.statistics.longest_session)}</span>
-                      </div>
-                      <div className="flex justify-between p-2 bg-muted/30 rounded">
-                        <span className="text-muted-foreground">Recent Velocity:</span>
-                        <span className="font-medium">{progress.reading_velocity.recent.toFixed(1)} p/h</span>
-                      </div>
-                    </div>
-                  </div>
 
-                  <Button
-                    onClick={() => navigate(`/book/${book.id}/progress`)}
-                    className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium mt-4"
-                  >
-                    <APP_ICONS.bookDetail.detailedAnalytics className="mr-2 h-4 w-4" />
-                    View Detailed Analytics
-                  </Button>
-                </>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <APP_ICONS.bookDetail.progressEmpty className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p className="font-sans">No progress data available yet</p>
-                  <p className="font-sans text-sm">Start logging your progress to see statistics</p>
-                </div>
-              )}
-            </TabsContent>
+                      <Button
+                        onClick={() => navigate(`/book/${book.id}/progress`)}
+                        className="w-full"
+                      >
+                        <AppIcon icon={APP_ICONS.bookDetail.detailedAnalytics} variant="action" className="mr-2" />
+                        View Detailed Analytics
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <PremiumEmptyState
+                    asset="emptyProgress"
+                    title="No progress data yet"
+                    description="Start logging your progress to see statistics."
+                    size="compact"
+                  />
+                )}
 
-            <TabsContent value="reviews" className="p-6">
-              <div className="space-y-4">
-                {/* Review Summary */}
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="font-sans text-lg font-semibold">Community Reviews</h3>
-                    {averageRating && (
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex items-center">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < Math.round(averageRating)
-                                  ? "fill-primary text-primary"
-                                  : "text-muted-foreground"
-                              }`}
+                {sessions.length > 0 && (
+                  <Card className="border-border/70 bg-card/80 shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="font-display text-xl">Recent Sessions</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-1">
+                        {sessions.slice(0, 5).map((session) => (
+                          <div key={session.id} className="flex items-center justify-between gap-3 border-b border-border/40 py-3 last:border-0">
+                            <span className="font-sans text-sm text-muted-foreground">
+                              {new Date(session.created_at).toLocaleDateString()}
+                            </span>
+                            <span className="font-sans text-sm font-medium">
+                              {formatDuration(session.duration || 0)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="reviews" className="mt-4">
+                <Card className="border-border/70 bg-card/80 shadow-sm">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="space-y-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <h3 className="font-display text-xl font-semibold">Community Reviews</h3>
+                          {averageRating && (
+                            <div className="mt-1 flex flex-wrap items-center gap-2">
+                              <div className="flex items-center">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={cn(
+                                      "h-4 w-4",
+                                      i < Math.round(averageRating)
+                                        ? "fill-primary text-primary"
+                                        : "text-muted-foreground"
+                                    )}
+                                  />
+                                ))}
+                              </div>
+                              <span className="font-sans text-sm text-muted-foreground">
+                                {averageRating.toFixed(1)} ({reviews.length} {reviews.length === 1 ? "review" : "reviews"})
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        {!userHasReviewed && user && (
+                          <Button onClick={() => setShowReviewForm(true)}>
+                            Write Review
+                          </Button>
+                        )}
+                      </div>
+
+                      {reviews.length > 0 ? (
+                        <div className="space-y-4">
+                          {reviews.map((review) => (
+                            <ReviewCard
+                              key={review.id}
+                              review={review}
+                              onChanged={refetchReviews}
                             />
                           ))}
                         </div>
-                        <span className="font-sans text-sm text-muted-foreground">
-                          {averageRating.toFixed(1)} ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
-                        </span>
+                      ) : (
+                        <PremiumEmptyState
+                          asset="emptyReviews"
+                          title="No reviews yet"
+                          description="Share your take once you have something useful to say about this book."
+                          size="compact"
+                          action={
+                            !userHasReviewed && user ? (
+                              <Button onClick={() => setShowReviewForm(true)}>
+                                Be the first to review
+                              </Button>
+                            ) : undefined
+                          }
+                        />
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="journal" className="mt-4">
+                <Card className="border-border/70 bg-card/80 shadow-sm">
+                  <CardContent className="p-4 sm:p-6">
+                    <JournalEntriesList bookId={book.id} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="logs" className="mt-4">
+                <Card className="border-border/70 bg-card/80 shadow-sm">
+                  <CardContent className="p-4 sm:p-6">
+                    {logs.length > 0 ? (
+                      <div className="space-y-3">
+                        {logs.map((log) => (
+                          <ProgressLogItem key={log.id} log={log} />
+                        ))}
                       </div>
-                    )}
-                  </div>
-                  {!userHasReviewed && user && (
-                    <Button onClick={() => setShowReviewForm(true)}>
-                      <Star className="mr-2 h-4 w-4" />
-                      Write Review
-                    </Button>
-                  )}
-                </div>
-
-                {/* Reviews List */}
-                {reviews.length > 0 ? (
-                  <div className="space-y-4">
-                    {reviews.map((review) => (
-                      <ReviewCard
-                        key={review.id}
-                        review={review}
-                        onChanged={refetchReviews}
+                    ) : (
+                      <PremiumEmptyState
+                        asset="emptyProgress"
+                        title="No progress logs yet"
+                        description="Log your reading progress to track your journey."
+                        size="compact"
+                        variant="plain"
                       />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <Star className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                    <p className="font-sans text-muted-foreground mb-4">No reviews yet</p>
-                    {!userHasReviewed && user && (
-                      <Button onClick={() => setShowReviewForm(true)}>
-                        Be the first to review
-                      </Button>
                     )}
-                  </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          <aside className="space-y-4 lg:sticky lg:top-28 lg:self-start">
+            <Card className="border-border/70 bg-card/85 shadow-sm">
+              <CardHeader>
+                <CardTitle className="font-display text-xl">Reading Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button
+                  onClick={() => startTimer(book.id, book.title)}
+                  className="w-full"
+                >
+                  <AppIcon icon={APP_ICONS.bookDetail.startTimer} variant="action" className="mr-2" />
+                  Start Timer
+                </Button>
+
+                <Button
+                  onClick={() => setShowProgressLogger(true)}
+                  variant="outline"
+                  className="w-full border-border/70 bg-background/45"
+                >
+                  <AppIcon icon={APP_ICONS.bookDetail.logProgress} variant="action" className="mr-2" />
+                  Log Progress
+                </Button>
+
+                {book.status !== "completed" && (
+                  <Button
+                    onClick={() => handleStatusChange("completed")}
+                    variant="outline"
+                    className="w-full border-border/70 bg-background/45"
+                  >
+                    <AppIcon icon={APP_ICONS.common.checkCircle} variant="action" className="mr-2" />
+                    Mark Done
+                  </Button>
                 )}
-              </div>
-            </TabsContent>
 
-            <TabsContent value="journal" className="p-6">
-              <JournalEntriesList bookId={book.id} />
-            </TabsContent>
-
-            <TabsContent value="logs" className="p-6">
-              {logs.length > 0 ? (
-                <div className="space-y-3">
-                  {logs.map((log) => (
-                    <ProgressLogItem key={log.id} log={log} />
-                  ))}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {user && (
+                    <AddToListDialog
+                      bookId={book.id}
+                      userId={user.id}
+                      triggerTooltip="Add to list"
+                      trigger={
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          aria-label="Add to list"
+                          title="Add to list"
+                          className="h-10 w-10 rounded-full border-border/70 bg-card/60 shadow-none"
+                        >
+                          <AppIcon icon={APP_ICONS.library.bookLists} variant="action" />
+                        </Button>
+                      }
+                    />
+                  )}
+                  <IconAction label="Share book" onClick={() => void handleShareBook()}>
+                    <AppIcon icon={APP_ICONS.common.share} variant="action" />
+                  </IconAction>
+                  <IconAction label="Edit book" onClick={() => navigate(`/edit-book/${book.id}`)}>
+                    <AppIcon icon={APP_ICONS.common.edit} variant="action" />
+                  </IconAction>
+                  <IconAction
+                    label="Delete book"
+                    onClick={() => setDeleteDialogOpen(true)}
+                    className="border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  >
+                    <AppIcon icon={APP_ICONS.common.delete} variant="action" />
+                  </IconAction>
                 </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <APP_ICONS.bookDetail.logProgress className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p className="font-sans">No progress logs yet</p>
-                  <p className="font-sans text-sm">Log your reading progress to track your journey</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/70 bg-card/85 shadow-sm">
+              <CardHeader>
+                <CardTitle className="font-display text-xl">At a Glance</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between font-sans text-sm">
+                    <span className="text-muted-foreground">Progress</span>
+                    <span className="font-semibold">{Math.round(progressValue)}%</span>
+                  </div>
+                  <Progress value={progressValue} className="h-2" />
                 </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </Card>
-
-        {/* Quick Progress Widget */}
-        {book.status === 'reading' && (
-          <div className="mb-6">
-            <QuickProgressWidget book={book} onUpdate={loadBookData} />
-          </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className="space-y-3 mb-6">
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              onClick={() => startTimer(book.id, book.title)}
-              className="bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium"
-            >
-              <APP_ICONS.bookDetail.startTimer className="mr-2 h-4 w-4" />
-              Start Timer
-            </Button>
-            
-            <Button
-              onClick={() => setShowProgressLogger(true)}
-              variant="outline"
-              className="border-border/50 hover:shadow-soft transition-all duration-300"
-            >
-              <APP_ICONS.bookDetail.logProgress className="mr-2 h-4 w-4" />
-              Log Progress
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            {book.status !== 'completed' && (
-              <Button
-                onClick={() => handleStatusChange('completed')}
-                variant="outline"
-                className="border-border/50 hover:shadow-soft transition-all duration-300"
-              >
-                <CheckCircle className="mr-2 h-4 w-4" />
-                Mark Done
-              </Button>
-            )}
-            
-            <Button
-              onClick={() => navigate(`/edit-book/${book.id}`)}
-              variant="outline"
-              className="border-border/50 hover:shadow-soft transition-all duration-300"
-            >
-              <EditPencil className="mr-2 h-4 w-4" />
-              Edit
-            </Button>
-          </div>
-
-
-          <Button
-            onClick={handleDeleteBook}
-            variant="outline"
-            className="w-full border-destructive/50 text-destructive hover:bg-destructive/10 transition-all duration-300"
-          >
-            <Trash className="mr-2 h-4 w-4" />
-            Delete Book
-          </Button>
+                <div className="grid grid-cols-2 gap-2 font-sans text-sm">
+                  <div className="rounded-lg border border-border/60 bg-background/45 p-3">
+                    <span className="block text-muted-foreground">Current</span>
+                    <span className="font-semibold">{currentPage}</span>
+                  </div>
+                  <div className="rounded-lg border border-border/60 bg-background/45 p-3">
+                    <span className="block text-muted-foreground">Pages</span>
+                    <span className="font-semibold">{totalPages || "—"}</span>
+                  </div>
+                  <div className="rounded-lg border border-border/60 bg-background/45 p-3">
+                    <span className="block text-muted-foreground">Started</span>
+                    <span className="font-semibold">{startedDate || "—"}</span>
+                  </div>
+                  <div className="rounded-lg border border-border/60 bg-background/45 p-3">
+                    <span className="block text-muted-foreground">Sessions</span>
+                    <span className="font-semibold">{sessions.length}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </aside>
         </div>
 
         {/* Progress Logger Modal */}
@@ -585,32 +778,26 @@ const BookDetail = () => {
           />
         )}
 
-        {/* Recent Sessions */}
-        {sessions.length > 0 && (
-          <Card className="animate-fade-in">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold text-foreground flex items-center">
-                <APP_ICONS.bookDetail.recentSessions className="mr-2 h-5 w-5" />
-                Recent Sessions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {sessions.slice(0, 5).map((session) => (
-                  <div key={session.id} className="flex justify-between items-center py-2 border-b border-border/20 last:border-0">
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(session.created_at).toLocaleDateString()}
-                    </span>
-                    <span className="font-medium">
-                      {formatDuration(session.duration || 0)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this book?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This removes "{book.title}" from your library. You can re-add it later.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Keep book</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteBook}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete Book
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </main>
     </MobileLayout>
   );
 };

@@ -11,7 +11,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { APP_ICONS } from "@/config/iconography";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getBlockedUsers,
@@ -177,10 +176,7 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <APP_ICONS.settings.profileVisibility className="h-5 w-5" />
-            Profile Visibility
-          </CardTitle>
+          <CardTitle>Profile Visibility</CardTitle>
           <CardDescription>
             Profile and activity visibility now affects Feed, Readers, and shared posts.
           </CardDescription>
@@ -233,10 +229,7 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <APP_ICONS.readers.active className="h-5 w-5" />
-            Presence & Discovery
-          </CardTitle>
+          <CardTitle>Presence & Discovery</CardTitle>
           <CardDescription>
             Control how readers see your availability in Discover.
           </CardDescription>
@@ -283,10 +276,7 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="font-display flex items-center gap-2">
-            <APP_ICONS.settings.dataSharing className="h-5 w-5" />
-            Blocked Readers
-          </CardTitle>
+          <CardTitle className="font-display">Blocked Readers</CardTitle>
           <CardDescription className="font-sans">
             Blocked readers cannot see your posts, profile, media, or activity, and you cannot see theirs.
           </CardDescription>

@@ -1,6 +1,5 @@
-import { type ComponentType, type MutableRefObject, useRef, useState } from "react";
+import { type MutableRefObject, useRef, useState } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, CheckCircle, Plus, Trash } from "iconoir-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,10 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Confetti } from "@/components/animations/Confetti";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { ProgressBarFill } from "@/components/animations/ProgressBarFill";
 import { TrophyReveal } from "@/components/animations/TrophyReveal";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { APP_ICONS } from "@/config/iconography";
+import { AppIcon } from "@/components/ui/app-icon";
 import { BRACK_GOALS_IMAGE, BRACK_TROPHY_IMAGE } from "@/config/brackAssets";
 import { useGoals, type Goal } from "@/hooks/useGoals";
 import { useToast } from "@/hooks/use-toast";
@@ -130,15 +131,15 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
 
             <div className="grid gap-3 sm:grid-cols-[1fr_auto] lg:w-[29rem] lg:grid-cols-1">
               <section className="grid grid-cols-3 gap-2">
-                <GoalMetric icon={APP_ICONS.dashboard.goal} label="Active" value={activeGoals.length.toString()} />
-                <GoalMetric icon={APP_ICONS.profile.badges} label="Done" value={completedGoals.length.toString()} />
-                <GoalMetric icon={APP_ICONS.stats.pagesRead} label="Target" value={totalActiveTarget.toString()} />
+                <GoalMetric label="Active" value={activeGoals.length.toString()} />
+                <GoalMetric label="Done" value={completedGoals.length.toString()} />
+                <GoalMetric label="Target" value={totalActiveTarget.toString()} />
               </section>
 
               <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogTrigger asChild>
                   <Button className="h-11 w-full sm:w-auto lg:w-full">
-                    <Plus className="h-4 w-4" />
+                    <AppIcon icon={APP_ICONS.common.add} variant="action" />
                     Create Goal
                   </Button>
                 </DialogTrigger>
@@ -360,7 +361,7 @@ const GoalCard = ({
                     Goal window
                   </p>
                   <div className="flex items-start gap-2 font-sans text-sm">
-                    <CalendarIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <AppIcon icon={APP_ICONS.bookDetail.progressDate} variant="inline" className="mt-0.5 text-primary" />
                     <span>
                       {format(new Date(goal.start_date), "MMM dd")} -{" "}
                       {format(new Date(goal.end_date), "MMM dd, yyyy")}
@@ -379,13 +380,13 @@ const GoalCard = ({
 
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="flex-1" onClick={() => onComplete(goal.id)}>
-                <CheckCircle className="h-4 w-4" />
+                <AppIcon icon={APP_ICONS.common.checkCircle} variant="action" />
                 Complete
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" size="sm" aria-label="Delete goal">
-                    <Trash className="h-4 w-4" />
+                    <AppIcon icon={APP_ICONS.common.delete} variant="action" />
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -537,43 +538,26 @@ const CompletedGoalRow = ({ goal }: { goal: Goal }) => (
 );
 
 const GoalMetric = ({
-  icon: Icon,
   label,
   value,
 }: {
-  icon: ComponentType<{ className?: string }>;
   label: string;
   value: string;
 }) => (
   <div className="rounded-md border border-border/70 bg-background/45 p-3">
-    <div className="flex items-center gap-2">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-        <Icon className="h-4 w-4" />
-      </div>
-      <div className="min-w-0">
-        <p className="font-sans text-lg font-semibold leading-none">{value}</p>
-        <p className="mt-1 truncate font-sans text-[11px] text-muted-foreground">{label}</p>
-      </div>
+    <div className="min-w-0">
+      <p className="font-sans text-lg font-semibold leading-none">{value}</p>
+      <p className="mt-1 truncate font-sans text-[11px] text-muted-foreground">{label}</p>
     </div>
   </div>
 );
 
 const EmptyGoalState = () => (
-  <Card>
-    <CardContent className="flex min-h-[18rem] flex-col items-center justify-center p-8 text-center">
-      <img
-        src={BRACK_GOALS_IMAGE}
-        alt=""
-        aria-hidden="true"
-        className="mb-4 h-20 w-20 rounded-md border border-border/70 object-cover"
-        draggable={false}
-      />
-      <h2 className="font-display text-xl font-semibold">No active goals</h2>
-      <p className="mt-2 max-w-sm font-sans text-sm text-muted-foreground">
-        Create one clear target to keep your dashboard and reading plan focused.
-      </p>
-    </CardContent>
-  </Card>
+  <PremiumEmptyState
+    asset="emptyGoals"
+    title="No active goals"
+    description="Create one clear target to keep your dashboard and reading plan focused."
+  />
 );
 
 const getGoalTarget = (goal: Goal) =>

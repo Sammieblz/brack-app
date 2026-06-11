@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Conversation } from "@/hooks/useConversations";
 import { Eye, EyeClosed, Search, Trash } from "iconoir-react";
 import { EmptyMessages } from "@/components/empty/EmptyMessages";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { hapticToast } from "@/utils/hapticToast";
@@ -269,9 +270,14 @@ export const ConversationsList = ({
       </div>
 
       {filteredConversations.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border p-6 text-center">
-          <p className="font-sans text-sm text-muted-foreground">No matching conversations.</p>
-        </div>
+        <PremiumEmptyState
+          asset="noResults"
+          title="No matching conversations"
+          description="Try another reader name or clear your search."
+          variant="plain"
+          size="compact"
+          className="rounded-lg border border-dashed border-border p-4"
+        />
       ) : (
         <div className="space-y-2">
           {filteredConversations.map((conv) => (

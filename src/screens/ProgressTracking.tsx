@@ -10,6 +10,7 @@ import { useBookProgress } from "@/hooks/useBookProgress";
 import { ReadingVelocityChart } from "@/components/charts/ReadingVelocityChart";
 import { DailyPagesChart } from "@/components/charts/DailyPagesChart";
 import { CompletionForecastChart } from "@/components/charts/CompletionForecastChart";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { useState, useEffect } from "react";
 import { APP_ICONS } from "@/config/iconography";
 import type { Book } from "@/types";
@@ -197,18 +198,16 @@ const ProgressTracking = () => {
 
         {/* Empty State */}
         {dailyProgress.length === 0 && (
-          <Card>
-            <CardContent className="text-center py-12">
-              <APP_ICONS.analytics.empty className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="font-display text-lg font-medium mb-2">No Progress Data Yet</h3>
-              <p className="font-sans text-muted-foreground mb-4">
-                Start logging your reading progress to see detailed analytics and forecasts
-              </p>
+          <PremiumEmptyState
+            asset="emptyProgress"
+            title="No progress data yet"
+            description="Start logging your reading progress to see detailed analytics and forecasts."
+            action={
               <Button onClick={() => navigate(`/book/${id}`)}>
                 Go to Book Details
               </Button>
-            </CardContent>
-          </Card>
+            }
+          />
         )}
       </div>
     </MobileLayout>

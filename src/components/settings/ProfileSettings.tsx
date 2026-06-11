@@ -11,6 +11,7 @@ import { useFollowing } from "@/hooks/useFollowing";
 import { useNavigate } from "react-router-dom";
 import { getInitials } from "@/lib/avatarUtils";
 import { APP_ICONS } from "@/config/iconography";
+import { AppIcon } from "@/components/ui/app-icon";
 import type { User as UserType, Profile } from "@/types";
 import {
   fetchProfile,
@@ -162,10 +163,7 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
       {/* Social Profile View */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <APP_ICONS.profile.social className="h-5 w-5" />
-            Social Profile
-          </CardTitle>
+          <CardTitle>Social Profile</CardTitle>
           <CardDescription>
             How others see your profile
           </CardDescription>
@@ -208,10 +206,7 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
       {/* Avatar */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-display flex items-center gap-2">
-            <APP_ICONS.profile.picture className="h-5 w-5" />
-            Profile Picture
-          </CardTitle>
+          <CardTitle className="font-display">Profile Picture</CardTitle>
           <CardDescription className="font-sans">
             Update your profile picture to personalize your account
           </CardDescription>
@@ -234,7 +229,7 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
                 onClick={() => setShowImagePicker(true)}
                 className="w-full sm:w-auto"
               >
-                <APP_ICONS.common.camera className="h-4 w-4 mr-2" />
+                <AppIcon icon={APP_ICONS.common.camera} variant="inline" size="sm" className="mr-2" />
                 {uploading ? "Uploading..." : "Choose Photo"}
               </Button>
               {profile?.avatar_url && (

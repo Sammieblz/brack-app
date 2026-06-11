@@ -1,11 +1,12 @@
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, ChatBubble, Search, Xmark } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { AppBackButton } from "@/components/AppBackButton";
 import { HeaderTimerWidget } from "@/components/HeaderTimerWidget";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
+import { AppIcon } from "@/components/ui/app-icon";
 import { APP_ICONS } from "@/config/iconography";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
@@ -95,7 +96,7 @@ const LibrarySearchAction = ({ compact = false }: { compact?: boolean }) => {
           aria-label="Search library"
           title="Search library"
         >
-          <Search className="h-4 w-4" />
+          <AppIcon icon={APP_ICONS.common.search} variant="action" />
           {!compact && <span className="font-normal">Search library</span>}
         </Button>
       </PopoverTrigger>
@@ -107,7 +108,11 @@ const LibrarySearchAction = ({ compact = false }: { compact?: boolean }) => {
       >
         <form onSubmit={handleSubmit} className="border-b border-border/70 p-3">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <AppIcon
+              icon={APP_ICONS.common.search}
+              variant="inline"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
             <Input
               ref={inputRef}
               type="search"
@@ -123,7 +128,7 @@ const LibrarySearchAction = ({ compact = false }: { compact?: boolean }) => {
                 className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 aria-label="Clear library search"
               >
-                <Xmark className="h-3.5 w-3.5" />
+                <AppIcon icon={APP_ICONS.common.close} variant="action" size="xs" />
               </button>
             )}
           </div>
@@ -137,24 +142,28 @@ const LibrarySearchAction = ({ compact = false }: { compact?: boolean }) => {
               <div className="h-14 animate-pulse rounded-md bg-muted" />
             </div>
           ) : books.length === 0 ? (
-            <div className="p-4 text-center">
-              <APP_ICONS.library.emptyResults className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-              <p className="font-sans text-sm font-medium">No books in your library</p>
-              <p className="font-sans text-xs text-muted-foreground">
-                Add a book before searching your library.
-              </p>
-              <Button size="sm" className="mt-3" onClick={() => navigate("/add-book")}>
-                Add Book
-              </Button>
-            </div>
+            <PremiumEmptyState
+              asset="emptyLibrary"
+              title="No books in your library"
+              description="Add a book before searching your library."
+              variant="plain"
+              size="compact"
+              action={
+                <Button size="sm" onClick={() => navigate("/add-book")}>
+                  Add Book
+                </Button>
+              }
+              className="p-4"
+            />
           ) : results.length === 0 ? (
-            <div className="p-4 text-center">
-              <APP_ICONS.library.emptyResults className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-              <p className="font-sans text-sm font-medium">No matches found</p>
-              <p className="font-sans text-xs text-muted-foreground">
-                Try another title, author, or genre.
-              </p>
-            </div>
+            <PremiumEmptyState
+              asset="noResults"
+              title="No matches found"
+              description="Try another title, author, or genre."
+              variant="plain"
+              size="compact"
+              className="p-4"
+            />
           ) : (
             <>
               <div className="px-2 pb-2 font-sans text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -179,8 +188,8 @@ const LibrarySearchAction = ({ compact = false }: { compact?: boolean }) => {
                           className="h-14 w-10 shrink-0 rounded object-cover"
                         />
                       ) : (
-                        <div className="flex h-14 w-10 shrink-0 items-center justify-center rounded bg-primary/10 text-primary">
-                          <APP_ICONS.dashboard.coverFallback className="h-5 w-5" />
+                        <div className="flex h-14 w-10 shrink-0 items-center justify-center rounded bg-muted/50 text-muted-foreground">
+                          <AppIcon icon={APP_ICONS.dashboard.coverFallback} variant="empty" size="md" />
                         </div>
                       )}
                       <span className="min-w-0 flex-1">
@@ -226,7 +235,7 @@ const HeaderUtilityActions = () => {
         aria-label="Open messages"
         title="Messages"
       >
-        <ChatBubble className="h-4 w-4" />
+        <AppIcon icon={APP_ICONS.common.chat} variant="action" />
       </Button>
 
       <Button
@@ -238,7 +247,7 @@ const HeaderUtilityActions = () => {
         aria-label="Open notification settings"
         title="Notifications"
       >
-        <Bell className="h-4 w-4" />
+        <AppIcon icon={APP_ICONS.settings.notifications} variant="action" />
       </Button>
     </div>
   );

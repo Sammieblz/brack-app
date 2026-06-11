@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Lock, Mail, Calendar, CardWallet } from "iconoir-react";
 import { fetchProfile, sendPasswordResetEmail } from "@/services/api";
 import { getPasswordResetRedirectUrl } from "@/services/platform";
 import { useToast } from "@/hooks/use-toast";
@@ -63,10 +62,7 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
       {/* Email */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-display flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Email Address
-          </CardTitle>
+          <CardTitle className="font-display">Email Address</CardTitle>
           <CardDescription className="font-sans">
             Your email address cannot be changed. Contact support if you need to update it.
           </CardDescription>
@@ -86,10 +82,7 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
       {/* Password */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-display flex items-center gap-2">
-            <Lock className="h-5 w-5" />
-            Password
-          </CardTitle>
+          <CardTitle className="font-display">Password</CardTitle>
           <CardDescription className="font-sans">
             Change your password to keep your account secure
           </CardDescription>
@@ -108,10 +101,7 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
       {/* Account Created */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Account Information
-          </CardTitle>
+          <CardTitle>Account Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -128,10 +118,7 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
       {/* Subscription (placeholder) */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CardWallet className="h-5 w-5" />
-            Subscription
-          </CardTitle>
+          <CardTitle>Subscription</CardTitle>
           <CardDescription>
             Manage your subscription and billing
           </CardDescription>

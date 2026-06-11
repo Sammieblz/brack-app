@@ -9,8 +9,11 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { Input } from "@/components/ui/input";
+import { AppIcon } from "@/components/ui/app-icon";
 import { APP_ICONS } from "@/config/iconography";
+import type { EmptyStateAssetKey } from "@/config/emptyStateAssets";
 import { useBookClubs, type BookClub } from "@/hooks/useBookClubs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -30,42 +33,50 @@ const sectionMeta: Record<
     label: string;
     description: string;
     icon: ComponentType<{ className?: string }>;
+    emptyAsset: EmptyStateAssetKey;
   }
 > = {
   myClubs: {
     label: "My Clubs",
     description: "Groups you belong to",
     icon: APP_ICONS.readers.myClubs,
+    emptyAsset: "emptyClubs",
   },
   suggested: {
     label: "Suggested",
     description: "Ranked by genres, connections, and activity",
     icon: APP_ICONS.readers.suggestions,
+    emptyAsset: "emptyClubs",
   },
   nearby: {
     label: "Nearby",
     description: "Clubs using your saved location",
     icon: APP_ICONS.readers.nearby,
+    emptyAsset: "emptyClubs",
   },
   popular: {
     label: "Popular",
     description: "Active public and previewable private clubs",
     icon: APP_ICONS.readers.discoverClubs,
+    emptyAsset: "emptyClubs",
   },
   newest: {
     label: "New",
     description: "Recently created clubs",
     icon: APP_ICONS.dashboard.recentActivity,
+    emptyAsset: "emptyClubs",
   },
   invites: {
     label: "Invites",
     description: "Private club invitations waiting for you",
     icon: APP_ICONS.settings.sendMessage,
+    emptyAsset: "emptyMessages",
   },
   pendingRequests: {
     label: "Requests",
     description: "Clubs reviewing your join request",
     icon: APP_ICONS.bookDetail.logProgress,
+    emptyAsset: "emptyProgress",
   },
 };
 
@@ -96,12 +107,13 @@ const BookClubs = () => {
   const showingSearch = debouncedQuery.length > 0;
   const activeItems = showingSearch ? home.searchResults : sections[activeSection];
   const activeMeta = showingSearch
-    ? {
-        label: "Search Results",
-        description: "Ranked by relevance, relationship, and club activity",
-        icon: APP_ICONS.common.search,
-      }
-    : sectionMeta[activeSection];
+      ? {
+          label: "Search Results",
+          description: "Ranked by relevance, relationship, and club activity",
+          icon: APP_ICONS.common.search,
+          emptyAsset: "noResults" as const,
+        }
+      : sectionMeta[activeSection];
 
   const statCards = useMemo(
     () => [
@@ -192,10 +204,7 @@ const BookClubs = () => {
           <section className="mt-6">
             <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <div className="flex items-center gap-2">
-                  <activeMeta.icon className="h-5 w-5 text-primary" />
-                  <h2 className="font-display text-2xl font-semibold">{activeMeta.label}</h2>
-                </div>
+                <h2 className="font-display text-2xl font-semibold">{activeMeta.label}</h2>
                 <p className="mt-1 font-sans text-sm text-muted-foreground">{activeMeta.description}</p>
               </div>
               {showingSearch && (
@@ -214,7 +223,7 @@ const BookClubs = () => {
             ) : (
               <ClubGrid
                 clubs={activeItems}
-                emptyIcon={activeMeta.icon}
+                emptyAsset={activeMeta.emptyAsset}
                 emptyTitle={showingSearch ? "No clubs matched your search" : `No ${activeMeta.label.toLowerCase()} yet`}
                 emptyDescription={
                   showingSearch
@@ -246,9 +255,7 @@ const SummaryCard = ({
 }) => (
   <Card>
     <CardContent className="flex items-center gap-3 p-4">
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-        <Icon className="h-5 w-5" />
-      </div>
+      <AppIcon icon={Icon} variant="inline" size="md" className="text-primary" />
       <div className="min-w-0">
         <p className="font-sans text-2xl font-semibold leading-none">{value}</p>
         <p className="mt-1 truncate font-sans text-sm text-muted-foreground">{label}</p>
@@ -259,7 +266,7 @@ const SummaryCard = ({
 
 const ClubGrid = ({
   clubs,
-  emptyIcon: EmptyIcon,
+  emptyAsset,
   emptyTitle,
   emptyDescription,
   onJoin,
@@ -269,7 +276,7 @@ const ClubGrid = ({
   onDeclineInvite,
 }: {
   clubs: BookClub[];
-  emptyIcon: ComponentType<{ className?: string }>;
+  emptyAsset: EmptyStateAssetKey;
   emptyTitle: string;
   emptyDescription: string;
   onJoin: (clubId: string) => Promise<void>;
@@ -280,13 +287,11 @@ const ClubGrid = ({
 }) => {
   if (clubs.length === 0) {
     return (
-      <Card>
-        <CardContent className="flex min-h-[20rem] flex-col items-center justify-center p-8 text-center">
-          <EmptyIcon className="mb-4 h-10 w-10 text-muted-foreground" />
-          <h3 className="font-display text-xl font-semibold">{emptyTitle}</h3>
-          <p className="mt-2 max-w-sm font-sans text-sm text-muted-foreground">{emptyDescription}</p>
-        </CardContent>
-      </Card>
+      <PremiumEmptyState
+        asset={emptyAsset}
+        title={emptyTitle}
+        description={emptyDescription}
+      />
     );
   }
 

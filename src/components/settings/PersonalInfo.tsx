@@ -4,7 +4,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, Pin } from "iconoir-react";
+import { MapPin } from "iconoir-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User, Profile } from "@/types";
 import { fetchProfile, type PersonalInfoUpdate, upsertPersonalInfo } from "@/services/api";
@@ -264,10 +264,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
       {/* Contact */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-display flex items-center gap-2">
-            <Phone className="h-5 w-5" />
-            Contact Information
-          </CardTitle>
+          <CardTitle className="font-display">Contact Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -292,10 +289,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
       {/* Location */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-display flex items-center gap-2">
-            <Pin className="h-5 w-5" />
-            Location
-          </CardTitle>
+          <CardTitle className="font-display">Location</CardTitle>
           <CardDescription className="font-sans">
             Add your location to discover readers near you
           </CardDescription>

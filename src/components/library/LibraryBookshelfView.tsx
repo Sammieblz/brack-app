@@ -1,6 +1,5 @@
 import { type CSSProperties, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Drag, Plus } from "iconoir-react";
 import { gsap } from "gsap";
 import {
   closestCenter,
@@ -23,6 +22,7 @@ import { OptimizedImage } from "@/components/OptimizedImage";
 import { LibraryBookshelfSelection } from "@/components/library/LibraryBookshelfSelection";
 import { LibraryStatusBadge } from "@/components/library/LibraryBookActions";
 import { Checkbox } from "@/components/ui/checkbox";
+import { AppIcon } from "@/components/ui/app-icon";
 import { APP_ICONS } from "@/config/iconography";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { cn } from "@/lib/utils";
@@ -157,7 +157,7 @@ const SortableShelfBook = ({
       <span className="library-shelf-book-shadow" aria-hidden="true" />
       {reorderMode && (
         <span className="library-shelf-drag-handle" aria-hidden="true">
-          <Drag className="h-3.5 w-3.5" />
+          <AppIcon icon={APP_ICONS.common.drag} variant="inline" size="xs" />
         </span>
       )}
       <span className="library-shelf-cover">
@@ -183,8 +183,8 @@ const SortableShelfBook = ({
               className="h-full w-full rounded-[0.22rem] object-cover"
             />
           ) : (
-            <span className="flex h-full w-full items-center justify-center rounded-[0.22rem] bg-primary/10 text-primary">
-              <APP_ICONS.dashboard.coverFallback className="h-7 w-7" />
+            <span className="flex h-full w-full items-center justify-center rounded-[0.22rem] bg-muted/50 text-muted-foreground">
+              <AppIcon icon={APP_ICONS.dashboard.coverFallback} variant="empty" size="lg" />
             </span>
           )}
           <span className="library-shelf-status">
@@ -283,7 +283,7 @@ export const LibraryBookshelfView = ({
                     >
                       <span className="library-shelf-add-book-shadow" aria-hidden="true" />
                       <span className="library-shelf-add-book-cover" aria-hidden="true">
-                        <Plus className="h-7 w-7" />
+                        <AppIcon icon={APP_ICONS.common.add} variant="action" size="lg" />
                       </span>
                       <span className="mt-2 line-clamp-2 font-serif text-xs font-semibold text-muted-foreground transition-colors group-hover:text-primary">
                         Add book

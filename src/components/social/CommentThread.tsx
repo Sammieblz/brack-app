@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { usePostComments, type PostComment } from "@/hooks/usePostComments";
@@ -51,9 +52,14 @@ export const CommentThread = ({ postId }: CommentThreadProps) => {
       {loading ? (
         <p className="font-sans text-sm text-muted-foreground">Loading comments...</p>
       ) : comments.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border/70 p-4 text-center font-sans text-sm text-muted-foreground">
-          No comments yet.
-        </p>
+        <PremiumEmptyState
+          asset="emptyComments"
+          title="No comments yet"
+          description="Start the thread with a useful response."
+          variant="plain"
+          size="compact"
+          className="rounded-md border border-dashed border-border/70"
+        />
       ) : (
         <div className="space-y-3">
           {comments.map((comment) => (

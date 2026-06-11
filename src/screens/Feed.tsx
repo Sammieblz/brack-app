@@ -9,12 +9,11 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { APP_ICONS } from "@/config/iconography";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePosts } from "@/hooks/usePosts";
 import { useSocialFeed } from "@/hooks/useSocialFeed";
-import type { ComponentType } from "react";
 
 const Feed = () => {
   const isMobile = useIsMobile();
@@ -65,9 +64,6 @@ const Feed = () => {
               <Card>
                 <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-                      <APP_ICONS.nav.feed className="h-5 w-5" />
-                    </div>
                     <div className="min-w-0">
                       <h2 className="font-display text-xl font-semibold">Community pulse</h2>
                       <p className="font-sans text-sm text-muted-foreground">
@@ -81,11 +77,9 @@ const Feed = () => {
               <Tabs defaultValue="posts" className="w-full">
                 <TabsList className="w-full sm:w-auto">
                   <TabsTrigger value="posts" className="gap-2">
-                    <APP_ICONS.profile.posts className="h-4 w-4" />
                     Posts
                   </TabsTrigger>
                   <TabsTrigger value="activity" className="gap-2">
-                    <APP_ICONS.dashboard.recentActivity className="h-4 w-4" />
                     Activity
                   </TabsTrigger>
                 </TabsList>
@@ -136,17 +130,14 @@ const Feed = () => {
                     <h2 className="mt-3 font-display text-lg font-semibold">At a glance</h2>
                   </div>
                   <PulseMetric
-                    icon={APP_ICONS.profile.posts}
                     label="Posts"
                     value={postsLoading ? "-" : posts.length.toString()}
                   />
                   <PulseMetric
-                    icon={APP_ICONS.dashboard.recentActivity}
                     label="Activity updates"
                     value={activityLoading ? "-" : activities.length.toString()}
                   />
                   <PulseMetric
-                    icon={APP_ICONS.readers.active}
                     label="Live surface"
                     value="Community"
                   />
@@ -197,32 +188,31 @@ const FeedPaginationState = ({
   if (!caughtUp) return null;
 
   return (
-    <Card className="border-dashed">
-      <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-        <APP_ICONS.dashboard.recentActivity className="mb-3 h-8 w-8 text-primary" />
-        <h2 className="font-display text-lg font-semibold">You're caught up</h2>
-        <p className="mt-1 max-w-md font-sans text-sm text-muted-foreground">
+    <PremiumEmptyState
+      asset="syncReviewClear"
+      title="You're caught up"
+      description={
+        <>
           {feedMode === "discovery"
             ? "You've reached the end of current discovery posts. Follow more readers or start a new conversation."
             : "No more posts from your network right now. Brack will surface discovery posts when there is more to explore."}
-        </p>
-      </CardContent>
-    </Card>
+        </>
+      }
+      size="compact"
+      className="border-dashed"
+    />
   );
 };
 
 const PulseMetric = ({
-  icon: Icon,
   label,
   value,
 }: {
-  icon: ComponentType<{ className?: string }>;
   label: string;
   value: string;
 }) => (
   <div className="flex items-center justify-between gap-3 rounded-md border border-border/70 p-3">
     <div className="flex items-center gap-2">
-      <Icon className="h-4 w-4 text-primary" />
       <span className="font-sans text-sm text-muted-foreground">{label}</span>
     </div>
     <span className="font-sans text-sm font-semibold">{value}</span>
@@ -230,15 +220,11 @@ const PulseMetric = ({
 );
 
 const EmptyFeedState = () => (
-  <Card>
-    <CardContent className="flex min-h-[16rem] flex-col items-center justify-center p-8 text-center">
-      <APP_ICONS.profile.posts className="mb-4 h-10 w-10 text-muted-foreground" />
-      <h2 className="font-display text-xl font-semibold">No posts yet</h2>
-      <p className="mt-2 max-w-sm font-sans text-sm text-muted-foreground">
-        Start the community feed with a reading update, recommendation, or thought from your current book.
-      </p>
-    </CardContent>
-  </Card>
+  <PremiumEmptyState
+    asset="emptyFeed"
+    title="No posts yet"
+    description="Start the community feed with a reading update, recommendation, or thought from your current book."
+  />
 );
 
 export default Feed;

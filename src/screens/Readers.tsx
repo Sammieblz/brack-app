@@ -14,8 +14,10 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { MobileLayout } from "@/components/MobileLayout";
 import { NativeHeader } from "@/components/NativeHeader";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { APP_ICONS } from "@/config/iconography";
+import type { EmptyStateAssetKey } from "@/config/emptyStateAssets";
 import { useBookClubs } from "@/hooks/useBookClubs";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -238,7 +240,7 @@ export default function Readers() {
                 </Card>
               ) : visibleReaders.length === 0 ? (
                 <EmptyDiscoverState
-                  icon={hasSearch ? APP_ICONS.common.search : activeSectionConfig.icon}
+                  asset={hasSearch ? "noResults" : "emptyReaders"}
                   title={hasSearch ? "No matching readers" : activeSectionConfig.emptyTitle}
                   description={
                     hasSearch
@@ -282,7 +284,7 @@ export default function Readers() {
                   <TabsContent value="my-clubs" className="mt-4">
                     {myClubs.length === 0 ? (
                       <EmptyDiscoverState
-                        icon={APP_ICONS.readers.clubs}
+                        asset="emptyClubs"
                         title="No clubs yet"
                         description="Create a club or join one from Discover to start discussing books."
                       />
@@ -298,7 +300,7 @@ export default function Readers() {
                   <TabsContent value="discover" className="mt-4">
                     {publicClubs.length === 0 ? (
                       <EmptyDiscoverState
-                        icon={APP_ICONS.readers.discoverClubs}
+                        asset="emptyClubs"
                         title="No public clubs"
                         description="Be the first to create a public club for readers to join."
                       />
@@ -455,19 +457,18 @@ const SummaryPill = ({ label, value }: { label: string; value: number }) => (
 );
 
 const EmptyDiscoverState = ({
-  icon: Icon,
+  asset,
   title,
   description,
 }: {
-  icon: ComponentType<{ className?: string }>;
+  asset: EmptyStateAssetKey;
   title: string;
   description: string;
 }) => (
-  <Card>
-    <CardContent className="flex min-h-[16rem] flex-col items-center justify-center p-8 text-center">
-      <Icon className="mb-4 h-10 w-10 text-muted-foreground" />
-      <h2 className="font-display text-xl font-semibold">{title}</h2>
-      <p className="mt-2 max-w-sm font-sans text-sm text-muted-foreground">{description}</p>
-    </CardContent>
-  </Card>
+  <PremiumEmptyState
+    asset={asset}
+    title={title}
+    description={description}
+    size="default"
+  />
 );

@@ -64,7 +64,7 @@ export const LibraryBookCard = ({
     >
       {selectMode && (
         <div
-          className="absolute right-3 top-3 z-10 rounded-full border border-border/70 bg-background/90 p-1 shadow-sm"
+          className="absolute right-3 top-3 z-10 rounded-full bg-background/90 p-1"
           onClick={(event) => event.stopPropagation()}
         >
           <Checkbox

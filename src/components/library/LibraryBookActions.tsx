@@ -1,12 +1,5 @@
 import { type ReactNode, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Calendar,
-  EditPencil,
-  JournalPage,
-  NavArrowRight,
-  Trash,
-} from "iconoir-react";
 import { AddToListDialog } from "@/components/AddToListDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { APP_ICONS } from "@/config/iconography";
+import { AppIcon } from "@/components/ui/app-icon";
 import { cn } from "@/lib/utils";
 import type { Book } from "@/types";
 import { formatBookDate, formatBookStatus, statusStyles } from "./libraryBookUtils";
@@ -81,16 +75,16 @@ export const LibraryBookActions = ({
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
       <IconAction label="View details" onClick={() => onView(book.id)}>
-        <NavArrowRight className="h-4 w-4" />
+        <AppIcon icon={APP_ICONS.common.forward} variant="action" />
       </IconAction>
       <IconAction
         label="Log progress"
         onClick={() => navigate(`/book/${book.id}/progress`)}
       >
-        <JournalPage className="h-4 w-4" />
+        <AppIcon icon={APP_ICONS.bookDetail.logProgress} variant="action" />
       </IconAction>
       <IconAction label="Edit book" onClick={() => onEdit(book.id)}>
-        <EditPencil className="h-4 w-4" />
+        <AppIcon icon={APP_ICONS.common.edit} variant="action" />
       </IconAction>
       {userId && (
         <AddToListDialog
@@ -106,7 +100,7 @@ export const LibraryBookActions = ({
               title="Add to list"
               className="h-10 w-10 rounded-full"
             >
-              <APP_ICONS.library.bookLists className="h-4 w-4" />
+              <AppIcon icon={APP_ICONS.library.bookLists} variant="action" />
             </Button>
           }
         />
@@ -124,7 +118,7 @@ export const LibraryBookActions = ({
                   title="Delete book"
                   className="h-10 w-10 rounded-full border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                 >
-                  <Trash className="h-4 w-4" />
+                  <AppIcon icon={APP_ICONS.common.delete} variant="action" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Delete book</TooltipContent>
@@ -175,7 +169,7 @@ export const LibraryBookDateLine = ({
   if (!formatted) return null;
   return (
     <span className="flex items-center gap-2">
-      <Calendar className="h-4 w-4 text-primary" />
+      <AppIcon icon={APP_ICONS.bookDetail.progressDate} variant="inline" className="text-primary" />
       {label} {formatted}
     </span>
   );

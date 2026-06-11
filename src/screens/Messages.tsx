@@ -13,8 +13,8 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { APP_ICONS } from "@/config/iconography";
 import { Card, CardContent } from "@/components/ui/card";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 
 const Messages = () => {
   const location = useLocation();
@@ -145,7 +145,6 @@ const Messages = () => {
                         {conversations.length} conversation{conversations.length === 1 ? "" : "s"}
                       </p>
                     </div>
-                    <APP_ICONS.nav.messages className="h-5 w-5 text-primary" />
                   </div>
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto p-3">
@@ -176,18 +175,14 @@ const Messages = () => {
                   />
                 )
               ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  <div className="max-w-sm text-center">
-                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-md bg-primary/10 text-primary">
-                      <APP_ICONS.nav.messages className="h-7 w-7" />
-                    </div>
-                    <h2 className="font-display text-xl font-semibold text-foreground">
-                      Choose a conversation
-                    </h2>
-                    <p className="mt-2 font-sans text-sm">
-                      Pick a reader from the inbox to continue the thread.
-                    </p>
-                  </div>
+                <div className="flex h-full items-center justify-center p-6">
+                  <PremiumEmptyState
+                    asset="chooseConversation"
+                    title="Choose a conversation"
+                    description="Pick a reader from the inbox to continue the thread."
+                    variant="plain"
+                    size="large"
+                  />
                 </div>
               )}
             </div>

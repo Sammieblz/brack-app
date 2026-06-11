@@ -5,7 +5,6 @@ import {
   Lock,
   MapPin,
   NavArrowRight,
-  Send,
   UserBadgeCheck,
 } from "iconoir-react";
 import { formatDistanceToNow } from "date-fns";
@@ -16,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { AppIcon } from "@/components/ui/app-icon";
 
 interface BookClubCardProps {
   club: BookClub;
@@ -86,7 +86,7 @@ export const BookClubCard = ({
             type="button"
             onClick={() => canOpen && navigate(`/clubs/${club.id}`)}
             className={cn(
-              "-mt-1 flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-primary/10 text-primary shadow-sm",
+              "-mt-1 flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted/45 text-muted-foreground shadow-sm",
               (club.banner_image_url || club.cover_image_url) && "-mt-10 ring-4 ring-card",
               canOpen && "transition group-hover:scale-[1.02]",
             )}
@@ -95,7 +95,7 @@ export const BookClubCard = ({
             {club.avatar_image_url || club.cover_image_url ? (
               <img src={club.avatar_image_url || club.cover_image_url || ""} alt="" className="h-full w-full object-cover" />
             ) : (
-              <APP_ICONS.readers.clubs className="h-7 w-7" />
+              <AppIcon icon={APP_ICONS.readers.clubs} variant="empty" size="lg" />
             )}
           </button>
 
@@ -218,7 +218,7 @@ export const BookClubCard = ({
                   })
                 }
               >
-                <Send className="mr-2 h-4 w-4" />
+                <AppIcon icon={APP_ICONS.common.send} variant="inline" size="sm" className="mr-2" />
                 Send
               </Button>
             </div>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -85,9 +86,13 @@ export const ReviewComments = ({
         {/* Comments List */}
         <div className="space-y-4">
           {comments.length === 0 ? (
-            <p className="font-sans text-sm text-muted-foreground text-center py-4">
-              No comments yet. Be the first to comment!
-            </p>
+            <PremiumEmptyState
+              asset="emptyComments"
+              title="No comments yet"
+              description="Be the first to add context to this review."
+              variant="plain"
+              size="compact"
+            />
           ) : (
             comments.map((comment) => (
               <div key={comment.id} className="flex gap-3 border-b pb-3 last:border-0">

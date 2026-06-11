@@ -6,11 +6,12 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { AppBackButton } from "@/components/AppBackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
-import { Book, Calendar, Clock, Notes, Search } from "iconoir-react";
+import { Book, Calendar, Clock, Search } from "iconoir-react";
 import { format } from "date-fns";
 import {
   fetchReadingHistory,
@@ -142,12 +143,12 @@ export default function ReadingHistory() {
           {/* Progress Logs Tab */}
           <TabsContent value="logs" className="space-y-4">
             {filteredLogs.length === 0 ? (
-              <Card>
-                <CardContent className="py-8 text-center text-muted-foreground">
-                  <Book className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No progress logs found</p>
-                </CardContent>
-              </Card>
+              <PremiumEmptyState
+                asset={searchQuery ? "noResults" : "emptyProgress"}
+                title="No progress logs found"
+                description={searchQuery ? "Try another book title or note." : "Log progress from a book page to build your history."}
+                size="compact"
+              />
             ) : (
               filteredLogs.map((log) => (
                 <Card 
@@ -222,12 +223,12 @@ export default function ReadingHistory() {
           {/* Journal Entries Tab */}
           <TabsContent value="journals" className="space-y-4">
             {filteredJournals.length === 0 ? (
-              <Card>
-                <CardContent className="py-8 text-center text-muted-foreground">
-                  <Notes className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No journal entries found</p>
-                </CardContent>
-              </Card>
+              <PremiumEmptyState
+                asset={searchQuery ? "noResults" : "emptyJournal"}
+                title="No journal entries found"
+                description={searchQuery ? "Try another book title, tag, or phrase." : "Journal entries from book pages will appear here."}
+                size="compact"
+              />
             ) : (
               filteredJournals.map((entry) => (
                 <Card 

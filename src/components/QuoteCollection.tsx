@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { shareService } from "@/services/shareService";
 import LoadingSpinner from "./LoadingSpinner";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { fetchUserQuoteEntries, type QuoteEntry } from "@/services/api";
 
 interface QuoteCollectionProps {
@@ -90,15 +91,13 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
           <CardDescription className="font-sans">Your favorite quotes from books</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8">
-            <Quote className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="font-sans text-sm text-muted-foreground mb-4">
-              No quotes saved yet
-            </p>
-            <p className="font-sans text-xs text-muted-foreground">
-              Add quotes while reading to build your collection
-            </p>
-          </div>
+          <PremiumEmptyState
+            asset="emptyQuotes"
+            title="No quotes saved yet"
+            description="Add quotes while reading to build your collection."
+            variant="plain"
+            size="compact"
+          />
         </CardContent>
       </Card>
     );
@@ -132,11 +131,13 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
         {/* Quotes List */}
         <div className="space-y-4">
           {filteredQuotes.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="font-sans text-sm text-muted-foreground">
-                No quotes match your search
-              </p>
-            </div>
+            <PremiumEmptyState
+              asset="noResults"
+              title="No quotes match your search"
+              description="Try another phrase, book title, or author."
+              variant="plain"
+              size="compact"
+            />
           ) : (
             filteredQuotes.map((quote) => (
               <div
