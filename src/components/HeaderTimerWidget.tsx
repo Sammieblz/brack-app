@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Pause, Play, Square, Timer, Xmark } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AppIcon } from "@/components/ui/app-icon";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
@@ -58,7 +59,7 @@ export const HeaderTimerWidget = () => {
             className="rounded-full border-border/70 bg-card/45 px-3 shadow-none hover:bg-accent"
             title="Start reading timer"
           >
-            <Timer className="h-4 w-4" />
+            <AppIcon icon={APP_ICONS.floatingAction.timer} variant="inline" size="sm" />
             <span className="hidden lg:inline">Start Timer</span>
           </Button>
         </PopoverTrigger>
@@ -90,7 +91,12 @@ export const HeaderTimerWidget = () => {
     <Popover open={open} onOpenChange={setOpen}>
       <div className="flex min-w-0 items-center rounded-full border border-primary/30 bg-primary/10 text-primary shadow-none">
         <div className="hidden min-w-0 items-center gap-2 pl-3 pr-2 xl:flex">
-          <Timer className={cn("h-4 w-4", isRunning && "animate-pulse")} />
+          <AppIcon
+            icon={APP_ICONS.floatingAction.timer}
+            variant="inline"
+            size="sm"
+            className={cn(isRunning && "animate-pulse")}
+          />
           <span className="max-w-36 truncate font-sans text-sm font-medium">
             {bookTitle || "Reading Timer"}
           </span>
@@ -107,7 +113,7 @@ export const HeaderTimerWidget = () => {
           aria-label={isRunning ? "Pause timer" : "Resume timer"}
           title={isRunning ? "Pause timer" : "Resume timer"}
         >
-          {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          <AppIcon icon={isRunning ? APP_ICONS.common.pause : APP_ICONS.common.play} variant="action" />
         </Button>
         {time > 0 && (
           <Button
@@ -119,7 +125,7 @@ export const HeaderTimerWidget = () => {
             aria-label="Finish timer"
             title="Finish timer"
           >
-            <Square className="h-4 w-4" />
+            <AppIcon icon={APP_ICONS.common.stop} variant="action" />
           </Button>
         )}
         <PopoverTrigger asChild>
@@ -131,7 +137,7 @@ export const HeaderTimerWidget = () => {
             aria-label="Open timer details"
             title="Open timer details"
           >
-            <Timer className="h-4 w-4" />
+            <AppIcon icon={APP_ICONS.floatingAction.timer} variant="action" />
           </Button>
         </PopoverTrigger>
       </div>
@@ -209,8 +215,8 @@ const TimerPickerContent = ({
                   className="h-14 w-10 shrink-0 rounded object-cover"
                 />
               ) : (
-                <div className="flex h-14 w-10 shrink-0 items-center justify-center rounded bg-primary/10 text-primary">
-                  <APP_ICONS.dashboard.coverFallback className="h-5 w-5" />
+                <div className="flex h-14 w-10 shrink-0 items-center justify-center rounded bg-muted/50 text-muted-foreground">
+                  <AppIcon icon={APP_ICONS.dashboard.coverFallback} variant="empty" size="md" />
                 </div>
               )}
               <span className="min-w-0 flex-1">
@@ -233,21 +239,24 @@ const TimerPickerContent = ({
         </div>
       </ScrollArea>
     ) : (
-      <div className="rounded-md border border-border/70 p-4 text-center">
-        <Timer className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-        <p className="font-sans text-sm font-medium">No reading books</p>
-        <p className="font-sans text-xs text-muted-foreground">
-          Mark a book as reading to start timing from the header.
-        </p>
-        <div className="mt-3 flex gap-2">
-          <Button variant="outline" size="sm" className="flex-1" onClick={onGoToLibrary}>
-            Library
-          </Button>
-          <Button size="sm" className="flex-1" onClick={onAddBook}>
-            Add Book
-          </Button>
-        </div>
-      </div>
+      <PremiumEmptyState
+        asset="emptyLibrary"
+        title="No reading books"
+        description="Mark a book as reading to start timing from the header."
+        variant="plain"
+        size="compact"
+        className="rounded-md border border-border/70 p-4"
+        action={
+          <div className="flex w-full gap-2">
+            <Button variant="outline" size="sm" className="flex-1" onClick={onGoToLibrary}>
+              Library
+            </Button>
+            <Button size="sm" className="flex-1" onClick={onAddBook}>
+              Add Book
+            </Button>
+          </div>
+        }
+      />
     )}
   </div>
 );
@@ -286,7 +295,7 @@ const TimerControlsContent = ({
         aria-label="Cancel timer"
         title="Cancel timer"
       >
-        <Xmark className="h-4 w-4" />
+        <AppIcon icon={APP_ICONS.common.close} variant="action" />
       </Button>
     </div>
 
@@ -307,12 +316,12 @@ const TimerControlsContent = ({
       >
         {isRunning ? (
           <>
-            <Pause className="mr-2 h-4 w-4" />
+            <AppIcon icon={APP_ICONS.common.pause} variant="inline" size="sm" className="mr-2" />
             Pause
           </>
         ) : (
           <>
-            <Play className="mr-2 h-4 w-4" />
+            <AppIcon icon={APP_ICONS.common.play} variant="inline" size="sm" className="mr-2" />
             Resume
           </>
         )}
@@ -324,7 +333,7 @@ const TimerControlsContent = ({
         disabled={time === 0}
         className="border-green-500/50 text-green-600 hover:bg-green-500/10"
       >
-        <Square className="mr-2 h-4 w-4" />
+        <AppIcon icon={APP_ICONS.common.stop} variant="inline" size="sm" className="mr-2" />
         Finish
       </Button>
     </div>

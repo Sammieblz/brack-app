@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { FollowButton } from "@/components/social/FollowButton";
 import { PostCard } from "@/components/social/PostCard";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
 import { PostCardSkeleton } from "@/components/skeletons/PostCardSkeleton";
 import { StatCardSkeleton } from "@/components/skeletons/StatCardSkeleton";
@@ -303,8 +304,7 @@ const UserProfile = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-2">
-                <APP_ICONS.profile.totalBooks className="h-4 w-4 text-primary shrink-0" />
+              <CardTitle className="text-xs sm:text-sm font-medium">
                 <span className="truncate">Total Books</span>
               </CardTitle>
             </CardHeader>
@@ -315,8 +315,7 @@ const UserProfile = () => {
 
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="font-sans text-xs sm:text-sm font-medium flex items-center gap-2">
-                <APP_ICONS.profile.booksRead className="h-4 w-4 text-primary shrink-0" />
+              <CardTitle className="font-sans text-xs sm:text-sm font-medium">
                 <span className="truncate">Books Read</span>
               </CardTitle>
             </CardHeader>
@@ -327,8 +326,7 @@ const UserProfile = () => {
 
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="font-sans text-xs sm:text-sm font-medium flex items-center gap-2">
-                <APP_ICONS.profile.streak className="h-4 w-4 text-primary shrink-0" />
+              <CardTitle className="font-sans text-xs sm:text-sm font-medium">
                 <span className="truncate">Streak</span>
               </CardTitle>
             </CardHeader>
@@ -340,8 +338,7 @@ const UserProfile = () => {
 
           <Card className="hover-scale cursor-pointer active:scale-95 transition-transform">
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="font-sans text-xs sm:text-sm font-medium flex items-center gap-2">
-                <APP_ICONS.profile.badges className="h-4 w-4 text-primary shrink-0" />
+              <CardTitle className="font-sans text-xs sm:text-sm font-medium">
                 <span className="truncate">Badges</span>
               </CardTitle>
             </CardHeader>
@@ -376,12 +373,12 @@ const UserProfile = () => {
                 ))}
               </div>
             ) : userBooks.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center text-muted-foreground">
-                  <APP_ICONS.profile.booksTab className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                  <p className="font-sans">No books yet</p>
-                </CardContent>
-              </Card>
+              <PremiumEmptyState
+                asset="emptyLibrary"
+                title="No books yet"
+                description="This reader has not shared any books."
+                size="compact"
+              />
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                 {userBooks.map((book) => (
@@ -424,12 +421,12 @@ const UserProfile = () => {
                 ))}
               </div>
             ) : userPosts.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center text-muted-foreground">
-                  <APP_ICONS.profile.posts className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                  <p className="font-sans">No posts yet</p>
-                </CardContent>
-              </Card>
+              <PremiumEmptyState
+                asset="emptyFeed"
+                title="No posts yet"
+                description="Posts from this reader will appear here."
+                size="compact"
+              />
             ) : (
               userPosts.map((post) => (
                 <PostCard
@@ -463,12 +460,12 @@ const UserProfile = () => {
                 ))}
               </div>
             ) : userClubs.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center text-muted-foreground">
-                  <APP_ICONS.profile.clubs className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                  <p className="font-sans">Not a member of any book clubs yet</p>
-                </CardContent>
-              </Card>
+              <PremiumEmptyState
+                asset="emptyClubs"
+                title="Not in any book clubs yet"
+                description="Clubs this reader joins will appear here."
+                size="compact"
+              />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {userClubs.map((club) => (

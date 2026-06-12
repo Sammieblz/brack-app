@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Book } from "iconoir-react";
+import { Plus } from "iconoir-react";
 import { JournalEntryCard } from "./JournalEntryCard";
 import { JournalEntryDialog } from "./JournalEntryDialog";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { useJournalEntries, JournalEntry } from "@/hooks/useJournalEntries";
 import LoadingSpinner from "./LoadingSpinner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -79,17 +80,23 @@ export const JournalEntriesList = ({ bookId }: JournalEntriesListProps) => {
       </div>
 
       {filteredEntries.length === 0 ? (
-        <div className="text-center py-12">
-          <Book className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="font-display text-lg font-semibold mb-2">No Journal Entries Yet</h3>
-          <p className="font-sans text-muted-foreground mb-4">
-            Start capturing your thoughts, quotes, and reflections
-          </p>
-          <Button onClick={() => setDialogOpen(true)}>
+        <PremiumEmptyState
+          asset={searchQuery || filterType !== "all" ? "noResults" : "emptyJournal"}
+          title={searchQuery || filterType !== "all" ? "No matching journal entries" : "No journal entries yet"}
+          description={
+            searchQuery || filterType !== "all"
+              ? "Try another search or filter."
+              : "Start capturing your thoughts, quotes, and reflections."
+          }
+          size="compact"
+          variant="plain"
+          action={
+            <Button onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Your First Entry
           </Button>
-        </div>
+          }
+        />
       ) : (
         <div className="space-y-4">
           {filteredEntries.map((entry) => (

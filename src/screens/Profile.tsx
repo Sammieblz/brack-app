@@ -18,6 +18,7 @@ import { useFollowing } from "@/hooks/useFollowing";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getInitials } from "@/lib/avatarUtils";
 import { APP_ICONS } from "@/config/iconography";
+import { AppIcon } from "@/components/ui/app-icon";
 import type { Profile } from "@/types";
 import {
   fetchProfile,
@@ -187,10 +188,7 @@ const ProfilePage = () => {
         {/* Social Profile View */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <APP_ICONS.profile.social className="h-5 w-5" />
-              Social Profile
-            </CardTitle>
+            <CardTitle>Social Profile</CardTitle>
             <CardDescription>
               How others see your profile
             </CardDescription>
@@ -233,10 +231,7 @@ const ProfilePage = () => {
         {/* Profile Picture */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <APP_ICONS.profile.picture className="h-5 w-5" />
-              Profile Picture
-            </CardTitle>
+            <CardTitle>Profile Picture</CardTitle>
             <CardDescription>
               Update your profile picture to personalize your account
             </CardDescription>
@@ -256,7 +251,7 @@ const ProfilePage = () => {
                   onClick={() => setShowImagePicker(true)}
                   className="w-full sm:w-auto"
                 >
-                  <APP_ICONS.common.camera className="h-4 w-4 mr-2" />
+                  <AppIcon icon={APP_ICONS.common.camera} variant="inline" size="sm" className="mr-2" />
                   {uploading ? "Uploading..." : "Choose Photo"}
                 </Button>
                 {profile?.avatar_url && (

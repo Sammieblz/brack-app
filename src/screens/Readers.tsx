@@ -4,6 +4,7 @@ import { useSwipeable } from "react-swipeable";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { BookClubCard } from "@/components/clubs/BookClubCard";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CreateClubDialog } from "@/components/clubs/CreateClubDialog";
 import { FollowButton } from "@/components/social/FollowButton";
@@ -13,37 +14,89 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { MobileLayout } from "@/components/MobileLayout";
 import { NativeHeader } from "@/components/NativeHeader";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { APP_ICONS } from "@/config/iconography";
+import type { EmptyStateAssetKey } from "@/config/emptyStateAssets";
 import { useBookClubs } from "@/hooks/useBookClubs";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { type UserSearchResult, useUserSearch } from "@/hooks/useUserSearch";
+import { cn } from "@/lib/utils";
+import type { ReaderStatusBadge } from "@/services/api";
 
 type MainTab = "readers" | "clubs";
-type ReaderFilter = "all" | "nearby" | "social" | "taste" | "active";
+type ReaderSection = "suggestions" | "nearby" | "connections" | "friendsOfFriends" | "activeFriends";
 
-const readerFilters: Array<{
-  value: ReaderFilter;
+const readerSections: Array<{
+  value: ReaderSection;
   label: string;
+  shortLabel: string;
   icon: ComponentType<{ className?: string }>;
+  emptyTitle: string;
+  emptyDescription: string;
 }> = [
-  { value: "all", label: "All", icon: APP_ICONS.readers.all },
-  { value: "nearby", label: "Nearby", icon: APP_ICONS.readers.nearby },
-  { value: "social", label: "Connections", icon: APP_ICONS.readers.connections },
-  { value: "taste", label: "Similar Taste", icon: APP_ICONS.readers.similarTaste },
-  { value: "active", label: "Active", icon: APP_ICONS.readers.active },
+  {
+    value: "suggestions",
+    label: "Suggestions",
+    shortLabel: "For You",
+    icon: APP_ICONS.readers.suggestions,
+    emptyTitle: "No smart suggestions yet",
+    emptyDescription: "Follow a few readers, add genres, or join clubs so Brack can find better matches.",
+  },
+  {
+    value: "nearby",
+    label: "Nearby",
+    shortLabel: "Nearby",
+    icon: APP_ICONS.readers.nearby,
+    emptyTitle: "No nearby readers",
+    emptyDescription: "Add your location in Personal Info or widen your reading circle through clubs.",
+  },
+  {
+    value: "connections",
+    label: "Connections",
+    shortLabel: "Network",
+    icon: APP_ICONS.readers.connections,
+    emptyTitle: "No connections yet",
+    emptyDescription: "Follow readers you know, then return here to keep up with your network.",
+  },
+  {
+    value: "friendsOfFriends",
+    label: "Friends of Friends",
+    shortLabel: "2nd Degree",
+    icon: APP_ICONS.readers.friendsOfFriends,
+    emptyTitle: "No friend-of-friend suggestions",
+    emptyDescription: "Mutual connections appear here once your friends follow more readers.",
+  },
+  {
+    value: "activeFriends",
+    label: "Active Friends",
+    shortLabel: "Active",
+    icon: APP_ICONS.readers.active,
+    emptyTitle: "No active friends right now",
+    emptyDescription: "Mutual friends with online status enabled will appear here when they are active.",
+  },
 ];
+
+const statusLabels: Record<ReaderStatusBadge, string> = {
+  available: "Available",
+  reading_now: "Reading now",
+  buddy_reads: "Buddy reads",
+  looking_for_club: "Looking for a club",
+  taking_recommendations: "Taking recs",
+  quiet: "Quiet",
+};
 
 export default function Readers() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<MainTab>("readers");
-  const [readerFilter, setReaderFilter] = useState<ReaderFilter>("all");
+  const [readerSection, setReaderSection] = useState<ReaderSection>("suggestions");
   const { results, loading } = useUserSearch(searchQuery);
   const { clubs, loading: clubsLoading, createClub, joinClub, leaveClub } = useBookClubs();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { triggerHaptic } = useHapticFeedback();
+  const hasSearch = searchQuery.trim().length > 0;
 
   const swipeHandlers = useSwipeable({
     onSwipedLeft: () => {
@@ -66,19 +119,11 @@ export default function Readers() {
   const publicClubs = clubs.filter((club) => !club.is_private && !club.user_role);
 
   const visibleReaders = useMemo(() => {
-    switch (readerFilter) {
-      case "nearby":
-        return results.nearby;
-      case "social":
-        return results.socialConnections;
-      case "taste":
-        return results.similarTaste;
-      case "active":
-        return results.activeReaders;
-      default:
-        return results.all;
-    }
-  }, [readerFilter, results]);
+    if (hasSearch) return results.searchResults;
+    return results[readerSection];
+  }, [hasSearch, readerSection, results]);
+
+  const activeSectionConfig = readerSections.find((section) => section.value === readerSection)!;
 
   const handleRefresh = async () => {
     const currentQuery = searchQuery;
@@ -96,7 +141,7 @@ export default function Readers() {
       ) : (
         <NativeHeader
           title="Discover"
-          subtitle="Find readers, follow taste matches, and join book communities"
+          subtitle="Find smart reader suggestions, nearby matches, and active friends"
           action={createClubAction}
           showUtilityActions
         />
@@ -117,10 +162,10 @@ export default function Readers() {
                 </TabsTrigger>
               </TabsList>
 
-              <div className="hidden gap-3 sm:grid sm:grid-cols-3 lg:w-[28rem]">
-                <SummaryPill label="Readers" value={results.all.length} />
-                <SummaryPill label="Following" value={results.socialConnections.length} />
-                <SummaryPill label="Clubs" value={clubs.length} />
+              <div className="hidden gap-3 sm:grid sm:grid-cols-3 lg:w-[30rem]">
+                <SummaryPill label="Suggestions" value={results.suggestions.length} />
+                <SummaryPill label="Active friends" value={results.activeFriends.length} />
+                <SummaryPill label="Nearby" value={results.nearby.length} />
               </div>
             </div>
 
@@ -137,22 +182,55 @@ export default function Readers() {
                     />
                   </div>
 
-                  <div className="overflow-x-auto">
-                    <Tabs value={readerFilter} onValueChange={(value) => setReaderFilter(value as ReaderFilter)}>
-                      <TabsList className="min-w-max shadow-none">
-                        {readerFilters
-                          .filter((item) => !isMobile || (item.value !== "social" && item.value !== "taste"))
-                          .map(({ value, label, icon: Icon }) => (
-                            <TabsTrigger key={value} value={value} className="gap-2 px-3">
+                  {!hasSearch && (
+                    <div className="overflow-x-auto pb-1">
+                      <div className="flex min-w-max gap-2">
+                        {readerSections.map(({ value, label, shortLabel, icon: Icon }) => {
+                          const active = readerSection === value;
+                          return (
+                            <Button
+                              key={value}
+                              type="button"
+                              variant={active ? "default" : "outline"}
+                              size="sm"
+                              className="gap-2 rounded-full"
+                              onClick={() => {
+                                setReaderSection(value);
+                                triggerHaptic("selection");
+                              }}
+                            >
                               <Icon className="h-4 w-4" />
-                              <span>{label}</span>
-                            </TabsTrigger>
-                          ))}
-                      </TabsList>
-                    </Tabs>
-                  </div>
+                              <span>{isMobile ? shortLabel : label}</span>
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
+
+              {hasSearch && (
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="font-display text-xl font-semibold">Search Results</h2>
+                    <p className="font-sans text-sm text-muted-foreground">
+                      Ranked by relationship, shared signals, and privacy rules.
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setSearchQuery("")}>
+                    Clear
+                  </Button>
+                </div>
+              )}
+
+              {!hasSearch && (
+                <SectionHeader
+                  icon={activeSectionConfig.icon}
+                  title={activeSectionConfig.label}
+                  count={visibleReaders.length}
+                />
+              )}
 
               {loading ? (
                 <Card>
@@ -162,12 +240,12 @@ export default function Readers() {
                 </Card>
               ) : visibleReaders.length === 0 ? (
                 <EmptyDiscoverState
-                  icon={APP_ICONS.readers.readers}
-                  title={searchQuery ? "No matching readers" : "No readers found"}
+                  asset={hasSearch ? "noResults" : "emptyReaders"}
+                  title={hasSearch ? "No matching readers" : activeSectionConfig.emptyTitle}
                   description={
-                    searchQuery
-                      ? "Try a different name or clear the search."
-                      : "As more people build their reading profiles, they will appear here."
+                    hasSearch
+                      ? "Try a different name. Private and blocked readers are not shown."
+                      : activeSectionConfig.emptyDescription
                   }
                 />
               ) : (
@@ -206,7 +284,7 @@ export default function Readers() {
                   <TabsContent value="my-clubs" className="mt-4">
                     {myClubs.length === 0 ? (
                       <EmptyDiscoverState
-                        icon={APP_ICONS.readers.clubs}
+                        asset="emptyClubs"
                         title="No clubs yet"
                         description="Create a club or join one from Discover to start discussing books."
                       />
@@ -222,7 +300,7 @@ export default function Readers() {
                   <TabsContent value="discover" className="mt-4">
                     {publicClubs.length === 0 ? (
                       <EmptyDiscoverState
-                        icon={APP_ICONS.readers.discoverClubs}
+                        asset="emptyClubs"
                         title="No public clubs"
                         description="Be the first to create a public club for readers to join."
                       />
@@ -254,50 +332,90 @@ const getInitials = (name: string | null) => {
     .slice(0, 2);
 };
 
-const ReaderCard = ({ user, onOpen }: { user: UserSearchResult; onOpen: () => void }) => (
-  <Card className="cursor-pointer" onClick={onOpen}>
-    <CardContent className="p-4">
-      <div className="flex items-start gap-3">
-        <Avatar className="h-12 w-12 shrink-0 md:h-14 md:w-14">
-          <AvatarImage src={user.avatar_url || ""} />
-          <AvatarFallback>{getInitials(user.display_name)}</AvatarFallback>
-        </Avatar>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="truncate font-sans text-base font-semibold">
-                  {user.display_name || "Anonymous Reader"}
-                </h3>
-                {user.recommendation_reason && (
-                  <Badge variant="secondary" className="text-xs">
-                    {user.recommendation_reason}
-                  </Badge>
+const ReaderCard = ({ user, onOpen }: { user: UserSearchResult; onOpen: () => void }) => {
+  const visibleBadges = user.badges.slice(0, 4);
+
+  return (
+    <Card className="cursor-pointer overflow-hidden transition-colors hover:border-primary/45" onClick={onOpen}>
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          <div className="relative shrink-0">
+            <Avatar className="h-12 w-12 md:h-14 md:w-14">
+              <AvatarImage src={user.avatar_url || ""} />
+              <AvatarFallback>{getInitials(user.display_name)}</AvatarFallback>
+            </Avatar>
+            {user.is_online && (
+              <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-card bg-emerald-500" />
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="truncate font-sans text-base font-semibold">
+                    {user.display_name || "Anonymous Reader"}
+                  </h3>
+                  <StatusBadge status={user.status_badge} />
+                </div>
+                {user.bio && (
+                  <p className="mt-1 line-clamp-2 font-sans text-sm text-muted-foreground">
+                    {user.bio}
+                  </p>
                 )}
               </div>
-              {user.bio && (
-                <p className="mt-1 line-clamp-2 font-sans text-sm text-muted-foreground">
-                  {user.bio}
-                </p>
+              <div className="shrink-0" onClick={(event) => event.stopPropagation()}>
+                <FollowButton userId={user.id} size="sm" />
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {visibleBadges.map((badge) => (
+                <Badge
+                  key={badge}
+                  variant={badge === "Active now" ? "default" : "secondary"}
+                  className={cn("text-xs", badge === "Active now" && "bg-emerald-600 text-white")}
+                >
+                  {badge}
+                </Badge>
+              ))}
+              {user.badges.length > visibleBadges.length && (
+                <Badge variant="outline" className="text-xs">
+                  +{user.badges.length - visibleBadges.length}
+                </Badge>
               )}
             </div>
-            <div className="shrink-0" onClick={(event) => event.stopPropagation()}>
-              <FollowButton userId={user.id} size="sm" />
+
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 font-sans text-sm text-muted-foreground">
+              <ReaderMeta icon={APP_ICONS.readers.booksRead} label={`${user.books_read_count} books`} />
+              {user.current_streak > 0 && (
+                <ReaderMeta icon={APP_ICONS.readers.streak} label={`${user.current_streak} day streak`} />
+              )}
+              {user.distance_km !== undefined && (
+                <ReaderMeta icon={APP_ICONS.readers.distance} label={`${Math.round(user.distance_km)}km away`} />
+              )}
+              {user.mutual_friend_count > 0 && (
+                <ReaderMeta
+                  icon={APP_ICONS.readers.friendsOfFriends}
+                  label={`${user.mutual_friend_count} mutual`}
+                />
+              )}
             </div>
-          </div>
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 font-sans text-sm text-muted-foreground">
-            <ReaderMeta icon={APP_ICONS.readers.booksRead} label={`${user.books_read_count} books`} />
-            {user.current_streak > 0 && (
-              <ReaderMeta icon={APP_ICONS.readers.streak} label={`${user.current_streak} day streak`} />
-            )}
-            {user.distance_km !== undefined && (
-              <ReaderMeta icon={APP_ICONS.readers.distance} label={`${Math.round(user.distance_km)}km away`} />
-            )}
+
+            <p className="mt-2 font-sans text-xs text-muted-foreground">
+              {user.recommendation_reason}
+            </p>
           </div>
         </div>
-      </div>
-    </CardContent>
-  </Card>
+      </CardContent>
+    </Card>
+  );
+};
+
+const StatusBadge = ({ status }: { status: ReaderStatusBadge }) => (
+  <Badge variant="outline" className="border-primary/30 bg-primary/5 text-primary">
+    {statusLabels[status] || "Available"}
+  </Badge>
 );
 
 const ReaderMeta = ({
@@ -313,6 +431,24 @@ const ReaderMeta = ({
   </span>
 );
 
+const SectionHeader = ({
+  icon: Icon,
+  title,
+  count,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  count: number;
+}) => (
+  <div className="flex items-center justify-between gap-3">
+    <div className="flex items-center gap-2">
+      <Icon className="h-5 w-5 text-primary" />
+      <h2 className="font-display text-xl font-semibold">{title}</h2>
+    </div>
+    <Badge variant="secondary">{count}</Badge>
+  </div>
+);
+
 const SummaryPill = ({ label, value }: { label: string; value: number }) => (
   <div className="rounded-md border border-border bg-card px-3 py-2">
     <p className="font-sans text-xs text-muted-foreground">{label}</p>
@@ -321,19 +457,18 @@ const SummaryPill = ({ label, value }: { label: string; value: number }) => (
 );
 
 const EmptyDiscoverState = ({
-  icon: Icon,
+  asset,
   title,
   description,
 }: {
-  icon: ComponentType<{ className?: string }>;
+  asset: EmptyStateAssetKey;
   title: string;
   description: string;
 }) => (
-  <Card>
-    <CardContent className="flex min-h-[16rem] flex-col items-center justify-center p-8 text-center">
-      <Icon className="mb-4 h-10 w-10 text-muted-foreground" />
-      <h2 className="font-display text-xl font-semibold">{title}</h2>
-      <p className="mt-2 max-w-sm font-sans text-sm text-muted-foreground">{description}</p>
-    </CardContent>
-  </Card>
+  <PremiumEmptyState
+    asset={asset}
+    title={title}
+    description={description}
+    size="default"
+  />
 );

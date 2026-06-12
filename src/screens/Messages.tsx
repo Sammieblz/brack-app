@@ -13,8 +13,8 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { APP_ICONS } from "@/config/iconography";
 import { Card, CardContent } from "@/components/ui/card";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 
 const Messages = () => {
   const location = useLocation();
@@ -22,7 +22,14 @@ const Messages = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
-  const { messages, loading: messagesLoading, sendMessage } = useMessages(selectedConversationId);
+  const {
+    messages,
+    detail,
+    loading: messagesLoading,
+    sendMessage,
+    toggleReaction,
+    deleteMessage,
+  } = useMessages(selectedConversationId);
   const { triggerHaptic } = useHapticFeedback();
 
   const swipeHandlers = useSwipeable({
@@ -56,7 +63,9 @@ const Messages = () => {
     startConversationWith();
   }, [location.state, getOrCreateConversation]);
 
-  const selectedConversation = conversations.find(c => c.id === selectedConversationId);
+  const selectedConversation = conversations.find((c) => c.id === selectedConversationId);
+  const selectedOtherUser = detail?.other_user || selectedConversation?.other_user;
+  const selectedIsBlocked = Boolean(detail?.is_blocked || selectedConversation?.is_blocked);
 
   if (loading) {
     return (
@@ -71,7 +80,7 @@ const Messages = () => {
     return (
       <MobileLayout showBottomNav={false}>
         <MobileHeader 
-          title={selectedConversation?.other_user?.display_name || "Message"}
+          title={selectedOtherUser?.display_name || "Message"}
           back={{
             label: "Messages",
             ariaLabel: "Back to messages",
@@ -85,9 +94,12 @@ const Messages = () => {
             <MessageThread
               messages={messages}
               onSendMessage={sendMessage}
+              onToggleReaction={toggleReaction}
+              onDeleteMessage={deleteMessage}
               currentUserId={user?.id}
               conversationId={selectedConversationId}
-              otherUser={selectedConversation?.other_user}
+              otherUser={selectedOtherUser}
+              isBlocked={selectedIsBlocked}
               onBack={() => setSelectedConversationId(null)}
             />
           )}
@@ -133,7 +145,6 @@ const Messages = () => {
                         {conversations.length} conversation{conversations.length === 1 ? "" : "s"}
                       </p>
                     </div>
-                    <APP_ICONS.nav.messages className="h-5 w-5 text-primary" />
                   </div>
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto p-3">
@@ -155,24 +166,23 @@ const Messages = () => {
                   <MessageThread
                     messages={messages}
                     onSendMessage={sendMessage}
+                    onToggleReaction={toggleReaction}
+                    onDeleteMessage={deleteMessage}
                     currentUserId={user?.id}
                     conversationId={selectedConversationId}
-                    otherUser={selectedConversation?.other_user}
+                    otherUser={selectedOtherUser}
+                    isBlocked={selectedIsBlocked}
                   />
                 )
               ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  <div className="max-w-sm text-center">
-                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-md bg-primary/10 text-primary">
-                      <APP_ICONS.nav.messages className="h-7 w-7" />
-                    </div>
-                    <h2 className="font-display text-xl font-semibold text-foreground">
-                      Choose a conversation
-                    </h2>
-                    <p className="mt-2 font-sans text-sm">
-                      Pick a reader from the inbox to continue the thread.
-                    </p>
-                  </div>
+                <div className="flex h-full items-center justify-center p-6">
+                  <PremiumEmptyState
+                    asset="chooseConversation"
+                    title="Choose a conversation"
+                    description="Pick a reader from the inbox to continue the thread."
+                    variant="plain"
+                    size="large"
+                  />
                 </div>
               )}
             </div>

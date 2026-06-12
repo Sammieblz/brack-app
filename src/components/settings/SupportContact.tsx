@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { APP_ICONS } from "@/config/iconography";
+import { AppIcon } from "@/components/ui/app-icon";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -35,10 +36,7 @@ export const SupportContact = () => {
       {/* FAQs */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <APP_ICONS.settings.faq className="h-5 w-5" />
-            Frequently Asked Questions
-          </CardTitle>
+          <CardTitle>Frequently Asked Questions</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -67,10 +65,7 @@ export const SupportContact = () => {
       {/* Contact Support */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <APP_ICONS.settings.contact className="h-5 w-5" />
-            Contact Support
-          </CardTitle>
+          <CardTitle>Contact Support</CardTitle>
           <CardDescription>
             Send us a message and we'll get back to you as soon as possible
           </CardDescription>
@@ -96,7 +91,7 @@ export const SupportContact = () => {
             />
           </div>
           <Button onClick={handleSubmitFeedback} className="w-full">
-            <APP_ICONS.settings.sendMessage className="h-4 w-4 mr-2" />
+            <AppIcon icon={APP_ICONS.settings.sendMessage} variant="inline" size="sm" className="mr-2" />
             Send Message
           </Button>
         </CardContent>
@@ -105,10 +100,7 @@ export const SupportContact = () => {
       {/* Feedback */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <APP_ICONS.settings.feedback className="h-5 w-5" />
-            Share Feedback
-          </CardTitle>
+          <CardTitle>Share Feedback</CardTitle>
           <CardDescription>
             Help us improve Brack by sharing your thoughts
           </CardDescription>
@@ -134,7 +126,7 @@ export const SupportContact = () => {
             />
           </div>
           <Button onClick={handleSubmitFeedback} variant="outline" className="w-full">
-            <APP_ICONS.settings.feedback className="h-4 w-4 mr-2" />
+            <AppIcon icon={APP_ICONS.settings.feedback} variant="inline" size="sm" className="mr-2" />
             Submit Feedback
           </Button>
         </CardContent>

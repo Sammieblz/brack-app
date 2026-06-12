@@ -275,8 +275,7 @@ const AddBook = () => {
         {/* Form Card */}
         <Card className="animate-scale-in max-w-4xl mx-auto">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="font-display text-xl font-bold text-foreground flex items-center justify-center gap-2">
-              <APP_ICONS.library.addBook className="h-5 w-5" />
+            <CardTitle className="font-display text-xl font-bold text-foreground">
               Add a New Book
             </CardTitle>
           </CardHeader>

@@ -2,16 +2,26 @@ import { useSocialFeed } from "@/hooks/useSocialFeed";
 import { FeedItem } from "./FeedItem";
 import { Button } from "@/components/ui/button";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { Refresh } from "iconoir-react";
 import { EmptyActivity } from "@/components/empty/EmptyActivity";
+import { AppIcon } from "@/components/ui/app-icon";
+import { APP_ICONS } from "@/config/iconography";
 
 export const ActivityFeed = () => {
-  const { activities, loading, hasMore, loadMore, formatTimeAgo, refetchFeed } = useSocialFeed();
+  const {
+    activities,
+    loading,
+    loadingMore,
+    hasMore,
+    caughtUp,
+    loadMore,
+    formatTimeAgo,
+    refetchFeed,
+  } = useSocialFeed();
 
   if (loading && activities.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 animate-fade-in">
-        <div className="p-4 rounded-full bg-primary/10 mb-4">
+        <div className="mb-4">
           <LoadingSpinner />
         </div>
         <p className="font-sans text-sm text-muted-foreground">Loading your feed...</p>
@@ -20,7 +30,16 @@ export const ActivityFeed = () => {
   }
 
   if (activities.length === 0) {
-    return <EmptyActivity />;
+    return (
+      <div className="space-y-4">
+        <EmptyActivity />
+        <div className="rounded-md border border-dashed border-border/70 p-4 text-center">
+          <p className="font-sans text-sm text-muted-foreground">
+            Activity now only shows mutual-follow friends who have reading activity enabled.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -39,7 +58,12 @@ export const ActivityFeed = () => {
           disabled={loading}
           className="hover-scale"
         >
-          <Refresh className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <AppIcon
+            icon={APP_ICONS.common.refresh}
+            variant="inline"
+            size="sm"
+            className={`mr-2 ${loading ? "animate-spin" : ""}`}
+          />
           Refresh
         </Button>
       </div>
@@ -64,18 +88,26 @@ export const ActivityFeed = () => {
           <Button
             variant="outline"
             onClick={loadMore}
-            disabled={loading}
+            disabled={loadingMore}
             className="hover-scale"
           >
-            {loading ? (
+            {loadingMore ? (
               <>
-                <Refresh className="h-4 w-4 mr-2 animate-spin" />
+                <AppIcon icon={APP_ICONS.common.refresh} variant="inline" size="sm" className="mr-2 animate-spin" />
                 Loading...
               </>
             ) : (
               'Load More Activities'
             )}
           </Button>
+        </div>
+      )}
+
+      {!hasMore && caughtUp && (
+        <div className="rounded-md border border-dashed border-border/70 p-4 text-center">
+          <p className="font-sans text-sm text-muted-foreground">
+            You're caught up with friend activity.
+          </p>
         </div>
       )}
     </div>

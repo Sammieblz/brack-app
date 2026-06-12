@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FireFlame, NavArrowLeft, NavArrowRight } from "iconoir-react";
+import { NavArrowLeft, NavArrowRight } from "iconoir-react";
 import type { DayActivity } from "@/utils/streakCalculation";
 
 interface StreakCalendarProps {
@@ -70,10 +70,7 @@ export const StreakCalendar = ({ activityCalendar }: StreakCalendarProps) => {
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="font-display text-lg flex items-center gap-2">
-            <FireFlame className="h-5 w-5 text-primary" />
-            Activity
-          </CardTitle>
+          <CardTitle className="font-display text-lg">Activity</CardTitle>
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"

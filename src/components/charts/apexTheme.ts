@@ -6,6 +6,7 @@ const FONT_FAMILY = "Inter, system-ui, sans-serif";
 
 const FALLBACK_COLORS = {
   primary: "hsl(20 90% 58%)",
+  background: "hsl(45 100% 98%)",
   foreground: "hsl(25 5% 15%)",
   mutedForeground: "hsl(25 8% 45%)",
   border: "hsl(45 20% 90%)",
@@ -63,18 +64,35 @@ const useReducedMotion = () => {
 export const useApexTheme = () => {
   const { currentTheme, resolvedTheme } = useTheme();
   const reducedMotion = useReducedMotion();
+  const [themeRevision, setThemeRevision] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const frame = window.requestAnimationFrame(() => {
+      setThemeRevision((value) => value + 1);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [currentTheme, resolvedTheme]);
 
   return useMemo(() => {
     const colors = {
       primary: readCssVar("--primary", FALLBACK_COLORS.primary),
+      primarySoft: readCssVarAlpha("--primary", 0.16, "hsl(20 90% 58% / 0.16)"),
+      background: readCssVar("--background", FALLBACK_COLORS.background),
+      backgroundSoft: readCssVarAlpha("--background", 0.72, "hsl(45 100% 98% / 0.72)"),
       foreground: readCssVar("--foreground", FALLBACK_COLORS.foreground),
       mutedForeground: readCssVar("--muted-foreground", FALLBACK_COLORS.mutedForeground),
       border: readCssVar("--border", FALLBACK_COLORS.border),
+      borderFaint: readCssVarAlpha("--border", 0.32, "hsl(45 20% 90% / 0.32)"),
       borderSubtle: readCssVarAlpha("--border", 0.65, "hsl(45 20% 90% / 0.65)"),
       card: readCssVar("--card", FALLBACK_COLORS.card),
+      cardSoft: readCssVarAlpha("--card", 0.68, "hsl(0 0% 100% / 0.68)"),
       popover: readCssVar("--popover", FALLBACK_COLORS.popover),
       popoverForeground: readCssVar("--popover-foreground", FALLBACK_COLORS.popoverForeground),
       muted: readCssVar("--muted", FALLBACK_COLORS.muted),
+      mutedFaint: readCssVarAlpha("--muted", 0.28, "hsl(45 20% 96% / 0.28)"),
       mutedSoft: readCssVarAlpha("--muted", 0.55, "hsl(45 20% 96% / 0.55)"),
       destructive: readCssVar("--destructive", FALLBACK_COLORS.destructive),
       chart: FALLBACK_COLORS.chart.map((fallback, index) =>
@@ -183,8 +201,9 @@ export const useApexTheme = () => {
       mode,
       reducedMotion,
       resolvedTheme,
+      themeRevision,
     };
-  }, [currentTheme, reducedMotion, resolvedTheme]);
+  }, [currentTheme, reducedMotion, resolvedTheme, themeRevision]);
 };
 
 export const formatChartMinutes = (minutes: number) => {

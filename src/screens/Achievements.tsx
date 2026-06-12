@@ -10,8 +10,8 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Badge, UserBadge } from "@/types";
 import { BadgeDetailsDialog } from "@/components/BadgeDetailsDialog";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { BRACK_TROPHY_IMAGE } from "@/config/brackAssets";
-import { APP_ICONS } from "@/config/iconography";
 
 const Achievements = () => {
   const { user } = useAuth();
@@ -67,10 +67,7 @@ const Achievements = () => {
             <div className="grid md:grid-cols-[minmax(0,1fr)_12rem]">
               <div className="space-y-4 p-5 md:p-6">
                 <div className="flex items-start justify-between gap-3">
-                  <CardTitle className="flex items-center gap-2">
-                    <APP_ICONS.nav.achievements className="h-5 w-5 text-primary" />
-                    Your Progress
-                  </CardTitle>
+                  <CardTitle>Your Progress</CardTitle>
                   <img
                     src={BRACK_TROPHY_IMAGE}
                     alt=""
@@ -128,18 +125,12 @@ const Achievements = () => {
                 <LoadingSpinner size="lg" text="Loading achievements..." />
               </div>
             ) : badges.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <img
-                    src={BRACK_TROPHY_IMAGE}
-                    alt=""
-                    aria-hidden="true"
-                    className="mx-auto mb-4 h-24 w-24 rounded-md object-cover opacity-80"
-                    draggable={false}
-                  />
-                  <p className="font-sans text-muted-foreground">No badges available</p>
-                </CardContent>
-              </Card>
+              <PremiumEmptyState
+                asset="emptyGoals"
+                title="No badges available"
+                description="Reading achievements will appear here when they are configured."
+                size="compact"
+              />
             ) : (
               <BadgeDisplay
                 badges={badges}
@@ -155,20 +146,12 @@ const Achievements = () => {
                 <LoadingSpinner size="lg" text="Loading achievements..." />
               </div>
             ) : earnedBadges.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <img
-                    src={BRACK_TROPHY_IMAGE}
-                    alt=""
-                    aria-hidden="true"
-                    className="mx-auto mb-4 h-24 w-24 rounded-md object-cover opacity-80"
-                    draggable={false}
-                  />
-                  <p className="font-sans text-muted-foreground">
-                    You haven't earned any badges yet. Keep reading!
-                  </p>
-                </CardContent>
-              </Card>
+              <PremiumEmptyState
+                asset="emptyGoals"
+                title="No badges earned yet"
+                description="Keep reading, logging progress, and finishing books to unlock achievements."
+                size="compact"
+              />
             ) : (
               <BadgeDisplay 
                 badges={badges.filter(badge => earnedBadgeIds.has(badge.id))} 
@@ -184,18 +167,12 @@ const Achievements = () => {
                 <LoadingSpinner size="lg" text="Loading achievements..." />
               </div>
             ) : badges.filter(badge => !earnedBadgeIds.has(badge.id)).length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <img
-                    src={BRACK_TROPHY_IMAGE}
-                    alt=""
-                    aria-hidden="true"
-                    className="mx-auto mb-4 h-24 w-24 rounded-md object-cover opacity-80"
-                    draggable={false}
-                  />
-                  <p className="font-sans text-muted-foreground">All badges earned!</p>
-                </CardContent>
-              </Card>
+              <PremiumEmptyState
+                asset="syncReviewClear"
+                title="All badges earned"
+                description="You have unlocked every available achievement."
+                size="compact"
+              />
             ) : (
               <BadgeDisplay 
                 badges={badges.filter(badge => !earnedBadgeIds.has(badge.id))} 

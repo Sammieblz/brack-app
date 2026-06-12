@@ -1,60 +1,59 @@
 # Conversation and Message Permissions Audit
 
-Source date: 2026-05-05  
-Scope: ticket 7.2, conversation membership, message read/write permissions, and unread strategy.
+Source date: 2026-06-08
+Scope: one-to-one conversation membership, message media, reactions, read cursors, and blocking.
 
 ## Conversation Rules
 
 | Operation | Current rule |
 | --- | --- |
 | Read conversation | User must be `participant_one_id` or `participant_two_id`. |
-| Create conversation | Authenticated user creates a pair involving self. |
+| Create conversation | `get-or-create-conversation` creates normalized pairs involving self and rejects blocked pairs. |
 | Update conversation | No normal client update policy; `update_conversation_timestamp` updates `updated_at` after message insert. |
-| Delete conversation | Service exposes delete by id, but RLS must restrict to participants. |
+| Hide conversation | `update-conversation-settings` sets `hidden_at` for the current user only. Shared conversation deletion is not exposed. |
 
-`getOrCreateConversation` checks both participant orderings before insert. The table has a unique pair constraint, but pair ordering normalization should remain an API responsibility.
+`getOrCreateConversation` checks both participant orderings and normalizes pair order before insert. The table has a unique pair constraint, but pair ordering remains an API responsibility.
 
 ## Message Rules
 
 | Operation | Current rule |
 | --- | --- |
 | Read messages | User must be a participant in the parent conversation. |
-| Send message | Sender must be the authenticated user and a participant in the parent conversation. |
-| Mark read | Participant can update messages in their conversation; service updates unread messages not sent by current user. |
-| Delete message | No delete policy in the current matrix. |
+| Read media | User must be a participant and the pair must not be blocked; reads use signed Storage URLs. |
+| Send message | `send-message` requires sender to be a participant and rejects blocked pairs. |
+| Mark read | `mark-conversation-read` updates only the caller's `conversation_reads` row. |
+| React | `toggle-message-reaction` allows one fixed reaction per user per message. |
+| Delete message | `delete-message` lets the sender soft-delete their own message. |
 
 ## Current Query Pattern
 
-`fetchConversations`:
+`fetchConversations` calls `conversations-home`, which:
 1. Reads all conversations where current user is either participant.
-2. For each conversation, fetches the other user's profile.
-3. For each conversation, fetches latest message.
-4. For each conversation, counts unread messages.
+2. Applies current user's conversation settings.
+3. Fetches profile previews, latest message previews, and media counts.
+4. Computes unread counts from `conversation_reads`.
+5. Returns blocked conversations as disabled history.
 
-This was correct for small data, but it was an N+1 query pattern. It has been replaced by `get_conversation_summaries(p_user_id)`, documented in `docs/messaging/conversation-summary.md`.
+This keeps the app-facing inbox shape server-owned and avoids direct table aggregation in the browser.
 
-`fetchMessages`:
-1. Reads messages by `conversation_id`, ordered by `created_at`.
-2. Marks unread messages as read for the current user.
+`fetchMessages` now calls `conversation-detail`, which returns the thread, reactions, other reader profile summary, settings, and signed media URLs when allowed.
 
 ## Unread Strategy
 
 Current unread state:
-- `messages.is_read` boolean.
-- Unread count is computed per conversation by counting messages where `is_read = false` and sender is not the current user.
+- `conversation_reads(conversation_id, user_id, last_read_message_id, read_at)`.
+- Unread count is computed per user by messages after the caller's read cursor.
+- Legacy `messages.is_read` may still be updated for compatibility, but it is not the authoritative read model.
 
 Rules:
-- A message is unread for the recipient until the recipient opens the thread.
+- A message is unread for the recipient until the recipient opens the thread or marks it read.
 - Sender's own messages should never count as unread for the sender.
-- Group conversations are not modeled; the boolean read flag works only for two-person conversations.
-
-Future summary strategy:
-- Add conversation summary fields or a separate summary view/table:
-  - latest message id/content/sender/time
-  - per-user unread count or last-read cursor
-- Prefer `conversation_reads(conversation_id, user_id, last_read_message_id, read_at)` if group messaging is likely.
-- For two-person only, a denormalized `unread_count_participant_one` and `unread_count_participant_two` can work but is less flexible.
+- Group conversations are not modeled in this pass, but per-user cursors avoid the old boolean-read limitation.
 
 ## Enforcement Status
 
-RLS and service code enforce participant-only message access. The remaining hardening item is performance/summary modeling, tracked by ticket 7.3.
+RLS and Edge code enforce participant-only message access. The current hardening baseline is:
+- blocked pairs cannot start/send/react or receive signed media URLs;
+- uploaded media is stored in private `message-media` owner-prefixed paths;
+- inbox deletion is per-user hide/archive behavior;
+- selected-thread realtime is scoped to one conversation instead of a broad inbox subscription.

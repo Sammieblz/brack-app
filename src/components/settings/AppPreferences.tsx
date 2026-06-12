@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Palette } from "iconoir-react";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 
@@ -17,10 +16,7 @@ export const AppPreferences = () => {
       {/* Theme */}
       <Card className="min-w-0 overflow-hidden">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="h-5 w-5" />
-            Appearance
-          </CardTitle>
+          <CardTitle>Appearance</CardTitle>
           <CardDescription>
             Choose between light mode, dark mode, or follow your system preference
           </CardDescription>

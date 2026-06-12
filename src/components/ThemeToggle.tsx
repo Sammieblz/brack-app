@@ -1,5 +1,6 @@
-import { SunLight, HalfMoon } from "iconoir-react";
 import { Button } from "@/components/ui/button";
+import { AppIcon } from "@/components/ui/app-icon";
+import { APP_ICONS } from "@/config/iconography";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -34,9 +35,9 @@ export const ThemeToggle = ({ className, variant = "floating" }: ThemeToggleProp
       )}
     >
       {isDark ? (
-        <SunLight className="h-5 w-5 text-yellow-400 transition-transform duration-300 rotate-0 hover:rotate-45" />
+        <AppIcon icon={APP_ICONS.common.themeLight} variant="action" size="md" className="text-yellow-400 transition-transform duration-300 rotate-0 hover:rotate-45" />
       ) : (
-        <HalfMoon className="h-5 w-5 text-slate-700 transition-transform duration-300 rotate-0 hover:-rotate-12" />
+        <AppIcon icon={APP_ICONS.common.themeDark} variant="action" size="md" className="text-slate-700 transition-transform duration-300 rotate-0 hover:-rotate-12 dark:text-slate-200" />
       )}
     </Button>
   );

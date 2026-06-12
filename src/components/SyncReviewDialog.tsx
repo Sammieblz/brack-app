@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { readingCoreSync, SYNC_STATUS_EVENT } from "@/services/sync/engine";
@@ -236,12 +237,12 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
                 Loading sync issues...
               </div>
             ) : items.length === 0 ? (
-              <div className="rounded-lg border border-primary/20 bg-primary/5 p-5">
-                <p className="font-sans text-sm font-medium text-foreground">No changes need review.</p>
-                <p className="mt-1 font-sans text-sm text-muted-foreground">
-                  Brack has no failed reading-core sync items on this device.
-                </p>
-              </div>
+              <PremiumEmptyState
+                asset="syncReviewClear"
+                title="No changes need review"
+                description="Brack has no failed reading-core sync items on this device."
+                size="compact"
+              />
             ) : (
               items.map((item) => {
                 const preview = previewPayload(item);

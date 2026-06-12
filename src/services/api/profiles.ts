@@ -18,6 +18,10 @@ export interface UserProfile {
   profile_visibility: string;
   show_reading_activity: boolean;
   show_currently_reading: boolean;
+  show_location: boolean;
+  show_online_status: boolean;
+  reader_status: string;
+  last_seen_at: string | null;
   current_streak: number;
   longest_streak: number;
 }
@@ -36,6 +40,20 @@ export interface UserProfileWithStats {
 
 export const fetchFollowStats = async (userId: string): Promise<FollowStats> => {
   const currentUser = await getCurrentAuthUser();
+
+  if (currentUser && currentUser.id !== userId) {
+    const { data: block } = await supabase
+      .from("user_blocks")
+      .select("id")
+      .or(
+        `and(blocker_id.eq.${currentUser.id},blocked_id.eq.${userId}),and(blocker_id.eq.${userId},blocked_id.eq.${currentUser.id})`
+      )
+      .maybeSingle();
+
+    if (block) {
+      return { followersCount: 0, followingCount: 0, isFollowing: false };
+    }
+  }
 
   const [{ count: followersCount }, { count: followingCount }] =
     await Promise.all([
@@ -96,6 +114,22 @@ export const unfollowUser = async (userId: string): Promise<void> => {
 export const fetchUserProfileWithStats = async (
   userId: string
 ): Promise<UserProfileWithStats> => {
+  const currentUser = await getCurrentAuthUser();
+
+  if (currentUser && currentUser.id !== userId) {
+    const { data: block } = await supabase
+      .from("user_blocks")
+      .select("id")
+      .or(
+        `and(blocker_id.eq.${currentUser.id},blocked_id.eq.${userId}),and(blocker_id.eq.${userId},blocked_id.eq.${currentUser.id})`
+      )
+      .maybeSingle();
+
+    if (block) {
+      throw new Error("Profile unavailable");
+    }
+  }
+
   const { data: profileData, error: profileError } = await supabase
     .from("profiles")
     .select("*")
@@ -104,7 +138,6 @@ export const fetchUserProfileWithStats = async (
 
   if (profileError) throw profileError;
 
-  const currentUser = await getCurrentAuthUser();
   const emptyStats = {
     totalBooks: 0,
     booksRead: 0,

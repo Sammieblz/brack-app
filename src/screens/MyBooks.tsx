@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { CheckSquare, Drag, NavArrowDown, Refresh, Search, Trash, Xmark } from "iconoir-react";
+import { NavArrowDown } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
 import { EmptyBooks } from "@/components/empty/EmptyBooks";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { LibraryBookshelfView } from "@/components/library/LibraryBookshelfView";
 import { LibraryCarouselView } from "@/components/library/LibraryCarouselView";
@@ -19,6 +20,7 @@ import { NativeHeader } from "@/components/NativeHeader";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { SwipeableBookCard } from "@/components/SwipeableBookCard";
 import { MobileAlertDialog } from "@/components/ui/mobile-dialog";
+import { AppIcon } from "@/components/ui/app-icon";
 import { useAuth } from "@/hooks/useAuth";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { useBooks } from "@/hooks/useBooks";
@@ -490,7 +492,7 @@ const MyBooks = () => {
               }}
               className="rounded-full"
             >
-              <Drag className="mr-2 h-4 w-4" />
+              <AppIcon icon={APP_ICONS.common.drag} variant="inline" size="sm" className="mr-2" />
               {reorderMode ? "Done" : "Reorder"}
             </Button>
           </span>
@@ -515,7 +517,7 @@ const MyBooks = () => {
               onClick={handleSelectModeToggle}
               className="rounded-full"
             >
-              <CheckSquare className="mr-2 h-4 w-4" />
+              <AppIcon icon={APP_ICONS.common.select} variant="inline" size="sm" className="mr-2" />
               {selectMode ? "Done" : "Select"}
             </Button>
           </span>
@@ -730,7 +732,6 @@ const MyBooks = () => {
         detail: "Books",
         value: bookStats.total,
         status: "all" as StatusFilter,
-        icon: APP_ICONS.stats.library,
         className: "text-primary",
       },
       {
@@ -738,7 +739,6 @@ const MyBooks = () => {
         detail: "In progress",
         value: bookStats.reading,
         status: "reading" as StatusFilter,
-        icon: APP_ICONS.dashboard.continueReading,
         className: "text-blue-500",
       },
       {
@@ -746,7 +746,6 @@ const MyBooks = () => {
         detail: "Completed",
         value: bookStats.completed,
         status: "completed" as StatusFilter,
-        icon: APP_ICONS.stats.completed,
         className: "text-green-500",
       },
       {
@@ -754,7 +753,6 @@ const MyBooks = () => {
         detail: "To read",
         value: bookStats.toRead,
         status: "to_read" as StatusFilter,
-        icon: APP_ICONS.dashboard.emptyNoBooks,
         className: "text-orange-500",
       },
     ];
@@ -773,21 +771,13 @@ const MyBooks = () => {
               setStatusFilter(chip.status);
             }}
             className={cn(
-              "flex min-w-[9.5rem] flex-1 items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors",
+              "flex min-w-[8.75rem] flex-1 items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition-colors",
               statusFilter === chip.status
                 ? "border-primary/50 bg-primary/10"
                 : "border-border/45 bg-background/45 hover:border-primary/35 hover:bg-primary/5"
             )}
             aria-pressed={statusFilter === chip.status}
           >
-            <span
-              className={cn(
-                "grid h-9 w-9 shrink-0 place-items-center rounded-full bg-background/70",
-                statusFilter === chip.status && "bg-primary text-primary-foreground"
-              )}
-            >
-              <chip.icon className="h-4 w-4" />
-            </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate font-sans text-sm font-semibold text-foreground">
                 {chip.label}
@@ -809,7 +799,11 @@ const MyBooks = () => {
     <div className="space-y-3 rounded-xl border border-border/60 bg-card/60 p-3">
       <div className={cn("flex flex-col gap-3", !compactToolbar && "xl:flex-row xl:items-center")}>
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <AppIcon
+            icon={APP_ICONS.common.search}
+            variant="inline"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
           <Input
             type="search"
             placeholder="Search title, author, ISBN, genre, tags..."
@@ -830,7 +824,7 @@ const MyBooks = () => {
               className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               aria-label="Clear search"
             >
-              <Xmark className="h-4 w-4" />
+              <AppIcon icon={APP_ICONS.common.close} variant="action" size="xs" />
             </button>
           )}
         </div>
@@ -961,7 +955,7 @@ const MyBooks = () => {
             disabled={selectedBookIds.length === 0}
             className="rounded-full"
           >
-            <Trash className="mr-2 h-4 w-4" />
+            <AppIcon icon={APP_ICONS.common.delete} variant="inline" size="sm" className="mr-2" />
             Delete
           </Button>
         </div>
@@ -984,20 +978,19 @@ const MyBooks = () => {
       return books.length === 0 ? (
         <EmptyBooks />
       ) : (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <APP_ICONS.library.emptyResults className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 font-sans font-semibold">No books found</h3>
-            <p className="font-sans text-sm text-muted-foreground">
-              Try changing your search, status, genre, or sort filters.
-            </p>
-            {hasActiveFilters && (
+        <PremiumEmptyState
+          asset="noResults"
+          title="No books found"
+          description="Try changing your search, status, genre, or sort filters."
+          size="compact"
+          action={
+            hasActiveFilters ? (
               <Button variant="outline" className="mt-4" onClick={clearFilters}>
                 Clear filters
               </Button>
-            )}
-          </CardContent>
-        </Card>
+            ) : undefined
+          }
+        />
       );
     }
 
@@ -1005,7 +998,7 @@ const MyBooks = () => {
       <div ref={loadMoreRef} className="py-8 flex justify-center md:col-span-2 2xl:col-span-3">
         {loadingMore && (
           <div className="flex items-center gap-2 text-muted-foreground">
-            <Refresh className="h-5 w-5 animate-spin" />
+            <AppIcon icon={APP_ICONS.common.refresh} variant="inline" size="md" className="animate-spin" />
             <span>Loading more...</span>
           </div>
         )}

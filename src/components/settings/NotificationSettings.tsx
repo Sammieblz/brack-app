@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Bell } from "iconoir-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -78,10 +77,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Push Notifications
-          </CardTitle>
+          <CardTitle>Push Notifications</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {loadingPrefs ? (

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { NavArrowRight, Plus } from "iconoir-react";
+import { NavArrowRight } from "iconoir-react";
 import { ProgressLogger } from "@/components/ProgressLogger";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
@@ -20,10 +20,12 @@ import type { Book as BookType, Goal, OnboardingStatus } from "@/types";
 import { DashboardCardSkeleton } from "@/components/skeletons/DashboardCardSkeleton";
 import { ActivityItemSkeleton } from "@/components/skeletons/ActivityItemSkeleton";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { GoalsSheet } from "@/components/GoalsSheet";
+import { AppIcon } from "@/components/ui/app-icon";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SwipeableBookListsCarousel } from "@/components/SwipeableBookListsCarousel";
 import { NativeHeader } from "@/components/NativeHeader";
@@ -224,7 +226,6 @@ const Dashboard = () => {
             <SectionHeader
               title="Insights"
               subtitle="Stats and trends for deeper review"
-              icon={<APP_ICONS.dashboard.insights className="h-5 w-5 text-primary" />}
             />
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)]">
               {user && (
@@ -301,7 +302,6 @@ const SetupPromptCard = ({ status, onResume }: SetupPromptCardProps) => {
         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_6rem] sm:items-center">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <APP_ICONS.dashboard.insights className="h-5 w-5 text-primary" />
               <h2 className="font-display text-lg font-semibold">
                 {isSkipped ? "Finish your reading profile" : "Complete your setup"}
               </h2>
@@ -352,16 +352,11 @@ const ContinueReadingSection = ({
   onLogProgress,
   onViewLibrary,
 }: ContinueReadingSectionProps) => {
-  const EmptyStateIcon = hasAnyBooks
-    ? APP_ICONS.dashboard.emptyWithBooks
-    : APP_ICONS.dashboard.emptyNoBooks;
-
   return (
     <section className="space-y-3">
       <SectionHeader
         title={primaryBook?.book.status === "to_read" ? "Pick Up a Book" : "Continue Reading"}
         subtitle="Your most recent reading activity appears first"
-        icon={<APP_ICONS.dashboard.continueReading className="h-5 w-5 text-primary" />}
         action={
           hasAnyBooks ? (
             <Button variant="outline" size="sm" onClick={onViewLibrary}>
@@ -411,43 +406,36 @@ const ContinueReadingSection = ({
           )}
         </div>
       ) : (
-        <Card>
-          <CardContent className="p-5">
-            <div className="grid gap-4 sm:grid-cols-[4rem_minmax(0,1fr)] sm:items-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-md bg-primary/10 text-primary">
-                <EmptyStateIcon className="h-7 w-7" />
-              </div>
-              <div className="space-y-3">
-                <div>
-                  <h3 className="font-display text-lg font-semibold">
-                    {hasAnyBooks ? "Choose your next read" : "Add your first book"}
-                  </h3>
-                  <p className="font-sans text-sm text-muted-foreground">
-                    {hasAnyBooks
-                      ? "Nothing is currently in progress. Pick a book from your library or add something new."
-                      : "Start your library so Brack can build a useful home dashboard around your reading."}
-                  </p>
-                </div>
-                {error && (
-                  <p className="font-sans text-xs text-destructive">
-                    Dashboard activity could not load: {error}
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  <Button onClick={hasAnyBooks ? onViewLibrary : onAddBook}>
-                    {hasAnyBooks ? "Open Library" : "Add Book"}
-                  </Button>
-                  {hasAnyBooks && (
-                    <Button variant="outline" onClick={onAddBook}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Book
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <PremiumEmptyState
+          asset={hasAnyBooks ? "emptyLibrary" : "emptyLibrary"}
+          title={hasAnyBooks ? "Choose your next read" : "Add your first book"}
+          description={
+            <>
+              {hasAnyBooks
+                ? "Nothing is currently in progress. Pick a book from your library or add something new."
+                : "Start your library so Brack can build a useful home dashboard around your reading."}
+              {error && (
+                <span className="mt-2 block text-xs text-destructive">
+                  Dashboard activity could not load: {error}
+                </span>
+              )}
+            </>
+          }
+          size="compact"
+          action={
+            <>
+              <Button onClick={hasAnyBooks ? onViewLibrary : onAddBook}>
+                {hasAnyBooks ? "Open Library" : "Add Book"}
+              </Button>
+              {hasAnyBooks && (
+                <Button variant="outline" onClick={onAddBook}>
+                  <AppIcon icon={APP_ICONS.common.add} variant="action" className="mr-2" />
+                  Add Book
+                </Button>
+              )}
+            </>
+          }
+        />
       )}
     </section>
   );
@@ -591,7 +579,6 @@ const TodaySection = ({
       <SectionHeader
         title="Today"
         subtitle="Momentum, streak, and goal status"
-        icon={<APP_ICONS.dashboard.today className="h-5 w-5 text-primary" />}
       />
       <div className="grid gap-4 lg:grid-cols-2">
         <GoalStatusCard
@@ -632,10 +619,7 @@ const GoalStatusCard = ({
         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_6rem] sm:items-center">
           <div className="space-y-3">
             <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <APP_ICONS.dashboard.goal className="h-5 w-5 text-primary" />
-                <h3 className="font-display text-lg font-semibold">Reading Goal</h3>
-              </div>
+              <h3 className="font-display text-lg font-semibold">Reading Goal</h3>
               <img
                 src={BRACK_GOALS_IMAGE}
                 alt=""
@@ -712,10 +696,7 @@ const StreakStatusCard = ({
         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_6rem] sm:items-center">
           <div className="space-y-3">
             <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <APP_ICONS.dashboard.streak className="h-5 w-5 text-primary" />
-                <h3 className="font-display text-lg font-semibold">Reading Streak</h3>
-              </div>
+              <h3 className="font-display text-lg font-semibold">Reading Streak</h3>
               <img
                 src={streakImage}
                 alt=""
@@ -842,9 +823,6 @@ const RecentActivityCard = ({
       <CardHeader className="border-b border-border/55 pb-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-start gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-              <APP_ICONS.dashboard.recentActivity className="h-5 w-5" />
-            </span>
             <div className="min-w-0">
               <CardTitle className="font-display text-base md:text-lg">
                 Recent Activity
@@ -870,13 +848,13 @@ const RecentActivityCard = ({
             <ActivityItemSkeleton />
           </div>
         ) : activities.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border/70 bg-background/45 px-4 py-8 text-center">
-            <APP_ICONS.dashboard.recentActivity className="mx-auto mb-3 h-10 w-10 text-primary/70" />
-            <p className="font-display text-base font-semibold">No activity yet</p>
-            <p className="font-sans mt-1 text-sm text-muted-foreground">
-              Start reading to see your progress here.
-            </p>
-          </div>
+          <PremiumEmptyState
+            asset="emptyProgress"
+            title="No activity yet"
+            description="Start reading to see your progress here."
+            size="compact"
+            className="border-dashed bg-background/45"
+          />
         ) : (
           <ol className="relative space-y-1">
             {visibleActivities.map((activity, index) => (
@@ -888,7 +866,7 @@ const RecentActivityCard = ({
                   {index < visibleActivities.length - 1 && (
                     <span className="absolute bottom-0 top-8 w-px bg-border" aria-hidden="true" />
                   )}
-                  <span className="z-10 grid h-8 w-8 place-items-center rounded-full border border-border/70 bg-card text-primary shadow-sm">
+                  <span className="z-10 grid h-8 w-8 place-items-center bg-card text-primary">
                     <ActivityIcon type={activity.type} />
                   </span>
                 </div>
@@ -932,15 +910,13 @@ const ActivityIcon = ({ type }: { type?: string }) => {
 interface SectionHeaderProps {
   title: string;
   subtitle?: string;
-  icon?: React.ReactNode;
   action?: React.ReactNode;
 }
 
-const SectionHeader = ({ title, subtitle, icon, action }: SectionHeaderProps) => {
+const SectionHeader = ({ title, subtitle, action }: SectionHeaderProps) => {
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="flex min-w-0 items-start gap-2">
-        {icon && <div className="mt-0.5 shrink-0">{icon}</div>}
         <div className="min-w-0">
           <h2 className="font-display text-lg font-semibold md:text-xl">{title}</h2>
           {subtitle && (

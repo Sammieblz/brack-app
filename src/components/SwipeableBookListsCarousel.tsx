@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { NavArrowLeft, NavArrowRight } from "iconoir-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBookLists } from "@/hooks/useBookLists";
@@ -83,17 +84,19 @@ export const SwipeableBookListsCarousel = () => {
           </div>
         </CardHeader>
         <CardContent className="p-4">
-          <div className="rounded-xl border border-dashed border-border/70 bg-background/45 px-4 py-8 text-center">
-            <APP_ICONS.library.bookLists className="mx-auto mb-3 h-10 w-10 text-primary/70" />
-            <p className="font-display text-base font-semibold">No lists yet</p>
-            <p className="font-sans mt-1 text-sm text-muted-foreground">
-              Create focused stacks for trips, study plans, clubs, or favorites.
-            </p>
-            <Button className="mt-4 rounded-full" onClick={() => navigate("/lists")}>
-              Manage lists
-              <NavArrowRight className="ml-1 h-4 w-4" />
-            </Button>
-          </div>
+          <PremiumEmptyState
+            asset="emptyLists"
+            title="No lists yet"
+            description="Create focused stacks for trips, study plans, clubs, or favorites."
+            size="compact"
+            className="border-dashed bg-background/45"
+            action={
+              <Button className="rounded-full" onClick={() => navigate("/lists")}>
+                Manage lists
+                <NavArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            }
+          />
         </CardContent>
       </Card>
     );

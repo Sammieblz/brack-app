@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FloatingQuickStatsWidget } from "./FloatingQuickStatsWidget";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { APP_ICONS } from "@/config/iconography";
 
 interface FABAction {
@@ -177,11 +178,13 @@ export const FloatingActionButton = () => {
           </SheetHeader>
           <ScrollArea className="h-[calc(85vh-100px)] mt-4">
             {readingBooks.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <APP_ICONS.floatingAction.timer className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="font-sans">No books currently being read</p>
-                <p className="font-sans text-sm mt-2">Add books and mark them as "Reading" to start tracking time</p>
-              </div>
+              <PremiumEmptyState
+                asset="emptyLibrary"
+                title="No books currently being read"
+                description='Add books and mark them as "Reading" to start tracking time.'
+                variant="plain"
+                size="compact"
+              />
             ) : (
               <div className="space-y-2">
                 {readingBooks.map((book) => (

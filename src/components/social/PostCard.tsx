@@ -1,151 +1,70 @@
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Heart, ChatBubble, Trash, EditPencil, WarningTriangle, ShareIos } from "iconoir-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ActionSheet } from "@/components/ui/action-sheet";
 import { HeartLike } from "@/components/animations/HeartLike";
-import { Post } from "@/hooks/usePosts";
-import { usePostComments, PostComment } from "@/hooks/usePostComments";
-import { toast } from "sonner";
+import { CommentThread } from "./CommentThread";
+import { AppIcon } from "@/components/ui/app-icon";
+import type { Post } from "@/hooks/usePosts";
 import { useAuth } from "@/hooks/useAuth";
-import { ContextMenuNative } from "@/components/ui/context-menu-native";
+import { blockUser, deletePost, sharePost } from "@/services/api";
+import { APP_ICONS } from "@/config/iconography";
+import { cn } from "@/lib/utils";
 import { sanitizeText } from "@/utils/sanitize";
-import { deletePost } from "@/services/api";
+import { toast } from "sonner";
 
 interface PostCardProps {
   post: Post;
   onLike: (postId: string) => void;
   onDelete?: (postId: string) => void;
+  onBlocked?: (userId: string) => void;
+  compact?: boolean;
 }
 
-const CommentItem = ({ 
-  comment, 
-  onReply, 
-  onDelete,
-  currentUserId,
-  level = 0 
-}: { 
-  comment: PostComment; 
-  onReply: (commentId: string, content: string) => void;
-  onDelete: (commentId: string) => void;
-  currentUserId?: string;
-  level?: number;
-}) => {
-  const [showReplyForm, setShowReplyForm] = useState(false);
-  const [replyContent, setReplyContent] = useState("");
+const initials = (name?: string | null) =>
+  (name || "Reader")
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
-  const getInitials = (name?: string) => {
-    if (!name) return "U";
-    return name.split(" ").map(n => n[0]).join("").toUpperCase();
-  };
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
 
-  const handleReply = async () => {
-    if (!replyContent.trim()) return;
-    await onReply(comment.id, replyContent);
-    setReplyContent("");
-    setShowReplyForm(false);
-  };
-
-  return (
-    <div className={`${level > 0 ? "ml-8 mt-3" : "mt-4"}`}>
-      <div className="flex gap-3">
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={comment.user?.avatar_url} />
-          <AvatarFallback className="text-xs">
-            {getInitials(comment.user?.display_name)}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <div className="bg-muted rounded-lg px-3 py-2">
-            <p className="font-sans font-semibold text-sm">{comment.user?.display_name || "Unknown User"}</p>
-            <p className="font-serif text-sm mt-1">{sanitizeText(comment.content)}</p>
-          </div>
-          <div className="flex items-center gap-3 mt-1 ml-3">
-            <button
-              onClick={() => setShowReplyForm(!showReplyForm)}
-              className="font-sans text-xs text-muted-foreground hover:text-foreground"
-            >
-              Reply
-            </button>
-            {currentUserId === comment.user_id && (
-              <button
-                onClick={() => onDelete(comment.id)}
-                className="font-sans text-xs text-muted-foreground hover:text-destructive flex items-center gap-1"
-              >
-                <Trash className="h-3 w-3" />
-                Delete
-              </button>
-            )}
-            <span className="font-sans text-xs text-muted-foreground">
-              {new Date(comment.created_at).toLocaleDateString([], {
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
-              })}
-            </span>
-          </div>
-
-          {showReplyForm && (
-            <div className="mt-2 ml-3 space-y-2">
-              <Textarea
-                placeholder="Write a reply..."
-                value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
-                rows={2}
-                className="resize-none text-sm"
-              />
-              <div className="flex gap-2">
-                <Button size="sm" onClick={handleReply}>
-                  Reply
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setShowReplyForm(false);
-                    setReplyContent("");
-                  }}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {comment.replies && comment.replies.length > 0 && (
-            <div>
-              {comment.replies.map((reply) => (
-                <CommentItem
-                  key={reply.id}
-                  comment={reply}
-                  onReply={onReply}
-                  onDelete={onDelete}
-                  currentUserId={currentUserId}
-                  level={level + 1}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  if (diffInHours < 1) return "Just now";
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  if (diffInHours < 168) {
+    return date.toLocaleDateString([], { weekday: "short", hour: "2-digit", minute: "2-digit" });
+  }
+  return date.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+    year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+  });
 };
 
-export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
+export const PostCard = ({ post, onLike, onDelete, onBlocked, compact }: PostCardProps) => {
   const [showComments, setShowComments] = useState(false);
-  const [commentContent, setCommentContent] = useState("");
-  const { comments, addComment, deleteComment } = usePostComments(post.id);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [shareCount, setShareCount] = useState(post.share_count || 0);
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const isOwner = user?.id === post.user_id;
+  const postType = post.post_type || "text";
+  const visibility = post.visibility || "public";
+
+  const openProfile = () => navigate(`/users/${post.user_id}`);
 
   const handleDeletePost = async () => {
     try {
       await deletePost(post.id);
-
-      toast.success("Post deleted");
+      toast.success("Post removed");
       onDelete?.(post.id);
     } catch (error: unknown) {
       console.error("Error deleting post:", error);
@@ -153,225 +72,280 @@ export const PostCard = ({ post, onLike, onDelete }: PostCardProps) => {
     }
   };
 
-  const contextActions = user?.id === post.user_id ? [
-    {
-      label: "Edit Post",
-      icon: <EditPencil className="h-5 w-5" />,
-      onClick: () => {
-        toast.info("Edit feature coming soon");
-      },
-    },
+  const handleShare = async () => {
+    try {
+      const result = await sharePost(post.id, "native");
+      setShareCount(result.share_count);
+      const url = result.share_url || post.share_url || `${window.location.origin}/posts/${post.id}`;
+      if (navigator.share) {
+        await navigator.share({
+          title: post.title,
+          text: post.content,
+          url,
+        });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Post link copied");
+      }
+    } catch (error: unknown) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      console.error("Error sharing post:", error);
+      toast.error("Failed to share post");
+    }
+  };
+
+  const handleBlock = async () => {
+    if (isOwner) return;
+    const ok = window.confirm(
+      `Block ${post.user?.display_name || "this reader"}? You will no longer see each other's posts, profiles, or activity.`
+    );
+    if (!ok) return;
+
+    try {
+      await blockUser(post.user_id);
+      toast.success("Reader blocked");
+      onBlocked?.(post.user_id);
+    } catch (error: unknown) {
+      console.error("Error blocking user:", error);
+      toast.error("Failed to block user");
+    }
+  };
+
+  const actions = [
     {
       label: "Share",
-      icon: <ShareIos className="h-5 w-5" />,
-      onClick: () => {
-        if (navigator.share) {
-          navigator.share({
-            title: post.title,
-            text: post.content,
-          });
-        }
-      },
+      icon: <AppIcon icon={APP_ICONS.common.share} variant="inline" size="md" />,
+      onClick: handleShare,
     },
-    {
-      label: "Delete Post",
-      icon: <Trash className="h-5 w-5" />,
-      variant: 'destructive' as const,
-      onClick: handleDeletePost,
-    },
-  ] : [
-    {
-      label: "Share",
-      icon: <ShareIos className="h-5 w-5" />,
-      onClick: () => {
-        if (navigator.share) {
-          navigator.share({
-            title: post.title,
-            text: post.content,
-          });
-        }
-      },
-    },
-    {
-      label: "Report",
-      icon: <WarningTriangle className="h-5 w-5" />,
-      variant: 'destructive' as const,
-      onClick: () => {
-        toast.success("Post reported. Thank you for keeping our community safe.");
-      },
-    },
+    ...(isOwner
+      ? [
+          {
+            label: "Delete Post",
+            icon: <AppIcon icon={APP_ICONS.common.delete} variant="inline" size="md" />,
+            variant: "destructive" as const,
+            onClick: handleDeletePost,
+          },
+        ]
+      : [
+          {
+            label: "Report",
+            icon: <AppIcon icon={APP_ICONS.common.warning} variant="inline" size="md" />,
+            variant: "destructive" as const,
+            onClick: () => toast.success("Post reported. Thank you for keeping Brack safe."),
+          },
+          {
+            label: "Block Reader",
+            icon: <AppIcon icon={APP_ICONS.common.warning} variant="inline" size="md" />,
+            variant: "destructive" as const,
+            onClick: handleBlock,
+          },
+        ]),
   ];
 
-  const getInitials = (name?: string) => {
-    if (!name) return "U";
-    return name.split(" ").map(n => n[0]).join("").toUpperCase();
-  };
-
-  const handleAddComment = async () => {
-    if (!commentContent.trim()) return;
-    const sanitized = sanitizeText(commentContent);
-    const success = await addComment(sanitized);
-    if (success) {
-      setCommentContent("");
-    }
-  };
-
-  const handleReply = async (parentId: string, content: string) => {
-    const sanitized = sanitizeText(content);
-    await addComment(sanitized, parentId);
-  };
-
-  const formatTimestamp = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    
-    const timeStr = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    
-    // If today, show just the time
-    if (diffInHours < 24 && date.getDate() === now.getDate()) {
-      return timeStr;
-    }
-    
-    // If yesterday
-    if (diffInHours < 48 && date.getDate() === now.getDate() - 1) {
-      return `Yesterday ${timeStr}`;
-    }
-    
-    // If within the last week, show day name
-    if (diffInHours < 168) {
-      const dayName = date.toLocaleDateString([], { weekday: "short" });
-      return `${dayName} ${timeStr}`;
-    }
-    
-    // Otherwise show full date
-    return date.toLocaleDateString([], { 
-      month: "short", 
-      day: "numeric",
-      year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined 
-    }) + " " + timeStr;
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    return formatTimestamp(dateString);
-  };
-
   return (
-    <ContextMenuNative
-      actions={contextActions}
-      title="Post Options"
-      description="Choose an action"
-    >
-      <Card className="p-6 hover-scale active:scale-[0.98] transition-all duration-200">
-      <div className="flex gap-4">
-        <Avatar className="h-12 w-12">
-          <AvatarImage src={post.user?.avatar_url} />
-          <AvatarFallback>{getInitials(post.user?.display_name)}</AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <p className="font-semibold">{post.user?.display_name || "Unknown User"}</p>
-              <p className="text-sm text-muted-foreground">{formatDate(post.created_at)}</p>
-            </div>
-            {user?.id === post.user_id && (
+    <>
+      <Card className="overflow-hidden border-border/70 bg-card/95 transition-colors hover:border-primary/35">
+        <article className={cn("space-y-4 p-4 sm:p-5", compact && "p-4")}>
+          <header className="flex items-start justify-between gap-3">
+            <button
+              type="button"
+              onClick={openProfile}
+              className="flex min-w-0 items-center gap-3 text-left"
+            >
+              <Avatar className="h-11 w-11 shrink-0 border border-border/70">
+                <AvatarImage src={post.user?.avatar_url || undefined} />
+                <AvatarFallback>{initials(post.user?.display_name)}</AvatarFallback>
+              </Avatar>
+              <span className="min-w-0">
+                <span className="block truncate font-sans text-sm font-semibold">
+                  {post.user?.display_name || "Unknown reader"}
+                </span>
+                <span className="block font-sans text-xs text-muted-foreground">
+                  {formatDate(post.created_at)}
+                </span>
+              </span>
+            </button>
+
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="hidden sm:inline-flex">
+                {postType === "book"
+                  ? "Book"
+                  : postType === "club"
+                    ? "Club"
+                    : "Post"}
+              </Badge>
               <Button
                 variant="ghost"
-                size="sm"
-                onClick={handleDeletePost}
-                className="text-muted-foreground hover:text-destructive"
+                size="icon"
+                className="h-9 w-9"
+                aria-label="Post options"
+                onClick={() => setActionsOpen(true)}
               >
-                <Trash className="h-4 w-4" />
+                <AppIcon icon={APP_ICONS.common.more} variant="action" />
               </Button>
-            )}
-          </div>
+            </div>
+          </header>
 
-          <h3 className="font-serif text-xl font-bold mb-2">{sanitizeText(post.title)}</h3>
-          
-          {post.genre && (
-            <Badge variant="secondary" className="mb-3">
-              {post.genre}
-            </Badge>
-          )}
-
-          <p className="font-serif text-foreground whitespace-pre-wrap mb-4">{sanitizeText(post.content)}</p>
-
-          {post.book && (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted mb-4">
-              {post.book.cover_url && (
-                <img
-                  src={post.book.cover_url}
-                  alt={post.book.title}
-                  className="w-12 h-16 object-cover rounded"
-                />
-              )}
-              <div>
-                <p className="font-serif font-medium text-sm">{post.book.title}</p>
-                {post.book.author && (
-                  <p className="font-serif text-xs text-muted-foreground">{post.book.author}</p>
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <h2 className="font-display text-xl font-semibold leading-tight">
+                {sanitizeText(post.title)}
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {post.genre && <Badge variant="secondary">{post.genre}</Badge>}
+                {visibility !== "public" && (
+                  <Badge variant="outline">{visibility}</Badge>
                 )}
               </div>
             </div>
-          )}
 
-          <div className="flex items-center gap-4 pt-3 border-t">
-            <div className="flex items-center gap-2">
-              <HeartLike
-                liked={post.user_has_liked}
-                onLike={() => onLike(post.id)}
-                size={20}
-              />
-              <span className="font-sans text-sm text-muted-foreground">{post.likes_count}</span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowComments(!showComments)}
-            >
-              <ChatBubble className="h-4 w-4 mr-2" />
-              {post.comments_count}
-            </Button>
+            <p className="whitespace-pre-wrap font-serif text-sm leading-relaxed text-foreground sm:text-base">
+              {sanitizeText(post.content)}
+            </p>
           </div>
 
-          {showComments && (
-            <div className="mt-4 pt-4 border-t space-y-4">
-              <div className="space-y-2">
-                <Textarea
-                  placeholder="Write a comment..."
-                  value={commentContent}
-                  onChange={(e) => setCommentContent(e.target.value)}
-                  rows={3}
-                  className="font-sans resize-none"
-                />
-                <Button onClick={handleAddComment} disabled={!commentContent.trim()}>
-                  Comment
-                </Button>
-              </div>
+          {post.media && post.media.length > 0 && <PostMediaGrid post={post} />}
 
-              {comments.length > 0 && (
-                <div className="space-y-2">
-                  {comments.map((comment) => (
-                    <CommentItem
-                      key={comment.id}
-                      comment={comment}
-                      onReply={handleReply}
-                      onDelete={deleteComment}
-                      currentUserId={user?.id}
-                    />
-                  ))}
-                </div>
-              )}
+          {(post.book || post.club) && <PostAttachment post={post} />}
+
+          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-3">
+            <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2 rounded-full border border-border/70 px-3 py-2">
+                <HeartLike liked={post.user_has_liked} onLike={() => onLike(post.id)} size={20} />
+                <span className="font-sans text-sm text-muted-foreground">
+                  {post.likes_count || 0}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowComments((value) => !value)}
+                className="gap-2 rounded-full"
+              >
+                <AppIcon icon={APP_ICONS.common.chat} variant="inline" size="sm" />
+                {post.comments_count || 0}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleShare}
+                className="gap-2 rounded-full"
+              >
+                <AppIcon icon={APP_ICONS.common.share} variant="inline" size="sm" />
+                {shareCount}
+              </Button>
+            </div>
+          </footer>
+
+          {showComments && (
+            <div className="border-t border-border/70 pt-4">
+              <CommentThread postId={post.id} />
             </div>
           )}
-        </div>
-      </div>
-    </Card>
-    </ContextMenuNative>
+        </article>
+      </Card>
+      <ActionSheet
+        open={actionsOpen}
+        onOpenChange={setActionsOpen}
+        title="Post Options"
+        description="Choose an action"
+        actions={actions}
+      />
+    </>
   );
+};
+
+const PostMediaGrid = ({ post }: { post: Post }) => {
+  const media = post.media || [];
+  return (
+    <div
+      className={cn(
+        "grid gap-2 overflow-hidden rounded-md border border-border/70 bg-muted/20 p-2",
+        media.length === 1 ? "grid-cols-1" : "grid-cols-2"
+      )}
+    >
+      {media.map((item) => (
+        <div
+          key={item.id || item.storage_path}
+          className="relative aspect-[4/3] overflow-hidden rounded bg-muted"
+        >
+          {item.media_type === "video" ? (
+            <video
+              src={item.signed_url || undefined}
+              poster={item.thumbnail_url || undefined}
+              controls
+              preload="metadata"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <img
+              src={item.signed_url || undefined}
+              alt={post.title}
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const PostAttachment = ({ post }: { post: Post }) => {
+  const navigate = useNavigate();
+  if (post.book) {
+    return (
+      <button
+        type="button"
+        onClick={() => navigate(`/book/${post.book_id}`)}
+        className="flex w-full items-center gap-3 rounded-md border border-border/70 bg-muted/25 p-3 text-left transition-colors hover:border-primary/40"
+      >
+        {post.book.cover_url ? (
+          <img
+            src={post.book.cover_url}
+            alt={post.book.title}
+            className="h-16 w-11 rounded object-cover"
+          />
+        ) : (
+          <div className="flex h-16 w-11 items-center justify-center rounded bg-muted/50 text-muted-foreground">
+            <AppIcon icon={APP_ICONS.dashboard.coverFallback} variant="empty" size="md" />
+          </div>
+        )}
+        <span className="min-w-0">
+          <span className="block truncate font-display text-base font-semibold">
+            {post.book.title}
+          </span>
+          {post.book.author && (
+            <span className="block truncate font-serif text-sm text-muted-foreground">
+              {post.book.author}
+            </span>
+          )}
+        </span>
+      </button>
+    );
+  }
+
+  if (post.club) {
+    return (
+      <button
+        type="button"
+        onClick={() => navigate(`/clubs/${post.club_id}`)}
+        className="flex w-full items-center gap-3 rounded-md border border-border/70 bg-muted/25 p-3 text-left transition-colors hover:border-primary/40"
+      >
+        <AppIcon icon={APP_ICONS.nav.clubs} variant="inline" size="md" className="shrink-0 text-muted-foreground" />
+        <span className="min-w-0">
+          <span className="block truncate font-display text-base font-semibold">
+            {post.club.name}
+          </span>
+          {post.club.description && (
+            <span className="block truncate font-sans text-sm text-muted-foreground">
+              {post.club.description}
+            </span>
+          )}
+        </span>
+      </button>
+    );
+  }
+
+  return null;
 };

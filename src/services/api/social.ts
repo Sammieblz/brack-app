@@ -3,74 +3,112 @@ import { supabase } from "@/integrations/supabase/client";
 import { sanitizeInput } from "@/utils/sanitize";
 import { getCurrentAuthUser } from "./auth";
 
+export type SocialActivityType =
+  | "book_started"
+  | "book_completed"
+  | "book_reviewed"
+  | "followed_user"
+  | "created_list"
+  | "earned_badge"
+  | "post";
+
 export interface FeedActivity {
   id: string;
   user_id: string;
-  activity_type:
-    | "book_started"
-    | "book_completed"
-    | "book_reviewed"
-    | "followed_user"
-    | "created_list"
-    | "earned_badge"
-    | "post";
-  book_id?: string;
-  review_id?: string;
-  list_id?: string;
-  badge_id?: string;
-  metadata?: Record<string, unknown>;
-  visibility: string;
-  created_at: string;
-  user?: {
-    id: string;
-    display_name: string;
-    avatar_url?: string;
-  };
-  book?: {
-    id: string;
-    title: string;
-    author?: string;
-    cover_url?: string;
-  };
-}
-
-export interface SocialFeedResponse {
-  activities: FeedActivity[];
-  has_more: boolean;
-}
-
-export const getSocialFeed = async (
-  limit: number,
-  offset: number
-): Promise<SocialFeedResponse> => {
-  return invokeFunction<SocialFeedResponse>("social-feed", {
-    body: { limit, offset },
-  });
-};
-
-export interface Post {
-  id: string;
-  user_id: string;
+  activity_type: SocialActivityType;
   book_id?: string | null;
-  title: string;
-  content: string;
-  genre?: string | null;
-  likes_count: number;
-  comments_count: number;
+  review_id?: string | null;
+  list_id?: string | null;
+  badge_id?: string | null;
+  metadata?: Record<string, unknown> | null;
+  visibility: string | null;
   created_at: string;
-  updated_at: string;
   user?: {
     id: string;
-    display_name: string;
+    display_name: string | null;
     avatar_url?: string | null;
-  };
+  } | null;
   book?: {
     id: string;
     title: string;
     author?: string | null;
     cover_url?: string | null;
-  };
+  } | null;
+}
+
+export interface SocialFeedResponse {
+  activities: FeedActivity[];
+  next_cursor?: string | null;
+  has_more: boolean;
+  caught_up?: boolean;
+}
+
+export type PostType = "text" | "book" | "club";
+export type PostVisibility = "public" | "followers" | "private";
+export type PostMediaType = "image" | "video";
+
+export interface PostMedia {
+  id?: string;
+  post_id?: string;
+  storage_path: string;
+  signed_url?: string | null;
+  thumbnail_path?: string | null;
+  thumbnail_url?: string | null;
+  media_type: PostMediaType;
+  mime_type: string;
+  size_bytes: number;
+  width?: number | null;
+  height?: number | null;
+  duration_ms?: number | null;
+  position?: number;
+}
+
+export interface Post {
+  id: string;
+  user_id: string;
+  book_id?: string | null;
+  club_id?: string | null;
+  title: string;
+  content: string;
+  genre?: string | null;
+  post_type: PostType;
+  visibility: PostVisibility;
+  likes_count: number;
+  comments_count: number;
+  share_count: number;
+  metadata?: Record<string, unknown> | null;
+  deleted_at?: string | null;
+  created_at: string;
+  updated_at: string;
+  user?: {
+    id: string;
+    display_name: string | null;
+    avatar_url?: string | null;
+  } | null;
+  book?: {
+    id: string;
+    title: string;
+    author?: string | null;
+    cover_url?: string | null;
+  } | null;
+  club?: {
+    id: string;
+    name: string;
+    description?: string | null;
+    cover_image_url?: string | null;
+    is_private?: boolean | null;
+  } | null;
+  media?: PostMedia[];
   user_has_liked?: boolean;
+  share_url?: string;
+}
+
+export interface PostsFeedResponse {
+  items: Post[];
+  next_cursor?: string | null;
+  has_more: boolean;
+  feed_mode: "following" | "discovery" | "mixed" | "caught_up" | "detail";
+  caught_up: boolean;
 }
 
 export interface PostComment {
@@ -78,15 +116,37 @@ export interface PostComment {
   post_id: string;
   user_id: string;
   parent_id?: string | null;
+  root_comment_id?: string | null;
   content: string;
+  depth: number;
+  reply_count: number;
+  deleted_at?: string | null;
+  is_deleted?: boolean;
   created_at: string;
   updated_at: string;
   user?: {
     id: string;
-    display_name: string;
+    display_name: string | null;
     avatar_url?: string | null;
-  };
+  } | null;
   replies?: PostComment[];
+}
+
+export interface PostCommentsResponse {
+  comments: PostComment[];
+  next_cursor?: string | null;
+  has_more: boolean;
+}
+
+export interface CreatePostRequest {
+  title: string;
+  content: string;
+  genre?: string | null;
+  post_type?: PostType;
+  visibility?: PostVisibility;
+  book_id?: string | null;
+  club_id?: string | null;
+  media?: PostMedia[];
 }
 
 export interface CreateCommunityPostRequest {
@@ -95,87 +155,120 @@ export interface CreateCommunityPostRequest {
   genre?: string | null;
 }
 
-export const createSocialActivityPost = async (
-  content: string,
-  bookId?: string
-): Promise<void> => {
+export interface BlockedUser {
+  id: string;
+  user_id: string;
+  created_at: string;
+  user?: {
+    id: string;
+    display_name: string | null;
+    avatar_url?: string | null;
+  } | null;
+}
+
+export interface SharePostResponse {
+  share_url: string;
+  share_count: number;
+}
+
+const POST_MEDIA_BUCKET = "post-media";
+const IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const VIDEO_MIME_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime"]);
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 60 * 1024 * 1024;
+
+const toSafeFileName = (name: string) =>
+  name
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80) || "media";
+
+export const getPostsFeed = async (
+  cursor?: string | null,
+  limit = 20
+): Promise<PostsFeedResponse> => {
+  return invokeFunction<PostsFeedResponse>("posts-feed", {
+    body: { cursor, limit },
+  });
+};
+
+export const getPostById = async (postId: string): Promise<Post | null> => {
+  const response = await invokeFunction<PostsFeedResponse>("posts-feed", {
+    body: { post_id: postId, limit: 1 },
+  });
+  return response.items[0] ?? null;
+};
+
+export const getSocialFeed = async (
+  limit = 20,
+  cursor?: string | null
+): Promise<SocialFeedResponse> => {
+  return invokeFunction<SocialFeedResponse>("social-feed", {
+    body: { limit, cursor },
+  });
+};
+
+export const uploadPostMediaFiles = async (files: File[]): Promise<PostMedia[]> => {
   const user = await getCurrentAuthUser();
   if (!user) throw new Error("Not authenticated");
 
-  const { error } = await supabase.from("social_activities").insert({
-    user_id: user.id,
-    activity_type: "post",
-    book_id: bookId || null,
-    metadata: { content: sanitizeInput(content) },
-    visibility: "public",
-  });
+  const imageCount = files.filter((file) => IMAGE_MIME_TYPES.has(file.type)).length;
+  const videoCount = files.filter((file) => VIDEO_MIME_TYPES.has(file.type)).length;
 
-  if (error) throw error;
-};
-
-export const fetchPosts = async (): Promise<Post[]> => {
-  const user = await getCurrentAuthUser();
-
-  const { data: postsData, error: postsError } = await supabase
-    .from("posts")
-    .select(
-      `
-      *,
-      profiles:user_id (
-        id,
-        display_name,
-        avatar_url
-      ),
-      books:book_id (
-        id,
-        title,
-        author,
-        cover_url
-      )
-    `
-    )
-    .order("created_at", { ascending: false });
-
-  if (postsError) throw postsError;
-
-  let likedPostIds: string[] = [];
-  if (user) {
-    const { data: likesData } = await supabase
-      .from("post_likes")
-      .select("post_id")
-      .eq("user_id", user.id);
-
-    likedPostIds = likesData?.map((like) => like.post_id) || [];
+  if (imageCount > 4) throw new Error("Posts can include up to 4 images");
+  if (videoCount > 1) throw new Error("Posts can include up to 1 video");
+  if (imageCount > 0 && videoCount > 0) {
+    throw new Error("Use either images or one video per post");
   }
 
-  return (postsData || []).map((post) => ({
-    id: post.id,
-    user_id: post.user_id,
-    book_id: post.book_id,
-    title: post.title,
-    content: post.content,
-    genre: post.genre,
-    likes_count: post.likes_count,
-    comments_count: post.comments_count,
-    created_at: post.created_at,
-    updated_at: post.updated_at,
-    user: post.profiles
-      ? {
-          id: post.profiles.id,
-          display_name: post.profiles.display_name,
-          avatar_url: post.profiles.avatar_url,
-        }
-      : undefined,
-    book: post.books
-      ? {
-          id: post.books.id,
-          title: post.books.title,
-          author: post.books.author,
-          cover_url: post.books.cover_url,
-        }
-      : undefined,
-    user_has_liked: likedPostIds.includes(post.id),
-  }));
+  const uploaded: PostMedia[] = [];
+
+  for (const [index, file] of files.entries()) {
+    const isImage = IMAGE_MIME_TYPES.has(file.type);
+    const isVideo = VIDEO_MIME_TYPES.has(file.type);
+    if (!isImage && !isVideo) {
+      throw new Error(`${file.name} is not a supported media type`);
+    }
+    if (isImage && file.size > MAX_IMAGE_BYTES) {
+      throw new Error(`${file.name} must be 10 MB or smaller`);
+    }
+    if (isVideo && file.size > MAX_VIDEO_BYTES) {
+      throw new Error(`${file.name} must be 60 MB or smaller`);
+    }
+
+    const storagePath = `${user.id}/${crypto.randomUUID()}-${toSafeFileName(file.name)}`;
+    const { error } = await supabase.storage
+      .from(POST_MEDIA_BUCKET)
+      .upload(storagePath, file, {
+        cacheControl: "31536000",
+        upsert: false,
+        contentType: file.type,
+      });
+
+    if (error) throw error;
+
+    uploaded.push({
+      storage_path: storagePath,
+      media_type: isVideo ? "video" : "image",
+      mime_type: file.type,
+      size_bytes: file.size,
+      position: index,
+    });
+  }
+
+  return uploaded;
+};
+
+export const createPost = async (payload: CreatePostRequest): Promise<Post> => {
+  const response = await invokeFunction<{ post: Post; post_id: string }>("create-post", {
+    body: {
+      ...payload,
+      title: sanitizeInput(payload.title),
+      content: sanitizeInput(payload.content),
+    },
+  });
+  return response.post;
 };
 
 export const createCommunityPost = async ({
@@ -183,169 +276,91 @@ export const createCommunityPost = async ({
   content,
   genre,
 }: CreateCommunityPostRequest): Promise<void> => {
-  const user = await getCurrentAuthUser();
-  if (!user) throw new Error("Not authenticated");
-
-  const { error } = await supabase.from("posts").insert({
-    user_id: user.id,
-    title: sanitizeInput(title),
-    content: sanitizeInput(content),
-    genre: genre || null,
-  });
-
-  if (error) throw error;
+  await createPost({ title, content, genre, post_type: "text", visibility: "public" });
 };
 
-export const createPostRecord = async (
-  data: Record<string, unknown>
-): Promise<void> => {
-  const { error } = await supabase.from("posts").insert(data);
-
-  if (error) throw error;
+export const fetchPosts = async (): Promise<Post[]> => {
+  const response = await getPostsFeed(null, 20);
+  return response.items;
 };
 
-export const updatePostRecord = async (
+export const createSocialActivityPost = async (): Promise<void> => {
+  // Post activity is now generated by the posts database trigger.
+};
+
+export const togglePostLike = async (
+  postOrId: Post | string
+): Promise<{ liked: boolean; likes_count: number }> => {
+  const postId = typeof postOrId === "string" ? postOrId : postOrId.id;
+  return invokeFunction("toggle-post-like", { body: { post_id: postId } });
+};
+
+export const sharePost = async (
   postId: string,
-  updates: Record<string, unknown>
-): Promise<void> => {
-  const { error } = await supabase.from("posts").update(updates).eq("id", postId);
-
-  if (error) throw error;
-};
-
-export const togglePostLike = async (post: Post): Promise<void> => {
-  const user = await getCurrentAuthUser();
-  if (!user) throw new Error("Not authenticated");
-
-  if (post.user_has_liked) {
-    const { error } = await supabase
-      .from("post_likes")
-      .delete()
-      .eq("post_id", post.id)
-      .eq("user_id", user.id);
-
-    if (error) throw error;
-    return;
-  }
-
-  const { error } = await supabase
-    .from("post_likes")
-    .insert({ post_id: post.id, user_id: user.id });
-
-  if (error) throw error;
+  target?: string
+): Promise<SharePostResponse> => {
+  return invokeFunction<SharePostResponse>("share-post", {
+    body: { post_id: postId, target },
+  });
 };
 
 export const deletePost = async (postId: string): Promise<void> => {
-  const { error } = await supabase.from("posts").delete().eq("id", postId);
+  const { error } = await supabase
+    .from("posts")
+    .update({ deleted_at: new Date().toISOString() })
+    .eq("id", postId);
   if (error) throw error;
 };
 
 export const fetchPostComments = async (
-  postId: string
-): Promise<PostComment[]> => {
-  const { data, error } = await supabase
-    .from("post_comments")
-    .select(
-      `
-      *,
-      profiles:user_id (
-        id,
-        display_name,
-        avatar_url
-      )
-    `
-    )
-    .eq("post_id", postId)
-    .order("created_at", { ascending: true });
-
-  if (error) throw error;
-
-  const commentMap = new Map<string, PostComment>();
-  const rootComments: PostComment[] = [];
-
-  data?.forEach((comment) => {
-    const commentObj: PostComment = {
-      id: comment.id,
-      post_id: comment.post_id,
-      user_id: comment.user_id,
-      parent_id: comment.parent_id,
-      content: comment.content,
-      created_at: comment.created_at,
-      updated_at: comment.updated_at,
-      user: comment.profiles
-        ? {
-            id: comment.profiles.id,
-            display_name: comment.profiles.display_name,
-            avatar_url: comment.profiles.avatar_url,
-          }
-        : undefined,
-      replies: [],
-    };
-
-    commentMap.set(comment.id, commentObj);
-
-    if (!comment.parent_id) {
-      rootComments.push(commentObj);
-    }
+  postId: string,
+  parentId?: string | null,
+  cursor?: string | null,
+  limit = 20
+): Promise<PostCommentsResponse> => {
+  return invokeFunction<PostCommentsResponse>("post-comments", {
+    body: { post_id: postId, parent_id: parentId, cursor, limit },
   });
-
-  commentMap.forEach((comment) => {
-    if (!comment.parent_id) return;
-
-    const parent = commentMap.get(comment.parent_id);
-    if (parent) {
-      parent.replies = parent.replies || [];
-      parent.replies.push(comment);
-    }
-  });
-
-  return rootComments;
 };
 
 export const addPostComment = async (
   postId: string,
   content: string,
   parentId?: string
-): Promise<void> => {
-  const user = await getCurrentAuthUser();
-  if (!user) throw new Error("Not authenticated");
-
-  const { error } = await supabase.from("post_comments").insert({
-    post_id: postId,
-    user_id: user.id,
-    parent_id: parentId,
-    content: sanitizeInput(content),
+): Promise<PostComment> => {
+  const response = await invokeFunction<{ comment: PostComment }>("create-post-comment", {
+    body: {
+      post_id: postId,
+      parent_id: parentId || null,
+      content: sanitizeInput(content),
+    },
   });
-
-  if (error) throw error;
+  return response.comment;
 };
 
 export const deletePostComment = async (commentId: string): Promise<void> => {
   const { error } = await supabase
     .from("post_comments")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", commentId);
-
   if (error) throw error;
 };
 
-export const subscribeToPosts = (onChange: () => void): (() => void) => {
-  const channel = supabase
-    .channel("posts-changes")
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "posts",
-      },
-      onChange
-    )
-    .subscribe();
+export const blockUser = async (userId: string): Promise<void> => {
+  await invokeFunction("block-user", { body: { user_id: userId } });
+};
 
-  return () => {
-    supabase.removeChannel(channel);
-  };
+export const unblockUser = async (userId: string): Promise<void> => {
+  await invokeFunction("unblock-user", { body: { user_id: userId } });
+};
+
+export const getBlockedUsers = async (): Promise<BlockedUser[]> => {
+  const response = await invokeFunction<{ users: BlockedUser[] }>("blocked-users");
+  return response.users;
+};
+
+export const subscribeToPosts = (): (() => void) => {
+  return () => undefined;
 };
 
 export const subscribeToPostComments = (
@@ -371,21 +386,6 @@ export const subscribeToPostComments = (
   };
 };
 
-export const subscribeToSocialFeed = (onChange: () => void): (() => void) => {
-  const channel = supabase
-    .channel("social-feed-changes")
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "social_activities",
-      },
-      onChange
-    )
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
+export const subscribeToSocialFeed = (): (() => void) => {
+  return () => undefined;
 };

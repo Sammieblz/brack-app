@@ -15,6 +15,7 @@ import { TimeDistributionChart } from "@/components/charts/TimeDistributionChart
 import { StatusFunnelChart } from "@/components/charts/StatusFunnelChart";
 import { ChartSkeleton } from "@/components/skeletons/ChartSkeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useBooks } from "@/hooks/useBooks";
 import { MobileLayout } from "@/components/MobileLayout";
@@ -254,15 +255,11 @@ const Analytics = () => {
 
         {/* No Data State */}
         {!loading && readingProgress.length === 0 && genreData.length === 0 && weeklyReading.length === 0 && (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <APP_ICONS.analytics.empty className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="font-display text-lg font-semibold mb-2">No analytics data yet</h3>
-              <p className="text-muted-foreground">
-                Start reading and tracking your sessions to see beautiful analytics here.
-              </p>
-            </CardContent>
-          </Card>
+          <PremiumEmptyState
+            asset="emptyAnalytics"
+            title="No analytics data yet"
+            description="Start reading and tracking your sessions to see useful analytics here."
+          />
         )}
       </div>
     </MobileLayout>
