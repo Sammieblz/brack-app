@@ -22,8 +22,19 @@ Brack uses modern, production-ready technologies for web and mobile development.
 
 ## Build Tools
 
+### Turborepo 2.9.18
+- **Why**: Workspace task orchestration, local/CI caching, and explicit dependencies between web, mobile sync, and desktop packaging.
+- **Configuration**: Root `turbo.json`
+- **Cache**: Local `.turbo/cache` and GitHub Actions cache only; Vercel Remote Cache is not enabled for v1.
+- **Task Model**:
+  - Cacheable `build` outputs use `dist/**`.
+  - Long-running `dev`/`preview` tasks are persistent and uncached.
+  - Capacitor sync and desktop package tasks are uncached side-effect tasks.
+  - Desktop packaging depends on both `@brack/client#build` and `@brack/desktop#build`.
+
 ### Vite 5.4.1
 - **Why**: Lightning-fast HMR and optimized builds
+- **Workspace**: `apps/client`
 - **Plugins**:
   - `@vitejs/plugin-react-swc` - Fast React compilation
   - `vite-plugin-pwa` - Progressive Web App support
@@ -37,6 +48,8 @@ Brack uses modern, production-ready technologies for web and mobile development.
 
 ### Capacitor 7.4.4
 - **Why**: Native mobile access with web technologies
+- **Workspace**: `apps/mobile`
+- **Native Projects**: Root `android/` and `ios/` directories referenced from `apps/mobile/capacitor.config.ts`
 - **Platform Support**: iOS, Android, Web
 - **Advantages**:
   - Unified codebase
@@ -61,6 +74,7 @@ Brack uses modern, production-ready technologies for web and mobile development.
 
 ### Electron
 - **Why**: Desktop packaging for the existing Vite/React app with one renderer codebase.
+- **Workspace**: `apps/desktop`
 - **Platform Support**: Windows 10/11, macOS Intel/Apple Silicon, Linux/Ubuntu.
 - **Packaging**: `electron-builder` creates unsigned internal artifacts in `release/desktop/`.
 - **Local Storage**: `better-sqlite3` runs in the Electron main process behind a restricted preload bridge.
@@ -86,7 +100,7 @@ Brack uses modern, production-ready technologies for web and mobile development.
 - **Runtime**: Deno 1.x
 - **Language**: TypeScript
 - **Functions**:
-  - `search-books` - Google Books API integration
+  - `search-books` - Google Books primary search with Open Library fallback
   - `add-book` - Protected library insertion and duplicate handling
   - `dashboard-home` - Dashboard aggregate data
   - `create-reading-session` - Timer session persistence
@@ -205,10 +219,12 @@ Brack uses modern, production-ready technologies for web and mobile development.
 
 ## APIs & Integrations
 
-### Google Books API
+### Book Search APIs
 - **Purpose**: Book search and metadata
+- **Primary**: Google Books API
+- **Fallback**: Open Library search when Google returns 403, 429, or 5xx
 - **Endpoint**: `googleapis.com/books/v1`
-- **Rate Limit**: Handled in Edge Function
+- **Rate Limit**: Handled in Edge Function with distributed buckets
 - **Caching**: 5-minute cache in browser
 
 ### Firebase Cloud Messaging (FCM)
@@ -218,10 +234,11 @@ Brack uses modern, production-ready technologies for web and mobile development.
 
 ## Package Manager
 
-### npm
-- **Version**: Comes with Node.js
+### npm Workspaces
+- **Version**: `npm@11.3.0` declared in root `package.json`
 - **Lock File**: `package-lock.json`
-- **Alternative**: Bun (experimental, `bun.lockb` exists)
+- **Workspaces**: `apps/*` and `packages/*`
+- **Policy**: npm is canonical. Do not reintroduce `bun.lockb`.
 
 ## Version Control
 
@@ -234,7 +251,7 @@ Brack uses modern, production-ready technologies for web and mobile development.
 
 ### Web
 - **Static Hosting**: Vercel, Netlify, or Cloudflare Pages
-- **Build Output**: `dist/` directory
+- **Build Output**: `apps/client/dist`
 - **PWA**: Service worker for offline support
 
 ### Mobile

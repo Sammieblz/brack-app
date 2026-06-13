@@ -19,8 +19,24 @@ npm run preview
 # Run linter
 npm run lint
 
+# Typecheck all workspaces
+npm run check-types
+
 # Fix linting errors
 npm run lint -- --fix
+```
+
+### Turborepo
+
+```bash
+# Inspect the build/typecheck task graph
+npx turbo run build check-types --dry=json
+
+# Run build and typecheck together
+npx turbo run build check-types
+
+# Run only the client build task
+npx turbo run build --filter=@brack/client
 ```
 
 ### Mobile
@@ -36,10 +52,10 @@ npm run cap:open:ios
 npm run cap:open:android
 
 # Run on iOS
-npx cap run ios
+npm --workspace @brack/mobile exec cap run ios
 
 # Run on Android
-npx cap run android
+npm --workspace @brack/mobile exec cap run android
 ```
 
 ### Supabase
@@ -81,7 +97,7 @@ npx supabase gen types typescript --project-id your-project-id
 ### Create New Hook
 
 ```typescript
-// src/hooks/useMyFeature.ts
+// apps/client/src/hooks/useMyFeature.ts
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -118,7 +134,7 @@ export const useMyFeature = (param: string) => {
 ### Create New Component
 
 ```typescript
-// src/components/MyComponent.tsx
+// apps/client/src/components/MyComponent.tsx
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -144,7 +160,7 @@ export const MyComponent = ({ title, onClick }: MyComponentProps) => {
 ### Create New Screen
 
 ```typescript
-// src/screens/MyScreen.tsx
+// apps/client/src/screens/MyScreen.tsx
 import { useAuth } from '@/hooks/useAuth';
 import { MobileLayout } from '@/components/MobileLayout';
 import { MobileHeader } from '@/components/MobileHeader';
@@ -494,7 +510,7 @@ return <Content data={data} />;
 ### Custom Classes
 
 ```css
-/* src/index.css */
+/* apps/client/src/index.css */
 .gradient-background {
   @apply bg-gradient-to-br from-blue-900 to-purple-900;
 }
@@ -510,15 +526,15 @@ return <Content data={data} />;
 
 | What | Where |
 |------|-------|
-| Add new screen | `src/screens/ScreenName.tsx` |
-| Add new component | `src/components/ComponentName.tsx` |
-| Add new hook | `src/hooks/useHookName.ts` |
-| Add new service | `src/services/serviceName.ts` |
-| Add new util | `src/utils/utilName.ts` |
+| Add new screen | `apps/client/src/screens/ScreenName.tsx` |
+| Add new component | `apps/client/src/components/ComponentName.tsx` |
+| Add new hook | `apps/client/src/hooks/useHookName.ts` |
+| Add new service | `apps/client/src/services/serviceName.ts` |
+| Add new util | `apps/client/src/utils/utilName.ts` |
 | Add migration | `supabase/migrations/YYYYMMDDHHMMSS_name.sql` |
 | Add Edge Function | `supabase/functions/function-name/index.ts` |
-| Update routes | `src/App.tsx` |
-| Update nav | `src/components/MobileBottomNav.tsx` or `Navbar.tsx` |
+| Update routes | `apps/client/src/App.tsx` |
+| Update nav | `apps/client/src/components/MobileBottomNav.tsx` or `Navbar.tsx` |
 
 ## Environment Variables
 
@@ -589,10 +605,10 @@ rm -rf node_modules package-lock.json
 npm install
 
 # Clear build
-rm -rf dist
+rm -rf apps/client/dist apps/desktop/dist
 
 # Clear cache
-rm -rf .vite
+rm -rf .turbo apps/client/node_modules/.vite
 
 # Reset database
 npx supabase db reset
@@ -609,7 +625,7 @@ Cmd/Ctrl + Shift + P → "TypeScript: Restart TS Server"
 
 ```bash
 # Clean and sync
-npx cap sync
+npm run cap:sync
 
 # iOS: Reinstall pods
 cd ios/App && pod deintegrate && pod install && cd ../..
@@ -722,7 +738,7 @@ useEffect(() => {
 | Build fails | `rm -rf node_modules && npm install` |
 | Stale data | Hard refresh (Cmd/Ctrl + Shift + R) |
 | Auth issues | Check .env, restart server |
-| Mobile crash | `npx cap sync` |
+| Mobile crash | `npm run cap:sync` |
 | Database error | Check RLS policies |
 | Offline sync stuck | `readingCoreSync.syncCurrentUser()` |
 

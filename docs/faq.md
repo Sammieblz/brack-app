@@ -36,7 +36,7 @@ The source code is available, but deployment costs depend on:
 
 ### Can I use Bun instead of npm?
 
-Partially. The project has a `bun.lockb` file, but npm is the official package manager. Bun may work but is not officially supported.
+No for project workflow. npm is the canonical package manager, `package-lock.json` is the canonical lockfile, and the root `package.json` declares `packageManager: "npm@11.3.0"`. Turborepo runs the npm workspace scripts. Do not reintroduce `bun.lockb`.
 
 ### Why is TypeScript strictness relaxed?
 
@@ -53,12 +53,12 @@ For production apps, consider enabling strict mode gradually.
 2. Write SQL in the generated file
 3. Add RLS policies
 4. Apply migration: `npx supabase db push`
-5. Update types: The types in `src/integrations/supabase/types.ts` should be regenerated
+5. Update types: The types in `apps/client/src/integrations/supabase/types.ts` should be regenerated
 
 ### How do I update Supabase types?
 
 ```bash
-npx supabase gen types typescript --project-id your-project-id > src/integrations/supabase/types.ts
+npx supabase gen types typescript --project-id your-project-id > apps/client/src/integrations/supabase/types.ts
 ```
 
 ## Features
@@ -81,7 +81,7 @@ See [Offline Support](./offline-support.md) for details.
 - Streak Freeze: Save your streak once per week
 - Calculated from `reading_sessions` table
 
-See `src/utils/streakCalculation.ts` for implementation.
+See `apps/client/src/utils/streakCalculation.ts` for implementation.
 
 ### How does the reading timer work?
 
@@ -91,7 +91,7 @@ See `src/utils/streakCalculation.ts` for implementation.
 - Automatically creates reading session when stopped
 - Prompts for journal entry after 5+ minutes
 
-See `src/contexts/TimerContext.tsx` for implementation.
+See `apps/client/src/contexts/TimerContext.tsx` for implementation.
 
 ### Can users share books with friends?
 
@@ -154,7 +154,7 @@ npm install @capacitor/camera@latest @capacitor/push-notifications@latest
 # (update all plugins)
 
 # Sync to native projects
-npx cap sync
+npm run cap:sync
 ```
 
 ## Database
@@ -310,7 +310,7 @@ npm install
 ### Mobile app crashes on startup
 
 1. Check Xcode/Android Studio console
-2. Verify all plugins are synced: `npx cap sync`
+2. Verify all plugins are synced: `npm run cap:sync`
 3. Check Info.plist/AndroidManifest.xml for missing permissions
 4. Clean and rebuild
 
@@ -378,7 +378,7 @@ Bracket for books - a way to organize and track your reading journey.
 
 Yes, the code is available for modification:
 1. Change branding (logos, colors, name)
-2. Update `capacitor.config.ts` with your app ID
+2. Update `apps/mobile/capacitor.config.ts` with your app ID
 3. Update app store listings
 4. Deploy with your own Supabase project
 

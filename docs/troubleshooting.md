@@ -166,7 +166,7 @@ npx supabase db reset
 **Cause**: Xcode project not configured
 
 **Solution**:
-1. Open project in Xcode: `npx cap open ios`
+1. Open project in Xcode: `npm run cap:open:ios`
 2. Select your team in "Signing & Capabilities"
 3. Let Xcode auto-manage signing
 
@@ -191,13 +191,13 @@ cd ../..
 
 **Solution**:
 1. Check Xcode console for errors
-2. Verify `capacitor.config.ts` is correct
+2. Verify `apps/mobile/capacitor.config.ts` is correct
 3. Clean build folder:
    ```bash
    cd ios/App
    rm -rf build/
    cd ../..
-   npx cap sync ios
+   npm run cap:sync:ios
    ```
 
 ### Android Issues
@@ -212,7 +212,7 @@ cd ../..
 cd android
 ./gradlew clean
 cd ..
-npx cap sync android
+npm run cap:sync:android
 ```
 
 #### "google-services.json missing"
@@ -233,7 +233,7 @@ npx cap sync android
 2. Verify permissions in `AndroidManifest.xml`
 3. Check for plugin errors:
    ```bash
-   npx cap sync android
+   npm run cap:sync:android
    ```
 
 ### Capacitor Sync Issues
@@ -245,11 +245,11 @@ npx cap sync android
 **Solution**:
 ```bash
 # Sync all plugins
-npx cap sync
+npm run cap:sync
 
 # Or sync specific platform
-npx cap sync ios
-npx cap sync android
+npm run cap:sync:ios
+npm run cap:sync:android
 ```
 
 #### "Native project out of sync"
@@ -260,10 +260,10 @@ npx cap sync android
 ```bash
 # Build then sync
 npm run build
-npx cap sync
+npm run cap:sync
 
 # Copy web assets
-npx cap copy
+npm --workspace @brack/mobile exec cap copy
 ```
 
 ## Runtime Issues
@@ -617,7 +617,7 @@ printenv | grep VITE
 
 # Clear all caches
 npm run build:clean  # If script exists
-rm -rf node_modules dist .vite
+rm -rf node_modules apps/client/dist apps/desktop/dist apps/client/node_modules/.vite .turbo
 npm install
 
 # Reset database
@@ -634,7 +634,7 @@ npx supabase status
 | TypeScript errors | Restart TS server |
 | Stale data | Hard refresh (Cmd/Ctrl + Shift + R) |
 | Build fails | `rm -rf node_modules && npm install` |
-| Mobile crash | `npx cap sync` |
+| Mobile crash | `npm run cap:sync` |
 | Auth issues | Check `.env` and restart server |
 | Slow queries | Check database indexes |
 | Memory leak | Check for missing cleanup in useEffect |

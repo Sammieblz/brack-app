@@ -1,0 +1,16 @@
+{
+  "name": "@brack/desktop",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check-types": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@brack/client": "*"
+  },
+  "devDependencies": {
+    "@brack/typescript-config": "*"
+  }
+}

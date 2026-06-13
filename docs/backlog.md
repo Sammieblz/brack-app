@@ -56,8 +56,8 @@ Status values:
 | 7.1 | Implemented | `docs/clubs/roles-and-permissions.md` documents owner/admin/moderator/member semantics and current RLS/frontend alignment. |
 | 7.2 | Implemented | `docs/messaging/permissions-audit.md` documents conversation membership, message read/write rules, and unread strategy. |
 | 7.3 | Implemented | `docs/messaging/conversation-summary.md` documents the `get_conversation_summaries` RPC and `fetchConversations` now uses one summary query with latest message and unread count. |
-| 8.1 | Implemented | `docs/architecture/frontend-service-boundaries.md` documents the service pattern; direct Supabase imports are confined to `src/services/api/*` and the integration client. |
-| 8.2 | Implemented | `docs/architecture/mobile-device-boundaries.md` documents device boundaries and fallbacks; timer local notifications/app state moved to `src/services/timerNative.ts`, badge push orchestration moved to `src/services/badgeNotifications.ts`, and push hooks delegate native detection to `pushNotificationsService`. |
+| 8.1 | Implemented | `docs/architecture/frontend-service-boundaries.md` documents the service pattern; direct Supabase imports are confined to `apps/client/src/services/api/*` and the integration client. |
+| 8.2 | Implemented | `docs/architecture/mobile-device-boundaries.md` documents device boundaries and fallbacks; timer local notifications/app state moved to `apps/client/src/services/timerNative.ts`, badge push orchestration moved to `apps/client/src/services/badgeNotifications.ts`, and push hooks delegate native detection to `pushNotificationsService`. |
 | 9.1 | Implemented | `docs/analytics/kpis.md` defines primary and secondary product KPIs. |
 | 9.2 | Implemented | `docs/analytics/in-product-analytics.md` reviews user-facing analytics and expensive live calculations for precomputation. |
 | 9.3 | Implemented | `docs/analytics/snapshot-strategy.md` documents snapshot tables/functions and chooses a hybrid incremental plus scheduled strategy. |

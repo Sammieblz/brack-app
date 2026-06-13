@@ -7,9 +7,9 @@ Scope: ticket 2.2, auth signup/profile creation/onboarding defaults.
 
 | Step | Owner | Path | Writes | Notes |
 | --- | --- | --- | --- | --- |
-| Email sign-up | Supabase Auth via `src/services/api/auth.ts` | `signUpWithEmail` | `auth.users` | Client passes optional metadata. |
+| Email sign-up | Supabase Auth via `apps/client/src/services/api/auth.ts` | `signUpWithEmail` | `auth.users` | Client passes optional metadata. |
 | Auth trigger | Database | `handle_new_user()` | `profiles` | Creates or updates profile defaults with display/avatar/name and onboarding fields. |
-| Profile fallback | App service | `ensureUserProfile` in `src/services/onboarding.ts` | `profiles` | If the trigger did not create a row, client upserts a profile with `ignoreDuplicates`. |
+| Profile fallback | App service | `ensureUserProfile` in `apps/client/src/services/onboarding.ts` | `profiles` | If the trigger did not create a row, client upserts a profile with `ignoreDuplicates`. |
 | First-run route decision | App service | `shouldEnterFirstRunOnboarding` | None | New accounts after `2026-05-01T00:00:00.000Z` enter onboarding when status is `not_started` or `in_progress`. |
 | Mark in progress | API service | `updateOnboardingInProgress` | `profiles` | Only updates `not_started` or `in_progress` profiles. |
 | Skip onboarding | App service/API service | `skipOnboarding` | `profiles`, `user_learning_profiles` | Dashboard access remains allowed after status `skipped`. |

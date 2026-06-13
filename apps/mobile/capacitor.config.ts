@@ -3,15 +3,19 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.brack.app',
   appName: 'Brack',
-  webDir: 'dist',
+  webDir: '../client/dist',
   bundledWebRuntime: false,
   backgroundColor: '#0b1021', // Dark background for splash screens (matches Brack dark theme)
   loggingBehavior: process.env.NODE_ENV === 'production' ? 'none' : 'debug',
+  android: {
+    path: '../../android',
+  },
   server: {
     androidScheme: 'https',
     cleartext: false,
   },
   ios: {
+    path: '../../ios',
     contentInset: 'always',
   },
   app: {

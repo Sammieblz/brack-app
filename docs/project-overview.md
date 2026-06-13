@@ -20,7 +20,7 @@ Brack is a comprehensive book tracking application that combines personal librar
 - **356 Source Files** - Well-organized codebase
 - **59 Custom Hooks** - Reusable business logic
 - **192 Components** - Modular UI architecture
-- **15 Edge Functions** - Serverless backend
+- **48 Edge Functions** - Serverless backend
 - **41 Migrations** - Evolved database schema
 
 ## Target Users
@@ -63,6 +63,7 @@ Brack is a comprehensive book tracking application that combines personal librar
 - **React 18** - Latest features (Suspense, concurrent rendering)
 - **TypeScript 5** - Type safety throughout
 - **Vite 5** - Lightning-fast builds
+- **Turborepo** - npm workspace orchestration and local/CI build cache
 - **Supabase** - Backend-as-a-Service
 - **Capacitor 7** - Native mobile capabilities
 

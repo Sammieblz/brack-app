@@ -84,6 +84,6 @@ Source of truth: remote Supabase project `waftnaqgkcgufzapcihe`, public schema, 
 - `log_progress_transaction` has a legacy overload without `p_client_log_id` and a current overload with idempotency support; both should remain wrappers around `complete_reading_transaction`.
 - `handle_new_user` is defined in older auth setup and again in unified onboarding; audit latest deployed body before changing sign-up behavior.
 - Streak updates happen through session/progress triggers, explicit calls from `complete_reading_transaction`, and profile sync triggers. Persistence is centralized around `reading_streak_days`.
-- Activity generation happens from several triggers plus direct app insertion in `src/services/api/social.ts`; ticket 6.1 should decide whether direct inserts remain valid.
+- Activity generation happens from several triggers plus direct app insertion in `apps/client/src/services/api/social.ts`; ticket 6.1 should decide whether direct inserts remain valid.
 - Dashboard metrics use `get_dashboard_home_snapshot` for reads; stale snapshots still refresh through live `get_user_dashboard_stats`.
 - Backend-only RPCs now revoke direct `anon`/`authenticated` execute privileges and are intended to run through service-role Edge Functions. Direct client RPCs that remain (`get_conversation_summaries`, `use_reading_streak_freeze`, club helper checks) include `auth.uid()` ownership checks.

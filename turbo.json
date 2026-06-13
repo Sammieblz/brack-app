@@ -1,0 +1,103 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "globalDependencies": [".env", ".env.*", "package-lock.json"],
+  "globalEnv": [
+    "NODE_ENV",
+    "VITE_*",
+    "CI",
+    "CSC_*",
+    "APPLE_*",
+    "WIN_CSC_*",
+    "GH_TOKEN"
+  ],
+  "globalPassThroughEnv": [
+    "APPDATA",
+    "ComSpec",
+    "HOME",
+    "LOCALAPPDATA",
+    "OS",
+    "PATHEXT",
+    "TEMP",
+    "TMP",
+    "USERPROFILE"
+  ],
+  "tasks": {
+    "transit": {
+      "dependsOn": ["^transit"]
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "build:dev": {
+      "dependsOn": ["^build:dev"],
+      "outputs": ["dist/**"]
+    },
+    "check-types": {
+      "dependsOn": ["transit"],
+      "outputs": []
+    },
+    "lint": {
+      "dependsOn": ["transit"],
+      "outputs": []
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "preview": {
+      "cache": false,
+      "persistent": true
+    },
+    "@brack/mobile#sync": {
+      "dependsOn": ["@brack/client#build"],
+      "cache": false
+    },
+    "@brack/mobile#sync:android": {
+      "dependsOn": ["@brack/client#build"],
+      "cache": false
+    },
+    "@brack/mobile#sync:ios": {
+      "dependsOn": ["@brack/client#build"],
+      "cache": false
+    },
+    "@brack/mobile#open:ios": {
+      "cache": false
+    },
+    "@brack/mobile#open:android": {
+      "cache": false
+    },
+    "//#_desktop:dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "//#_desktop:pack": {
+      "dependsOn": ["@brack/client#build", "@brack/desktop#build"],
+      "cache": false
+    },
+    "//#_desktop:dist": {
+      "dependsOn": ["@brack/client#build", "@brack/desktop#build"],
+      "cache": false
+    },
+    "//#_desktop:dist:win": {
+      "dependsOn": ["@brack/client#build", "@brack/desktop#build"],
+      "cache": false
+    },
+    "//#_desktop:dist:mac": {
+      "dependsOn": ["@brack/client#build", "@brack/desktop#build"],
+      "cache": false
+    },
+    "//#_desktop:dist:mac:arm64": {
+      "dependsOn": ["@brack/client#build", "@brack/desktop#build"],
+      "cache": false
+    },
+    "//#_desktop:dist:mac:x64": {
+      "dependsOn": ["@brack/client#build", "@brack/desktop#build"],
+      "cache": false
+    },
+    "//#_desktop:dist:linux": {
+      "dependsOn": ["@brack/client#build", "@brack/desktop#build"],
+      "cache": false
+    }
+  }
+}

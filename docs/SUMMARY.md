@@ -11,8 +11,8 @@ This documentation provides comprehensive coverage of:
 - **Deployment** - Ship to production
 - **Troubleshooting** - Solve common issues
 
-**Total Documents**: 55  
-**Last Updated**: May 5, 2026
+**Total Documents**: 56
+**Last Updated**: June 13, 2026
 
 ---
 
@@ -24,7 +24,8 @@ This documentation provides comprehensive coverage of:
 2. **[Getting Started](./getting-started.md)** - Set up your development environment
 3. **[Tech Stack](./tech-stack.md)** - Learn what technologies are used
 4. **[Architecture](./architecture.md)** - Understand the system design
-5. **[File Structure](./file-structure.md)** - Navigate the codebase
+5. **[Monorepo and Turborepo](./monorepo.md)** - Understand workspaces, Turbo tasks, cache, and CI
+6. **[File Structure](./file-structure.md)** - Navigate the codebase
 
 ### Experienced Developers
 
@@ -34,6 +35,7 @@ This documentation provides comprehensive coverage of:
 4. **[Hooks Reference](./hooks.md)** - Custom hooks API
 5. **[Sprint Backlog](./backlog.md)** - Current implementation checklist and ticket statuses
 6. **[Table Catalog](./schema/table-catalog.md)** - Remote public schema inventory
+7. **[Monorepo and Turborepo](./monorepo.md)** - Workspace ownership and task graph
 
 ### Mobile Developers
 
@@ -69,6 +71,7 @@ This documentation provides comprehensive coverage of:
 - [Project Overview](./project-overview.md) - What is Brack?
 - [Tech Stack](./tech-stack.md) - Technologies used
 - [Architecture](./architecture.md) - System design
+- [Monorepo and Turborepo](./monorepo.md) - npm workspaces and Turbo orchestration
 - [File Structure](./file-structure.md) - Code organization
 
 ### Development
@@ -166,6 +169,7 @@ This documentation provides comprehensive coverage of:
 |-------|----------|
 | ...the architecture? | [Architecture](./architecture.md) |
 | ...the tech stack? | [Tech Stack](./tech-stack.md) |
+| ...the monorepo layout? | [Monorepo and Turborepo](./monorepo.md) |
 | ...the database schema? | [Database Schema](./database-schema.md) |
 | ...the source-of-truth table catalog? | [Table Catalog](./schema/table-catalog.md) |
 | ...domain ownership boundaries? | [Domain Map](./architecture/domain-map.md) |
@@ -179,10 +183,10 @@ This documentation provides comprehensive coverage of:
 
 | Looking for | Location |
 |-------------|----------|
-| Components | [File Structure](./file-structure.md#components-srccomponents) |
-| Hooks | [File Structure](./file-structure.md#hooks-srchooks) |
-| Screens | [File Structure](./file-structure.md#screens-srcscreens) |
-| Services | [File Structure](./file-structure.md#services-srcservices) |
+| Components | [File Structure](./file-structure.md#components-appsclientsrccomponents) |
+| Hooks | [File Structure](./file-structure.md#hooks-appsclientsrchooks) |
+| Screens | [File Structure](./file-structure.md#screens-appsclientsrcscreens) |
+| Services | [File Structure](./file-structure.md#services-appsclientsrcservices) |
 | Database migrations | [File Structure](./file-structure.md#supabase-directory-supabase) |
 | Edge Functions | [File Structure](./file-structure.md#supabase-directory-supabase) |
 
@@ -225,10 +229,11 @@ This documentation provides comprehensive coverage of:
 
 1. [Project Overview](./project-overview.md) - Understand the app
 2. [Getting Started](./getting-started.md) - Set up environment
-3. [Tech Stack](./tech-stack.md) - Learn the technologies
-4. [Components](./components.md) - Study UI patterns
-5. [Hooks Reference](./hooks.md) - Understand data fetching
-6. [State Management](./state-management.md) - Master state patterns
+3. [Monorepo and Turborepo](./monorepo.md) - Understand workspaces and root commands
+4. [Tech Stack](./tech-stack.md) - Learn the technologies
+5. [Components](./components.md) - Study UI patterns
+6. [Hooks Reference](./hooks.md) - Understand data fetching
+7. [State Management](./state-management.md) - Master state patterns
 
 **Estimated Time**: 4-6 hours
 
@@ -279,7 +284,8 @@ This documentation provides comprehensive coverage of:
 |------|---------|
 | Start dev | `npm run dev` |
 | Build prod | `npm run build` |
-| Sync mobile | `npx cap sync` |
+| Sync mobile | `npm run cap:sync` |
+| Inspect Turbo graph | `npx turbo run build check-types --dry=json` |
 | Run migrations | `npx supabase db push` |
 | Deploy functions | `npx supabase functions deploy` |
 
@@ -287,10 +293,12 @@ This documentation provides comprehensive coverage of:
 
 | Type | Location |
 |------|----------|
-| Components | `src/components/` |
-| Screens | `src/screens/` |
-| Hooks | `src/hooks/` |
-| Services | `src/services/` |
+| Components | `apps/client/src/components/` |
+| Screens | `apps/client/src/screens/` |
+| Hooks | `apps/client/src/hooks/` |
+| Services | `apps/client/src/services/` |
+| Mobile wrapper | `apps/mobile/` |
+| Desktop shell | `apps/desktop/` |
 | Migrations | `supabase/migrations/` |
 | Functions | `supabase/functions/` |
 
@@ -298,11 +306,12 @@ This documentation provides comprehensive coverage of:
 
 | File | Purpose |
 |------|---------|
-| `src/App.tsx` | App routing and providers |
-| `src/main.tsx` | Entry point |
-| `vite.config.ts` | Build configuration |
-| `capacitor.config.ts` | Mobile configuration |
-| `tailwind.config.ts` | Styling configuration |
+| `apps/client/src/App.tsx` | App routing and providers |
+| `apps/client/src/main.tsx` | Renderer entry point |
+| `apps/client/vite.config.ts` | Web build and PWA configuration |
+| `apps/mobile/capacitor.config.ts` | Mobile wrapper configuration |
+| `apps/client/tailwind.config.ts` | Styling configuration |
+| `turbo.json` | Workspace task graph and cache rules |
 
 ---
 
@@ -382,7 +391,7 @@ When making changes:
 
 | From | Related Docs |
 |------|--------------|
-| Getting Started | Tech Stack, Architecture, File Structure |
+| Getting Started | Monorepo and Turborepo, Tech Stack, Architecture, File Structure |
 | Architecture | Tech Stack, State Management, Database Schema |
 | Components | Hooks, State Management |
 | Hooks | Components, State Management |

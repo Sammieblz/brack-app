@@ -13,6 +13,7 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 - [Getting Started Guide](./getting-started.md) - Setup, installation, and first steps
 - [Tech Stack](./tech-stack.md) - Technologies and libraries used
 - [Architecture Overview](./architecture.md) - System design and patterns
+- [Monorepo and Turborepo](./monorepo.md) - Workspaces, task graph, cache, and CI behavior
 
 ### Development
 - [File Structure](./file-structure.md) - Project organization and folder layout
@@ -87,11 +88,12 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 | Document | Status | Last Updated |
 |----------|--------|--------------|
 | Getting Started | ✅ Complete | 2026-02-04 |
-| Tech Stack | ✅ Complete | 2026-02-04 |
+| Tech Stack | ✅ Complete | 2026-06-13 |
 | Architecture | ✅ Complete | 2026-02-04 |
-| File Structure | ✅ Complete | 2026-02-04 |
+| Monorepo and Turborepo | Complete | 2026-06-13 |
+| File Structure | ✅ Complete | 2026-06-13 |
 | Database Schema | ✅ Complete | 2026-02-04 |
-| API Reference | ✅ Complete | 2026-02-04 |
+| API Reference | ✅ Complete | 2026-06-13 |
 | Mobile Features | ✅ Complete | 2026-02-04 |
 | Project Overview | ✅ Complete | 2026-02-04 |
 | Quick Reference | ✅ Complete | 2026-02-04 |
@@ -102,7 +104,7 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 | Authentication | ✅ Complete | 2026-02-04 |
 | Testing Guide | ✅ Complete | 2026-02-04 |
 | Features List | ✅ Complete | 2026-02-04 |
-| Deployment | ✅ Complete | 2026-02-04 |
+| Deployment | ✅ Complete | 2026-06-13 |
 | Contributing | ✅ Complete | 2026-02-04 |
 | FAQ | ✅ Complete | 2026-02-04 |
 | Troubleshooting | ✅ Complete | 2026-02-04 |
@@ -110,7 +112,7 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 | Sprint Backlog | Active | 2026-05-05 |
 | Table Catalog | ✅ Complete | 2026-05-05 |
 | Functions and Triggers | ✅ Complete | 2026-05-05 |
-| Edge Function Catalog | ✅ Complete | 2026-05-05 |
+| Edge Function Catalog | ✅ Complete | 2026-06-13 |
 | Domain Map | ✅ Complete | 2026-05-05 |
 | RLS Matrix | ✅ Complete | 2026-05-05 |
 | Onboarding/Auth Audit | Complete | 2026-05-05 |
@@ -154,6 +156,7 @@ docs/
 ├── Architecture & Design
 │   ├── tech-stack.md          # Technologies used
 │   ├── architecture.md        # System design
+│   ├── monorepo.md            # npm workspaces and Turborepo
 │   ├── file-structure.md      # Project organization
 │   └── database-schema.md     # Database design
 │

@@ -1,13 +1,19 @@
 appId: com.brack.desktop
 productName: Brack
-copyright: Copyright © 2026 Brack
+copyright: Copyright (c) 2026 Brack
 
 directories:
   output: release/desktop
 
 files:
-  - dist/**/*
-  - desktop/dist/**/*
+  - from: apps/client/dist
+    to: dist
+    filter:
+      - "**/*"
+  - from: apps/desktop/dist
+    to: apps/desktop/dist
+    filter:
+      - "**/*"
   - package.json
 
 extraResources:

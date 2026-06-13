@@ -9,7 +9,7 @@ Primary migration: `supabase/migrations/20260506170000_modern_direct_messaging.s
 
 Primary Edge Function: `conversations-home`
 
-Frontend service: `fetchConversations` in `src/services/api/messaging.ts`
+Frontend service: `fetchConversations` in `apps/client/src/services/api/messaging.ts`
 
 ## Response Shape
 

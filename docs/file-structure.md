@@ -4,155 +4,102 @@ Complete guide to the Brack project organization.
 
 ## Root Directory
 
+Brack is now an npm-workspace Turborepo. The apps are split by runtime wrapper, but the product still uses one shared React renderer.
+
 ```
 brack-app/
-|-- desktop/              # Electron desktop main/preload source
-├── android/              # Android native project (Capacitor)
-├── ios/                  # iOS native project (Capacitor)
-├── dist/                 # Production build output
-├── docs/                 # 📚 Documentation (you are here)
-├── LLM/                  # AI agent implementation guides
-├── node_modules/         # Dependencies
-├── public/               # Static assets
-├── resources/            # App icons and splash screens
-├── scripts/              # Build and deployment scripts
-├── src/                  # 🎯 Main application source
-├── supabase/             # Supabase configuration and migrations
-├── .env.example          # Environment variables template
-├── .gitignore            # Git ignore patterns
-├── capacitor.config.ts   # Capacitor configuration
-├── components.json       # shadcn/ui configuration
-├── eslint.config.js      # ESLint configuration
-├── index.html            # HTML entry point
-├── package.json          # Dependencies and scripts
-├── postcss.config.js     # PostCSS configuration
-├── README.md             # Project readme
-├── tailwind.config.ts    # Tailwind CSS configuration
-├── tsconfig.json         # TypeScript base config
-├── tsconfig.app.json     # TypeScript app config
-├── tsconfig.node.json    # TypeScript node config
-└── vite.config.ts        # Vite build configuration
+|-- apps/
+|   |-- client/                  # @brack/client: Vite React app
+|   |   |-- public/              # Static web/PWA assets
+|   |   |-- src/                 # Main renderer source
+|   |   |-- dist/                # Web build output
+|   |   |-- components.json      # shadcn/ui config
+|   |   |-- index.html           # HTML entry
+|   |   |-- postcss.config.js    # PostCSS config
+|   |   |-- tailwind.config.ts   # Tailwind config
+|   |   |-- tsconfig*.json       # Client TypeScript configs
+|   |   `-- vite.config.ts       # Vite/PWA config
+|   |-- mobile/                  # @brack/mobile: Capacitor wrapper
+|   |   |-- capacitor.config.ts  # Points to ../client/dist and root native projects
+|   |   `-- package.json
+|   `-- desktop/                 # @brack/desktop: Electron shell
+|       |-- src/                 # main/preload/SQLite IPC source
+|       |-- dist/                # Compiled Electron files
+|       |-- package.json
+|       `-- tsconfig.json
+|-- packages/
+|   `-- typescript-config/       # Shared base/client/desktop TS configs
+|-- android/                     # Root Android native project (Capacitor)
+|-- ios/                         # Root iOS native project (Capacitor)
+|-- assets/                      # Source brand assets
+|-- docs/                        # Documentation
+|-- resources/                   # Desktop/mobile package icons and splash assets
+|-- scripts/                     # Repo scripts
+|-- supabase/                    # Supabase config, migrations, and Edge Functions
+|-- electron-builder.yml         # Desktop package config
+|-- eslint.config.js             # Root ESLint config
+|-- package.json                 # Root npm workspace scripts
+|-- package-lock.json            # Canonical npm lockfile
+|-- tsconfig.json                # Root solution TS config
+`-- turbo.json                   # Turborepo task graph
 ```
 
-## Source Directory (`src/`)
+## Workspace Map
 
-### Overview
+| Workspace | Package | Purpose |
+| --- | --- | --- |
+| `apps/client` | `@brack/client` | React renderer, web/PWA build, shared app UI/business logic. |
+| `apps/mobile` | `@brack/mobile` | Capacitor commands and config for iOS/Android. |
+| `apps/desktop` | `@brack/desktop` | Electron main/preload process and native SQLite IPC. |
+| `packages/typescript-config` | `@brack/typescript-config` | Shared TypeScript compiler settings. |
+
+See [Monorepo and Turborepo](./monorepo.md) for task graph, cache, and CI behavior.
+
+## Client Source (`apps/client/src/`)
+
+Older docs may still use shorthand such as `src/components/Button.tsx`. In the current repository, that means `apps/client/src/components/Button.tsx`.
 
 ```
-src/
-├── components/           # 192 React components
-├── contexts/            # React contexts (global state)
-├── hooks/               # 59 custom hooks
-├── integrations/        # External service integrations
-├── lib/                 # Library configurations
-├── screens/             # 27 page components
-├── services/            # API, local storage, sync, and platform services
-├── types/               # TypeScript type definitions
-├── utils/               # 9 utility functions
-├── App.css              # Global app styles
-├── App.tsx              # Root app component
-├── index.css            # Global CSS and Tailwind imports
-├── main.tsx             # Application entry point
-└── vite-env.d.ts        # Vite environment types
+apps/client/src/
+|-- components/          # React components
+|-- config/              # App asset/navigation/icon config
+|-- constants/           # Shared constants
+|-- contexts/            # React contexts
+|-- hooks/               # Custom hooks
+|-- integrations/        # Supabase client and generated types
+|-- lib/                 # Library setup and shared utilities
+|-- screens/             # Route-level screens
+|-- services/            # API, platform, local storage, and sync services
+|-- types/               # TypeScript type definitions
+|-- utils/               # Pure helpers
+|-- App.css
+|-- App.tsx
+|-- index.css
+|-- main.tsx
+`-- vite-env.d.ts
 ```
 
-## Components (`src/components/`)
-
-### Structure
+## Components (`apps/client/src/components/`)
 
 ```
 components/
-├── ui/                  # 54 shadcn/ui base components
-│   ├── accordion.tsx
-│   ├── alert-dialog.tsx
-│   ├── button.tsx
-│   ├── card.tsx
-│   ├── dialog.tsx
-│   ├── input.tsx
-│   ├── select.tsx
-│   ├── toast.tsx
-│   └── ... (46 more)
-│
-├── charts/              # Data visualization components
-│   ├── WeeklyReadingChart.tsx
-│   ├── MonthlyProgressChart.tsx
-│   ├── GenreDistributionChart.tsx
-│   ├── ReadingVelocityChart.tsx
-│   ├── GoalProgressChart.tsx
-│   ├── StreakTrendChart.tsx
-│   ├── ReadingHeatmap.tsx
-│   └── YearInReviewChart.tsx
-│
-├── social/              # Social feature components
-│   ├── PostCard.tsx
-│   ├── PostList.tsx
-│   ├── CreatePostDialog.tsx
-│   ├── ReviewCard.tsx
-│   ├── ReviewForm.tsx
-│   ├── CommentSection.tsx
-│   ├── UserCard.tsx
-│   ├── FollowButton.tsx
-│   └── ActivityItem.tsx
-│
-├── clubs/               # Book club components
-│   ├── BookClubCard.tsx
-│   ├── CreateClubDialog.tsx
-│   └── DiscussionThread.tsx
-│
-├── messaging/           # Messaging components
-│   ├── ConversationsList.tsx
-│   └── MessageThread.tsx
-│
-├── skeletons/           # Loading state components
-│   ├── BookCardSkeleton.tsx
-│   ├── DashboardCardSkeleton.tsx
-│   ├── PostCardSkeleton.tsx
-│   ├── StatCardSkeleton.tsx
-│   ├── ActivityItemSkeleton.tsx
-│   └── ReviewCardSkeleton.tsx
-│
-└── [Feature Components]  # Top-level components
-    ├── BookCard.tsx              # Book display card
-    ├── BookSearch.tsx            # Book search with Google Books
-    ├── SwipeableBookCard.tsx     # Swipeable book card
-    ├── JournalEntryCard.tsx      # Journal entry display
-    ├── JournalEntryDialog.tsx    # Create/edit journal
-    ├── QuickJournalEntryDialog.tsx # Quick journal after reading
-    ├── JournalPromptHandler.tsx  # Global journal prompt handler
-    ├── ProgressLogger.tsx        # Log reading progress
-    ├── ProgressLogItem.tsx       # Progress log display
-    ├── QuickProgressWidget.tsx   # Quick progress update
-    ├── FloatingTimerWidget.tsx   # Reading timer widget
-    ├── StreakDisplay.tsx         # Streak counter
-    ├── StreakCalendar.tsx        # Activity calendar
-    ├── StreakHistoryTimeline.tsx # Streak milestones
-    ├── QuoteCollection.tsx       # Quote collection view
-    ├── GoalManager.tsx           # Goal creation/editing
-    ├── GoalsSheet.tsx            # Goals bottom sheet
-    ├── BadgeDisplay.tsx          # Badge showcase
-    ├── MobileLayout.tsx          # Mobile page wrapper
-    ├── MobileHeader.tsx          # Mobile page header
-    ├── MobileBottomNav.tsx       # Bottom navigation
-    ├── NativeHeader.tsx          # Native-style header
-    ├── NativeScrollView.tsx      # Native scroll container
-    ├── NativeSearchBar.tsx       # Native search input
-    ├── FloatingActionButton.tsx  # FAB for mobile
-    ├── OfflineIndicator.tsx      # Offline status banner
-    ├── OptimizedImage.tsx        # Cached image component
-    ├── PullToRefresh.tsx         # Pull-to-refresh wrapper
-    ├── SwipeBackHandler.tsx      # iOS-style swipe back
-    ├── DeepLinkHandler.tsx       # Deep link initialization
-    ├── ErrorBoundary.tsx         # Error boundary
-    ├── LoadingSpinner.tsx        # Loading indicator
-    ├── Header.tsx                # Desktop header
-    ├── Navbar.tsx                # Desktop navigation
-    └── ... (and more)
+|-- ui/                  # shadcn/ui base components
+|-- charts/              # Data visualization components
+|-- clubs/               # Book club components
+|-- empty/               # Empty-state components
+|-- library/             # Library-specific book surfaces
+|-- messaging/           # Direct-message components
+|-- mobile/              # Mobile form/input helpers
+|-- settings/            # Settings panels
+|-- skeletons/           # Loading states
+|-- social/              # Feed, review, comment, and profile cards
+`-- *.tsx                # Shared feature components
 ```
 
 ### Naming Conventions
 
-- **PascalCase** for all components
-- **Descriptive names** (e.g., `QuickJournalEntryDialog` not `Dialog2`)
+- **PascalCase** for all components.
+- **Descriptive names** such as `QuickJournalEntryDialog`, not `Dialog2`.
 - **Suffix patterns**:
   - `*Card` - Display cards
   - `*Dialog` - Modal dialogs
@@ -162,61 +109,59 @@ components/
   - `*Skeleton` - Loading skeletons
   - `*Widget` - Interactive widgets
 
-## Screens (`src/screens/`)
+## Screens (`apps/client/src/screens/`)
 
 Page-level components for routing.
 
 ```
 screens/
-├── Index.tsx              # Landing page (redirects to auth or dashboard)
-├── Auth.tsx               # Login/signup
-├── Welcome.tsx            # Onboarding welcome
-├── Questionnaire.tsx      # Onboarding questionnaire
-├── Goals.tsx              # Onboarding goals
-├── Dashboard.tsx          # Main dashboard (home)
-├── MyBooks.tsx            # Book library
-├── AddBook.tsx            # Add new book
-├── EditBook.tsx           # Edit book details
-├── BookDetail.tsx         # Book detail page
-├── ScanBarcode.tsx        # Barcode scanner
-├── ScanCover.tsx          # Book cover scanner
-├── ProgressTracking.tsx   # Detailed progress analytics
-├── ReadingHistory.tsx     # Reading sessions history
-├── Analytics.tsx          # Reading analytics
-├── Profile.tsx            # User profile
-├── UserProfile.tsx        # Other user's profile
-├── BookLists.tsx          # Book lists overview
-├── BookListDetail.tsx     # Single list detail
-├── GoalsManagement.tsx    # Manage goals
-├── Reviews.tsx            # Book reviews feed
-├── Feed.tsx               # Social feed
-├── Readers.tsx            # Reader discovery
-├── BookClubs.tsx          # Book clubs list
-├── BookClubDetail.tsx     # Single club detail
-├── Messages.tsx           # Direct messages
-└── NotFound.tsx           # 404 page
+|-- Index.tsx
+|-- Auth.tsx
+|-- AuthCallback.tsx
+|-- Dashboard.tsx
+|-- MyBooks.tsx
+|-- AddBook.tsx
+|-- EditBook.tsx
+|-- BookDetail.tsx
+|-- ScanBarcode.tsx
+|-- ScanCover.tsx
+|-- ProgressTracking.tsx
+|-- ReadingHistory.tsx
+|-- Analytics.tsx
+|-- Profile.tsx
+|-- UserProfile.tsx
+|-- BookLists.tsx
+|-- BookListDetail.tsx
+|-- GoalsManagement.tsx
+|-- Reviews.tsx
+|-- Feed.tsx
+|-- Readers.tsx
+|-- BookClubs.tsx
+|-- BookClubDetail.tsx
+|-- Messages.tsx
+|-- Settings.tsx
+|-- ResetPassword.tsx
+|-- Onboarding.tsx
+`-- NotFound.tsx
 ```
 
-### Screen Patterns
-
-All screens follow this structure:
+### Screen Pattern
 
 ```tsx
 const ScreenName = () => {
-  // 1. Hooks
   const { user } = useAuth();
   const { data, loading } = useData();
-  
-  // 2. Effects
-  useEffect(() => { /* ... */ }, []);
-  
-  // 3. Handlers
-  const handleAction = () => { /* ... */ };
-  
-  // 4. Loading state
+
+  useEffect(() => {
+    // Effects
+  }, []);
+
+  const handleAction = () => {
+    // Handlers
+  };
+
   if (loading) return <Skeleton />;
-  
-  // 5. Render
+
   return (
     <MobileLayout>
       {/* Content */}
@@ -225,204 +170,132 @@ const ScreenName = () => {
 };
 ```
 
-## Hooks (`src/hooks/`)
+## Hooks (`apps/client/src/hooks/`)
 
 Custom React hooks for business logic.
 
 ```
 hooks/
-├── use-mobile.tsx            # Mobile breakpoint detection
-├── use-toast.ts              # Toast notifications
-├── useAuth.ts                # Authentication
-├── useBooks.ts               # Book data with caching
-├── useBookProgress.ts        # Book progress analytics
-├── useProgressLogs.ts        # Progress log history
-├── useProgressTracking.ts    # Progress tracking data
-├── useJournalEntries.ts      # Journal entries CRUD
-├── useReviews.ts             # Book reviews
-├── usePosts.ts               # Social posts
-├── useGoals.ts               # Reading goals
-├── useStreaks.ts             # Reading streaks
-├── useStreakHistory.ts       # Streak milestones
-├── useBadges.ts              # Badge system
-├── useBookClubs.ts           # Book clubs
-├── useClubDiscussions.ts     # Club discussions
-├── useMessages.ts            # Direct messages
-├── useConversations.ts       # Message conversations
-├── useBookLists.ts           # Book lists
-├── useListBooks.ts           # Books in a list
-├── useFollowing.ts           # Follow/unfollow
-├── useSocialFeed.ts          # Social feed
-├── useRecentActivity.ts      # Activity feed
-├── useEnhancedActivity.ts    # Enhanced activity
-├── useUserProfile.ts         # User profile data
-├── useUserSearch.ts          # Search users
-├── useChartData.ts           # Chart data
-├── useMonthlyStats.ts        # Monthly statistics
-├── useRecentSearches.ts      # Search history
-├── useVirtualBooks.ts        # Virtual scrolling for books
-├── useInfiniteScroll.ts      # Infinite scroll helper
-├── useBarcodeScanner.ts      # Barcode scanning
-├── useCoverScanner.ts        # Cover OCR scanning
-├── useImagePicker.ts         # Image selection
-├── useHapticFeedback.ts      # Haptic feedback
-├── useNetworkStatus.ts       # Online/offline detection
-├── usePushNotifications.ts   # Push notifications
-├── usePlatform.ts            # Platform detection
-├── useNativeApp.ts           # Native app detection
-├── useScrollDirection.ts     # Scroll direction
-├── usePullToDismiss.ts       # Pull to dismiss
-├── useSwipeBack.ts           # Swipe back gesture
-├── useLongPress.ts           # Long press gesture
-├── useTypingIndicator.ts     # Typing indicator
-├── useSupabaseRequest.ts     # Supabase request wrapper
-├── useCreatePost.ts          # Create social post
-└── usePostComments.ts        # Post comments
+|-- useAuth.ts
+|-- useBooks.ts
+|-- useBookProgress.ts
+|-- useProgressLogs.ts
+|-- useJournalEntries.ts
+|-- useReviews.ts
+|-- usePosts.ts
+|-- useGoals.ts
+|-- useStreaks.ts
+|-- useBadges.ts
+|-- useBookClubs.ts
+|-- useConversations.ts
+|-- useMessages.ts
+|-- useBarcodeScanner.ts
+|-- useCoverScanner.ts
+|-- useImagePicker.ts
+|-- useNetworkStatus.ts
+|-- useNativeApp.ts
+|-- usePlatform.ts
+`-- ...
 ```
 
 ### Hook Categories
 
-**Data Fetching**: Use TanStack Query for caching
-**Gestures**: Platform-specific interactions
-**Platform**: Native capabilities
-**UI State**: Component state management
+**Data Fetching**: TanStack Query-backed hooks.
 
-## Services (`src/services/`)
+**Gestures**: Platform-specific interactions.
+
+**Platform**: Native capability detection and fallbacks.
+
+**UI State**: Component and page state helpers.
+
+## Services (`apps/client/src/services/`)
 
 Business logic and external integrations.
 
 ```
 services/
-├── api/                   # Backend API service modules
-├── local/                 # IndexedDB/SQLite local repositories
-├── sync/                  # Reading-core sync engine and types
-├── syncService.ts         # Background sync facade
-├── timerNative.ts         # Native timer notifications/app state
-├── badgeNotifications.ts  # Badge push orchestration
-├── deepLinkService.ts     # Deep link handling
-├── pushNotifications.ts   # Push notification management
-├── shareService.ts        # Native sharing
-├── dataCache.ts           # Data caching with TTL
-└── imageCache.ts          # Image caching (Filesystem)
+|-- api/                  # Backend API service modules
+|-- local/                # IndexedDB/SQLite local repositories
+|-- sync/                 # Reading-core sync engine and types
+|-- authRedirect.ts
+|-- badgeNotifications.ts
+|-- dataCache.ts
+|-- deepLinkService.ts
+|-- imageCache.ts
+|-- platform.ts
+|-- pushNotifications.ts
+|-- shareService.ts
+|-- syncService.ts
+`-- timerNative.ts
 ```
 
-### Service Pattern
+## Utilities, Contexts, Types, Integrations
 
-```typescript
-class ServiceName {
-  // Private state
-  private data: any[] = [];
-  
-  // Public methods
-  public async fetch() { /* ... */ }
-  public async update() { /* ... */ }
-  
-  // Listeners
-  subscribe(listener: () => void) { /* ... */ }
-}
+| Area | Path | Notes |
+| --- | --- | --- |
+| Utilities | `apps/client/src/utils/` | Pure helpers, validation, progress math, offline wrappers. |
+| Contexts | `apps/client/src/contexts/` | Profile, timer, theme, confirmation, badge celebration state. |
+| Types | `apps/client/src/types/` | Shared app types and external API shapes. |
+| Supabase client | `apps/client/src/integrations/supabase/` | Browser Supabase client and generated database types. |
+| Library setup | `apps/client/src/lib/` | Sentry, animation helpers, themes, utility functions. |
 
-export const serviceName = new ServiceName();
-```
-
-## Utils (`src/utils/`)
-
-Pure utility functions.
+## Mobile Wrapper (`apps/mobile/`)
 
 ```
-utils/
-├── index.ts              # Exports and common utilities
-├── offlineOperation.ts   # Offline operation wrappers
-├── ocrHelpers.ts         # OCR image processing
-├── streakCalculation.ts  # Streak logic
-├── bookProgress.ts       # Progress calculations
-├── bookStatus.ts         # Auto-update book status
-├── batchOperations.ts    # Batch, debounce, throttle
-├── hapticToast.ts        # Toast with haptics
-└── sanitize.ts           # Input sanitization
+apps/mobile/
+|-- capacitor.config.ts
+`-- package.json
 ```
 
-## Contexts (`src/contexts/`)
+`capacitor.config.ts` uses:
 
-React Context providers for global state.
+- `webDir: "../client/dist"`
+- `android.path: "../../android"`
+- `ios.path: "../../ios"`
 
-```
-contexts/
-├── ProfileContext.tsx        # User profile
-├── TimerContext.tsx          # Reading timer (complex)
-├── ThemeContext.tsx          # Theme mode
-└── ConfirmDialogContext.tsx  # Confirmation dialogs
-```
+The native `android/` and `ios/` directories intentionally remain at the repository root. Capacitor sync tasks are side-effecting and are not cached by Turbo.
 
-## Types (`src/types/`)
-
-TypeScript type definitions.
+## Desktop Wrapper (`apps/desktop/`)
 
 ```
-types/
-├── index.ts          # Core types (User, Book, etc.)
-└── googleBooks.ts    # Google Books API types
+apps/desktop/
+|-- src/
+|   |-- main.cts
+|   |-- preload.cts
+|   `-- sqliteLocalDb.cts
+|-- dist/
+|   |-- main.cjs
+|   |-- preload.cjs
+|   `-- sqliteLocalDb.cjs
+|-- package.json
+`-- tsconfig.json
 ```
 
-## Integrations (`src/integrations/`)
-
-External service integrations.
-
-```
-integrations/
-└── supabase/
-    ├── client.ts     # Supabase client instance
-    └── types.ts      # Generated database types
-```
-
-## Library Configurations (`src/lib/`)
-
-Third-party library setup.
-
-```
-lib/
-├── sentry.ts         # Error tracking
-└── utils.ts          # Class name utilities (cn)
-```
+Desktop packaging is configured by `electron-builder.yml`. Renderer bridge types live in `apps/client/src/types/desktop.d.ts`. The root package `main` points to `apps/desktop/dist/main.cjs`.
 
 ## Supabase Directory (`supabase/`)
 
-Backend configuration and code.
+Backend configuration and code remain root-managed.
 
 ```
 supabase/
-├── config.toml                # Supabase CLI configuration
-├── migrations/                # Database migrations (53 files)
-│   ├── 20250731180820_...sql # Enable RLS
-│   ├── 20260109044500_...sql # Add push tokens
-│   ├── 20260109044600_...sql # Add notification prefs
-│   ├── 20260204013937_...sql # Fix relationships
-│   ├── 20260204020000_...sql # Add journal photos
-│   └── ... (42 more)
-│
-└── functions/                 # Edge Functions (Deno)
-    ├── _shared/              # Shared utilities
-    │   ├── cors.ts
-    │   ├── errorHandler.ts
-    │   ├── rateLimit.ts
-    │   └── validation.ts
-    │
-    ├── add-book/             # Protected library insert + duplicate handling
-    ├── search-books/         # Public Google Books search
-    ├── dashboard-home/       # Dashboard aggregate data
-    ├── complete-reading/     # Consolidated reading completion transaction
-    ├── create-reading-session/ # Timer session persistence
-    ├── award-badges/         # Badge awarding
-    ├── compute-analytics/    # Daily analytics snapshots
-    ├── sync-pull/            # Pull reading-core sync changes
-    ├── sync-push/            # Push reading-core outbox mutations
-    ├── discover-readers/     # Reader recommendations
-    ├── enhanced-activity/    # Activity feed
-    ├── log-progress/         # Progress logging
-    ├── monthly-stats/        # Statistics
-    ├── social-feed/          # Social feed
-    ├── send-push-notification/ # FCM integration
-    └── calculate-book-progress/ # Progress analytics
+|-- config.toml                 # Supabase CLI configuration and function JWT settings
+|-- migrations/                 # Database migrations
+`-- functions/                  # Edge Functions (Deno)
+    |-- _shared/                # Shared CORS, rate limit, validation, messaging helpers
+    |-- search-books/           # Public book search, Google primary with Open Library fallback
+    |-- add-book/
+    |-- dashboard-home/
+    |-- complete-reading/
+    |-- conversations-home/
+    |-- conversation-detail/
+    |-- send-message/
+    |-- sync-pull/
+    |-- sync-push/
+    `-- ...
 ```
+
+See [Edge Function Catalog](./backend/edge-functions.md) and [API Reference](./api-reference.md).
 
 ## Native Directories
 
@@ -430,106 +303,51 @@ supabase/
 
 ```
 android/
-├── app/
-│   ├── src/main/
-│   │   ├── java/              # Java/Kotlin code
-│   │   ├── res/               # Android resources
-│   │   └── AndroidManifest.xml # App manifest
-│   ├── build.gradle
-│   └── google-services.json   # Firebase config
-├── build.gradle
-└── gradle/                    # Gradle wrapper
+|-- app/
+|   |-- src/main/
+|   |   |-- java/
+|   |   |-- res/
+|   |   `-- AndroidManifest.xml
+|   |-- build.gradle
+|   `-- google-services.json
+|-- build.gradle
+`-- gradle/
 ```
 
 ### iOS (`ios/`)
 
 ```
 ios/
-└── App/
-    ├── App/
-    │   ├── Info.plist         # iOS configuration
-    │   ├── Assets.xcassets/   # App icons/images
-    │   └── GoogleService-Info.plist # Firebase config
-    └── App.xcodeproj/         # Xcode project
+`-- App/
+    |-- App/
+    |   |-- Info.plist
+    |   |-- Assets.xcassets/
+    |   `-- GoogleService-Info.plist
+    `-- App.xcodeproj/
 ```
 
 ## Documentation (`docs/`)
 
-Developer documentation (this directory).
+Developer documentation lives in `docs/` and follows topic-based markdown files.
 
 ```
 docs/
-├── README.md              # Documentation index
-├── analytics/             # Analytics and KPI strategy
-│   ├── in-product-analytics.md
-│   ├── kpis.md
-│   └── snapshot-strategy.md
-├── backlog.md             # Sprint backlog and ticket status ledger
-├── getting-started.md     # Setup guide
-├── tech-stack.md          # Technologies used
-├── architecture.md        # System architecture
-├── architecture/          # Domain ownership docs
-│   ├── domain-map.md
-│   ├── frontend-service-boundaries.md
-│   └── mobile-device-boundaries.md
-├── backend/               # Edge Function catalogs
-│   └── edge-functions.md
-├── clubs/                 # Club policy docs
-│   └── roles-and-permissions.md
-├── data/                  # Data model reviews and migration plans
-│   ├── books-schema-review.md
-│   └── books-user-books-migration-plan.md
-├── file-structure.md      # This file
-├── database-schema.md     # Database design
-├── performance/           # Query/index/read-model audits
-│   ├── dashboard-query-audit.md
-│   ├── dashboard-read-model.md
-│   ├── index-audit.md
-│   └── scale-readiness.md
-├── operations/            # Runtime monitoring and alerting
-│   └── observability.md
-├── messaging/             # Messaging permission docs
-│   ├── conversation-summary.md
-│   └── permissions-audit.md
-├── product/               # Product rules and UX audits
-│   ├── progress-model.md
-│   ├── reading-loop-friction-audit.md
-│   ├── streak-rules.md
-│   └── must-win-screens.md
-├── reading/               # Reading workflow audits
-│   ├── completion-transaction.md
-│   └── write-path-audit.md
-├── schema/                # Public schema audit catalogs
-│   ├── table-catalog.md
-│   └── functions-and-triggers.md
-├── security/              # Security audit docs
-│   ├── onboarding-auth-audit.md
-│   ├── visibility-semantics.md
-│   └── rls-matrix.md
-├── social/                # Social feed/activity docs
-│   ├── activity-generation-audit.md
-│   ├── activity-types.md
-│   └── feed-policy.md
-├── api-reference.md       # Edge Functions
-├── mobile-features.md     # Native features
-├── troubleshooting.md     # Common issues
-└── ... (more docs)
+|-- README.md
+|-- SUMMARY.md
+|-- getting-started.md
+|-- monorepo.md
+|-- tech-stack.md
+|-- architecture.md
+|-- file-structure.md
+|-- deployment.md
+|-- api-reference.md
+|-- backend/
+|-- architecture/
+|-- performance/
+|-- product/
+|-- security/
+`-- ...
 ```
-
-## Desktop Directory (`desktop/`)
-
-Electron desktop packaging source.
-
-```
-desktop/
-|-- tsconfig.json          # TypeScript config for Electron main/preload
-`-- src/
-    |-- main.cts           # Window, protocol, deep link, and IPC setup
-    |-- preload.cts        # Secure window.brackDesktop bridge
-    `-- sqliteLocalDb.cts  # Native SQLite local driver behind IPC
-```
-
-Desktop packaging is configured by `electron-builder.yml`, and renderer bridge types live in `src/types/desktop.d.ts`.
 
 ## Best Practices
 
@@ -540,13 +358,6 @@ Desktop packaging is configured by `electron-builder.yml`, and renderer bridge t
 - **Services**: `camelCase.ts`
 - **Utils**: `camelCase.ts`
 - **Types**: `camelCase.ts`
-
-### File Size
-
-- **Components**: < 300 lines (split if larger)
-- **Hooks**: < 150 lines
-- **Services**: < 200 lines
-- **Utils**: Single responsibility
 
 ### Imports
 
@@ -574,7 +385,7 @@ import type { Book } from '@/types';
 
 ### Path Aliases
 
-Configure in `tsconfig.json`:
+The `@/*` alias is scoped to the client app and maps to `apps/client/src/*`.
 
 ```json
 {
@@ -585,34 +396,31 @@ Configure in `tsconfig.json`:
 ```
 
 Usage:
+
 ```typescript
 import { Button } from '@/components/ui/button';
-// Instead of: import { Button } from '../../../../components/ui/button';
 ```
 
 ## Finding Files
 
 ### By Feature
 
-- **Books**: `src/screens/MyBooks.tsx`, `src/hooks/useBooks.ts`, `src/components/BookCard.tsx`
-- **Social**: `src/screens/Feed.tsx`, `src/hooks/usePosts.ts`, `src/components/social/`
-- **Analytics**: `src/screens/Analytics.tsx`, `src/hooks/useChartData.ts`, `src/components/charts/`
+- **Books**: `apps/client/src/screens/MyBooks.tsx`, `apps/client/src/hooks/useBooks.ts`, `apps/client/src/components/BookCard.tsx`
+- **Social**: `apps/client/src/screens/Feed.tsx`, `apps/client/src/hooks/usePosts.ts`, `apps/client/src/components/social/`
+- **Analytics**: `apps/client/src/screens/Analytics.tsx`, `apps/client/src/hooks/useChartData.ts`, `apps/client/src/components/charts/`
+- **Messaging**: `apps/client/src/screens/Messages.tsx`, `apps/client/src/services/api/messaging.ts`, `supabase/functions/conversations-home/`
 
 ### By Type
 
-- **All components**: `src/components/**/*.tsx`
-- **All hooks**: `src/hooks/*.ts`
-- **All screens**: `src/screens/*.tsx`
-- **All services**: `src/services/*.ts`
-
-### Common Patterns
-
-- **Feature hooks**: `use{FeatureName}.ts`
-- **Feature components**: `{FeatureName}Card.tsx`, `{FeatureName}List.tsx`
-- **Feature screens**: `{FeatureName}.tsx`, `{FeatureName}Detail.tsx`
+- **All components**: `apps/client/src/components/**/*.tsx`
+- **All hooks**: `apps/client/src/hooks/*.ts`
+- **All screens**: `apps/client/src/screens/*.tsx`
+- **All services**: `apps/client/src/services/**/*.ts`
+- **All Edge Functions**: `supabase/functions/*/index.ts`
 
 ## Further Reading
 
+- [Monorepo and Turborepo](./monorepo.md)
 - [Architecture Overview](./architecture.md)
 - [Component Library](./components.md)
 - [Database Schema](./database-schema.md)

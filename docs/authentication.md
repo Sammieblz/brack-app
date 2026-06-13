@@ -38,7 +38,7 @@ Render dashboard
 
 ### Supabase Configuration
 
-**Location**: `src/integrations/supabase/client.ts`
+**Location**: `apps/client/src/integrations/supabase/client.ts`
 
 ```typescript
 export const supabase = createClient<Database>(
@@ -209,7 +209,7 @@ subscription.unsubscribe();
 
 ## useAuth Hook
 
-**Location**: `src/hooks/useAuth.ts`
+**Location**: `apps/client/src/hooks/useAuth.ts`
 
 ### Usage
 
@@ -362,7 +362,7 @@ const { error } = await supabase.auth.resetPasswordForEmail(
 
 ### Update Password
 
-`src/screens/ResetPassword.tsx` handles Supabase recovery callback parameters, confirms an active recovery session, validates the new password, and updates the logged-in recovery user:
+`apps/client/src/screens/ResetPassword.tsx` handles Supabase recovery callback parameters, confirms an active recovery session, validates the new password, and updates the logged-in recovery user:
 
 ```typescript
 const { error } = await supabase.auth.updateUser({
@@ -511,7 +511,7 @@ try {
 
 ## Auth Screen
 
-**Location**: `src/screens/Auth.tsx`
+**Location**: `apps/client/src/screens/Auth.tsx`
 
 **Features**:
 - Email/password sign in

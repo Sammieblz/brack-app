@@ -5,7 +5,7 @@ Scope: ticket 4.1, dashboard render query paths and round trips.
 
 ## Dashboard Entry Points
 
-Primary screen: `src/screens/Dashboard.tsx`
+Primary screen: `apps/client/src/screens/Dashboard.tsx`
 
 Data hooks/services invoked on initial render:
 - `useBooks(user.id)`

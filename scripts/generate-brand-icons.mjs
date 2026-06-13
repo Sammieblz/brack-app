@@ -3,6 +3,7 @@ import path from "node:path";
 import sharp from "sharp";
 
 const ROOT = process.cwd();
+const CLIENT_PUBLIC = path.join(ROOT, "apps", "client", "public");
 const BRAND_ORANGE = "#F97316";
 const APP_ICON_SOURCE = path.join(
   ROOT,
@@ -165,7 +166,7 @@ const main = async () => {
   await Promise.all(
     WEBP_ICON_SIZES.map(async (size) => {
       await writeFile(
-        path.join(ROOT, "icons", `icon-${size}.webp`),
+        path.join(CLIENT_PUBLIC, "icons", `icon-${size}.webp`),
         await sharp(source)
           .resize(size, size, { fit: "cover", kernel: sharp.kernel.lanczos3 })
           .webp({ quality: 92 })

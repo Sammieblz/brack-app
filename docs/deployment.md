@@ -10,7 +10,7 @@ How to deploy Brack to production environments.
 npm run build
 ```
 
-This creates an optimized production build in the `dist/` directory.
+This runs `@brack/client#build` through Turborepo and creates an optimized production build in `apps/client/dist`.
 
 ### Deploy to Vercel
 
@@ -37,7 +37,7 @@ VITE_SENTRY_DSN (optional)
 ```json
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "dist",
+  "outputDirectory": "apps/client/dist",
   "framework": "vite"
 }
 ```
@@ -60,7 +60,7 @@ netlify deploy --prod
 ```toml
 [build]
   command = "npm run build"
-  publish = "dist"
+  publish = "apps/client/dist"
 
 [[redirects]]
   from = "/*"
@@ -75,7 +75,7 @@ netlify deploy --prod
 3. **Connect GitHub repository**
 4. **Configure build**:
    - Build command: `npm run build`
-   - Build output: `dist`
+   - Build output: `apps/client/dist`
 5. **Set environment variables**
 6. **Deploy**
 
@@ -89,7 +89,7 @@ The app is automatically configured as a PWA:
 - ✅ App manifest
 - ✅ Icons (192x192, 512x512)
 
-**Configuration**: `vite.config.ts` - VitePWA plugin
+**Configuration**: `apps/client/vite.config.ts` - VitePWA plugin
 
 ## Mobile Deployment
 
@@ -98,14 +98,11 @@ The app is automatically configured as a PWA:
 #### 1. Prepare Build
 
 ```bash
-# Build web assets
-npm run build
-
-# Sync to iOS
-npx cap sync ios
+# Build web assets and sync to iOS
+npm run cap:sync:ios
 
 # Open Xcode
-npx cap open ios
+npm run cap:open:ios
 ```
 
 #### 2. Configure in Xcode
@@ -152,14 +149,11 @@ npx cap open ios
 #### 1. Prepare Build
 
 ```bash
-# Build web assets
-npm run build
-
-# Sync to Android
-npx cap sync android
+# Build web assets and sync to Android
+npm run cap:sync:android
 
 # Open Android Studio
-npx cap open android
+npm run cap:open:android
 ```
 
 #### 2. Configure in Android Studio
@@ -272,7 +266,23 @@ Function JWT settings are controlled in `supabase/config.toml`. The current inte
 - `search-books`: `verify_jwt = false` because it is public book search.
 - All other functions: `verify_jwt = true`.
 
-After deployment, verify remote drift with the Supabase dashboard, MCP, or CLI before relying on protected user data.
+After deployment, verify remote drift with the Supabase dashboard, MCP, or CLI before relying on protected user data. As of June 13, 2026, the direct-message Edge Functions are deployed to project `waftnaqgkcgufzapcihe` and the `modern_direct_messaging` migration has been applied remotely.
+
+Messaging functions that must stay deployed together:
+
+- `conversations-home`
+- `conversation-detail`
+- `get-or-create-conversation`
+- `send-message`
+- `mark-conversation-read`
+- `toggle-message-reaction`
+- `update-conversation-settings`
+- `delete-message`
+- `search-message-gifs`
+
+If messaging functions return 404, deploy the missing function. If they return 500 after deployment, verify the remote database has `conversation_reads`, `conversation_user_settings`, `message_media`, `message_reactions`, the modern `messages` columns, and the private `message-media` bucket.
+
+`search-books` uses Google Books first and falls back to Open Library when Google returns 403, 429, or 5xx. `GOOGLE_BOOKS_API_KEY` is optional but recommended to reduce upstream quota failures.
 
 The legacy 2025 functions (`get-book-details`, `update-reading-progress`, `daily-summary`) were removed from the remote project on May 5, 2026 after confirming there are no local consumers.
 
@@ -339,13 +349,13 @@ Brack uses GitHub Actions for continuous integration. The CI pipeline automatica
 
 ### Pipeline Overview
 
-The CI pipeline consists of 6 jobs that run quality checks and validate builds:
+The CI pipeline consists of 6 jobs that run quality checks and validate builds through npm and Turborepo:
 
-1. **Quality Checks** - ESLint and TypeScript validation
-2. **Build Web** - Production web build validation
-3. **Validate Android** - Capacitor Android sync validation
-4. **Validate iOS** - Capacitor iOS sync validation
-5. **Build Desktop** - Electron desktop artifact builds for Windows, Linux, and macOS
+1. **Quality Checks** - Turbo-backed ESLint and TypeScript validation
+2. **Build Web** - Turbo-backed production client build validation
+3. **Validate Android** - Turbo-backed Capacitor Android sync validation
+4. **Validate iOS** - Turbo-backed Capacitor iOS sync validation
+5. **Build Desktop** - Turbo-backed Electron desktop artifact builds for Windows, Linux, and macOS
 6. **Tests** - Test execution (disabled until tests are added)
 
 ### Workflow File
@@ -364,10 +374,10 @@ The CI pipeline is defined in `.github/workflows/ci.yml`:
 
 **Steps**:
 1. Checkout code
-2. Setup Node.js 18 with npm caching
+2. Setup Node.js 20 with npm caching
 3. Install dependencies (`npm ci`)
 4. Run ESLint (`npm run lint`)
-5. Run TypeScript type check (`npx tsc --noEmit`)
+5. Run TypeScript type check (`npm run check-types`)
 
 **Purpose**: Catch code quality issues and type errors before merging.
 
@@ -377,10 +387,10 @@ The CI pipeline is defined in `.github/workflows/ci.yml`:
 
 **Steps**:
 1. Checkout code
-2. Setup Node.js 18 with npm caching
+2. Setup Node.js 20 with npm caching
 3. Install dependencies
 4. Build web app (`npm run build`)
-5. Validate `dist/` output exists and contains expected files
+5. Validate `apps/client/dist` output exists and contains expected files
 
 **Purpose**: Ensure production build succeeds and generates expected output.
 
@@ -392,14 +402,13 @@ The CI pipeline is defined in `.github/workflows/ci.yml`:
 
 **Steps**:
 1. Checkout code
-2. Setup Node.js 18
+2. Setup Node.js 20
 3. Setup Java 17 (required for Android)
 4. Cache Gradle dependencies
 5. Install npm dependencies
-6. Build web app (prerequisite for Capacitor)
-7. Sync Capacitor Android (`npx cap sync android`)
-8. Validate Android project structure
-9. Validate Gradle setup
+6. Sync Capacitor Android (`npm run cap:sync:android`), which builds `@brack/client` first through Turbo
+7. Validate Android project structure
+8. Validate Gradle setup
 
 **Purpose**: Ensure Android project can be synced and is properly configured.
 
@@ -411,13 +420,12 @@ The CI pipeline is defined in `.github/workflows/ci.yml`:
 
 **Steps**:
 1. Checkout code
-2. Setup Node.js 18
-3. Install CocoaPods dependencies
-4. Cache CocoaPods
-5. Install npm dependencies
-6. Build web app (prerequisite for Capacitor)
-7. Sync Capacitor iOS (`npx cap sync ios`)
-8. Validate iOS project structure
+2. Setup Node.js 20
+3. Install npm dependencies
+4. Sync Capacitor iOS (`npm run cap:sync:ios`), which builds `@brack/client` first through Turbo
+5. Cache CocoaPods
+6. Install CocoaPods dependencies
+7. Validate iOS project structure
 
 **Purpose**: Ensure iOS project can be synced and is properly configured.
 
@@ -459,10 +467,11 @@ The CI matrix maps each platform to an explicit script:
 The pipeline uses aggressive caching to speed up builds:
 
 - **npm dependencies**: Cached using `actions/setup-node@v4` with `cache: 'npm'`
+- **Turborepo**: Cached using `actions/cache@v4` at `.turbo/cache`
 - **Gradle dependencies**: Cached in `~/.gradle/caches` (Android job)
 - **CocoaPods**: Cached in `ios/App/Pods` (iOS job)
 
-Cache keys are based on dependency lock files (`package-lock.json`, `Podfile.lock`, Gradle files).
+Dependency cache keys are based on lock/config files (`package-lock.json`, `Podfile.lock`, Gradle files). Turbo cache keys use the runner OS plus the Git SHA with OS-level restore keys.
 
 ### Viewing CI Results
 
@@ -484,7 +493,7 @@ npm run lint -- --fix  # Auto-fix where possible
 **TypeScript Errors**:
 ```bash
 # Check types locally
-npx tsc --noEmit
+npm run check-types
 ```
 
 **Build Failures**:
@@ -496,15 +505,13 @@ npm run build
 **Android Sync Failures**:
 ```bash
 # Test locally
-npm run build
-npx cap sync android
+npm run cap:sync:android
 ```
 
 **iOS Sync Failures**:
 ```bash
 # Test locally (macOS only)
-npm run build
-npx cap sync ios
+npm run cap:sync:ios
 ```
 
 #### Viewing Logs
@@ -584,7 +591,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
       - run: npm ci
       - run: npm run build
       - run: npm run deploy  # Configure based on hosting
@@ -610,7 +617,7 @@ jobs:
    ```env
    VITE_SENTRY_DSN=https://...@sentry.io/...
    ```
-4. Errors automatically tracked (configured in `src/lib/sentry.ts`)
+4. Errors automatically tracked (configured in `apps/client/src/lib/sentry.ts`)
 
 ### Supabase Monitoring
 
@@ -733,7 +740,7 @@ android {
 
 ```bash
 # Clean install
-rm -rf node_modules package-lock.json dist
+rm -rf node_modules package-lock.json apps/client/dist apps/desktop/dist .turbo
 npm install
 npm run build
 ```
@@ -746,7 +753,7 @@ cd ios/App
 pod deintegrate
 pod install
 cd ../..
-npx cap sync ios
+npm run cap:sync:ios
 ```
 
 **Android**:
@@ -754,7 +761,7 @@ npx cap sync ios
 cd android
 ./gradlew clean
 cd ..
-npx cap sync android
+npm run cap:sync:android
 ```
 
 ### Function Deployment Fails

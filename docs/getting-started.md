@@ -6,7 +6,7 @@ This guide will help you set up Brack for local development.
 
 ### Required Software
 
-- **Node.js** 18+ and npm
+- **Node.js** 20+ and npm 11.3.0
 - **Git**
 - **Supabase Account** (free tier works)
 
@@ -42,6 +42,8 @@ cd brack-app
 ```bash
 npm install
 ```
+
+Brack uses npm workspaces and Turborepo. Run package commands from the repository root unless a doc explicitly names a workspace path. See [Monorepo and Turborepo](./monorepo.md) for workspace ownership and task graph details.
 
 ### 3. Environment Variables
 
@@ -108,6 +110,8 @@ npm run dev
 
 The app will be available at `http://localhost:8080`
 
+`npm run dev` runs `turbo run dev --filter=@brack/client`, so the Vite server starts from `apps/client`.
+
 ## Desktop Development Setup
 
 Run the Electron desktop shell with Vite:
@@ -145,13 +149,12 @@ sudo gem install cocoapods
 
 2. Build and sync:
 ```bash
-npm run build
-npx cap sync ios
+npm run cap:sync:ios
 ```
 
 3. Open in Xcode:
 ```bash
-npx cap open ios
+npm run cap:open:ios
 ```
 
 4. Configure signing in Xcode:
@@ -167,13 +170,12 @@ npx cap open ios
 
 3. Build and sync:
 ```bash
-npm run build
-npx cap sync android
+npm run cap:sync:android
 ```
 
 4. Open in Android Studio:
 ```bash
-npx cap open android
+npm run cap:open:android
 ```
 
 5. Add `google-services.json` for Firebase (push notifications):
@@ -245,7 +247,7 @@ npx supabase db reset --seed
 
 ### Port Already in Use
 
-If port 8080 is in use, change it in `vite.config.ts`:
+If port 8080 is in use, change it in `apps/client/vite.config.ts`:
 
 ```typescript
 server: {
@@ -287,12 +289,12 @@ npm run lint
 # 4. Build for production
 npm run build
 
-# 5. Sync to mobile (after build)
-npx cap sync
+# 5. Sync to mobile (build runs first through Turbo)
+npm run cap:sync
 
 # 6. Open native IDE
-npx cap open ios
-npx cap open android
+npm run cap:open:ios
+npm run cap:open:android
 ```
 
 ## Useful Commands
@@ -302,12 +304,16 @@ npx cap open android
 npm run dev              # Start dev server
 npm run build           # Production build
 npm run build:dev       # Development build
+npm run check-types     # Typecheck all workspaces
 npm run preview         # Preview production build
 
 # Mobile
 npm run cap:sync        # Build & sync to native
 npm run cap:open:ios    # Open Xcode
 npm run cap:open:android # Open Android Studio
+
+# Turborepo
+npx turbo run build check-types --dry=json # Inspect selected tasks and dependencies
 
 # Linting
 npm run lint            # Run ESLint

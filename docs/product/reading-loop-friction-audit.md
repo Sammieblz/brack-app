@@ -7,12 +7,12 @@ Scope: ticket 10.1, add/import, start reading, finish reading, progress, and res
 
 | Flow | Primary files | Notes |
 | --- | --- | --- |
-| Add book | `src/screens/AddBook.tsx`, `src/components/BookSearch.tsx` | Search, quick add, and manual tabs share the same destination. |
-| Scan/import book | `src/screens/ScanBarcode.tsx`, `src/screens/ScanCover.tsx` | Barcode routes to ISBN prefill; cover OCR routes to search query. |
-| Resume current book | `src/screens/Dashboard.tsx`, `src/hooks/useDashboardHomeData.ts` | Dashboard continue section selects recent/current candidates. |
-| Start reading | `src/screens/BookDetail.tsx`, `src/contexts/TimerContext.tsx` | Timer starts from book detail and shared header timer surfaces. |
-| Finish reading | `src/contexts/TimerContext.tsx` | Finish writes session and can trigger journal prompt for 5+ minute sessions. |
-| Update progress | `src/components/ProgressLogger.tsx`, `src/components/QuickProgressWidget.tsx` | Full logger creates a progress log; quick update only updates book state. |
+| Add book | `apps/client/src/screens/AddBook.tsx`, `apps/client/src/components/BookSearch.tsx` | Search, quick add, and manual tabs share the same destination. |
+| Scan/import book | `apps/client/src/screens/ScanBarcode.tsx`, `apps/client/src/screens/ScanCover.tsx` | Barcode routes to ISBN prefill; cover OCR routes to search query. |
+| Resume current book | `apps/client/src/screens/Dashboard.tsx`, `apps/client/src/hooks/useDashboardHomeData.ts` | Dashboard continue section selects recent/current candidates. |
+| Start reading | `apps/client/src/screens/BookDetail.tsx`, `apps/client/src/contexts/TimerContext.tsx` | Timer starts from book detail and shared header timer surfaces. |
+| Finish reading | `apps/client/src/contexts/TimerContext.tsx` | Finish writes session and can trigger journal prompt for 5+ minute sessions. |
+| Update progress | `apps/client/src/components/ProgressLogger.tsx`, `apps/client/src/components/QuickProgressWidget.tsx` | Full logger creates a progress log; quick update only updates book state. |
 
 ## Findings
 

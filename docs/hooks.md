@@ -6,7 +6,7 @@ Complete reference for all custom hooks in Brack.
 
 ### useAuth
 
-**Location**: `src/hooks/useAuth.ts`
+**Location**: `apps/client/src/hooks/useAuth.ts`
 
 **Purpose**: User authentication state
 
@@ -21,7 +21,7 @@ const { user, loading, signOut } = useAuth();
 
 ### useBooks
 
-**Location**: `src/hooks/useBooks.ts`
+**Location**: `apps/client/src/hooks/useBooks.ts`
 
 **Purpose**: Fetch user's books with pagination and caching
 
@@ -36,7 +36,7 @@ const { books, loading, loadingMore, hasMore, loadMore, refetchBooks } = useBook
 
 ### useBookProgress
 
-**Location**: `src/hooks/useBookProgress.ts`
+**Location**: `apps/client/src/hooks/useBookProgress.ts`
 
 **Purpose**: Calculate book progress analytics
 
@@ -48,7 +48,7 @@ const { progress, loading, refetchProgress } = useBookProgress(bookId);
 
 ### useProgressLogs
 
-**Location**: `src/hooks/useProgressLogs.ts`
+**Location**: `apps/client/src/hooks/useProgressLogs.ts`
 
 **Purpose**: Fetch progress log history
 
@@ -58,7 +58,7 @@ const { logs, loading, refetchLogs } = useProgressLogs(bookId);
 
 ### useJournalEntries
 
-**Location**: `src/hooks/useJournalEntries.ts`
+**Location**: `apps/client/src/hooks/useJournalEntries.ts`
 
 **Purpose**: CRUD operations for journal entries
 
@@ -75,7 +75,7 @@ const { entries, loading, addEntry, updateEntry, deleteEntry, refetchEntries } =
 
 ### useReviews
 
-**Location**: `src/hooks/useReviews.ts`
+**Location**: `apps/client/src/hooks/useReviews.ts`
 
 **Purpose**: Book reviews with user interaction
 
@@ -85,7 +85,7 @@ const { reviews, averageRating, userHasReviewed, loading, refetch } = useReviews
 
 ### usePosts
 
-**Location**: `src/hooks/usePosts.ts`
+**Location**: `apps/client/src/hooks/usePosts.ts`
 
 **Purpose**: Social feed posts
 
@@ -100,7 +100,7 @@ const { posts, loading, refetchPosts, toggleLike } = usePosts();
 
 ### useGoals
 
-**Location**: `src/hooks/useGoals.ts`
+**Location**: `apps/client/src/hooks/useGoals.ts`
 
 **Purpose**: Reading goals management
 
@@ -111,7 +111,7 @@ const { goals, activeGoals, loading, createGoal, updateGoal, deleteGoal, complet
 
 ### useStreaks
 
-**Location**: `src/hooks/useStreaks.ts`
+**Location**: `apps/client/src/hooks/useStreaks.ts`
 
 **Purpose**: Reading streak tracking
 
@@ -127,7 +127,7 @@ const { streakData, activityCalendar, loading, refetchStreaks, useStreakFreeze }
 
 ### useBadges
 
-**Location**: `src/hooks/useBadges.ts`
+**Location**: `apps/client/src/hooks/useBadges.ts`
 
 **Purpose**: Achievement badge system
 
@@ -137,7 +137,7 @@ const { badges, userBadges, loading, checkAndAwardBadges } = useBadges(userId);
 
 ### useBookClubs
 
-**Location**: `src/hooks/useBookClubs.ts`
+**Location**: `apps/client/src/hooks/useBookClubs.ts`
 
 **Purpose**: Book club management
 
@@ -150,7 +150,7 @@ const { clubs, loading, createClub, joinClub, leaveClub, updateClub, deleteClub 
 
 ### usePlatform
 
-**Location**: `src/hooks/usePlatform.ts`
+**Location**: `apps/client/src/hooks/usePlatform.ts`
 
 **Purpose**: Detect current platform
 
@@ -160,7 +160,7 @@ const { platform, isNative, isIOS, isAndroid, isWeb } = usePlatform();
 
 ### useNativeApp
 
-**Location**: `src/hooks/useNativeApp.ts`
+**Location**: `apps/client/src/hooks/useNativeApp.ts`
 
 **Purpose**: Detect if running in native app
 
@@ -170,7 +170,7 @@ const isNative = useNativeApp();
 
 ### use-mobile
 
-**Location**: `src/hooks/use-mobile.tsx`
+**Location**: `apps/client/src/hooks/use-mobile.tsx`
 
 **Purpose**: Detect mobile viewport (responsive design)
 
@@ -184,7 +184,7 @@ const isMobile = useIsMobile();
 
 ### useBarcodeScanner
 
-**Location**: `src/hooks/useBarcodeScanner.ts`
+**Location**: `apps/client/src/hooks/useBarcodeScanner.ts`
 
 **Purpose**: Scan ISBN barcodes
 
@@ -204,7 +204,7 @@ const handleScan = async () => {
 
 ### useCoverScanner
 
-**Location**: `src/hooks/useCoverScanner.ts`
+**Location**: `apps/client/src/hooks/useCoverScanner.ts`
 
 **Purpose**: Scan book cover with OCR
 
@@ -223,7 +223,7 @@ const handleScanCover = async () => {
 
 ### useImagePicker
 
-**Location**: `src/hooks/useImagePicker.ts`
+**Location**: `apps/client/src/hooks/useImagePicker.ts`
 
 **Purpose**: Select/capture images
 
@@ -240,7 +240,7 @@ const handleSelectImage = async () => {
 
 ### useHapticFeedback
 
-**Location**: `src/hooks/useHapticFeedback.ts`
+**Location**: `apps/client/src/hooks/useHapticFeedback.ts`
 
 **Purpose**: Trigger haptic feedback
 
@@ -252,7 +252,7 @@ triggerHaptic('success'); // or 'warning', 'error', 'light', 'medium', 'heavy'
 
 ### usePushNotifications
 
-**Location**: `src/hooks/usePushNotifications.ts`
+**Location**: `apps/client/src/hooks/usePushNotifications.ts`
 
 **Purpose**: Manage push notifications
 
@@ -264,7 +264,7 @@ const { isRegistered, token, register, unregister, error } = usePushNotification
 
 ### useNetworkStatus
 
-**Location**: `src/hooks/useNetworkStatus.ts`
+**Location**: `apps/client/src/hooks/useNetworkStatus.ts`
 
 **Purpose**: Monitor online/offline status
 
@@ -284,7 +284,7 @@ if (!isOnline) {
 
 ### use-toast
 
-**Location**: `src/hooks/use-toast.ts`
+**Location**: `apps/client/src/hooks/use-toast.ts`
 
 **Purpose**: Show toast notifications
 
@@ -305,7 +305,7 @@ toast({
 
 ### useScrollDirection
 
-**Location**: `src/hooks/useScrollDirection.ts`
+**Location**: `apps/client/src/hooks/useScrollDirection.ts`
 
 **Purpose**: Detect scroll direction (up/down)
 
@@ -317,7 +317,7 @@ const scrollDirection = useScrollDirection();
 
 ### useLongPress
 
-**Location**: `src/hooks/useLongPress.ts`
+**Location**: `apps/client/src/hooks/useLongPress.ts`
 
 **Purpose**: Detect long press gestures
 
@@ -331,7 +331,7 @@ const longPressHandlers = useLongPress(() => {
 
 ### useSwipeBack
 
-**Location**: `src/hooks/useSwipeBack.ts`
+**Location**: `apps/client/src/hooks/useSwipeBack.ts`
 
 **Purpose**: iOS-style swipe back gesture
 
@@ -345,7 +345,7 @@ const swipeHandlers = useSwipeBack(() => {
 
 ### usePullToDismiss
 
-**Location**: `src/hooks/usePullToDismiss.ts`
+**Location**: `apps/client/src/hooks/usePullToDismiss.ts`
 
 **Purpose**: Pull down to dismiss modals
 
@@ -357,7 +357,7 @@ const pullHandlers = usePullToDismiss(onDismiss, threshold);
 
 ### useInfiniteScroll
 
-**Location**: `src/hooks/useInfiniteScroll.ts`
+**Location**: `apps/client/src/hooks/useInfiniteScroll.ts`
 
 **Purpose**: Infinite scroll with Intersection Observer
 
@@ -375,7 +375,7 @@ const loadMoreRef = useInfiniteScroll({
 
 ### useVirtualBooks
 
-**Location**: `src/hooks/useVirtualBooks.ts`
+**Location**: `apps/client/src/hooks/useVirtualBooks.ts`
 
 **Purpose**: Virtual scrolling for large book lists
 
@@ -387,7 +387,7 @@ const { virtualizer, items } = useVirtualBooks(books);
 
 ### useRecentSearches
 
-**Location**: `src/hooks/useRecentSearches.ts`
+**Location**: `apps/client/src/hooks/useRecentSearches.ts`
 
 **Purpose**: Manage search history
 
@@ -399,7 +399,7 @@ const { recentSearches, addSearch, clearSearches } = useRecentSearches();
 
 ### useTypingIndicator
 
-**Location**: `src/hooks/useTypingIndicator.ts`
+**Location**: `apps/client/src/hooks/useTypingIndicator.ts`
 
 **Purpose**: Show when user is typing (messages)
 
@@ -411,7 +411,7 @@ const { isTyping, startTyping, stopTyping } = useTypingIndicator(conversationId)
 
 ### useChartData
 
-**Location**: `src/hooks/useChartData.ts`
+**Location**: `apps/client/src/hooks/useChartData.ts`
 
 **Purpose**: Fetch weekly reading chart data
 
@@ -421,7 +421,7 @@ const { weeklyReading, loading } = useChartData(userId);
 
 ### useMonthlyStats
 
-**Location**: `src/hooks/useMonthlyStats.ts`
+**Location**: `apps/client/src/hooks/useMonthlyStats.ts`
 
 **Purpose**: Monthly reading statistics
 
@@ -431,7 +431,7 @@ const { stats, loading, refetch } = useMonthlyStats(userId, month, year);
 
 ### useProgressTracking
 
-**Location**: `src/hooks/useProgressTracking.ts`
+**Location**: `apps/client/src/hooks/useProgressTracking.ts`
 
 **Purpose**: Detailed progress tracking data
 
@@ -444,7 +444,7 @@ const { dailyProgress, velocityData, forecastData, loading, refetch } =
 
 ### useFollowing
 
-**Location**: `src/hooks/useFollowing.ts`
+**Location**: `apps/client/src/hooks/useFollowing.ts`
 
 **Purpose**: Follow/unfollow users
 
@@ -454,7 +454,7 @@ const { following, followers, isFollowing, toggleFollow, loading } = useFollowin
 
 ### useConversations
 
-**Location**: `src/hooks/useConversations.ts`
+**Location**: `apps/client/src/hooks/useConversations.ts`
 
 **Purpose**: Direct message conversations
 
@@ -464,7 +464,7 @@ const { conversations, loading, getOrCreateConversation } = useConversations();
 
 ### useMessages
 
-**Location**: `src/hooks/useMessages.ts`
+**Location**: `apps/client/src/hooks/useMessages.ts`
 
 **Purpose**: Messages in a conversation
 
@@ -474,7 +474,7 @@ const { messages, loading, sendMessage, markAsRead } = useMessages(conversationI
 
 ### useSocialFeed
 
-**Location**: `src/hooks/useSocialFeed.ts`
+**Location**: `apps/client/src/hooks/useSocialFeed.ts`
 
 **Purpose**: Aggregated social feed
 
@@ -484,7 +484,7 @@ const { feed, loading, refetch } = useSocialFeed(userId);
 
 ### useRecentActivity
 
-**Location**: `src/hooks/useRecentActivity.ts`
+**Location**: `apps/client/src/hooks/useRecentActivity.ts`
 
 **Purpose**: User's recent activity
 
@@ -494,7 +494,7 @@ const { activities, loading, formatTimeAgo } = useRecentActivity(userId);
 
 ### useUserSearch
 
-**Location**: `src/hooks/useUserSearch.ts`
+**Location**: `apps/client/src/hooks/useUserSearch.ts`
 
 **Purpose**: Search for users
 

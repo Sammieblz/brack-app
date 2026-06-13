@@ -4,7 +4,7 @@ Complete guide to Brack's native mobile capabilities powered by Capacitor.
 
 ## Overview
 
-Brack uses Capacitor 7 to provide native mobile functionality while maintaining a unified web codebase.
+Brack uses Capacitor 7 to provide native mobile functionality while maintaining a unified web codebase. Capacitor config lives in `apps/mobile/capacitor.config.ts`; the native `android/` and `ios/` projects intentionally remain at the repository root.
 
 **Supported Platforms**:
 - iOS 13+
@@ -29,15 +29,12 @@ Brack uses Capacitor 7 to provide native mobile functionality while maintaining 
 ### Initial Setup
 
 ```bash
-# Build web assets
-npm run build
-
-# Sync to native projects
-npx cap sync
+# Build web assets and sync to native projects
+npm run cap:sync
 
 # Open native IDEs
-npx cap open ios      # macOS only
-npx cap open android
+npm run cap:open:ios      # macOS only
+npm run cap:open:android
 ```
 
 ## Available Features
@@ -111,7 +108,7 @@ const handleScan = async () => {
 };
 ```
 
-**Screen**: `src/screens/ScanBarcode.tsx`
+**Screen**: `apps/client/src/screens/ScanBarcode.tsx`
 
 ### 3. Cover Recognition (OCR)
 
@@ -140,7 +137,7 @@ const handleScanCover = async () => {
 };
 ```
 
-**Screen**: `src/screens/ScanCover.tsx`
+**Screen**: `apps/client/src/screens/ScanCover.tsx`
 
 ### 4. Push Notifications
 
@@ -182,7 +179,7 @@ useEffect(() => {
 }, []);
 ```
 
-**Service**: `src/services/pushNotifications.ts`
+**Service**: `apps/client/src/services/pushNotifications.ts`
 
 ### 5. Local Notifications
 
@@ -236,7 +233,7 @@ const { triggerHaptic } = useHapticFeedback();
 triggerHaptic('success'); // or 'warning', 'error', 'light', 'medium', 'heavy'
 ```
 
-**Hook**: `src/hooks/useHapticFeedback.ts`
+**Hook**: `apps/client/src/hooks/useHapticFeedback.ts`
 
 ### 7. Share
 
@@ -268,7 +265,7 @@ await shareService.shareReadingStats({
 });
 ```
 
-**Service**: `src/services/shareService.ts`
+**Service**: `apps/client/src/services/shareService.ts`
 
 ### 8. Network Status
 
@@ -292,7 +289,7 @@ if (!isOnline) {
 }
 ```
 
-**Hook**: `src/hooks/useNetworkStatus.ts`
+**Hook**: `apps/client/src/hooks/useNetworkStatus.ts`
 
 ### 9. Filesystem
 
@@ -319,7 +316,7 @@ const cachedImage = await imageCache.get('book-cover-123');
 await imageCache.cleanup();
 ```
 
-**Service**: `src/services/imageCache.ts`
+**Service**: `apps/client/src/services/imageCache.ts`
 
 ### 10. Device Information
 
@@ -346,7 +343,7 @@ if (isNative) {
 }
 ```
 
-**Hook**: `src/hooks/usePlatform.ts`
+**Hook**: `apps/client/src/hooks/usePlatform.ts`
 
 ### 11. App Lifecycle
 
@@ -374,9 +371,9 @@ App.addListener('appStateChange', ({ isActive }) => {
 ```
 
 **Used in**: 
-- `src/contexts/TimerContext.tsx` - Timer persistence
-- `src/services/syncService.ts` - Background sync
-- `src/services/deepLinkService.ts` - Deep links
+- `apps/client/src/contexts/TimerContext.tsx` - Timer persistence
+- `apps/client/src/services/syncService.ts` - Background sync
+- `apps/client/src/services/deepLinkService.ts` - Deep links
 
 ## App Icons
 
@@ -387,7 +384,7 @@ Capacitor launcher icons use the fixed Brack `B` mark on the orange app field:
 - Android legacy launcher icons: `android/app/src/main/res/mipmap-*/ic_launcher.png` and `ic_launcher_round.png`
 - Reusable source layers: `assets/icon-only.png`, `assets/icon-background.png`, and `assets/icon-foreground.png`
 
-Run `npm run brand:icons` after changing Brack app icon artwork. Android adaptive icons include a monochrome layer through `ic_launcher_foreground` for themed launcher support. Runtime UI logos remain theme-aware through `src/components/ThemeAwareLogo.tsx`.
+Run `npm run brand:icons` after changing Brack app icon artwork. Android adaptive icons include a monochrome layer through `ic_launcher_foreground` for themed launcher support. Runtime UI logos remain theme-aware through `apps/client/src/components/ThemeAwareLogo.tsx`.
 
 ## Deep Linking
 
@@ -428,8 +425,8 @@ Android (`AndroidManifest.xml`):
 ```
 
 **Services**:
-- `src/services/deepLinkService.ts` routes content deep links and forwards auth callbacks.
-- `src/components/DeepLinkHandler.tsx` completes `brack://auth/callback` and `brack://auth/reset-password` by exchanging the Supabase code/session and routing to onboarding, dashboard, or password reset.
+- `apps/client/src/services/deepLinkService.ts` routes content deep links and forwards auth callbacks.
+- `apps/client/src/components/DeepLinkHandler.tsx` completes `brack://auth/callback` and `brack://auth/reset-password` by exchanging the Supabase code/session and routing to onboarding, dashboard, or password reset.
 - `@capacitor/browser` opens OAuth providers outside the WebView and closes on return where supported.
 
 ## Offline Support
@@ -547,7 +544,7 @@ const throttledScroll = throttle(onScroll, 100);
 ### iOS Simulator
 
 ```bash
-npx cap run ios
+npm --workspace @brack/mobile exec cap run ios
 ```
 
 **Limitations**:
@@ -559,7 +556,7 @@ npx cap run ios
 ### Android Emulator
 
 ```bash
-npx cap run android
+npm --workspace @brack/mobile exec cap run android
 ```
 
 **Limitations**:
@@ -612,7 +609,7 @@ sdk.dir=/Users/username/Library/Android/sdk
 ### Runtime Errors
 
 **"Plugin not available"**:
-- Solution: Run `npx cap sync` after adding plugins
+- Solution: Run `npm run cap:sync` after adding plugins
 
 **"Permission denied"**:
 - Solution: Check permissions in Info.plist (iOS) or AndroidManifest.xml (Android)

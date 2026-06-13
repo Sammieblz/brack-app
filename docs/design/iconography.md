@@ -4,7 +4,7 @@ Brack uses icons as functional signals, not decoration.
 
 ## Source
 
-- Use `iconoir-react` through `src/config/iconography.ts` for semantic app surfaces.
+- Use `iconoir-react` through `apps/client/src/config/iconography.ts` for semantic app surfaces.
 - Use `AppIcon` for app-level icon treatment.
 - Direct icon imports are acceptable only in low-level UI primitives or highly local universal controls.
 

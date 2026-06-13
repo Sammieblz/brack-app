@@ -4,13 +4,15 @@ Brack now has an Electron desktop target in addition to the web/PWA and Capacito
 
 ## Runtime Model
 
-- Renderer: the existing Vite/React app in `src/`.
-- Desktop shell: Electron main/preload code in `desktop/`.
+- Renderer: the shared Vite/React app in `apps/client/src/`.
+- Desktop shell: Electron main/preload code in `apps/desktop/src/`.
+- Desktop build output: `apps/desktop/dist/`.
+- Packaged renderer files: copied from `apps/client/dist` into app-root `dist/` by `electron-builder.yml`.
 - Bundled app protocol: `brack-app://brack/`.
 - Deep link protocol: `brack://`.
 - Auth callback URLs: `brack://auth/callback` and `brack://auth/reset-password`, shared with Capacitor mobile.
 
-The renderer must not import Node or Electron directly. Desktop-only capabilities are exposed through the typed `window.brackDesktop` preload bridge and consumed through app services such as `src/services/platform.ts` and `src/services/local/driver.ts`.
+The renderer must not import Node or Electron directly. Desktop-only capabilities are exposed through the typed `window.brackDesktop` preload bridge and consumed through app services such as `apps/client/src/services/platform.ts` and `apps/client/src/services/local/driver.ts`.
 
 ## Offline Storage
 
@@ -64,7 +66,7 @@ The source artwork is the Brack `B` mark on the orange app field. Regenerate des
 npm run brand:icons
 ```
 
-In-app logos remain theme-aware through `src/components/ThemeAwareLogo.tsx`; packaged app icons stay fixed so they remain legible in light and dark operating-system launchers.
+In-app logos remain theme-aware through `apps/client/src/components/ThemeAwareLogo.tsx`; packaged app icons stay fixed so they remain legible in light and dark operating-system launchers.
 
 ## Packaging Targets
 

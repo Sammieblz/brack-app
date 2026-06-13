@@ -7,8 +7,8 @@ Scope: ticket 3.1, reading sessions, progress, streaks, goals, and journal write
 
 | Flow | Frontend entry | API/service path | Backend path | Writes | Hidden side effects |
 | --- | --- | --- | --- | --- | --- |
-| Add book by search/manual | `src/screens/AddBook.tsx` | `bookOperations.create` -> `addBookToLibrary` | `add-book` Edge Function -> `add_library_book` RPC | `books` | Duplicate policy uses ISBN first, then title+author when ISBN missing; soft-deleted match is restored. |
-| Add book offline | `src/screens/AddBook.tsx` | `bookOperations.create` | Local repo/outbox -> `sync-push` | Local `books`, later remote `books` | Duplicate conflict can surface during sync review. |
+| Add book by search/manual | `apps/client/src/screens/AddBook.tsx` | `bookOperations.create` -> `addBookToLibrary` | `add-book` Edge Function -> `add_library_book` RPC | `books` | Duplicate policy uses ISBN first, then title+author when ISBN missing; soft-deleted match is restored. |
+| Add book offline | `apps/client/src/screens/AddBook.tsx` | `bookOperations.create` | Local repo/outbox -> `sync-push` | Local `books`, later remote `books` | Duplicate conflict can surface during sync review. |
 | Start session | `BookDetail`, header timer surfaces | `TimerContext.startTimer` | Local browser state only | `localStorage` timer state | No database write until finish. |
 | Finish session online | `TimerContext.finishTimer` | `createReadingSession` | `create-reading-session` Edge Function -> `create_reading_session` -> `complete_reading_transaction` RPC | `reading_sessions`, `books`, `reading_streak_days`, `profiles`, `goals`, `social_activities`, `user_badges` | Status moves `to_read` to `reading`; streak and badge recalculation run; start/completion activity is deduped. |
 | Finish session offline | `TimerContext.finishTimer` | `sessionsRepo.createPending` | Local repo/outbox -> `sync-push` | Local `reading_sessions`, local `books`, later remote tables | Streak UI refreshes locally through event, then backend triggers catch up after sync. |
@@ -19,7 +19,7 @@ Scope: ticket 3.1, reading sessions, progress, streaks, goals, and journal write
 | Mark book complete | `BookDetail.handleStatusChange` | `updateBookStatus` -> `completeReading` or offline `bookOperations.update` | `complete-reading` Edge Function -> `complete_reading_transaction` RPC, or local outbox while offline | Online: `books`, `goals`, `social_activities`, `user_badges`, profile streak recalculation. Offline: local `books`, later sync. | Online completion is consolidated; offline explicit completion still syncs as a book update and does not add a synthetic session/progress row. |
 | Create journal entry | `useJournalEntries.addEntry` | `journalOperations.create` | Direct Supabase/local outbox | `journal_entries` | Calls `updateBookStatusIfNeeded`, which can mark a `to_read` book as `reading`. |
 | Update/delete journal | `useJournalEntries` | `journalOperations.update/delete` | Direct Supabase/local outbox | `journal_entries` soft delete | Does not affect streaks; hard cross-device delete consistency depends on tombstone sync. |
-| Create/update/delete goal | Goal screens/hooks | `src/services/api/goals.ts` | Direct Supabase/local outbox | `goals` soft delete | Goal progress is computed from books; no progress counter is stored. |
+| Create/update/delete goal | Goal screens/hooks | `apps/client/src/services/api/goals.ts` | Direct Supabase/local outbox | `goals` soft delete | Goal progress is computed from books; no progress counter is stored. |
 
 ## Duplicate or Hidden Writes
 

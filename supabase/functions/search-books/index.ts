@@ -27,6 +27,20 @@ interface GoogleBooksVolume {
   };
 }
 
+interface OpenLibraryDoc {
+  key?: string;
+  title?: string;
+  author_name?: string[];
+  first_publish_year?: number;
+  publisher?: string[];
+  isbn?: string[];
+  subject?: string[];
+  cover_i?: number;
+  number_of_pages_median?: number;
+  ratings_average?: number;
+  ratings_count?: number;
+}
+
 const limiterConfig = {
   name: "search-books",
   limit: 30, // requests
@@ -87,6 +101,66 @@ const normalizeGenre = (value?: string | null): string | null => {
   return aliases[normalized] || aliases[firstSegment] || "Other";
 };
 
+const searchOpenLibrary = async (query: string, maxResults: number) => {
+  const encodedQuery = encodeURIComponent(query);
+  const fields = [
+    "key",
+    "title",
+    "author_name",
+    "first_publish_year",
+    "publisher",
+    "isbn",
+    "subject",
+    "cover_i",
+    "number_of_pages_median",
+    "ratings_average",
+    "ratings_count",
+  ].join(",");
+  const apiUrl = `https://openlibrary.org/search.json?q=${encodedQuery}&limit=${maxResults}&fields=${fields}`;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+  try {
+    const response = await fetch(apiUrl, { signal: controller.signal });
+    if (!response.ok) {
+      throw new Error(`Open Library API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const docs = Array.isArray(data.docs) ? data.docs as OpenLibraryDoc[] : [];
+
+    return docs
+      .filter((doc) => doc.title)
+      .map((doc) => {
+        const sourceId = doc.key || doc.isbn?.[0] || doc.title || crypto.randomUUID();
+        return {
+          googleBooksId: sourceId,
+          source_provider: "open_library",
+          source_id: sourceId,
+          title: doc.title,
+          author: doc.author_name?.join(", ") || null,
+          isbn: doc.isbn?.[0] || null,
+          genre: normalizeGenre(doc.subject?.[0] || null),
+          pages: doc.number_of_pages_median || null,
+          chapters: null,
+          cover_url: doc.cover_i
+            ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`
+            : null,
+          description: null,
+          publisher: doc.publisher?.[0] || null,
+          published_date: doc.first_publish_year
+            ? String(doc.first_publish_year)
+            : null,
+          average_rating: doc.ratings_average || null,
+          ratings_count: doc.ratings_count || null,
+        };
+      });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
 serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
@@ -142,7 +216,16 @@ serve(async (req) => {
       clearTimeout(timeoutId);
 
     if (!response.ok) {
-      console.error("Google Books API error:", response.status, await response.text());
+      const googleError = await response.text();
+      console.error("Google Books API error:", response.status, googleError);
+
+      if (response.status === 403 || response.status === 429 || response.status >= 500) {
+        const books = await searchOpenLibrary(trimmedQuery, maxResultsLimit);
+        return new Response(JSON.stringify({ books, fallback_provider: "open_library" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       return new Response(
         JSON.stringify({ error: "Failed to search books" }),
         {

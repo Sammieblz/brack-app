@@ -1,6 +1,6 @@
 # Domain Map
 
-Source of truth: remote Supabase public schema inspected on 2026-05-05 plus current frontend API boundaries under `src/services/api/`.
+Source of truth: remote Supabase public schema inspected on 2026-05-05 plus current frontend API boundaries under `apps/client/src/services/api/`.
 
 ## Domain Boundaries
 
@@ -17,7 +17,7 @@ Source of truth: remote Supabase public schema inspected on 2026-05-05 plus curr
 
 ## Ownership Rules
 
-- Frontend code should call domain service modules in `src/services/api/*`; components should not add new ad hoc Supabase calls for shared behavior.
+- Frontend code should call domain service modules in `apps/client/src/services/api/*`; components should not add new ad hoc Supabase calls for shared behavior.
 - Edge Functions should wrap cross-table, privileged, external, or idempotent flows.
 - Database RPCs own transactional writes and derived read models.
 - Triggers are allowed for local invariant maintenance, counters, timestamp maintenance, and derived event rows, but new trigger side effects must be documented in `docs/schema/functions-and-triggers.md`.

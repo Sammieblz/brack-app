@@ -1,18 +1,23 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-  },
-  plugins: [
-    react(),
-    VitePWA({
+export default defineConfig(({ mode }) => {
+  const repoRoot = path.resolve(__dirname, "../..");
+  const env = loadEnv(mode, repoRoot, "");
+
+  return {
+    envDir: repoRoot,
+    server: {
+      host: "::",
+      port: 8080,
+    },
+    plugins: [
+      react(),
+      VitePWA({
       registerType: "autoUpdate",
       includeAssets: [
         "brack-favicon/favicon.ico",
@@ -56,7 +61,7 @@ export default defineConfig(({ mode }) => ({
             // Use environment variable or fallback pattern
             // Note: Replace hardcoded URL with VITE_SUPABASE_URL in production
             urlPattern: ({ url }) => {
-              const supabaseUrl = process.env.VITE_SUPABASE_URL;
+              const supabaseUrl = env.VITE_SUPABASE_URL;
               if (supabaseUrl) {
                 return url.href.startsWith(`${supabaseUrl}/storage/v1/object/public/`);
               }
@@ -92,41 +97,42 @@ export default defineConfig(({ mode }) => ({
         ],
       },
     }),
-    mode === 'development' &&
-    componentTagger(),
-  ].filter(Boolean),
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // Vendor chunks for better caching
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
-          'query-vendor': ['@tanstack/react-query', '@tanstack/react-query-persist-client'],
-          'supabase-vendor': ['@supabase/supabase-js'],
-          'apex-vendor': ['apexcharts', 'react-apexcharts'],
-          'animation-vendor': ['gsap', '@gsap/react', 'framer-motion'],
-        },
+      mode === 'development' &&
+      componentTagger(),
+    ].filter(Boolean),
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
       },
     },
-    // Optimize chunk size
-    chunkSizeWarningLimit: 1000,
-    // Enable source maps for production debugging (optional)
-    sourcemap: false,
-  },
-  // Optimize dependencies
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
-      '@supabase/supabase-js',
-      '@tanstack/react-query',
-    ],
-  },
-}));
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // Vendor chunks for better caching
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
+            'query-vendor': ['@tanstack/react-query', '@tanstack/react-query-persist-client'],
+            'supabase-vendor': ['@supabase/supabase-js'],
+            'apex-vendor': ['apexcharts', 'react-apexcharts'],
+            'animation-vendor': ['gsap', '@gsap/react', 'framer-motion'],
+          },
+        },
+      },
+      // Optimize chunk size
+      chunkSizeWarningLimit: 1000,
+      // Enable source maps for production debugging (optional)
+      sourcemap: false,
+    },
+    // Optimize dependencies
+    optimizeDeps: {
+      include: [
+        'react',
+        'react-dom',
+        'react-router-dom',
+        '@supabase/supabase-js',
+        '@tanstack/react-query',
+      ],
+    },
+  };
+});

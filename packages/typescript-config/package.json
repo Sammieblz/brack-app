@@ -1,0 +1,10 @@
+{
+  "name": "@brack/typescript-config",
+  "private": true,
+  "version": "0.0.0",
+  "exports": {
+    "./base.json": "./base.json",
+    "./client.json": "./client.json",
+    "./desktop.json": "./desktop.json"
+  }
+}

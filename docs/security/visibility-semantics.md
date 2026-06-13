@@ -61,7 +61,7 @@ Phase 4:
 
 ## API Rules
 
-- Frontend calls remain in `src/services/api/*`.
+- Frontend calls remain in `apps/client/src/services/api/*`.
 - RLS must be the final access-control layer.
 - Feed functions should pass through visibility decisions instead of widening access with service-role queries.
 - Any Edge Function that enriches rows should preserve the visibility rule of the root row.

@@ -60,7 +60,7 @@ This document describes the high-level architecture and design patterns used in 
 
 ### 1. Presentation Layer (Components)
 
-**Location**: `src/components/`, `src/screens/`
+**Location**: `apps/client/src/components/`, `apps/client/src/screens/`
 
 **Responsibilities**:
 - Render UI based on state
@@ -88,7 +88,7 @@ function BookDetail() {
 
 ### 2. Business Logic Layer (Hooks)
 
-**Location**: `src/hooks/`
+**Location**: `apps/client/src/hooks/`
 
 **Responsibilities**:
 - Data fetching and mutations
@@ -115,7 +115,7 @@ function useBook(bookId: string) {
 
 ### 3. Data Layer (Services)
 
-**Location**: `src/services/`
+**Location**: `apps/client/src/services/`
 
 **Responsibilities**:
 - API communication
@@ -466,7 +466,7 @@ Asset Optimization
     ↓
 PWA Service Worker
     ↓
-dist/ Directory
+apps/client/dist
     ↓
 Deploy to Hosting
 ```
@@ -474,11 +474,11 @@ Deploy to Hosting
 ### Mobile Build
 
 ```
-npm run build
+npm run cap:sync
     ↓
-npx cap sync
+Build @brack/client, then sync from apps/mobile
     ↓
-Copy to Native Projects
+Copy to root native projects
     ↓
 Open in Xcode/Android Studio
     ↓
@@ -486,6 +486,8 @@ Build Native App
     ↓
 Submit to App Stores
 ```
+
+`npm run cap:sync` is a root Turbo-backed script. The client build runs in `apps/client`; Capacitor sync runs from `apps/mobile` and copies built web assets into the root `android/` and `ios/` projects.
 
 ## Scalability Considerations
 
