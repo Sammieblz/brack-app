@@ -44,15 +44,15 @@ The old localStorage-only `offlineQueue` service has been replaced by durable lo
 
 | Area | Files |
 | --- | --- |
-| Local driver | `src/services/local/driver.ts` |
-| Local repositories | `src/services/local/repositories.ts`, `src/services/local/index.ts` |
-| Sync engine | `src/services/sync/engine.ts` |
-| Sync types | `src/services/sync/types.ts` |
-| Sync API wrappers | `src/services/api/sync.ts` |
-| App sync facade | `src/services/syncService.ts` |
-| Offline wrappers | `src/utils/offlineOperation.ts` |
-| Status UI | `src/components/OfflineIndicator.tsx` |
-| Failed sync review | `src/components/SyncReviewDialog.tsx` |
+| Local driver | `apps/client/src/services/local/driver.ts` |
+| Local repositories | `apps/client/src/services/local/repositories.ts`, `apps/client/src/services/local/index.ts` |
+| Sync engine | `apps/client/src/services/sync/engine.ts` |
+| Sync types | `apps/client/src/services/sync/types.ts` |
+| Sync API wrappers | `apps/client/src/services/api/sync.ts` |
+| App sync facade | `apps/client/src/services/syncService.ts` |
+| Offline wrappers | `apps/client/src/utils/offlineOperation.ts` |
+| Status UI | `apps/client/src/components/OfflineIndicator.tsx` |
+| Failed sync review | `apps/client/src/components/SyncReviewDialog.tsx` |
 | Edge Functions | `supabase/functions/sync-pull/index.ts`, `supabase/functions/sync-push/index.ts` |
 | Database migrations | `supabase/migrations/20260505010000_offline_reading_core_sync.sql`, `supabase/migrations/20260505070118_journal_goal_delete_tombstones.sql` |
 
@@ -171,12 +171,12 @@ Use the domain API layer and existing offline wrappers instead of writing direct
 
 Preferred paths:
 
-- Books: `src/hooks/useBooks.ts` and `src/services/api/books.ts`
-- Progress: `src/components/ProgressLogger.tsx`, `src/hooks/useProgressLogs.ts`, `src/services/api/progress.ts`
-- Timer sessions: `src/contexts/TimerContext.tsx`, `src/services/api/reading.ts`
-- Journals: `src/hooks/useJournalEntries.ts`, `src/services/api/journal.ts`
-- Goals: `src/services/api/goals.ts`
-- Profile preferences: `src/services/api/profiles.ts`
+- Books: `apps/client/src/hooks/useBooks.ts` and `apps/client/src/services/api/books.ts`
+- Progress: `apps/client/src/components/ProgressLogger.tsx`, `apps/client/src/hooks/useProgressLogs.ts`, `apps/client/src/services/api/progress.ts`
+- Timer sessions: `apps/client/src/contexts/TimerContext.tsx`, `apps/client/src/services/api/reading.ts`
+- Journals: `apps/client/src/hooks/useJournalEntries.ts`, `apps/client/src/services/api/journal.ts`
+- Goals: `apps/client/src/services/api/goals.ts`
+- Profile preferences: `apps/client/src/services/api/profiles.ts`
 
 Do not add a new localStorage queue. Extend `SyncEntity`, local repositories, `sync-push`, and `sync-pull` when a new domain needs durable offline sync.
 
@@ -198,7 +198,7 @@ Do not add a new localStorage queue. Extend `SyncEntity`, local repositories, `s
 ### Android
 
 1. Run `npm run build`.
-2. Run `npx cap sync android`.
+2. Run `npm run cap:sync:android`.
 3. Test airplane-mode workflows on an emulator or physical device.
 4. Reconnect and verify local changes sync to Supabase.
 

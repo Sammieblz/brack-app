@@ -79,8 +79,8 @@ Test production build for:
 
 ```bash
 npm run build
-npx cap sync ios
-npx cap run ios
+npm run cap:sync:ios
+npm --workspace @brack/mobile exec cap run ios
 ```
 
 **Test**:
@@ -98,8 +98,8 @@ npx cap run ios
 
 ```bash
 npm run build
-npx cap sync android
-npx cap run android
+npm run cap:sync:android
+npm --workspace @brack/mobile exec cap run android
 ```
 
 **Test**: Same as iOS
@@ -140,7 +140,7 @@ npx cap run android
 
 ### Books
 - [ ] Add book manually
-- [ ] Add book via Google Books search
+- [ ] Add book via book search
 - [ ] Add book via barcode scan
 - [ ] Add book via cover scan
 - [ ] Edit book details
@@ -390,8 +390,8 @@ lighthouse http://localhost:8080 --view
 # Build with analysis
 npm run build
 
-# Check dist/ folder sizes
-du -sh dist/*
+# Check client build output sizes
+du -sh apps/client/dist/*
 ```
 
 ## Load Testing

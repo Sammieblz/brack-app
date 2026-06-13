@@ -190,7 +190,7 @@ Use Context for:
 
 #### ProfileContext
 
-**Location**: `src/contexts/ProfileContext.tsx`
+**Location**: `apps/client/src/contexts/ProfileContext.tsx`
 
 **Purpose**: Current user's profile data
 
@@ -208,7 +208,7 @@ const MyComponent = () => {
 
 #### TimerContext
 
-**Location**: `src/contexts/TimerContext.tsx`
+**Location**: `apps/client/src/contexts/TimerContext.tsx`
 
 **Purpose**: Reading timer state and controls
 
@@ -234,7 +234,7 @@ const BookActions = ({ book }: { book: Book }) => {
 
 #### ThemeContext
 
-**Location**: `src/contexts/ThemeContext.tsx`
+**Location**: `apps/client/src/contexts/ThemeContext.tsx`
 
 **Purpose**: Theme mode (light/dark/system)
 
@@ -256,7 +256,7 @@ const ThemeToggle = () => {
 
 #### ConfirmDialogContext
 
-**Location**: `src/contexts/ConfirmDialogContext.tsx`
+**Location**: `apps/client/src/contexts/ConfirmDialogContext.tsx`
 
 **Purpose**: Programmatic confirmation dialogs
 
@@ -641,7 +641,7 @@ useEffect(() => {
 
 ### Data Cache Service
 
-**Location**: `src/services/dataCache.ts`
+**Location**: `apps/client/src/services/dataCache.ts`
 
 **When to use**: For data that doesn't fit TanStack Query patterns
 

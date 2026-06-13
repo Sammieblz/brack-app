@@ -7,18 +7,18 @@ Scope: ticket 8.2, isolate Capacitor/device-specific behavior.
 
 | Capability | Current owner | Web fallback |
 | --- | --- | --- |
-| Barcode scanning | `src/hooks/useBarcodeScanner.ts` | Camera/photo prompt plus canvas barcode detection path. |
-| Cover OCR | `src/hooks/useCoverScanner.ts`, `src/utils/ocrHelpers.ts` | Photo picker/OCR in browser. |
-| Generic image picking | `src/hooks/useImagePicker.ts` | File input fallback. |
-| Push registration | `src/services/pushNotifications.ts`, `src/hooks/usePushNotifications.ts` | No-op with clear unsupported state. |
-| Push send API | `src/services/api/notifications.ts` and `send-push-notification` Edge Function | Server-side send only. |
-| Badge push orchestration | `src/services/badgeNotifications.ts` | No-op on web. |
-| Image cache/filesystem | `src/services/imageCache.ts` | Browser cache/data URL path. |
-| Offline DB | `src/services/local/driver.ts` | Dexie on web, SQLite on native. |
-| App lifecycle sync | `src/services/syncService.ts` | Browser `visibilitychange`; native Capacitor App plugin. |
-| Haptics | `src/hooks/useHapticFeedback.ts` | No-op on web. |
-| Sharing | `src/services/shareService.ts` | Web Share API / clipboard fallback. |
-| Timer notifications and app-state bridge | `src/services/timerNative.ts`, used by `src/contexts/TimerContext.tsx` | Native local notifications only; web is a no-op. |
+| Barcode scanning | `apps/client/src/hooks/useBarcodeScanner.ts` | Camera/photo prompt plus canvas barcode detection path. |
+| Cover OCR | `apps/client/src/hooks/useCoverScanner.ts`, `apps/client/src/utils/ocrHelpers.ts` | Photo picker/OCR in browser. |
+| Generic image picking | `apps/client/src/hooks/useImagePicker.ts` | File input fallback. |
+| Push registration | `apps/client/src/services/pushNotifications.ts`, `apps/client/src/hooks/usePushNotifications.ts` | No-op with clear unsupported state. |
+| Push send API | `apps/client/src/services/api/notifications.ts` and `send-push-notification` Edge Function | Server-side send only. |
+| Badge push orchestration | `apps/client/src/services/badgeNotifications.ts` | No-op on web. |
+| Image cache/filesystem | `apps/client/src/services/imageCache.ts` | Browser cache/data URL path. |
+| Offline DB | `apps/client/src/services/local/driver.ts` | Dexie on web, SQLite on native. |
+| App lifecycle sync | `apps/client/src/services/syncService.ts` | Browser `visibilitychange`; native Capacitor App plugin. |
+| Haptics | `apps/client/src/hooks/useHapticFeedback.ts` | No-op on web. |
+| Sharing | `apps/client/src/services/shareService.ts` | Web Share API / clipboard fallback. |
+| Timer notifications and app-state bridge | `apps/client/src/services/timerNative.ts`, used by `apps/client/src/contexts/TimerContext.tsx` | Native local notifications only; web is a no-op. |
 
 ## Boundary Rule
 

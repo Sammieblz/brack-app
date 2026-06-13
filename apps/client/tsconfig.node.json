@@ -1,0 +1,8 @@
+{
+  "extends": "@brack/typescript-config/client.json",
+  "compilerOptions": {
+    "strict": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["vite.config.ts"]
+}

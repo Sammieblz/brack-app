@@ -19,7 +19,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppIcon } from "@/components/ui/app-icon";
-import { APP_ICONS, type AppIcon } from "@/config/iconography";
+import { APP_ICONS, type AppIcon as AppIconType } from "@/config/iconography";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { cn } from "@/lib/utils";
 
@@ -36,7 +36,7 @@ type SettingsSection =
 const sections: Array<{
   id: SettingsSection;
   label: string;
-  icon: AppIcon;
+  icon: AppIconType;
   description: string;
   component: (user: { id: string }) => React.ReactNode;
 }> = [

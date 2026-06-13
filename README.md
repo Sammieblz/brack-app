@@ -11,7 +11,7 @@ Brack is a comprehensive book tracking application that helps readers manage the
 - 📝 **Journaling** - Notes, quotes, and reflections
 - 👥 **Social Features** - Connect with readers, share reviews, join book clubs
 - 📱 **Mobile Apps** - Native iOS and Android apps via Capacitor
-- 🔍 **Book Search** - Powered by Google Books API
+- 🔍 **Book Search** - Google Books primary search with Open Library fallback
 - 📷 **Barcode & Cover Scanning** - Quick book entry with camera
 - 🔔 **Push Notifications** - Stay engaged with timely notifications
 - 🌓 **Dark Mode** - Beautiful themes for day and night reading
@@ -21,7 +21,7 @@ Brack is a comprehensive book tracking application that helps readers manage the
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- Node.js 20+ and npm 11.3.0
 - Supabase account (free tier works)
 - For mobile: Xcode (iOS) or Android Studio (Android)
 
@@ -82,6 +82,7 @@ Comprehensive documentation is available in the `/docs` directory:
 - **[Tech Stack](./docs/tech-stack.md)** - Technologies and libraries
 - **[Architecture](./docs/architecture.md)** - System design and patterns
 - **[File Structure](./docs/file-structure.md)** - Project organization
+- **[Monorepo and Turborepo](./docs/monorepo.md)** - Workspaces, task graph, cache, and CI
 - **[Database Schema](./docs/database-schema.md)** - Database design
 - **[API Reference](./docs/api-reference.md)** - Edge Functions documentation
 
@@ -113,6 +114,7 @@ npm run dev              # Start development server
 npm run build           # Production build
 npm run build:dev       # Development build
 npm run lint            # Run ESLint
+npm run check-types     # Typecheck all workspaces
 npm run preview         # Preview production build
 
 # Mobile Development
@@ -129,6 +131,7 @@ npm run desktop:dist        # Build unsigned desktop artifacts
 ### Tech Stack
 
 - **Frontend**: React 18 + TypeScript + Vite
+- **Monorepo**: npm workspaces + Turborepo
 - **Mobile**: Capacitor 7 (iOS & Android)
 - **Desktop**: Electron + electron-builder
 - **Backend**: Supabase (PostgreSQL + Edge Functions)
@@ -144,8 +147,8 @@ See [Tech Stack](./docs/tech-stack.md) for complete list.
 
 ```bash
 npm run build
-npx cap sync ios
-npx cap open ios
+npm run cap:sync:ios
+npm run cap:open:ios
 ```
 
 Requirements: macOS, Xcode 14+, CocoaPods
@@ -154,8 +157,8 @@ Requirements: macOS, Xcode 14+, CocoaPods
 
 ```bash
 npm run build
-npx cap sync android
-npx cap open android
+npm run cap:sync:android
+npm run cap:open:android
 ```
 
 Requirements: Android Studio, Android SDK (API 24+)
@@ -195,7 +198,7 @@ npm run lint -- --fix
 
 ### Web
 
-Build the project and deploy the `dist/` directory to any static hosting service (Vercel, Netlify, Cloudflare Pages, etc.):
+Build the project and deploy `apps/client/dist` to any static hosting service (Vercel, Netlify, Cloudflare Pages, etc.):
 
 ```bash
 npm run build
@@ -203,8 +206,8 @@ npm run build
 
 ### Mobile
 
-1. Build and sync: `npm run build && npx cap sync`
-2. Open in native IDE: `npx cap open ios` or `npx cap open android`
+1. Build and sync: `npm run cap:sync`
+2. Open in native IDE: `npm run cap:open:ios` or `npm run cap:open:android`
 3. Build and submit to App Store / Play Store
 
 ### Desktop

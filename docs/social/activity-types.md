@@ -21,8 +21,8 @@ Scope: ticket 6.2, canonical social activity event names.
 - Past-tense verbs are allowed only for clear user events (`book_completed`, `earned_badge`).
 - Do not add a new activity type without updating:
   - `social_activities_activity_type_check`
-  - `src/services/api/social.ts`
-  - `src/components/social/FeedItem.tsx`
+  - `apps/client/src/services/api/social.ts`
+  - `apps/client/src/components/social/FeedItem.tsx`
   - this document
 - Feed-only derived events like `progress_logged` and `reading_session` should stay out of `social_activities` unless product decides they belong in the community feed.
 - Activity feed delivery is fanout-based through `activity_feed_items`; event creation still writes `social_activities` first.

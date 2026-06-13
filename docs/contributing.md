@@ -40,9 +40,9 @@ npm run dev
 
 # Test on mobile (if applicable)
 npm run build
-npx cap sync
-npx cap open ios
-npx cap open android
+npm run cap:sync
+npm run cap:open:ios
+npm run cap:open:android
 ```
 
 ### 3. Commit Your Changes
@@ -290,12 +290,12 @@ CREATE POLICY "Users can view own records"
 For a new feature like "Reading Challenges":
 
 1. **Database**: Create migration in `supabase/migrations/`
-2. **Types**: Add to `src/types/index.ts`
-3. **Hook**: Create `src/hooks/useReadingChallenges.ts`
-4. **Service**: (Optional) Create `src/services/challengeService.ts`
-5. **Component**: Create `src/components/ChallengeCard.tsx`
-6. **Screen**: Create `src/screens/Challenges.tsx`
-7. **Route**: Add to `src/App.tsx`
+2. **Types**: Add to `apps/client/src/types/index.ts`
+3. **Hook**: Create `apps/client/src/hooks/useReadingChallenges.ts`
+4. **Service**: (Optional) Create `apps/client/src/services/challengeService.ts`
+5. **Component**: Create `apps/client/src/components/ChallengeCard.tsx`
+6. **Screen**: Create `apps/client/src/screens/Challenges.tsx`
+7. **Route**: Add to `apps/client/src/App.tsx`
 8. **Navigation**: Add to nav components
 
 ## Pull Request Guidelines

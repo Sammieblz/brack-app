@@ -4,10 +4,19 @@ import { registerSW } from 'virtual:pwa-register'
 import App from './App.tsx'
 import './index.css'
 
-if (!window.brackDesktop) {
+if (import.meta.env.PROD && !window.brackDesktop) {
   registerSW({
     immediate: true,
   });
+}
+
+if (import.meta.env.DEV && "serviceWorker" in navigator) {
+  navigator.serviceWorker
+    .getRegistrations()
+    .then((registrations) => {
+      registrations.forEach((registration) => registration.unregister());
+    })
+    .catch(() => undefined);
 }
 
 createRoot(document.getElementById("root")!).render(

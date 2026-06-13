@@ -14,7 +14,7 @@ Scope: ticket 6.1, every path that writes `social_activities`.
 | Follow | `create_follow_activity` via `create_follow_activity_trigger` | `user_follows` insert | `followed_user` | `social_activities.user_id`, followed user metadata. |
 | Badge award | `create_badge_activity` via `create_badge_activity_trigger` | `user_badges` insert | `earned_badge` | `social_activities.user_id`, `badge_id`, badge metadata. |
 | Post creation | `create_post_activity` via `create_post_activity_trigger` | `posts` insert | `post` | `social_activities.user_id`, post metadata. |
-| Direct API insert | `createSocialActivityPost` in `src/services/api/social.ts` | App command | `post` | Direct insert into `social_activities`. |
+| Direct API insert | `createSocialActivityPost` in `apps/client/src/services/api/social.ts` | App command | `post` | Direct insert into `social_activities`. |
 
 ## Duplicate Risks
 

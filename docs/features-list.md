@@ -53,7 +53,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 
 ### Display Components
 - `BookCard` - Book display card
-- `BookSearch` - Google Books search
+- `BookSearch` - Book search with Google Books primary and Open Library fallback
 - `SwipeableBookCard` - Book card with swipe actions
 - `BadgeDisplay` - Achievement badges
 - `StreakDisplay` - Streak counter
@@ -113,7 +113,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 
 ### Book Management ✅
 - ✅ Add books manually
-- ✅ Search Google Books
+- ✅ Search Google Books with Open Library fallback
 - ✅ Scan ISBN barcode
 - ✅ Scan book cover (OCR)
 - ✅ Edit book details
@@ -366,7 +366,8 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 ## 🔌 Integrations
 
 ### External APIs
-- ✅ **Google Books API** - Book search and metadata
+- ✅ **Google Books API** - Primary book search and metadata
+- ✅ **Open Library API** - Fallback book search when Google is rate limited or unavailable
 - ✅ **Firebase Cloud Messaging** - Push notifications
 - ✅ **Sentry** - Error tracking (optional)
 
@@ -374,7 +375,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ **Supabase REST API** - Database operations
 - ✅ **Supabase Realtime** - Live updates
 - ✅ **Supabase Storage** - Image storage
-- ✅ **Edge Functions** - Serverless backend (16 maintained local functions)
+- ✅ **Edge Functions** - Serverless backend (48 maintained local functions)
 
 ---
 
@@ -621,7 +622,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 
 ## 🔄 API Endpoints (Edge Functions)
 
-1. **search-books** - Search Google Books API
+1. **search-books** - Book search with Google Books primary and Open Library fallback
 2. **add-book** - Protected library insert and duplicate handling
 3. **dashboard-home** - Snapshot-backed dashboard data
 4. **complete-reading** - Consolidated reading completion transaction
@@ -637,6 +638,8 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 14. **compute-analytics** - Daily analytics snapshots
 15. **sync-pull** - Pull reading-core changes
 16. **sync-push** - Push reading-core outbox mutations
+
+This list highlights core app-facing endpoints. See [Edge Function Catalog](./backend/edge-functions.md) for the full maintained function inventory.
 
 All maintained Edge Functions use distributed rate limiting through `api_rate_limits`; every maintained function except public `search-books` requires JWT verification.
 

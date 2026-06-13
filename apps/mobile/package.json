@@ -1,0 +1,34 @@
+{
+  "name": "@brack/mobile",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "sync": "cap sync",
+    "sync:android": "cap sync android",
+    "sync:ios": "cap sync ios",
+    "open:ios": "cap open ios",
+    "open:android": "cap open android",
+    "doctor": "cap doctor"
+  },
+  "dependencies": {
+    "@brack/client": "*",
+    "@capacitor-community/sqlite": "^7.0.3",
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/app": "^7.1.0",
+    "@capacitor/browser": "^7.0.5",
+    "@capacitor/camera": "^7.0.3",
+    "@capacitor/core": "^7.4.4",
+    "@capacitor/device": "^7.0.2",
+    "@capacitor/filesystem": "^7.1.6",
+    "@capacitor/haptics": "^7.0.2",
+    "@capacitor/ios": "^7.4.4",
+    "@capacitor/local-notifications": "^7.0.4",
+    "@capacitor/network": "^7.0.2",
+    "@capacitor/push-notifications": "^7.0.4",
+    "@capacitor/share": "^7.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.4"
+  }
+}

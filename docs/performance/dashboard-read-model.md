@@ -7,7 +7,7 @@ Scope: ticket 4.3, snapshot-backed dashboard home response.
 
 Dashboard home data is fetched through:
 
-`src/services/api/dashboard.ts` -> `dashboard-home` Edge Function -> `get_dashboard_home_snapshot` RPC.
+`apps/client/src/services/api/dashboard.ts` -> `dashboard-home` Edge Function -> `get_dashboard_home_snapshot` RPC.
 
 The response shape remains the dashboard contract:
 - `continueBooks`

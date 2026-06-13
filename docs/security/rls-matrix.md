@@ -65,7 +65,7 @@ Legend:
 - Ticket 2.2: controlled remote auth trigger validation passed; keep a UI signup smoke test in manual QA before releases.
 - Ticket 2.3: define one visibility model for public/followers/club/private and decide how it applies to posts, lists, activities, reviews, profiles, and clubs.
 - `analytics_snapshots` insert/update policies were removed on 2026-05-05; snapshot writes now go through service-role `compute-analytics`.
-- Anonymous direct table privileges were revoked from the public schema on 2026-05-05. Authenticated clients still rely on RLS for app data access through `src/services/api/*`.
+- Anonymous direct table privileges were revoked from the public schema on 2026-05-05. Authenticated clients still rely on RLS for app data access through `apps/client/src/services/api/*`.
 - Public storage bucket listing policies for `avatars` and `book-covers` were removed. Direct public object URLs still work through public buckets; Storage API listing is blocked.
 - `get_conversation_summaries`, `use_reading_streak_freeze`, `is_club_member`, and `is_club_admin` remain callable by authenticated clients by design and include `auth.uid()` guards. Backend-only security-definer RPCs are service-role-only.
 - Social posts/comments/likes were tightened on 2026-06-06. Smart discovery now excludes blocked/private readers and hides online presence when disabled. Remaining broad social surfaces to review are follows, review likes, and public review comments.

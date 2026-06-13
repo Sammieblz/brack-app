@@ -8,7 +8,7 @@ Guide to key components in Brack and their usage.
 
 #### MobileLayout
 
-**Location**: `src/components/MobileLayout.tsx`
+**Location**: `apps/client/src/components/MobileLayout.tsx`
 
 **Purpose**: Wrapper for mobile screens with bottom navigation
 
@@ -24,7 +24,7 @@ Guide to key components in Brack and their usage.
 
 #### MobileHeader
 
-**Location**: `src/components/MobileHeader.tsx`
+**Location**: `apps/client/src/components/MobileHeader.tsx`
 
 **Purpose**: Mobile page header with title and actions
 
@@ -43,7 +43,7 @@ Guide to key components in Brack and their usage.
 
 #### NativeHeader
 
-**Location**: `src/components/NativeHeader.tsx`
+**Location**: `apps/client/src/components/NativeHeader.tsx`
 
 **Purpose**: Desktop header with large title and subtitle
 
@@ -63,7 +63,7 @@ Guide to key components in Brack and their usage.
 
 #### NativeScrollView
 
-**Location**: `src/components/NativeScrollView.tsx`
+**Location**: `apps/client/src/components/NativeScrollView.tsx`
 
 **Purpose**: Scrollable container with native scrolling behavior
 
@@ -77,7 +77,7 @@ Guide to key components in Brack and their usage.
 
 #### BookCard
 
-**Location**: `src/components/BookCard.tsx`
+**Location**: `apps/client/src/components/BookCard.tsx`
 
 **Purpose**: Display book information in card format
 
@@ -103,7 +103,7 @@ Guide to key components in Brack and their usage.
 
 #### SwipeableBookCard
 
-**Location**: `src/components/SwipeableBookCard.tsx`
+**Location**: `apps/client/src/components/SwipeableBookCard.tsx`
 
 **Purpose**: Book card with swipe actions (mobile)
 
@@ -125,7 +125,7 @@ Guide to key components in Brack and their usage.
 
 #### StreakDisplay
 
-**Location**: `src/components/StreakDisplay.tsx`
+**Location**: `apps/client/src/components/StreakDisplay.tsx`
 
 **Purpose**: Display reading streak information
 
@@ -144,7 +144,7 @@ Guide to key components in Brack and their usage.
 
 #### StreakCalendar
 
-**Location**: `src/components/StreakCalendar.tsx`
+**Location**: `apps/client/src/components/StreakCalendar.tsx`
 
 **Purpose**: Lightweight 90-day streak activity calendar
 
@@ -160,7 +160,7 @@ Guide to key components in Brack and their usage.
 
 #### ReadingHeatmap
 
-**Location**: `src/components/charts/ReadingHeatmap.tsx`
+**Location**: `apps/client/src/components/charts/ReadingHeatmap.tsx`
 
 **Purpose**: ApexCharts heatmap for dashboard and analytics reading activity
 
@@ -178,7 +178,7 @@ Guide to key components in Brack and their usage.
 
 #### FloatingTimerWidget
 
-**Location**: `src/components/FloatingTimerWidget.tsx`
+**Location**: `apps/client/src/components/FloatingTimerWidget.tsx`
 
 **Purpose**: Floating reading timer with minimize/expand
 
@@ -197,7 +197,7 @@ Guide to key components in Brack and their usage.
 
 #### FloatingActionButton
 
-**Location**: `src/components/FloatingActionButton.tsx`
+**Location**: `apps/client/src/components/FloatingActionButton.tsx`
 
 **Purpose**: Mobile FAB with quick actions
 
@@ -213,7 +213,7 @@ Guide to key components in Brack and their usage.
 
 #### ProgressLogger
 
-**Location**: `src/components/ProgressLogger.tsx`
+**Location**: `apps/client/src/components/ProgressLogger.tsx`
 
 **Purpose**: Dialog for logging reading progress
 
@@ -237,7 +237,7 @@ Guide to key components in Brack and their usage.
 
 #### QuickProgressWidget
 
-**Location**: `src/components/QuickProgressWidget.tsx`
+**Location**: `apps/client/src/components/QuickProgressWidget.tsx`
 
 **Purpose**: Quick progress update widget
 
@@ -257,7 +257,7 @@ Guide to key components in Brack and their usage.
 
 #### JournalEntryDialog
 
-**Location**: `src/components/JournalEntryDialog.tsx`
+**Location**: `apps/client/src/components/JournalEntryDialog.tsx`
 
 **Purpose**: Create/edit journal entries
 
@@ -278,7 +278,7 @@ Guide to key components in Brack and their usage.
 
 #### QuickJournalEntryDialog
 
-**Location**: `src/components/QuickJournalEntryDialog.tsx`
+**Location**: `apps/client/src/components/QuickJournalEntryDialog.tsx`
 
 **Purpose**: Quick journal entry after reading session
 
@@ -300,7 +300,7 @@ Guide to key components in Brack and their usage.
 
 #### JournalEntriesList
 
-**Location**: `src/components/JournalEntriesList.tsx`
+**Location**: `apps/client/src/components/JournalEntriesList.tsx`
 
 **Purpose**: Display list of journal entries
 
@@ -316,7 +316,7 @@ Guide to key components in Brack and their usage.
 
 #### QuoteCollection
 
-**Location**: `src/components/QuoteCollection.tsx`
+**Location**: `apps/client/src/components/QuoteCollection.tsx`
 
 **Purpose**: Display and search quotes
 
@@ -333,7 +333,7 @@ Guide to key components in Brack and their usage.
 
 #### PostCard
 
-**Location**: `src/components/social/PostCard.tsx`
+**Location**: `apps/client/src/components/social/PostCard.tsx`
 
 **Purpose**: Social media post display
 
@@ -349,7 +349,7 @@ Guide to key components in Brack and their usage.
 
 #### ReviewCard
 
-**Location**: `src/components/social/ReviewCard.tsx`
+**Location**: `apps/client/src/components/social/ReviewCard.tsx`
 
 **Purpose**: Book review display
 
@@ -365,7 +365,7 @@ Guide to key components in Brack and their usage.
 
 #### ReviewForm
 
-**Location**: `src/components/social/ReviewForm.tsx`
+**Location**: `apps/client/src/components/social/ReviewForm.tsx`
 
 **Purpose**: Create/edit book review
 
@@ -379,7 +379,7 @@ Guide to key components in Brack and their usage.
 
 #### UserCard
 
-**Location**: `src/components/social/UserCard.tsx`
+**Location**: `apps/client/src/components/social/UserCard.tsx`
 
 **Purpose**: User profile card for discovery
 
@@ -398,7 +398,7 @@ Guide to key components in Brack and their usage.
 
 #### BookSearch
 
-**Location**: `src/components/BookSearch.tsx`
+**Location**: `apps/client/src/components/BookSearch.tsx`
 
 **Purpose**: Search books via Google Books API
 
@@ -418,7 +418,7 @@ Guide to key components in Brack and their usage.
 
 #### NativeSearchBar
 
-**Location**: `src/components/NativeSearchBar.tsx`
+**Location**: `apps/client/src/components/NativeSearchBar.tsx`
 
 **Purpose**: Native-styled search input
 
@@ -434,7 +434,7 @@ Guide to key components in Brack and their usage.
 
 #### OfflineIndicator
 
-**Location**: `src/components/OfflineIndicator.tsx`
+**Location**: `apps/client/src/components/OfflineIndicator.tsx`
 
 **Purpose**: Show offline status and reading-core sync state
 
@@ -450,7 +450,7 @@ Guide to key components in Brack and their usage.
 
 #### PullToRefresh
 
-**Location**: `src/components/PullToRefresh.tsx`
+**Location**: `apps/client/src/components/PullToRefresh.tsx`
 
 **Purpose**: Pull-to-refresh wrapper
 
@@ -470,7 +470,7 @@ Guide to key components in Brack and their usage.
 
 #### OptimizedImage
 
-**Location**: `src/components/OptimizedImage.tsx`
+**Location**: `apps/client/src/components/OptimizedImage.tsx`
 
 **Purpose**: Image with caching and lazy loading
 
@@ -491,7 +491,7 @@ Guide to key components in Brack and their usage.
 
 #### LoadingSpinner
 
-**Location**: `src/components/LoadingSpinner.tsx`
+**Location**: `apps/client/src/components/LoadingSpinner.tsx`
 
 **Purpose**: Loading indicator
 
@@ -503,7 +503,7 @@ Guide to key components in Brack and their usage.
 
 #### ErrorBoundary
 
-**Location**: `src/components/ErrorBoundary.tsx`
+**Location**: `apps/client/src/components/ErrorBoundary.tsx`
 
 **Purpose**: Catch and display component errors
 
@@ -522,7 +522,7 @@ Guide to key components in Brack and their usage.
 
 #### MobileBottomNav
 
-**Location**: `src/components/MobileBottomNav.tsx`
+**Location**: `apps/client/src/components/MobileBottomNav.tsx`
 
 **Purpose**: Bottom navigation bar (mobile)
 
@@ -535,13 +535,13 @@ Guide to key components in Brack and their usage.
 
 #### Navbar
 
-**Location**: `src/components/Navbar.tsx`
+**Location**: `apps/client/src/components/Navbar.tsx`
 
 **Purpose**: Desktop sidebar navigation
 
 #### SwipeBackHandler
 
-**Location**: `src/components/SwipeBackHandler.tsx`
+**Location**: `apps/client/src/components/SwipeBackHandler.tsx`
 
 **Purpose**: iOS-style swipe back gesture
 
@@ -553,7 +553,7 @@ Guide to key components in Brack and their usage.
 
 ## shadcn/ui Components
 
-Located in `src/components/ui/`
+Located in `apps/client/src/components/ui/`
 
 ### Common Components
 
@@ -660,7 +660,7 @@ const [open, setOpen] = useState(false);
 
 ## Charts Components
 
-Located in `src/components/charts/`
+Located in `apps/client/src/components/charts/`
 
 ### WeeklyReadingChart
 
@@ -682,7 +682,7 @@ Located in `src/components/charts/`
 
 ## Skeleton Components
 
-Located in `src/components/skeletons/`
+Located in `apps/client/src/components/skeletons/`
 
 ### Usage
 
@@ -875,7 +875,7 @@ MyComponent.Body = ({ children }: { children: ReactNode }) => {
 ### Template
 
 ```typescript
-// src/components/MyComponent.tsx
+// apps/client/src/components/MyComponent.tsx
 import { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -898,7 +898,7 @@ export const MyComponent = ({
 
 ### Adding to Component Library
 
-1. Create component file in `src/components/`
+1. Create component file in `apps/client/src/components/`
 2. Export from component file
 3. Import where needed: `import { MyComponent } from '@/components/MyComponent'`
 4. Add to documentation (this file)
@@ -931,7 +931,7 @@ import { Book, Star, Settings } from 'iconoir-react';
 <div className="animate-spin">
 ```
 
-**Configuration**: `tailwind.config.ts` - tailwindcss-animate plugin
+**Configuration**: `apps/client/tailwind.config.ts` - tailwindcss-animate plugin
 
 ## Further Reading
 

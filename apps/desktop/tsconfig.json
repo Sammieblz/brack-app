@@ -1,0 +1,9 @@
+{
+  "extends": "@brack/typescript-config/desktop.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "noEmit": false
+  },
+  "include": ["src/**/*.cts"]
+}

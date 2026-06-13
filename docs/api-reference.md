@@ -72,11 +72,11 @@ export function requireFields(
 
 ## Functions
 
-Current maintained local function catalog:
+App-facing function summary. The complete maintained inventory is in [Edge Function Catalog](./backend/edge-functions.md).
 
 | Function | Purpose | JWT |
 | --- | --- | --- |
-| `search-books` | Google Books search | No |
+| `search-books` | Book search with Google Books primary and Open Library fallback | No |
 | `add-book` | Protected library insert with duplicate handling | Yes |
 | `dashboard-home` | Snapshot-backed dashboard payload | Yes |
 | `complete-reading` | Consolidated reading completion transaction | Yes |
@@ -115,11 +115,13 @@ Current maintained local function catalog:
 | `sync-pull` | Pull reading-core sync changes | Yes |
 | `sync-push` | Push reading-core outbox mutations | Yes |
 
-Local JWT settings live in `supabase/config.toml`. Remote deployment was verified on May 5, 2026: every maintained function except public `search-books` is deployed with `verify_jwt = true`. The legacy 2025 functions `get-book-details`, `update-reading-progress`, and `daily-summary` were deleted remotely after confirming there are no local consumers.
+Local JWT settings live in `supabase/config.toml`. Remote deployment was aligned on June 13, 2026: every maintained function except public `search-books` is deployed with `verify_jwt = true`, the direct-message function group is deployed, and the `modern_direct_messaging` schema is applied remotely. See [Edge Function Catalog](./backend/edge-functions.md) for the full maintained inventory and operational checks.
+
+The legacy 2025 functions `get-book-details`, `update-reading-progress`, and `daily-summary` were deleted remotely after confirming there are no local consumers.
 
 ### search-books
 
-Search for books using Google Books API.
+Search for books. Google Books is the primary provider; Open Library is the fallback when Google returns 403, 429, or 5xx.
 
 **Endpoint**: `POST /search-books`
 
@@ -148,7 +150,10 @@ Search for books using Google Books API.
     published_date: string | null;
     average_rating: number | null;
     ratings_count: number | null;
+    source_provider?: 'google_books' | 'open_library';
+    source_id?: string | null;
   }>;
+  fallback_provider?: 'open_library';
 }
 ```
 
@@ -171,7 +176,7 @@ const { books } = await response.json();
 ```
 
 **Environment Variables**:
-- `GOOGLE_BOOKS_API_KEY` (optional) - Increases rate limits
+- `GOOGLE_BOOKS_API_KEY` (optional, recommended) - Increases Google Books quota. If it is missing or Google rejects the request, the function can still return Open Library results.
 
 ### add-book
 

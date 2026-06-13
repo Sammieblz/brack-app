@@ -232,7 +232,7 @@ export const normalizeUploadedMedia = (
 };
 
 export const normalizeTenorGif = (
-  _userId: string,
+  userId: string,
   conversationId: string,
   gif: Record<string, unknown> | null | undefined
 ) => {
