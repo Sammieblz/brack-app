@@ -1,6 +1,29 @@
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeInput } from "@/utils/sanitize";
 import { getCurrentAuthUser } from "./auth";
+import { invokeFunction } from "./client";
+
+export type ReviewScope = "for_you" | "following" | "recent" | "popular" | "mine";
+export type ReviewSort = "personalized" | "recent" | "popular";
+export type RatingFilter = "all" | "5" | "4" | "3" | "2" | "1";
+
+export interface ReviewBookSummary {
+  id: string;
+  user_id?: string | null;
+  title: string;
+  author: string | null;
+  cover_url: string | null;
+  isbn?: string | null;
+  genre?: string | null;
+  pages?: number | null;
+  description?: string | null;
+}
+
+export interface ReviewUserSummary {
+  id?: string;
+  display_name: string | null;
+  avatar_url: string | null;
+}
 
 export interface Review {
   id: string;
@@ -13,18 +36,22 @@ export interface Review {
   is_public: boolean;
   likes_count: number;
   comments_count: number;
+  share_count?: number;
+  deleted_at?: string | null;
   created_at: string;
   updated_at: string;
-  profiles: {
-    display_name: string | null;
-    avatar_url: string | null;
-  };
-  books?: {
-    title: string;
-    author: string | null;
-    cover_url: string | null;
-  } | null;
+  profiles: ReviewUserSummary;
+  reviewer?: ReviewUserSummary | null;
+  books?: ReviewBookSummary | null;
+  book?: ReviewBookSummary | null;
+  user_has_liked?: boolean;
+  viewer_has_book?: boolean;
+  viewer_book_id?: string | null;
+  feed_reason?: string | null;
+  share_url?: string | null;
 }
+
+export type ReviewFeedItem = Review;
 
 export interface ReviewComment {
   id: string;
@@ -32,13 +59,11 @@ export interface ReviewComment {
   user_id: string;
   content: string;
   created_at: string;
-  profiles: {
-    display_name: string | null;
-    avatar_url: string | null;
-  };
+  updated_at?: string;
+  profiles: ReviewUserSummary;
 }
 
-export interface CreateReviewData {
+export interface CreateReviewRequest {
   book_id: string;
   rating: number;
   title?: string;
@@ -47,23 +72,122 @@ export interface CreateReviewData {
   is_public?: boolean;
 }
 
+export type CreateReviewData = CreateReviewRequest;
+
+export interface ReviewFeedSummary {
+  rating_mix: Array<{ rating: number; count: number }>;
+  trending_books: Array<{
+    id: string;
+    title: string;
+    author: string | null;
+    cover_url: string | null;
+    review_count: number;
+    average_rating: number | null;
+  }>;
+  review_opportunities: Array<{
+    id: string;
+    title: string;
+    author: string | null;
+    cover_url: string | null;
+    date_finished?: string | null;
+  }>;
+}
+
+export interface ReviewsFeedResponse {
+  items: ReviewFeedItem[];
+  next_cursor?: string | null;
+  has_more: boolean;
+  caught_up: boolean;
+  feed_mode: ReviewScope;
+  summary: ReviewFeedSummary;
+}
+
+export interface ReviewsFeedRequest {
+  cursor?: string | null;
+  limit?: number;
+  query?: string;
+  rating?: RatingFilter;
+  scope?: ReviewScope;
+  sort?: ReviewSort;
+}
+
 export interface ReviewsResult {
   reviews: Review[];
   averageRating: number | null;
   userHasReviewed: boolean;
 }
 
+export interface ReviewDetail {
+  review: ReviewFeedItem;
+  related_reviews: ReviewFeedItem[];
+}
+
+export interface ReviewCommentPage {
+  comments: ReviewComment[];
+  next_cursor?: string | null;
+  has_more: boolean;
+}
+
+export interface ShareReviewResponse {
+  share_url: string;
+  share_count: number;
+}
+
 const normalizeReview = (review: Review): Review => ({
   ...review,
+  profiles: review.profiles ?? review.reviewer ?? { display_name: null, avatar_url: null },
+  reviewer: review.reviewer ?? review.profiles ?? null,
+  books: review.books ?? review.book ?? null,
+  book: review.book ?? review.books ?? null,
   is_public: review.is_public ?? true,
   is_spoiler: review.is_spoiler ?? false,
   likes_count: review.likes_count ?? 0,
   comments_count: review.comments_count ?? 0,
+  share_count: review.share_count ?? 0,
 });
 
-export const fetchBookReviews = async (
-  bookId: string
-): Promise<ReviewsResult> => {
+export const getReviewsFeed = async ({
+  cursor,
+  limit = 20,
+  query,
+  rating,
+  scope = "for_you",
+  sort = "personalized",
+}: ReviewsFeedRequest = {}): Promise<ReviewsFeedResponse> => {
+  const response = await invokeFunction<ReviewsFeedResponse>("reviews-feed", {
+    body: {
+      cursor,
+      limit,
+      query,
+      rating: rating === "all" ? null : rating,
+      scope,
+      sort,
+    },
+  });
+
+  return {
+    ...response,
+    items: (response.items || []).map(normalizeReview),
+    summary: response.summary ?? {
+      rating_mix: [5, 4, 3, 2, 1].map((value) => ({ rating: value, count: 0 })),
+      trending_books: [],
+      review_opportunities: [],
+    },
+  };
+};
+
+export const fetchReviewDetail = async (reviewId: string): Promise<ReviewDetail> => {
+  const response = await invokeFunction<ReviewDetail>("review-detail", {
+    body: { review_id: reviewId },
+  });
+
+  return {
+    review: normalizeReview(response.review),
+    related_reviews: (response.related_reviews || []).map(normalizeReview),
+  };
+};
+
+export const fetchBookReviews = async (bookId: string): Promise<ReviewsResult> => {
   const { data, error } = await supabase
     .from("book_reviews")
     .select(
@@ -77,17 +201,16 @@ export const fetchBookReviews = async (
     )
     .eq("book_id", bookId)
     .eq("is_public", true)
+    .is("deleted_at", null)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
 
-  const reviews = ((data || []) as Review[]).map(normalizeReview);
+  const reviews = ((data || []) as unknown as Review[]).map(normalizeReview);
   const averageRating =
     reviews.length > 0
       ? Math.round(
-          (reviews.reduce((sum, review) => sum + review.rating, 0) /
-            reviews.length) *
-            10
+          (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length) * 10
         ) / 10
       : null;
 
@@ -99,38 +222,13 @@ export const fetchBookReviews = async (
   return { reviews, averageRating, userHasReviewed };
 };
 
-export const fetchCommunityReviews = async (
-  limit = 50
-): Promise<ReviewsResult> => {
-  const { data, error } = await supabase
-    .from("book_reviews")
-    .select(
-      `
-      *,
-      profiles (
-        display_name,
-        avatar_url
-      ),
-      books (
-        title,
-        author,
-        cover_url
-      )
-    `
-    )
-    .eq("is_public", true)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-
-  if (error) throw error;
-
-  const reviews = ((data || []) as Review[]).map(normalizeReview);
+export const fetchCommunityReviews = async (limit = 50): Promise<ReviewsResult> => {
+  const response = await getReviewsFeed({ limit, scope: "recent", sort: "recent" });
+  const reviews = response.items;
   const averageRating =
     reviews.length > 0
       ? Math.round(
-          (reviews.reduce((sum, review) => sum + review.rating, 0) /
-            reviews.length) *
-            10
+          (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length) * 10
         ) / 10
       : null;
 
@@ -143,72 +241,38 @@ export const fetchCommunityReviews = async (
 };
 
 export const fetchSingleReview = async (reviewId: string): Promise<Review> => {
-  const { data, error } = await supabase
-    .from("book_reviews")
-    .select(
-      `
-      *,
-      profiles (
-        display_name,
-        avatar_url
-      )
-    `
-    )
-    .eq("id", reviewId)
-    .single();
-
-  if (error) throw error;
-  return data as Review;
+  const { review } = await fetchReviewDetail(reviewId);
+  return review;
 };
 
 export const fetchReviewComments = async (
-  reviewId: string
-): Promise<ReviewComment[]> => {
-  const { data, error } = await supabase
-    .from("review_comments")
-    .select(
-      `
-      *,
-      profiles (
-        display_name,
-        avatar_url
-      )
-    `
-    )
-    .eq("review_id", reviewId)
-    .order("created_at", { ascending: true });
-
-  if (error) throw error;
-  return (data || []) as ReviewComment[];
-};
-
-export const createBookReview = async (
-  data: CreateReviewData
-): Promise<void> => {
-  const currentUser = await getCurrentAuthUser();
-  if (!currentUser) throw new Error("Not authenticated");
-
-  const { error } = await supabase.from("book_reviews").insert({
-    user_id: currentUser.id,
-    ...data,
-    title: data.title ? sanitizeInput(data.title) : undefined,
-    content: sanitizeInput(data.content),
+  reviewId: string,
+  cursor?: string | null,
+  limit = 20
+): Promise<ReviewCommentPage> => {
+  return invokeFunction<ReviewCommentPage>("review-comments", {
+    body: { review_id: reviewId, cursor, limit },
   });
-
-  if (error) throw error;
 };
 
-export const createReviewRecord = async (
-  data: Record<string, unknown>
-): Promise<void> => {
-  const { error } = await supabase.from("book_reviews").insert(data);
+export const createBookReview = async (data: CreateReviewRequest): Promise<Review> => {
+  const response = await invokeFunction<{ review: Review }>("create-review", {
+    body: {
+      ...data,
+      title: data.title ? sanitizeInput(data.title) : undefined,
+      content: sanitizeInput(data.content),
+    },
+  });
+  return normalizeReview(response.review);
+};
 
-  if (error) throw error;
+export const createReviewRecord = async (data: Record<string, unknown>): Promise<void> => {
+  await createBookReview(data as unknown as CreateReviewRequest);
 };
 
 export const updateBookReview = async (
   reviewId: string,
-  data: Partial<CreateReviewData>
+  data: Partial<CreateReviewRequest>
 ): Promise<void> => {
   const updates = {
     ...data,
@@ -237,42 +301,30 @@ export const updateReviewRecord = async (
 };
 
 export const deleteBookReview = async (reviewId: string): Promise<void> => {
-  const { error } = await supabase
-    .from("book_reviews")
-    .delete()
-    .eq("id", reviewId);
+  await invokeFunction("delete-review", { body: { review_id: reviewId } });
+};
 
-  if (error) throw error;
+export const toggleBookReviewLike = async (
+  reviewId: string
+): Promise<{ liked: boolean; likes_count: number }> => {
+  return invokeFunction("toggle-review-like", { body: { review_id: reviewId } });
 };
 
 export const likeBookReview = async (reviewId: string): Promise<void> => {
-  const currentUser = await getCurrentAuthUser();
-  if (!currentUser) throw new Error("Not authenticated");
-
-  const { error } = await supabase.from("review_likes").insert({
-    review_id: reviewId,
-    user_id: currentUser.id,
-  });
-
-  if (error) throw error;
+  const result = await toggleBookReviewLike(reviewId);
+  if (!result.liked) {
+    await toggleBookReviewLike(reviewId);
+  }
 };
 
 export const unlikeBookReview = async (reviewId: string): Promise<void> => {
-  const currentUser = await getCurrentAuthUser();
-  if (!currentUser) throw new Error("Not authenticated");
-
-  const { error } = await supabase
-    .from("review_likes")
-    .delete()
-    .eq("review_id", reviewId)
-    .eq("user_id", currentUser.id);
-
-  if (error) throw error;
+  const result = await toggleBookReviewLike(reviewId);
+  if (result.liked) {
+    await toggleBookReviewLike(reviewId);
+  }
 };
 
-export const checkBookReviewLiked = async (
-  reviewId: string
-): Promise<boolean> => {
+export const checkBookReviewLiked = async (reviewId: string): Promise<boolean> => {
   const currentUser = await getCurrentAuthUser();
   if (!currentUser) return false;
 
@@ -286,25 +338,21 @@ export const checkBookReviewLiked = async (
   return !!data;
 };
 
+export const shareReview = async (reviewId: string): Promise<ShareReviewResponse> => {
+  return invokeFunction("share-review", { body: { review_id: reviewId } });
+};
+
 export const addReviewComment = async (
   reviewId: string,
   content: string
-): Promise<void> => {
-  const currentUser = await getCurrentAuthUser();
-  if (!currentUser) throw new Error("Not authenticated");
-
-  const { error } = await supabase.from("review_comments").insert({
-    review_id: reviewId,
-    user_id: currentUser.id,
-    content: sanitizeInput(content),
+): Promise<ReviewComment> => {
+  const response = await invokeFunction<{ comment: ReviewComment }>("create-review-comment", {
+    body: { review_id: reviewId, content: sanitizeInput(content) },
   });
-
-  if (error) throw error;
+  return response.comment;
 };
 
-export const deleteReviewComment = async (
-  commentId: string
-): Promise<void> => {
+export const deleteReviewComment = async (commentId: string): Promise<void> => {
   const { error } = await supabase
     .from("review_comments")
     .delete()

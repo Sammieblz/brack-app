@@ -2,7 +2,7 @@
 
 Source of truth: local `supabase/functions/`, `supabase/config.toml`, and remote project `waftnaqgkcgufzapcihe`, last aligned on 2026-06-13.
 
-Brack currently has 48 maintained local Edge Function directories, excluding `_shared`. All maintained functions use the shared distributed limiter in `_shared/rateLimit.ts`. The limiter stores buckets in `api_rate_limits` through the service-role-only `check_api_rate_limit` RPC, with an instance-memory fallback if the RPC is temporarily unavailable.
+Brack currently has 56 maintained local Edge Function directories, excluding `_shared`. All maintained functions use the shared distributed limiter in `_shared/rateLimit.ts`. The limiter stores buckets in `api_rate_limits` through the service-role-only `check_api_rate_limit` RPC, with an instance-memory fallback if the RPC is temporarily unavailable.
 
 ## Current Remote State
 
@@ -11,6 +11,7 @@ Brack currently has 48 maintained local Edge Function directories, excluding `_s
 - The direct-message function group was deployed on 2026-06-13.
 - The `modern_direct_messaging` database migration is applied remotely.
 - The private `message-media` storage bucket exists remotely.
+- The scalable reviews function group was deployed on 2026-06-13 after applying `20260613183356_scalable_reviews_feed.sql`.
 - The legacy 2025 functions `get-book-details`, `update-reading-progress`, and `daily-summary` had no local consumers and were deleted remotely on 2026-05-05.
 
 ## Shared Utilities
@@ -23,6 +24,7 @@ Brack currently has 48 maintained local Edge Function directories, excluding `_s
 | `_shared/validation.ts` | Request parsing and validation helpers. |
 | `_shared/messaging.ts` | Direct-message normalization, participant checks, media/reaction helpers. |
 | `_shared/clubs.ts` | Club discovery, permissions, membership, and preview helpers. |
+| `_shared/reviews.ts` | Review feed cursor, visibility, enrichment, and summary helpers. |
 
 ## Maintained Functions
 
@@ -65,6 +67,19 @@ Brack currently has 48 maintained local Edge Function directories, excluding `_s
 | `blocked-users` | JWT required | List blocked users. | Read-only; retry safe. |
 | `block-user` | JWT required | Block a user. | Safe if implemented as idempotent upsert. |
 | `unblock-user` | JWT required | Unblock a user. | Safe if row absence is accepted. |
+
+### Reviews
+
+| Function | Auth | Purpose | Retry concerns |
+| --- | --- | --- | --- |
+| `reviews-feed` | JWT required | Cursor-paginated review feed with scopes, search, rating filters, summaries, and block filtering. | Read-only; retry safe. |
+| `review-detail` | JWT required | Canonical review detail payload with book context and related reviews. | Read-only; retry safe. |
+| `create-review` | JWT required | Create, update, or restore the current user's review for an owned book. | Retry safe for the same user/book because the endpoint updates the existing row. |
+| `toggle-review-like` | JWT required | Toggle review like state and return the new like count. | Toggle semantics require clear client intent. |
+| `share-review` | JWT required | Generate canonical share URL and increment share count. | Retrying increments share count again. |
+| `review-comments` | JWT required | Cursor-paginated comments for a visible review. | Read-only; retry safe. |
+| `create-review-comment` | JWT required | Add a comment to a visible review. | Retrying can duplicate comments. |
+| `delete-review` | JWT required | Owner soft-delete for a review. | Retry safe after first success. |
 
 ### Clubs
 
@@ -120,6 +135,7 @@ Use these checks when a function works locally but fails remotely:
 ```bash
 npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api
 npx supabase functions deploy conversations-home --project-ref waftnaqgkcgufzapcihe --use-api
+npx supabase functions deploy reviews-feed --project-ref waftnaqgkcgufzapcihe --use-api
 npx supabase secrets list
 ```
 

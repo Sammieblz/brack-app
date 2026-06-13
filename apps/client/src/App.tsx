@@ -38,6 +38,7 @@ import BookListDetail from "./screens/BookListDetail";
 import GoalsManagement from "./screens/GoalsManagement";
 import UserProfile from "./screens/UserProfile";
 import Reviews from "./screens/Reviews";
+import ReviewDetail from "./screens/ReviewDetail";
 import Feed from "./screens/Feed";
 import PostDetail from "./screens/PostDetail";
 import Readers from "./screens/Readers";
@@ -152,6 +153,7 @@ const App = () => {
                             <Route path="/goals-management" element={<GoalsManagement />} />
                             <Route path="/users/:userId" element={<UserProfile />} />
                             <Route path="/reviews" element={<Reviews />} />
+                            <Route path="/reviews/:reviewId" element={<ReviewDetail />} />
                             <Route path="/feed" element={<Feed />} />
                             <Route path="/posts/:postId" element={<PostDetail />} />
                             <Route path="/clubs" element={<BookClubs />} />

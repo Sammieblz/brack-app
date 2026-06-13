@@ -87,6 +87,14 @@ App-facing function summary. The complete maintained inventory is in [Edge Funct
 | `monthly-stats` | Monthly reading statistics | Yes |
 | `enhanced-activity` | Enriched activity feed | Yes |
 | `social-feed` | Aggregated social feed | Yes |
+| `reviews-feed` | Cursor-paginated, block-aware review feed | Yes |
+| `review-detail` | Canonical public/private-author review detail payload | Yes |
+| `create-review` | Create, update, or restore the current user's review for a book | Yes |
+| `toggle-review-like` | Idempotent review like toggle for the authenticated user | Yes |
+| `share-review` | Return canonical share URL and increment share count | Yes |
+| `review-comments` | Cursor-paginated comments for a visible review | Yes |
+| `create-review-comment` | Add a comment to a visible review | Yes |
+| `delete-review` | Owner soft-delete for a review | Yes |
 | `discover-readers` | Reader discovery | Yes |
 | `update-presence` | Reader online/status heartbeat | Yes |
 | `clubs-home` | Smart club discovery sections and member/invite/request summaries | Yes |
@@ -210,6 +218,123 @@ If the book already exists, the function returns `409`:
 - ISBN is the primary duplicate key.
 - Title + author is used as a fallback when ISBN is missing.
 - Re-adding a soft-deleted book restores the existing row instead of creating a duplicate.
+
+### reviews-feed
+
+Load the scalable review feed used by `/reviews`.
+
+**Endpoint**: `POST /reviews-feed`
+
+**Request**:
+```typescript
+{
+  cursor?: string | null;
+  limit?: number; // 1-30, default 20
+  query?: string;
+  rating?: '1' | '2' | '3' | '4' | '5' | null;
+  scope?: 'for_you' | 'following' | 'recent' | 'popular' | 'mine';
+  sort?: 'personalized' | 'recent' | 'popular';
+}
+```
+
+**Response**:
+```typescript
+{
+  items: ReviewFeedItem[];
+  next_cursor: string | null;
+  has_more: boolean;
+  caught_up: boolean;
+  feed_mode: 'for_you' | 'following' | 'recent' | 'popular' | 'mine';
+  summary: {
+    rating_mix: Array<{ rating: number; count: number }>;
+    trending_books: Array<{
+      id: string;
+      title: string;
+      author: string | null;
+      cover_url: string | null;
+      review_count: number;
+      average_rating: number | null;
+    }>;
+    review_opportunities: Array<{
+      id: string;
+      title: string;
+      author: string | null;
+      cover_url: string | null;
+      date_finished?: string | null;
+    }>;
+  };
+}
+```
+
+**Notes**:
+- Uses opaque cursor pagination based on `created_at + id` or popularity ordering.
+- Excludes blocked users, deleted reviews, and non-public reviews unless `scope = 'mine'`.
+- Feed cards link to `/reviews/:reviewId`; they do not link to another user's private `/book/:id`.
+
+### review-detail
+
+Load one canonical review page payload.
+
+**Endpoint**: `POST /review-detail`
+
+**Request**:
+```typescript
+{
+  review_id: string;
+}
+```
+
+**Response**:
+```typescript
+{
+  review: ReviewFeedItem;
+  related_reviews: ReviewFeedItem[];
+}
+```
+
+Public reviews are visible to authenticated users unless blocking hides either side. Private reviews are visible only to their author.
+
+### create-review
+
+Create, update, or restore the authenticated user's review for a book they own.
+
+**Endpoint**: `POST /create-review`
+
+**Request**:
+```typescript
+{
+  book_id: string;
+  rating: number; // 1-5
+  title?: string;
+  content: string; // 10-5000 chars
+  is_spoiler?: boolean;
+  is_public?: boolean;
+}
+```
+
+**Response**:
+```typescript
+{
+  review: ReviewFeedItem;
+  review_id: string;
+}
+```
+
+The backend preserves one active review per user/book by updating an existing row, including a previously soft-deleted row.
+
+### review actions
+
+Review interaction endpoints:
+
+| Endpoint | Request | Response |
+| --- | --- | --- |
+| `toggle-review-like` | `{ review_id: string }` | `{ liked: boolean; likes_count: number }` |
+| `share-review` | `{ review_id: string }` | `{ share_url: string; share_count: number }` |
+| `delete-review` | `{ review_id: string }` | `{ success: true }` |
+| `review-comments` | `{ review_id: string; cursor?: string | null; limit?: number }` | `{ comments: ReviewComment[]; next_cursor: string | null; has_more: boolean }` |
+| `create-review-comment` | `{ review_id: string; content: string }` | `{ comment: ReviewComment }` |
+
+All review action endpoints are authenticated, block-aware where visibility is relevant, and use soft deletion for review removal.
 
 ### dashboard-home
 
