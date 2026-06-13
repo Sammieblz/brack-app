@@ -135,6 +135,30 @@ verify_jwt = true
 [functions.compute-analytics]
 verify_jwt = true
 
+[functions.reviews-feed]
+verify_jwt = true
+
+[functions.review-detail]
+verify_jwt = true
+
+[functions.create-review]
+verify_jwt = true
+
+[functions.toggle-review-like]
+verify_jwt = true
+
+[functions.share-review]
+verify_jwt = true
+
+[functions.review-comments]
+verify_jwt = true
+
+[functions.create-review-comment]
+verify_jwt = true
+
+[functions.delete-review]
+verify_jwt = true
+
 [functions.send-push-notification]
 verify_jwt = true
 

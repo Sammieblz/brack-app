@@ -11,6 +11,7 @@ import {
   fetchReviewComments,
   fetchSingleReview,
   likeBookReview,
+  toggleBookReviewLike,
   unlikeBookReview,
   updateBookReview,
   type CreateReviewData,
@@ -86,7 +87,8 @@ export const useReviews = (
     if (!reviewId) return;
 
     try {
-      setComments(await fetchReviewComments(reviewId));
+      const page = await fetchReviewComments(reviewId);
+      setComments(page.comments);
     } catch (error: unknown) {
       console.error("Error fetching comments:", error);
     }
@@ -183,8 +185,10 @@ export const useReviews = (
 
   const likeReview = useCallback(async (reviewId: string) => {
     try {
-      await likeBookReview(reviewId);
-
+      const result = await toggleBookReviewLike(reviewId);
+      if (!result.liked) {
+        await likeBookReview(reviewId);
+      }
       void fetchReviews();
     } catch (error: unknown) {
       console.error("Error liking review:", error);
@@ -198,8 +202,10 @@ export const useReviews = (
 
   const unlikeReview = useCallback(async (reviewId: string) => {
     try {
-      await unlikeBookReview(reviewId);
-
+      const result = await toggleBookReviewLike(reviewId);
+      if (result.liked) {
+        await unlikeBookReview(reviewId);
+      }
       void fetchReviews();
     } catch (error: unknown) {
       console.error("Error unliking review:", error);
@@ -221,7 +227,8 @@ export const useReviews = (
 
   const addComment = useCallback(async (reviewId: string, content: string) => {
     try {
-      await addReviewComment(reviewId, content);
+      const comment = await addReviewComment(reviewId, content);
+      setComments((current) => [...current, comment]);
 
       toast({
         title: "Success",
