@@ -25,7 +25,7 @@ interface PostsFeedBody {
 }
 
 const POST_SELECT =
-  "id,user_id,book_id,club_id,title,content,genre,post_type,visibility,likes_count,comments_count,share_count,metadata,deleted_at,created_at,updated_at";
+  "id,user_id,book_id,club_id,title,content,content_format,content_json,content_html,genre,post_type,visibility,likes_count,comments_count,share_count,metadata,deleted_at,created_at,updated_at";
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");

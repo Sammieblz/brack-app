@@ -42,6 +42,9 @@ export type Database = {
         Row: {
           club_id: string
           content: string
+          content_format: string
+          content_html: string | null
+          content_json: Json | null
           created_at: string
           deleted_at: string | null
           discussion_type: string
@@ -57,6 +60,9 @@ export type Database = {
         Insert: {
           club_id: string
           content: string
+          content_format?: string
+          content_html?: string | null
+          content_json?: Json | null
           created_at?: string
           deleted_at?: string | null
           discussion_type?: string
@@ -72,6 +78,9 @@ export type Database = {
         Update: {
           club_id?: string
           content?: string
+          content_format?: string
+          content_html?: string | null
+          content_json?: Json | null
           created_at?: string
           deleted_at?: string | null
           discussion_type?: string
@@ -373,6 +382,9 @@ export type Database = {
           book_id: string
           comments_count: number | null
           content: string
+          content_format: string
+          content_html: string | null
+          content_json: Json | null
           created_at: string
           deleted_at: string | null
           id: string
@@ -389,6 +401,9 @@ export type Database = {
           book_id: string
           comments_count?: number | null
           content: string
+          content_format?: string
+          content_html?: string | null
+          content_json?: Json | null
           created_at?: string
           deleted_at?: string | null
           id?: string
@@ -405,6 +420,9 @@ export type Database = {
           book_id?: string
           comments_count?: number | null
           content?: string
+          content_format?: string
+          content_html?: string | null
+          content_json?: Json | null
           created_at?: string
           deleted_at?: string | null
           id?: string
@@ -616,6 +634,9 @@ export type Database = {
         Row: {
           book_id: string
           content: string
+          content_format: string
+          content_html: string | null
+          content_json: Json | null
           created_at: string
           deleted_at: string | null
           entry_type: string
@@ -629,6 +650,9 @@ export type Database = {
         Insert: {
           book_id: string
           content: string
+          content_format?: string
+          content_html?: string | null
+          content_json?: Json | null
           created_at?: string
           deleted_at?: string | null
           entry_type: string
@@ -642,6 +666,9 @@ export type Database = {
         Update: {
           book_id?: string
           content?: string
+          content_format?: string
+          content_html?: string | null
+          content_json?: Json | null
           created_at?: string
           deleted_at?: string | null
           entry_type?: string
@@ -1083,6 +1110,9 @@ export type Database = {
           club_id: string | null
           comments_count: number | null
           content: string
+          content_format: string
+          content_html: string | null
+          content_json: Json | null
           created_at: string
           deleted_at: string | null
           genre: string | null
@@ -1101,6 +1131,9 @@ export type Database = {
           club_id?: string | null
           comments_count?: number | null
           content: string
+          content_format?: string
+          content_html?: string | null
+          content_json?: Json | null
           created_at?: string
           deleted_at?: string | null
           genre?: string | null
@@ -1119,6 +1152,9 @@ export type Database = {
           club_id?: string | null
           comments_count?: number | null
           content?: string
+          content_format?: string
+          content_html?: string | null
+          content_json?: Json | null
           created_at?: string
           deleted_at?: string | null
           genre?: string | null

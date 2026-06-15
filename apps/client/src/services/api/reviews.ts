@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { sanitizeInput } from "@/utils/sanitize";
 import { getCurrentAuthUser } from "./auth";
 import { invokeFunction } from "./client";
+import type { RichTextDocument, RichTextFormat } from "@/types/richText";
 
 export type ReviewScope = "for_you" | "following" | "recent" | "popular" | "mine";
 export type ReviewSort = "personalized" | "recent" | "popular";
@@ -32,6 +33,9 @@ export interface Review {
   rating: number;
   title: string | null;
   content: string;
+  content_format?: RichTextFormat | null;
+  content_json?: RichTextDocument | null;
+  content_html?: string | null;
   is_spoiler: boolean;
   is_public: boolean;
   likes_count: number;
@@ -68,6 +72,9 @@ export interface CreateReviewRequest {
   rating: number;
   title?: string;
   content: string;
+  content_format?: RichTextFormat;
+  content_json?: RichTextDocument | null;
+  content_html?: string | null;
   is_spoiler?: boolean;
   is_public?: boolean;
 }
@@ -261,6 +268,11 @@ export const createBookReview = async (data: CreateReviewRequest): Promise<Revie
       ...data,
       title: data.title ? sanitizeInput(data.title) : undefined,
       content: sanitizeInput(data.content),
+      rich_text: {
+        content_format: data.content_format,
+        content_json: data.content_json,
+        content_html: data.content_html,
+      },
     },
   });
   return normalizeReview(response.review);

@@ -24,6 +24,12 @@ Legend:
 | `book_club_join_requests` | Requester or club admin | Requester | Club admin | None | Private-club request review is Edge-owned. |
 | `book_club_members` | Club member | Club admin or self-join | Club admin | Self or club admin | Admin management now goes through Edge APIs. |
 | `book_clubs` | Public/private/member rule | Creator | Club admin | Club admin | Private clubs are discoverable as limited previews through Edge. |
+| `club_chat_media` | Club member if not blocked | Sender club member | None | None | Private `club-media` bucket reads use signed URLs from club chat Edge Functions. |
+| `club_chat_mentions` | Club member | Sender club member mentioning club members only | None | None | Mentions are created by `send-club-chat-message`. |
+| `club_chat_messages` | Club member if not blocked | Sender club member | Sender or moderator/admin | None | Sender/moderator soft-delete and heavy writes go through club chat Edge Functions. |
+| `club_chat_reactions` | Club member if not blocked | Club member self reaction | Owner reaction | Owner reaction | One fixed reaction per member/message. |
+| `club_chat_reads` | Owner club member | Owner club member | Owner club member | None | Per-member read cursor for chat unread counts. |
+| `club_chat_user_settings` | Owner club member | Owner club member | Owner club member | None | Per-member mute/open state. |
 | `book_list_items` | Owner through parent list | Owner through parent list | Owner through parent list | Owner through parent list | Public list read behavior is not implemented. |
 | `book_lists` | Owner | Owner | Owner | Owner | `is_public` exists but RLS is owner-only. |
 | `book_reviews` | Public if `is_public`, or owner | Owner | Owner | Owner | Visibility differs from profile/activity semantics. |
@@ -42,7 +48,7 @@ Legend:
 | `post_comments` | Parent post visibility | Visible post commenter | Owner | Owner | Thread metadata supports root/reply pagination. |
 | `post_likes` | Parent post visibility | Visible post liker | None | Owner | Like rows are no longer broadly public. |
 | `post_media` | Parent post visibility | Owner | None | Owner | Private Storage read uses signed URLs from Edge Functions. |
-| `club-media` Storage | Signed URL from club Edge Functions | Owner path prefix | Owner path prefix | Owner path prefix | Private bucket for club banners, profile images, and discussion attachments. |
+| `club-media` Storage | Signed URL from club Edge Functions | Owner path prefix | Owner path prefix | Owner path prefix | Private bucket for club banners, profile images, discussion attachments, and chat images/GIFs. |
 | `post_shares` | Owner | Owner | None | None | Share count is denormalized onto posts. |
 | `posts` | Public/followers/private plus block filters | Owner | Owner | Owner | `deleted_at` hides posts without hard delete. |
 | `profiles` | Owner plus public/followers visibility | Owner | Owner | None | `profile_visibility` supports public/followers/private; presence fields are filtered by discovery APIs. |

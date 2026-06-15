@@ -14,13 +14,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/rich-text/RichTextEditor";
+import { RichTextRenderer } from "@/components/rich-text/RichTextRenderer";
+import { toPlainRichTextPayload } from "@/lib/richText";
 import { cn } from "@/lib/utils";
-import type { ClubDiscussion, ClubMedia } from "@/hooks/useBookClubs";
+import type { ClubDiscussion, ClubMedia } from "@/services/api";
+import type { RichTextPayload } from "@/types/richText";
 
 interface DiscussionThreadProps {
   discussion: ClubDiscussion;
-  onReply: (parentId: string, content: string, files?: File[]) => Promise<void>;
+  onReply: (parentId: string, data: RichTextPayload & { files?: File[] }) => Promise<void>;
   onDelete: (discussionId: string) => Promise<void>;
   onPin?: (discussionId: string) => Promise<void>;
   currentUserId?: string;
@@ -46,7 +49,7 @@ const DiscussionNode = ({
 }: DiscussionThreadProps & { depth: number }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
-  const [replyContent, setReplyContent] = useState("");
+  const [replyText, setReplyText] = useState<RichTextPayload>(() => toPlainRichTextPayload(""));
   const [replyFiles, setReplyFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
@@ -56,11 +59,17 @@ const DiscussionNode = ({
   const canCollapse = hasChildren || discussion.content.length > 180 || Boolean(discussion.media?.length);
 
   const handleReply = async () => {
-    if (!replyContent.trim()) return;
+    if (!replyText.content.trim()) return;
     try {
       setSubmitting(true);
-      await onReply(discussion.id, replyContent, replyFiles);
-      setReplyContent("");
+      await onReply(discussion.id, {
+        content: replyText.content.trim(),
+        content_format: replyText.content_format,
+        content_json: replyText.content_json,
+        content_html: replyText.content_html,
+        files: replyFiles,
+      });
+      setReplyText(toPlainRichTextPayload(""));
       setReplyFiles([]);
       setShowReplyForm(false);
     } finally {
@@ -127,9 +136,13 @@ const DiscussionNode = ({
 
           {!collapsed && (
             <>
-              <p className="mt-2 whitespace-pre-wrap font-serif text-sm leading-relaxed text-foreground">
-                {discussion.content}
-              </p>
+              <RichTextRenderer
+                content={discussion.content}
+                contentFormat={discussion.content_format}
+                contentJson={discussion.content_json}
+                contentHtml={discussion.content_html}
+                className="mt-2 font-serif text-sm leading-relaxed text-foreground"
+              />
               <DiscussionMediaGallery media={discussion.media || []} />
             </>
           )}
@@ -170,12 +183,11 @@ const DiscussionNode = ({
 
           {showReplyForm && (
             <div className="mt-3 rounded-xl border border-border/70 bg-muted/20 p-3">
-              <Textarea
-                value={replyContent}
-                onChange={(event) => setReplyContent(event.target.value)}
+              <RichTextEditor
+                value={replyText}
+                onChange={setReplyText}
                 placeholder="Write your reply..."
-                rows={3}
-                className="resize-none"
+                minHeightClassName="min-h-28"
               />
               <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border px-3 py-2 font-sans text-xs text-muted-foreground transition hover:border-primary hover:text-primary">
@@ -195,13 +207,13 @@ const DiscussionNode = ({
                     size="sm"
                     onClick={() => {
                       setShowReplyForm(false);
-                      setReplyContent("");
+                      setReplyText(toPlainRichTextPayload(""));
                       setReplyFiles([]);
                     }}
                   >
                     Cancel
                   </Button>
-                  <Button size="sm" onClick={handleReply} disabled={submitting || !replyContent.trim()}>
+                  <Button size="sm" onClick={handleReply} disabled={submitting || !replyText.content.trim()}>
                     <Send className="mr-1 h-3.5 w-3.5" />
                     {submitting ? "Posting..." : "Post Reply"}
                   </Button>

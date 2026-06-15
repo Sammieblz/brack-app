@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { RichTextRenderer } from "@/components/rich-text/RichTextRenderer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -259,10 +260,13 @@ export const ReviewCard = ({
                 <p className="font-sans text-sm font-medium">This review contains spoilers.</p>
               </div>
             ) : (
-              <p className="mt-2 whitespace-pre-wrap font-serif text-foreground">
-                {sanitizeText(compact ? review.content.slice(0, 360) : review.content)}
-                {compact && review.content.length > 360 ? "..." : ""}
-              </p>
+              <RichTextRenderer
+                content={compact ? `${review.content.slice(0, 360)}${review.content.length > 360 ? "..." : ""}` : review.content}
+                contentFormat={compact ? "plain" : review.content_format}
+                contentJson={compact ? null : review.content_json}
+                contentHtml={compact ? null : review.content_html}
+                className="mt-2 font-serif text-foreground"
+              />
             )}
           </button>
 

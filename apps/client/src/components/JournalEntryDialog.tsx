@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RichTextEditor } from "@/components/rich-text/RichTextEditor";
 import { JournalEntry } from "@/hooks/useJournalEntries";
 import { Badge } from "@/components/ui/badge";
 import { Xmark, Camera, MediaImage } from "iconoir-react";
@@ -13,6 +13,8 @@ import { useImagePicker } from "@/hooks/useImagePicker";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { removeStorageFiles, uploadPublicStorageFile } from "@/services/api";
+import { toPlainRichTextPayload } from "@/lib/richText";
+import type { RichTextPayload } from "@/types/richText";
 
 interface JournalEntryDialogProps {
   open: boolean;
@@ -31,7 +33,7 @@ export const JournalEntryDialog = ({
 }: JournalEntryDialogProps) => {
   const [entryType, setEntryType] = useState<'note' | 'quote' | 'reflection'>('note');
   const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [richText, setRichText] = useState<RichTextPayload>(() => toPlainRichTextPayload(""));
   const [pageReference, setPageReference] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
@@ -47,7 +49,12 @@ export const JournalEntryDialog = ({
     if (editEntry) {
       setEntryType(editEntry.entry_type);
       setTitle(editEntry.title || '');
-      setContent(editEntry.content);
+      setRichText({
+        content: editEntry.content,
+        content_format: editEntry.content_format || "plain",
+        content_json: editEntry.content_json || null,
+        content_html: editEntry.content_html || null,
+      });
       setPageReference(editEntry.page_reference?.toString() || '');
       setTags(editEntry.tags || []);
       setPhotoUrl(editEntry.photo_url || null);
@@ -60,7 +67,7 @@ export const JournalEntryDialog = ({
   const resetForm = () => {
     setEntryType('note');
     setTitle('');
-    setContent('');
+    setRichText(toPlainRichTextPayload(""));
     setPageReference('');
     setTags([]);
     setTagInput('');
@@ -129,13 +136,16 @@ export const JournalEntryDialog = ({
   };
 
   const handleSave = () => {
-    if (!content.trim()) return;
+    if (!richText.content.trim()) return;
 
     onSave({
       book_id: bookId,
       entry_type: entryType,
       title: title.trim() || undefined,
-      content: content.trim(),
+      content: richText.content.trim(),
+      content_format: richText.content_format,
+      content_json: richText.content_json,
+      content_html: richText.content_html,
       page_reference: pageReference ? parseInt(pageReference) : undefined,
       tags: tags.length > 0 ? tags : undefined,
       photo_url: photoUrl || undefined,
@@ -178,9 +188,10 @@ export const JournalEntryDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="content">Content *</Label>
-            <Textarea
-              id="content"
+            <Label>Content *</Label>
+            <RichTextEditor
+              value={richText}
+              onChange={setRichText}
               placeholder={
                 entryType === 'quote'
                   ? 'Enter the quote...'
@@ -188,9 +199,7 @@ export const JournalEntryDialog = ({
                   ? 'Share your thoughts and reflections...'
                   : 'Write your notes...'
               }
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className={`min-h-[200px] ${entryType === 'quote' || entryType === 'reflection' ? 'font-serif' : 'font-sans'}`}
+              minHeightClassName="min-h-[200px]"
             />
           </div>
 
@@ -302,7 +311,7 @@ export const JournalEntryDialog = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={!content.trim()}>
+          <Button onClick={handleSave} disabled={!richText.content.trim()}>
             {editEntry ? 'Update' : 'Add'} Entry
           </Button>
         </DialogFooter>

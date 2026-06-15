@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { RichTextDocument, RichTextFormat } from "@/types/richText";
 
 export interface JournalEntry {
   id: string;
@@ -7,6 +8,9 @@ export interface JournalEntry {
   entry_type: "note" | "quote" | "reflection";
   title?: string | null;
   content: string;
+  content_format?: RichTextFormat | null;
+  content_json?: RichTextDocument | null;
+  content_html?: string | null;
   page_reference?: number | null;
   tags?: string[] | null;
   photo_url?: string | null;
