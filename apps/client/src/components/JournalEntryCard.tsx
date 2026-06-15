@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RichTextRenderer } from "@/components/rich-text/RichTextRenderer";
 import { EditPencil, Trash, Book, Quote, LightBulb } from "iconoir-react";
 import { JournalEntry } from "@/hooks/useJournalEntries";
 import { formatDistanceToNow } from "date-fns";
@@ -69,9 +70,13 @@ export const JournalEntryCard = ({ entry, onEdit, onDelete }: JournalEntryCardPr
             />
           </div>
         )}
-        <p className="font-serif text-muted-foreground whitespace-pre-wrap mb-3">
-          {entry.content}
-        </p>
+        <RichTextRenderer
+          content={entry.content}
+          contentFormat={entry.content_format}
+          contentJson={entry.content_json}
+          contentHtml={entry.content_html}
+          className="mb-3 font-serif text-muted-foreground"
+        />
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex gap-1 flex-wrap">
             {entry.tags?.map((tag, index) => (

@@ -6,6 +6,7 @@ import {
   parseJsonBody,
 } from "../_shared/appEndpoint.ts";
 import { enforceRateLimit } from "../_shared/rateLimit.ts";
+import { normalizeRichText, type RichTextPayload } from "../_shared/richText.ts";
 import { sanitizeString } from "../_shared/social.ts";
 
 type PostType = "text" | "book" | "club";
@@ -31,6 +32,10 @@ interface CreatePostBody {
   book_id?: unknown;
   club_id?: unknown;
   media?: CreatePostMediaInput[];
+  content_format?: unknown;
+  content_json?: unknown;
+  content_html?: unknown;
+  rich_text?: RichTextPayload;
 }
 
 const IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -127,7 +132,16 @@ Deno.serve(async (req) => {
 
     const body = await parseJsonBody<CreatePostBody>(req);
     const title = sanitizeString(body.title, 200);
-    const content = sanitizeString(body.content, 10_000);
+    const richText = normalizeRichText(
+      body.rich_text || {
+        content_format: body.content_format,
+        content_json: body.content_json,
+        content_html: body.content_html,
+      },
+      body.content,
+      10_000,
+    );
+    const content = richText.text;
     const genre = sanitizeString(body.genre, 100) || null;
     const postType = (body.post_type === "book" || body.post_type === "club"
       ? body.post_type
@@ -181,6 +195,9 @@ Deno.serve(async (req) => {
         user_id: authResult.user.id,
         title,
         content,
+        content_format: richText.content_format,
+        content_json: richText.content_json,
+        content_html: richText.content_html,
         genre,
         post_type: postType,
         visibility,

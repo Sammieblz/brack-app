@@ -87,6 +87,9 @@ verify_jwt = true
 [functions.search-message-gifs]
 verify_jwt = true
 
+[functions.search-gifs]
+verify_jwt = true
+
 [functions.discover-readers]
 verify_jwt = true
 
@@ -130,6 +133,24 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.update-club-media]
+verify_jwt = true
+
+[functions.club-chat-history]
+verify_jwt = true
+
+[functions.send-club-chat-message]
+verify_jwt = true
+
+[functions.toggle-club-chat-reaction]
+verify_jwt = true
+
+[functions.mark-club-chat-read]
+verify_jwt = true
+
+[functions.delete-club-chat-message]
+verify_jwt = true
+
+[functions.update-club-chat-settings]
 verify_jwt = true
 
 [functions.compute-analytics]

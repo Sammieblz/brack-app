@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { ActionSheet } from "@/components/ui/action-sheet";
 import { HeartLike } from "@/components/animations/HeartLike";
 import { CommentThread } from "./CommentThread";
+import { RichTextRenderer } from "@/components/rich-text/RichTextRenderer";
 import { AppIcon } from "@/components/ui/app-icon";
 import type { Post } from "@/hooks/usePosts";
 import { useAuth } from "@/hooks/useAuth";
@@ -199,9 +200,13 @@ export const PostCard = ({ post, onLike, onDelete, onBlocked, compact }: PostCar
               </div>
             </div>
 
-            <p className="whitespace-pre-wrap font-serif text-sm leading-relaxed text-foreground sm:text-base">
-              {sanitizeText(post.content)}
-            </p>
+            <RichTextRenderer
+              content={post.content}
+              contentFormat={post.content_format}
+              contentJson={post.content_json}
+              contentHtml={post.content_html}
+              className="font-serif text-sm leading-relaxed text-foreground sm:text-base"
+            />
           </div>
 
           {post.media && post.media.length > 0 && <PostMediaGrid post={post} />}

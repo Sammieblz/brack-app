@@ -6,6 +6,7 @@ import {
   parseJsonBody,
 } from "../_shared/appEndpoint.ts";
 import { enforceRateLimit } from "../_shared/rateLimit.ts";
+import { normalizeRichText, type RichTextPayload } from "../_shared/richText.ts";
 import { sanitizeString } from "../_shared/social.ts";
 import {
   DISCUSSION_SELECT,
@@ -19,6 +20,10 @@ interface CreateDiscussionBody {
   clubId?: unknown;
   title?: unknown;
   content?: unknown;
+  content_format?: unknown;
+  content_json?: unknown;
+  content_html?: unknown;
+  rich_text?: RichTextPayload;
   parentId?: unknown;
   parent_id?: unknown;
   discussionType?: unknown;
@@ -53,7 +58,16 @@ Deno.serve(async (req) => {
         : typeof body.parent_id === "string"
           ? body.parent_id
           : null;
-    const content = sanitizeString(body.content, 5000);
+    const richText = normalizeRichText(
+      body.rich_text || {
+        content_format: body.content_format,
+        content_json: body.content_json,
+        content_html: body.content_html,
+      },
+      body.content,
+      5000,
+    );
+    const content = richText.text;
     const title = sanitizeString(body.title, 160);
     const requestedType = body.discussionType || body.discussion_type;
     const discussionType = requestedType === "announcement" ? "announcement" : "discussion";
@@ -94,6 +108,9 @@ Deno.serve(async (req) => {
         user_id: authResult.user.id,
         title: parentId ? null : title || null,
         content,
+        content_format: richText.content_format,
+        content_json: richText.content_json,
+        content_html: richText.content_html,
         parent_id: parentId,
         discussion_type: parentId ? "discussion" : discussionType,
         is_pinned: parentId ? false : isPinned,

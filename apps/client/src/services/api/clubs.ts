@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { invokeFunction } from "./client";
 import { getCurrentAuthUser } from "./auth";
+import type { RichTextDocument, RichTextFormat } from "@/types/richText";
 
 export type ClubMemberRole = "admin" | "moderator" | "member";
 export type ClubJoinStatus = "none" | "member" | "requested" | "invited";
@@ -63,6 +64,10 @@ export interface ClubPreview {
 }
 
 export type ClubMediaType = "image" | "video";
+export type ClubChatMessageType = "text" | "media" | "gif";
+export type ClubChatMediaSource = "upload" | "tenor";
+export type ClubChatMediaType = "image" | "gif";
+export type ClubChatReactionType = "like" | "dislike" | "heart" | "laugh" | "wow" | "thanks";
 
 export interface ClubMedia {
   storage_path: string;
@@ -77,6 +82,128 @@ export interface ClubMedia {
   duration_ms?: number | null;
   position?: number;
   alt_text?: string | null;
+}
+
+export interface GifSearchResult {
+  id: string;
+  provider: "tenor";
+  provider_id: string;
+  title: string;
+  url: string;
+  preview_url: string;
+  width?: number | null;
+  height?: number | null;
+}
+
+export interface GifSearchResponse {
+  results: GifSearchResult[];
+  next?: string | null;
+}
+
+export interface ClubChatUser {
+  id: string;
+  display_name: string | null;
+  avatar_url?: string | null;
+}
+
+export interface ClubChatMedia {
+  id?: string;
+  message_id?: string;
+  club_id?: string;
+  user_id?: string;
+  media_source: ClubChatMediaSource;
+  media_type: ClubChatMediaType;
+  bucket_id?: string;
+  storage_path?: string | null;
+  external_url?: string | null;
+  signed_url?: string | null;
+  preview_url?: string | null;
+  provider?: string | null;
+  provider_id?: string | null;
+  mime_type: string;
+  size_bytes?: number | null;
+  width?: number | null;
+  height?: number | null;
+  position?: number;
+  metadata?: Record<string, unknown>;
+  created_at?: string;
+}
+
+export interface ClubChatReaction {
+  id: string;
+  message_id: string;
+  club_id: string;
+  user_id: string;
+  reaction_type: ClubChatReactionType;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface ClubChatTypingUser {
+  userId: string;
+  name: string;
+  avatarUrl?: string | null;
+  isTyping: boolean;
+  timestamp: number;
+}
+
+export interface ClubChatTypingSubscription {
+  setTyping: (isTyping: boolean) => Promise<void>;
+  cleanup: () => void;
+}
+
+export interface ClubChatMessage {
+  id: string;
+  club_id: string;
+  user_id: string;
+  content: string | null;
+  message_type: ClubChatMessageType;
+  reply_to_message_id?: string | null;
+  client_message_id?: string | null;
+  metadata?: Record<string, unknown> | null;
+  edited_at?: string | null;
+  deleted_at?: string | null;
+  created_at: string;
+  updated_at?: string;
+  user?: ClubChatUser | null;
+  media?: ClubChatMedia[];
+  reactions?: ClubChatReaction[];
+  reaction_counts?: Partial<Record<ClubChatReactionType, number>>;
+  current_user_reaction?: ClubChatReactionType | null;
+  reply_to_message?: {
+    id: string;
+    user_id: string;
+    content: string | null;
+    message_type: ClubChatMessageType;
+    deleted_at?: string | null;
+    user?: ClubChatUser | null;
+  } | null;
+}
+
+export interface ClubChatSettings {
+  club_id: string;
+  user_id: string;
+  is_muted: boolean;
+  last_opened_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ClubChatHistoryResponse {
+  messages: ClubChatMessage[];
+  next_cursor?: string | null;
+  has_more: boolean;
+  settings?: ClubChatSettings | null;
+}
+
+export interface SendClubChatMessageRequest {
+  club_id: string;
+  content?: string | null;
+  media?: ClubChatMedia[];
+  gif?: GifSearchResult | null;
+  reply_to_message_id?: string | null;
+  mention_ids?: string[];
+  client_message_id?: string | null;
 }
 
 export type BookClub = ClubPreview;
@@ -103,6 +230,9 @@ export interface ClubDiscussion {
   user_id: string;
   title?: string | null;
   content: string;
+  content_format?: RichTextFormat | null;
+  content_json?: RichTextDocument | null;
+  content_html?: string | null;
   parent_id?: string | null;
   discussion_type?: "discussion" | "announcement";
   is_pinned?: boolean;
@@ -197,6 +327,9 @@ export interface CreateBookClubRequest {
 export interface CreateClubDiscussionRequest {
   title?: string;
   content: string;
+  content_format?: RichTextFormat;
+  content_json?: RichTextDocument | null;
+  content_html?: string | null;
   parent_id?: string;
   discussion_type?: "discussion" | "announcement";
   is_pinned?: boolean;
@@ -206,8 +339,10 @@ export interface CreateClubDiscussionRequest {
 const CLUB_MEDIA_BUCKET = "club-media";
 const IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const VIDEO_MIME_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime"]);
+const CLUB_CHAT_MEDIA_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 60 * 1024 * 1024;
+const MAX_CHAT_MEDIA_BYTES = 10 * 1024 * 1024;
 
 const toSafeFileName = (name: string) =>
   name
@@ -278,6 +413,46 @@ export const uploadClubDiscussionMediaFiles = async (
     uploaded.push({
       storage_path: storagePath,
       media_type: isVideo ? "video" : "image",
+      mime_type: file.type,
+      size_bytes: file.size,
+      position: index,
+    });
+  }
+
+  return uploaded;
+};
+
+export const uploadClubChatMediaFiles = async (
+  files: File[],
+  clubId: string
+): Promise<ClubChatMedia[]> => {
+  const user = await getCurrentAuthUser();
+  if (!user) throw new Error("Not authenticated");
+  if (files.length > 4) throw new Error("Club chat messages can include up to 4 media items");
+
+  const uploaded: ClubChatMedia[] = [];
+  for (const [index, file] of files.entries()) {
+    if (!CLUB_CHAT_MEDIA_TYPES.has(file.type)) {
+      throw new Error(`${file.name} is not a supported image or GIF`);
+    }
+    if (file.size > MAX_CHAT_MEDIA_BYTES) {
+      throw new Error(`${file.name} must be 10 MB or smaller`);
+    }
+
+    const storagePath = `${user.id}/clubs/${clubId}/chat/${crypto.randomUUID()}-${toSafeFileName(file.name)}`;
+    const { error } = await supabase.storage
+      .from(CLUB_MEDIA_BUCKET)
+      .upload(storagePath, file, {
+        cacheControl: "31536000",
+        upsert: false,
+        contentType: file.type,
+      });
+    if (error) throw error;
+
+    uploaded.push({
+      media_source: "upload",
+      media_type: file.type === "image/gif" ? "gif" : "image",
+      storage_path: storagePath,
       mime_type: file.type,
       size_bytes: file.size,
       position: index,
@@ -381,6 +556,14 @@ export const createClubDiscussion = async (
       clubId,
       title: data.title,
       content: data.content,
+      content_format: data.content_format,
+      content_json: data.content_json,
+      content_html: data.content_html,
+      rich_text: {
+        content_format: data.content_format,
+        content_json: data.content_json,
+        content_html: data.content_html,
+      },
       parentId: data.parent_id,
       discussionType: data.discussion_type,
       isPinned: data.is_pinned,
@@ -411,6 +594,129 @@ export const moderateClubDiscussion = async (
     body: { discussionId, action },
   });
   return response.discussion;
+};
+
+export const getClubChatHistory = async (
+  clubId: string,
+  cursor?: string | null,
+  limit = 40
+): Promise<ClubChatHistoryResponse> => {
+  return invokeFunction<ClubChatHistoryResponse>("club-chat-history", {
+    body: { club_id: clubId, cursor: cursor || null, limit },
+  });
+};
+
+export const sendClubChatMessage = async (
+  request: SendClubChatMessageRequest
+): Promise<ClubChatMessage> => {
+  const response = await invokeFunction<{ message: ClubChatMessage }>("send-club-chat-message", {
+    body: {
+      ...request,
+      content: request.content || null,
+      client_message_id: request.client_message_id || crypto.randomUUID(),
+    },
+  });
+  return response.message;
+};
+
+export const toggleClubChatReaction = async (
+  messageId: string,
+  reactionType: ClubChatReactionType
+): Promise<{ reaction: ClubChatReactionType | null; message: ClubChatMessage }> => {
+  return invokeFunction("toggle-club-chat-reaction", {
+    body: { message_id: messageId, reaction_type: reactionType },
+  });
+};
+
+export const markClubChatRead = async (
+  clubId: string,
+  lastReadMessageId?: string | null
+): Promise<void> => {
+  await invokeFunction("mark-club-chat-read", {
+    body: { club_id: clubId, last_read_message_id: lastReadMessageId || null },
+  });
+};
+
+export const deleteClubChatMessage = async (messageId: string): Promise<ClubChatMessage> => {
+  const response = await invokeFunction<{ message: ClubChatMessage }>("delete-club-chat-message", {
+    body: { message_id: messageId },
+  });
+  return response.message;
+};
+
+export const updateClubChatSettings = async (
+  clubId: string,
+  settings: Partial<Pick<ClubChatSettings, "is_muted">>
+): Promise<ClubChatSettings> => {
+  const response = await invokeFunction<{ settings: ClubChatSettings }>(
+    "update-club-chat-settings",
+    { body: { club_id: clubId, ...settings } }
+  );
+  return response.settings;
+};
+
+export const searchGifs = async (
+  query: string,
+  pos?: string | null
+): Promise<GifSearchResponse> => {
+  return invokeFunction<GifSearchResponse>("search-gifs", {
+    body: { query, pos: pos || null, limit: 18 },
+  });
+};
+
+export const subscribeToClubChatTypingIndicator = (
+  clubId: string,
+  currentUser: { id: string; name: string; avatarUrl?: string | null },
+  onTypingUsersChange: (users: ClubChatTypingUser[]) => void
+): ClubChatTypingSubscription => {
+  const channel = supabase.channel(`club-chat-typing:${clubId}`, {
+    config: {
+      presence: {
+        key: currentUser.id,
+      },
+    },
+  });
+
+  channel
+    .on("presence", { event: "sync" }, () => {
+      const now = Date.now();
+      const state = channel.presenceState<ClubChatTypingUser>();
+      const usersById = new Map<string, ClubChatTypingUser>();
+
+      Object.values(state)
+        .flat()
+        .filter((user) => user.userId !== currentUser.id)
+        .filter((user) => user.isTyping && now - user.timestamp < 6000)
+        .forEach((user) => usersById.set(user.userId, user));
+
+      onTypingUsersChange(Array.from(usersById.values()));
+    })
+    .subscribe(async (status) => {
+      if (status === "SUBSCRIBED") {
+        await channel.track({
+          userId: currentUser.id,
+          name: currentUser.name,
+          avatarUrl: currentUser.avatarUrl || null,
+          isTyping: false,
+          timestamp: Date.now(),
+        });
+      }
+    });
+
+  return {
+    setTyping: async (isTyping: boolean) => {
+      await channel.track({
+        userId: currentUser.id,
+        name: currentUser.name,
+        avatarUrl: currentUser.avatarUrl || null,
+        isTyping,
+        timestamp: Date.now(),
+      });
+    },
+    cleanup: () => {
+      supabase.removeChannel(channel);
+    },
+  };
 };
 
 export const manageClubMember = async (
@@ -486,4 +792,47 @@ export const subscribeToClubDiscussions = (
   _onChange: () => void
 ): (() => void) => {
   return () => undefined;
+};
+
+export const subscribeToClubChat = (
+  clubId: string,
+  onChange: () => void
+): (() => void) => {
+  const channel = supabase
+    .channel(`club-chat-${clubId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "club_chat_messages",
+        filter: `club_id=eq.${clubId}`,
+      },
+      onChange
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "club_chat_reactions",
+        filter: `club_id=eq.${clubId}`,
+      },
+      onChange
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "club_chat_media",
+        filter: `club_id=eq.${clubId}`,
+      },
+      onChange
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
 };

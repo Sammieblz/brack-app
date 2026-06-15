@@ -68,7 +68,7 @@ export const MEMBER_SELECT =
   "id,club_id,user_id,role,joined_at";
 
 export const DISCUSSION_SELECT =
-  "id,club_id,user_id,title,content,parent_id,discussion_type,is_pinned,reply_count,media,deleted_at,created_at,updated_at";
+  "id,club_id,user_id,title,content,content_format,content_json,content_html,parent_id,discussion_type,is_pinned,reply_count,media,deleted_at,created_at,updated_at";
 
 export const sanitizeClubMediaPath = (value: unknown, userId: string): string | null => {
   const path = sanitizeString(value, 700);

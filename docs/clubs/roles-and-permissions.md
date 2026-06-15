@@ -32,6 +32,12 @@ Current DB role constraint allows `admin`, `moderator`, and `member`. Owner is r
 | Leave club | Yes, if policy allows self-delete | Yes | Yes | Yes | N/A |
 | View discussions | Yes | Yes | Yes | Yes | No for private clubs |
 | Create discussion/reply | Yes | Yes | Yes | Yes | No |
+| View club chat | Yes | Yes | Yes | Yes | No |
+| Send club chat message | Yes | Yes | Yes | Yes | No |
+| React to club chat message | Yes | Yes | Yes | Yes | No |
+| Delete own chat message | Yes | Yes | Yes | Yes for own rows | No |
+| Delete any chat message | Via admin membership | Yes | Yes | No | No |
+| Mute own club chat | Yes | Yes | Yes | Yes | N/A |
 | Delete own discussion | Yes | Yes | Yes | Yes for own rows | No |
 | Pin announcement/discussion | Via admin membership | Yes | No | No | No |
 | Delete any discussion | Via admin membership | Yes | Yes | No | No |
@@ -49,10 +55,13 @@ Current behavior:
 - Member role changes check admin helper.
 - Discussion insert checks membership and author.
 - Discussion update/delete checks author or moderator/admin helper.
+- Club chat read/send/reaction/settings policies require membership and filter blocked users through club chat helper functions.
+- Club chat media is stored in private `club-media`; reads are signed by Edge Functions and never exposed through public URLs.
 - Join requests and invites are requester/invitee plus admin visible.
 
 Frontend alignment:
 - `BookClubDetail` uses `club-detail` for role, private preview, admin queues, discussions, announcements, and members.
+- `BookClubDetail` exposes the Chat tab only to accepted members and passes moderator/admin state into the chat moderation controls.
 - `BookClubCard` uses `club.user_role`, `join_status`, `request_id`, and `invite_id` to choose CTA.
 - Because creators are inserted as admin, owner actions align with frontend admin checks.
 

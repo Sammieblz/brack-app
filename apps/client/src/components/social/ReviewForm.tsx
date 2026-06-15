@@ -19,12 +19,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { RichTextEditor } from "@/components/rich-text/RichTextEditor";
+import { toPlainRichTextPayload } from "@/lib/richText";
 import { useReviews } from "@/hooks/useReviews";
 import { Star } from "iconoir-react";
 import { sanitizeInput } from "@/utils/sanitize";
+import type { RichTextPayload } from "@/types/richText";
 
 const reviewSchema = z.object({
   rating: z.number().min(1).max(5),
@@ -46,6 +48,7 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
   const { createReview } = useReviews(bookId);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [richText, setRichText] = useState<RichTextPayload>(() => toPlainRichTextPayload(""));
 
   const form = useForm<ReviewFormData>({
     resolver: zodResolver(reviewSchema),
@@ -65,12 +68,16 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
       rating: data.rating,
       title: data.title ? sanitizeInput(data.title) : undefined,
       content: sanitizeInput(data.content),
+      content_format: richText.content_format,
+      content_json: richText.content_json,
+      content_html: richText.content_html,
       is_spoiler: data.is_spoiler,
       is_public: data.is_public,
     });
 
     if (result.success) {
       form.reset();
+      setRichText(toPlainRichTextPayload(""));
       onOpenChange(false);
     }
     setSubmitting(false);
@@ -150,11 +157,15 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
                 <FormItem>
                   <FormLabel className="font-sans">Review *</FormLabel>
                   <FormControl>
-                    <Textarea
-                      className="font-serif"
+                    <RichTextEditor
                       placeholder="What did you think about this book?"
-                      rows={6}
-                      {...field}
+                      value={richText}
+                      limit={5000}
+                      minHeightClassName="min-h-36"
+                      onChange={(payload) => {
+                        setRichText(payload);
+                        field.onChange(payload.content);
+                      }}
                     />
                   </FormControl>
                   <FormDescription className="font-sans">Minimum 10 characters</FormDescription>

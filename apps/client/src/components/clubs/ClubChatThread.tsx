@@ -1,19 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { TypingIndicator } from "@/components/messaging/TypingIndicator";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Attachment,
   ChatBubble,
@@ -23,47 +10,53 @@ import {
   Search,
   Send,
   Trash,
-  WarningTriangle,
   Xmark,
 } from "iconoir-react";
-import { useTypingIndicator } from "@/hooks/useTypingIndicator";
-import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
+import { TypingIndicator } from "@/components/messaging/TypingIndicator";
+import { ReactionBar } from "@/components/reactions/ReactionBar";
+import { useClubChatTypingIndicator } from "@/hooks/useClubChatTypingIndicator";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { useProfileContext } from "@/contexts/ProfileContext";
-import { ReactionBar } from "@/components/reactions/ReactionBar";
-import { blockUser, searchMessageGifs, uploadMessageMediaFiles } from "@/services/api";
-import type {
-  GifSearchResult,
-  Message,
-  MessageReactionType,
-  SendMessageRequest,
-} from "@/services/api";
-import { sanitizeText, sanitizeInput } from "@/utils/sanitize";
 import { cn } from "@/lib/utils";
+import { sanitizeInput, sanitizeText } from "@/utils/sanitize";
+import {
+  deleteClubChatMessage,
+  getClubChatHistory,
+  markClubChatRead,
+  searchGifs,
+  sendClubChatMessage,
+  subscribeToClubChat,
+  toggleClubChatReaction,
+  uploadClubChatMediaFiles,
+  type ClubChatMessage,
+  type ClubChatReactionType,
+  type ClubMember,
+  type GifSearchResult,
+} from "@/services/api";
 import { toast } from "sonner";
 
-interface MessageThreadProps {
-  messages: Message[];
-  onSendMessage: (contentOrRequest: string | Omit<SendMessageRequest, "conversation_id">) => Promise<boolean>;
-  onToggleReaction: (messageId: string, reactionType: MessageReactionType) => Promise<boolean>;
-  onDeleteMessage: (messageId: string) => Promise<boolean>;
+interface ClubChatThreadProps {
+  clubId: string;
+  members: ClubMember[];
   currentUserId?: string;
-  conversationId: string | null;
-  otherUser?: {
-    id: string;
-    display_name: string | null;
-    avatar_url?: string | null;
-    show_online_status?: boolean | null;
-    last_seen_at?: string | null;
-    reader_status?: string | null;
-  } | null;
-  isBlocked?: boolean;
-  onBack?: () => void;
+  canModerate?: boolean;
 }
 
 const getInitials = (name?: string | null) => {
-  if (!name) return "U";
+  if (!name) return "R";
   return name
     .split(" ")
     .map((part) => part[0])
@@ -75,66 +68,85 @@ const getInitials = (name?: string | null) => {
 const formatTimestamp = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
-  const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-  const timeStr = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-  if (diffInHours < 24 && date.getDate() === now.getDate()) return timeStr;
-  if (diffInHours < 48 && date.getDate() === now.getDate() - 1) return `Yesterday ${timeStr}`;
-  if (diffInHours < 168) {
-    return `${date.toLocaleDateString([], { weekday: "short" })} ${timeStr}`;
-  }
-  return `${date.toLocaleDateString([], {
-    month: "short",
-    day: "numeric",
-    year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
-  })} ${timeStr}`;
+  const sameDay = date.toDateString() === now.toDateString();
+  const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (sameDay) return time;
+  return `${date.toLocaleDateString([], { month: "short", day: "numeric" })} ${time}`;
 };
 
-const shouldGroupWithPrevious = (message: Message, previous?: Message) => {
+const shouldGroupWithPrevious = (message: ClubChatMessage, previous?: ClubChatMessage) => {
   if (!previous) return false;
-  if (message.sender_id !== previous.sender_id) return false;
+  if (message.user_id !== previous.user_id) return false;
   const delta = new Date(message.created_at).getTime() - new Date(previous.created_at).getTime();
   return delta >= 0 && delta < 5 * 60 * 1000;
 };
 
-const previewText = (message: Message) => {
+const previewText = (message: ClubChatMessage) => {
   if (message.deleted_at) return "Deleted message";
   if (message.content) return sanitizeText(message.content);
   if (message.message_type === "gif") return "GIF";
   return "Media";
 };
 
-export const MessageThread = ({
-  messages,
-  onSendMessage,
-  onToggleReaction,
-  onDeleteMessage,
+export const ClubChatThread = ({
+  clubId,
+  members,
   currentUserId,
-  conversationId,
-  otherUser,
-  isBlocked,
-}: MessageThreadProps) => {
-  const [messageContent, setMessageContent] = useState("");
-  const [sending, setSending] = useState(false);
+  canModerate = false,
+}: ClubChatThreadProps) => {
+  const [messages, setMessages] = useState<ClubChatMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [content, setContent] = useState("");
   const [files, setFiles] = useState<File[]>([]);
-  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [sending, setSending] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<ClubChatMessage | null>(null);
   const [previewMedia, setPreviewMedia] = useState<string | null>(null);
   const [gifOpen, setGifOpen] = useState(false);
-  const [emojiOpen, setEmojiOpen] = useState(false);
   const [gifQuery, setGifQuery] = useState("");
   const [gifResults, setGifResults] = useState<GifSearchResult[]>([]);
   const [gifSearching, setGifSearching] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [mentionIds, setMentionIds] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { otherUserTyping, setTyping } = useTypingIndicator(conversationId, currentUserId);
-  const { triggerHaptic } = useHapticFeedback();
-  const isMobile = useIsMobile();
-  const isOnline = useNetworkStatus();
   const navigate = useNavigate();
+  const isOnline = useNetworkStatus();
   const { profile } = useProfileContext();
 
-  const draftKey = conversationId ? `message_draft_${conversationId}` : null;
+  const currentTypingUser = useMemo(
+    () =>
+      currentUserId
+        ? {
+            id: currentUserId,
+            name: profile?.display_name || "You",
+            avatarUrl: profile?.avatar_url,
+          }
+        : null,
+    [currentUserId, profile?.avatar_url, profile?.display_name]
+  );
+  const { typingUsers, setTyping } = useClubChatTypingIndicator(clubId, currentTypingUser);
+
+  const membersById = useMemo(
+    () => new Map(members.map((member) => [member.user_id, member])),
+    [members]
+  );
+
+  const currentMention = useMemo(() => {
+    const match = content.match(/(?:^|\s)@([\w\s-]{0,32})$/);
+    return match?.[1]?.toLowerCase() ?? null;
+  }, [content]);
+
+  const mentionMatches = useMemo(() => {
+    if (currentMention == null) return [];
+    return members
+      .filter((member) => member.user_id !== currentUserId)
+      .filter((member) =>
+        (member.user?.display_name || "Reader").toLowerCase().includes(currentMention)
+      )
+      .slice(0, 5);
+  }, [currentMention, currentUserId, members]);
+
   const selectedFilePreviews = useMemo(
     () => files.map((file) => ({ file, url: URL.createObjectURL(file) })),
     [files]
@@ -144,21 +156,30 @@ export const MessageThread = ({
     return () => selectedFilePreviews.forEach((preview) => URL.revokeObjectURL(preview.url));
   }, [selectedFilePreviews]);
 
-  useEffect(() => {
-    if (!draftKey) return;
-    setMessageContent(localStorage.getItem(draftKey) || "");
-    setFiles([]);
-    setReplyingTo(null);
-  }, [draftKey]);
+  const loadMessages = async () => {
+    try {
+      const response = await getClubChatHistory(clubId);
+      setMessages(response.messages || []);
+      const latest = response.messages?.[response.messages.length - 1];
+      if (latest) void markClubChatRead(clubId, latest.id);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to load club chat");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!draftKey) return;
-    localStorage.setItem(draftKey, messageContent);
-  }, [draftKey, messageContent]);
+    setLoading(true);
+    void loadMessages();
+    const unsubscribe = subscribeToClubChat(clubId, () => void loadMessages());
+    return unsubscribe;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clubId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, typingUsers.length]);
 
   useEffect(() => {
     return () => {
@@ -166,26 +187,19 @@ export const MessageThread = ({
       void setTyping(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId]);
+  }, [clubId]);
 
   const openProfile = (userId?: string | null) => {
     if (userId) navigate(`/users/${userId}`);
   };
 
-  const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    setMessageContent(event.target.value);
-    setTyping(true);
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => setTyping(false), 2000);
-  };
-
   const validateFiles = (selected: File[]) => {
-    if (selected.length > 4) throw new Error("Messages can include up to 4 media items");
+    if (selected.length > 4) throw new Error("Club chat messages can include up to 4 media items");
     for (const file of selected) {
       if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
         throw new Error(`${file.name} is not a supported image or GIF`);
       }
-      if (file.size > 8 * 1024 * 1024) throw new Error(`${file.name} must be 8 MB or smaller`);
+      if (file.size > 10 * 1024 * 1024) throw new Error(`${file.name} must be 10 MB or smaller`);
     }
   };
 
@@ -201,39 +215,42 @@ export const MessageThread = ({
   };
 
   const clearComposer = () => {
-    setMessageContent("");
+    setContent("");
     setFiles([]);
     setReplyingTo(null);
+    setMentionIds([]);
+    void setTyping(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
-    if (draftKey) localStorage.removeItem(draftKey);
   };
 
-  const handleSend = async () => {
-    if (sending || !conversationId || isBlocked || !isOnline) return;
-    if (!messageContent.trim() && files.length === 0) return;
-    if (messageContent.length > 5000) {
-      triggerHaptic("error");
-      toast.error("Message must be less than 5000 characters");
-      return;
-    }
+  const handleContentChange = (value: string) => {
+    setContent(value);
+    void setTyping(Boolean(value.trim()));
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => void setTyping(false), 2200);
+  };
 
+  const handleSend = async (gif?: GifSearchResult) => {
+    if (sending || !isOnline) return;
+    if (!content.trim() && files.length === 0 && !gif) return;
     try {
-      triggerHaptic("light");
       setSending(true);
-      setTyping(false);
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-
-      const media = files.length > 0 ? await uploadMessageMediaFiles(files) : [];
-      const success = await onSendMessage({
-        content: sanitizeInput(messageContent),
+      const media = files.length > 0 ? await uploadClubChatMediaFiles(files, clubId) : [];
+      const message = await sendClubChatMessage({
+        club_id: clubId,
+        content: content.trim() ? sanitizeInput(content) : null,
         media,
+        gif: gif || null,
         reply_to_message_id: replyingTo?.id || null,
+        mention_ids: mentionIds,
       });
-
-      if (success) {
-        clearComposer();
-        triggerHaptic("success");
-      }
+      setMessages((current) => [...current.filter((item) => item.id !== message.id), message]);
+      clearComposer();
+      setGifOpen(false);
+      setGifResults([]);
+      setGifQuery("");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to send message");
     } finally {
       setSending(false);
     }
@@ -243,7 +260,7 @@ export const MessageThread = ({
     if (!gifQuery.trim()) return;
     try {
       setGifSearching(true);
-      const response = await searchMessageGifs(gifQuery);
+      const response = await searchGifs(gifQuery);
       setGifResults(response.results || []);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to search GIFs");
@@ -252,131 +269,82 @@ export const MessageThread = ({
     }
   };
 
-  const handleSendGif = async (gif: GifSearchResult) => {
-    if (sending || !isOnline || isBlocked) return;
+  const handleToggleReaction = async (messageId: string, reactionType: ClubChatReactionType) => {
     try {
-      setSending(true);
-      const success = await onSendMessage({
-        content: messageContent.trim() ? sanitizeInput(messageContent) : null,
-        gif,
-        reply_to_message_id: replyingTo?.id || null,
-      });
-      if (success) {
-        clearComposer();
-        setGifOpen(false);
-        setGifResults([]);
-        setGifQuery("");
-      }
-    } finally {
-      setSending(false);
+      const response = await toggleClubChatReaction(messageId, reactionType);
+      setMessages((current) =>
+        current.map((message) => (message.id === messageId ? response.message : message))
+      );
+    } catch {
+      toast.error("Failed to update reaction");
     }
+  };
+
+  const handleDelete = async (messageId: string) => {
+    try {
+      const message = await deleteClubChatMessage(messageId);
+      setMessages((current) => current.map((item) => (item.id === messageId ? message : item)));
+      toast.success("Message removed");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to remove message");
+    }
+  };
+
+  const insertMention = (member: ClubMember) => {
+    const displayName = member.user?.display_name || "Reader";
+    setContent((value) => value.replace(/(?:^|\s)@([\w\s-]{0,32})$/, ` @${displayName} `));
+    setMentionIds((ids) => Array.from(new Set([...ids, member.user_id])));
   };
 
   const handleEmojiClick = (emoji: EmojiClickData) => {
-    setMessageContent((value) => `${value}${emoji.emoji}`);
+    setContent((value) => `${value}${emoji.emoji}`);
     setEmojiOpen(false);
   };
 
-  const handleCopy = async (message: Message) => {
-    if (!message.content) return;
-    await navigator.clipboard.writeText(message.content);
-    toast.success("Message copied");
-  };
-
-  const handleBlock = async () => {
-    if (!otherUser?.id) return;
-    const confirmed = window.confirm(
-      `Block ${otherUser.display_name || "this reader"}? You will no longer be able to message each other.`
-    );
-    if (!confirmed) return;
-    try {
-      await blockUser(otherUser.id);
-      toast.success("Reader blocked");
-      window.dispatchEvent(new Event("messages-changed"));
-    } catch {
-      toast.error("Failed to block reader");
-    }
-  };
-
-  const canSend = isOnline && !isBlocked && (messageContent.trim().length > 0 || files.length > 0);
+  const canSend = isOnline && (content.trim().length > 0 || files.length > 0);
 
   return (
-    <div className="flex h-full flex-col bg-card">
-      {!isMobile && (
-        <div className="border-b border-border/70 bg-card/95 p-4">
-          <div className="flex items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={() => openProfile(otherUser?.id)}
-              className="flex min-w-0 items-center gap-3 text-left"
-            >
-              <Avatar className="h-11 w-11 border border-border/70">
-                <AvatarImage src={otherUser?.avatar_url || undefined} />
-                <AvatarFallback>{getInitials(otherUser?.display_name)}</AvatarFallback>
-              </Avatar>
-              <span className="min-w-0">
-                <span className="block truncate font-sans text-sm font-semibold">
-                  {otherUser?.display_name || "Unknown Reader"}
-                </span>
-                <span className="block font-sans text-xs text-muted-foreground">
-                  Private conversation
-                </span>
-              </span>
-            </button>
-            <Button variant="outline" size="sm" onClick={handleBlock} disabled={!otherUser?.id}>
-              Block
-            </Button>
-          </div>
-        </div>
-      )}
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="border-b border-border/70 px-4 py-3">
+        <p className="font-display text-xl font-semibold">Club Chat</p>
+        <p className="font-sans text-sm text-muted-foreground">
+          Fast member-only conversation. Keep long-form threads in Discussions.
+        </p>
+      </div>
 
-      <div className={cn("min-h-0 flex-1 overflow-y-auto", isMobile ? "p-3" : "p-5")}>
-        {isBlocked && (
-          <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/8 p-3">
-            <p className="font-sans text-sm text-destructive">
-              Messaging is disabled because one of you blocked the other. Existing text history is
-              still visible.
-            </p>
+      <div className="h-[min(44rem,calc(var(--app-viewport-height,100dvh)-17rem))] min-h-[28rem] overflow-y-auto p-4">
+        {loading ? (
+          <div className="flex h-full items-center justify-center font-sans text-sm text-muted-foreground">
+            Loading chat...
           </div>
-        )}
-
-        {messages.length === 0 ? (
-          <div className="flex min-h-64 items-center justify-center text-center text-muted-foreground">
-            <div>
-              <ChatBubble className="mx-auto mb-3 h-10 w-10 text-primary" />
-              <p className="font-display text-lg font-semibold text-foreground">
-                Start the conversation
-              </p>
-              <p className="mt-1 font-sans text-sm">Share a recommendation, quote, or reading note.</p>
-            </div>
-          </div>
+        ) : messages.length === 0 ? (
+          <PremiumEmptyState
+            asset="emptyMessages"
+            title="No club messages yet"
+            description="Start with an emoji, a reading update, or a quick prompt."
+            size="compact"
+          />
         ) : (
           <div className="space-y-2">
             {messages.map((message, index) => {
               const previous = messages[index - 1];
               const grouped = shouldGroupWithPrevious(message, previous);
-              const isOwnMessage = message.sender_id === currentUserId;
-              const sender = isOwnMessage
-                ? {
-                    id: currentUserId,
-                    display_name: profile?.display_name || "You",
-                    avatar_url: profile?.avatar_url,
-                  }
-                : otherUser;
+              const isOwn = message.user_id === currentUserId;
+              const member = membersById.get(message.user_id);
+              const sender = isOwn
+                ? { id: currentUserId, display_name: profile?.display_name || "You", avatar_url: profile?.avatar_url }
+                : message.user || member?.user;
+              const canDelete = isOwn || canModerate;
 
               return (
-                <div
-                  key={message.id}
-                  className={cn("flex gap-2", isOwnMessage ? "justify-end" : "justify-start")}
-                  onContextMenu={(event) => event.preventDefault()}
-                >
-                  {!isOwnMessage && (
+                <div key={message.id} className={cn("flex gap-2", isOwn && "justify-end")}>
+                  {!isOwn && (
                     grouped ? (
                       <div className="h-9 w-9 shrink-0" />
                     ) : (
                       <button
                         type="button"
-                        onClick={() => openProfile(sender?.id)}
+                        onClick={() => openProfile(message.user_id)}
                         className="mt-1 shrink-0 rounded-full"
                         aria-label={`Open ${sender?.display_name || "reader"} profile`}
                       >
@@ -390,30 +358,25 @@ export const MessageThread = ({
                     )
                   )}
 
-                  <div
-                    className={cn(
-                      "group max-w-[82%] space-y-1 sm:max-w-[70%]",
-                      isOwnMessage && "items-end text-right"
-                    )}
-                  >
+                  <div className={cn("group max-w-[82%] space-y-1 sm:max-w-[72%]", isOwn && "text-right")}>
                     {!grouped && (
                       <button
                         type="button"
-                        onClick={() => openProfile(sender?.id)}
+                        onClick={() => openProfile(message.user_id)}
                         className={cn(
                           "block font-sans text-xs font-medium text-muted-foreground hover:text-primary",
-                          isOwnMessage && "ml-auto"
+                          isOwn && "ml-auto"
                         )}
                       >
-                        {isOwnMessage ? "You" : sender?.display_name || "Reader"}
+                        {isOwn ? "You" : sender?.display_name || "Reader"}
                       </button>
                     )}
 
-                    <div className={cn("flex items-end gap-2", isOwnMessage && "flex-row-reverse")}>
+                    <div className={cn("flex items-end gap-2", isOwn && "flex-row-reverse")}>
                       <div
                         className={cn(
-                          "overflow-hidden rounded-2xl border px-3 py-2 text-left shadow-sm",
-                          isOwnMessage
+                          "overflow-hidden rounded-2xl border px-3 py-2 text-left shadow-sm animate-in fade-in-0 slide-in-from-bottom-1",
+                          isOwn
                             ? "rounded-br-md border-primary/30 bg-primary text-primary-foreground"
                             : "rounded-bl-md border-border bg-muted/60 text-foreground",
                           message.deleted_at && "bg-muted/30 text-muted-foreground"
@@ -423,9 +386,10 @@ export const MessageThread = ({
                           <p className="font-sans text-sm italic">Message deleted</p>
                         ) : (
                           <>
-                            {message.reply_to_message_id && (
+                            {message.reply_to_message && (
                               <div className="mb-2 rounded-md border border-current/20 px-2 py-1 text-xs opacity-80">
-                                Reply
+                                Reply to {message.reply_to_message.user?.display_name || "reader"}:{" "}
+                                {previewText(message.reply_to_message as ClubChatMessage)}
                               </div>
                             )}
                             {message.content && (
@@ -434,34 +398,26 @@ export const MessageThread = ({
                               </p>
                             )}
                             {message.media && message.media.length > 0 && (
-                              <div
-                                className={cn(
-                                  "mt-2 grid gap-2",
-                                  message.media.length === 1 ? "grid-cols-1" : "grid-cols-2"
-                                )}
-                              >
+                              <div className={cn("mt-2 grid gap-2", message.media.length === 1 ? "grid-cols-1" : "grid-cols-2")}>
                                 {message.media.map((item) => {
                                   const url = item.signed_url || item.preview_url || item.external_url;
                                   if (!url) {
                                     return (
-                                      <div
-                                        key={item.id || item.storage_path || item.provider_id}
-                                        className="flex aspect-video items-center justify-center rounded-lg bg-background/40 text-xs"
-                                      >
+                                      <div key={item.id || item.storage_path || item.provider_id} className="flex aspect-video items-center justify-center rounded-lg bg-background/40 text-xs">
                                         Media unavailable
                                       </div>
                                     );
                                   }
                                   return (
                                     <button
-                                      type="button"
                                       key={item.id || item.storage_path || item.provider_id}
+                                      type="button"
                                       onClick={() => setPreviewMedia(url)}
                                       className="overflow-hidden rounded-lg border border-current/10 bg-background/10"
                                     >
                                       <img
                                         src={url}
-                                        alt={item.media_type === "gif" ? "GIF" : "Message media"}
+                                        alt={item.media_type === "gif" ? "GIF" : "Club chat media"}
                                         className="max-h-64 w-full object-cover"
                                         loading="lazy"
                                       />
@@ -489,7 +445,7 @@ export const MessageThread = ({
                           <PopoverContent className="w-auto p-2">
                             <ReactionBar
                               currentReaction={message.current_user_reaction}
-                              onToggle={(reactionType) => onToggleReaction(message.id, reactionType)}
+                              onToggle={(reactionType) => handleToggleReaction(message.id, reactionType)}
                             />
                             <div className="mt-2 grid gap-1 border-t border-border pt-2">
                               <button
@@ -504,29 +460,23 @@ export const MessageThread = ({
                                 <button
                                   type="button"
                                   className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left font-sans text-sm hover:bg-muted"
-                                  onClick={() => handleCopy(message)}
+                                  onClick={async () => {
+                                    await navigator.clipboard.writeText(message.content || "");
+                                    toast.success("Message copied");
+                                  }}
                                 >
                                   <Copy className="h-4 w-4" />
                                   Copy
                                 </button>
                               )}
-                              {isOwnMessage ? (
+                              {canDelete && (
                                 <button
                                   type="button"
                                   className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left font-sans text-sm text-destructive hover:bg-destructive/10"
-                                  onClick={() => onDeleteMessage(message.id)}
+                                  onClick={() => handleDelete(message.id)}
                                 >
                                   <Trash className="h-4 w-4" />
                                   Delete
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left font-sans text-sm text-destructive hover:bg-destructive/10"
-                                  onClick={() => toast.success("Message reported. Thank you.")}
-                                >
-                                  <WarningTriangle className="h-4 w-4" />
-                                  Report
                                 </button>
                               )}
                             </div>
@@ -535,26 +485,20 @@ export const MessageThread = ({
                       )}
                     </div>
 
-                    <div
-                      className={cn(
-                        "flex flex-wrap items-center gap-1 text-xs text-muted-foreground",
-                        isOwnMessage && "justify-end"
-                      )}
-                    >
+                    <div className={cn("flex flex-wrap items-center gap-1 text-xs text-muted-foreground", isOwn && "justify-end")}>
                       <span>{formatTimestamp(message.created_at)}</span>
-                      {message.reaction_counts &&
-                        Object.keys(message.reaction_counts).length > 0 && (
-                          <ReactionBar
-                            compact
-                            currentReaction={message.current_user_reaction}
-                            reactionCounts={message.reaction_counts}
-                            onToggle={(reactionType) => onToggleReaction(message.id, reactionType)}
-                          />
-                        )}
+                      {message.reaction_counts && Object.keys(message.reaction_counts).length > 0 && (
+                        <ReactionBar
+                          compact
+                          currentReaction={message.current_user_reaction}
+                          reactionCounts={message.reaction_counts}
+                          onToggle={(reactionType) => handleToggleReaction(message.id, reactionType)}
+                        />
+                      )}
                     </div>
                   </div>
 
-                  {isOwnMessage && (
+                  {isOwn && (
                     grouped ? (
                       <div className="h-9 w-9 shrink-0" />
                     ) : (
@@ -576,38 +520,29 @@ export const MessageThread = ({
                 </div>
               );
             })}
+            <TypingIndicator
+              users={typingUsers.map((user) => ({
+                id: user.userId,
+                name: user.name,
+                avatarUrl: user.avatarUrl,
+              }))}
+            />
+            <div ref={messagesEndRef} />
           </div>
         )}
-
-      {otherUserTyping && !isBlocked && (
-          <TypingIndicator
-            className="mt-3"
-            users={[
-              {
-                id: otherUser?.id,
-                name: otherUser?.display_name || "Reader",
-                avatarUrl: otherUser?.avatar_url,
-              },
-            ]}
-          />
-        )}
-        <div ref={messagesEndRef} />
       </div>
 
-      <div className={cn("border-t border-border/70 bg-card", isMobile ? "p-3 pb-safe" : "p-4")}>
+      <div className="border-t border-border/70 bg-card p-3">
         {!isOnline && (
           <div className="mb-2 rounded-md border border-border bg-muted/60 px-3 py-2 font-sans text-sm text-muted-foreground">
-            Messages need a connection. Your draft is saved on this device.
+            Club chat needs a connection.
           </div>
         )}
-
         {replyingTo && (
           <div className="mb-2 flex items-center justify-between gap-2 rounded-md border border-border bg-muted/40 px-3 py-2">
             <div className="min-w-0">
               <p className="font-sans text-xs font-medium">Replying to</p>
-              <p className="truncate font-sans text-sm text-muted-foreground">
-                {previewText(replyingTo)}
-              </p>
+              <p className="truncate font-sans text-sm text-muted-foreground">{previewText(replyingTo)}</p>
             </div>
             <Button size="icon" variant="ghost" onClick={() => setReplyingTo(null)}>
               <Xmark className="h-4 w-4" />
@@ -637,13 +572,32 @@ export const MessageThread = ({
           </div>
         )}
 
+        {mentionMatches.length > 0 && (
+          <div className="mb-2 max-h-48 overflow-y-auto rounded-xl border border-border bg-card p-1 shadow-sm">
+            {mentionMatches.map((member) => (
+              <button
+                key={member.user_id}
+                type="button"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left hover:bg-accent"
+                onClick={() => insertMention(member)}
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={member.user?.avatar_url || undefined} />
+                  <AvatarFallback className="text-xs">{getInitials(member.user?.display_name)}</AvatarFallback>
+                </Avatar>
+                <span className="font-sans text-sm">{member.user?.display_name || "Reader"}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         <input
           ref={fileInputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp,image/gif"
           multiple
           className="hidden"
-          onChange={(event) => handleFileChange(event.target.files)}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => handleFileChange(event.target.files)}
         />
 
         <div className="flex items-end gap-2">
@@ -651,31 +605,29 @@ export const MessageThread = ({
             type="button"
             size="icon"
             variant="outline"
+            disabled={!isOnline || sending}
             onClick={() => fileInputRef.current?.click()}
-            disabled={!isOnline || Boolean(isBlocked) || sending}
             aria-label="Attach image or GIF"
           >
             <Attachment className="h-4 w-4" />
           </Button>
-
           <Button
             type="button"
             size="icon"
             variant="outline"
+            disabled={!isOnline || sending}
             onClick={() => setGifOpen(true)}
-            disabled={!isOnline || Boolean(isBlocked) || sending}
             aria-label="Search GIFs"
           >
             <MediaImage className="h-4 w-4" />
           </Button>
-
           <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
             <PopoverTrigger asChild>
               <Button
                 type="button"
                 size="icon"
                 variant="outline"
-                disabled={!isOnline || Boolean(isBlocked) || sending}
+                disabled={!isOnline || sending}
                 aria-label="Add emoji"
               >
                 <Emoji className="h-4 w-4" />
@@ -685,35 +637,32 @@ export const MessageThread = ({
               <EmojiPicker
                 onEmojiClick={handleEmojiClick}
                 lazyLoadEmojis
-                searchDisabled={false}
                 previewConfig={{ showPreview: false }}
                 height={360}
                 width={320}
               />
             </PopoverContent>
           </Popover>
-
           <Textarea
-            placeholder={isBlocked ? "Messaging is disabled" : "Message"}
-            value={messageContent}
-            onChange={handleInputChange}
+            value={content}
+            onChange={(event) => handleContentChange(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
-                handleSend();
+                void handleSend();
               }
             }}
+            placeholder="Message the club. Use @ to mention a member."
             rows={1}
-            disabled={Boolean(isBlocked)}
             className="max-h-32 min-h-11 resize-none"
           />
-
           <Button
-            onClick={handleSend}
+            type="button"
+            onClick={() => void handleSend()}
             disabled={!canSend || sending}
             size="icon"
             className="h-11 w-11 shrink-0"
-            aria-label="Send message"
+            aria-label="Send club message"
           >
             <Send className="h-4 w-4" />
           </Button>
@@ -725,7 +674,7 @@ export const MessageThread = ({
           {previewMedia && (
             <img
               src={previewMedia}
-              alt="Message media preview"
+              alt="Club chat media preview"
               className="max-h-[80vh] w-full rounded-md object-contain"
             />
           )}
@@ -736,7 +685,7 @@ export const MessageThread = ({
         <DialogContent className="max-h-[min(42rem,calc(var(--app-viewport-height,100dvh)-2rem))] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Search GIFs</DialogTitle>
-            <DialogDescription>Powered by Tenor. Choose a lightweight GIF for this chat.</DialogDescription>
+            <DialogDescription>Choose a lightweight GIF for club chat.</DialogDescription>
           </DialogHeader>
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -745,22 +694,19 @@ export const MessageThread = ({
                 value={gifQuery}
                 onChange={(event) => setGifQuery(event.target.value)}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter") handleGifSearch();
+                  if (event.key === "Enter") void handleGifSearch();
                 }}
                 placeholder="Search GIFs"
                 className="pl-9"
               />
             </div>
-            <Button onClick={handleGifSearch} disabled={gifSearching || !gifQuery.trim()}>
+            <Button onClick={() => void handleGifSearch()} disabled={gifSearching || !gifQuery.trim()}>
               {gifSearching ? "Searching..." : "Search"}
             </Button>
           </div>
-
           {gifResults.length === 0 ? (
             <div className="flex min-h-40 items-center justify-center rounded-md border border-dashed border-border text-center">
-              <p className="font-sans text-sm text-muted-foreground">
-                Search for a reaction, scene, or mood.
-              </p>
+              <p className="font-sans text-sm text-muted-foreground">Search for a reaction, scene, or mood.</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -768,7 +714,7 @@ export const MessageThread = ({
                 <button
                   key={gif.id}
                   type="button"
-                  onClick={() => handleSendGif(gif)}
+                  onClick={() => void handleSend(gif)}
                   className="overflow-hidden rounded-md border border-border bg-muted transition hover:border-primary"
                 >
                   <img src={gif.preview_url} alt={gif.title} className="aspect-video w-full object-cover" />

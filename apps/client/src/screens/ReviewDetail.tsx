@@ -11,6 +11,7 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { MobileLayout } from "@/components/MobileLayout";
 import { NativeHeader } from "@/components/NativeHeader";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
+import { RichTextRenderer } from "@/components/rich-text/RichTextRenderer";
 import { ReviewCard } from "@/components/social/ReviewCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
@@ -349,9 +350,13 @@ const ReviewDetail = () => {
                         {sanitizeText(review.title)}
                       </h2>
                     )}
-                    <p className="whitespace-pre-wrap font-serif text-lg leading-8 text-foreground">
-                      {sanitizeText(review.content)}
-                    </p>
+                    <RichTextRenderer
+                      content={review.content}
+                      contentFormat={review.content_format}
+                      contentJson={review.content_json}
+                      contentHtml={review.content_html}
+                      className="font-serif text-lg leading-8 text-foreground"
+                    />
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 border-t border-border/70 pt-4">

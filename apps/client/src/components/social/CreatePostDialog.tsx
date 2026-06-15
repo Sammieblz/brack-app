@@ -10,10 +10,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { createPost, uploadPostMediaFiles, type PostType, type PostVisibility } from "@/services/api";
+import { RichTextEditor } from "@/components/rich-text/RichTextEditor";
+import { toPlainRichTextPayload } from "@/lib/richText";
+import type { RichTextPayload } from "@/types/richText";
 import { toast } from "sonner";
 import { EditPencil, MediaImage, Trash } from "iconoir-react";
 import { GENRES } from "@/constants";
@@ -36,7 +38,7 @@ const VIDEO_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime"]);
 export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostDialogProps) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [richText, setRichText] = useState<RichTextPayload>(() => toPlainRichTextPayload(""));
   const [genre, setGenre] = useState<string>("none");
   const [postType, setPostType] = useState<PostType>("text");
   const [visibility, setVisibility] = useState<PostVisibility>("public");
@@ -65,7 +67,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
 
   const reset = () => {
     setTitle("");
-    setContent("");
+    setRichText(toPlainRichTextPayload(""));
     setGenre("none");
     setPostType("text");
     setVisibility("public");
@@ -108,7 +110,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !content.trim()) {
+    if (!title.trim() || !richText.content.trim()) {
       triggerHaptic("error");
       toast.error("Please fill in all required fields");
       return;
@@ -129,7 +131,10 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
       const media = files.length > 0 ? await uploadPostMediaFiles(files) : [];
       await createPost({
         title,
-        content,
+        content: richText.content,
+        content_format: richText.content_format,
+        content_json: richText.content_json,
+        content_html: richText.content_html,
         genre: genre === "none" ? null : genre,
         post_type: postType,
         visibility,
@@ -271,14 +276,11 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
 
             <div className="space-y-2">
               <Label htmlFor="content">Content *</Label>
-              <Textarea
-                id="content"
+              <RichTextEditor
                 placeholder="Share your thoughts, insight, quote, recommendation, or question..."
-                maxLength={10000}
-                value={content}
-                onChange={(event) => setContent(event.target.value)}
-                rows={8}
-                className="resize-none font-serif"
+                limit={10000}
+                value={richText}
+                onChange={setRichText}
               />
             </div>
           </div>
@@ -362,7 +364,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
                   {title || "Post title"}
                 </p>
                 <p className="mt-1 line-clamp-3 font-serif text-xs text-muted-foreground">
-                  {content || "Your post preview will appear here."}
+                  {richText.content || "Your post preview will appear here."}
                 </p>
               </div>
             </div>
@@ -373,7 +375,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={loading || !title.trim() || !content.trim()}>
+          <Button onClick={handleSubmit} disabled={loading || !title.trim() || !richText.content.trim()}>
             {loading ? "Publishing..." : "Publish Post"}
           </Button>
         </div>

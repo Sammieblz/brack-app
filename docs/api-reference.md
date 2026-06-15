@@ -109,6 +109,13 @@ App-facing function summary. The complete maintained inventory is in [Edge Funct
 | `create-club-discussion` | Member discussion/reply and admin announcement creation | Yes |
 | `moderate-club-discussion` | Author/moderator/admin discussion moderation | Yes |
 | `manage-club-member` | Admin member role and removal controls | Yes |
+| `club-chat-history` | Member-only club chat history with signed media URLs | Yes |
+| `send-club-chat-message` | Send club chat text, uploaded image/GIF, or Tenor GIF | Yes |
+| `toggle-club-chat-reaction` | Add, replace, or remove fixed club chat reactions | Yes |
+| `mark-club-chat-read` | Update per-member club chat read cursor | Yes |
+| `delete-club-chat-message` | Sender/moderator soft-delete for club chat messages | Yes |
+| `update-club-chat-settings` | Per-member club chat mute/open state | Yes |
+| `search-gifs` | Generic authenticated Tenor GIF search for chat surfaces | Yes |
 | `conversations-home` | Direct-message inbox summaries, read cursors, and settings | Yes |
 | `conversation-detail` | Selected direct-message thread with signed media URLs | Yes |
 | `get-or-create-conversation` | Start or reopen a one-to-one conversation | Yes |
@@ -307,6 +314,9 @@ Create, update, or restore the authenticated user's review for a book they own.
   rating: number; // 1-5
   title?: string;
   content: string; // 10-5000 chars
+  content_format?: 'plain' | 'tiptap';
+  content_json?: RichTextDocument | null;
+  content_html?: string | null; // server validates JSON and derives safe HTML
   is_spoiler?: boolean;
   is_public?: boolean;
 }
@@ -432,6 +442,32 @@ Protected club command functions:
 - `moderate-club-discussion`: author can delete own posts; moderators/admins can moderate; admins can pin.
 - `manage-club-member`: admin-only role changes and removals.
 
+Club discussion and announcement payloads support rich text:
+
+```typescript
+{
+  title?: string;
+  content: string; // plain-text fallback/search excerpt
+  content_format?: 'plain' | 'tiptap';
+  content_json?: RichTextDocument | null;
+  content_html?: string | null; // server-derived sanitized HTML
+}
+```
+
+### Club Chat
+
+Protected member-only club chat functions:
+
+- `club-chat-history`: returns paginated chat messages, reply previews, mention data, reactions, read/settings state, and signed private media URLs.
+- `send-club-chat-message`: accepts compact plain text with emoji/mentions, uploaded image/GIF metadata, or a normalized Tenor GIF; inserts media/mentions and updates the sender read cursor.
+- `toggle-club-chat-reaction`: fixed reactions are `like`, `dislike`, `heart`, `laugh`, `wow`, and `thanks`; each member has at most one reaction per message.
+- `mark-club-chat-read`: updates the authenticated member's read cursor without mutating another member's state.
+- `delete-club-chat-message`: sender soft-delete; moderators/admins can moderate member messages.
+- `update-club-chat-settings`: per-member mute/open state.
+- `search-gifs`: shared Tenor v2 GIF search for club chat and compatible chat surfaces. Requires `TENOR_API_KEY`.
+
+Club chat uses the private `club-media` bucket for uploaded JPEG, PNG, WebP, or GIF attachments, max 10 MB each and max 4 attachments per message. Reads use signed URLs returned by club chat Edge Functions. Blocked users in the same club are filtered in both directions.
+
 ### Direct Messaging
 
 Protected one-to-one messaging functions:
@@ -447,6 +483,8 @@ Protected one-to-one messaging functions:
 - `search-message-gifs`: Tenor v2 search with safe-content filtering. Requires `TENOR_API_KEY` in deployed Edge Function secrets.
 
 Message media uses the private `message-media` bucket. Uploads are JPEG, PNG, WebP, or GIF only, max 8 MB each, max 4 attachments per message. Reads use signed URLs returned by messaging Edge Functions.
+
+Direct message reactions use the same fixed values as club chat and render as icons in the client: like, dislike, heart, laugh, wow, and thanks.
 
 ### complete-reading
 

@@ -1,10 +1,10 @@
 import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Book, Quote, Notes, Camera, Xmark, MediaImage } from "iconoir-react";
+import { RichTextEditor } from "@/components/rich-text/RichTextEditor";
 import { useJournalEntries } from "@/hooks/useJournalEntries";
 import { useToast } from "@/hooks/use-toast";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
@@ -14,6 +14,8 @@ import { SuccessCheckmark } from "@/components/animations/SuccessCheckmark";
 import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
 import { uploadPublicStorageFile } from "@/services/api";
+import { toPlainRichTextPayload } from "@/lib/richText";
+import type { RichTextPayload } from "@/types/richText";
 
 interface QuickJournalEntryDialogProps {
   open: boolean;
@@ -32,7 +34,7 @@ export const QuickJournalEntryDialog = ({
 }: QuickJournalEntryDialogProps) => {
   const [entryType, setEntryType] = useState<'note' | 'quote' | 'reflection'>('note');
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [richText, setRichText] = useState<RichTextPayload>(() => toPlainRichTextPayload(""));
   const [pageReference, setPageReference] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -44,8 +46,8 @@ export const QuickJournalEntryDialog = ({
   const { pickImage, picking } = useImagePicker();
   const [saving, setSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const contentRef = useRef<HTMLTextAreaElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const hasContent = richText.content.trim().length > 0;
 
   const handleImagePicked = async (image: { dataUrl: string; format: string; base64?: string }) => {
     if (!user || !image.base64) return;
@@ -91,7 +93,7 @@ export const QuickJournalEntryDialog = ({
   };
 
   const handleSave = async () => {
-    if (!content.trim()) {
+    if (!hasContent) {
       toast({
         variant: "destructive",
         title: "Content required",
@@ -106,7 +108,10 @@ export const QuickJournalEntryDialog = ({
         book_id: bookId,
         entry_type: entryType,
         title: title.trim() || undefined,
-        content: content.trim(),
+        content: richText.content.trim(),
+        content_format: richText.content_format,
+        content_json: richText.content_json,
+        content_html: richText.content_html,
         page_reference: pageReference ? parseInt(pageReference) : undefined,
         photo_url: photoUrl || undefined,
       });
@@ -123,7 +128,7 @@ export const QuickJournalEntryDialog = ({
       setTimeout(() => {
         setShowSuccess(false);
         setTitle("");
-        setContent("");
+        setRichText(toPlainRichTextPayload(""));
         setPageReference("");
         setPhotoUrl(null);
         setPhotoPreview(null);
@@ -136,17 +141,6 @@ export const QuickJournalEntryDialog = ({
       setSaving(false);
     }
   };
-
-  // Pen writing effect on content focus
-  useGSAP(() => {
-    if (contentRef.current && open) {
-      gsap.fromTo(
-        contentRef.current,
-        { opacity: 0.7 },
-        { opacity: 1, duration: 0.3, ease: "power2.out" }
-      );
-    }
-  }, { dependencies: [open] });
 
   // Page turn animation on dialog open
   useGSAP(() => {
@@ -232,10 +226,9 @@ export const QuickJournalEntryDialog = ({
             <Label htmlFor="content">
               {entryType === 'quote' ? 'Quote' : entryType === 'reflection' ? 'Reflection' : 'Note'} *
             </Label>
-            <Textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+            <RichTextEditor
+              value={richText}
+              onChange={setRichText}
               placeholder={
                 entryType === 'quote'
                   ? 'Paste your favorite quote here...'
@@ -243,8 +236,7 @@ export const QuickJournalEntryDialog = ({
                   ? 'What did you think about this reading session?'
                   : 'Write your notes here...'
               }
-              rows={5}
-              className="font-serif resize-none"
+              minHeightClassName="min-h-36"
             />
           </div>
 
@@ -332,7 +324,7 @@ export const QuickJournalEntryDialog = ({
             <Button
               type="button"
               onClick={handleSave}
-              disabled={saving || !content.trim()}
+              disabled={saving || !hasContent}
             >
               {saving ? "Saving..." : "Save Entry"}
             </Button>

@@ -6,6 +6,7 @@ import {
   parseJsonBody,
 } from "../_shared/appEndpoint.ts";
 import { enforceRateLimit } from "../_shared/rateLimit.ts";
+import { normalizeRichText, type RichTextPayload } from "../_shared/richText.ts";
 import { enrichReviews, REVIEW_SELECT, sanitizeString } from "../_shared/reviews.ts";
 
 interface CreateReviewBody {
@@ -13,6 +14,10 @@ interface CreateReviewBody {
   rating?: unknown;
   title?: unknown;
   content?: unknown;
+  content_format?: unknown;
+  content_json?: unknown;
+  content_html?: unknown;
+  rich_text?: RichTextPayload;
   is_spoiler?: unknown;
   is_public?: unknown;
 }
@@ -39,7 +44,16 @@ Deno.serve(async (req) => {
     const bookId = String(body.book_id ?? "");
     const rating = Number.parseInt(String(body.rating ?? ""), 10);
     const title = sanitizeString(body.title, 200) || null;
-    const content = sanitizeString(body.content, 5000);
+    const richText = normalizeRichText(
+      body.rich_text || {
+        content_format: body.content_format,
+        content_json: body.content_json,
+        content_html: body.content_html,
+      },
+      body.content,
+      5000,
+    );
+    const content = richText.text;
 
     if (!bookId) return jsonResponse({ error: "Missing book_id" }, 400, origin);
     if (!Number.isFinite(rating) || rating < 1 || rating > 5) {
@@ -65,6 +79,9 @@ Deno.serve(async (req) => {
       rating,
       title,
       content,
+      content_format: richText.content_format,
+      content_json: richText.content_json,
+      content_html: richText.content_html,
       is_spoiler: body.is_spoiler === true,
       is_public: body.is_public !== false,
       deleted_at: null,

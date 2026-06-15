@@ -2,6 +2,7 @@ import { invokeFunction } from "./client";
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeInput } from "@/utils/sanitize";
 import { getCurrentAuthUser } from "./auth";
+import type { RichTextDocument, RichTextFormat } from "@/types/richText";
 
 export type SocialActivityType =
   | "book_started"
@@ -70,6 +71,9 @@ export interface Post {
   club_id?: string | null;
   title: string;
   content: string;
+  content_format?: RichTextFormat | null;
+  content_json?: RichTextDocument | null;
+  content_html?: string | null;
   genre?: string | null;
   post_type: PostType;
   visibility: PostVisibility;
@@ -141,6 +145,9 @@ export interface PostCommentsResponse {
 export interface CreatePostRequest {
   title: string;
   content: string;
+  content_format?: RichTextFormat;
+  content_json?: RichTextDocument | null;
+  content_html?: string | null;
   genre?: string | null;
   post_type?: PostType;
   visibility?: PostVisibility;
@@ -266,6 +273,11 @@ export const createPost = async (payload: CreatePostRequest): Promise<Post> => {
       ...payload,
       title: sanitizeInput(payload.title),
       content: sanitizeInput(payload.content),
+      rich_text: {
+        content_format: payload.content_format,
+        content_json: payload.content_json,
+        content_html: payload.content_html,
+      },
     },
   });
   return response.post;

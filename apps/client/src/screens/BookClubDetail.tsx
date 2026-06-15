@@ -14,8 +14,10 @@ import { AppBackButton } from "@/components/AppBackButton";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { MobileHeader } from "@/components/MobileHeader";
 import { MobileLayout } from "@/components/MobileLayout";
+import { ClubChatThread } from "@/components/clubs/ClubChatThread";
 import { DiscussionThread } from "@/components/clubs/DiscussionThread";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
+import { RichTextEditor } from "@/components/rich-text/RichTextEditor";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,6 +36,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { APP_ICONS } from "@/config/iconography";
 import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { toPlainRichTextPayload } from "@/lib/richText";
 import { cn } from "@/lib/utils";
 import { discoverReaders, type UserSearchResult } from "@/services/api/readers";
 import {
@@ -56,7 +59,16 @@ import {
   type ClubMember,
   type ClubMemberRole,
 } from "@/services/api";
+import type { RichTextPayload } from "@/types/richText";
 import { toast } from "sonner";
+
+type DiscussionSubmitData = RichTextPayload & {
+  title?: string;
+  discussion_type?: "discussion" | "announcement";
+  is_pinned?: boolean;
+  parent_id?: string;
+  files?: File[];
+};
 
 const BookClubDetail = () => {
   const { clubId } = useParams<{ clubId: string }>();
@@ -135,14 +147,7 @@ const BookClubDetail = () => {
     }
   };
 
-  const handleCreateDiscussion = async (data: {
-    title?: string;
-    content: string;
-    discussion_type?: "discussion" | "announcement";
-    is_pinned?: boolean;
-    parent_id?: string;
-    files?: File[];
-  }) => {
+  const handleCreateDiscussion = async (data: DiscussionSubmitData) => {
     if (!club) return;
     const media = data.files?.length
       ? await uploadClubDiscussionMediaFiles(data.files, club.id)
@@ -238,6 +243,11 @@ const BookClubDetail = () => {
                 <TabsTrigger value="overview" className="flex-none px-4 sm:px-5">
                   Overview
                 </TabsTrigger>
+                {isMember && (
+                  <TabsTrigger value="chat" className="flex-none px-4 sm:px-5">
+                    Chat
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="discussions" className="flex-none px-4 sm:px-5">
                   Discussions
                 </TabsTrigger>
@@ -259,6 +269,17 @@ const BookClubDetail = () => {
               <OverviewTab detail={detail} />
             </TabsContent>
 
+            {isMember && (
+              <TabsContent value="chat">
+                <ClubChatThread
+                  clubId={club.id}
+                  members={detail.members}
+                  currentUserId={currentUserId}
+                  canModerate={canModerate}
+                />
+              </TabsContent>
+            )}
+
             <TabsContent value="discussions" className="space-y-4">
               <DiscussionComposer
                 canPost={isMember}
@@ -268,7 +289,7 @@ const BookClubDetail = () => {
                 discussions={detail.discussions}
                 currentUserId={currentUserId}
                 canModerate={canModerate}
-                onReply={(parentId, content, files) => handleCreateDiscussion({ parent_id: parentId, content, files })}
+                onReply={(parentId, data) => handleCreateDiscussion({ parent_id: parentId, ...data })}
                 onModerate={handleModerate}
               />
             </TabsContent>
@@ -287,7 +308,7 @@ const BookClubDetail = () => {
                 discussions={detail.announcements}
                 currentUserId={currentUserId}
                 canModerate={canModerate}
-                onReply={(parentId, content, files) => handleCreateDiscussion({ parent_id: parentId, content, files })}
+                onReply={(parentId, data) => handleCreateDiscussion({ parent_id: parentId, ...data })}
                 onModerate={handleModerate}
                 emptyLabel="No announcements yet"
               />
@@ -579,12 +600,13 @@ const DiscussionComposer = ({
 }: {
   canPost: boolean;
   announcement?: boolean;
-  onSubmit: (data: { title?: string; content: string; files?: File[] }) => Promise<void>;
+  onSubmit: (data: RichTextPayload & { title?: string; files?: File[] }) => Promise<void>;
 }) => {
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [richText, setRichText] = useState<RichTextPayload>(() => toPlainRichTextPayload(""));
   const [files, setFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const hasContent = richText.content.trim().length > 0;
 
   if (!canPost) {
     return (
@@ -608,12 +630,19 @@ const DiscussionComposer = ({
           className="space-y-4"
           onSubmit={async (event) => {
             event.preventDefault();
-            if (!content.trim()) return;
+            if (!hasContent) return;
             setSubmitting(true);
             try {
-              await onSubmit({ title: title.trim() || undefined, content: content.trim(), files });
+              await onSubmit({
+                title: title.trim() || undefined,
+                content: richText.content.trim(),
+                content_format: richText.content_format,
+                content_json: richText.content_json,
+                content_html: richText.content_html,
+                files,
+              });
               setTitle("");
-              setContent("");
+              setRichText(toPlainRichTextPayload(""));
               setFiles([]);
             } finally {
               setSubmitting(false);
@@ -630,14 +659,12 @@ const DiscussionComposer = ({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor={`club-content-${announcement ? "announcement" : "discussion"}`}>Message</Label>
-            <Textarea
-              id={`club-content-${announcement ? "announcement" : "discussion"}`}
-              value={content}
-              onChange={(event) => setContent(event.target.value)}
-              rows={4}
+            <Label>Message</Label>
+            <RichTextEditor
+              value={richText}
+              onChange={setRichText}
               placeholder="Share what members should know..."
-              required
+              minHeightClassName="min-h-36"
             />
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -652,7 +679,7 @@ const DiscussionComposer = ({
                 onChange={(event) => setFiles(Array.from(event.target.files || []))}
               />
             </label>
-            <Button type="submit" disabled={submitting || !content.trim()}>
+            <Button type="submit" disabled={submitting || !hasContent}>
               <Send className="mr-2 h-4 w-4" />
               {submitting ? "Posting..." : announcement ? "Post Announcement" : "Post Discussion"}
             </Button>
@@ -674,7 +701,7 @@ const DiscussionList = ({
   discussions: ClubDiscussion[];
   currentUserId?: string;
   canModerate: boolean;
-  onReply: (parentId: string, content: string, files?: File[]) => Promise<void>;
+  onReply: (parentId: string, data: RichTextPayload & { files?: File[] }) => Promise<void>;
   onModerate: (discussionId: string, action: "delete" | "restore" | "pin" | "unpin") => Promise<void>;
   emptyLabel?: string;
 }) => {
