@@ -16,6 +16,7 @@
     "@capacitor-community/sqlite": "^7.0.3",
     "@capacitor/android": "^7.4.4",
     "@capacitor/app": "^7.1.0",
+    "@capacitor/barcode-scanner": "^2.2.6",
     "@capacitor/browser": "^7.0.5",
     "@capacitor/camera": "^7.0.3",
     "@capacitor/core": "^7.4.4",

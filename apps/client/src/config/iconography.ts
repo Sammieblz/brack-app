@@ -116,6 +116,7 @@ export const APP_ICONS = {
     privacy: PrivacyPolicy,
     support: HeadsetHelp,
     readingProfile: BookStack,
+    dataBackup: Download,
     profileVisibility: ShieldEye,
     dataSharing: DatabaseSettings,
     faq: ChatBubbleQuestion,

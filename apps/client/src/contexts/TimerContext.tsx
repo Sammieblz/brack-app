@@ -1,10 +1,11 @@
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
-import { createReadingSession, getCurrentAuthUser } from "@/services/api";
+import { emitBooksChanged, getCurrentAuthUser } from "@/services/api";
 import { booksRepo, sessionsRepo } from "@/services/local";
 import { timerNativeService } from "@/services/timerNative";
+import { readingCoreSync } from "@/services/sync/engine";
+import { isConnectivityAvailable } from "@/services/connectivity";
 
 interface TimerState {
   time: number;
@@ -41,7 +42,6 @@ const createClientSessionId = (bookId: string) => {
 
 export const TimerProvider = ({ children }: { children: ReactNode }) => {
   const confirmDialog = useConfirmDialog();
-  const queryClient = useQueryClient();
   const [state, setState] = useState<TimerState>({
     time: 0,
     isRunning: false,
@@ -227,115 +227,56 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       const durationMinutes = Math.max(1, Math.round(state.time / 60));
       const clientSessionId = state.clientSessionId || createClientSessionId(state.bookId);
 
-      if (!navigator.onLine) {
-        const user = await getCurrentAuthUser();
-        if (!user) throw new Error("Not authenticated");
+      const user = await getCurrentAuthUser();
+      if (!user) throw new Error("Not authenticated");
 
-        const session = {
-          id: clientSessionId,
-          user_id: user.id,
-          book_id: state.bookId,
-          start_time: state.startTime.toISOString(),
-          end_time: endTime.toISOString(),
-          duration: durationMinutes,
-          client_session_id: clientSessionId,
-          created_at: endTime.toISOString(),
+      const session = {
+        id: clientSessionId,
+        user_id: user.id,
+        book_id: state.bookId,
+        start_time: state.startTime.toISOString(),
+        end_time: endTime.toISOString(),
+        duration: durationMinutes,
+        client_session_id: clientSessionId,
+        created_at: endTime.toISOString(),
+      };
+
+      await sessionsRepo.createPending(user.id, session);
+
+      const localBook = await booksRepo.get(state.bookId);
+      if (localBook) {
+        const updatedBook = {
+          ...localBook,
+          status: localBook.status === "to_read" ? "reading" : localBook.status,
+          date_started: localBook.date_started || state.startTime.toISOString().split("T")[0],
+          updated_at: endTime.toISOString(),
         };
-
-        await sessionsRepo.createPending(user.id, session);
-
-        const localBook = await booksRepo.get(state.bookId);
-        if (localBook) {
-          await booksRepo.upsertLocal(user.id, {
-            ...localBook,
-            status: localBook.status === "to_read" ? "reading" : localBook.status,
-            date_started: localBook.date_started || state.startTime.toISOString().split("T")[0],
-            updated_at: endTime.toISOString(),
-          }, "update");
-        }
-
-        toast.success("Reading session saved offline");
-
-        window.dispatchEvent(new CustomEvent('readingSessionSaved', {
-          detail: {
-            userId: user.id,
-            bookId: state.bookId,
-            sessionId: session.id,
-            durationMinutes,
-            activityDate: state.startTime.toISOString().split('T')[0],
-            pendingSync: true,
-          },
-        }));
-
-        const sessionData = {
-          bookId: state.bookId,
-          bookTitle: state.bookTitle,
-          durationMinutes,
-        };
-
-        setState({
-          time: 0,
-          isRunning: false,
-          startTime: null,
-          bookId: null,
-          bookTitle: null,
-          clientSessionId: null,
-          isVisible: false,
-          isMinimized: true,
-        });
-
-        if (showJournalPrompt && durationMinutes >= 5) {
-          window.dispatchEvent(new CustomEvent('showJournalPrompt', {
-            detail: sessionData
-          }));
-        }
-        return;
+        await booksRepo.upsertLocal(user.id, updatedBook, "update");
+        emitBooksChanged({ type: "upsert", userId: user.id, book: updatedBook });
       }
 
-      const result = await createReadingSession({
-        bookId: state.bookId,
-        startTime: state.startTime.toISOString(),
-        endTime: endTime.toISOString(),
-        durationMinutes,
-        clientSessionId,
-      });
-
-      const session = result.session;
-      if (!session) {
-        throw new Error("Reading session was not returned");
+      if (isConnectivityAvailable()) {
+        void readingCoreSync.syncUser(user.id).catch(console.error);
       }
-
-      const userId = session.user_id;
 
       const hours = Math.floor(durationMinutes / 60);
       const minutes = durationMinutes % 60;
-      toast.success(`Reading session saved: ${hours}h ${minutes}m`);
-
-      if (userId) {
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ["profile", userId] }),
-          queryClient.invalidateQueries({ queryKey: ["books", userId] }),
-        ]);
-      }
+      toast.success(
+        isConnectivityAvailable()
+          ? `Reading session saved: ${hours}h ${minutes}m`
+          : "Reading session saved offline"
+      );
 
       window.dispatchEvent(new CustomEvent('readingSessionSaved', {
         detail: {
-          userId,
+          userId: user.id,
           bookId: state.bookId,
-          sessionId: session?.id,
+          sessionId: session.id,
           durationMinutes,
           activityDate: state.startTime.toISOString().split('T')[0],
+          pendingSync: true,
         },
       }));
-
-      if (userId && result.awarded_badges && result.awarded_badges.length > 0) {
-        window.dispatchEvent(new CustomEvent('badgesAwarded', {
-          detail: {
-            userId,
-            badges: result.awarded_badges,
-          },
-        }));
-      }
 
       // Store session data temporarily for journal prompt
       const sessionData = {

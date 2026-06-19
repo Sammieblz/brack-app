@@ -5,6 +5,7 @@ import { updateBookStatusIfNeeded } from "@/utils/bookStatus";
 import { journalOperations } from "@/utils/offlineOperation";
 import { fetchJournalEntries, type JournalEntry } from "@/services/api";
 import { journalRepo } from "@/services/local";
+import { isConnectivityAvailable } from "@/services/connectivity";
 
 export type { JournalEntry } from "@/services/api";
 
@@ -27,7 +28,7 @@ export const useJournalEntries = (bookId: string) => {
         setEntries(localEntries);
       }
 
-      if (!navigator.onLine) {
+      if (!isConnectivityAvailable()) {
         setEntries(localEntries);
         return;
       }

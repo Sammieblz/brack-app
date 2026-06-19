@@ -86,12 +86,19 @@ Android (`AndroidManifest.xml`):
 
 ### 2. Barcode Scanning
 
-**Libraries**: `@zxing/library@0.21.3` + Capacitor Camera
+**Libraries**:
+- Native iOS/Android: `@capacitor/barcode-scanner`
+- Web/PWA/Desktop fallback: `@zxing/library@0.21.3` with `navigator.mediaDevices.getUserMedia`
 
 **Features**:
-- Scan ISBN-10 and ISBN-13
-- Validate barcode format
-- Haptic feedback on success
+- Scan ISBN-10, ISBN-13, EAN-13 ISBN barcodes, and QR payloads that contain a valid ISBN
+- Validate ISBN checksums before lookup
+- Show a live camera preview and viewfinder on web/desktop
+- Use the native scanner camera surface on iOS/Android
+- Resolve scanned ISBNs through the `search-books` provider gateway
+- Require an exact normalized ISBN metadata match before adding
+- Confirm the matched book preview before saving to the library
+- Detect duplicate books and restore soft-deleted matches through `add-book`
 
 **Usage**:
 
@@ -103,12 +110,17 @@ const { startScan, scannedCode, isScanning } = useBarcodeScanner();
 const handleScan = async () => {
   const isbn = await startScan();
   if (isbn) {
-    // Add book with ISBN
+    // Resolve exact metadata match, preview, then add through add-book
   }
 };
 ```
 
-**Screen**: `apps/client/src/screens/ScanBarcode.tsx`
+**Screens/components**:
+- `apps/client/src/components/BarcodeScannerFlow.tsx` - shared scan, lookup, preview, add state machine
+- `apps/client/src/screens/ScanBarcode.tsx` - standalone scanner route
+- `apps/client/src/screens/AddBook.tsx` - `Scan` tab and manual ISBN scanner control
+
+See [Book Acquisition, Search, And Barcode Scanning](./reading/book-acquisition.md) for the full scanner-to-library flow.
 
 ### 3. Cover Recognition (OCR)
 

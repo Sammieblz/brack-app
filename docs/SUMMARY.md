@@ -11,8 +11,8 @@ This documentation provides comprehensive coverage of:
 - **Deployment** - Ship to production
 - **Troubleshooting** - Solve common issues
 
-**Total Documents**: 56
-**Last Updated**: June 13, 2026
+**Total Documents**: 57
+**Last Updated**: June 19, 2026
 
 ---
 
@@ -89,6 +89,7 @@ This documentation provides comprehensive coverage of:
 - [Onboarding/Auth Audit](./security/onboarding-auth-audit.md) - Signup/profile/onboarding audit
 - [Visibility Semantics](./security/visibility-semantics.md) - Shared visibility model
 - [Reading Write-Path Audit](./reading/write-path-audit.md) - Reading workflow write paths
+- [Book Acquisition, Search, And Barcode Scanning](./reading/book-acquisition.md) - Search providers, scanner flow, ISBN matching, and add-book semantics
 - [Reading Completion Transaction](./reading/completion-transaction.md) - Consolidated reading completion backend path
 - [Dashboard Query Audit](./performance/dashboard-query-audit.md) - Dashboard round trips and aggregation review
 - [Index Audit](./performance/index-audit.md) - Hot-path index coverage and migration notes
@@ -147,6 +148,7 @@ This documentation provides comprehensive coverage of:
 | ...review RLS coverage? | [RLS Matrix](./security/rls-matrix.md) |
 | ...find database triggers? | [Functions and Triggers](./schema/functions-and-triggers.md) |
 | ...understand reading progress rules? | [Progress Model](./product/progress-model.md) |
+| ...understand book search and barcode scanning? | [Book Acquisition, Search, And Barcode Scanning](./reading/book-acquisition.md) |
 | ...audit reading writes? | [Reading Write-Path Audit](./reading/write-path-audit.md) |
 | ...understand reading completion side effects? | [Reading Completion Transaction](./reading/completion-transaction.md) |
 | ...audit dashboard performance? | [Dashboard Query Audit](./performance/dashboard-query-audit.md) |

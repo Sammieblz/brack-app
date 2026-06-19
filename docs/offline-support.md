@@ -221,7 +221,8 @@ iOS requires macOS, CocoaPods, and Xcode. JavaScript sync behavior is implemente
 
 ## Known Limitations
 
-- Feed, clubs, messages, reviews, follows, discovery, push notifications, book search, and image uploads remain online-first.
+- Feed, clubs, messages, reviews, follows, discovery, push notifications, uncached external book search, direct barcode lookup/add, and image uploads remain online-first.
+- General book search can display previously cached local results offline. Direct barcode-to-library still requires connectivity because it must resolve an exact ISBN match and call `add-book`.
 - `SyncReviewDialog` supports retry/discard, not full manual merge resolution.
 - Hard-delete semantics are avoided for reading-core entities that must sync across devices.
 - Native SQLite behavior still needs real-device validation, especially iOS.
@@ -232,5 +233,6 @@ iOS requires macOS, CocoaPods, and Xcode. JavaScript sync behavior is implemente
 - [Architecture](./architecture.md)
 - [Database Schema](./database-schema.md)
 - [API Reference](./api-reference.md)
+- [Book Acquisition, Search, And Barcode Scanning](./reading/book-acquisition.md)
 - [Testing](./testing.md)
 - [Troubleshooting](./troubleshooting.md)

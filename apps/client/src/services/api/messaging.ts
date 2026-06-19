@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { sanitizeInput } from "@/utils/sanitize";
 import { getCurrentAuthUser } from "./auth";
 import { invokeFunction } from "./client";
+import { withContentSnapshot } from "@/services/contentSnapshots";
 
 export type MessageType = "text" | "media" | "gif";
 export type MessageReactionType = "like" | "dislike" | "heart" | "laugh" | "wow" | "thanks";
@@ -372,15 +373,17 @@ const sendTextMessageLegacy = async (
 };
 
 export const fetchConversations = async (): Promise<ConversationSummary[]> => {
-  try {
-    const response = await invokeFunction<{ conversations: ConversationSummary[] }>(
-      "conversations-home"
-    );
-    return response.conversations || [];
-  } catch (error) {
-    console.warn("conversations-home unavailable; falling back to legacy conversation summaries", error);
-    return fetchConversationsLegacy();
-  }
+  return withContentSnapshot("conversations", "home", async () => {
+    try {
+      const response = await invokeFunction<{ conversations: ConversationSummary[] }>(
+        "conversations-home"
+      );
+      return response.conversations || [];
+    } catch (error) {
+      console.warn("conversations-home unavailable; falling back to legacy conversation summaries", error);
+      return fetchConversationsLegacy();
+    }
+  });
 };
 
 export const getOrCreateConversation = async (

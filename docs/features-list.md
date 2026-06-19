@@ -53,7 +53,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 
 ### Display Components
 - `BookCard` - Book display card
-- `BookSearch` - Book search with Google Books primary and Open Library fallback
+- `BookSearch` - Book search with provider fallback, ISBN lookup, and metadata caching
 - `SwipeableBookCard` - Book card with swipe actions
 - `BadgeDisplay` - Achievement badges
 - `StreakDisplay` - Streak counter
@@ -113,8 +113,8 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 
 ### Book Management ✅
 - ✅ Add books manually
-- ✅ Search Google Books with Open Library fallback
-- ✅ Scan ISBN barcode
+- ✅ Search Google Books with Open Library fallback and metadata caching
+- ✅ Scan ISBN barcode, resolve exact match, preview, and add directly
 - ✅ Scan book cover (OCR)
 - ✅ Edit book details
 - ✅ Delete books (soft delete)
@@ -367,7 +367,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 
 ### External APIs
 - ✅ **Google Books API** - Primary book search and metadata
-- ✅ **Open Library API** - Fallback book search when Google is rate limited or unavailable
+- ✅ **Open Library API** - Fallback book search when Google fails, times out, or returns no usable books
 - ✅ **Firebase Cloud Messaging** - Push notifications
 - ✅ **Sentry** - Error tracking (optional)
 
@@ -622,7 +622,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 
 ## 🔄 API Endpoints (Edge Functions)
 
-1. **search-books** - Book search with Google Books primary and Open Library fallback
+1. **search-books** - Book search and ISBN lookup gateway with Google Books primary, Open Library fallback, and metadata caching
 2. **add-book** - Protected library insert and duplicate handling
 3. **dashboard-home** - Snapshot-backed dashboard data
 4. **complete-reading** - Consolidated reading completion transaction

@@ -1,9 +1,17 @@
-import type { Book, Goal, LibraryViewMode, Profile, ReadingSession } from "@/types";
+import type {
+  Book,
+  BookList,
+  BookListItem,
+  Goal,
+  LibraryViewMode,
+  Profile,
+  ReadingSession,
+} from "@/types";
 import type { JournalEntry } from "@/services/api/journal";
 
 export type LocalEntityStatus = "synced" | "pending" | "failed" | "deleted";
 
-export type SyncOperation = "create" | "update" | "delete" | "restore";
+export type SyncOperation = "create" | "update" | "delete" | "restore" | "reorder";
 
 export type SyncEntity =
   | "books"
@@ -11,6 +19,8 @@ export type SyncEntity =
   | "progress_logs"
   | "journal_entries"
   | "goals"
+  | "book_lists"
+  | "book_list_items"
   | "profile_preferences";
 
 export type OutboxStatus = "pending" | "syncing" | "failed" | "synced";
@@ -77,18 +87,23 @@ export interface SyncEntityPayloads {
   progress_logs: ProgressLogPayload;
   journal_entries: JournalEntry;
   goals: Goal;
+  book_lists: BookList;
+  book_list_items: BookListItem;
   profile_preferences: ProfilePreferencesPayload;
 }
 
 export interface SyncPullResponse {
   success: boolean;
   cursor: string;
+  has_more?: boolean;
   records: {
     books: Book[];
     reading_sessions: ReadingSession[];
     progress_logs: ProgressLogPayload[];
     journal_entries: JournalEntry[];
     goals: Goal[];
+    book_lists: BookList[];
+    book_list_items: BookListItem[];
     profile_preferences: Partial<Profile>[];
   };
 }

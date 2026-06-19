@@ -125,6 +125,10 @@ const processItem = async (
       return processJournalEntry(supabaseClient, userId, item);
     case "goals":
       return processGoal(supabaseClient, userId, item);
+    case "book_lists":
+      return processBookList(supabaseClient, userId, item);
+    case "book_list_items":
+      return processBookListItem(supabaseClient, userId, item);
     case "profile_preferences":
       return processProfilePreferences(supabaseClient, userId, item);
     default:
@@ -278,6 +282,131 @@ const processGoal = async (supabaseClient: SupabaseClient, userId: string, item:
     .update(updates)
     .eq("id", item.client_entity_id)
     .eq("user_id", userId)
+    .select()
+    .single();
+  if (error) throw error;
+  return { server_entity_id: data.id, record: data };
+};
+
+const processBookList = async (
+  supabaseClient: SupabaseClient,
+  userId: string,
+  item: OutboxItem
+) => {
+  if (item.operation === "reorder") {
+    const orderedBookIds = Array.isArray(item.payload.ordered_book_ids)
+      ? item.payload.ordered_book_ids.filter((value): value is string => typeof value === "string")
+      : [];
+    const { data, error } = await supabaseClient.rpc("reorder_book_list_items", {
+      p_user_id: userId,
+      p_list_id: item.client_entity_id,
+      p_ordered_book_ids: orderedBookIds,
+      p_expected_version: asNumber(item.payload.expected_version),
+    });
+    if (error) throw error;
+
+    const { data: list, error: listError } = await supabaseClient
+      .from("book_lists")
+      .select("*")
+      .eq("id", item.client_entity_id)
+      .eq("user_id", userId)
+      .single();
+    if (listError) throw listError;
+    return { server_entity_id: list.id, record: list, reorder: data };
+  }
+
+  if (item.operation === "delete") {
+    const { data, error } = await supabaseClient.rpc("delete_book_list_transaction", {
+      p_user_id: userId,
+      p_list_id: item.client_entity_id,
+    });
+    if (error) throw error;
+    return {
+      server_entity_id: item.client_entity_id,
+      record: data?.list,
+    };
+  }
+
+  const payload = {
+    ...omitKeys(item.payload, ["book_count"]),
+    id: item.payload.id || item.client_entity_id,
+    user_id: userId,
+    deleted_at: item.operation === "restore" ? null : item.payload.deleted_at ?? null,
+    updated_at: new Date().toISOString(),
+  };
+  const { data, error } = await supabaseClient
+    .from("book_lists")
+    .upsert(payload, { onConflict: "id" })
+    .select()
+    .single();
+  if (error) throw error;
+  return { server_entity_id: data.id, record: data };
+};
+
+const processBookListItem = async (
+  supabaseClient: SupabaseClient,
+  userId: string,
+  item: OutboxItem
+) => {
+  const listId = asString(item.payload.list_id);
+  const bookId = asString(item.payload.book_id);
+  if (!listId || !bookId) throw new Error("List item is missing list or book identity");
+
+  const [{ data: list }, { data: book }] = await Promise.all([
+    supabaseClient
+      .from("book_lists")
+      .select("id")
+      .eq("id", listId)
+      .eq("user_id", userId)
+      .is("deleted_at", null)
+      .maybeSingle(),
+    supabaseClient
+      .from("books")
+      .select("id")
+      .eq("id", bookId)
+      .eq("user_id", userId)
+      .is("deleted_at", null)
+      .maybeSingle(),
+  ]);
+  if (!list || !book) throw new Error("Book list item does not belong to this user");
+
+  const { data: existing } = await supabaseClient
+    .from("book_list_items")
+    .select("*")
+    .eq("list_id", listId)
+    .eq("book_id", bookId)
+    .maybeSingle();
+
+  if (item.operation === "delete") {
+    if (!existing) {
+      return { server_entity_id: item.client_entity_id, record: item.payload };
+    }
+    const timestamp = new Date().toISOString();
+    const { data, error } = await supabaseClient
+      .from("book_list_items")
+      .update({ deleted_at: timestamp, updated_at: timestamp })
+      .eq("id", existing.id)
+      .eq("user_id", userId)
+      .select()
+      .single();
+    if (error) throw error;
+    return { server_entity_id: data.id, record: data };
+  }
+
+  const payload = {
+    id: existing?.id || item.payload.id || item.client_entity_id,
+    user_id: userId,
+    list_id: listId,
+    book_id: bookId,
+    position: asNumber(item.payload.position) ?? existing?.position ?? 0,
+    added_at: existing?.added_at || item.payload.added_at || new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    deleted_at: null,
+  };
+
+  const { data, error } = await supabaseClient
+    .from("book_list_items")
+    .upsert(payload, { onConflict: "id" })
     .select()
     .single();
   if (error) throw error;

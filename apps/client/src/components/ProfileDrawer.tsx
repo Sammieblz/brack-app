@@ -17,6 +17,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { User, LogOut } from "iconoir-react";
 import { cn } from "@/lib/utils";
 import { NAV_GROUPS, getNavItemsBySection, isNavItemActive, type NavItem } from "@/config/navigation";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 interface ProfileDrawerProps {
   open: boolean;
@@ -31,6 +32,7 @@ export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
   const { followersCount, followingCount } = useFollowing(user?.id || null);
   const { conversations } = useConversations();
   const { triggerHaptic } = useHapticFeedback();
+  const { socialEnabled } = useFeatureFlags();
   
   const menuItemsRef = useRef<HTMLDivElement>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -71,11 +73,11 @@ export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
   const drawerGroups = NAV_GROUPS
     .map((group) => ({
       ...group,
-      items: getNavItemsBySection(group.section),
+      items: getNavItemsBySection(group.section, socialEnabled),
     }))
     .filter((group) => group.items.length > 0);
 
-  const accountItems = getNavItemsBySection("account");
+  const accountItems = getNavItemsBySection("account", socialEnabled);
 
   const handleMenuItemClick = (path: string) => {
     triggerHaptic("selection");

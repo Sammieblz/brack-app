@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Camera, CameraResultType } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
-import { createWorker } from 'tesseract.js';
 import { useHapticFeedback } from './useHapticFeedback';
 import { toast } from 'sonner';
 import { preprocessImageForOCR, parseBookCoverText, type ExtractedBookInfo } from '@/utils/ocrHelpers';
@@ -50,6 +49,7 @@ export const useCoverScanner = (): UseCoverScannerReturn => {
 
       // Step 3: Initialize Tesseract worker (40%)
       setProgress(40);
+      const { createWorker } = await import("tesseract.js");
       const worker = await createWorker('eng', 1, {
         logger: (m) => {
           // Track OCR progress

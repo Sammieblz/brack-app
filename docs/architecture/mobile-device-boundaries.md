@@ -7,7 +7,7 @@ Scope: ticket 8.2, isolate Capacitor/device-specific behavior.
 
 | Capability | Current owner | Web fallback |
 | --- | --- | --- |
-| Barcode scanning | `apps/client/src/hooks/useBarcodeScanner.ts` | Camera/photo prompt plus canvas barcode detection path. |
+| Barcode scanning | `apps/client/src/hooks/useBarcodeScanner.ts` | Live `getUserMedia` video preview scanned by ZXing. Requires HTTPS or localhost. |
 | Cover OCR | `apps/client/src/hooks/useCoverScanner.ts`, `apps/client/src/utils/ocrHelpers.ts` | Photo picker/OCR in browser. |
 | Generic image picking | `apps/client/src/hooks/useImagePicker.ts` | File input fallback. |
 | Push registration | `apps/client/src/services/pushNotifications.ts`, `apps/client/src/hooks/usePushNotifications.ts` | No-op with clear unsupported state. |
@@ -32,7 +32,7 @@ Scope: ticket 8.2, isolate Capacitor/device-specific behavior.
 - `TimerContext` owns timer state and UI events; native app-state and Local Notification plugin calls live in `timerNativeService`.
 - `useBadges` owns badge UI/toast behavior; native badge push dispatch lives in `badgeNotificationService`.
 - `usePushNotifications` delegates platform detection and plugin calls to `pushNotificationsService`.
-- Camera/OCR/barcode code is isolated in hooks with web fallbacks. If scanner behavior grows, move plugin-specific camera capture into a scanner service.
+- Camera/OCR/barcode code is isolated in hooks with web fallbacks. Barcode scanning uses `@capacitor/barcode-scanner` on native platforms and the same visible `<video>` element plus ZXing on web/desktop. If scanner behavior grows, move plugin-specific scanner orchestration into a scanner service.
 
 ## Recommendation
 

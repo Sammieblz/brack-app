@@ -8,7 +8,12 @@ export type LocalTableName =
   | "progress_logs"
   | "journal_entries"
   | "goals"
-  | "profile_preferences";
+  | "book_lists"
+  | "book_list_items"
+  | "profile_preferences"
+  | "pending_book_imports"
+  | "book_search_cache"
+  | "content_snapshots";
 
 type LocalEntityStatus = "synced" | "pending" | "failed" | "deleted";
 type OutboxStatus = "pending" | "syncing" | "failed" | "synced";
@@ -73,7 +78,12 @@ const ENTITY_TABLES: LocalTableName[] = [
   "progress_logs",
   "journal_entries",
   "goals",
+  "book_lists",
+  "book_list_items",
   "profile_preferences",
+  "pending_book_imports",
+  "book_search_cache",
+  "content_snapshots",
 ];
 
 const ENTITY_TABLE_SET = new Set<string>(ENTITY_TABLES);

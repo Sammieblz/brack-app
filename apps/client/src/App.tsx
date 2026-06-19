@@ -22,26 +22,6 @@ import Index from "./screens/Index";
 import Auth from "./screens/Auth";
 import AuthCallback from "./screens/AuthCallback";
 import ResetPassword from "./screens/ResetPassword";
-import Onboarding from "./screens/Onboarding";
-import Dashboard from "./screens/Dashboard";
-import MyBooks from "./screens/MyBooks";
-import AddBook from "./screens/AddBook";
-import BookDetail from "./screens/BookDetail";
-import EditBook from "./screens/EditBook";
-import ScanBarcode from "./screens/ScanBarcode";
-import ScanCover from "./screens/ScanCover";
-import Profile from "./screens/Profile";
-import Settings from "./screens/Settings";
-import Achievements from "./screens/Achievements";
-import BookLists from "./screens/BookLists";
-import BookListDetail from "./screens/BookListDetail";
-import GoalsManagement from "./screens/GoalsManagement";
-import UserProfile from "./screens/UserProfile";
-import Reviews from "./screens/Reviews";
-import ReviewDetail from "./screens/ReviewDetail";
-import Feed from "./screens/Feed";
-import PostDetail from "./screens/PostDetail";
-import Readers from "./screens/Readers";
 import NotFound from "./screens/NotFound";
 
 import { ProfileProvider } from "./contexts/ProfileContext";
@@ -56,11 +36,32 @@ import { BadgeCelebrationProvider } from "./contexts/BadgeCelebrationContext";
 import { useAppViewportHeight } from "./hooks/useAppViewportHeight";
 import { OnboardingRouteGuard } from "./components/OnboardingRouteGuard";
 import { OnboardingEntryRedirect } from "./components/OnboardingEntryRedirect";
+import { FeatureGate } from "./components/FeatureGate";
 
 // Initialize Sentry error tracking
 initSentry();
 
 const Analytics = lazy(() => import("./screens/Analytics"));
+const Onboarding = lazy(() => import("./screens/Onboarding"));
+const Dashboard = lazy(() => import("./screens/Dashboard"));
+const MyBooks = lazy(() => import("./screens/MyBooks"));
+const AddBook = lazy(() => import("./screens/AddBook"));
+const BookDetail = lazy(() => import("./screens/BookDetail"));
+const EditBook = lazy(() => import("./screens/EditBook"));
+const ScanBarcode = lazy(() => import("./screens/ScanBarcode"));
+const ScanCover = lazy(() => import("./screens/ScanCover"));
+const Profile = lazy(() => import("./screens/Profile"));
+const Settings = lazy(() => import("./screens/Settings"));
+const Achievements = lazy(() => import("./screens/Achievements"));
+const BookLists = lazy(() => import("./screens/BookLists"));
+const BookListDetail = lazy(() => import("./screens/BookListDetail"));
+const GoalsManagement = lazy(() => import("./screens/GoalsManagement"));
+const UserProfile = lazy(() => import("./screens/UserProfile"));
+const Reviews = lazy(() => import("./screens/Reviews"));
+const ReviewDetail = lazy(() => import("./screens/ReviewDetail"));
+const Feed = lazy(() => import("./screens/Feed"));
+const PostDetail = lazy(() => import("./screens/PostDetail"));
+const Readers = lazy(() => import("./screens/Readers"));
 const BookClubs = lazy(() => import("./screens/BookClubs"));
 const BookClubDetail = lazy(() => import("./screens/BookClubDetail"));
 const Messages = lazy(() => import("./screens/Messages"));
@@ -151,15 +152,15 @@ const App = () => {
                             <Route path="/lists" element={<BookLists />} />
                             <Route path="/lists/:listId" element={<BookListDetail />} />
                             <Route path="/goals-management" element={<GoalsManagement />} />
-                            <Route path="/users/:userId" element={<UserProfile />} />
-                            <Route path="/reviews" element={<Reviews />} />
-                            <Route path="/reviews/:reviewId" element={<ReviewDetail />} />
-                            <Route path="/feed" element={<Feed />} />
-                            <Route path="/posts/:postId" element={<PostDetail />} />
-                            <Route path="/clubs" element={<BookClubs />} />
-                            <Route path="/clubs/:clubId" element={<BookClubDetail />} />
-                            <Route path="/readers" element={<Readers />} />
-                            <Route path="/messages" element={<Messages />} />
+                            <Route path="/users/:userId" element={<FeatureGate feature="social"><UserProfile /></FeatureGate>} />
+                            <Route path="/reviews" element={<FeatureGate feature="social"><Reviews /></FeatureGate>} />
+                            <Route path="/reviews/:reviewId" element={<FeatureGate feature="social"><ReviewDetail /></FeatureGate>} />
+                            <Route path="/feed" element={<FeatureGate feature="social"><Feed /></FeatureGate>} />
+                            <Route path="/posts/:postId" element={<FeatureGate feature="social"><PostDetail /></FeatureGate>} />
+                            <Route path="/clubs" element={<FeatureGate feature="social"><BookClubs /></FeatureGate>} />
+                            <Route path="/clubs/:clubId" element={<FeatureGate feature="social"><BookClubDetail /></FeatureGate>} />
+                            <Route path="/readers" element={<FeatureGate feature="social"><Readers /></FeatureGate>} />
+                            <Route path="/messages" element={<FeatureGate feature="social"><Messages /></FeatureGate>} />
                             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                             <Route path="*" element={<NotFound />} />
                           </Routes>

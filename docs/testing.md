@@ -31,7 +31,7 @@ npm run dev
 2. **Book Management**:
    - Add book manually
    - Search and add book
-   - Scan barcode (web camera)
+   - Scan barcode (web camera), resolve exact match, preview, and add
    - Scan cover (OCR)
    - Edit book details
    - Delete book
@@ -141,7 +141,7 @@ npm --workspace @brack/mobile exec cap run android
 ### Books
 - [ ] Add book manually
 - [ ] Add book via book search
-- [ ] Add book via barcode scan
+- [ ] Add book via barcode scan with exact ISBN preview
 - [ ] Add book via cover scan
 - [ ] Edit book details
 - [ ] Delete book (soft delete)
@@ -230,7 +230,12 @@ npm --workspace @brack/mobile exec cap run android
 - [ ] View other users' public lists
 
 ### Mobile Features
-- [ ] Barcode scanner works
+- [ ] Barcode scanner shows live preview/viewfinder on web
+- [ ] Barcode scanner opens native scanner on Android/iOS
+- [ ] Barcode scanner resolves exact ISBN metadata before add
+- [ ] Barcode duplicate scan shows existing/restored state without creating a second book
+- [ ] Barcode no-match scan offers manual ISBN fallback
+- [ ] Barcode permission denial and network loss show recoverable states
 - [ ] Cover scanner (OCR) extracts title/author
 - [ ] Image picker opens camera
 - [ ] Image picker opens photo library

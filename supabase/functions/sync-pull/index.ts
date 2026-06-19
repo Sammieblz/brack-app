@@ -7,18 +7,107 @@ import {
 } from "../_shared/appEndpoint.ts";
 import { enforceRateLimit } from "../_shared/rateLimit.ts";
 
-type CursorQuery<T> = T & {
-  gt: (column: string, value: string) => T;
-};
-
 interface SyncPullBody {
   cursor?: unknown;
 }
 
-const applyCursor = <T>(query: CursorQuery<T>, column: string, cursor: string | null): T => {
-  if (!cursor) return query;
-  return query.gt(column, cursor);
+interface EntityCursor {
+  timestamp: string;
+  id: string;
+}
+
+interface SyncCursor {
+  version: 1;
+  entities: Record<string, EntityCursor | null>;
+}
+
+interface SyncDefinition {
+  key: string;
+  table: string;
+  timestampColumn: string;
+  select: string;
+  userColumn: string;
+}
+
+const PAGE_SIZE = 250;
+const CURSOR_VERSION = 1 as const;
+
+const DEFINITIONS: SyncDefinition[] = [
+  { key: "books", table: "books", timestampColumn: "updated_at", select: "*", userColumn: "user_id" },
+  {
+    key: "reading_sessions",
+    table: "reading_sessions",
+    timestampColumn: "created_at",
+    select: "*",
+    userColumn: "user_id",
+  },
+  {
+    key: "progress_logs",
+    table: "progress_logs",
+    timestampColumn: "created_at",
+    select: "*",
+    userColumn: "user_id",
+  },
+  {
+    key: "journal_entries",
+    table: "journal_entries",
+    timestampColumn: "updated_at",
+    select: "*",
+    userColumn: "user_id",
+  },
+  { key: "goals", table: "goals", timestampColumn: "updated_at", select: "*", userColumn: "user_id" },
+  {
+    key: "book_lists",
+    table: "book_lists",
+    timestampColumn: "updated_at",
+    select: "*",
+    userColumn: "user_id",
+  },
+  {
+    key: "book_list_items",
+    table: "book_list_items",
+    timestampColumn: "updated_at",
+    select: "*",
+    userColumn: "user_id",
+  },
+  {
+    key: "profile_preferences",
+    table: "profiles",
+    timestampColumn: "updated_at",
+    select: "id, color_theme, theme_mode, library_view_mode, updated_at",
+    userColumn: "id",
+  },
+];
+
+const emptyCursor = (): SyncCursor => ({
+  version: CURSOR_VERSION,
+  entities: Object.fromEntries(DEFINITIONS.map((definition) => [definition.key, null])),
+});
+
+const decodeCursor = (value: unknown): SyncCursor => {
+  if (typeof value !== "string" || !value) return emptyCursor();
+  try {
+    const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+    const parsed = JSON.parse(atob(padded)) as Partial<SyncCursor>;
+    if (parsed.version !== CURSOR_VERSION || !parsed.entities) return emptyCursor();
+    return {
+      version: CURSOR_VERSION,
+      entities: {
+        ...emptyCursor().entities,
+        ...parsed.entities,
+      },
+    };
+  } catch {
+    return emptyCursor();
+  }
 };
+
+const encodeCursor = (cursor: SyncCursor) =>
+  btoa(JSON.stringify(cursor)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+
+const escapeFilterValue = (value: string) =>
+  `"${value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
@@ -42,95 +131,52 @@ Deno.serve(async (req) => {
     if (limited) return limited;
 
     const body = await parseJsonBody<SyncPullBody>(req);
-    const cursor = typeof body.cursor === "string" && body.cursor ? body.cursor : null;
+    const cursor = decodeCursor(body.cursor);
     const userId = authResult.user.id;
-    const nextCursor = new Date().toISOString();
+    const records: Record<string, Record<string, unknown>[]> = {};
+    let hasMore = false;
 
-    const [
-      booksResult,
-      sessionsResult,
-      progressResult,
-      journalResult,
-      goalsResult,
-      profileResult,
-    ] = await Promise.all([
-      applyCursor(
-        supabaseClient
-          .from("books")
-          .select("*")
-          .eq("user_id", userId)
-          .order("updated_at", { ascending: true }),
-        "updated_at",
-        cursor
-      ),
-      applyCursor(
-        supabaseClient
-          .from("reading_sessions")
-          .select("*")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: true }),
-        "created_at",
-        cursor
-      ),
-      applyCursor(
-        supabaseClient
-          .from("progress_logs")
-          .select("*")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: true }),
-        "created_at",
-        cursor
-      ),
-      applyCursor(
-        supabaseClient
-          .from("journal_entries")
-          .select("*")
-          .eq("user_id", userId)
-          .order("updated_at", { ascending: true }),
-        "updated_at",
-        cursor
-      ),
-      applyCursor(
-        supabaseClient
-          .from("goals")
-          .select("*")
-          .eq("user_id", userId)
-          .order("updated_at", { ascending: true }),
-        "updated_at",
-        cursor
-      ),
-      applyCursor(
-        supabaseClient
-          .from("profiles")
-          .select("id, color_theme, theme_mode, library_view_mode, updated_at")
-          .eq("id", userId),
-        "updated_at",
-        cursor
-      ),
-    ]);
+    for (const definition of DEFINITIONS) {
+      const entityCursor = cursor.entities[definition.key];
+      let query = supabaseClient
+        .from(definition.table)
+        .select(definition.select)
+        .eq(definition.userColumn, userId)
+        .order(definition.timestampColumn, { ascending: true })
+        .order("id", { ascending: true })
+        .limit(PAGE_SIZE + 1);
 
-    const error =
-      booksResult.error ||
-      sessionsResult.error ||
-      progressResult.error ||
-      journalResult.error ||
-      goalsResult.error ||
-      profileResult.error;
+      if (entityCursor) {
+        const timestamp = escapeFilterValue(entityCursor.timestamp);
+        const id = escapeFilterValue(entityCursor.id);
+        query = query.or(
+          `${definition.timestampColumn}.gt.${timestamp},and(${definition.timestampColumn}.eq.${timestamp},id.gt.${id})`
+        );
+      }
 
-    if (error) throw error;
+      const { data, error } = await query;
+      if (error) throw error;
+
+      const page = (data ?? []) as Record<string, unknown>[];
+      if (page.length > PAGE_SIZE) hasMore = true;
+      const acceptedPage = page.slice(0, PAGE_SIZE);
+      records[definition.key] = acceptedPage;
+
+      const last = acceptedPage.at(-1);
+      if (last) {
+        cursor.entities[definition.key] = {
+          timestamp: String(last[definition.timestampColumn]),
+          id: String(last.id),
+        };
+      }
+    }
 
     return jsonResponse(
       {
         success: true,
-        cursor: nextCursor,
-        records: {
-          books: booksResult.data ?? [],
-          reading_sessions: sessionsResult.data ?? [],
-          progress_logs: progressResult.data ?? [],
-          journal_entries: journalResult.data ?? [],
-          goals: goalsResult.data ?? [],
-          profile_preferences: profileResult.data ?? [],
-        },
+        cursor: encodeCursor(cursor),
+        has_more: hasMore,
+        records,
       },
       200,
       origin

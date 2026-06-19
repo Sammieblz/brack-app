@@ -1,0 +1,10 @@
+appId: com.brack.app
+---
+- launchApp
+- assertVisible:
+    text: "Brack"
+- tapOn:
+    text: "Library"
+    optional: true
+- assertNotVisible:
+    text: "Page error"

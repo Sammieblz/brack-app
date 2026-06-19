@@ -24,8 +24,8 @@ export const QuickProgressWidget = ({ book, onUpdate }: QuickProgressWidgetProps
       await updateBookQuickProgress(book, pageNum);
 
       toast({
-        title: "Progress updated",
-        description: `You're now on page ${pageNum}`,
+        title: "Page corrected",
+        description: `Current page is now ${pageNum}. This correction does not count as reading activity.`,
       });
       
       onUpdate();
@@ -43,7 +43,7 @@ export const QuickProgressWidget = ({ book, onUpdate }: QuickProgressWidgetProps
   return (
     <Card className="bg-gradient-card">
       <CardHeader>
-        <CardTitle className="font-display text-lg">Quick Progress Update</CardTitle>
+        <CardTitle className="font-display text-lg">Correct Current Page</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
@@ -60,7 +60,7 @@ export const QuickProgressWidget = ({ book, onUpdate }: QuickProgressWidgetProps
                 className="flex-1"
               />
               <Button onClick={handleUpdate} disabled={updating}>
-                {updating ? 'Updating...' : 'Update'}
+                {updating ? "Correcting..." : "Correct page"}
               </Button>
             </div>
           </div>
@@ -69,6 +69,9 @@ export const QuickProgressWidget = ({ book, onUpdate }: QuickProgressWidgetProps
               {Math.round((parseInt(currentPage) / book.pages) * 100)}% complete
             </p>
           )}
+          <p className="font-sans text-xs text-muted-foreground">
+            Use Log Progress when you have read. Corrections do not affect streaks or activity.
+          </p>
         </div>
       </CardContent>
     </Card>

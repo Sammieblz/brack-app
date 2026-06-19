@@ -2,6 +2,8 @@ import { supabase } from "@/integrations/supabase/client";
 import type { LibraryViewMode, Profile } from "@/types";
 import { getCurrentAuthUser } from "./auth";
 import { profilePreferencesRepo } from "@/services/local";
+import { isConnectivityAvailable } from "@/services/connectivity";
+import { readingCoreSync } from "@/services/sync/engine";
 
 export interface FollowStats {
   followersCount: number;
@@ -262,8 +264,8 @@ export interface ThemePreferences {
 export const fetchThemePreferences = async (
   userId: string
 ): Promise<ThemePreferences | null> => {
-  if (!navigator.onLine) {
-    const local = await profilePreferencesRepo.get(userId);
+  const local = await profilePreferencesRepo.get(userId);
+  if (!isConnectivityAvailable()) {
     return local
       ? {
           color_theme: local.color_theme ?? null,
@@ -303,51 +305,27 @@ export const upsertThemePreferences = async (
   preferences: Partial<ThemePreferences>
 ): Promise<void> => {
   const updatedAt = new Date().toISOString();
+  const existing = await profilePreferencesRepo.get(userId);
 
-  if (!navigator.onLine) {
-    const existing = await profilePreferencesRepo.get(userId);
+  await profilePreferencesRepo.upsertLocal(userId, {
+    id: userId,
+    color_theme:
+      preferences.color_theme !== undefined
+        ? preferences.color_theme
+        : existing?.color_theme ?? null,
+    theme_mode:
+      preferences.theme_mode !== undefined
+        ? preferences.theme_mode
+        : existing?.theme_mode ?? null,
+    library_view_mode:
+      preferences.library_view_mode !== undefined
+        ? preferences.library_view_mode
+        : existing?.library_view_mode ?? "flat",
+    updated_at: updatedAt,
+  });
 
-    await profilePreferencesRepo.upsertLocal(userId, {
-      id: userId,
-      color_theme:
-        preferences.color_theme !== undefined
-          ? preferences.color_theme
-          : existing?.color_theme ?? null,
-      theme_mode:
-        preferences.theme_mode !== undefined
-          ? preferences.theme_mode
-          : existing?.theme_mode ?? null,
-      library_view_mode:
-        preferences.library_view_mode !== undefined
-          ? preferences.library_view_mode
-          : existing?.library_view_mode ?? "flat",
-      updated_at: updatedAt,
-    });
-    return;
-  }
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .upsert(
-      {
-        id: userId,
-        ...preferences,
-        updated_at: updatedAt,
-      },
-      { onConflict: "id" }
-    )
-    .select("id, color_theme, theme_mode, library_view_mode, updated_at")
-    .single();
-
-  if (error) throw error;
-  if (data) {
-    await profilePreferencesRepo.upsertRemote(userId, {
-      id: userId,
-      color_theme: data.color_theme ?? null,
-      theme_mode: data.theme_mode ?? null,
-      library_view_mode: (data.library_view_mode as LibraryViewMode | null) ?? "flat",
-      updated_at: data.updated_at ?? updatedAt,
-    });
+  if (isConnectivityAvailable()) {
+    void readingCoreSync.syncUser(userId).catch(console.error);
   }
 };
 

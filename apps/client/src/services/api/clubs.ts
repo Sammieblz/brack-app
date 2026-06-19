@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { invokeFunction } from "./client";
 import { getCurrentAuthUser } from "./auth";
 import type { RichTextDocument, RichTextFormat } from "@/types/richText";
+import { withContentSnapshot } from "@/services/contentSnapshots";
 
 export type ClubMemberRole = "admin" | "moderator" | "member";
 export type ClubJoinStatus = "none" | "member" | "requested" | "invited";
@@ -476,9 +477,16 @@ export const getClubsHome = async (filters: {
   limit?: number;
   maxDistance?: number;
 } = {}): Promise<ClubsHomeResponse> => {
-  return invokeFunction<ClubsHomeResponse>("clubs-home", {
-    body: filters,
+  const key = JSON.stringify({
+    searchQuery: filters.searchQuery ?? "",
+    limit: filters.limit ?? null,
+    maxDistance: filters.maxDistance ?? null,
   });
+  return withContentSnapshot("clubs", key, () =>
+    invokeFunction<ClubsHomeResponse>("clubs-home", {
+      body: filters,
+    }),
+  );
 };
 
 export const getClubDetail = async (clubId: string): Promise<ClubDetailResponse> => {

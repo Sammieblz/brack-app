@@ -188,3 +188,18 @@ verify_jwt = true
 
 [functions.sync-push]
 verify_jwt = true
+
+[functions.export-reading-data]
+verify_jwt = true
+
+[functions.preview-reading-import]
+verify_jwt = true
+
+[functions.commit-reading-import]
+verify_jwt = true
+
+[functions.feature-flags]
+verify_jwt = false
+
+[functions.core-telemetry]
+verify_jwt = false

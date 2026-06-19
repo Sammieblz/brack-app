@@ -10,6 +10,7 @@ import { NotificationSettings } from "@/components/settings/NotificationSettings
 import { PrivacySettings } from "@/components/settings/PrivacySettings";
 import { SupportContact } from "@/components/settings/SupportContact";
 import { ReadingProfileSettings } from "@/components/settings/ReadingProfileSettings";
+import { DataBackupSettings } from "@/components/settings/DataBackupSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -28,6 +29,7 @@ type SettingsSection =
   | 'profile' 
   | 'personal' 
   | 'reading'
+  | 'data'
   | 'app' 
   | 'notifications' 
   | 'privacy' 
@@ -40,7 +42,7 @@ const sections: Array<{
   description: string;
   component: (user: { id: string }) => React.ReactNode;
 }> = [
-  { 
+  {
     id: 'account', 
     label: 'Account', 
     icon: APP_ICONS.settings.account,
@@ -67,6 +69,13 @@ const sections: Array<{
     icon: APP_ICONS.settings.readingProfile,
     description: 'Taste, pace, learning signals',
     component: (user) => <ReadingProfileSettings user={user} />
+  },
+  {
+    id: 'data',
+    label: 'Data & Backup',
+    icon: APP_ICONS.settings.dataBackup,
+    description: 'Export, import, restore',
+    component: (user) => <DataBackupSettings user={user} />
   },
   { 
     id: 'app', 

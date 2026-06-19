@@ -282,7 +282,7 @@ Messaging functions that must stay deployed together:
 
 If messaging functions return 404, deploy the missing function. If they return 500 after deployment, verify the remote database has `conversation_reads`, `conversation_user_settings`, `message_media`, `message_reactions`, the modern `messages` columns, and the private `message-media` bucket.
 
-`search-books` uses Google Books first and falls back to Open Library when Google returns 403, 429, or 5xx. `GOOGLE_BOOKS_API_KEY` is optional but recommended to reduce upstream quota failures.
+`search-books` uses Google Books first and falls back to Open Library when Google fails, times out, or returns no usable books. `GOOGLE_BOOKS_API_KEY` is optional but recommended to reduce upstream quota failures. ISBN lookups are cached in `book_metadata_cache` for 7 days; non-ISBN searches are cached for 1 day.
 
 The legacy 2025 functions (`get-book-details`, `update-reading-progress`, `daily-summary`) were removed from the remote project on May 5, 2026 after confirming there are no local consumers.
 
@@ -374,7 +374,7 @@ The CI pipeline is defined in `.github/workflows/ci.yml`:
 
 **Steps**:
 1. Checkout code
-2. Setup Node.js 20 with npm caching
+2. Setup Node.js 22 with npm caching
 3. Install dependencies (`npm ci`)
 4. Run ESLint (`npm run lint`)
 5. Run TypeScript type check (`npm run check-types`)
@@ -387,7 +387,7 @@ The CI pipeline is defined in `.github/workflows/ci.yml`:
 
 **Steps**:
 1. Checkout code
-2. Setup Node.js 20 with npm caching
+2. Setup Node.js 22 with npm caching
 3. Install dependencies
 4. Build web app (`npm run build`)
 5. Validate `apps/client/dist` output exists and contains expected files
@@ -402,7 +402,7 @@ The CI pipeline is defined in `.github/workflows/ci.yml`:
 
 **Steps**:
 1. Checkout code
-2. Setup Node.js 20
+2. Setup Node.js 22
 3. Setup Java 17 (required for Android)
 4. Cache Gradle dependencies
 5. Install npm dependencies
@@ -420,7 +420,7 @@ The CI pipeline is defined in `.github/workflows/ci.yml`:
 
 **Steps**:
 1. Checkout code
-2. Setup Node.js 20
+2. Setup Node.js 22
 3. Install npm dependencies
 4. Sync Capacitor iOS (`npm run cap:sync:ios`), which builds `@brack/client` first through Turbo
 5. Cache CocoaPods
@@ -439,7 +439,7 @@ The CI pipeline is defined in `.github/workflows/ci.yml`:
 
 **Steps**:
 1. Checkout code
-2. Setup Node.js 20
+2. Setup Node.js 22
 3. Install npm dependencies
 4. Typecheck the Electron shell (`npm run desktop:typecheck`)
 5. Build unsigned desktop artifacts with the platform-specific and architecture-specific `desktop:dist:*` script
@@ -591,7 +591,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - run: npm ci
       - run: npm run build
       - run: npm run deploy  # Configure based on hosting

@@ -1,10 +1,24 @@
 import { invokeFunction } from "./client";
 import { supabase } from "@/integrations/supabase/client";
 import { dataCache } from "@/services/dataCache";
-import { booksRepo } from "@/services/local";
+import {
+  bookSearchCacheRepo,
+  booksRepo,
+  createLocalId,
+  pendingBookImportsRepo,
+} from "@/services/local";
 import type { Book } from "@/types";
 import { completeReading } from "./reading";
 import { getCurrentAuthUser } from "./auth";
+import {
+  getConnectivityState,
+  isConnectivityAvailable,
+  isRetryableConnectivityError,
+  markConnectivityFailure,
+  markConnectivitySuccess,
+} from "@/services/connectivity";
+import { buildIsbnSearchQuery, canonicalizeIsbn } from "@/utils/isbn";
+import { trackCoreEvent } from "@/services/telemetry";
 
 export interface SearchBooksRequest {
   query: string;
@@ -13,14 +27,130 @@ export interface SearchBooksRequest {
 
 export interface SearchBooksResponse<TBook = unknown> {
   books: TBook[];
+  provider?: string;
+  cached?: boolean;
+  stale?: boolean;
 }
+
+const normalizeSearchKey = (query: string) =>
+  query.trim().toLowerCase().replace(/\s+/g, " ");
+
+const hashSearchKey = (value: string) => {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `search-${(hash >>> 0).toString(16)}`;
+};
 
 export const searchBooks = async <TBook = unknown>(
   request: SearchBooksRequest
 ): Promise<SearchBooksResponse<TBook>> => {
-  return invokeFunction<SearchBooksResponse<TBook>>("search-books", {
-    body: request,
+  const queryKey = normalizeSearchKey(request.query);
+  const user = await getCurrentAuthUser().catch(() => null);
+  const localUserId = user?.id ?? "public";
+  const cacheId = `${localUserId}:${hashSearchKey(queryKey)}`;
+  const cached = await bookSearchCacheRepo.get(cacheId);
+  const cacheFresh = cached && Date.parse(cached.expires_at) > Date.now();
+
+  if (!isConnectivityAvailable() || getConnectivityState() === "offline") {
+    if (cached) {
+      trackCoreEvent("book_search_cache_hit", {
+        stale: !cacheFresh,
+        provider: cached.provider,
+        isbn_lookup: Boolean(canonicalizeIsbn(request.query)),
+      });
+      return {
+        books: cached.results as TBook[],
+        provider: cached.provider ?? undefined,
+        cached: true,
+        stale: !cacheFresh,
+      };
+    }
+    throw new Error("Book search is unavailable offline and no cached result was found");
+  }
+
+  try {
+    const response = await invokeFunction<SearchBooksResponse<TBook>>("search-books", {
+      body: request,
+    });
+    const timestamp = new Date().toISOString();
+    await bookSearchCacheRepo.upsert(localUserId, {
+      id: cacheId,
+      user_id: localUserId,
+      query_key: queryKey,
+      query: request.query,
+      isbn: canonicalizeIsbn(request.query),
+      provider: response.provider ?? null,
+      results: response.books as unknown[],
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      created_at: cached?.created_at ?? timestamp,
+      updated_at: timestamp,
+    });
+    markConnectivitySuccess();
+    trackCoreEvent("book_search_succeeded", {
+      provider: response.provider,
+      cached: Boolean(response.cached),
+      stale: Boolean(response.stale),
+      result_count: response.books.length,
+      isbn_lookup: Boolean(canonicalizeIsbn(request.query)),
+    });
+    return response;
+  } catch (error) {
+    if (isRetryableConnectivityError(error)) {
+      markConnectivityFailure();
+      if (cached) {
+        trackCoreEvent("book_search_cache_hit", {
+          stale: true,
+          provider: cached.provider,
+          isbn_lookup: Boolean(canonicalizeIsbn(request.query)),
+        });
+        return {
+          books: cached.results as TBook[],
+          provider: cached.provider ?? undefined,
+          cached: true,
+          stale: true,
+        };
+      }
+    }
+    trackCoreEvent("book_search_failed", {
+      retryable: isRetryableConnectivityError(error),
+      isbn_lookup: Boolean(canonicalizeIsbn(request.query)),
+    });
+    throw error;
+  }
+};
+
+export const lookupBookByIsbn = async <TBook = unknown>(isbnValue: string) => {
+  const isbn = canonicalizeIsbn(isbnValue);
+  if (!isbn) throw new Error("Invalid ISBN");
+  const response = await searchBooks<TBook>({
+    query: buildIsbnSearchQuery(isbn),
+    maxResults: 10,
   });
+  return { ...response, isbn, book: response.books[0] ?? null };
+};
+
+export const queuePendingBookImport = async (
+  userId: string,
+  input: { isbn?: string | null; query: string; source: "barcode" | "qr" | "cover" | "manual" }
+) => {
+  const timestamp = new Date().toISOString();
+  const pendingImport = {
+    id: createLocalId(),
+    user_id: userId,
+    isbn: input.isbn ? canonicalizeIsbn(input.isbn) : null,
+    query: input.query,
+    source: input.source,
+    status: "pending" as const,
+    resolved_book_id: null,
+    last_error: null,
+    created_at: timestamp,
+    updated_at: timestamp,
+  };
+  await pendingBookImportsRepo.upsert(userId, pendingImport);
+  return pendingImport;
 };
 
 export interface BooksPageResult {
@@ -169,6 +299,7 @@ export const addBookToLibrary = async (
   }
 
   if (data?.code === "book_exists") {
+    trackCoreEvent("duplicate_prevented", { source: "add_book_endpoint" });
     throw new BookAlreadyExistsError(data.message, data.book_id, data.book);
   }
 
@@ -213,54 +344,28 @@ export const reorderLibraryShelf = async (
     updated_at: timestamp,
   }));
 
-  if (!navigator.onLine) {
-    await Promise.all(
-      positionedBooks.map(async (book) => {
-        await booksRepo.upsertLocal(user.id, book, "update");
-        emitBooksChanged({ type: "upsert", userId: user.id, book });
-      })
-    );
-
-    invalidateBooksCache(user.id);
-    return {
-      success: true,
-      books: positionedBooks.map((book) => ({
-        id: book.id,
-        shelf_position: book.shelf_position,
-        updated_at: book.updated_at,
-      })),
-    };
-  }
-
-  const { data, error } = await supabase.rpc("reorder_library_shelf", {
-    p_user_id: user.id,
-    p_book_ids: orderedBooks.map((book) => book.id),
-  });
-
-  if (error) throw error;
-
-  const response = (data ?? { success: true, books: [] }) as ReorderLibraryShelfResponse;
-  const returnedPositions = Array.isArray(response.books) ? response.books : [];
-
   await Promise.all(
-    returnedPositions.map(async (position) => {
-      const existing =
-        orderedBooks.find((book) => book.id === position.id) ?? (await booksRepo.get(position.id));
-      if (!existing) return;
-
-      const updatedBook = {
-        ...existing,
-        shelf_position: position.shelf_position,
-        updated_at: position.updated_at || timestamp,
-      } as Book;
-
-      await booksRepo.upsertRemote(user.id, updatedBook);
-      emitBooksChanged({ type: "upsert", userId: user.id, book: updatedBook });
+    positionedBooks.map(async (book) => {
+      await booksRepo.upsertLocal(user.id, book, "update");
+      emitBooksChanged({ type: "upsert", userId: user.id, book });
     })
   );
 
   invalidateBooksCache(user.id);
-  return { success: Boolean(response.success), books: returnedPositions };
+  if (isConnectivityAvailable()) {
+    void import("@/services/sync/engine")
+      .then(({ readingCoreSync }) => readingCoreSync.syncUser(user.id))
+      .catch(console.error);
+  }
+
+  return {
+    success: true,
+    books: positionedBooks.map((book) => ({
+      id: book.id,
+      shelf_position: book.shelf_position,
+      updated_at: book.updated_at,
+    })),
+  };
 };
 
 export const updateBookStatus = async (
@@ -384,19 +489,13 @@ export const updateBookQuickProgress = async (
     updates.status = "reading";
   }
 
-  if (!navigator.onLine) {
-    await booksRepo.upsertLocal(book.user_id, { ...book, ...updates } as Book, "update");
-    emitBooksChanged({ type: "upsert", userId: book.user_id, book: { ...book, ...updates } as Book });
-    return;
-  }
-
-  const { error } = await supabase
-    .from("books")
-    .update(updates)
-    .eq("id", book.id);
-
-  if (error) throw error;
-  await booksRepo.upsertRemote(book.user_id, { ...book, ...updates } as Book);
+  const updatedBook = { ...book, ...updates } as Book;
+  await booksRepo.upsertLocal(book.user_id, updatedBook, "update");
   invalidateBooksCache(book.user_id);
-  emitBooksChanged({ type: "refresh", userId: book.user_id });
+  emitBooksChanged({ type: "upsert", userId: book.user_id, book: updatedBook });
+  if (isConnectivityAvailable()) {
+    void import("@/services/sync/engine").then(({ readingCoreSync }) =>
+      readingCoreSync.syncUser(book.user_id).catch(console.error)
+    );
+  }
 };

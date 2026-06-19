@@ -1,15 +1,13 @@
-import { useState, useCallback } from 'react';
-import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library';
-import { Camera, CameraResultType } from '@capacitor/camera';
+import { useState, useCallback, useEffect, useRef, type RefObject } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { useHapticFeedback } from './useHapticFeedback';
 import { toast } from 'sonner';
+import { extractIsbnFromScan } from '@/utils/isbn';
+import { trackCoreEvent } from '@/services/telemetry';
 
-// Helper to validate ISBN format
-const isValidISBN = (code: string): boolean => {
-  const cleaned = code.replace(/[^0-9X]/g, '');
-  return cleaned.length === 10 || cleaned.length === 13;
-};
+interface UseBarcodeScannerOptions {
+  videoRef?: RefObject<HTMLVideoElement>;
+}
 
 interface UseBarcodeScannerReturn {
   isScanning: boolean;
@@ -20,13 +18,80 @@ interface UseBarcodeScannerReturn {
   resetScan: () => void;
 }
 
-export const useBarcodeScanner = (): UseBarcodeScannerReturn => {
+type VideoInputDevice = { deviceId: string; label?: string };
+
+type WebCodeReader = {
+  reset: () => void;
+  listVideoInputDevices: () => Promise<VideoInputDevice[]>;
+  decodeFromVideoDevice: (
+    deviceId: string | null | undefined,
+    videoElement: HTMLVideoElement,
+    callback: (result: { getText: () => string } | undefined, error: unknown) => void
+  ) => Promise<void>;
+};
+
+const getPreferredDeviceId = (devices: VideoInputDevice[]) => {
+  const rearCamera = devices.find((device) =>
+    /back|rear|environment|world/i.test(device.label ?? "")
+  );
+  return rearCamera?.deviceId ?? devices[0]?.deviceId ?? null;
+};
+
+const preparePreviewVideo = (videoElement: HTMLVideoElement) => {
+  videoElement.muted = true;
+  videoElement.autoplay = true;
+  videoElement.playsInline = true;
+  videoElement.setAttribute("muted", "true");
+  videoElement.setAttribute("autoplay", "true");
+  videoElement.setAttribute("playsinline", "true");
+};
+
+export const useBarcodeScanner = (
+  options: UseBarcodeScannerOptions = {}
+): UseBarcodeScannerReturn => {
   const [isScanning, setIsScanning] = useState(false);
   const [scannedCode, setScannedCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { triggerHaptic } = useHapticFeedback();
+  const codeReaderRef = useRef<WebCodeReader | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const resolveRef = useRef<((value: string | null) => void) | null>(null);
+
+  const cleanupWebScanner = useCallback(() => {
+    if (timeoutRef.current) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
+    codeReaderRef.current?.reset();
+    codeReaderRef.current = null;
+
+    const videoElement = options.videoRef?.current;
+    if (videoElement) {
+      const stream = videoElement.srcObject;
+      if (stream instanceof MediaStream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+      videoElement.pause();
+      videoElement.srcObject = null;
+      videoElement.removeAttribute("src");
+      videoElement.load();
+    }
+  }, [options.videoRef]);
+
+  const finishWebScan = useCallback(
+    (value: string | null) => {
+      const resolve = resolveRef.current;
+      resolveRef.current = null;
+      cleanupWebScanner();
+      setIsScanning(false);
+      resolve?.(value);
+    },
+    [cleanupWebScanner]
+  );
 
   const startScan = useCallback(async (): Promise<string | null> => {
+    cleanupWebScanner();
     setIsScanning(true);
     setError(null);
     setScannedCode(null);
@@ -34,107 +99,122 @@ export const useBarcodeScanner = (): UseBarcodeScannerReturn => {
     try {
       // Check if we're on a native platform
       if (Capacitor.isNativePlatform()) {
-        // Use Capacitor Camera to take a photo
-        const image = await Camera.getPhoto({
-          quality: 90,
-          allowEditing: false,
-          resultType: CameraResultType.DataUrl,
-          source: 'camera',
+        const {
+          CapacitorBarcodeScanner,
+          CapacitorBarcodeScannerAndroidScanningLibrary,
+          CapacitorBarcodeScannerCameraDirection,
+          CapacitorBarcodeScannerScanOrientation,
+          CapacitorBarcodeScannerTypeHint,
+        } = await import("@capacitor/barcode-scanner");
+        const result = await CapacitorBarcodeScanner.scanBarcode({
+          hint: CapacitorBarcodeScannerTypeHint.ALL,
+          scanInstructions: "Align the ISBN barcode or book QR code inside the frame",
+          scanButton: false,
+          cameraDirection: CapacitorBarcodeScannerCameraDirection.BACK,
+          scanOrientation: CapacitorBarcodeScannerScanOrientation.ADAPTIVE,
+          android: {
+            scanningLibrary: CapacitorBarcodeScannerAndroidScanningLibrary.MLKIT,
+          },
+          web: {
+            showCameraSelection: false,
+            scannerFPS: 15,
+          },
         });
 
-        if (!image.dataUrl) {
-          throw new Error('No image data received');
-        }
+        const isbn = extractIsbnFromScan(result.ScanResult);
+        if (!isbn) throw new Error('Scanned code does not contain a valid ISBN');
+        setScannedCode(isbn);
+        trackCoreEvent("barcode_scan_succeeded", { scanner: "native" });
+        triggerHaptic('success');
+        setIsScanning(false);
+        return isbn;
+      }
 
-        // Use ZXing to decode the barcode from the image
-        const codeReader = new BrowserMultiFormatReader();
-        const result = await codeReader.decodeFromImageUrl(image.dataUrl);
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("Camera access is not available in this browser");
+      }
 
-        if (result && result.getText()) {
-          const code = result.getText();
-          // Validate ISBN format
-          if (isValidISBN(code)) {
-            setScannedCode(code);
-            triggerHaptic('success');
-            setIsScanning(false);
-            return code;
-          } else {
-            throw new Error('Scanned code is not a valid ISBN');
-          }
-        } else {
-          throw new Error('No barcode found in image');
-        }
-      } else {
-        // Web fallback: For web, we'll use the camera API directly
-        // Note: This requires HTTPS or localhost
-        const codeReader = new BrowserMultiFormatReader();
-        
-        try {
-          // Try to get video stream
-          const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'environment' } 
-          });
-          
-          // Create video element
-          const video = document.createElement('video');
-          video.srcObject = stream;
-          video.setAttribute('playsinline', 'true');
-          video.setAttribute('autoplay', 'true');
-          await video.play();
-          
-          // Decode from video stream
-          return new Promise((resolve) => {
-            const timeout = setTimeout(() => {
-              stream.getTracks().forEach(track => track.stop());
-              setError('Scan timeout. Please try again.');
-              setIsScanning(false);
-              resolve(null);
-            }, 30000); // 30 second timeout
-            
-            codeReader.decodeFromVideoDevice(null, video, (result, error) => {
-              if (result) {
-                clearTimeout(timeout);
-                const code = result.getText();
-                if (isValidISBN(code)) {
-                  stream.getTracks().forEach(track => track.stop());
-                  setScannedCode(code);
-                  triggerHaptic('success');
-                  codeReader.reset();
-                  setIsScanning(false);
-                  resolve(code);
-                } else {
-                  setError('Scanned code is not a valid ISBN');
-                  setIsScanning(false);
-                  resolve(null);
+      if (!window.isSecureContext && window.location.hostname !== "localhost") {
+        throw new Error("Camera scanning requires HTTPS or localhost");
+      }
+
+      const videoElement = options.videoRef?.current ?? document.createElement("video");
+      preparePreviewVideo(videoElement);
+
+      return await new Promise<string | null>((resolve, reject) => {
+        resolveRef.current = resolve;
+
+        void (async () => {
+          try {
+            const { BrowserMultiFormatReader, NotFoundException } = await import("@zxing/library");
+            const codeReader = new BrowserMultiFormatReader() as WebCodeReader;
+            codeReaderRef.current = codeReader;
+            const devices = await codeReader.listVideoInputDevices().catch(() => []);
+            const preferredDeviceId = getPreferredDeviceId(devices);
+
+            timeoutRef.current = window.setTimeout(() => {
+              setError("Scan timeout. Please try again with the barcode centered in the frame.");
+              finishWebScan(null);
+            }, 45_000);
+
+            await codeReader.decodeFromVideoDevice(
+              preferredDeviceId,
+              videoElement,
+              (result, scanError) => {
+                if (result) {
+                  const isbn = extractIsbnFromScan(result.getText());
+                  if (isbn) {
+                    setScannedCode(isbn);
+                    trackCoreEvent("barcode_scan_succeeded", {
+                      scanner: "web",
+                      device: preferredDeviceId ? "selected" : "default",
+                    });
+                    triggerHaptic('success');
+                    finishWebScan(isbn);
+                    return;
+                  }
+
+                  setError("Scanned code does not contain a valid ISBN");
+                  triggerHaptic("error");
+                  trackCoreEvent("barcode_scan_failed", {
+                    scanner: "web",
+                    reason: "invalid_isbn_payload",
+                  });
+                  finishWebScan(null);
+                }
+
+                if (scanError && !(scanError instanceof NotFoundException)) {
+                  const scanMessage =
+                    scanError instanceof Error ? scanError.message : "Camera scan failed";
+                  console.error("Scan error:", scanError);
+                  setError(scanMessage);
+                  finishWebScan(null);
                 }
               }
-              if (error && !(error instanceof NotFoundException)) {
-                clearTimeout(timeout);
-                console.error('Scan error:', error);
-                stream.getTracks().forEach(track => track.stop());
-                setError(error.message);
-                setIsScanning(false);
-                resolve(null);
-              }
-            });
-          });
-        } catch (err: unknown) {
-          if (err instanceof Error && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
-            throw new Error('Camera permission denied');
+            );
+          } catch (err) {
+            resolveRef.current = null;
+            cleanupWebScanner();
+            reject(err);
           }
-          throw err;
-        }
-      }
+        })();
+      });
     } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error('Failed to scan barcode');
       console.error('Barcode scan error:', err);
-      setError(err.message || 'Failed to scan barcode');
+      cleanupWebScanner();
+      setError(error.message);
       setIsScanning(false);
       triggerHaptic('error');
+      trackCoreEvent("barcode_scan_failed", {
+        scanner: Capacitor.isNativePlatform() ? "native" : "web",
+        reason: error.message.slice(0, 120),
+      });
       
       // Provide user-friendly error messages
-      if (err.message?.includes('permission')) {
+      if (error.message.toLowerCase().includes('permission')) {
         toast.error('Camera permission denied. Please enable camera access in settings.');
-      } else if (err.message?.includes('No barcode found')) {
+      } else if (error.message.includes('No barcode found')) {
         toast.error('No barcode detected. Please try again with better lighting.');
       } else {
         toast.error('Failed to scan barcode. Please try again or enter manually.');
@@ -142,18 +222,21 @@ export const useBarcodeScanner = (): UseBarcodeScannerReturn => {
       
       return null;
     }
-  }, [triggerHaptic]);
+  }, [cleanupWebScanner, finishWebScan, options.videoRef, triggerHaptic]);
 
   const stopScan = useCallback(() => {
-    setIsScanning(false);
+    finishWebScan(null);
     setError(null);
-  }, []);
+  }, [finishWebScan]);
 
   const resetScan = useCallback(() => {
+    cleanupWebScanner();
     setIsScanning(false);
     setScannedCode(null);
     setError(null);
-  }, []);
+  }, [cleanupWebScanner]);
+
+  useEffect(() => cleanupWebScanner, [cleanupWebScanner]);
 
   return {
     isScanning,

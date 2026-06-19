@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarcodeScannerFlow } from "@/components/BarcodeScannerFlow";
 import { BookSearch } from "@/components/BookSearch";
-import { countUserBooks, getCurrentAuthUser, isBookAlreadyExistsError } from "@/services/api";
+import { getCurrentAuthUser, isBookAlreadyExistsError } from "@/services/api";
 import { Camera, Search, EditPencil, Refresh } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
@@ -26,12 +27,14 @@ import { useReadingProfile } from "@/hooks/useReadingProfile";
 import { useBooks } from "@/hooks/useBooks";
 import { findExistingLibraryBook } from "@/utils/bookIdentity";
 import { normalizeGenre } from "@/utils/genres";
+import { booksRepo } from "@/services/local";
 
 const AddBook = () => {
   const [user, setUser] = useState<{ id: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("search");
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const [showSuccess, setShowSuccess] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -56,6 +59,9 @@ const AddBook = () => {
     source_provider: null as string | null,
     source_id: null as string | null,
   });
+  const scannedBook = (
+    location.state as { scannedBook?: GoogleBookResult } | null
+  )?.scannedBook;
 
   useEffect(() => {
     const getUser = async () => {
@@ -85,6 +91,24 @@ const AddBook = () => {
       setActiveTab("search");
     }
   }, [searchFromUrl]);
+
+  useEffect(() => {
+    if (!scannedBook) return;
+    setFormData({
+      title: scannedBook.title,
+      author: scannedBook.author || "",
+      isbn: scannedBook.isbn || isbnFromUrl,
+      genre: scannedBook.genre || "",
+      pages: scannedBook.pages?.toString() || "",
+      chapters: scannedBook.chapters?.toString() || "",
+      cover_url: scannedBook.cover_url || "",
+      description: scannedBook.description || "",
+      source_provider: scannedBook.source_provider || "google_books",
+      source_id: scannedBook.source_id || scannedBook.googleBooksId,
+    });
+    setActiveTab("manual");
+    toast.success("Book details loaded from the scan");
+  }, [isbnFromUrl, scannedBook]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,10 +155,8 @@ const AddBook = () => {
 
       const addedBook = await bookOperations.create(bookData);
 
-      let firstBook = false;
-      if (navigator.onLine) {
-        firstBook = (await countUserBooks(user.id)) <= 1;
-      }
+      const firstBook =
+        (await booksRepo.list(user.id)).filter((book) => !book.deleted_at).length <= 1;
       setIsFirstBook(firstBook);
 
       // Show success animation
@@ -228,7 +250,31 @@ const AddBook = () => {
   };
 
   const handleScanISBN = () => {
-    navigate("/scan");
+    setActiveTab("scan");
+  };
+
+  const handleScannedManualEntry = (isbn?: string | null) => {
+    if (isbn) {
+      setFormData((prev) => ({ ...prev, isbn }));
+    }
+    setActiveTab("manual");
+  };
+
+  const handleScannedEditDetails = (book: GoogleBookResult) => {
+    setFormData({
+      title: book.title,
+      author: book.author || "",
+      isbn: book.isbn || "",
+      genre: book.genre || "",
+      pages: book.pages?.toString() || "",
+      chapters: book.chapters?.toString() || "",
+      cover_url: book.cover_url || "",
+      description: book.description || "",
+      source_provider: book.source_provider || "google_books",
+      source_id: book.source_id || book.googleBooksId,
+    });
+    setActiveTab("manual");
+    toast.success("Book details loaded from scan. Review and save.");
   };
 
   const handleScanCover = () => {
@@ -281,7 +327,7 @@ const AddBook = () => {
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full grid grid-cols-2 mb-6">
+              <TabsList className="w-full grid grid-cols-3 mb-6">
                 <TabsTrigger value="search" className="flex items-center gap-2">
                   <Search className="h-4 w-4" />
                   <span>Search</span>
@@ -289,6 +335,10 @@ const AddBook = () => {
                 <TabsTrigger value="manual" className="flex items-center gap-2">
                   <EditPencil className="h-4 w-4" />
                   <span>Manual</span>
+                </TabsTrigger>
+                <TabsTrigger value="scan" className="flex items-center gap-2">
+                  <Camera className="h-4 w-4" />
+                  <span>Scan</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -338,6 +388,8 @@ const AddBook = () => {
                         variant="outline"
                         size="sm"
                         onClick={handleScanISBN}
+                        aria-label="Scan ISBN"
+                        title="Scan ISBN"
                         className="border-border/50 hover:shadow-soft transition-all duration-300 px-3 min-h-[44px] min-w-[44px]"
                       >
                         <Camera className="h-4 w-4" />
@@ -427,6 +479,27 @@ const AddBook = () => {
                       "Save Book"
                     )}
                   </Button>
+                </div>
+              </TabsContent>
+
+              {/* Scan Tab */}
+              <TabsContent value="scan" className="mt-0">
+                <div className="space-y-4">
+                  <div className="rounded-lg border border-border/70 bg-muted/20 p-4">
+                    <h2 className="font-display text-lg font-semibold text-foreground">
+                      Scan ISBN barcode
+                    </h2>
+                    <p className="mt-1 font-sans text-sm text-muted-foreground">
+                      Point your camera at the book ISBN barcode. Brack will find the exact book,
+                      show a preview, then let you add it directly to your library.
+                    </p>
+                  </div>
+                  <BarcodeScannerFlow
+                    onManualEntry={handleScannedManualEntry}
+                    onEditDetails={(match) => handleScannedEditDetails(match.book)}
+                    onViewBook={(bookId) => navigate(`/book/${bookId}`)}
+                    onGoToLibrary={() => navigate("/my-books")}
+                  />
                 </div>
               </TabsContent>
             </Tabs>

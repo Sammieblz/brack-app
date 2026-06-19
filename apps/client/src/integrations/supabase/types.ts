@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -12,8 +12,183 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
+      activity_feed_items: {
+        Row: {
+          activity_id: string
+          actor_id: string
+          created_at: string
+          id: string
+          item_created_at: string
+          viewer_id: string
+        }
+        Insert: {
+          activity_id: string
+          actor_id: string
+          created_at?: string
+          id?: string
+          item_created_at?: string
+          viewer_id: string
+        }
+        Update: {
+          activity_id?: string
+          actor_id?: string
+          created_at?: string
+          id?: string
+          item_created_at?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_feed_items_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "social_activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_feed_items_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_feed_items_viewer_id_fkey"
+            columns: ["viewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      analytics_snapshots: {
+        Row: {
+          author_distribution: Json | null
+          avg_pages_per_hour: number | null
+          books_completed: number | null
+          books_started: number | null
+          computed_at: string | null
+          genre_distribution: Json | null
+          hourly_distribution: Json | null
+          id: string
+          snapshot_date: string
+          status_breakdown: Json | null
+          total_pages_read: number | null
+          total_reading_minutes: number | null
+          user_id: string
+        }
+        Insert: {
+          author_distribution?: Json | null
+          avg_pages_per_hour?: number | null
+          books_completed?: number | null
+          books_started?: number | null
+          computed_at?: string | null
+          genre_distribution?: Json | null
+          hourly_distribution?: Json | null
+          id?: string
+          snapshot_date: string
+          status_breakdown?: Json | null
+          total_pages_read?: number | null
+          total_reading_minutes?: number | null
+          user_id: string
+        }
+        Update: {
+          author_distribution?: Json | null
+          avg_pages_per_hour?: number | null
+          books_completed?: number | null
+          books_started?: number | null
+          computed_at?: string | null
+          genre_distribution?: Json | null
+          hourly_distribution?: Json | null
+          id?: string
+          snapshot_date?: string
+          status_breakdown?: Json | null
+          total_pages_read?: number | null
+          total_reading_minutes?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_snapshots_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_rate_limits: {
+        Row: {
+          bucket_key: string
+          request_count: number
+          updated_at: string
+          window_seconds: number
+          window_start: string
+        }
+        Insert: {
+          bucket_key: string
+          request_count?: number
+          updated_at?: string
+          window_seconds: number
+          window_start?: string
+        }
+        Update: {
+          bucket_key?: string
+          request_count?: number
+          updated_at?: string
+          window_seconds?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
+      app_feature_flags: {
+        Row: {
+          config: Json
+          enabled: boolean
+          key: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          enabled?: boolean
+          key: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          enabled?: boolean
+          key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           created_at: string | null
@@ -108,36 +283,11 @@ export type Database = {
             referencedRelation: "book_club_discussions"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      book_club_members: {
-        Row: {
-          club_id: string
-          id: string
-          joined_at: string
-          role: string
-          user_id: string
-        }
-        Insert: {
-          club_id: string
-          id?: string
-          joined_at?: string
-          role?: string
-          user_id: string
-        }
-        Update: {
-          club_id?: string
-          id?: string
-          joined_at?: string
-          role?: string
-          user_id?: string
-        }
-        Relationships: [
           {
-            foreignKeyName: "book_club_members_club_id_fkey"
-            columns: ["club_id"]
+            foreignKeyName: "book_club_discussions_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "book_clubs"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -187,6 +337,20 @@ export type Database = {
             referencedRelation: "book_clubs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "book_club_invites_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_club_invites_invited_user_id_fkey"
+            columns: ["invited_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       book_club_join_requests: {
@@ -229,6 +393,59 @@ export type Database = {
             columns: ["club_id"]
             isOneToOne: false
             referencedRelation: "book_clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_club_join_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_club_join_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_club_members: {
+        Row: {
+          club_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          club_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          club_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_club_members_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "book_clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_club_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -306,29 +523,53 @@ export type Database = {
           tags?: string[]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "book_clubs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_clubs_current_book_id_fkey"
+            columns: ["current_book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       book_list_items: {
         Row: {
           added_at: string
           book_id: string
+          deleted_at: string | null
           id: string
           list_id: string
           position: number
+          updated_at: string
+          user_id: string
         }
         Insert: {
           added_at?: string
           book_id: string
+          deleted_at?: string | null
           id?: string
           list_id: string
           position?: number
+          updated_at?: string
+          user_id: string
         }
         Update: {
           added_at?: string
           book_id?: string
+          deleted_at?: string | null
           id?: string
           list_id?: string
           position?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: [
           {
@@ -350,30 +591,77 @@ export type Database = {
       book_lists: {
         Row: {
           created_at: string
+          deleted_at: string | null
           description: string | null
           id: string
           is_public: boolean | null
           name: string
+          order_version: number
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           is_public?: boolean | null
           name: string
+          order_version?: number
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           id?: string
           is_public?: boolean | null
           name?: string
+          order_version?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_lists_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_metadata_cache: {
+        Row: {
+          cache_key: string
+          expires_at: string
+          fetched_at: string
+          isbn: string | null
+          last_error: string | null
+          payload: Json
+          provider: string
+          query: string
+        }
+        Insert: {
+          cache_key: string
+          expires_at: string
+          fetched_at?: string
+          isbn?: string | null
+          last_error?: string | null
+          payload: Json
+          provider: string
+          query: string
+        }
+        Update: {
+          cache_key?: string
+          expires_at?: string
+          fetched_at?: string
+          isbn?: string | null
+          last_error?: string | null
+          payload?: Json
+          provider?: string
+          query?: string
         }
         Relationships: []
       }
@@ -392,7 +680,7 @@ export type Database = {
           is_spoiler: boolean | null
           likes_count: number | null
           rating: number
-          share_count: number | null
+          share_count: number
           title: string | null
           updated_at: string
           user_id: string
@@ -411,7 +699,7 @@ export type Database = {
           is_spoiler?: boolean | null
           likes_count?: number | null
           rating: number
-          share_count?: number | null
+          share_count?: number
           title?: string | null
           updated_at?: string
           user_id: string
@@ -430,7 +718,7 @@ export type Database = {
           is_spoiler?: boolean | null
           likes_count?: number | null
           rating?: number
-          share_count?: number | null
+          share_count?: number
           title?: string | null
           updated_at?: string
           user_id?: string
@@ -470,7 +758,6 @@ export type Database = {
           notes: string | null
           pages: number | null
           rating: number | null
-          shelf_position: number | null
           source_id: string | null
           source_provider: string | null
           status: string | null
@@ -496,7 +783,6 @@ export type Database = {
           notes?: string | null
           pages?: number | null
           rating?: number | null
-          shelf_position?: number | null
           source_id?: string | null
           source_provider?: string | null
           status?: string | null
@@ -522,7 +808,6 @@ export type Database = {
           notes?: string | null
           pages?: number | null
           rating?: number | null
-          shelf_position?: number | null
           source_id?: string | null
           source_provider?: string | null
           status?: string | null
@@ -541,88 +826,87 @@ export type Database = {
           },
         ]
       }
-      conversations: {
+      club_chat_media: {
         Row: {
+          bucket_id: string
+          club_id: string
           created_at: string
+          external_url: string | null
+          height: number | null
           id: string
-          participant_one_id: string
-          participant_two_id: string
-          updated_at: string
+          media_source: string
+          media_type: string
+          message_id: string
+          metadata: Json
+          mime_type: string
+          position: number
+          preview_url: string | null
+          provider: string | null
+          provider_id: string | null
+          size_bytes: number | null
+          storage_path: string | null
+          user_id: string
+          width: number | null
         }
         Insert: {
+          bucket_id?: string
+          club_id: string
           created_at?: string
+          external_url?: string | null
+          height?: number | null
           id?: string
-          participant_one_id: string
-          participant_two_id: string
-          updated_at?: string
+          media_source?: string
+          media_type: string
+          message_id: string
+          metadata?: Json
+          mime_type: string
+          position?: number
+          preview_url?: string | null
+          provider?: string | null
+          provider_id?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          user_id: string
+          width?: number | null
         }
         Update: {
+          bucket_id?: string
+          club_id?: string
           created_at?: string
+          external_url?: string | null
+          height?: number | null
           id?: string
-          participant_one_id?: string
-          participant_two_id?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      goals: {
-        Row: {
-          completed_at: string | null
-          created_at: string | null
-          deleted_at: string | null
-          end_date: string | null
-          goal_type: string | null
-          id: string
-          is_active: boolean | null
-          is_completed: boolean | null
-          period_type: string | null
-          reminder_time: string | null
-          start_date: string | null
-          target_books: number | null
-          target_minutes: number | null
-          target_pages: number | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string | null
-          deleted_at?: string | null
-          end_date?: string | null
-          goal_type?: string | null
-          id?: string
-          is_active?: boolean | null
-          is_completed?: boolean | null
-          period_type?: string | null
-          reminder_time?: string | null
-          start_date?: string | null
-          target_books?: number | null
-          target_minutes?: number | null
-          target_pages?: number | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string | null
-          deleted_at?: string | null
-          end_date?: string | null
-          goal_type?: string | null
-          id?: string
-          is_active?: boolean | null
-          is_completed?: boolean | null
-          period_type?: string | null
-          reminder_time?: string | null
-          start_date?: string | null
-          target_books?: number | null
-          target_minutes?: number | null
-          target_pages?: number | null
-          updated_at?: string | null
-          user_id?: string | null
+          media_source?: string
+          media_type?: string
+          message_id?: string
+          metadata?: Json
+          mime_type?: string
+          position?: number
+          preview_url?: string | null
+          provider?: string | null
+          provider_id?: string | null
+          size_bytes?: number | null
+          storage_path?: string | null
+          user_id?: string
+          width?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "goals_user_id_fkey"
+            foreignKeyName: "club_chat_media_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "book_clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_chat_media_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "club_chat_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_chat_media_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -630,117 +914,268 @@ export type Database = {
           },
         ]
       }
-      journal_entries: {
+      club_chat_mentions: {
         Row: {
-          book_id: string
-          content: string
-          content_format: string
-          content_html: string | null
-          content_json: Json | null
+          club_id: string
+          created_at: string
+          created_by: string
+          id: string
+          mentioned_user_id: string
+          message_id: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          mentioned_user_id: string
+          message_id: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          mentioned_user_id?: string
+          message_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_chat_mentions_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "book_clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_chat_mentions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_chat_mentions_mentioned_user_id_fkey"
+            columns: ["mentioned_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_chat_mentions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "club_chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_chat_messages: {
+        Row: {
+          client_message_id: string | null
+          club_id: string
+          content: string | null
           created_at: string
           deleted_at: string | null
-          entry_type: string
+          edited_at: string | null
           id: string
-          page_reference: number | null
-          tags: string[] | null
-          title: string | null
+          message_type: string
+          metadata: Json
+          reply_to_message_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
-          book_id: string
-          content: string
-          content_format?: string
-          content_html?: string | null
-          content_json?: Json | null
+          client_message_id?: string | null
+          club_id: string
+          content?: string | null
           created_at?: string
           deleted_at?: string | null
-          entry_type: string
+          edited_at?: string | null
           id?: string
-          page_reference?: number | null
-          tags?: string[] | null
-          title?: string | null
+          message_type?: string
+          metadata?: Json
+          reply_to_message_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
-          book_id?: string
-          content?: string
-          content_format?: string
-          content_html?: string | null
-          content_json?: Json | null
+          client_message_id?: string | null
+          club_id?: string
+          content?: string | null
           created_at?: string
           deleted_at?: string | null
-          entry_type?: string
+          edited_at?: string | null
           id?: string
-          page_reference?: number | null
-          tags?: string[] | null
-          title?: string | null
+          message_type?: string
+          metadata?: Json
+          reply_to_message_id?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "journal_entries_book_id_fkey"
-            columns: ["book_id"]
+            foreignKeyName: "club_chat_messages_club_id_fkey"
+            columns: ["club_id"]
             isOneToOne: false
-            referencedRelation: "books"
+            referencedRelation: "book_clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_chat_messages_reply_to_message_id_fkey"
+            columns: ["reply_to_message_id"]
+            isOneToOne: false
+            referencedRelation: "club_chat_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_chat_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
-      messages: {
+      club_chat_reactions: {
         Row: {
-          client_message_id: string | null
-          content: string | null
-          conversation_id: string
+          club_id: string
           created_at: string
-          deleted_at: string | null
-          edited_at: string | null
           id: string
-          is_read: boolean | null
-          message_type: string
-          metadata: Json
-          reply_to_message_id: string | null
-          sender_id: string
+          message_id: string
+          reaction_type: string
           updated_at: string
+          user_id: string
         }
         Insert: {
-          client_message_id?: string | null
-          content?: string | null
-          conversation_id: string
+          club_id: string
           created_at?: string
-          deleted_at?: string | null
-          edited_at?: string | null
           id?: string
-          is_read?: boolean | null
-          message_type?: string
-          metadata?: Json
-          reply_to_message_id?: string | null
-          sender_id: string
+          message_id: string
+          reaction_type: string
           updated_at?: string
+          user_id: string
         }
         Update: {
-          client_message_id?: string | null
-          content?: string | null
-          conversation_id?: string
+          club_id?: string
           created_at?: string
-          deleted_at?: string | null
-          edited_at?: string | null
           id?: string
-          is_read?: boolean | null
-          message_type?: string
-          metadata?: Json
-          reply_to_message_id?: string | null
-          sender_id?: string
+          message_id?: string
+          reaction_type?: string
           updated_at?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "messages_reply_to_message_id_fkey"
-            columns: ["reply_to_message_id"]
+            foreignKeyName: "club_chat_reactions_club_id_fkey"
+            columns: ["club_id"]
             isOneToOne: false
-            referencedRelation: "messages"
+            referencedRelation: "book_clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_chat_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "club_chat_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_chat_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_chat_reads: {
+        Row: {
+          club_id: string
+          created_at: string
+          last_read_message_id: string | null
+          read_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          last_read_message_id?: string | null
+          read_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          last_read_message_id?: string | null
+          read_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_chat_reads_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "book_clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_chat_reads_last_read_message_id_fkey"
+            columns: ["last_read_message_id"]
+            isOneToOne: false
+            referencedRelation: "club_chat_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_chat_reads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      club_chat_user_settings: {
+        Row: {
+          club_id: string
+          created_at: string
+          is_muted: boolean
+          last_opened_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          is_muted?: boolean
+          last_opened_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          is_muted?: boolean
+          last_opened_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_chat_user_settings_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "book_clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "club_chat_user_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -838,6 +1273,244 @@ export type Database = {
           },
           {
             foreignKeyName: "conversation_user_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          participant_one_id: string
+          participant_two_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          participant_one_id: string
+          participant_two_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          participant_one_id?: string
+          participant_two_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_participant_one_id_fkey"
+            columns: ["participant_one_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_participant_two_id_fkey"
+            columns: ["participant_two_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      core_telemetry_events: {
+        Row: {
+          app_version: string | null
+          created_at: string
+          event_name: string
+          id: string
+          metadata: Json
+          platform: string
+          user_id: string | null
+        }
+        Insert: {
+          app_version?: string | null
+          created_at?: string
+          event_name: string
+          id?: string
+          metadata?: Json
+          platform?: string
+          user_id?: string | null
+        }
+        Update: {
+          app_version?: string | null
+          created_at?: string
+          event_name?: string
+          id?: string
+          metadata?: Json
+          platform?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      dashboard_home_snapshots: {
+        Row: {
+          created_at: string
+          data: Json
+          generated_at: string
+          recent_limit: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          generated_at?: string
+          recent_limit?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          generated_at?: string
+          recent_limit?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dashboard_home_snapshots_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          deleted_at: string | null
+          end_date: string | null
+          goal_type: string | null
+          id: string
+          is_active: boolean | null
+          is_completed: boolean | null
+          period_type: string | null
+          reminder_time: string | null
+          start_date: string | null
+          target_books: number | null
+          target_minutes: number | null
+          target_pages: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          end_date?: string | null
+          goal_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_completed?: boolean | null
+          period_type?: string | null
+          reminder_time?: string | null
+          start_date?: string | null
+          target_books?: number | null
+          target_minutes?: number | null
+          target_pages?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          end_date?: string | null
+          goal_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_completed?: boolean | null
+          period_type?: string | null
+          reminder_time?: string | null
+          start_date?: string | null
+          target_books?: number | null
+          target_minutes?: number | null
+          target_pages?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journal_entries: {
+        Row: {
+          book_id: string
+          content: string
+          content_format: string
+          content_html: string | null
+          content_json: Json | null
+          created_at: string
+          deleted_at: string | null
+          entry_type: string
+          id: string
+          page_reference: number | null
+          photo_url: string | null
+          tags: string[] | null
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          content: string
+          content_format?: string
+          content_html?: string | null
+          content_json?: Json | null
+          created_at?: string
+          deleted_at?: string | null
+          entry_type: string
+          id?: string
+          page_reference?: number | null
+          photo_url?: string | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          content?: string
+          content_format?: string
+          content_html?: string | null
+          content_json?: Json | null
+          created_at?: string
+          deleted_at?: string | null
+          entry_type?: string
+          id?: string
+          page_reference?: number | null
+          photo_url?: string | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_entries_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_entries_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -985,6 +1658,76 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          client_message_id: string | null
+          content: string | null
+          conversation_id: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          is_read: boolean | null
+          message_type: string
+          metadata: Json
+          reply_to_message_id: string | null
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          client_message_id?: string | null
+          content?: string | null
+          conversation_id: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_type?: string
+          metadata?: Json
+          reply_to_message_id?: string | null
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          client_message_id?: string | null
+          content?: string | null
+          conversation_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_type?: string
+          metadata?: Json
+          reply_to_message_id?: string | null
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_message_id_fkey"
+            columns: ["reply_to_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           book_clubs_enabled: boolean
@@ -1081,7 +1824,81 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "post_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_feed_items: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          item_created_at: string
+          post_id: string
+          source: string
+          viewer_id: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          item_created_at?: string
+          post_id: string
+          source?: string
+          viewer_id: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          item_created_at?: string
+          post_id?: string
+          source?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_feed_items_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_feed_items_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_feed_items_viewer_id_fkey"
+            columns: ["viewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       post_likes: {
         Row: {
@@ -1102,7 +1919,127 @@ export type Database = {
           post_id?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_media: {
+        Row: {
+          bucket_id: string
+          created_at: string
+          duration_ms: number | null
+          height: number | null
+          id: string
+          media_type: string
+          mime_type: string
+          position: number
+          post_id: string
+          size_bytes: number
+          storage_path: string
+          thumbnail_path: string | null
+          user_id: string
+          width: number | null
+        }
+        Insert: {
+          bucket_id?: string
+          created_at?: string
+          duration_ms?: number | null
+          height?: number | null
+          id?: string
+          media_type: string
+          mime_type: string
+          position?: number
+          post_id: string
+          size_bytes: number
+          storage_path: string
+          thumbnail_path?: string | null
+          user_id: string
+          width?: number | null
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string
+          duration_ms?: number | null
+          height?: number | null
+          id?: string
+          media_type?: string
+          mime_type?: string
+          position?: number
+          post_id?: string
+          size_bytes?: number
+          storage_path?: string
+          thumbnail_path?: string | null
+          user_id?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_media_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_media_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_shares: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          share_target: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          share_target?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          share_target?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_shares_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_shares_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       posts: {
         Row: {
@@ -1177,6 +2114,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "posts_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "book_clubs"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "posts_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -1214,11 +2158,11 @@ export type Database = {
           onboarding_version: number
           phone_number: string | null
           profile_visibility: string | null
+          reader_status: string
           show_currently_reading: boolean | null
           show_location: boolean
           show_online_status: boolean
           show_reading_activity: boolean | null
-          reader_status: string
           streak_freeze_used_at: string | null
           theme_mode: string | null
           updated_at: string | null
@@ -1251,11 +2195,11 @@ export type Database = {
           onboarding_version?: number
           phone_number?: string | null
           profile_visibility?: string | null
+          reader_status?: string
           show_currently_reading?: boolean | null
           show_location?: boolean
           show_online_status?: boolean
           show_reading_activity?: boolean | null
-          reader_status?: string
           streak_freeze_used_at?: string | null
           theme_mode?: string | null
           updated_at?: string | null
@@ -1288,11 +2232,11 @@ export type Database = {
           onboarding_version?: number
           phone_number?: string | null
           profile_visibility?: string | null
+          reader_status?: string
           show_currently_reading?: boolean | null
           show_location?: boolean
           show_online_status?: boolean
           show_reading_activity?: boolean | null
-          reader_status?: string
           streak_freeze_used_at?: string | null
           theme_mode?: string | null
           updated_at?: string | null
@@ -1303,6 +2247,7 @@ export type Database = {
         Row: {
           book_id: string
           chapter_number: number | null
+          client_log_id: string | null
           created_at: string
           id: string
           log_type: string
@@ -1318,6 +2263,7 @@ export type Database = {
         Insert: {
           book_id: string
           chapter_number?: number | null
+          client_log_id?: string | null
           created_at?: string
           id?: string
           log_type: string
@@ -1333,6 +2279,7 @@ export type Database = {
         Update: {
           book_id?: string
           chapter_number?: number | null
+          client_log_id?: string | null
           created_at?: string
           id?: string
           log_type?: string
@@ -1358,6 +2305,48 @@ export type Database = {
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "reading_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progress_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          platform: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          platform: string
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          platform?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_tokens_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1423,6 +2412,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      reading_import_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          last_error: string | null
+          payload: Json
+          preview: Json
+          processed_items: number
+          result: Json | null
+          source_format: string
+          source_hash: string
+          status: string
+          total_items: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          payload?: Json
+          preview?: Json
+          processed_items?: number
+          result?: Json | null
+          source_format: string
+          source_hash: string
+          status?: string
+          total_items?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          payload?: Json
+          preview?: Json
+          processed_items?: number
+          result?: Json | null
+          source_format?: string
+          source_hash?: string
+          status?: string
+          total_items?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       reading_sessions: {
         Row: {
@@ -1538,38 +2578,11 @@ export type Database = {
           streak_count?: number
           user_id?: string
         }
-        Relationships: []
-      }
-      user_learning_profiles: {
-        Row: {
-          created_at: string
-          derived_preferences: Json
-          onboarding_answers: Json
-          signal_version: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          derived_preferences?: Json
-          onboarding_answers?: Json
-          signal_version?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          derived_preferences?: Json
-          onboarding_answers?: Json
-          signal_version?: number
-          updated_at?: string
-          user_id?: string
-        }
         Relationships: [
           {
-            foreignKeyName: "user_learning_profiles_user_id_fkey"
+            foreignKeyName: "reading_streak_history_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1836,43 +2849,133 @@ export type Database = {
           },
         ]
       }
+      user_learning_profiles: {
+        Row: {
+          created_at: string
+          derived_preferences: Json
+          onboarding_answers: Json
+          signal_version: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          derived_preferences?: Json
+          onboarding_answers?: Json
+          signal_version?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          derived_preferences?: Json
+          onboarding_answers?: Json
+          signal_version?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_learning_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      add_library_book: {
+        Args: { p_book: Json; p_user_id: string }
+        Returns: Json
+      }
+      award_badges: {
+        Args: { p_event?: string; p_user_id: string }
+        Returns: Json
+      }
       calculate_distance: {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
       }
-      award_badges: {
-        Args: { p_event?: string | null; p_user_id: string }
+      can_view_club_chat_message: {
+        Args: { p_author_id: string; p_club_id: string; p_viewer_id: string }
+        Returns: boolean
+      }
+      can_view_social_post: {
+        Args: {
+          p_post: Database["public"]["Tables"]["posts"]["Row"]
+          p_viewer: string
+        }
+        Returns: boolean
+      }
+      check_api_rate_limit: {
+        Args: {
+          p_bucket_key: string
+          p_limit: number
+          p_window_seconds: number
+        }
         Returns: Json
+      }
+      club_chat_pair_blocked: {
+        Args: { p_user_a: string; p_user_b: string }
+        Returns: boolean
       }
       complete_reading_transaction: {
         Args: {
           p_book_id: string
-          p_chapter_number?: number | null
-          p_client_log_id?: string | null
-          p_client_session_id?: string | null
-          p_duration_minutes?: number | null
-          p_end_time?: string | null
-          p_log_type?: string | null
-          p_mark_complete?: boolean | null
-          p_notes?: string | null
-          p_page_number?: number | null
-          p_paragraph_number?: number | null
-          p_photo_url?: string | null
-          p_start_time?: string | null
-          p_time_spent_minutes?: number | null
+          p_chapter_number?: number
+          p_client_log_id?: string
+          p_client_session_id?: string
+          p_duration_minutes?: number
+          p_end_time?: string
+          p_log_type?: string
+          p_mark_complete?: boolean
+          p_notes?: string
+          p_page_number?: number
+          p_paragraph_number?: number
+          p_photo_url?: string
+          p_start_time?: string
+          p_time_spent_minutes?: number
           p_user_id: string
         }
         Returns: Json
       }
+      compute_daily_analytics: {
+        Args: { p_date: string; p_user_id: string }
+        Returns: {
+          author_distribution: Json | null
+          avg_pages_per_hour: number | null
+          books_completed: number | null
+          books_started: number | null
+          computed_at: string | null
+          genre_distribution: Json | null
+          hourly_distribution: Json | null
+          id: string
+          snapshot_date: string
+          status_breakdown: Json | null
+          total_pages_read: number | null
+          total_reading_minutes: number | null
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "analytics_snapshots"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      conversation_other_participant_id: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: string
+      }
       create_reading_session: {
         Args: {
           p_book_id: string
-          p_client_session_id?: string | null
+          p_client_session_id?: string
           p_duration_minutes: number
           p_end_time: string
           p_start_time: string
@@ -1880,20 +2983,21 @@ export type Database = {
         }
         Returns: Json
       }
-      get_user_dashboard_stats: {
-        Args: { p_recent_limit?: number; p_user_id: string }
+      delete_book_list_transaction: {
+        Args: { p_list_id: string; p_user_id: string }
         Returns: Json
       }
-      get_conversation_summaries: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
+      get_conversation_summaries: { Args: { p_user_id: string }; Returns: Json }
       get_dashboard_home_snapshot: {
         Args: {
           p_max_age_seconds?: number
           p_recent_limit?: number
           p_user_id: string
         }
+        Returns: Json
+      }
+      get_user_dashboard_stats: {
+        Args: { p_recent_limit?: number; p_user_id: string }
         Returns: Json
       }
       is_club_admin: {
@@ -1904,13 +3008,84 @@ export type Database = {
         Args: { club_id: string; user_id: string }
         Returns: boolean
       }
+      is_club_moderator_or_admin: {
+        Args: { club_id: string; user_id: string }
+        Returns: boolean
+      }
+      is_conversation_participant: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      log_progress_transaction:
+        | {
+            Args: {
+              p_book_id: string
+              p_chapter_number?: number
+              p_log_type?: string
+              p_notes?: string
+              p_page_number: number
+              p_paragraph_number?: number
+              p_photo_url?: string
+              p_time_spent_minutes?: number
+              p_user_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_book_id: string
+              p_chapter_number?: number
+              p_client_log_id?: string
+              p_log_type?: string
+              p_notes?: string
+              p_page_number: number
+              p_paragraph_number?: number
+              p_photo_url?: string
+              p_time_spent_minutes?: number
+              p_user_id: string
+            }
+            Returns: Json
+          }
+      messaging_pair_blocked: {
+        Args: { p_user_a: string; p_user_b: string }
+        Returns: boolean
+      }
+      normalize_book_isbn: { Args: { value: string }; Returns: string }
+      normalize_book_text: { Args: { value: string }; Returns: string }
       recalculate_user_reading_streak: {
         Args: { p_user_id: string }
         Returns: Json
       }
-      reorder_library_shelf: {
-        Args: { p_book_ids: string[]; p_user_id: string }
+      refresh_book_club_counts: {
+        Args: { p_club_id: string }
+        Returns: undefined
+      }
+      refresh_book_club_reply_count: {
+        Args: { p_parent_id: string }
+        Returns: undefined
+      }
+      refresh_dashboard_home_snapshot: {
+        Args: { p_recent_limit?: number; p_user_id: string }
         Returns: Json
+      }
+      refresh_reading_streak_day: {
+        Args: { p_activity_date: string; p_user_id: string }
+        Returns: undefined
+      }
+      reorder_book_list_items: {
+        Args: {
+          p_expected_version?: number
+          p_list_id: string
+          p_ordered_book_ids: string[]
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
+      social_pair_blocked: {
+        Args: { p_user_a: string; p_user_b: string }
+        Returns: boolean
       }
       use_reading_streak_freeze: {
         Args: { p_activity_date?: string; p_user_id: string }
@@ -1924,6 +3099,12 @@ export type Database = {
           updated_at: string
           used_freeze: boolean
           user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reading_streak_days"
+          isOneToOne: true
+          isSetofReturn: false
         }
       }
     }
@@ -2054,6 +3235,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

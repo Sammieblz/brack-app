@@ -41,6 +41,10 @@
       "dependsOn": ["transit"],
       "outputs": []
     },
+    "test": {
+      "dependsOn": ["transit"],
+      "outputs": []
+    },
     "dev": {
       "cache": false,
       "persistent": true

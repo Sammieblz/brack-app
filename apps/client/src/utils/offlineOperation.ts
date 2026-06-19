@@ -1,16 +1,16 @@
 import {
-  createBook,
-  createJournalEntry,
-  deleteJournalEntry,
+  emitBooksChanged,
   getCurrentAuthUser,
-  softDeleteBook,
-  updateBook,
-  updateJournalEntry,
+  invalidateBooksCache,
 } from "@/services/api";
 import { booksRepo, createLocalId, journalRepo } from "@/services/local";
 import { toast } from "sonner";
 import type { Book } from "@/types";
 import type { JournalEntry } from "@/services/api/journal";
+import { readingCoreSync } from "@/services/sync/engine";
+import { isConnectivityAvailable } from "@/services/connectivity";
+import { findExistingLibraryBook } from "@/utils/bookIdentity";
+import { trackCoreEvent } from "@/services/telemetry";
 
 /**
  * Legacy compatibility wrapper for simple network-only operations.
@@ -21,7 +21,7 @@ export async function executeWithOfflineQueue<T>(
   queueAction?: unknown
 ): Promise<T> {
   // If online, execute directly
-  if (navigator.onLine) {
+  if (isConnectivityAvailable()) {
     return await operation();
   }
 
@@ -66,6 +66,11 @@ const asBook = (bookData: Record<string, unknown>, userId: string): Book => {
   };
 };
 
+const syncInBackground = (userId: string) => {
+  if (!isConnectivityAvailable()) return;
+  void readingCoreSync.syncUser(userId).catch(console.error);
+};
+
 /**
  * Book operations with durable local repository + outbox support.
  */
@@ -75,15 +80,34 @@ export const bookOperations = {
     const userId = (bookData.user_id as string | undefined) || user?.id;
     if (!userId) throw new Error("Not authenticated");
 
-    if (navigator.onLine) {
-      const book = await createBook({ ...bookData, user_id: userId });
-      await booksRepo.upsertRemote(userId, book);
-      return book;
+    const existingBooks = await booksRepo.list(userId);
+    const duplicate = findExistingLibraryBook(
+      {
+        title: String(bookData.title || ""),
+        author: (bookData.author as string | null) ?? null,
+        isbn: (bookData.isbn as string | null) ?? null,
+      },
+      existingBooks
+    );
+    if (duplicate) {
+      trackCoreEvent("duplicate_prevented", { source: "local_library" });
+      const error = new Error("Book already exists in your library") as Error & {
+        code?: string;
+        bookId?: string;
+      };
+      error.code = "book_exists";
+      error.bookId = duplicate.id;
+      throw error;
     }
 
     const localBook = asBook({ ...bookData, user_id: userId }, userId);
     await booksRepo.upsertLocal(userId, localBook, "create");
-    toast.info("Book saved offline. It will sync when you're back online.");
+    invalidateBooksCache(userId);
+    emitBooksChanged({ type: "upsert", userId, book: localBook });
+    syncInBackground(userId);
+    if (!isConnectivityAvailable()) {
+      toast.info("Book saved offline. It will sync when you're back online.");
+    }
     return localBook;
   },
 
@@ -92,17 +116,17 @@ export const bookOperations = {
     if (!user) throw new Error("Not authenticated");
 
     const existing = await booksRepo.get(bookId);
-    if (!navigator.onLine) {
-      if (!existing) throw new Error("This book is not available offline yet");
-      await booksRepo.upsertLocal(user.id, { ...existing, ...updates } as Book, "update");
-      toast.info("Book update saved offline.");
-      return;
-    }
-
-    await updateBook(bookId, updates);
-    if (existing) {
-      await booksRepo.upsertRemote(user.id, { ...existing, ...updates, updated_at: new Date().toISOString() } as Book);
-    }
+    if (!existing) throw new Error("This book is not available locally yet");
+    const updatedBook = {
+      ...existing,
+      ...updates,
+      updated_at: new Date().toISOString(),
+    } as Book;
+    await booksRepo.upsertLocal(user.id, updatedBook, "update");
+    invalidateBooksCache(user.id);
+    emitBooksChanged({ type: "upsert", userId: user.id, book: updatedBook });
+    syncInBackground(user.id);
+    if (!isConnectivityAvailable()) toast.info("Book update saved offline.");
   },
 
   async delete(bookId: string) {
@@ -110,21 +134,13 @@ export const bookOperations = {
     if (!user) throw new Error("Not authenticated");
 
     const existing = await booksRepo.get(bookId);
-    if (!navigator.onLine) {
-      if (!existing) throw new Error("This book is not available offline yet");
-      await booksRepo.softDeleteLocal(user.id, existing);
+    if (!existing) throw new Error("This book is not available locally yet");
+    await booksRepo.softDeleteLocal(user.id, existing);
+    invalidateBooksCache(user.id);
+    emitBooksChanged({ type: "remove", userId: user.id, bookId });
+    syncInBackground(user.id);
+    if (!isConnectivityAvailable()) {
       toast.info("Book removed offline. The deletion will sync when you're back online.");
-      return;
-    }
-
-    await softDeleteBook(bookId);
-    if (existing) {
-      const deletedAt = new Date().toISOString();
-      await booksRepo.upsertRemote(user.id, {
-        ...existing,
-        deleted_at: deletedAt,
-        updated_at: deletedAt,
-      });
     }
   },
 };
@@ -158,15 +174,10 @@ export const journalOperations = {
     const userId = (entryData.user_id as string | undefined) || user?.id;
     if (!userId) throw new Error("Not authenticated");
 
-    if (navigator.onLine) {
-      const entry = await createJournalEntry({ ...entryData, user_id: userId });
-      await journalRepo.upsertRemote(userId, entry);
-      return entry;
-    }
-
     const localEntry = asJournalEntry({ ...entryData, user_id: userId }, userId);
     await journalRepo.upsertLocal(userId, localEntry, "create");
-    toast.info("Journal entry saved offline.");
+    syncInBackground(userId);
+    if (!isConnectivityAvailable()) toast.info("Journal entry saved offline.");
     return localEntry;
   },
 
@@ -175,21 +186,14 @@ export const journalOperations = {
     if (!user) throw new Error("Not authenticated");
 
     const existing = await journalRepo.get(entryId);
-    if (!navigator.onLine) {
-      if (!existing) throw new Error("This journal entry is not available offline yet");
-      await journalRepo.upsertLocal(user.id, { ...existing, ...updates } as JournalEntry, "update");
-      toast.info("Journal update saved offline.");
-      return;
-    }
-
-    await updateJournalEntry(entryId, updates);
-    if (existing) {
-      await journalRepo.upsertRemote(user.id, {
-        ...existing,
-        ...updates,
-        updated_at: new Date().toISOString(),
-      } as JournalEntry);
-    }
+    if (!existing) throw new Error("This journal entry is not available locally yet");
+    await journalRepo.upsertLocal(user.id, {
+      ...existing,
+      ...updates,
+      updated_at: new Date().toISOString(),
+    } as JournalEntry, "update");
+    syncInBackground(user.id);
+    if (!isConnectivityAvailable()) toast.info("Journal update saved offline.");
   },
 
   async delete(entryId: string) {
@@ -197,21 +201,9 @@ export const journalOperations = {
     if (!user) throw new Error("Not authenticated");
 
     const existing = await journalRepo.get(entryId);
-    if (!navigator.onLine) {
-      if (!existing) throw new Error("This journal entry is not available offline yet");
-      await journalRepo.softDeleteLocal(user.id, existing);
-      toast.info("Journal deletion saved offline.");
-      return;
-    }
-
-    await deleteJournalEntry(entryId);
-    if (existing) {
-      const deletedAt = new Date().toISOString();
-      await journalRepo.upsertRemote(user.id, {
-        ...existing,
-        deleted_at: deletedAt,
-        updated_at: deletedAt,
-      } as JournalEntry & { deleted_at: string });
-    }
+    if (!existing) throw new Error("This journal entry is not available locally yet");
+    await journalRepo.softDeleteLocal(user.id, existing);
+    syncInBackground(user.id);
+    if (!isConnectivityAvailable()) toast.info("Journal deletion saved offline.");
   },
 };

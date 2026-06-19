@@ -1,4 +1,13 @@
-import type { Book, Goal, ReadingSession } from "@/types";
+import type {
+  Book,
+  BookList,
+  BookListItem,
+  BookSearchCacheEntry,
+  ContentSnapshot,
+  Goal,
+  PendingBookImport,
+  ReadingSession,
+} from "@/types";
 import type { JournalEntry } from "@/services/api/journal";
 import { localDriver, type LocalTableName, type OutboxCounts } from "./driver";
 import type {
@@ -156,6 +165,35 @@ export const progressRepo = {
 };
 export const journalRepo = createEntityRepo<JournalEntry>("journal_entries", "journal_entries");
 export const goalsRepo = createEntityRepo<Goal>("goals", "goals");
+export const bookListsRepo = createEntityRepo<BookList>("book_lists", "book_lists");
+export const bookListItemsRepo = createEntityRepo<BookListItem>(
+  "book_list_items",
+  "book_list_items"
+);
+
+const createLocalOnlyRepo = <T extends { id: string }>(table: LocalTableName) => ({
+  async list(userId: string): Promise<T[]> {
+    const records = await localDriver.listRecords<T>(table, userId);
+    return records.map((record) => record.data);
+  },
+  async get(id: string): Promise<T | null> {
+    return (await localDriver.getRecord<T>(table, id))?.data ?? null;
+  },
+  async upsert(userId: string, item: T & { updated_at?: string | null; created_at?: string | null }) {
+    await localDriver.upsertRecord(table, toLocalRecord(userId, item, "synced"));
+    return item;
+  },
+  async remove(id: string) {
+    await localDriver.removeRecord(table, id);
+  },
+});
+
+export const pendingBookImportsRepo =
+  createLocalOnlyRepo<PendingBookImport>("pending_book_imports");
+export const bookSearchCacheRepo =
+  createLocalOnlyRepo<BookSearchCacheEntry>("book_search_cache");
+export const contentSnapshotsRepo =
+  createLocalOnlyRepo<ContentSnapshot>("content_snapshots");
 
 export const profilePreferencesRepo = {
   async get(userId: string) {
@@ -195,6 +233,17 @@ export const profilePreferencesRepo = {
 
 export const syncRepo = {
   enqueue: localDriver.enqueueOutbox.bind(localDriver),
+  enqueueMutation(
+    userId: string,
+    entity: SyncEntity,
+    entityId: string,
+    operation: SyncOperation,
+    payload: unknown
+  ) {
+    return localDriver.enqueueOutbox(
+      makeOutboxItem(userId, entity, entityId, operation, payload)
+    );
+  },
   listPending(userId: string) {
     return localDriver.listOutbox(userId, ["pending", "failed", "syncing"]);
   },
@@ -248,6 +297,11 @@ export const localRepositories = {
   progress: progressRepo,
   journal: journalRepo,
   goals: goalsRepo,
+  bookLists: bookListsRepo,
+  bookListItems: bookListItemsRepo,
   profilePreferences: profilePreferencesRepo,
+  pendingBookImports: pendingBookImportsRepo,
+  bookSearchCache: bookSearchCacheRepo,
+  contentSnapshots: contentSnapshotsRepo,
   sync: syncRepo,
 };

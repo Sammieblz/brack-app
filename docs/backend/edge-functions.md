@@ -32,7 +32,7 @@ Brack currently has 56 maintained local Edge Function directories, excluding `_s
 
 | Function | Auth | Purpose | Retry concerns |
 | --- | --- | --- | --- |
-| `search-books` | Public | Book search. Google Books is primary; Open Library is the fallback when Google returns 403, 429, or 5xx. | Safe to retry, but repeated calls still count against Brack and upstream limits. |
+| `search-books` | Public | Book search and ISBN lookup gateway. Google Books is primary; Open Library is fallback when Google fails, times out, or returns no usable books. Responses are cached in `book_metadata_cache`. | Safe to retry, but repeated calls still count against Brack and upstream limits. Scanner adds require exact ISBN match before confirmation. |
 | `add-book` | JWT required | Protected library insert, duplicate detection, and soft-delete restore through `add_library_book`. | Safe when payload identity is stable; duplicate responses are expected. |
 | `complete-reading` | JWT required | Consolidated reading completion transaction. | Retry safe when client IDs are supplied. |
 | `create-reading-session` | JWT required | Timer session persistence through the completion transaction. | Retry safe when `client_session_id` is supplied. |

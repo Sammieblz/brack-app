@@ -14,6 +14,8 @@ dist-ssr
 desktop/dist
 release
 *.local
+test-results
+playwright-report
 
 # Editor directories and files
 .vscode/*
