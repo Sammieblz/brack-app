@@ -31,8 +31,22 @@ SELECT has_table('public', 'book_metadata_cache', 'provider metadata cache exist
 SELECT has_table('public', 'reading_import_jobs', 'resumable import jobs exist');
 SELECT has_table('public', 'app_feature_flags', 'remote feature flags exist');
 SELECT has_table('public', 'core_telemetry_events', 'core telemetry table exists');
-SELECT row_security_active('public.book_lists', 'book list RLS is active');
-SELECT row_security_active('public.reading_import_jobs', 'reading import RLS is active');
+SELECT ok(
+  (
+    SELECT relrowsecurity
+    FROM pg_class
+    WHERE oid = 'public.book_lists'::regclass
+  ),
+  'book list RLS is active'
+);
+SELECT ok(
+  (
+    SELECT relrowsecurity
+    FROM pg_class
+    WHERE oid = 'public.reading_import_jobs'::regclass
+  ),
+  'reading import RLS is active'
+);
 
 SELECT * FROM finish();
 ROLLBACK;
