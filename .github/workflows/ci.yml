@@ -291,11 +291,14 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Build web app for Playwright
+        run: npm run build
+
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
       - name: Run web smoke tests
-        run: npm run test:e2e -- --project=chromium
+        run: npx playwright test --project=chromium
 
   database-tests:
     name: Database Tests
