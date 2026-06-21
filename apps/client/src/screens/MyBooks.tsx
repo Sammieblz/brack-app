@@ -36,6 +36,7 @@ import { bookOperations } from "@/utils/offlineOperation";
 import { getProgressPercentage } from "@/utils/bookProgress";
 import { getCuratedGenres, normalizeGenre } from "@/utils/genres";
 import type { Book, LibraryViewMode } from "@/types";
+import { isConnectivityAvailable } from "@/services/connectivity";
 
 type StatusFilter = "all" | "reading" | "completed" | "to_read";
 type SortKey =
@@ -460,7 +461,11 @@ const MyBooks = () => {
           updated_at: timestamp,
         }))
       );
-      toast.success(navigator.onLine ? "Shelf order updated" : "Shelf order saved offline");
+      toast.success(
+        isConnectivityAvailable()
+          ? "Shelf order updated"
+          : "Shelf order saved offline",
+      );
     } catch (error: unknown) {
       rollback();
       console.error("Failed to reorder shelf:", error);

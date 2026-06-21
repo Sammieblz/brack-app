@@ -400,7 +400,7 @@ Guide to key components in Brack and their usage.
 
 **Location**: `apps/client/src/components/BookSearch.tsx`
 
-**Purpose**: Search books via Google Books API
+**Purpose**: Search books through Brack's provider gateway (`search-books`)
 
 ```tsx
 <BookSearch 
@@ -415,6 +415,8 @@ Guide to key components in Brack and their usage.
 - Result list with covers
 - Quick add button
 - Select for editing
+- Uses Google Books first and Open Library fallback through the Edge Function
+- Uses the local search cache when available
 
 #### NativeSearchBar
 

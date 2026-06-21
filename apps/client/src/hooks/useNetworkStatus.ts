@@ -1,33 +1,47 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { readingCoreSync } from "@/services/sync/engine";
+import {
+  CONNECTIVITY_STATE_EVENT,
+  getConnectivityState,
+  initializeConnectivityMonitoring,
+  probeConnectivity,
+} from "@/services/connectivity";
+import type { ConnectivityState } from "@/types";
 
-export const useNetworkStatus = () => {
-  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
+export const useConnectivityState = () => {
+  const [state, setState] = useState<ConnectivityState>(getConnectivityState());
 
   useEffect(() => {
-    const handleOnline = async () => {
-      setIsOnline(true);
-      toast.success("Back online");
-      
-      setTimeout(() => {
-        readingCoreSync.syncCurrentUser().catch(console.error);
-      }, 1000);
+    const cleanup = initializeConnectivityMonitoring();
+    const handleState = (event: Event) => {
+      const nextState = (event as CustomEvent<ConnectivityState>).detail;
+      setState((previous) => {
+        if (previous !== "online" && nextState === "online") {
+          toast.success("Back online");
+          window.setTimeout(() => readingCoreSync.syncCurrentUser().catch(console.error), 500);
+        } else if (previous !== "offline" && nextState === "offline") {
+          toast.info("You're offline. Reading changes will save locally and sync later.");
+        } else if (previous === "online" && nextState === "degraded") {
+          toast.info("Connection is limited. Reading changes are being saved locally.");
+        }
+        return nextState;
+      });
     };
 
-    const handleOffline = () => {
-      setIsOnline(false);
-      toast.info("You're offline. Reading changes will save locally and sync when you're back online.");
-    };
-
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener(CONNECTIVITY_STATE_EVENT, handleState);
+    void probeConnectivity();
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      cleanup();
+      window.removeEventListener(CONNECTIVITY_STATE_EVENT, handleState);
     };
   }, []);
 
-  return isOnline;
+  return state;
+};
+
+export const useNetworkStatus = () => {
+  const state = useConnectivityState();
+  return state === "online" || state === "degraded";
 };

@@ -75,6 +75,15 @@ ALTER TABLE public.journal_entries
 ADD CONSTRAINT journal_entries_user_id_fkey
 FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
 
+-- 11. Social Activities
+ALTER TABLE public.social_activities
+ADD CONSTRAINT social_activities_review_id_fkey
+FOREIGN KEY (review_id) REFERENCES public.book_reviews(id) ON DELETE CASCADE;
+
+ALTER TABLE public.social_activities
+ADD CONSTRAINT social_activities_list_id_fkey
+FOREIGN KEY (list_id) REFERENCES public.book_lists(id) ON DELETE CASCADE;
+
 -- Add performance indexes for the new foreign keys
 CREATE INDEX IF NOT EXISTS idx_book_club_discussions_user_id ON public.book_club_discussions(user_id);
 CREATE INDEX IF NOT EXISTS idx_book_club_members_user_id ON public.book_club_members(user_id);
@@ -92,6 +101,8 @@ CREATE INDEX IF NOT EXISTS idx_post_likes_post_id ON public.post_likes(post_id);
 CREATE INDEX IF NOT EXISTS idx_post_likes_user_id ON public.post_likes(user_id);
 CREATE INDEX IF NOT EXISTS idx_progress_logs_user_id ON public.progress_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_journal_entries_user_id_fk ON public.journal_entries(user_id);
+CREATE INDEX IF NOT EXISTS idx_social_activities_review_id_fk ON public.social_activities(review_id);
+CREATE INDEX IF NOT EXISTS idx_social_activities_list_id_fk ON public.social_activities(list_id);
 
 -- Add composite unique constraints where needed
 CREATE UNIQUE INDEX IF NOT EXISTS unique_post_likes_user_post 

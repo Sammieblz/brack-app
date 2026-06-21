@@ -1,11 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { MOBILE_NAV_ITEMS, isNavItemActive } from "@/config/navigation";
+import { getMobileNavItems, isNavItemActive } from "@/config/navigation";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 export const MobileBottomNav = () => {
   const location = useLocation();
   const { triggerHaptic } = useHapticFeedback();
+  const { socialEnabled } = useFeatureFlags();
+  const mobileNavItems = getMobileNavItems(socialEnabled);
 
   return (
     <nav
@@ -18,7 +21,7 @@ export const MobileBottomNav = () => {
         <div className="absolute inset-x-8 top-[16%] h-px bg-white/14 rounded-full pointer-events-none" />
 
         <div className="relative flex items-center justify-around h-[72px] max-w-4xl mx-auto gap-0.5 rounded-[28px] max-[400px]:h-16">
-        {MOBILE_NAV_ITEMS.map((tab) => {
+        {mobileNavItems.map((tab) => {
           const Icon = tab.icon;
           const active = isNavItemActive(location.pathname, tab);
           

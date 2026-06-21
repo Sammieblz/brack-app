@@ -25,6 +25,7 @@ import { getInitials } from "@/lib/avatarUtils";
 import { NAV_GROUPS, getNavItemsBySection, isNavItemActive, type NavItem } from "@/config/navigation";
 import { APP_ICONS } from "@/config/iconography";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 const renderNavGroup = (label: string, items: NavItem[], pathname: string) => (
   <SidebarGroup className="px-2 py-1.5">
@@ -58,6 +59,7 @@ export const AppSidebar = () => {
   const { profile } = useProfileContext();
   const { resolvedTheme, setThemeMode } = useTheme();
   const { triggerHaptic } = useHapticFeedback();
+  const { socialEnabled } = useFeatureFlags();
   const { setOpen } = useSidebar();
   const isDarkMode = resolvedTheme === "dark";
 
@@ -127,7 +129,11 @@ export const AppSidebar = () => {
         {NAV_GROUPS.map((group, index) => (
           <div key={group.section}>
             {index > 0 && <SidebarSeparator />}
-            {renderNavGroup(group.label, getNavItemsBySection(group.section), location.pathname)}
+            {renderNavGroup(
+              group.label,
+              getNavItemsBySection(group.section, socialEnabled),
+              location.pathname,
+            )}
           </div>
         ))}
       </SidebarContent>
@@ -148,7 +154,7 @@ export const AppSidebar = () => {
             </SidebarMenuButton>
           </SidebarMenuItem>
 
-          {getNavItemsBySection("account").map((item) => {
+          {getNavItemsBySection("account", socialEnabled).map((item) => {
             const Icon = item.icon;
             return (
               <SidebarMenuItem key={item.path}>

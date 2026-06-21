@@ -44,10 +44,10 @@ import type { Book, ReadingSession } from "@/types";
 import {
   fetchActiveBookById,
   fetchBookReadingSessions,
-  updateBookStatus,
 } from "@/services/api";
 import { booksRepo, sessionsRepo } from "@/services/local";
 import { bookOperations } from "@/utils/offlineOperation";
+import { isConnectivityAvailable } from "@/services/connectivity";
 
 const formatStatus = (status: string) => status.replace("_", " ");
 
@@ -142,24 +142,26 @@ const BookDetail = () => {
     if (!id) return;
     
     try {
-      if (!navigator.onLine) {
-        const localBook = await booksRepo.get(id);
-        if (!localBook) {
-          toast.error("Book is not available offline yet");
-          navigate("/dashboard");
-          return;
-        }
+      const localBook = await booksRepo.get(id);
+      if (localBook && !localBook.deleted_at) {
         setBook(localBook);
         const localSessions = (await sessionsRepo.list(user?.id || ""))
           .filter((session) => session.book_id === id);
         setSessions(localSessions);
+      }
+
+      if (!isConnectivityAvailable()) {
+        if (!localBook || localBook.deleted_at) {
+          toast.error("Book is not available offline yet");
+          navigate("/my-books");
+        }
         return;
       }
 
       const bookData = await fetchActiveBookById(id);
       if (!bookData) {
         toast.error("Book not found");
-        navigate("/dashboard");
+        navigate("/my-books");
         return;
       }
 
@@ -179,16 +181,20 @@ const BookDetail = () => {
     if (!book) return;
 
     try {
-      if (!navigator.onLine) {
-        await bookOperations.update(book.id, { status: newStatus });
-        setBook({ ...book, status: newStatus, updated_at: new Date().toISOString() });
-        toast.success(`Book marked as ${newStatus.replace('_', ' ')}`);
-        return;
+      const updates: Partial<Book> = {
+        status: newStatus,
+        updated_at: new Date().toISOString(),
+      };
+      if (newStatus === "reading" && !book.date_started) {
+        updates.date_started = new Date().toISOString();
       }
-
-      const updateData = await updateBookStatus(book, newStatus);
-
-      setBook({ ...book, ...updateData, status: newStatus });
+      if (newStatus === "completed") {
+        updates.date_finished =
+          book.date_finished || new Date().toISOString().split("T")[0];
+        if (book.pages) updates.current_page = book.pages;
+      }
+      await bookOperations.update(book.id, updates);
+      setBook({ ...book, ...updates });
       toast.success(`Book marked as ${newStatus.replace('_', ' ')}`);
     } catch (error: unknown) {
       console.error('Error updating book status:', error);

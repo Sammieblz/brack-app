@@ -10,7 +10,12 @@ export type LocalTableName =
   | "progress_logs"
   | "journal_entries"
   | "goals"
-  | "profile_preferences";
+  | "book_lists"
+  | "book_list_items"
+  | "profile_preferences"
+  | "pending_book_imports"
+  | "book_search_cache"
+  | "content_snapshots";
 
 const ENTITY_TABLES: LocalTableName[] = [
   "books",
@@ -18,7 +23,12 @@ const ENTITY_TABLES: LocalTableName[] = [
   "progress_logs",
   "journal_entries",
   "goals",
+  "book_lists",
+  "book_list_items",
   "profile_preferences",
+  "pending_book_imports",
+  "book_search_cache",
+  "content_snapshots",
 ];
 
 export interface OutboxCounts {
@@ -53,7 +63,12 @@ class BrackLocalDexie extends Dexie {
   progress_logs!: Table<LocalRecord, string>;
   journal_entries!: Table<LocalRecord, string>;
   goals!: Table<LocalRecord, string>;
+  book_lists!: Table<LocalRecord, string>;
+  book_list_items!: Table<LocalRecord, string>;
   profile_preferences!: Table<LocalRecord, string>;
+  pending_book_imports!: Table<LocalRecord, string>;
+  book_search_cache!: Table<LocalRecord, string>;
+  content_snapshots!: Table<LocalRecord, string>;
   outbox!: Table<OutboxItem, string>;
   sync_state!: Table<SyncState, string>;
 
@@ -66,6 +81,22 @@ class BrackLocalDexie extends Dexie {
       journal_entries: "id, user_id, status, updated_at, deleted_at",
       goals: "id, user_id, status, updated_at, deleted_at",
       profile_preferences: "id, user_id, status, updated_at, deleted_at",
+      outbox:
+        "id, client_mutation_id, client_entity_id, user_id, entity, status, created_at, next_attempt_at",
+      sync_state: "key, user_id",
+    });
+    this.version(2).stores({
+      books: "id, user_id, status, updated_at, deleted_at",
+      reading_sessions: "id, user_id, status, updated_at, deleted_at",
+      progress_logs: "id, user_id, status, updated_at, deleted_at",
+      journal_entries: "id, user_id, status, updated_at, deleted_at",
+      goals: "id, user_id, status, updated_at, deleted_at",
+      book_lists: "id, user_id, status, updated_at, deleted_at",
+      book_list_items: "id, user_id, status, updated_at, deleted_at",
+      profile_preferences: "id, user_id, status, updated_at, deleted_at",
+      pending_book_imports: "id, user_id, status, updated_at, deleted_at",
+      book_search_cache: "id, user_id, status, updated_at, deleted_at",
+      content_snapshots: "id, user_id, status, updated_at, deleted_at",
       outbox:
         "id, client_mutation_id, client_entity_id, user_id, entity, status, created_at, next_attempt_at",
       sync_state: "key, user_id",

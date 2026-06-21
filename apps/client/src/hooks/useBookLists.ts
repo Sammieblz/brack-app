@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import {
+  BOOK_LISTS_CHANGED_EVENT,
   addBookToList as addBookToListApi,
   createBookList,
   deleteBookList,
@@ -24,7 +25,7 @@ export const useBookLists = (userId?: string) => {
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
 
-  const fetchLists = async (isInitial = true) => {
+  const fetchLists = useCallback(async (isInitial = true, requestedOffset = 0) => {
     if (!userId) return;
     
     try {
@@ -35,7 +36,7 @@ export const useBookLists = (userId?: string) => {
         setLoadingMore(true);
       }
 
-      const currentOffset = isInitial ? 0 : offset;
+      const currentOffset = isInitial ? 0 : requestedOffset;
       
       const { lists: listsWithCount, hasMore: hasMoreData } =
         await fetchBookListsPage(userId, currentOffset, PAGE_SIZE);
@@ -55,17 +56,31 @@ export const useBookLists = (userId?: string) => {
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     fetchLists(true);
-  }, [userId]);
+  }, [fetchLists]);
+
+  useEffect(() => {
+    if (!userId || typeof window === "undefined") return;
+
+    const handleListsChanged = (event: Event) => {
+      const detail = (event as CustomEvent<{ userId?: string }>).detail;
+      if (!detail?.userId || detail.userId === userId) {
+        void fetchLists(true);
+      }
+    };
+
+    window.addEventListener(BOOK_LISTS_CHANGED_EVENT, handleListsChanged);
+    return () => window.removeEventListener(BOOK_LISTS_CHANGED_EVENT, handleListsChanged);
+  }, [fetchLists, userId]);
 
   const loadMore = useCallback(() => {
     if (!loadingMore && hasMore) {
-      fetchLists(false);
+      fetchLists(false, offset);
     }
-  }, [loadingMore, hasMore, offset]);
+  }, [fetchLists, loadingMore, hasMore, offset]);
 
   const createList = async (name: string, description?: string) => {
     if (!userId) return null;

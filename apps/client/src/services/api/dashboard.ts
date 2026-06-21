@@ -1,6 +1,7 @@
 import type { Book, Goal } from "@/types";
 import { invokeFunction } from "./client";
 import type { AwardedBadge } from "./badges";
+import { withContentSnapshot } from "@/services/contentSnapshots";
 
 export type DashboardLastActivityType =
   | "progress_log"
@@ -58,7 +59,9 @@ export interface DashboardHomeResponse {
 }
 
 export const getDashboardHome = async (recentLimit = 10): Promise<DashboardHomeResponse> => {
-  return invokeFunction<DashboardHomeResponse>("dashboard-home", {
-    body: { recent_limit: recentLimit },
-  });
+  return withContentSnapshot("dashboard", `home:${recentLimit}`, () =>
+    invokeFunction<DashboardHomeResponse>("dashboard-home", {
+      body: { recent_limit: recentLimit },
+    }),
+  );
 };

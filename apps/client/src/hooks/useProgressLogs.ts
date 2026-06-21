@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { fetchProgressLogs, getCurrentAuthUser, type ProgressLog } from "@/services/api";
 import { progressRepo } from "@/services/local";
+import { isConnectivityAvailable } from "@/services/connectivity";
 
 export type { ProgressLog } from "@/services/api";
 
@@ -25,7 +26,7 @@ export const useProgressLogs = (bookId?: string) => {
 
       if (localLogs.length > 0) setLogs(localLogs);
 
-      if (!navigator.onLine) {
+      if (!isConnectivityAvailable()) {
         setLogs(localLogs);
         return;
       }

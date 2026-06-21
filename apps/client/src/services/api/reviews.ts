@@ -3,6 +3,7 @@ import { sanitizeInput } from "@/utils/sanitize";
 import { getCurrentAuthUser } from "./auth";
 import { invokeFunction } from "./client";
 import type { RichTextDocument, RichTextFormat } from "@/types/richText";
+import { withContentSnapshot } from "@/services/contentSnapshots";
 
 export type ReviewScope = "for_you" | "following" | "recent" | "popular" | "mine";
 export type ReviewSort = "personalized" | "recent" | "popular";
@@ -161,16 +162,24 @@ export const getReviewsFeed = async ({
   scope = "for_you",
   sort = "personalized",
 }: ReviewsFeedRequest = {}): Promise<ReviewsFeedResponse> => {
-  const response = await invokeFunction<ReviewsFeedResponse>("reviews-feed", {
-    body: {
-      cursor,
-      limit,
-      query,
-      rating: rating === "all" ? null : rating,
-      scope,
-      sort,
-    },
-  });
+  const load = () =>
+    invokeFunction<ReviewsFeedResponse>("reviews-feed", {
+      body: {
+        cursor,
+        limit,
+        query,
+        rating: rating === "all" ? null : rating,
+        scope,
+        sort,
+      },
+    });
+  const response = cursor
+    ? await load()
+    : await withContentSnapshot(
+        "reviews",
+        JSON.stringify({ limit, query: query ?? "", rating, scope, sort }),
+        load,
+      );
 
   return {
     ...response,

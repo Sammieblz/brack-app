@@ -8,6 +8,7 @@ import {
 } from "@/services/api";
 import { booksRepo } from "@/services/local";
 import { readingCoreSync } from "@/services/sync/engine";
+import { isConnectivityAvailable } from "@/services/connectivity";
 
 const PAGE_SIZE = 20;
 
@@ -19,19 +20,24 @@ export const useBooks = (userId?: string) => {
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
 
-  const fetchBooks = async (isInitial = true, forceRefresh = false, silent = false) => {
+  const fetchBooks = useCallback(async (
+    isInitial = true,
+    forceRefresh = false,
+    silent = false,
+    requestedOffset = 0
+  ) => {
     if (!userId) return;
 
     if (isInitial) {
       const localBooks = await booksRepo.list(userId);
       if (localBooks.length > 0 && !forceRefresh) {
         setBooks(localBooks);
-        setHasMore(navigator.onLine);
+        setHasMore(false);
         setLoading(false);
         setOffset(localBooks.length);
       }
 
-      if (!navigator.onLine) {
+      if (!isConnectivityAvailable()) {
         setBooks(localBooks);
         setHasMore(false);
         setLoading(false);
@@ -47,21 +53,21 @@ export const useBooks = (userId?: string) => {
         setLoadingMore(true);
       }
 
-      const currentOffset = isInitial ? 0 : offset;
-      
-      const { books: newBooks, hasMore: hasMoreData } =
-        await fetchUserBooksPage(userId, currentOffset, PAGE_SIZE);
-
-      await booksRepo.upsertRemoteMany(userId, newBooks);
-      
-      setHasMore(hasMoreData);
+      const currentOffset = isInitial ? 0 : requestedOffset;
       
       if (isInitial) {
-        setBooks(newBooks);
-        setOffset(PAGE_SIZE);
+        await readingCoreSync.syncUser(userId);
+        const syncedBooks = await booksRepo.list(userId);
+        setBooks(syncedBooks);
+        setHasMore(false);
+        setOffset(syncedBooks.length);
       } else {
-        setBooks(prev => [...prev, ...newBooks]);
-        setOffset(prev => prev + PAGE_SIZE);
+        const { books: newBooks, hasMore: hasMoreData } =
+          await fetchUserBooksPage(userId, currentOffset, PAGE_SIZE);
+        await booksRepo.upsertRemoteMany(userId, newBooks);
+        setHasMore(hasMoreData);
+        setBooks((prev) => [...prev, ...newBooks]);
+        setOffset((prev) => prev + PAGE_SIZE);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to fetch books');
@@ -69,11 +75,11 @@ export const useBooks = (userId?: string) => {
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     fetchBooks(true);
-  }, [userId]);
+  }, [fetchBooks]);
 
   useEffect(() => {
     if (!userId || typeof window === "undefined") return;
@@ -108,17 +114,17 @@ export const useBooks = (userId?: string) => {
 
     window.addEventListener(BOOKS_CHANGED_EVENT, handleBooksChanged);
     return () => window.removeEventListener(BOOKS_CHANGED_EVENT, handleBooksChanged);
-  }, [userId]);
+  }, [fetchBooks, userId]);
 
   const loadMore = useCallback(() => {
     if (!loadingMore && hasMore) {
-      fetchBooks(false);
+      fetchBooks(false, false, false, offset);
     }
-  }, [loadingMore, hasMore, offset]);
+  }, [fetchBooks, loadingMore, hasMore, offset]);
 
   const refetchBooks = () => {
     invalidateBooksCache(userId);
-    if (navigator.onLine && userId) {
+    if (isConnectivityAvailable() && userId) {
       readingCoreSync.syncUser(userId).catch(console.error);
     }
     fetchBooks(true, true);

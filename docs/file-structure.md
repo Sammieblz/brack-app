@@ -283,7 +283,7 @@ supabase/
 |-- migrations/                 # Database migrations
 `-- functions/                  # Edge Functions (Deno)
     |-- _shared/                # Shared CORS, rate limit, validation, messaging helpers
-    |-- search-books/           # Public book search, Google primary with Open Library fallback
+    |-- search-books/           # Public book search/ISBN gateway with provider cache
     |-- add-book/
     |-- dashboard-home/
     |-- complete-reading/

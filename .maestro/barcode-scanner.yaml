@@ -1,0 +1,8 @@
+appId: com.brack.app
+---
+- launchApp
+- openLink: "brack://scan"
+- assertVisible:
+    text: "Scan"
+- assertNotVisible:
+    text: "Page error"

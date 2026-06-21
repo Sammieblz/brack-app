@@ -8,7 +8,7 @@ Scope: ticket 10.1, add/import, start reading, finish reading, progress, and res
 | Flow | Primary files | Notes |
 | --- | --- | --- |
 | Add book | `apps/client/src/screens/AddBook.tsx`, `apps/client/src/components/BookSearch.tsx` | Search, quick add, and manual tabs share the same destination. |
-| Scan/import book | `apps/client/src/screens/ScanBarcode.tsx`, `apps/client/src/screens/ScanCover.tsx` | Barcode routes to ISBN prefill; cover OCR routes to search query. |
+| Scan/import book | `apps/client/src/screens/ScanBarcode.tsx`, `apps/client/src/components/BarcodeScannerFlow.tsx`, `apps/client/src/screens/ScanCover.tsx` | Barcode reads ISBN, resolves an exact provider match, previews, then adds directly; cover OCR routes to search query. |
 | Resume current book | `apps/client/src/screens/Dashboard.tsx`, `apps/client/src/hooks/useDashboardHomeData.ts` | Dashboard continue section selects recent/current candidates. |
 | Start reading | `apps/client/src/screens/BookDetail.tsx`, `apps/client/src/contexts/TimerContext.tsx` | Timer starts from book detail and shared header timer surfaces. |
 | Finish reading | `apps/client/src/contexts/TimerContext.tsx` | Finish writes session and can trigger journal prompt for 5+ minute sessions. |
@@ -20,7 +20,7 @@ Scope: ticket 10.1, add/import, start reading, finish reading, progress, and res
 | --- | --- | --- | --- |
 | Add book | Duplicate prevention exists locally and in backend; soft-deleted books restore. | Manual tab uses a large card and fixed save button that can feel form-heavy on small screens. | Keep as-is until usability testing; prioritize scan/search speed first. |
 | Search import | Search result quick add is efficient. | Failed search/import recovery depends on user noticing the manual tab. | Add clearer empty-state path after search failure. |
-| Barcode scan | ISBN route pre-fills manual form. | Scanner screen uses an instructional card; on desktop/tablet this is less relevant. | Native mobile should be the primary QA target. |
+| Barcode scan | Direct scanner flow shows live camera preview, validates ISBN, resolves metadata, prevents duplicates, and can add directly after confirmation. | Requires connectivity for lookup/add; web release depends on reliable `getUserMedia` + ZXing behavior across webcams. | Test web camera, native Android, native iOS, duplicate scan, no-match scan, and network-loss recovery. |
 | Cover scan | OCR lets user edit extracted title/author. | Confidence can be low and still pushes to search; no direct "try another photo" prominence until after result. | Keep edit path; consider showing top detected text snippets later. |
 | Resume current book | Dashboard puts Continue Reading first and exposes log progress. | Current selection depends on live dashboard aggregation. | Complete Epic 4 read-model work. |
 | Start timer | One-tap timer start from book detail. | Starting a new timer requires replacing any running timer; this is correct but should be tested on native background/foreground. | Native QA on Android/iOS. |

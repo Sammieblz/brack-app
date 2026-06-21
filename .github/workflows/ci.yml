@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Cache Turborepo
@@ -34,8 +34,14 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      - name: Enforce warning-free reading core
+        run: npm run lint:core
+
       - name: Run TypeScript type check
         run: npm run check-types
+
+      - name: Run unit tests
+        run: npm test
 
   build-web:
     name: Build Web
@@ -48,7 +54,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Cache Turborepo
@@ -89,7 +95,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Cache Turborepo
@@ -150,7 +156,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Cache Turborepo
@@ -238,7 +244,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Cache Turborepo
@@ -268,7 +274,7 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
-    if: false
+    needs: [build-web]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -276,11 +282,44 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run tests
-        run: npm test || echo "Tests not configured yet"
+        run: npm test
+
+      - name: Build web app for Playwright
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run web smoke tests
+        run: npx playwright test --project=chromium
+
+  database-tests:
+    name: Database Tests
+    runs-on: ubuntu-latest
+    needs: [quality-checks]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Reset and validate migrations
+        run: |
+          supabase db reset --local
+          supabase db lint --local
+
+      - name: Run pgTAP tests
+        run: supabase test db

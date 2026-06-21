@@ -191,3 +191,5 @@ export interface ReadingStreakHistory {
   achieved_at: string;
   created_at: string;
 }
+
+export * from "./releaseCore";

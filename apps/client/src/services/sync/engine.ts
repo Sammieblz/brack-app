@@ -3,6 +3,8 @@ import { emitBooksChanged } from "@/services/api/books";
 import { getCurrentAuthUser } from "@/services/api/auth";
 import {
   booksRepo,
+  bookListItemsRepo,
+  bookListsRepo,
   goalsRepo,
   journalRepo,
   profilePreferencesRepo,
@@ -17,8 +19,11 @@ import type {
   SyncPushAcceptedItem,
   SyncPushFailedItem,
 } from "./types";
-import type { Book, Goal, ReadingSession } from "@/types";
+import type { Book, BookList, BookListItem, Goal, ReadingSession } from "@/types";
 import type { JournalEntry } from "@/services/api/journal";
+import { isConnectivityAvailable } from "@/services/connectivity";
+import { trackCoreEvent } from "@/services/telemetry";
+import { resolveBookSyncConflict } from "./conflicts";
 
 export const SYNC_STATUS_EVENT = "brack:sync-status-changed";
 
@@ -39,7 +44,23 @@ const getRecordUserId = (record: { user_id?: string | null }, fallbackUserId: st
   record.user_id || fallbackUserId;
 
 const applyPulledRecords = async (userId: string, response: SyncPullResponse) => {
-  await booksRepo.upsertRemoteMany(userId, response.records.books as Book[]);
+  const localBookRecords = new Map(
+    (await booksRepo.listRecords(userId, { includeDeleted: true })).map(
+      (record) => [record.id, record],
+    ),
+  );
+  for (const remoteBook of response.records.books as Book[]) {
+    const localBook = localBookRecords.get(remoteBook.id);
+    if (!localBook || localBook.status === "synced") {
+      await booksRepo.upsertRemote(userId, remoteBook);
+      continue;
+    }
+
+    const resolved = resolveBookSyncConflict(localBook, remoteBook);
+    if (resolved === remoteBook) {
+      await booksRepo.upsertRemote(userId, remoteBook);
+    }
+  }
   await sessionsRepo.upsertRemoteMany(userId, response.records.reading_sessions as ReadingSession[]);
   await progressRepo.upsertRemoteMany(
     userId,
@@ -50,6 +71,11 @@ const applyPulledRecords = async (userId: string, response: SyncPullResponse) =>
   );
   await journalRepo.upsertRemoteMany(userId, response.records.journal_entries as JournalEntry[]);
   await goalsRepo.upsertRemoteMany(userId, response.records.goals as Goal[]);
+  await bookListsRepo.upsertRemoteMany(userId, response.records.book_lists as BookList[]);
+  await bookListItemsRepo.upsertRemoteMany(
+    userId,
+    response.records.book_list_items as BookListItem[]
+  );
 
   const preferences = response.records.profile_preferences[0];
   if (preferences?.id) {
@@ -64,6 +90,14 @@ const applyPulledRecords = async (userId: string, response: SyncPullResponse) =>
 
   if (response.records.books.length > 0) {
     emitBooksChanged({ type: "refresh", userId });
+  }
+  if (
+    response.records.book_lists.length > 0 ||
+    response.records.book_list_items.length > 0
+  ) {
+    window.dispatchEvent(
+      new CustomEvent("brack:book-lists-changed", { detail: { userId } })
+    );
   }
 };
 
@@ -113,6 +147,36 @@ const applyAcceptedRecord = async (userId: string, accepted: SyncPushAcceptedIte
         break;
       }
       await goalsRepo.upsertRemote(getRecordUserId(goal, userId), goal);
+      break;
+    }
+    case "book_lists": {
+      const list = accepted.record as BookList;
+      if (accepted.client_entity_id !== list.id) {
+        await bookListsRepo.remove(accepted.client_entity_id);
+      }
+      if (list.deleted_at) {
+        await bookListsRepo.remove(accepted.client_entity_id);
+      } else {
+        await bookListsRepo.upsertRemote(getRecordUserId(list, userId), list);
+      }
+      window.dispatchEvent(
+        new CustomEvent("brack:book-lists-changed", { detail: { userId } })
+      );
+      break;
+    }
+    case "book_list_items": {
+      const item = accepted.record as BookListItem;
+      if (accepted.client_entity_id !== item.id) {
+        await bookListItemsRepo.remove(accepted.client_entity_id);
+      }
+      if (item.deleted_at) {
+        await bookListItemsRepo.remove(accepted.client_entity_id);
+      } else {
+        await bookListItemsRepo.upsertRemote(getRecordUserId(item, userId), item);
+      }
+      window.dispatchEvent(
+        new CustomEvent("brack:book-lists-changed", { detail: { userId } })
+      );
       break;
     }
     case "profile_preferences": {
@@ -185,7 +249,7 @@ class ReadingCoreSyncEngine {
     await syncRepo.retry(item);
     const status = await this.notifyCurrentStatus(item.user_id);
 
-    if (typeof navigator !== "undefined" && navigator.onLine) {
+    if (isConnectivityAvailable()) {
       return this.syncUser(item.user_id);
     }
 
@@ -199,7 +263,7 @@ class ReadingCoreSyncEngine {
   }
 
   async syncUser(userId: string): Promise<SyncStatusDetail> {
-    if (this.syncing || !navigator.onLine) {
+    if (this.syncing || !isConnectivityAvailable()) {
       const status = await this.getStatus(userId);
       notifySyncStatus(status);
       return status;
@@ -211,6 +275,12 @@ class ReadingCoreSyncEngine {
     try {
       await this.pushPending(userId);
       await this.pullLatest(userId);
+      trackCoreEvent("sync_succeeded");
+    } catch (error) {
+      trackCoreEvent("sync_failed", {
+        reason: error instanceof Error ? error.message.slice(0, 160) : "unknown",
+      });
+      throw error;
     } finally {
       this.syncing = false;
     }
@@ -259,12 +329,22 @@ class ReadingCoreSyncEngine {
 
   private async pullLatest(userId: string) {
     const state = await syncRepo.getState(userId, "reading_core");
-    const response = await pullSyncChanges(state?.cursor ?? null);
-    await applyPulledRecords(userId, response);
+    let cursor = state?.cursor ?? null;
+    let hasMore = true;
+    let pageCount = 0;
+
+    while (hasMore && pageCount < 20) {
+      const response = await pullSyncChanges(cursor);
+      await applyPulledRecords(userId, response);
+      cursor = response.cursor;
+      hasMore = Boolean(response.has_more);
+      pageCount += 1;
+    }
+
     await syncRepo.setState({
       key: `${userId}:reading_core`,
       user_id: userId,
-      cursor: response.cursor,
+      cursor,
       last_synced_at: new Date().toISOString(),
     });
   }
@@ -288,6 +368,12 @@ class ReadingCoreSyncEngine {
         case "goals":
           await goalsRepo.remove(item.client_entity_id);
           break;
+        case "book_lists":
+          await bookListsRepo.remove(item.client_entity_id);
+          break;
+        case "book_list_items":
+          await bookListItemsRepo.remove(item.client_entity_id);
+          break;
         default:
           break;
       }
@@ -306,6 +392,12 @@ class ReadingCoreSyncEngine {
           break;
         case "goals":
           await goalsRepo.restoreDeletedLocal(item.client_entity_id);
+          break;
+        case "book_lists":
+          await bookListsRepo.restoreDeletedLocal(item.client_entity_id);
+          break;
+        case "book_list_items":
+          await bookListItemsRepo.restoreDeletedLocal(item.client_entity_id);
           break;
         default:
           break;

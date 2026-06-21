@@ -76,7 +76,9 @@ App-facing function summary. The complete maintained inventory is in [Edge Funct
 
 | Function | Purpose | JWT |
 | --- | --- | --- |
-| `search-books` | Book search with Google Books primary and Open Library fallback | No |
+| `search-books` | Book search and ISBN lookup gateway with Google Books primary, Open Library fallback, and metadata caching | No |
+| `feature-flags` | Remotely controlled release flags, including social availability | No |
+| `core-telemetry` | Whitelisted, rate-limited reading-core reliability events | No |
 | `add-book` | Protected library insert with duplicate handling | Yes |
 | `dashboard-home` | Snapshot-backed dashboard payload | Yes |
 | `complete-reading` | Consolidated reading completion transaction | Yes |
@@ -128,15 +130,22 @@ App-facing function summary. The complete maintained inventory is in [Edge Funct
 | `compute-analytics` | Daily analytics snapshot generation | Yes |
 | `send-push-notification` | Firebase Cloud Messaging delivery | Yes |
 | `sync-pull` | Pull reading-core sync changes | Yes |
+| `export-reading-data` | Export complete server reading data | Yes |
+| `preview-reading-import` | Validate and persist an import preview job | Yes |
+| `commit-reading-import` | Commit the next idempotent import batch | Yes |
 | `sync-push` | Push reading-core outbox mutations | Yes |
 
-Local JWT settings live in `supabase/config.toml`. Remote deployment was aligned on June 13, 2026: every maintained function except public `search-books` is deployed with `verify_jwt = true`, the direct-message function group is deployed, and the `modern_direct_messaging` schema is applied remotely. See [Edge Function Catalog](./backend/edge-functions.md) for the full maintained inventory and operational checks.
+Local JWT settings live in `supabase/config.toml`. Public functions are limited to
+`search-books`, `feature-flags`, and `core-telemetry`; telemetry accepts only a fixed
+event allowlist and is rate-limited. All user-data functions require JWT validation.
+See [Edge Function Catalog](./backend/edge-functions.md) for the full maintained
+inventory and operational checks.
 
 The legacy 2025 functions `get-book-details`, `update-reading-progress`, and `daily-summary` were deleted remotely after confirming there are no local consumers.
 
 ### search-books
 
-Search for books. Google Books is the primary provider; Open Library is the fallback when Google returns 403, 429, or 5xx.
+Search for books and resolve ISBN lookups. Google Books is the primary provider; Open Library is the fallback when Google errors, times out, or returns no usable books. The same endpoint powers the direct barcode-to-library flow after the scanner extracts a valid ISBN.
 
 **Endpoint**: `POST /search-books`
 
@@ -168,13 +177,27 @@ Search for books. Google Books is the primary provider; Open Library is the fall
     source_provider?: 'google_books' | 'open_library';
     source_id?: string | null;
   }>;
+  provider?: 'google_books' | 'open_library';
   fallback_provider?: 'open_library';
+  cached?: boolean;
+  stale?: boolean;
+  isbn?: string | null;
+  provider_error?: string | null;
 }
 ```
 
 **Rate Limit**: 30 requests per minute per client IP
 
 **Auth**: Public function (`verify_jwt = false`). The app may still call it through the Supabase client, but a user JWT is not required.
+
+**Search and ISBN behavior**:
+- Queries that contain a valid ISBN are normalized to `isbn:<canonical-isbn>`.
+- ISBN-10 and ISBN-13 checksums are validated client-side before barcode lookup and server-side before provider lookup.
+- Google Books is attempted first.
+- Open Library is attempted when Google fails, times out, or returns no usable books.
+- Server cache uses `book_metadata_cache`: ISBN lookups are cached for 7 days; non-ISBN searches are cached for 1 day.
+- The client also keeps a local search cache and can use stale cached search results when offline.
+- Barcode adds require an exact normalized ISBN match before the UI allows confirmation.
 
 **Example**:
 ```typescript
@@ -192,6 +215,8 @@ const { books } = await response.json();
 
 **Environment Variables**:
 - `GOOGLE_BOOKS_API_KEY` (optional, recommended) - Increases Google Books quota. If it is missing or Google rejects the request, the function can still return Open Library results.
+
+See [Book Acquisition, Search, And Barcode Scanning](./reading/book-acquisition.md) for the full scanner/search/add flow.
 
 ### add-book
 

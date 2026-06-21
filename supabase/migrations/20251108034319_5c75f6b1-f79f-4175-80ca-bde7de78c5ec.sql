@@ -57,3 +57,20 @@ USING (
     )
   )
 );
+
+CREATE POLICY "Public activities are viewable by everyone"
+ON public.social_activities
+FOR SELECT
+USING (
+  visibility = 'public'
+  OR auth.uid() = user_id
+  OR (
+    visibility = 'followers'
+    AND EXISTS (
+      SELECT 1
+      FROM public.user_follows
+      WHERE following_id = social_activities.user_id
+        AND follower_id = auth.uid()
+    )
+  )
+);

@@ -28,6 +28,7 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 - [Onboarding/Auth Audit](./security/onboarding-auth-audit.md) - Signup/profile/onboarding write-path review
 - [Visibility Semantics](./security/visibility-semantics.md) - Social/community visibility strategy
 - [Reading Write-Path Audit](./reading/write-path-audit.md) - Reading workflow write-path inventory
+- [Book Acquisition, Search, And Barcode Scanning](./reading/book-acquisition.md) - Search providers, scanner flow, ISBN matching, and add-book semantics
 - [Reading Completion Transaction](./reading/completion-transaction.md) - Consolidated reading completion backend path
 - [Dashboard Query Audit](./performance/dashboard-query-audit.md) - Dashboard round trips and aggregation review
 - [Index Audit](./performance/index-audit.md) - Hot-path index coverage and migration notes

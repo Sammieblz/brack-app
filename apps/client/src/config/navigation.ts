@@ -14,6 +14,7 @@ export interface NavItem {
   section: NavSection;
   matchPaths: string[];
   showInMobileNav?: boolean;
+  feature?: "social";
 }
 
 export const NAV_ITEMS: NavItem[] = [
@@ -69,6 +70,7 @@ export const NAV_ITEMS: NavItem[] = [
     section: "community",
     matchPaths: ["/feed"],
     showInMobileNav: true,
+    feature: "social",
   },
   {
     label: "Readers",
@@ -77,6 +79,7 @@ export const NAV_ITEMS: NavItem[] = [
     section: "community",
     matchPaths: ["/readers", "/users"],
     showInMobileNav: true,
+    feature: "social",
   },
   {
     label: "Clubs",
@@ -84,6 +87,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: APP_ICONS.nav.clubs,
     section: "community",
     matchPaths: ["/clubs"],
+    feature: "social",
   },
   {
     label: "Messages",
@@ -91,6 +95,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: APP_ICONS.nav.messages,
     section: "community",
     matchPaths: ["/messages"],
+    feature: "social",
   },
   {
     label: "Reviews",
@@ -98,6 +103,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: APP_ICONS.nav.reviews,
     section: "community",
     matchPaths: ["/reviews"],
+    feature: "social",
   },
   {
     label: "Settings",
@@ -133,7 +139,18 @@ export const isNavItemActive = (pathname: string, item: NavItem) =>
     return pathname.startsWith(`${matchPath}/`);
   });
 
-export const getNavItemsBySection = (section: NavSection) =>
-  NAV_ITEMS.filter((item) => item.section === section);
+const isFeatureAvailable = (item: NavItem, socialEnabled: boolean) =>
+  item.feature !== "social" || socialEnabled;
 
-export const MOBILE_NAV_ITEMS = NAV_ITEMS.filter((item) => item.showInMobileNav);
+export const getNavItemsBySection = (
+  section: NavSection,
+  socialEnabled = true,
+) =>
+  NAV_ITEMS.filter(
+    (item) => item.section === section && isFeatureAvailable(item, socialEnabled),
+  );
+
+export const getMobileNavItems = (socialEnabled = true) =>
+  NAV_ITEMS.filter(
+    (item) => item.showInMobileNav && isFeatureAvailable(item, socialEnabled),
+  );

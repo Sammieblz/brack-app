@@ -7,6 +7,7 @@ export * from "./books";
 export * from "./client";
 export * from "./clubs";
 export * from "./dashboard";
+export * from "./dataPortability";
 export * from "./goals";
 export * from "./journal";
 export * from "./messaging";

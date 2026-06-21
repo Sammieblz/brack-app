@@ -186,21 +186,27 @@ const isMobile = useIsMobile();
 
 **Location**: `apps/client/src/hooks/useBarcodeScanner.ts`
 
-**Purpose**: Scan ISBN barcodes
+**Purpose**: Scan ISBN barcodes and QR payloads that contain valid ISBNs
 
 ```typescript
-const { isScanning, scannedCode, error, startScan, stopScan, resetScan } = 
-  useBarcodeScanner();
+const videoRef = useRef<HTMLVideoElement>(null);
+
+const { isScanning, scannedCode, error, startScan, stopScan, resetScan } =
+  useBarcodeScanner({ videoRef });
 
 const handleScan = async () => {
   const isbn = await startScan();
   if (isbn) {
-    // Use ISBN to add book
+    // Resolve exact metadata match, preview, then add through add-book
   }
 };
 ```
 
-**Platforms**: Native (camera) and Web (getUserMedia)
+**Platforms**:
+- Native iOS/Android: `@capacitor/barcode-scanner`
+- Web/PWA/Desktop: live `getUserMedia` video stream scanned by ZXing
+
+The scanner hook only returns a validated ISBN. Book lookup and add behavior is orchestrated by `BarcodeScannerFlow` through `resolveScannedBook` and `addScannedBookToLibrary`.
 
 ### useCoverScanner
 

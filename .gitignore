@@ -14,6 +14,8 @@ dist-ssr
 desktop/dist
 release
 *.local
+test-results
+playwright-report
 
 # Editor directories and files
 .vscode/*
@@ -35,3 +37,4 @@ release
 
 # Supabase local CLI state
 supabase/.temp/
+supabase/.branches/

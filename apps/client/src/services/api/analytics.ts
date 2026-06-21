@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { invokeFunction } from "./client";
+import { withContentSnapshot } from "@/services/contentSnapshots";
 
 export interface MonthlyStats {
   month: string;
@@ -139,7 +140,7 @@ export const getMonthlyStats = async (
   });
 };
 
-export const getAnalyticsChartData = async (
+const loadAnalyticsChartData = async (
   userId: string,
 ): Promise<AnalyticsChartData> => {
   if (!userId) return emptyChartData();
@@ -484,3 +485,10 @@ export const getAnalyticsChartData = async (
     statusFunnel,
   };
 };
+
+export const getAnalyticsChartData = async (
+  userId: string,
+): Promise<AnalyticsChartData> =>
+  withContentSnapshot("analytics", "charts", () =>
+    loadAnalyticsChartData(userId),
+  );

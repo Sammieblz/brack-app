@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { sanitizeInput } from "@/utils/sanitize";
 import { getCurrentAuthUser } from "./auth";
 import type { RichTextDocument, RichTextFormat } from "@/types/richText";
+import { withContentSnapshot } from "@/services/contentSnapshots";
 
 export type SocialActivityType =
   | "book_started"
@@ -195,9 +196,10 @@ export const getPostsFeed = async (
   cursor?: string | null,
   limit = 20
 ): Promise<PostsFeedResponse> => {
-  return invokeFunction<PostsFeedResponse>("posts-feed", {
+  const load = () => invokeFunction<PostsFeedResponse>("posts-feed", {
     body: { cursor, limit },
   });
+  return cursor ? load() : withContentSnapshot("feed", `posts:${limit}`, load);
 };
 
 export const getPostById = async (postId: string): Promise<Post | null> => {
@@ -211,9 +213,10 @@ export const getSocialFeed = async (
   limit = 20,
   cursor?: string | null
 ): Promise<SocialFeedResponse> => {
-  return invokeFunction<SocialFeedResponse>("social-feed", {
+  const load = () => invokeFunction<SocialFeedResponse>("social-feed", {
     body: { limit, cursor },
   });
+  return cursor ? load() : withContentSnapshot("feed", `activity:${limit}`, load);
 };
 
 export const uploadPostMediaFiles = async (files: File[]): Promise<PostMedia[]> => {

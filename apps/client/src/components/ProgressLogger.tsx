@@ -5,12 +5,14 @@ import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { logProgress, uploadPublicStorageFile } from "@/services/api";
+import { emitBooksChanged, uploadPublicStorageFile } from "@/services/api";
 import { Refresh, Camera, Xmark } from "iconoir-react";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
 import { useImagePicker } from "@/hooks/useImagePicker";
 import { useAuth } from "@/hooks/useAuth";
 import { booksRepo, createLocalId, progressRepo } from "@/services/local";
+import { readingCoreSync } from "@/services/sync/engine";
+import { isConnectivityAvailable } from "@/services/connectivity";
 
 interface ProgressLoggerProps {
   bookId: string;
@@ -99,71 +101,57 @@ export const ProgressLogger = ({
 
     setLoading(true);
     try {
-      if (!navigator.onLine) {
-        if (!user) throw new Error("Not authenticated");
-
-        await progressRepo.createPending(user.id, {
-          id: createLocalId(),
-          user_id: user.id,
-          book_id: bookId,
-          page_number: pageNumber,
-          chapter_number: chapterNumber || null,
-          paragraph_number: paragraphNumber || null,
-          notes: notes || null,
-          log_type: "manual",
-          time_spent_minutes: timeSpent || null,
-          photo_url: photoUrl || null,
-          logged_at: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-        });
-
-        const localBook = await booksRepo.get(bookId);
-        if (localBook) {
-          await booksRepo.upsertLocal(user.id, {
-            ...localBook,
-            current_page: Math.max(localBook.current_page || 0, pageNumber),
-            status:
-              localBook.pages && pageNumber >= localBook.pages
-                ? "completed"
-                : localBook.status === "to_read"
-                  ? "reading"
-                  : localBook.status,
-            updated_at: new Date().toISOString(),
-          }, "update");
-        }
-
-        toast({
-          title: "Progress saved offline",
-          description: `Page ${pageNumber} will sync when you're back online`,
-        });
-
-        setPageNumber(currentPage || 0);
-        setChapterNumber(undefined);
-        setParagraphNumber(undefined);
-        setTimeSpent(undefined);
-        setNotes("");
-        setPhotoUrl(null);
-        setPhotoPreview(null);
-        onOpenChange(false);
-        onSuccess?.();
-        return;
-      }
-
-      const data = await logProgress({
+      if (!user) throw new Error("Not authenticated");
+      const timestamp = new Date().toISOString();
+      await progressRepo.createPending(user.id, {
         id: createLocalId(),
+        user_id: user.id,
         book_id: bookId,
         page_number: pageNumber,
         chapter_number: chapterNumber || null,
         paragraph_number: paragraphNumber || null,
         notes: notes || null,
-        log_type: 'manual',
+        log_type: "manual",
         time_spent_minutes: timeSpent || null,
         photo_url: photoUrl || null,
+        logged_at: timestamp,
+        created_at: timestamp,
       });
 
+      const localBook = await booksRepo.get(bookId);
+      let resultingStatus = localBook?.status ?? "reading";
+      if (localBook) {
+        resultingStatus =
+          localBook.pages && pageNumber >= localBook.pages
+            ? "completed"
+            : localBook.status === "to_read"
+              ? "reading"
+              : localBook.status;
+        const updatedBook = {
+          ...localBook,
+          current_page: Math.max(localBook.current_page || 0, pageNumber),
+          status: resultingStatus,
+          date_started:
+            localBook.date_started || (pageNumber > 0 ? timestamp.split("T")[0] : null),
+          date_finished:
+            resultingStatus === "completed"
+              ? localBook.date_finished || timestamp.split("T")[0]
+              : localBook.date_finished,
+          updated_at: timestamp,
+        };
+        await booksRepo.upsertLocal(user.id, updatedBook, "update");
+        emitBooksChanged({ type: "upsert", userId: user.id, book: updatedBook });
+      }
+
+      if (isConnectivityAvailable()) {
+        void readingCoreSync.syncUser(user.id).catch(console.error);
+      }
+
       toast({
-        title: "Progress logged!",
-        description: `Updated to page ${pageNumber}${data.progress.status === 'completed' ? ' - Book completed!' : ''}`,
+        title: isConnectivityAvailable() ? "Progress logged!" : "Progress saved offline",
+        description: `Updated to page ${pageNumber}${
+          resultingStatus === "completed" ? " - Book completed!" : ""
+        }`,
       });
 
       // Reset form

@@ -54,9 +54,38 @@ export default defineConfig(({ mode }) => {
       },
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        globIgnores: ["**/achievement-badges/*.png"],
+        globPatterns: ["**/*.{js,css,html,ico,svg,woff2}"],
+        globIgnores: [
+          "**/achievement-badges/*.png",
+          "**/3dicons/*.png",
+          "**/brack-*.png",
+          "**/assets/*scanner*",
+          "**/assets/*tesseract*",
+          "**/assets/ReactionBar-*.js",
+          "**/assets/apex-vendor-*.js",
+          "**/assets/Feed-*.js",
+          "**/assets/Messages-*.js",
+          "**/assets/BookClub*.js",
+          "**/assets/Reviews-*.js",
+          "**/assets/ReviewDetail-*.js",
+          "**/assets/ScanCover-*.js",
+          "**/assets/ScanBarcode-*.js",
+        ],
         runtimeCaching: [
+          {
+            urlPattern: /\/assets\/.*\.js$/,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "brack-lazy-chunks",
+              expiration: {
+                maxEntries: 80,
+                maxAgeSeconds: 60 * 60 * 24 * 30,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
           {
             // Use environment variable or fallback pattern
             // Note: Replace hardcoded URL with VITE_SUPABASE_URL in production
@@ -116,6 +145,7 @@ export default defineConfig(({ mode }) => {
             'supabase-vendor': ['@supabase/supabase-js'],
             'apex-vendor': ['apexcharts', 'react-apexcharts'],
             'animation-vendor': ['gsap', '@gsap/react', 'framer-motion'],
+            'offline-vendor': ['dexie', 'fflate', 'papaparse'],
           },
         },
       },

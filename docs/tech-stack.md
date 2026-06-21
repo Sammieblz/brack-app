@@ -62,6 +62,7 @@ Brack uses modern, production-ready technologies for web and mobile development.
 |--------|---------|---------|
 | @capacitor/app | 7.1.0 | App lifecycle events |
 | @capacitor/camera | 7.0.3 | Camera & photos |
+| @capacitor/barcode-scanner | 2.2.6 | Native ISBN/QR scanning (Capacitor 7 compatible) |
 | @capacitor/device | 7.0.2 | Device information |
 | @capacitor/filesystem | 7.1.6 | File storage |
 | @capacitor/haptics | 7.0.2 | Vibration feedback |
@@ -82,7 +83,7 @@ Brack uses modern, production-ready technologies for web and mobile development.
 ## Backend & Database
 
 ### Supabase
-- **PostgreSQL 15** - Relational database
+- **PostgreSQL 17** - Relational database
 - **PostgREST** - RESTful API
 - **Realtime** - WebSocket subscriptions
 - **Edge Functions** - Serverless functions (Deno)
@@ -100,13 +101,17 @@ Brack uses modern, production-ready technologies for web and mobile development.
 - **Runtime**: Deno 1.x
 - **Language**: TypeScript
 - **Functions**:
-  - `search-books` - Google Books primary search with Open Library fallback
+  - `search-books` - Google Books/Open Library gateway with ISBN lookup and metadata cache
   - `add-book` - Protected library insertion and duplicate handling
   - `dashboard-home` - Dashboard aggregate data
   - `create-reading-session` - Timer session persistence
   - `award-badges` - Badge awarding
   - `compute-analytics` - Daily analytics snapshots
-  - `sync-pull` / `sync-push` - Reading-core offline sync
+  - `sync-pull` / `sync-push` - Opaque-cursor reading-core offline sync
+  - `export-reading-data` - Authenticated server reading-data export
+  - `feature-flags` - Remote social-feature release control
+  - `core-telemetry` - Rate-limited reading-core reliability telemetry
+  - `preview-reading-import` / `commit-reading-import` - Resumable import preview and commit
   - `discover-readers` - Smart reader discovery sections and ranked search
   - `update-presence` - Lightweight reader online/status heartbeat
   - `enhanced-activity` - Personal activity aggregation
@@ -135,6 +140,15 @@ Brack uses modern, production-ready technologies for web and mobile development.
   - Optimistic updates
   - Persistence to localStorage
   - Infinite scrolling support
+
+### Local-First Storage
+
+- **Dexie / IndexedDB** on web and PWA.
+- **@capacitor-community/sqlite** on Android and iOS.
+- **better-sqlite3** behind the Electron preload bridge on desktop.
+- Durable outbox sync for books, lists, list membership, sessions, progress,
+  journals, goals, and preferences.
+- `fflate` and `papaparse` power portable Brack/ZIP/CSV/Goodreads backups.
 
 ### React Context API
 - **Usage**: Global state for:
@@ -222,10 +236,12 @@ Brack uses modern, production-ready technologies for web and mobile development.
 ### Book Search APIs
 - **Purpose**: Book search and metadata
 - **Primary**: Google Books API
-- **Fallback**: Open Library search when Google returns 403, 429, or 5xx
+- **Fallback**: Open Library search when Google errors, times out, or returns no usable books
 - **Endpoint**: `googleapis.com/books/v1`
 - **Rate Limit**: Handled in Edge Function with distributed buckets
-- **Caching**: 5-minute cache in browser
+- **Server Caching**: `book_metadata_cache` stores ISBN lookups for 7 days and non-ISBN searches for 1 day
+- **Client Caching**: IndexedDB/SQLite search cache stores fresh results for 24 hours and can serve stale results while offline
+- **Scanner Integration**: Barcode scans resolve through the same gateway with exact normalized ISBN matching before add
 
 ### Firebase Cloud Messaging (FCM)
 - **Purpose**: Push notifications
