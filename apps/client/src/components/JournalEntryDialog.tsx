@@ -165,7 +165,14 @@ export const JournalEntryDialog = ({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="entry-type">Entry Type</Label>
-            <Select value={entryType} onValueChange={(value: string) => setEntryType(value)}>
+            <Select
+              value={entryType}
+              onValueChange={(value) => {
+                if (value === "note" || value === "quote" || value === "reflection") {
+                  setEntryType(value);
+                }
+              }}
+            >
               <SelectTrigger id="entry-type">
                 <SelectValue />
               </SelectTrigger>

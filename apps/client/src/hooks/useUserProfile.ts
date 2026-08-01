@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   fetchUserProfileWithStats,
+  type PublicGamificationProfile,
   type UserProfile,
   type UserStats,
 } from "@/services/api";
@@ -13,6 +14,7 @@ export const useUserProfile = (userId: string | null) => {
     currentlyReading: 0,
     badges: 0,
   });
+  const [gamification, setGamification] = useState<PublicGamificationProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +32,7 @@ export const useUserProfile = (userId: string | null) => {
         const data = await fetchUserProfileWithStats(userId);
         setProfile(data.profile);
         setStats(data.stats);
+        setGamification(data.gamification);
       } catch (err: unknown) {
         console.error("Error fetching user profile:", err);
         setError(err instanceof Error ? err.message : "Failed to load profile");
@@ -41,5 +44,5 @@ export const useUserProfile = (userId: string | null) => {
     fetchUserProfile();
   }, [userId]);
 
-  return { profile, stats, loading, error };
+  return { profile, stats, gamification, loading, error };
 };

@@ -18,7 +18,7 @@ Legend:
 | --- | --- | --- | --- | --- | --- |
 | `analytics_snapshots` | Owner | None | None | None | Derived analytics; writes are service/RPC only. |
 | `api_rate_limits` | None | None | None | None | Backend-only operational table. RLS has no policies; service-role RPC writes buckets. |
-| `badges` | Public | None | None | None | Reference data. |
+| `badges` | Authenticated | None | None | None | Reference catalog; rules are server-owned. |
 | `book_club_discussions` | Club member | Club member and owner | Author or moderator/admin | Author or moderator/admin | Soft delete, media validation, and pin/type moderation are Edge-owned. |
 | `book_club_invites` | Invited user or club admin | Club admin | Invited user or club admin | None | Invite response is Edge-owned. |
 | `book_club_join_requests` | Requester or club admin | Requester | Club admin | None | Private-club request review is Edge-owned. |
@@ -39,6 +39,17 @@ Legend:
 | `conversations` | Participant | Participant | None | None | One-to-one conversation lifecycle is Edge-owned. |
 | `dashboard_home_snapshots` | Owner | None | None | None | Derived read model; writes are through security-definer RPC/service role. |
 | `goals` | Owner | Owner | Owner | Owner | Private with soft deletes. |
+| `gamification_accounts` | Owner through Edge | None | None | None | Balance changes are service-role reward operations only. |
+| `gamification_ledger` | Owner through Edge | None | None | None | Immutable exactly-once reward history. |
+| `gamification_daily_scores` | Owner through Edge | None | None | None | Enforces the local-day competitive cap. |
+| `gamification_weeks` | Edge projection | None | None | None | Shared UTC week metadata. |
+| `gamification_weekly_scores` | Privacy-aware Edge projection | None | None | None | Opt-in and block filtering occur in leaderboard RPCs. |
+| `quest_templates` | Edge projection | None | None | None | Backend configuration. |
+| `user_quest_assignments` | Owner through Edge | None | None | None | Server-generated; rewards are automatic. |
+| `user_quest_progress_events` | Owner through assignment | None | None | None | Backend-only source-event deduplication. |
+| `reader_leagues` | Edge projection | None | None | None | Public names; membership details remain privacy-aware. |
+| `reader_league_members` | Same-league projection through Edge | None | None | None | Blocked/private readers are filtered or anonymized. |
+| `user_notifications` | Owner | None | Owner `read_at` only | None | Notification content and push state are backend-owned. |
 | `journal_entries` | Owner | Owner | Owner | Owner | Private with soft deletes. |
 | `message_media` | Participant if not blocked | Sender participant if not blocked | None | None | Private `message-media` bucket reads use signed URLs from messaging Edge Functions. |
 | `message_reactions` | Participant | Participant self reaction if not blocked | Owner reaction | Owner reaction | One fixed reaction per user/message. |
@@ -61,7 +72,7 @@ Legend:
 | `review_comments` | Public review visibility or review owner | Owner | Owner | Owner | Select joins to `book_reviews`. |
 | `review_likes` | Public | Owner | None | Owner | Like rows are public today. |
 | `social_activities` | Public/followers/owner | Owner | Owner | Owner | Trigger-created activities use security definer functions. |
-| `user_badges` | Owner | Owner | None | None | Award RPC also inserts; no update/delete. |
+| `user_badges` | Owner | None | None | None | Direct writes are revoked. Security-definer award logic inserts idempotently from canonical metrics. |
 | `user_blocks` | Blocker | Blocker | None | Blocker | Block relationships hide social/profile surfaces both directions. |
 | `user_follows` | Public | Follower | None | Follower | Follow graph is public today. |
 | `user_learning_profiles` | Owner | Owner | Owner | Owner | Private onboarding/personalization data. |

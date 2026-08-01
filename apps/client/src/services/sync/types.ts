@@ -78,6 +78,10 @@ export interface ProfilePreferencesPayload {
   color_theme?: string | null;
   theme_mode?: string | null;
   library_view_mode?: LibraryViewMode | null;
+  timezone?: string | null;
+  leaderboard_opt_in?: boolean | null;
+  leaderboard_eligible_from?: string | null;
+  gamification_profile_visible?: boolean | null;
   updated_at?: string | null;
 }
 

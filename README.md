@@ -62,7 +62,8 @@ GOOGLE_BOOKS_API_KEY=your-google-books-api-key
 VITE_SENTRY_DSN=your-sentry-dsn
 ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com
 ENVIRONMENT=development
-FCM_SERVER_KEY=your-fcm-server-key
+FCM_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
+GAMIFICATION_WORKER_SECRET=replace-with-a-random-worker-secret
 SUPABASE_ACCESS_TOKEN=your-supabase-cli-token
 SUPABASE_DB_PASSWORD=your-linked-project-db-password
 ```

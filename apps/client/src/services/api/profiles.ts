@@ -4,6 +4,12 @@ import { getCurrentAuthUser } from "./auth";
 import { profilePreferencesRepo } from "@/services/local";
 import { isConnectivityAvailable } from "@/services/connectivity";
 import { readingCoreSync } from "@/services/sync/engine";
+import { parseRichTextDocument, parseRichTextFormat } from "@/types/richText";
+import {
+  getPublicGamificationProfile,
+  type PublicGamificationProfile,
+} from "./gamification";
+import type { Post, PostType, PostVisibility } from "./social";
 
 export interface FollowStats {
   followersCount: number;
@@ -38,6 +44,7 @@ export interface UserStats {
 export interface UserProfileWithStats {
   profile: UserProfile;
   stats: UserStats;
+  gamification: PublicGamificationProfile | null;
 }
 
 export const fetchFollowStats = async (userId: string): Promise<FollowStats> => {
@@ -151,7 +158,11 @@ export const fetchUserProfileWithStats = async (
     profileData.profile_visibility !== "public" &&
     profileData.id !== currentUser?.id
   ) {
-    return { profile: profileData as UserProfile, stats: emptyStats };
+    return {
+      profile: profileData as UserProfile,
+      stats: emptyStats,
+      gamification: await getPublicGamificationProfile(userId).catch(() => null),
+    };
   }
 
   const [
@@ -159,6 +170,7 @@ export const fetchUserProfileWithStats = async (
     { count: booksRead },
     { count: currentlyReading },
     { count: badges },
+    gamification,
   ] = await Promise.all([
     supabase
       .from("books")
@@ -181,6 +193,7 @@ export const fetchUserProfileWithStats = async (
       .from("user_badges")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId),
+    getPublicGamificationProfile(userId).catch(() => null),
   ]);
 
   return {
@@ -191,6 +204,7 @@ export const fetchUserProfileWithStats = async (
       currentlyReading: currentlyReading || 0,
       badges: badges || 0,
     },
+    gamification,
   };
 };
 
@@ -277,7 +291,7 @@ export const fetchThemePreferences = async (
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("color_theme, theme_mode, library_view_mode, updated_at")
+    .select("color_theme, theme_mode, library_view_mode, timezone, leaderboard_opt_in, leaderboard_eligible_from, gamification_profile_visible, updated_at")
     .eq("id", userId)
     .maybeSingle();
 
@@ -288,6 +302,10 @@ export const fetchThemePreferences = async (
       color_theme: data.color_theme ?? null,
       theme_mode: data.theme_mode ?? null,
       library_view_mode: (data.library_view_mode as LibraryViewMode | null) ?? "flat",
+      timezone: data.timezone ?? "UTC",
+      leaderboard_opt_in: data.leaderboard_opt_in ?? false,
+      leaderboard_eligible_from: data.leaderboard_eligible_from ?? null,
+      gamification_profile_visible: data.gamification_profile_visible ?? true,
       updated_at: data.updated_at ?? null,
     });
   }
@@ -321,6 +339,10 @@ export const upsertThemePreferences = async (
       preferences.library_view_mode !== undefined
         ? preferences.library_view_mode
         : existing?.library_view_mode ?? "flat",
+    timezone: existing?.timezone ?? "UTC",
+    leaderboard_opt_in: existing?.leaderboard_opt_in ?? false,
+    leaderboard_eligible_from: existing?.leaderboard_eligible_from ?? null,
+    gamification_profile_visible: existing?.gamification_profile_visible ?? true,
     updated_at: updatedAt,
   });
 
@@ -331,9 +353,20 @@ export const upsertThemePreferences = async (
 
 export interface UserProfileTabData {
   books: import("@/types").Book[];
-  posts: import("./social").Post[];
+  posts: Post[];
   clubs: import("./clubs").BookClub[];
 }
+
+const normalizePostType = (value: string): PostType =>
+  value === "book" || value === "club" ? value : "text";
+
+const normalizePostVisibility = (value: string): PostVisibility =>
+  value === "followers" || value === "private" ? value : "public";
+
+const normalizePostMetadata = (value: unknown): Record<string, unknown> | null =>
+  typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 
 export const fetchUserProfileTabData = async (
   userId: string
@@ -382,9 +415,22 @@ export const fetchUserProfileTabData = async (
     )
     .eq("user_id", userId);
 
+  const normalizedPosts: Post[] = (posts || []).map((post) => ({
+    ...post,
+    post_type: normalizePostType(post.post_type),
+    visibility: normalizePostVisibility(post.visibility),
+    likes_count: post.likes_count ?? 0,
+    comments_count: post.comments_count ?? 0,
+    metadata: normalizePostMetadata(post.metadata),
+    content_format: parseRichTextFormat(post.content_format),
+    content_json: parseRichTextDocument(post.content_json),
+    user: post.profiles,
+    book: post.books,
+  }));
+
   return {
     books: (books || []) as import("@/types").Book[],
-    posts: (posts || []) as import("./social").Post[],
+    posts: normalizedPosts,
     clubs: (clubs?.map((club) => club.book_clubs).filter(Boolean) ||
       []) as import("./clubs").BookClub[],
   };

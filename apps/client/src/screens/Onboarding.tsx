@@ -237,7 +237,9 @@ const Onboarding = () => {
       },
     });
 
-    return () => tween.kill();
+    return () => {
+      tween.kill();
+    };
   }, [formData.goalTargetBooks, reducedMotion]);
 
   useEffect(() => {

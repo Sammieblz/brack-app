@@ -9,6 +9,8 @@ export * from "./clubs";
 export * from "./dashboard";
 export * from "./dataPortability";
 export * from "./goals";
+export * from "./gamification";
+export * from "./userNotifications";
 export * from "./journal";
 export * from "./messaging";
 export * from "./notifications";

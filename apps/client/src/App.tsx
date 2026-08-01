@@ -37,6 +37,8 @@ import { useAppViewportHeight } from "./hooks/useAppViewportHeight";
 import { OnboardingRouteGuard } from "./components/OnboardingRouteGuard";
 import { OnboardingEntryRedirect } from "./components/OnboardingEntryRedirect";
 import { FeatureGate } from "./components/FeatureGate";
+import { JourneyLevelUpObserver } from "./components/JourneyLevelUpObserver";
+import { getApiErrorStatus } from "@/services/api/client";
 
 // Initialize Sentry error tracking
 initSentry();
@@ -73,12 +75,12 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 1000 * 60 * 5,
       gcTime: 1000 * 60 * 30,
-      retry: 1,
+      retry: (failureCount, error) => getApiErrorStatus(error) !== 429 && failureCount < 1,
       refetchOnWindowFocus: false,
       refetchOnReconnect: "always",
     },
     mutations: {
-      retry: 1,
+      retry: (failureCount, error) => getApiErrorStatus(error) !== 429 && failureCount < 1,
     },
   },
 });
@@ -121,6 +123,7 @@ const App = () => {
                     <BrowserRouter>
                       <BadgeCelebrationProvider>
                         <DeepLinkHandler />
+                        <JourneyLevelUpObserver />
                         <OnboardingRouteGuard />
                         <SwipeBackHandler>
                           <PageTransition>
@@ -147,7 +150,7 @@ const App = () => {
                             <Route path="/history" element={<ReadingHistory />} />
                             <Route path="/profile" element={<Profile />} />
                             <Route path="/settings" element={<Settings />} />
-                            <Route path="/achievements" element={<Achievements />} />
+                            <Route path="/achievements" element={<FeatureGate feature="gamification"><Achievements /></FeatureGate>} />
                             <Route path="/book-lists" element={<BookLists />} />
                             <Route path="/lists" element={<BookLists />} />
                             <Route path="/lists/:listId" element={<BookListDetail />} />

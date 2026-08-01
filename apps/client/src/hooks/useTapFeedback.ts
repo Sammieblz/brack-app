@@ -15,7 +15,7 @@ export const useTapFeedback = (options: UseTapFeedbackOptions = {}) => {
   const handlePressStart = useCallback(() => {
     if (disabled) return;
     setIsPressed(true);
-    triggerHaptic(hapticType);
+    triggerHaptic(hapticType === "warning" ? "heavy" : hapticType);
   }, [disabled, hapticType, triggerHaptic]);
 
   const handlePressEnd = useCallback(() => {

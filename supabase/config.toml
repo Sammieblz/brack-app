@@ -203,3 +203,21 @@ verify_jwt = false
 
 [functions.core-telemetry]
 verify_jwt = false
+
+[functions.gamification-home]
+verify_jwt = true
+
+[functions.gamification-history]
+verify_jwt = true
+
+[functions.leaderboard]
+verify_jwt = true
+
+[functions.update-gamification-settings]
+verify_jwt = true
+
+[functions.profile-gamification]
+verify_jwt = true
+
+[functions.gamification-worker]
+verify_jwt = false

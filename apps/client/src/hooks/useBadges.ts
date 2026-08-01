@@ -8,7 +8,6 @@ import {
   fetchUserBadges,
   type AwardedBadge,
 } from "@/services/api";
-import { badgeNotificationService } from "@/services/badgeNotifications";
 
 interface BadgesAwardedEventDetail {
   userId?: string;
@@ -49,12 +48,6 @@ export const useBadges = (userId?: string) => {
           title: "New Badge Earned!",
           description: React.createElement(NewBadgeToast, { badge }),
         });
-
-        badgeNotificationService
-          .notifyBadgeEarned(userId, badge)
-          .catch((error) => {
-            console.error("Error sending badge push notification:", error);
-          });
 
         showCelebration(badge);
       }

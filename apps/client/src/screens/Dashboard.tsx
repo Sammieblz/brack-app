@@ -15,6 +15,7 @@ import { useRecentActivity } from "@/hooks/useRecentActivity";
 import { useChartData } from "@/hooks/useChartData";
 import { ReadingHeatmap } from "@/components/charts/ReadingHeatmap";
 import { toast } from "sonner";
+import type { Badge as BadgeType, UserBadge } from "@/types";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import type { Book as BookType, Goal, OnboardingStatus } from "@/types";
 import { DashboardCardSkeleton } from "@/components/skeletons/DashboardCardSkeleton";
@@ -45,6 +46,8 @@ import {
 } from "@/hooks/useDashboardHomeData";
 import type { DayActivity, StreakData } from "@/utils/streakCalculation";
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
+import { useGamification } from "@/hooks/useGamification";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { needsSetupPrompt } from "@/services/onboarding";
 import { fetchLatestGoal } from "@/services/api";
 
@@ -70,6 +73,13 @@ const Dashboard = () => {
   } = useDashboardHomeData(user?.id);
   const { profile } = useProfileContext();
   const { status: onboardingStatus } = useOnboardingStatus(user?.id);
+  const { gamificationEnabled } = useFeatureFlags();
+  const {
+    data: gamification,
+    levelProgress,
+    provisional: gamificationProvisional,
+    refetch: refetchGamification,
+  } = useGamification(user?.id);
   const [goal, setGoal] = useState<Goal | null>(null);
   const [progressBook, setProgressBook] = useState<BookType | null>(null);
   const navigate = useNavigate();
@@ -123,6 +133,7 @@ const Dashboard = () => {
       refetchStreaks(),
       refetchActivity(),
       loadGoalData(),
+      refetchGamification(),
     ]);
   };
 
@@ -211,6 +222,20 @@ const Dashboard = () => {
             onViewLibrary={() => navigate("/my-books")}
           />
 
+          {gamificationEnabled && gamification && (
+            <JourneyProgressStrip
+              level={gamification.account.current_level}
+              title={gamification.account.level_title}
+              ink={gamification.account.lifetime_ink}
+              goldLeaves={gamification.account.gold_leaves}
+              levelProgress={levelProgress}
+              completedQuests={gamification.quests.filter((quest) => quest.status === "completed").length}
+              totalQuests={gamification.quests.length}
+              provisional={gamificationProvisional}
+              onOpen={() => navigate("/achievements")}
+            />
+          )}
+
           <TodaySection
             goal={goal}
             completedBooksCount={completedBooksCount}
@@ -287,6 +312,52 @@ const Dashboard = () => {
     </MobileLayout>
   );
 };
+
+interface JourneyProgressStripProps {
+  level: number;
+  title: string;
+  ink: number;
+  goldLeaves: number;
+  levelProgress: number;
+  completedQuests: number;
+  totalQuests: number;
+  provisional: boolean;
+  onOpen: () => void;
+}
+
+const JourneyProgressStrip = ({
+  level,
+  title,
+  ink,
+  goldLeaves,
+  levelProgress,
+  completedQuests,
+  totalQuests,
+  provisional,
+  onOpen,
+}: JourneyProgressStripProps) => (
+  <button
+    type="button"
+    onClick={onOpen}
+    className="grid w-full gap-3 rounded-md border border-border/70 bg-card p-4 text-left transition-colors hover:bg-muted/25 md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
+  >
+    <div className="min-w-0 space-y-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span className="font-display text-lg font-semibold">Level {level}: {title}</span>
+        <span className="text-sm text-muted-foreground">{ink.toLocaleString()} Ink</span>
+        {goldLeaves > 0 && <span className="text-sm text-primary">{goldLeaves} Gold Leaves</span>}
+        {provisional && <Badge variant="secondary">Sync pending</Badge>}
+      </div>
+      <Progress value={levelProgress} className="h-1.5" />
+    </div>
+    <div className="flex items-center justify-between gap-3 md:justify-end">
+      <span className="text-sm text-muted-foreground">
+        {completedQuests}/{totalQuests} quests
+      </span>
+      <NavArrowRight className="h-4 w-4" />
+    </div>
+  </button>
+);
 
 interface SetupPromptCardProps {
   status?: OnboardingStatus;
@@ -759,8 +830,8 @@ const StreakStatusCard = ({
 
 interface AchievementsPreviewProps {
   loading: boolean;
-  badges: Array<{ id: string; title: string; description: string | null; icon_url: string | null; created_at: string }>;
-  earnedBadges: Array<{ id: string; user_id: string; badge_id: string; earned_at: string }>;
+  badges: BadgeType[];
+  earnedBadges: UserBadge[];
   onViewAll: () => void;
 }
 
@@ -771,6 +842,19 @@ const AchievementsPreview = ({
   onViewAll,
 }: AchievementsPreviewProps) => {
   if (loading || badges.length === 0) return null;
+  const earnedById = new Map(earnedBadges.map((badge) => [badge.badge_id, badge]));
+  const featuredBadges = [...badges]
+    .sort((left, right) => {
+      const leftEarned = earnedById.get(left.id);
+      const rightEarned = earnedById.get(right.id);
+      if (leftEarned && rightEarned) {
+        return new Date(rightEarned.earned_at).getTime() - new Date(leftEarned.earned_at).getTime();
+      }
+      if (leftEarned) return -1;
+      if (rightEarned) return 1;
+      return (right.progress_percentage || 0) - (left.progress_percentage || 0);
+    })
+    .slice(0, 4);
 
   return (
     <Card>
@@ -796,7 +880,7 @@ const AchievementsPreview = ({
         <p className="font-sans mb-4 text-sm text-muted-foreground">
           {earnedBadges.length} of {badges.length} badges earned
         </p>
-        <BadgeDisplay badges={badges.slice(0, 4)} earnedBadges={earnedBadges} />
+        <BadgeDisplay badges={featuredBadges} earnedBadges={earnedBadges} />
       </CardContent>
     </Card>
   );

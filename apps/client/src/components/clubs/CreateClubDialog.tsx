@@ -28,7 +28,7 @@ interface CreateClubDialogProps {
     member_limit?: number | null;
     banner_image_path?: string;
     avatar_image_path?: string;
-  }) => Promise<void>;
+  }) => Promise<unknown>;
   compact?: boolean;
 }
 

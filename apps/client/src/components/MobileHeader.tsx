@@ -11,6 +11,7 @@ import { getInitials } from "@/lib/avatarUtils";
 import { cn } from "@/lib/utils";
 import { AppBackButton } from "@/components/AppBackButton";
 import type { BackButtonConfig } from "@/hooks/useAppBack";
+import { UserNotificationsPopover } from "@/components/UserNotificationsPopover";
 
 interface MobileHeaderProps {
   title: string;
@@ -69,27 +70,30 @@ export const MobileHeader = ({
           <div className="flex items-center gap-2 shrink-0 ml-2">
             {action}
             {showAvatar && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  triggerHaptic("selection");
-                  setDrawerOpen(true);
-                }}
-                className="shrink-0"
-                aria-label="Open profile menu"
-              >
-                {profileLoading ? (
-                  <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
-                ) : (
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
-                    <AvatarFallback name={displayName} className="text-xs">
-                      {getInitials(displayName)}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-              </Button>
+              <>
+                <UserNotificationsPopover />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    triggerHaptic("selection");
+                    setDrawerOpen(true);
+                  }}
+                  className="shrink-0"
+                  aria-label="Open profile menu"
+                >
+                  {profileLoading ? (
+                    <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                  ) : (
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
+                      <AvatarFallback name={displayName} className="text-xs">
+                        {getInitials(displayName)}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                </Button>
+              </>
             )}
           </div>
         </div>

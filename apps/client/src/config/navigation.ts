@@ -57,7 +57,7 @@ export const NAV_ITEMS: NavItem[] = [
     matchPaths: ["/goals-management"],
   },
   {
-    label: "Achievements",
+    label: "Journey",
     path: "/achievements",
     icon: APP_ICONS.nav.achievements,
     section: "progress",

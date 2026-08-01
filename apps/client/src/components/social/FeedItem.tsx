@@ -12,6 +12,19 @@ interface FeedItemProps {
 
 export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
   const navigate = useNavigate();
+  const metadataText = (key: string) => {
+    const value = activity.metadata?.[key];
+    return typeof value === "string" ? value : null;
+  };
+  const rawRating = activity.metadata?.rating;
+  const rating =
+    typeof rawRating === "number" || typeof rawRating === "string"
+      ? String(rawRating)
+      : null;
+  const followedUserName = metadataText("followed_user_name");
+  const listName = metadataText("list_name");
+  const badgeTitle = metadataText("badge_title");
+  const postContent = metadataText("content");
 
   const getActivityIcon = () => {
     switch (activity.activity_type) {
@@ -78,9 +91,9 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
                 {activity.book.title}
               </span>
             )}
-            {activity.metadata?.rating && (
+            {rating && (
               <Badge variant="secondary" className="ml-2">
-                {activity.metadata.rating} ★
+                {rating} ★
               </Badge>
             )}
           </>
@@ -89,21 +102,21 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
         return (
           <>
             <span className="font-sans font-semibold">{userName}</span> started following{' '}
-            <span className="font-sans font-semibold">{activity.metadata?.followed_user_name || 'someone'}</span>
+            <span className="font-sans font-semibold">{followedUserName || 'someone'}</span>
           </>
         );
       case 'created_list':
         return (
           <>
             <span className="font-sans font-semibold">{userName}</span> created a new list:{' '}
-            <span className="font-sans font-semibold">{activity.metadata?.list_name}</span>
+            <span className="font-sans font-semibold">{listName || 'Untitled list'}</span>
           </>
         );
       case 'earned_badge':
         return (
           <>
             <span className="font-sans font-semibold">{userName}</span> earned the badge:{' '}
-            <span className="font-sans font-semibold">{activity.metadata?.badge_title}</span>
+            <span className="font-sans font-semibold">{badgeTitle || 'New badge'}</span>
           </>
         );
       case 'post':
@@ -154,9 +167,9 @@ export const FeedItem = ({ activity, formatTimeAgo }: FeedItemProps) => {
               </div>
             </div>
 
-            {activity.activity_type === 'post' && activity.metadata?.content && (
+            {activity.activity_type === 'post' && postContent && (
               <div className="mt-3 p-3 bg-muted/50 rounded-lg">
-                <p className="font-serif text-sm">{activity.metadata.content}</p>
+                <p className="font-serif text-sm">{postContent}</p>
               </div>
             )}
 

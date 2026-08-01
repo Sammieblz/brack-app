@@ -6,6 +6,7 @@ import {
   parseJsonBody,
 } from "../_shared/appEndpoint.ts";
 import { enforceRateLimit } from "../_shared/rateLimit.ts";
+import { validateReadingSessionInput } from "../_shared/readingSessionValidation.ts";
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.53.0";
 
 interface OutboxItem {
@@ -32,6 +33,25 @@ const asString = (value: unknown) => (typeof value === "string" && value.trim() 
 const asNumber = (value: unknown) => {
   const number = Number(value);
   return Number.isFinite(number) ? number : null;
+};
+
+const isRetryableSyncError = (message: string) => {
+  const normalized = message.toLowerCase();
+  if (
+    normalized.includes("already exists") ||
+    normalized.includes("cannot exceed") ||
+    normalized.includes("does not match") ||
+    normalized.includes("invalid reading session") ||
+    normalized.includes("invalid session") ||
+    normalized.includes("duration must") ||
+    normalized.includes("end time cannot") ||
+    normalized.includes("order changed on another device") ||
+    normalized.includes("not allowed") ||
+    normalized.includes("access denied")
+  ) {
+    return false;
+  }
+  return true;
 };
 
 Deno.serve(async (req) => {
@@ -84,7 +104,7 @@ Deno.serve(async (req) => {
           entity: item.entity,
           client_entity_id: item.client_entity_id,
           error: message,
-          retryable: !message.toLowerCase().includes("already exists"),
+          retryable: isRetryableSyncError(message),
         });
       }
     }
@@ -143,7 +163,9 @@ const processBook = async (supabaseClient: SupabaseClient, userId: string, item:
       p_book: { ...item.payload, id: item.payload.id || item.client_entity_id, user_id: userId },
     });
     if (error) throw error;
-    if (data?.code === "book_exists") throw new Error("Book already exists in your library");
+    if (data?.code === "book_exists") {
+      return { server_entity_id: data.book_id, record: data.book };
+    }
     return { server_entity_id: data?.book_id, record: data?.book };
   }
 
@@ -159,27 +181,47 @@ const processBook = async (supabaseClient: SupabaseClient, userId: string, item:
     return { server_entity_id: data.id, record: data };
   }
 
-  const updates = omitKeys(item.payload, ["id", "user_id", "created_at"]);
+  const updates = omitKeys(item.payload, ["id", "user_id", "created_at", "deleted_at"]);
   updates.updated_at = new Date().toISOString();
   const { data, error } = await supabaseClient
     .from("books")
     .update(updates)
     .eq("id", item.client_entity_id)
     .eq("user_id", userId)
+    .is("deleted_at", null)
     .select()
     .single();
   if (error) throw error;
+  const importSource =
+    data.metadata && typeof data.metadata === "object"
+      ? (data.metadata as Record<string, unknown>).import_source
+      : null;
+  if (data.status === "completed" && !importSource) {
+    const { error: badgeError } = await supabaseClient.rpc("award_badges", {
+      p_user_id: userId,
+      p_event: "book_completed",
+    });
+    if (badgeError) throw badgeError;
+  }
   return { server_entity_id: data.id, record: data };
 };
 
 const processReadingSession = async (supabaseClient: SupabaseClient, userId: string, item: OutboxItem) => {
   const payload = item.payload;
+  const durationMinutes = asNumber(payload.duration) ?? asNumber(payload.duration_minutes);
+  const validationError = validateReadingSessionInput({
+    startTime: String(payload.start_time ?? ""),
+    endTime: String(payload.end_time ?? ""),
+    durationMinutes: durationMinutes ?? Number.NaN,
+  });
+  if (validationError) throw new Error(validationError);
+
   const { data, error } = await supabaseClient.rpc("create_reading_session", {
     p_user_id: userId,
     p_book_id: payload.book_id,
     p_start_time: payload.start_time,
     p_end_time: payload.end_time,
-    p_duration_minutes: asNumber(payload.duration) ?? asNumber(payload.duration_minutes),
+    p_duration_minutes: durationMinutes,
     p_client_session_id: asString(payload.client_session_id) || item.client_entity_id,
   });
 
@@ -237,7 +279,7 @@ const processJournalEntry = async (supabaseClient: SupabaseClient, userId: strin
     return { server_entity_id: data.id, record: data };
   }
 
-  const updates = omitKeys(item.payload, ["id", "user_id", "created_at"]);
+  const updates = omitKeys(item.payload, ["id", "user_id", "created_at", "deleted_at"]);
   updates.updated_at = new Date().toISOString();
   const { data, error } = await supabaseClient
     .from("journal_entries")
@@ -275,7 +317,7 @@ const processGoal = async (supabaseClient: SupabaseClient, userId: string, item:
     return { server_entity_id: data.id, record: data };
   }
 
-  const updates = omitKeys(item.payload, ["id", "user_id", "created_at"]);
+  const updates = omitKeys(item.payload, ["id", "user_id", "created_at", "deleted_at"]);
   updates.updated_at = new Date().toISOString();
   const { data, error } = await supabaseClient
     .from("goals")
@@ -297,13 +339,45 @@ const processBookList = async (
     const orderedBookIds = Array.isArray(item.payload.ordered_book_ids)
       ? item.payload.ordered_book_ids.filter((value): value is string => typeof value === "string")
       : [];
+    const expectedVersion = asNumber(item.payload.expected_version);
     const { data, error } = await supabaseClient.rpc("reorder_book_list_items", {
       p_user_id: userId,
       p_list_id: item.client_entity_id,
       p_ordered_book_ids: orderedBookIds,
-      p_expected_version: asNumber(item.payload.expected_version),
+      p_expected_version: expectedVersion,
     });
-    if (error) throw error;
+    if (error) {
+      const isVersionConflict = error.message
+        .toLowerCase()
+        .includes("order changed on another device");
+      if (!isVersionConflict) throw error;
+
+      const [{ data: currentList }, { data: currentItems }] = await Promise.all([
+        supabaseClient
+          .from("book_lists")
+          .select("*")
+          .eq("id", item.client_entity_id)
+          .eq("user_id", userId)
+          .is("deleted_at", null)
+          .maybeSingle(),
+        supabaseClient
+          .from("book_list_items")
+          .select("book_id")
+          .eq("list_id", item.client_entity_id)
+          .eq("user_id", userId)
+          .is("deleted_at", null)
+          .order("position", { ascending: true })
+          .order("id", { ascending: true }),
+      ]);
+      const currentBookIds = (currentItems ?? []).map((entry) => entry.book_id);
+      const orderAlreadyApplied =
+        currentList &&
+        (expectedVersion === null || currentList.order_version >= expectedVersion + 1) &&
+        currentBookIds.length === orderedBookIds.length &&
+        currentBookIds.every((bookId, index) => bookId === orderedBookIds[index]);
+      if (!orderAlreadyApplied) throw error;
+      return { server_entity_id: currentList.id, record: currentList };
+    }
 
     const { data: list, error: listError } = await supabaseClient
       .from("book_lists")
@@ -325,6 +399,28 @@ const processBookList = async (
       server_entity_id: item.client_entity_id,
       record: data?.list,
     };
+  }
+
+  if (item.operation === "update") {
+    const updates = omitKeys(item.payload, [
+      "id",
+      "user_id",
+      "created_at",
+      "book_count",
+      "deleted_at",
+      "order_version",
+    ]);
+    updates.updated_at = new Date().toISOString();
+    const { data, error } = await supabaseClient
+      .from("book_lists")
+      .update(updates)
+      .eq("id", item.client_entity_id)
+      .eq("user_id", userId)
+      .is("deleted_at", null)
+      .select()
+      .single();
+    if (error) throw error;
+    return { server_entity_id: data.id, record: data };
   }
 
   const payload = {
@@ -414,13 +510,44 @@ const processBookListItem = async (
 };
 
 const processProfilePreferences = async (supabaseClient: SupabaseClient, userId: string, item: OutboxItem) => {
-  const updates = omitKeys(item.payload, ["id", "user_id", "created_at"]);
+  const updates = omitKeys(item.payload, ["id", "user_id", "created_at", "deleted_at"]);
+  const hasGamificationSettings =
+    Object.prototype.hasOwnProperty.call(item.payload, "leaderboard_opt_in")
+    || Object.prototype.hasOwnProperty.call(item.payload, "gamification_profile_visible")
+    || Object.prototype.hasOwnProperty.call(item.payload, "timezone");
+
+  if (hasGamificationSettings) {
+    const { error: settingsError } = await supabaseClient.rpc(
+      "update_gamification_settings",
+      {
+        p_user_id: userId,
+        p_leaderboard_opt_in:
+          typeof item.payload.leaderboard_opt_in === "boolean"
+            ? item.payload.leaderboard_opt_in
+            : null,
+        p_profile_visible:
+          typeof item.payload.gamification_profile_visible === "boolean"
+            ? item.payload.gamification_profile_visible
+            : null,
+        p_timezone:
+          typeof item.payload.timezone === "string"
+            ? item.payload.timezone
+            : null,
+      },
+    );
+    if (settingsError) throw settingsError;
+  }
+
+  delete updates.leaderboard_opt_in;
+  delete updates.leaderboard_eligible_from;
+  delete updates.gamification_profile_visible;
+  delete updates.timezone;
   updates.updated_at = new Date().toISOString();
   const { data, error } = await supabaseClient
     .from("profiles")
     .update(updates)
     .eq("id", userId)
-    .select("id, color_theme, theme_mode, library_view_mode, updated_at")
+    .select("id, color_theme, theme_mode, library_view_mode, timezone, leaderboard_opt_in, leaderboard_eligible_from, gamification_profile_visible, updated_at")
     .single();
   if (error) throw error;
   return { server_entity_id: data.id, record: data };

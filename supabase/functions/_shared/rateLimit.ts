@@ -25,10 +25,7 @@ type DistributedRateLimitResult = {
 };
 
 type RateLimitClient = {
-  rpc: (
-    fn: string,
-    args: Record<string, unknown>,
-  ) => Promise<{ data: unknown; error: unknown }>;
+  rpc: (...args: any[]) => unknown;
 };
 
 // Simple in-memory store scoped to the function instance.
@@ -119,11 +116,13 @@ export const enforceRateLimit = async (
   const bucketKey = `${name}:${identifier || getClientIdentifier(req)}`;
 
   try {
-    const { data, error } = await supabaseClient.rpc("check_api_rate_limit", {
-      p_bucket_key: bucketKey,
-      p_limit: limit,
-      p_window_seconds: Math.ceil(windowMs / 1000),
-    });
+    const { data, error } = await (
+      supabaseClient.rpc("check_api_rate_limit", {
+        p_bucket_key: bucketKey,
+        p_limit: limit,
+        p_window_seconds: Math.ceil(windowMs / 1000),
+      }) as PromiseLike<{ data: unknown; error: unknown }>
+    );
 
     if (error) throw error;
 

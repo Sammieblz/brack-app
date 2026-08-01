@@ -97,6 +97,9 @@ export default function EditBook() {
         tags: book.tags,
         date_started: book.date_started,
         date_finished: book.date_finished,
+        series_name: book.series_name || null,
+        series_position: book.series_position || null,
+        series_total: book.series_total || null,
       });
 
       toast({
@@ -147,7 +150,7 @@ export default function EditBook() {
     } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Failed to upload image",
+        description: error instanceof Error ? error.message : "Failed to upload image",
         variant: "destructive",
       });
     } finally {
@@ -272,6 +275,41 @@ export default function EditBook() {
                   inputMode="numeric"
                   value={book.chapters || ''}
                   onChange={(e) => setBook({ ...book, chapters: parseInt(e.target.value) || null })}
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_8rem_8rem]">
+                <MobileInput
+                  id="series_name"
+                  label="Series"
+                  value={book.series_name || ""}
+                  onChange={(e) => setBook({ ...book, series_name: e.target.value || null })}
+                  placeholder="Optional series name"
+                />
+                <MobileInput
+                  id="series_position"
+                  label="Book #"
+                  type="number"
+                  inputMode="decimal"
+                  value={book.series_position || ""}
+                  onChange={(e) => setBook({
+                    ...book,
+                    series_position: e.target.value ? Number(e.target.value) : null,
+                  })}
+                  min="0"
+                  step="0.5"
+                />
+                <MobileInput
+                  id="series_total"
+                  label="Series total"
+                  type="number"
+                  inputMode="numeric"
+                  value={book.series_total || ""}
+                  onChange={(e) => setBook({
+                    ...book,
+                    series_total: e.target.value ? parseInt(e.target.value) : null,
+                  })}
+                  min="1"
                 />
               </div>
 

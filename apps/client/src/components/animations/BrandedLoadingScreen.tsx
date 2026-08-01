@@ -86,7 +86,7 @@ export const BrandedLoadingScreen = ({
         repeat: -1,
         yoyo: true,
         ease: "power1.inOut",
-      }, "-=0.5");
+      });
     }
 
     // Progress bar animation if provided

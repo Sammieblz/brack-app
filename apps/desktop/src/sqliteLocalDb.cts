@@ -17,7 +17,7 @@ export type LocalTableName =
 
 type LocalEntityStatus = "synced" | "pending" | "failed" | "deleted";
 type OutboxStatus = "pending" | "syncing" | "failed" | "synced";
-type SyncOperation = "create" | "update" | "delete" | "restore";
+type SyncOperation = "create" | "update" | "delete" | "restore" | "reorder";
 type SyncEntity = LocalTableName;
 
 interface LocalRecord<T = unknown> {
@@ -65,6 +65,11 @@ export type LocalDbRequest =
     }
   | { operation: "removeRecord"; table: LocalTableName; id: string }
   | { operation: "enqueueOutbox"; item: OutboxItem }
+  | {
+      operation: "commitMutation";
+      records: Array<{ table: LocalTableName; record: LocalRecord }>;
+      item: OutboxItem;
+    }
   | { operation: "listOutbox"; userId: string; statuses?: OutboxStatus[] }
   | { operation: "updateOutbox"; id: string; updates: Partial<OutboxItem> }
   | { operation: "deleteOutbox"; id: string }
@@ -174,6 +179,8 @@ export class DesktopLocalDb {
         return this.removeRecord(assertTable(request.table), assertString(request.id, "id"));
       case "enqueueOutbox":
         return this.enqueueOutbox(request.item);
+      case "commitMutation":
+        return this.commitMutation(request.records, request.item);
       case "listOutbox":
         return this.listOutbox(assertString(request.userId, "userId"), assertStatuses(request.statuses));
       case "updateOutbox":
@@ -388,6 +395,23 @@ export class DesktopLocalDb {
           next_attempt_at = excluded.next_attempt_at`
       )
       .run(this.serializeOutbox(item));
+    return null;
+  }
+
+  private commitMutation(
+    records: Array<{ table: LocalTableName; record: LocalRecord }>,
+    item: OutboxItem
+  ) {
+    if (!Array.isArray(records) || records.length === 0) {
+      throw new Error("Invalid local database request: records must be a non-empty array");
+    }
+    const transaction = this.connection().transaction(() => {
+      for (const mutation of records) {
+        this.upsertRecord(assertTable(mutation.table), mutation.record);
+      }
+      this.enqueueOutbox(item);
+    });
+    transaction();
     return null;
   }
 

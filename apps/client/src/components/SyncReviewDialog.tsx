@@ -4,6 +4,7 @@ import {
   Book,
   ClockRotateRight,
   JournalPage,
+  List,
   NavArrowRight,
   Refresh,
   Settings,
@@ -46,6 +47,8 @@ const ENTITY_LABELS: Record<SyncEntity, string> = {
   journal_entries: "Journal entry",
   goals: "Goal",
   profile_preferences: "Preferences",
+  book_lists: "Book list",
+  book_list_items: "List book",
 };
 
 const OPERATION_LABELS: Record<SyncOperation, string> = {
@@ -53,6 +56,7 @@ const OPERATION_LABELS: Record<SyncOperation, string> = {
   update: "Update",
   delete: "Delete",
   restore: "Restore",
+  reorder: "Reorder",
 };
 
 const ENTITY_ICONS: Record<SyncEntity, typeof Book> = {
@@ -62,6 +66,8 @@ const ENTITY_ICONS: Record<SyncEntity, typeof Book> = {
   journal_entries: JournalPage,
   goals: TriangleFlag,
   profile_preferences: Settings,
+  book_lists: List,
+  book_list_items: List,
 };
 
 const getText = (value: unknown) => (typeof value === "string" && value.trim() ? value.trim() : "");
@@ -110,6 +116,21 @@ const previewPayload = (item: OutboxItem): PayloadPreview => {
         title: "App preferences",
         subtitle: "Theme or profile preference change waiting to sync",
       };
+    case "book_lists":
+      return {
+        title: getText(payload.name) || "Book list",
+        subtitle: getText(payload.description) || "List change waiting to sync",
+      };
+    case "book_list_items": {
+      const position = getNumber(payload.position);
+      return {
+        title: "Book in list",
+        subtitle:
+          position === null
+            ? "List membership change waiting to sync"
+            : `List position ${position + 1} waiting to sync`,
+      };
+    }
     default:
       return { title: "Reading change" };
   }

@@ -85,7 +85,7 @@ export interface ClubMedia {
   alt_text?: string | null;
 }
 
-export interface GifSearchResult {
+export interface ClubGifSearchResult {
   id: string;
   provider: "tenor";
   provider_id: string;
@@ -96,8 +96,8 @@ export interface GifSearchResult {
   height?: number | null;
 }
 
-export interface GifSearchResponse {
-  results: GifSearchResult[];
+export interface ClubGifSearchResponse {
+  results: ClubGifSearchResult[];
   next?: string | null;
 }
 
@@ -201,7 +201,7 @@ export interface SendClubChatMessageRequest {
   club_id: string;
   content?: string | null;
   media?: ClubChatMedia[];
-  gif?: GifSearchResult | null;
+  gif?: ClubGifSearchResult | null;
   reply_to_message_id?: string | null;
   mention_ids?: string[];
   client_message_id?: string | null;
@@ -666,8 +666,8 @@ export const updateClubChatSettings = async (
 export const searchGifs = async (
   query: string,
   pos?: string | null
-): Promise<GifSearchResponse> => {
-  return invokeFunction<GifSearchResponse>("search-gifs", {
+): Promise<ClubGifSearchResponse> => {
+  return invokeFunction<ClubGifSearchResponse>("search-gifs", {
     body: { query, pos: pos || null, limit: 18 },
   });
 };

@@ -489,7 +489,9 @@ export const MessageThread = ({
                           <PopoverContent className="w-auto p-2">
                             <ReactionBar
                               currentReaction={message.current_user_reaction}
-                              onToggle={(reactionType) => onToggleReaction(message.id, reactionType)}
+                              onToggle={async (reactionType) => {
+                                await onToggleReaction(message.id, reactionType);
+                              }}
                             />
                             <div className="mt-2 grid gap-1 border-t border-border pt-2">
                               <button
@@ -548,7 +550,9 @@ export const MessageThread = ({
                             compact
                             currentReaction={message.current_user_reaction}
                             reactionCounts={message.reaction_counts}
-                            onToggle={(reactionType) => onToggleReaction(message.id, reactionType)}
+                            onToggle={async (reactionType) => {
+                              await onToggleReaction(message.id, reactionType);
+                            }}
                           />
                         )}
                     </div>

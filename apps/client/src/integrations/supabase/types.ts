@@ -7,11 +7,6 @@
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "12.2.12 (cd3cf9e)"
-  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -191,24 +186,57 @@ export type Database = {
       }
       badges: {
         Row: {
+          category: string
+          code: string
           created_at: string | null
           description: string | null
+          event_types: string[]
+          icon_key: string | null
           icon_url: string | null
           id: string
+          is_active: boolean
+          is_secret: boolean
+          metric_key: string
+          rarity: string
+          sort_order: number
+          target_value: number
+          tier: number
           title: string
         }
         Insert: {
+          category?: string
+          code: string
           created_at?: string | null
           description?: string | null
+          event_types?: string[]
+          icon_key?: string | null
           icon_url?: string | null
           id?: string
+          is_active?: boolean
+          is_secret?: boolean
+          metric_key: string
+          rarity?: string
+          sort_order?: number
+          target_value?: number
+          tier?: number
           title: string
         }
         Update: {
+          category?: string
+          code?: string
           created_at?: string | null
           description?: string | null
+          event_types?: string[]
+          icon_key?: string | null
           icon_url?: string | null
           id?: string
+          is_active?: boolean
+          is_secret?: boolean
+          metric_key?: string
+          rarity?: string
+          sort_order?: number
+          target_value?: number
+          tier?: number
           title?: string
         }
         Relationships: []
@@ -758,6 +786,10 @@ export type Database = {
           notes: string | null
           pages: number | null
           rating: number | null
+          series_name: string | null
+          series_position: number | null
+          series_total: number | null
+          shelf_position: number | null
           source_id: string | null
           source_provider: string | null
           status: string | null
@@ -783,6 +815,10 @@ export type Database = {
           notes?: string | null
           pages?: number | null
           rating?: number | null
+          series_name?: string | null
+          series_position?: number | null
+          series_total?: number | null
+          shelf_position?: number | null
           source_id?: string | null
           source_provider?: string | null
           status?: string | null
@@ -808,6 +844,10 @@ export type Database = {
           notes?: string | null
           pages?: number | null
           rating?: number | null
+          series_name?: string | null
+          series_position?: number | null
+          series_total?: number | null
+          shelf_position?: number | null
           source_id?: string | null
           source_provider?: string | null
           status?: string | null
@@ -1384,6 +1424,278 @@ export type Database = {
           },
         ]
       }
+      gamification_accounts: {
+        Row: {
+          created_at: string
+          current_level: number
+          gold_leaves: number
+          last_reward_at: string | null
+          lifetime_ink: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_level?: number
+          gold_leaves?: number
+          last_reward_at?: string | null
+          lifetime_ink?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_level?: number
+          gold_leaves?: number
+          last_reward_at?: string | null
+          lifetime_ink?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gamification_accounts_current_level_fkey"
+            columns: ["current_level"]
+            isOneToOne: false
+            referencedRelation: "gamification_levels"
+            referencedColumns: ["level"]
+          },
+          {
+            foreignKeyName: "gamification_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gamification_daily_scores: {
+        Row: {
+          competitive_ink: number
+          score_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          competitive_ink?: number
+          score_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          competitive_ink?: number
+          score_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gamification_daily_scores_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gamification_ledger: {
+        Row: {
+          competitive_ink_delta: number
+          created_at: string
+          event_key: string
+          event_type: string
+          gold_leaves_delta: number
+          id: string
+          ink_delta: number
+          metadata: Json
+          occurred_at: string
+          source_id: string | null
+          source_type: string | null
+          user_id: string
+        }
+        Insert: {
+          competitive_ink_delta?: number
+          created_at?: string
+          event_key: string
+          event_type: string
+          gold_leaves_delta?: number
+          id?: string
+          ink_delta?: number
+          metadata?: Json
+          occurred_at?: string
+          source_id?: string | null
+          source_type?: string | null
+          user_id: string
+        }
+        Update: {
+          competitive_ink_delta?: number
+          created_at?: string
+          event_key?: string
+          event_type?: string
+          gold_leaves_delta?: number
+          id?: string
+          ink_delta?: number
+          metadata?: Json
+          occurred_at?: string
+          source_id?: string | null
+          source_type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gamification_ledger_event_type_fkey"
+            columns: ["event_type"]
+            isOneToOne: false
+            referencedRelation: "gamification_reward_rules"
+            referencedColumns: ["event_type"]
+          },
+          {
+            foreignKeyName: "gamification_ledger_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gamification_levels: {
+        Row: {
+          accent_key: string
+          created_at: string
+          ink_threshold: number
+          level: number
+          title: string
+        }
+        Insert: {
+          accent_key?: string
+          created_at?: string
+          ink_threshold: number
+          level: number
+          title: string
+        }
+        Update: {
+          accent_key?: string
+          created_at?: string
+          ink_threshold?: number
+          level?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      gamification_reward_rules: {
+        Row: {
+          base_ink: number
+          competitive: boolean
+          config: Json
+          daily_event_limit: number | null
+          display_name: string
+          enabled: boolean
+          event_type: string
+          updated_at: string
+        }
+        Insert: {
+          base_ink?: number
+          competitive?: boolean
+          config?: Json
+          daily_event_limit?: number | null
+          display_name: string
+          enabled?: boolean
+          event_type: string
+          updated_at?: string
+        }
+        Update: {
+          base_ink?: number
+          competitive?: boolean
+          config?: Json
+          daily_event_limit?: number | null
+          display_name?: string
+          enabled?: boolean
+          event_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gamification_weekly_scores: {
+        Row: {
+          competitive_ink: number
+          qualifying_minutes: number
+          quests_completed: number
+          reading_days: number
+          score_attained_at: string | null
+          updated_at: string
+          user_id: string
+          week_id: string
+        }
+        Insert: {
+          competitive_ink?: number
+          qualifying_minutes?: number
+          quests_completed?: number
+          reading_days?: number
+          score_attained_at?: string | null
+          updated_at?: string
+          user_id: string
+          week_id: string
+        }
+        Update: {
+          competitive_ink?: number
+          qualifying_minutes?: number
+          quests_completed?: number
+          reading_days?: number
+          score_attained_at?: string | null
+          updated_at?: string
+          user_id?: string
+          week_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gamification_weekly_scores_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gamification_weekly_scores_week_id_fkey"
+            columns: ["week_id"]
+            isOneToOne: false
+            referencedRelation: "gamification_weeks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gamification_weeks: {
+        Row: {
+          created_at: string
+          finalized_at: string | null
+          id: string
+          scoring_closes_at: string
+          status: string
+          updated_at: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          finalized_at?: string | null
+          id?: string
+          scoring_closes_at: string
+          status?: string
+          updated_at?: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          finalized_at?: string | null
+          id?: string
+          scoring_closes_at?: string
+          status?: string
+          updated_at?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       goals: {
         Row: {
           completed_at: string | null
@@ -1730,49 +2042,64 @@ export type Database = {
       }
       notification_preferences: {
         Row: {
+          badges_enabled: boolean
           book_clubs_enabled: boolean
           created_at: string
           followers_enabled: boolean
           goals_enabled: boolean
+          gold_leaves_enabled: boolean
           id: string
           messages_enabled: boolean
           push_enabled: boolean
+          quests_enabled: boolean
           quiet_hours_end: string | null
           quiet_hours_start: string | null
+          rank_movement_enabled: boolean
           reading_reminders_enabled: boolean
           streaks_enabled: boolean
           updated_at: string
           user_id: string
+          weekly_results_enabled: boolean
         }
         Insert: {
+          badges_enabled?: boolean
           book_clubs_enabled?: boolean
           created_at?: string
           followers_enabled?: boolean
           goals_enabled?: boolean
+          gold_leaves_enabled?: boolean
           id?: string
           messages_enabled?: boolean
           push_enabled?: boolean
+          quests_enabled?: boolean
           quiet_hours_end?: string | null
           quiet_hours_start?: string | null
+          rank_movement_enabled?: boolean
           reading_reminders_enabled?: boolean
           streaks_enabled?: boolean
           updated_at?: string
           user_id: string
+          weekly_results_enabled?: boolean
         }
         Update: {
+          badges_enabled?: boolean
           book_clubs_enabled?: boolean
           created_at?: string
           followers_enabled?: boolean
           goals_enabled?: boolean
+          gold_leaves_enabled?: boolean
           id?: string
           messages_enabled?: boolean
           push_enabled?: boolean
+          quests_enabled?: boolean
           quiet_hours_end?: string | null
           quiet_hours_start?: string | null
+          rank_movement_enabled?: boolean
           reading_reminders_enabled?: boolean
           streaks_enabled?: boolean
           updated_at?: string
           user_id?: string
+          weekly_results_enabled?: boolean
         }
         Relationships: [
           {
@@ -2142,12 +2469,15 @@ export type Database = {
           date_of_birth: string | null
           display_name: string | null
           first_name: string | null
+          gamification_profile_visible: boolean
           id: string
           is_active: boolean | null
           last_name: string | null
           last_reading_date: string | null
           last_seen_at: string | null
           latitude: number | null
+          leaderboard_eligible_from: string | null
+          leaderboard_opt_in: boolean
           library_view_mode: string
           longest_streak: number | null
           longitude: number | null
@@ -2165,6 +2495,7 @@ export type Database = {
           show_reading_activity: boolean | null
           streak_freeze_used_at: string | null
           theme_mode: string | null
+          timezone: string
           updated_at: string | null
         }
         Insert: {
@@ -2179,12 +2510,15 @@ export type Database = {
           date_of_birth?: string | null
           display_name?: string | null
           first_name?: string | null
+          gamification_profile_visible?: boolean
           id: string
           is_active?: boolean | null
           last_name?: string | null
           last_reading_date?: string | null
           last_seen_at?: string | null
           latitude?: number | null
+          leaderboard_eligible_from?: string | null
+          leaderboard_opt_in?: boolean
           library_view_mode?: string
           longest_streak?: number | null
           longitude?: number | null
@@ -2202,6 +2536,7 @@ export type Database = {
           show_reading_activity?: boolean | null
           streak_freeze_used_at?: string | null
           theme_mode?: string | null
+          timezone?: string
           updated_at?: string | null
         }
         Update: {
@@ -2216,12 +2551,15 @@ export type Database = {
           date_of_birth?: string | null
           display_name?: string | null
           first_name?: string | null
+          gamification_profile_visible?: boolean
           id?: string
           is_active?: boolean | null
           last_name?: string | null
           last_reading_date?: string | null
           last_seen_at?: string | null
           latitude?: number | null
+          leaderboard_eligible_from?: string | null
+          leaderboard_opt_in?: boolean
           library_view_mode?: string
           longest_streak?: number | null
           longitude?: number | null
@@ -2239,6 +2577,7 @@ export type Database = {
           show_reading_activity?: boolean | null
           streak_freeze_used_at?: string | null
           theme_mode?: string | null
+          timezone?: string
           updated_at?: string | null
         }
         Relationships: []
@@ -2347,6 +2686,155 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quest_templates: {
+        Row: {
+          cadence: string
+          code: string
+          cooldown_days: number
+          created_at: string
+          description_template: string
+          eligibility: Json
+          enabled: boolean
+          gold_leaves_reward: number
+          id: string
+          maximum_target: number
+          metric: string
+          minimum_target: number
+          reward_ink_max: number
+          reward_ink_min: number
+          selection_weight: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cadence: string
+          code: string
+          cooldown_days?: number
+          created_at?: string
+          description_template: string
+          eligibility?: Json
+          enabled?: boolean
+          gold_leaves_reward?: number
+          id?: string
+          maximum_target: number
+          metric: string
+          minimum_target: number
+          reward_ink_max: number
+          reward_ink_min: number
+          selection_weight?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cadence?: string
+          code?: string
+          cooldown_days?: number
+          created_at?: string
+          description_template?: string
+          eligibility?: Json
+          enabled?: boolean
+          gold_leaves_reward?: number
+          id?: string
+          maximum_target?: number
+          metric?: string
+          minimum_target?: number
+          reward_ink_max?: number
+          reward_ink_min?: number
+          selection_weight?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reader_league_members: {
+        Row: {
+          final_rank: number | null
+          final_score: number | null
+          finalized_at: string | null
+          joined_at: string
+          league_id: string
+          movement: string | null
+          provisional_rank: number | null
+          starting_tier: number
+          user_id: string
+        }
+        Insert: {
+          final_rank?: number | null
+          final_score?: number | null
+          finalized_at?: string | null
+          joined_at?: string
+          league_id: string
+          movement?: string | null
+          provisional_rank?: number | null
+          starting_tier: number
+          user_id: string
+        }
+        Update: {
+          final_rank?: number | null
+          final_score?: number | null
+          finalized_at?: string | null
+          joined_at?: string
+          league_id?: string
+          movement?: string | null
+          provisional_rank?: number | null
+          starting_tier?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reader_league_members_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "reader_leagues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reader_league_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reader_leagues: {
+        Row: {
+          created_at: string
+          group_number: number
+          id: string
+          name: string
+          status: string
+          tier: number
+          week_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_number: number
+          id?: string
+          name: string
+          status?: string
+          tier: number
+          week_id: string
+        }
+        Update: {
+          created_at?: string
+          group_number?: number
+          id?: string
+          name?: string
+          status?: string
+          tier?: number
+          week_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reader_leagues_week_id_fkey"
+            columns: ["week_id"]
+            isOneToOne: false
+            referencedRelation: "gamification_weeks"
             referencedColumns: ["id"]
           },
         ]
@@ -2671,7 +3159,7 @@ export type Database = {
           activity_type: string
           badge_id: string | null
           book_id: string | null
-          created_at: string
+          created_at: string | null
           id: string
           list_id: string | null
           metadata: Json | null
@@ -2683,7 +3171,7 @@ export type Database = {
           activity_type: string
           badge_id?: string | null
           book_id?: string | null
-          created_at?: string
+          created_at?: string | null
           id?: string
           list_id?: string | null
           metadata?: Json | null
@@ -2695,7 +3183,7 @@ export type Database = {
           activity_type?: string
           badge_id?: string | null
           book_id?: string | null
-          created_at?: string
+          created_at?: string | null
           id?: string
           list_id?: string | null
           metadata?: Json | null
@@ -2746,18 +3234,27 @@ export type Database = {
           badge_id: string | null
           earned_at: string | null
           id: string
+          progress_value: number | null
+          reward_eligible: boolean
+          source: string
           user_id: string | null
         }
         Insert: {
           badge_id?: string | null
           earned_at?: string | null
           id?: string
+          progress_value?: number | null
+          reward_eligible?: boolean
+          source?: string
           user_id?: string | null
         }
         Update: {
           badge_id?: string | null
           earned_at?: string | null
           id?: string
+          progress_value?: number | null
+          reward_eligible?: boolean
+          source?: string
           user_id?: string | null
         }
         Relationships: [
@@ -2849,6 +3346,59 @@ export type Database = {
           },
         ]
       }
+      user_gamification_week_summaries: {
+        Row: {
+          competitive_ink: number
+          created_at: string
+          final_league_name: string | null
+          final_rank: number | null
+          gold_leaves_earned: number
+          movement: string | null
+          quest_ink_earned: number
+          quests_assigned: number
+          quests_completed: number
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          competitive_ink?: number
+          created_at?: string
+          final_league_name?: string | null
+          final_rank?: number | null
+          gold_leaves_earned?: number
+          movement?: string | null
+          quest_ink_earned?: number
+          quests_assigned?: number
+          quests_completed?: number
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          competitive_ink?: number
+          created_at?: string
+          final_league_name?: string | null
+          final_rank?: number | null
+          gold_leaves_earned?: number
+          movement?: string | null
+          quest_ink_earned?: number
+          quests_assigned?: number
+          quests_completed?: number
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_gamification_week_summaries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_learning_profiles: {
         Row: {
           created_at: string
@@ -2884,6 +3434,169 @@ export type Database = {
           },
         ]
       }
+      user_notifications: {
+        Row: {
+          body: string
+          created_at: string
+          data: Json
+          dedupe_key: string | null
+          id: string
+          last_push_error: string | null
+          notification_type: string
+          push_attempts: number
+          push_status: string
+          read_at: string | null
+          sent_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          data?: Json
+          dedupe_key?: string | null
+          id?: string
+          last_push_error?: string | null
+          notification_type: string
+          push_attempts?: number
+          push_status?: string
+          read_at?: string | null
+          sent_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          data?: Json
+          dedupe_key?: string | null
+          id?: string
+          last_push_error?: string | null
+          notification_type?: string
+          push_attempts?: number
+          push_status?: string
+          read_at?: string | null
+          sent_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_quest_assignments: {
+        Row: {
+          assignment_date: string
+          cadence: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          period_end: string
+          period_start: string
+          progress_value: number
+          reward_event_key: string | null
+          reward_gold_leaves: number
+          reward_ink: number
+          status: string
+          target_value: number
+          template_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assignment_date: string
+          cadence: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          period_end: string
+          period_start: string
+          progress_value?: number
+          reward_event_key?: string | null
+          reward_gold_leaves?: number
+          reward_ink: number
+          status?: string
+          target_value: number
+          template_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assignment_date?: string
+          cadence?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          period_end?: string
+          period_start?: string
+          progress_value?: number
+          reward_event_key?: string | null
+          reward_gold_leaves?: number
+          reward_ink?: number
+          status?: string
+          target_value?: number
+          template_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_quest_assignments_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "quest_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_quest_assignments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_quest_progress_events: {
+        Row: {
+          assignment_id: string
+          created_at: string
+          event_key: string
+          increment_value: number
+          occurred_at: string
+        }
+        Insert: {
+          assignment_id: string
+          created_at?: string
+          event_key: string
+          increment_value: number
+          occurred_at?: string
+        }
+        Update: {
+          assignment_id?: string
+          created_at?: string
+          event_key?: string
+          increment_value?: number
+          occurred_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_quest_progress_events_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "user_quest_assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -2893,6 +3606,33 @@ export type Database = {
         Args: { p_book: Json; p_user_id: string }
         Returns: Json
       }
+      add_library_book_without_series: {
+        Args: { p_book: Json; p_user_id: string }
+        Returns: Json
+      }
+      advance_user_quests: {
+        Args: {
+          p_event_key: string
+          p_increment: number
+          p_metric: string
+          p_occurred_at?: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      apply_gamification_event: {
+        Args: {
+          p_event_key: string
+          p_event_type: string
+          p_metadata?: Json
+          p_occurred_at?: string
+          p_source_id?: string
+          p_source_type?: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      assign_reader_leagues: { Args: { p_week_id: string }; Returns: number }
       award_badges: {
         Args: { p_event?: string; p_user_id: string }
         Returns: Json
@@ -2924,6 +3664,7 @@ export type Database = {
         Args: { p_user_a: string; p_user_b: string }
         Returns: boolean
       }
+      compact_gamification_history: { Args: never; Returns: Json }
       complete_reading_transaction: {
         Args: {
           p_book_id: string
@@ -2972,6 +3713,37 @@ export type Database = {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: string
       }
+      create_gamification_notification: {
+        Args: {
+          p_body: string
+          p_data?: Json
+          p_dedupe_key?: string
+          p_notification_type: string
+          p_title: string
+          p_user_id: string
+        }
+        Returns: {
+          body: string
+          created_at: string
+          data: Json
+          dedupe_key: string | null
+          id: string
+          last_push_error: string | null
+          notification_type: string
+          push_attempts: number
+          push_status: string
+          read_at: string | null
+          sent_at: string | null
+          title: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_notifications"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_reading_session: {
         Args: {
           p_book_id: string
@@ -2987,6 +3759,39 @@ export type Database = {
         Args: { p_list_id: string; p_user_id: string }
         Returns: Json
       }
+      delete_gamification_job: {
+        Args: { p_message_id: number }
+        Returns: boolean
+      }
+      ensure_gamification_week: {
+        Args: { p_date?: string }
+        Returns: {
+          created_at: string
+          finalized_at: string | null
+          id: string
+          scoring_closes_at: string
+          status: string
+          updated_at: string
+          week_end: string
+          week_start: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "gamification_weeks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      ensure_user_quests: {
+        Args: {
+          p_prefetch_tomorrow?: boolean
+          p_reference_time?: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      finalize_gamification_week: { Args: { p_week_id: string }; Returns: Json }
+      get_badge_metric_snapshot: { Args: { p_user_id: string }; Returns: Json }
       get_conversation_summaries: { Args: { p_user_id: string }; Returns: Json }
       get_dashboard_home_snapshot: {
         Args: {
@@ -2996,6 +3801,25 @@ export type Database = {
         }
         Returns: Json
       }
+      get_gamification_history: {
+        Args: { p_before?: string; p_limit?: number; p_user_id: string }
+        Returns: Json
+      }
+      get_gamification_home: { Args: { p_user_id: string }; Returns: Json }
+      get_public_gamification_profile: {
+        Args: { p_target_user_id: string; p_viewer_id: string }
+        Returns: Json
+      }
+      get_reader_leaderboard: {
+        Args: {
+          p_limit?: number
+          p_scope?: string
+          p_user_id: string
+          p_week_id?: string
+        }
+        Returns: Json
+      }
+      get_user_badge_catalog: { Args: { p_user_id: string }; Returns: Json }
       get_user_dashboard_stats: {
         Args: { p_recent_limit?: number; p_user_id: string }
         Returns: Json
@@ -3052,7 +3876,31 @@ export type Database = {
       }
       normalize_book_isbn: { Args: { value: string }; Returns: string }
       normalize_book_text: { Args: { value: string }; Returns: string }
+      quest_target_for_user: {
+        Args: {
+          p_cadence: string
+          p_maximum: number
+          p_metric: string
+          p_minimum: number
+          p_user_id: string
+        }
+        Returns: number
+      }
+      read_gamification_jobs: {
+        Args: { p_batch_size?: number; p_visibility_timeout?: number }
+        Returns: {
+          enqueued_at: string
+          message: Json
+          msg_id: number
+          read_ct: number
+          vt: string
+        }[]
+      }
       recalculate_user_reading_streak: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
+      reconcile_gamification_user: {
         Args: { p_user_id: string }
         Returns: Json
       }
@@ -3068,6 +3916,10 @@ export type Database = {
         Args: { p_recent_limit?: number; p_user_id: string }
         Returns: Json
       }
+      refresh_reader_league_rank: {
+        Args: { p_occurred_at?: string; p_user_id: string; p_week_id: string }
+        Returns: number
+      }
       refresh_reading_streak_day: {
         Args: { p_activity_date: string; p_user_id: string }
         Returns: undefined
@@ -3081,11 +3933,26 @@ export type Database = {
         }
         Returns: Json
       }
+      reorder_library_shelf: {
+        Args: { p_book_ids: string[]; p_user_id: string }
+        Returns: Json
+      }
+      run_gamification_quest_reminders: { Args: never; Returns: number }
+      run_gamification_rollover: { Args: never; Returns: Json }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       social_pair_blocked: {
         Args: { p_user_a: string; p_user_b: string }
         Returns: boolean
+      }
+      update_gamification_settings: {
+        Args: {
+          p_leaderboard_opt_in?: boolean
+          p_profile_visible?: boolean
+          p_timezone?: string
+          p_user_id: string
+        }
+        Returns: Json
       }
       use_reading_streak_freeze: {
         Args: { p_activity_date?: string; p_user_id: string }

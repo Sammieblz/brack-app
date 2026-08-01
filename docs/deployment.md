@@ -295,7 +295,8 @@ npx supabase secrets set SUPABASE_URL=https://your-project.supabase.co
 npx supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 npx supabase secrets set ENVIRONMENT=production
 npx supabase secrets set GOOGLE_BOOKS_API_KEY=your-key
-npx supabase secrets set FCM_SERVER_KEY=your-fcm-key
+npx supabase secrets set FCM_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}'
+npx supabase secrets set GAMIFICATION_WORKER_SECRET=your-random-worker-secret
 npx supabase secrets set ALLOWED_ORIGINS=https://yourdomain.com
 ```
 

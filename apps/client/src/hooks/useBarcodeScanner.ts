@@ -28,13 +28,18 @@ type WebCodeReader = {
     videoElement: HTMLVideoElement,
     callback: (result: { getText: () => string } | undefined, error: unknown) => void
   ) => Promise<void>;
+  decodeFromConstraints: (
+    constraints: MediaStreamConstraints,
+    videoElement: HTMLVideoElement,
+    callback: (result: { getText: () => string } | undefined, error: unknown) => void
+  ) => Promise<void>;
 };
 
-const getPreferredDeviceId = (devices: VideoInputDevice[]) => {
+export const getPreferredDeviceId = (devices: VideoInputDevice[]) => {
   const rearCamera = devices.find((device) =>
     /back|rear|environment|world/i.test(device.label ?? "")
   );
-  return rearCamera?.deviceId ?? devices[0]?.deviceId ?? null;
+  return rearCamera?.deviceId ?? null;
 };
 
 const preparePreviewVideo = (videoElement: HTMLVideoElement) => {
@@ -54,7 +59,7 @@ export const useBarcodeScanner = (
   const [error, setError] = useState<string | null>(null);
   const { triggerHaptic } = useHapticFeedback();
   const codeReaderRef = useRef<WebCodeReader | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const timeoutRef = useRef<number | null>(null);
   const resolveRef = useRef<((value: string | null) => void) | null>(null);
 
   const cleanupWebScanner = useCallback(() => {
@@ -157,41 +162,57 @@ export const useBarcodeScanner = (
               finishWebScan(null);
             }, 45_000);
 
-            await codeReader.decodeFromVideoDevice(
-              preferredDeviceId,
-              videoElement,
-              (result, scanError) => {
-                if (result) {
-                  const isbn = extractIsbnFromScan(result.getText());
-                  if (isbn) {
-                    setScannedCode(isbn);
-                    trackCoreEvent("barcode_scan_succeeded", {
-                      scanner: "web",
-                      device: preferredDeviceId ? "selected" : "default",
-                    });
-                    triggerHaptic('success');
-                    finishWebScan(isbn);
-                    return;
-                  }
-
-                  setError("Scanned code does not contain a valid ISBN");
-                  triggerHaptic("error");
-                  trackCoreEvent("barcode_scan_failed", {
+            const handleDecode = (
+              result: { getText: () => string } | undefined,
+              scanError: unknown,
+            ) => {
+              if (result) {
+                const isbn = extractIsbnFromScan(result.getText());
+                if (isbn) {
+                  setScannedCode(isbn);
+                  trackCoreEvent("barcode_scan_succeeded", {
                     scanner: "web",
-                    reason: "invalid_isbn_payload",
+                    device: preferredDeviceId ? "selected" : "environment",
                   });
-                  finishWebScan(null);
+                  triggerHaptic('success');
+                  finishWebScan(isbn);
+                  return;
                 }
 
-                if (scanError && !(scanError instanceof NotFoundException)) {
-                  const scanMessage =
-                    scanError instanceof Error ? scanError.message : "Camera scan failed";
-                  console.error("Scan error:", scanError);
-                  setError(scanMessage);
-                  finishWebScan(null);
-                }
+                setError("Scanned code does not contain a valid ISBN");
+                triggerHaptic("error");
+                trackCoreEvent("barcode_scan_failed", {
+                  scanner: "web",
+                  reason: "invalid_isbn_payload",
+                });
+                finishWebScan(null);
               }
-            );
+
+              if (scanError && !(scanError instanceof NotFoundException)) {
+                const scanMessage =
+                  scanError instanceof Error ? scanError.message : "Camera scan failed";
+                console.error("Scan error:", scanError);
+                setError(scanMessage);
+                finishWebScan(null);
+              }
+            };
+
+            if (preferredDeviceId) {
+              await codeReader.decodeFromVideoDevice(
+                preferredDeviceId,
+                videoElement,
+                handleDecode,
+              );
+            } else {
+              await codeReader.decodeFromConstraints(
+                {
+                  audio: false,
+                  video: { facingMode: { ideal: "environment" } },
+                },
+                videoElement,
+                handleDecode,
+              );
+            }
           } catch (err) {
             resolveRef.current = null;
             cleanupWebScanner();

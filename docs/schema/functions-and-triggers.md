@@ -8,7 +8,9 @@ Source of truth: remote Supabase project `waftnaqgkcgufzapcihe`, public schema, 
 | --- | --- | --- | --- | --- |
 | `add_club_creator_as_admin()` | Trigger | `book_clubs` insert row | `book_club_members` | Adds creator as club admin after club creation. |
 | `add_library_book(p_user_id uuid, p_book jsonb)` | RPC | User id and book payload | JSON result with book/status | Central duplicate-safe library insert/restore path. Writes `books`; uses normalized ISBN/title-author identity. |
-| `award_badges(p_user_id uuid, p_event text)` | RPC | User id and optional event | JSON award summary | Reads books/sessions/badges; inserts `user_badges`; may trigger badge activity. |
+| `award_badges(p_user_id uuid, p_event text)` | RPC | User id and optional event | JSON award summary | Evaluates active event-scoped badge metrics and inserts exactly-once `user_badges`; organic awards trigger Ink, notification, and badge activity. |
+| `get_badge_metric_snapshot(p_user_id uuid)` | Private helper | User id | JSON metric map | Aggregates canonical collection, completion, streak, time, page, exploration, craft, quest, and league metrics. |
+| `get_user_badge_catalog(p_user_id uuid)` | Authenticated RPC | Owner user id | JSON catalog/progress payload | Returns the active categorized badge catalog, earned rows, metric values, and progress percentages. |
 | `calculate_distance(lat1, lon1, lat2, lon2)` | Helper | Coordinates | Distance number | Used by discovery/location logic; duplicate migration definitions exist historically. |
 | `check_api_rate_limit(p_bucket_key text, p_limit int, p_window_seconds int)` | RPC/helper | Rate-limit bucket key, limit, and window size | JSON allow/deny result | Service-role-only shared Edge Function limiter. Writes `api_rate_limits`; uses an advisory lock per bucket. |
 | `complete_reading_transaction(...)` | RPC | User/book plus optional session, progress, and completion payload | JSON completion result | Canonical reading completion transaction. Writes sessions/progress/book state, refreshes streaks, completes active goals, creates deduped book activity, and awards badges. |
@@ -43,6 +45,7 @@ Source of truth: remote Supabase project `waftnaqgkcgufzapcihe`, public schema, 
 | `update_review_likes_count()` | Trigger | `review_likes` insert/delete | Trigger row | Updates `book_reviews.likes_count`. |
 | `update_updated_at_column()` | Trigger helper | Updated row | Trigger row | Sets `updated_at = now()` on many tables. |
 | `use_reading_streak_freeze(p_user_id uuid, p_activity_date date)` | RPC | User id/date | `reading_streak_days` row | Writes freeze day and profile freeze timestamp; rejects days with real reading activity. |
+| `validate_reading_session_row()` | Trigger | `reading_sessions` insert/update row | Trigger row | Rejects impossible timer/session rows: duration below one minute, over 12 hours, future end time, end before start, or duration that does not match the time range. |
 
 ## Trigger Catalog
 
@@ -72,10 +75,17 @@ Source of truth: remote Supabase project `waftnaqgkcgufzapcihe`, public schema, 
 | `update_push_tokens_updated_at` | `push_tokens` | Before update | `update_updated_at_column` | Maintains `updated_at`. |
 | `update_reading_habits_updated_at` | `reading_habits` | Before update | `update_updated_at_column` | Maintains `updated_at`. |
 | `trg_sync_reading_streak_day_from_session` | `reading_sessions` | After insert/update/delete | `sync_reading_streak_day_from_session` | Refreshes `reading_streak_days`; cascades profile streak trigger. |
+| `validate_reading_session_row` | `reading_sessions` | Before insert/update of `start_time`, `end_time`, `duration` | `validate_reading_session_row` | Blocks stale persisted timers and impossible offline replay rows before they can affect streaks, analytics, Ink, or storage. |
 | `trg_sync_profile_streak_from_reading_streak_day` | `reading_streak_days` | After insert/update/delete | `sync_profile_streak_from_reading_streak_day` | Updates profile streak fields. |
 | `update_review_comments_updated_at` | `review_comments` | Before update | `update_updated_at_column` | Maintains `updated_at`. |
 | `update_review_likes_count_trigger` | `review_likes` | After insert/delete | `update_review_likes_count` | Recounts review likes. |
 | `create_badge_activity_trigger` | `user_badges` | After insert | `create_badge_activity` | Inserts `social_activities`. |
+| `evaluate_badges_book_added` | `books` | After insert | `evaluate_badges_after_domain_event` | Evaluates collection badges. |
+| `evaluate_badges_list_created` | `book_lists` | After insert | `evaluate_badges_after_domain_event` | Evaluates list/curation badges. |
+| `evaluate_badges_review_created` | `book_reviews` | After insert | `evaluate_badges_after_domain_event` | Evaluates review badges. |
+| `evaluate_badges_goal_completed` | `goals` | After insert/update | `evaluate_badges_after_domain_event` | Evaluates completed-goal badges on genuine transitions. |
+| `evaluate_badges_quest_completed` | `user_quest_assignments` | After status update | `evaluate_badges_after_domain_event` | Evaluates quest badges on genuine completion transitions. |
+| `evaluate_badges_league_finalized` | `reader_league_members` | After finalization | `evaluate_badges_after_domain_event` | Evaluates league participation and podium badges. |
 | `create_follow_activity_trigger` | `user_follows` | After insert | `create_follow_activity` | Inserts `social_activities`. |
 | `update_user_learning_profiles_updated_at` | `user_learning_profiles` | Before update | `update_updated_at_column` | Maintains `updated_at`. |
 

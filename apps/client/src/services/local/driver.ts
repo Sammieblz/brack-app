@@ -37,6 +37,11 @@ export interface OutboxCounts {
   syncing: number;
 }
 
+export interface LocalMutationRecord {
+  table: LocalTableName;
+  record: LocalRecord<unknown>;
+}
+
 export interface LocalDriver {
   init(): Promise<void>;
   upsertRecord<T>(table: LocalTableName, record: LocalRecord<T>): Promise<void>;
@@ -49,6 +54,7 @@ export interface LocalDriver {
   ): Promise<LocalRecord<T>[]>;
   removeRecord(table: LocalTableName, id: string): Promise<void>;
   enqueueOutbox(item: OutboxItem): Promise<void>;
+  commitMutation(records: LocalMutationRecord[], item: OutboxItem): Promise<void>;
   listOutbox(userId: string, statuses?: OutboxItem["status"][]): Promise<OutboxItem[]>;
   updateOutbox(id: string, updates: Partial<OutboxItem>): Promise<void>;
   deleteOutbox(id: string): Promise<void>;
@@ -154,6 +160,19 @@ class DexieLocalDriver implements LocalDriver {
   async enqueueOutbox(item: OutboxItem) {
     await this.init();
     await this.db.outbox.put(item);
+  }
+
+  async commitMutation(records: LocalMutationRecord[], item: OutboxItem) {
+    await this.init();
+    const tables = Array.from(new Set(records.map(({ table }) => table))).map((table) =>
+      this.table(table)
+    );
+    await this.db.transaction("rw", [...tables, this.db.outbox], async () => {
+      for (const { table, record } of records) {
+        await this.table(table).put(record);
+      }
+      await this.db.outbox.put(item);
+    });
   }
 
   async listOutbox(userId: string, statuses: OutboxItem["status"][] = ["pending", "failed"]) {
@@ -360,6 +379,26 @@ class SQLiteLocalDriver implements LocalDriver {
     );
   }
 
+  async commitMutation(records: LocalMutationRecord[], item: OutboxItem) {
+    await this.init();
+    const connection = this.connection();
+    await connection.beginTransaction();
+    try {
+      for (const { table, record } of records) {
+        await this.upsertRecord(table, record);
+      }
+      await this.enqueueOutbox(item);
+      await connection.commitTransaction();
+    } catch (error) {
+      try {
+        await connection.rollbackTransaction();
+      } catch (rollbackError) {
+        console.error("Failed to roll back local mutation:", rollbackError);
+      }
+      throw error;
+    }
+  }
+
   async listOutbox(userId: string, statuses: OutboxItem["status"][] = ["pending", "failed"]) {
     await this.init();
     const placeholders = statuses.map(() => "?").join(", ");
@@ -475,6 +514,10 @@ class ElectronSQLiteLocalDriver implements LocalDriver {
 
   async enqueueOutbox(item: OutboxItem) {
     await this.invoke({ operation: "enqueueOutbox", item });
+  }
+
+  async commitMutation(records: LocalMutationRecord[], item: OutboxItem) {
+    await this.invoke({ operation: "commitMutation", records, item });
   }
 
   async listOutbox(userId: string, statuses: OutboxItem["status"][] = ["pending", "failed"]) {

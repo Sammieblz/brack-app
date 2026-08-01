@@ -48,7 +48,7 @@ const UserProfile = () => {
   const navigate = useNavigate();
   const { user: currentUser, loading: authLoading } = useAuth();
   const resolvedUserId = routeUserId === "me" ? currentUser?.id ?? null : routeUserId ?? null;
-  const { profile, stats, loading, error } = useUserProfile(resolvedUserId);
+  const { profile, stats, gamification, loading, error } = useUserProfile(resolvedUserId);
   const { followersCount, followingCount } = useFollowing(resolvedUserId);
   const [userBooks, setUserBooks] = useState<Book[]>([]);
   const [userPosts, setUserPosts] = useState<PostWithRelations[]>([]);
@@ -294,6 +294,16 @@ const UserProfile = () => {
                       ? "Followers Only"
                       : "Private"}
                   </Badge>
+                  {gamification && (
+                    <Badge variant="outline" className="text-xs">
+                      Lv. {gamification.level} {gamification.level_title}
+                    </Badge>
+                  )}
+                  {gamification?.league_name && gamification.league_rank && (
+                    <Badge variant="outline" className="text-xs">
+                      #{gamification.league_rank} {gamification.league_name}
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>

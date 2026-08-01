@@ -6,6 +6,7 @@ import {
   parseJsonBody,
 } from "../_shared/appEndpoint.ts";
 import { enforceRateLimit } from "../_shared/rateLimit.ts";
+import { canonicalizeIsbn } from "../_shared/isbn.ts";
 
 interface ImportBook {
   id?: string;
@@ -27,7 +28,7 @@ interface PreviewBody {
 const normalize = (value: unknown) =>
   String(value ?? "").trim().toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 const normalizeIsbn = (value: unknown) =>
-  String(value ?? "").toUpperCase().replace(/[^0-9X]/g, "") || null;
+  canonicalizeIsbn(String(value ?? ""));
 
 const digestPayload = async (payload: unknown) => {
   const bytes = new TextEncoder().encode(JSON.stringify(payload));

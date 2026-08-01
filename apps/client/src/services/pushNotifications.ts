@@ -46,20 +46,20 @@ export const pushNotificationsService = {
             platform: Capacitor.getPlatform() as 'ios' | 'android',
           });
 
-          tokenListener.remove();
+          void tokenListener.then((listener) => listener.remove());
           resolve(token.value);
         });
 
         const errorListener = PushNotifications.addListener('registrationError', (error) => {
           console.error('Error on registration: ' + JSON.stringify(error));
-          errorListener.remove();
+          void errorListener.then((listener) => listener.remove());
           resolve(null);
         });
 
         // Timeout after 10 seconds
         setTimeout(() => {
-          tokenListener.remove();
-          errorListener.remove();
+          void tokenListener.then((listener) => listener.remove());
+          void errorListener.then((listener) => listener.remove());
           resolve(null);
         }, 10000);
       });
@@ -121,8 +121,8 @@ export const pushNotificationsService = {
 
     // Return cleanup function
     return () => {
-      receivedListener.remove();
-      actionListener.remove();
+      void receivedListener.then((listener) => listener.remove());
+      void actionListener.then((listener) => listener.remove());
     };
   },
 };

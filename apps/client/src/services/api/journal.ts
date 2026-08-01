@@ -1,5 +1,32 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { RichTextDocument, RichTextFormat } from "@/types/richText";
+import type { Database } from "@/integrations/supabase/types";
+import {
+  parseRichTextDocument,
+  parseRichTextFormat,
+  type RichTextDocument,
+  type RichTextFormat,
+} from "@/types/richText";
+
+type JournalTable = Database["public"]["Tables"]["journal_entries"];
+type JournalRow = JournalTable["Row"];
+
+export type CreateJournalEntryData = Omit<
+  JournalTable["Insert"],
+  "content_format" | "content_json" | "entry_type"
+> & {
+  content_format?: RichTextFormat;
+  content_json?: RichTextDocument | null;
+  entry_type: JournalEntry["entry_type"];
+};
+
+export type UpdateJournalEntryData = Omit<
+  JournalTable["Update"],
+  "content_format" | "content_json" | "entry_type"
+> & {
+  content_format?: RichTextFormat;
+  content_json?: RichTextDocument | null;
+  entry_type?: JournalEntry["entry_type"];
+};
 
 export interface JournalEntry {
   id: string;
@@ -19,6 +46,16 @@ export interface JournalEntry {
   deleted_at?: string | null;
 }
 
+const normalizeJournalEntry = (entry: JournalRow): JournalEntry => ({
+  ...entry,
+  entry_type:
+    entry.entry_type === "quote" || entry.entry_type === "reflection"
+      ? entry.entry_type
+      : "note",
+  content_format: parseRichTextFormat(entry.content_format),
+  content_json: parseRichTextDocument(entry.content_json),
+});
+
 export const fetchJournalEntries = async (
   bookId: string
 ): Promise<JournalEntry[]> => {
@@ -30,7 +67,7 @@ export const fetchJournalEntries = async (
     .order("created_at", { ascending: false });
 
   if (error) throw error;
-  return (data as JournalEntry[]) || [];
+  return (data || []).map(normalizeJournalEntry);
 };
 
 export type QuoteEntry = JournalEntry & {
@@ -59,15 +96,18 @@ export const fetchUserQuoteEntries = async (
 
   if (error) throw error;
 
-  return ((data || []).map((entry) => ({
-    ...entry,
-    book_title: entry.books?.title,
-    book_author: entry.books?.author,
-  })) || []) as QuoteEntry[];
+  return (data || []).map((entry) => {
+    const { books, ...journalEntry } = entry;
+    return {
+      ...normalizeJournalEntry(journalEntry),
+      book_title: books?.title,
+      book_author: books?.author,
+    };
+  });
 };
 
 export const createJournalEntry = async (
-  entryData: Record<string, unknown>
+  entryData: CreateJournalEntryData
 ): Promise<JournalEntry> => {
   const { data, error } = await supabase
     .from("journal_entries")
@@ -76,12 +116,12 @@ export const createJournalEntry = async (
     .single();
 
   if (error) throw error;
-  return data as JournalEntry;
+  return normalizeJournalEntry(data);
 };
 
 export const updateJournalEntry = async (
   entryId: string,
-  updates: Record<string, unknown>
+  updates: UpdateJournalEntryData
 ): Promise<void> => {
   const { error } = await supabase
     .from("journal_entries")

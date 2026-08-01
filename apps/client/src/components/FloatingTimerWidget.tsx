@@ -266,7 +266,7 @@ export const FloatingTimerWidget = () => {
             
             {time > 0 && (
               <Button
-                onClick={finishTimer}
+                onClick={() => void finishTimer()}
                 size="sm"
                 variant="outline"
                 className="border-green-500/50 text-green-600 hover:bg-green-500/10"

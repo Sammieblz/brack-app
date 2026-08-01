@@ -1,4 +1,5 @@
 import { pullSyncChanges, pushSyncMutations } from "@/services/api/sync";
+import { getApiRetryAfterMs } from "@/services/api/client";
 import { emitBooksChanged } from "@/services/api/books";
 import { getCurrentAuthUser } from "@/services/api/auth";
 import {
@@ -71,8 +72,11 @@ const applyPulledRecords = async (userId: string, response: SyncPullResponse) =>
   );
   await journalRepo.upsertRemoteMany(userId, response.records.journal_entries as JournalEntry[]);
   await goalsRepo.upsertRemoteMany(userId, response.records.goals as Goal[]);
-  await bookListsRepo.upsertRemoteMany(userId, response.records.book_lists as BookList[]);
-  await bookListItemsRepo.upsertRemoteMany(
+  await bookListsRepo.upsertRemoteManyPreservingLocal(
+    userId,
+    response.records.book_lists as BookList[],
+  );
+  await bookListItemsRepo.upsertRemoteManyPreservingLocal(
     userId,
     response.records.book_list_items as BookListItem[]
   );
@@ -84,6 +88,10 @@ const applyPulledRecords = async (userId: string, response: SyncPullResponse) =>
       color_theme: preferences.color_theme ?? null,
       theme_mode: preferences.theme_mode ?? null,
       library_view_mode: preferences.library_view_mode ?? "flat",
+      timezone: preferences.timezone ?? "UTC",
+      leaderboard_opt_in: preferences.leaderboard_opt_in ?? false,
+      leaderboard_eligible_from: preferences.leaderboard_eligible_from ?? null,
+      gamification_profile_visible: preferences.gamification_profile_visible ?? true,
       updated_at: preferences.updated_at ?? null,
     });
   }
@@ -101,7 +109,11 @@ const applyPulledRecords = async (userId: string, response: SyncPullResponse) =>
   }
 };
 
-const applyAcceptedRecord = async (userId: string, accepted: SyncPushAcceptedItem) => {
+const applyAcceptedRecord = async (
+  userId: string,
+  accepted: SyncPushAcceptedItem,
+  sourceItem: OutboxItem,
+) => {
   if (!accepted.record) return;
 
   switch (accepted.entity) {
@@ -128,6 +140,9 @@ const applyAcceptedRecord = async (userId: string, accepted: SyncPushAcceptedIte
     }
     case "progress_logs": {
       const log = accepted.record as ProgressLogPayload & { id: string };
+      if (accepted.client_entity_id !== log.id) {
+        await progressRepo.remove(accepted.client_entity_id);
+      }
       await progressRepo.upsertRemote(getRecordUserId(log, userId), log);
       break;
     }
@@ -151,6 +166,29 @@ const applyAcceptedRecord = async (userId: string, accepted: SyncPushAcceptedIte
     }
     case "book_lists": {
       const list = accepted.record as BookList;
+      if (sourceItem.operation === "reorder") {
+        const sourcePayload =
+          sourceItem.payload &&
+          typeof sourceItem.payload === "object" &&
+          !Array.isArray(sourceItem.payload)
+            ? sourceItem.payload as Record<string, unknown>
+            : {};
+        const localList = await bookListsRepo.get(sourceItem.client_entity_id);
+        const mutationVersion = Number(sourcePayload.order_version);
+        const mutationUpdatedAt =
+          typeof sourcePayload.updated_at === "string"
+            ? sourcePayload.updated_at
+            : "";
+        const isCurrentReorder =
+          localList?.order_version === mutationVersion &&
+          localList.updated_at === mutationUpdatedAt;
+        if (!isCurrentReorder) break;
+        await bookListItemsRepo.markReorderSynced(
+          userId,
+          sourceItem.client_entity_id,
+          mutationUpdatedAt,
+        );
+      }
       if (accepted.client_entity_id !== list.id) {
         await bookListsRepo.remove(accepted.client_entity_id);
       }
@@ -185,6 +223,10 @@ const applyAcceptedRecord = async (userId: string, accepted: SyncPushAcceptedIte
         color_theme?: string | null;
         theme_mode?: string | null;
         library_view_mode?: "flat" | "bookshelf" | "carousel" | null;
+        timezone?: string | null;
+        leaderboard_opt_in?: boolean | null;
+        leaderboard_eligible_from?: string | null;
+        gamification_profile_visible?: boolean | null;
         updated_at?: string | null;
       };
       await profilePreferencesRepo.upsertRemote(preferences.id || userId, {
@@ -192,6 +234,10 @@ const applyAcceptedRecord = async (userId: string, accepted: SyncPushAcceptedIte
         color_theme: preferences.color_theme ?? null,
         theme_mode: preferences.theme_mode ?? null,
         library_view_mode: preferences.library_view_mode ?? "flat",
+        timezone: preferences.timezone ?? "UTC",
+        leaderboard_opt_in: preferences.leaderboard_opt_in ?? false,
+        leaderboard_eligible_from: preferences.leaderboard_eligible_from ?? null,
+        gamification_profile_visible: preferences.gamification_profile_visible ?? true,
         updated_at: preferences.updated_at ?? null,
       });
       break;
@@ -201,8 +247,10 @@ const applyAcceptedRecord = async (userId: string, accepted: SyncPushAcceptedIte
   }
 };
 
-class ReadingCoreSyncEngine {
-  private syncing = false;
+export class ReadingCoreSyncEngine {
+  private activeSync: Promise<SyncStatusDetail> | null = null;
+  private activeUserId: string | null = null;
+  private resyncRequested = false;
 
   private async notifyCurrentStatus(userId?: string | null) {
     const status = await this.getStatus(userId);
@@ -263,31 +311,61 @@ class ReadingCoreSyncEngine {
   }
 
   async syncUser(userId: string): Promise<SyncStatusDetail> {
-    if (this.syncing || !isConnectivityAvailable()) {
+    if (!isConnectivityAvailable()) {
       const status = await this.getStatus(userId);
       notifySyncStatus(status);
       return status;
     }
 
-    this.syncing = true;
+    if (this.activeSync) {
+      if (this.activeUserId === userId) {
+        this.resyncRequested = true;
+        return this.activeSync;
+      }
+
+      try {
+        await this.activeSync;
+      } catch {
+        // A different signed-in user should still get an independent sync attempt.
+      }
+      return this.syncUser(userId);
+    }
+
+    const sync = this.runSync(userId);
+    this.activeSync = sync;
+    this.activeUserId = userId;
+    try {
+      return await sync;
+    } finally {
+      if (this.activeSync === sync) {
+        this.activeSync = null;
+        this.activeUserId = null;
+        this.resyncRequested = false;
+      }
+    }
+  }
+
+  private async runSync(userId: string): Promise<SyncStatusDetail> {
     notifySyncStatus(await this.getStatus(userId));
 
     try {
-      await this.pushPending(userId);
-      await this.pullLatest(userId);
+      let status: SyncStatusDetail;
+      do {
+        this.resyncRequested = false;
+        await this.pushPending(userId);
+        await this.pullLatest(userId);
+        status = await this.getStatus(userId);
+      } while (this.resyncRequested && isConnectivityAvailable());
+
       trackCoreEvent("sync_succeeded");
+      notifySyncStatus(status);
+      return status;
     } catch (error) {
       trackCoreEvent("sync_failed", {
         reason: error instanceof Error ? error.message.slice(0, 160) : "unknown",
       });
       throw error;
-    } finally {
-      this.syncing = false;
     }
-
-    const status = await this.getStatus(userId);
-    notifySyncStatus(status);
-    return status;
   }
 
   private async pushPending(userId: string) {
@@ -308,22 +386,31 @@ class ReadingCoreSyncEngine {
       response = await pushSyncMutations({ items: eligible });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Sync failed";
-      await Promise.all(eligible.map((item) => syncRepo.markFailed(item, message)));
+      const retryAfterMs = getApiRetryAfterMs(error) ?? undefined;
+      await Promise.all(eligible.map((item) => syncRepo.deferRetry(item, message, retryAfterMs)));
       throw error;
     }
-    const acceptedById = new Map(response.accepted.map((item) => [item.id, item]));
-    const failedById = new Map(response.failed.map((item) => [item.id, item]));
+    const acceptedById = new Map<string, SyncPushAcceptedItem>(
+      response.accepted.map((item) => [item.id, item]),
+    );
+    const failedById = new Map<string, SyncPushFailedItem>(
+      response.failed.map((item) => [item.id, item]),
+    );
 
     for (const item of eligible) {
       const accepted = acceptedById.get(item.id);
       if (accepted) {
-        await applyAcceptedRecord(userId, accepted);
+        await applyAcceptedRecord(userId, accepted, item);
         await syncRepo.delete(item.id);
         continue;
       }
 
       const failed = failedById.get(item.id);
-      await syncRepo.markFailed(item, failed?.error || "Sync failed");
+      if (failed?.retryable !== false) {
+        await syncRepo.deferRetry(item, failed?.error || "Sync failed");
+      } else {
+        await syncRepo.markFailed(item, failed?.error || "Sync failed");
+      }
     }
   }
 

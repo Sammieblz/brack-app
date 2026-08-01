@@ -516,11 +516,13 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 
 ## 🎮 Gamification Features
 
-### Achievement System
-- ✅ Badge definitions
-- ✅ Badge awarding logic
-- ✅ Badge display
-- ✅ Social activity on badge earn
+### Badge Progression
+- ✅ 51 categorized badges across eight reading/Journey domains
+- ✅ Common, uncommon, rare, epic, and legendary milestones
+- ✅ Server-authoritative metric targets and idempotent awards
+- ✅ Per-badge progress, category filters, tier treatment, and locked details
+- ✅ Historical-safe backfill without retroactive Ink or social spam
+- ✅ Durable notification, Ink reward, and social activity on organic unlocks
 
 ### Streak System
 - ✅ Daily streak tracking
@@ -599,7 +601,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - [ ] Reading speed tests
 - [ ] Book club scheduling
 - [ ] Reading groups (public clubs)
-- [ ] Achievements system expansion
+- [x] Reader Journey: Ink levels, personalized quests, Gold Leaves, and opt-in Reader Leagues
 
 ### Long Term (Ideas)
 - [ ] Browser extension

@@ -191,7 +191,7 @@ export const stagger = (
     stagger?: number;
   }
 ) => {
-  return gsap.utils.toArray(elements).forEach((el, i) => {
+  return gsap.utils.toArray<gsap.TweenTarget>(elements).forEach((el, i) => {
     animation(el).delay((options?.delay || 0) + (i * (options?.stagger || 0.1)));
   });
 };

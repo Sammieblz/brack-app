@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Camera, CameraResultType } from '@capacitor/camera';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
 import { useHapticFeedback } from './useHapticFeedback';
 import { toast } from 'sonner';
@@ -36,7 +36,7 @@ export const useCoverScanner = (): UseCoverScannerReturn => {
         quality: 90,
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
-        source: Capacitor.isNativePlatform() ? 'camera' : 'photos',
+        source: Capacitor.isNativePlatform() ? CameraSource.Camera : CameraSource.Photos,
       });
 
       if (!image.dataUrl) {

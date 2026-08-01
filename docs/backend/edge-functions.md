@@ -35,12 +35,12 @@ Brack currently has 56 maintained local Edge Function directories, excluding `_s
 | `search-books` | Public | Book search and ISBN lookup gateway. Google Books is primary; Open Library is fallback when Google fails, times out, or returns no usable books. Responses are cached in `book_metadata_cache`. | Safe to retry, but repeated calls still count against Brack and upstream limits. Scanner adds require exact ISBN match before confirmation. |
 | `add-book` | JWT required | Protected library insert, duplicate detection, and soft-delete restore through `add_library_book`. | Safe when payload identity is stable; duplicate responses are expected. |
 | `complete-reading` | JWT required | Consolidated reading completion transaction. | Retry safe when client IDs are supplied. |
-| `create-reading-session` | JWT required | Timer session persistence through the completion transaction. | Retry safe when `client_session_id` is supplied. |
+| `create-reading-session` | JWT required | Timer session persistence through the completion transaction. Rejects stale/impossible sessions above 12 hours or with inconsistent time ranges. | Retry safe when `client_session_id` is supplied. Validation failures are non-retryable. |
 | `log-progress` | JWT required | Progress logging through the completion transaction. | Retry safe when `client_log_id` is supplied. |
 | `calculate-book-progress` | JWT required | Book-level progress analytics. | Read-only; retry safe. |
 | `monthly-stats` | JWT required | Monthly reading statistics. | Read-only; retry safe. |
 | `sync-pull` | JWT required | Pull reading-core sync records and tombstones. | Cursor should advance only after local apply. |
-| `sync-push` | JWT required | Push reading-core outbox mutations. | Retry per item; idempotency depends on client IDs. |
+| `sync-push` | JWT required | Push reading-core outbox mutations. Validates timer sessions before replaying them. | Retry per item; idempotency depends on client IDs. Non-retryable validation failures should remain in Sync Review. |
 
 ### Dashboard, Analytics, Activity
 
@@ -119,13 +119,25 @@ Brack currently has 56 maintained local Edge Function directories, excluding `_s
 | --- | --- | --- | --- |
 | `send-push-notification` | JWT required | Firebase Cloud Messaging delivery. | Retrying can duplicate user-visible notifications. |
 
+### Reader Journey
+
+| Function | Auth | Purpose | Retry concerns |
+| --- | --- | --- | --- |
+| `gamification-home` | JWT required | Current account, levels, quests, recent rewards, and league snapshot. | Read-only except idempotent lazy quest generation. |
+| `gamification-history` | JWT required | Owner Ink ledger history. | Read-only; retry safe. |
+| `leaderboard` | JWT required | League, mutual-friend, and Global Top 100 rankings. | Read-only; retry safe. |
+| `profile-gamification` | JWT required | Privacy-aware level/current rank for profile surfaces. | Read-only; retry safe. |
+| `update-gamification-settings` | JWT required | Timezone, Journey visibility, and next-cycle league opt-in. | Setting final state is retry safe. |
+| `gamification-worker` | Worker secret | Drains rollover, quest reminder, and push jobs from `pgmq`. | Queue visibility and exactly-once ledger keys make retries safe; poison jobs stop after five reads. |
+
 ## Auth and Secrets Notes
 
 - Local JWT settings live in `supabase/config.toml`.
 - Backend-only secrets must not be exposed with `VITE_` prefixes.
 - `SUPABASE_SERVICE_ROLE_KEY` is required for trusted functions that bypass caller RLS after authenticating the user.
 - `GOOGLE_BOOKS_API_KEY` is optional but recommended for `search-books`.
-- `FCM_SERVER_KEY` is required for `send-push-notification`.
+- `FCM_SERVICE_ACCOUNT_JSON` is required for FCM HTTP v1 push delivery.
+- `GAMIFICATION_WORKER_SECRET` protects the internal Reader Journey queue worker.
 - Tenor GIF search requires the configured Tenor integration secret used by `search-message-gifs`.
 
 ## Operational Checks

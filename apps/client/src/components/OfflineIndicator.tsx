@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { WifiOff, Refresh, CheckCircle, WarningTriangle } from "iconoir-react";
@@ -17,6 +17,7 @@ export const OfflineIndicator = () => {
   });
   const [syncing, setSyncing] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const lastAutoSyncAtRef = useRef(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -70,10 +71,12 @@ export const OfflineIndicator = () => {
   }, [isOnline, syncing, toast]);
 
   useEffect(() => {
-    if (isOnline && (status.pending > 0 || status.failed > 0)) {
+    const autoSyncDue = Date.now() - lastAutoSyncAtRef.current > 30_000;
+    if (isOnline && status.pending > 0 && autoSyncDue) {
+      lastAutoSyncAtRef.current = Date.now();
       void handleSync();
     }
-  }, [handleSync, isOnline, status.failed, status.pending]);
+  }, [handleSync, isOnline, status.pending]);
 
   const pendingCount = status.pending + status.failed + status.syncing;
 

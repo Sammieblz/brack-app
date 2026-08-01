@@ -13,6 +13,7 @@ import { useBooks } from "@/hooks/useBooks";
 import type { BackButtonConfig } from "@/hooks/useAppBack";
 import { cn } from "@/lib/utils";
 import { addScrollListener, getScrollParent, getScrollTop } from "@/utils/scroll";
+import { UserNotificationsPopover } from "@/components/UserNotificationsPopover";
 
 interface NativeHeaderProps {
   title: string;
@@ -238,17 +239,7 @@ const HeaderUtilityActions = () => {
         <AppIcon icon={APP_ICONS.common.chat} variant="action" />
       </Button>
 
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        onClick={() => navigate("/settings?section=notifications")}
-        className="rounded-full border-border/70 bg-card/45 shadow-none hover:bg-accent"
-        aria-label="Open notification settings"
-        title="Notifications"
-      >
-        <AppIcon icon={APP_ICONS.settings.notifications} variant="action" />
-      </Button>
+      <UserNotificationsPopover />
     </div>
   );
 };

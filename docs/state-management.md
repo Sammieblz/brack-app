@@ -228,6 +228,9 @@ const BookActions = ({ book }: { book: Book }) => {
 
 **Features**:
 - Persistent state (survives page refresh)
+- Persisted timer state stores `accumulatedSeconds` and `runningSince`; it is not rewritten every second.
+- Stale persisted timers over 12 hours open a recovery dialog instead of auto-saving a multi-day session.
+- Recovery requires an explicit Save reviewed time or Discard timer action so backdrop dismissal cannot silently lose the decision.
 - Background timer on native
 - App state handling (foreground/background)
 - Local notifications

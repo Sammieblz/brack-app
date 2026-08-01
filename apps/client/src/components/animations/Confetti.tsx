@@ -10,16 +10,39 @@ interface ConfettiProps {
   className?: string;
 }
 
+const DEFAULT_CONFETTI_COLORS = [
+  "#FF6B6B",
+  "#4ECDC4",
+  "#45B7D1",
+  "#FFA07A",
+  "#98D8C8",
+  "#F7DC6F",
+];
+
 /**
  * Confetti animation for celebrations
  */
 export const Confetti = ({
   trigger = true,
   count = 50,
-  colors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8", "#F7DC6F"],
+  colors = DEFAULT_CONFETTI_COLORS,
   className,
 }: ConfettiProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const particlesRef = useRef(new Set<HTMLDivElement>());
+  const cleanupTimersRef = useRef(new Set<ReturnType<typeof setTimeout>>());
+
+  useEffect(() => {
+    const cleanupTimers = cleanupTimersRef.current;
+    const particles = particlesRef.current;
+
+    return () => {
+      cleanupTimers.forEach((timer) => clearTimeout(timer));
+      cleanupTimers.clear();
+      particles.forEach((particle) => particle.remove());
+      particles.clear();
+    };
+  }, []);
 
   useGSAP(() => {
     if (!containerRef.current || !trigger) return;
@@ -46,6 +69,7 @@ export const Confetti = ({
 
       containerRef.current.appendChild(particle);
       particles.push(particle);
+      particlesRef.current.add(particle);
 
       // Animate particle
       gsap.to(particle, {
@@ -72,13 +96,13 @@ export const Confetti = ({
 
     // Cleanup after animation
     const cleanup = setTimeout(() => {
-      particles.forEach((p) => p.remove());
+      particles.forEach((particle) => {
+        particle.remove();
+        particlesRef.current.delete(particle);
+      });
+      cleanupTimersRef.current.delete(cleanup);
     }, 4000);
-
-    return () => {
-      clearTimeout(cleanup);
-      particles.forEach((p) => p.remove());
-    };
+    cleanupTimersRef.current.add(cleanup);
   }, { dependencies: [trigger, count, colors] });
 
   return (

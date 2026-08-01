@@ -29,11 +29,11 @@ export const getScrollParent = (
 };
 
 export const getScrollTop = (target: ScrollTarget) => {
-  if (target === window) {
-    return window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+  if (target instanceof HTMLElement) {
+    return target.scrollTop;
   }
 
-  return target.scrollTop;
+  return window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
 };
 
 export const addScrollListener = (

@@ -12,6 +12,7 @@ describe("ISBN validation", () => {
     expect(isValidIsbn10("0306406152")).toBe(true);
     expect(isValidIsbn13("9780306406157")).toBe(true);
     expect(isValidIsbn13("9780306406158")).toBe(false);
+    expect(isValidIsbn13("4006381333931")).toBe(false);
   });
 
   it("canonicalizes ISBN-10 to ISBN-13", () => {
@@ -21,6 +22,15 @@ describe("ISBN validation", () => {
 
   it("extracts ISBN from supported QR URLs and rejects unrelated QR values", () => {
     expect(extractIsbnFromScan("https://openlibrary.org/isbn/9780306406157")).toBe(
+      "9780306406157"
+    );
+    expect(extractIsbnFromScan("https://books.example/v2?isbn=9780306406157")).toBe(
+      "9780306406157"
+    );
+    expect(extractIsbnFromScan("https://example.com/book/9780306406157?source=1")).toBe(
+      "9780306406157"
+    );
+    expect(extractIsbnFromScan("https://example.com/isbn/9780306406157?discount=10%")).toBe(
       "9780306406157"
     );
     expect(extractIsbnFromScan("https://example.com/not-a-book")).toBeNull();

@@ -68,7 +68,8 @@ VITE_SENTRY_DSN=your-sentry-dsn
 # For Edge Functions
 ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com,brack-app://brack
 ENVIRONMENT=development
-FCM_SERVER_KEY=your-fcm-server-key
+FCM_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
+GAMIFICATION_WORKER_SECRET=replace-with-a-random-worker-secret
 
 # For Supabase CLI automation
 SUPABASE_ACCESS_TOKEN=your-supabase-cli-token
@@ -215,7 +216,9 @@ npx supabase db reset --seed
 3. Download `google-services.json`
 4. Place in `android/app/google-services.json`
 5. Get Server Key from Firebase Console → Project Settings → Cloud Messaging
-6. Add to `.env` as `FCM_SERVER_KEY`
+6. Download a Firebase service-account JSON document and add it to the backend
+   environment as `FCM_SERVICE_ACCOUNT_JSON`. Never expose it through a
+   `VITE_` variable.
 
 ### iOS (APNs via FCM)
 

@@ -32,6 +32,22 @@ The transaction can write or refresh:
 
 ## Validation
 
+Current validation is enforced in three places:
+
+- `TimerContext` refuses to finish a timer above the 12-hour safety limit and opens stale-session recovery instead.
+- `create-reading-session`, `complete-reading`, and `sync-push` call `_shared/readingSessionValidation.ts` before invoking reading RPCs.
+- `validate_reading_session_row()` runs as a database trigger on `reading_sessions` inserts and updates so direct table/RPC writes cannot persist impossible durations.
+
+Timer sessions must:
+
+- have valid `start_time`, `end_time`, and `duration_minutes`;
+- be at least one minute and no more than 720 minutes;
+- end after they start;
+- not end more than five minutes in the future;
+- have a duration that matches the wall-clock time range within a two-minute tolerance.
+
+Validation failures are non-retryable in offline sync and should appear in Sync Review.
+
 Remote validation on 2026-05-05 created a controlled auth user, profile, book, and goal, then called `complete_reading_transaction` twice with the same client IDs. The test confirmed:
 - One reading session.
 - One progress log.
