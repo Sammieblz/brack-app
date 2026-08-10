@@ -1266,6 +1266,24 @@ must be a valid IANA identifier.
 Returns a privacy-aware level and optional current league rank. Gold Leaves are
 returned only for the owner.
 
+### `gamification-shop`
+
+`GET /functions/v1/gamification-shop` returns the authenticated reader's Gold
+Leaf balance, enabled catalog items, inventory quantities, and purchase limits.
+
+`POST /functions/v1/gamification-shop` purchases a consumable atomically:
+
+```json
+{
+  "itemCode": "streak_freeze",
+  "quantity": 1,
+  "idempotencyKey": "shop:streak_freeze:client-generated-id"
+}
+```
+
+The same idempotency key returns the original purchase without charging twice.
+Insufficient balance and inventory-limit responses use HTTP `409`.
+
 ### `gamification-worker`
 
 Internal `POST` endpoint protected by `X-Brack-Worker-Secret`. It drains the

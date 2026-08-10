@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { AppIcon } from "@/components/ui/app-icon";
+import { CurrencyIcon, type BrackCurrency } from "@/components/CurrencyIcon";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { APP_ICONS } from "@/config/iconography";
 import {
@@ -14,6 +15,12 @@ import {
 } from "@/services/api";
 
 const notificationPath = (notification: GamificationNotification) => {
+  if (
+    notification.notification_type === "gold_leaves_earned"
+    || notification.notification_type.includes("gold_leaf")
+  ) {
+    return "/achievements?tab=shop";
+  }
   if (
     notification.notification_type.includes("league")
     || notification.notification_type === "rank_movement"
@@ -27,6 +34,24 @@ const notificationPath = (notification: GamificationNotification) => {
     return "/achievements?tab=badges";
   }
   return "/achievements";
+};
+
+const notificationCurrency = (
+  notification: GamificationNotification,
+): BrackCurrency | null => {
+  if (
+    notification.notification_type === "gold_leaves_earned"
+    || notification.notification_type.includes("gold_leaf")
+  ) {
+    return "goldLeaves";
+  }
+  if (
+    notification.notification_type === "level_up"
+    || notification.notification_type.startsWith("quest_")
+  ) {
+    return "ink";
+  }
+  return null;
 };
 
 export const UserNotificationsPopover = () => {
@@ -93,27 +118,35 @@ export const UserNotificationsPopover = () => {
           />
         ) : (
           <div className="max-h-[28rem] overflow-y-auto p-2">
-            {query.data.map((notification) => (
-              <button
-                key={notification.id}
-                type="button"
-                onClick={() => openNotification(notification)}
-                className="flex w-full items-start gap-3 rounded-md p-3 text-left transition-colors hover:bg-accent"
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2">
-                    <span className="truncate text-sm font-medium">{notification.title}</span>
-                    {!notification.read_at && <Badge className="h-2 w-2 rounded-full p-0" />}
+            {query.data.map((notification) => {
+              const currency = notificationCurrency(notification);
+              return (
+                <button
+                  key={notification.id}
+                  type="button"
+                  onClick={() => openNotification(notification)}
+                  className="flex w-full items-start gap-3 rounded-md p-3 text-left transition-colors hover:bg-accent"
+                >
+                  {currency && (
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                      <CurrencyIcon currency={currency} size="lg" />
+                    </span>
+                  )}
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2">
+                      <span className="truncate text-sm font-medium">{notification.title}</span>
+                      {!notification.read_at && <Badge className="h-2 w-2 rounded-full p-0" />}
+                    </span>
+                    <span className="mt-1 block text-sm text-muted-foreground">
+                      {notification.body}
+                    </span>
+                    <span className="mt-1 block text-xs text-muted-foreground">
+                      {new Date(notification.created_at).toLocaleString()}
+                    </span>
                   </span>
-                  <span className="mt-1 block text-sm text-muted-foreground">
-                    {notification.body}
-                  </span>
-                  <span className="mt-1 block text-xs text-muted-foreground">
-                    {new Date(notification.created_at).toLocaleString()}
-                  </span>
-                </span>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         )}
       </PopoverContent>

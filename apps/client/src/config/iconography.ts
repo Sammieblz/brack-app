@@ -212,8 +212,6 @@ export const APP_ICONS = {
     quests: CalendarCheck,
     badges: Medal1st,
     rankings: LeaderboardStar,
-    ink: EditPencil,
-    goldLeaf: Sparks,
   },
   badges: {
     collection: BookStack,

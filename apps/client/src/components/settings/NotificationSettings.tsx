@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { CurrencyIcon } from "@/components/CurrencyIcon";
 import type { User } from "@/types";
 import {
   DEFAULT_NOTIFICATION_PREFERENCES,
@@ -178,7 +179,10 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="gold_leaves_enabled">Gold Leaves</Label>
+                    <Label htmlFor="gold_leaves_enabled" className="inline-flex items-center gap-1.5">
+                      <CurrencyIcon currency="goldLeaves" />
+                      Gold Leaves
+                    </Label>
                     <p className="font-sans text-sm text-muted-foreground">
                       Notify me when a rare Gold Leaf is earned
                     </p>

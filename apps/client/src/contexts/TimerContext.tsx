@@ -155,10 +155,15 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       const user = await getCurrentAuthUser();
       if (!user) throw new Error("Not authenticated");
 
+      // A persisted timer can outlive a local book identity remap. Resolve its
+      // saved ID before writing anything so every follow-up record and event
+      // consistently targets the canonical book.
+      const resolvedBookId = await booksRepo.resolveIdentity(user.id, bookId);
+
       const session = {
         id: clientSessionId,
         user_id: user.id,
-        book_id: bookId,
+        book_id: resolvedBookId,
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString(),
         duration: durationMinutes,
@@ -168,7 +173,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
 
       await sessionsRepo.createPending(user.id, session);
 
-      const localBook = await booksRepo.get(bookId);
+      const localBook = await booksRepo.get(resolvedBookId);
       if (localBook) {
         const updatedBook = {
           ...localBook,
@@ -194,7 +199,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
         new CustomEvent("readingSessionSaved", {
           detail: {
             userId: user.id,
-            bookId,
+            bookId: resolvedBookId,
             sessionId: session.id,
             durationMinutes,
             activityDate: startTime.toISOString().split("T")[0],
@@ -207,7 +212,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
         window.dispatchEvent(
           new CustomEvent("showJournalPrompt", {
             detail: {
-              bookId,
+              bookId: resolvedBookId,
               bookTitle,
               durationMinutes,
             },

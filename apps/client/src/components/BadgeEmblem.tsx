@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { Badge } from "@/types";
 import { APP_ICONS, type AppIcon as AppIconType } from "@/config/iconography";
 import { getBadgeImagePath } from "@/lib/badgeImages";
@@ -62,6 +63,7 @@ export const BadgeEmblem = ({
   className,
 }: BadgeEmblemProps) => {
   const imagePath = getBadgeImagePath(badge);
+  const [imageFailed, setImageFailed] = useState(false);
   const Icon =
     (badge.icon_key && ICON_KEY_MAP[badge.icon_key]) ||
     APP_ICONS.badges[badge.category] ||
@@ -71,22 +73,31 @@ export const BadgeEmblem = ({
     md: "h-20 w-20",
     lg: "h-32 w-32",
   }[size];
+  const imageDimensions = {
+    sm: "h-12 w-12",
+    md: "h-20 w-20",
+    lg: "h-32 w-32",
+  }[size];
 
-  if (imagePath?.startsWith("/")) {
+  useEffect(() => {
+    setImageFailed(false);
+  }, [imagePath]);
+
+  if (imagePath && !imageFailed) {
     return (
       <div className={cn("relative grid place-items-center", dimensions, className)}>
         <img
           src={imagePath}
           alt=""
           className={cn(
-            "h-full w-full object-contain",
+            "select-none object-contain",
+            imageDimensions,
             !earned && "grayscale opacity-45",
           )}
           loading="lazy"
+          decoding="async"
+          onError={() => setImageFailed(true)}
         />
-        <span className="absolute -bottom-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full border border-background bg-foreground px-1 text-[10px] font-semibold text-background">
-          {badge.tier}
-        </span>
       </div>
     );
   }

@@ -221,3 +221,6 @@ verify_jwt = true
 
 [functions.gamification-worker]
 verify_jwt = false
+
+[functions.gamification-shop]
+verify_jwt = true

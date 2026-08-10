@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,7 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { GoalsSheet } from "@/components/GoalsSheet";
 import { AppIcon } from "@/components/ui/app-icon";
+import { CurrencyIcon } from "@/components/CurrencyIcon";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { SwipeableBookListsCarousel } from "@/components/SwipeableBookListsCarousel";
 import { NativeHeader } from "@/components/NativeHeader";
@@ -46,17 +48,23 @@ import {
 } from "@/hooks/useDashboardHomeData";
 import type { DayActivity, StreakData } from "@/utils/streakCalculation";
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
-import { useGamification } from "@/hooks/useGamification";
+import { useGamification, useGamificationShop } from "@/hooks/useGamification";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { needsSetupPrompt } from "@/services/onboarding";
-import { fetchLatestGoal } from "@/services/api";
+import { fetchLatestGoal, GAMIFICATION_SHOP_ITEM_CODES } from "@/services/api";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const isMobile = useIsMobile();
   const { books, loading: booksLoading, refetchBooks } = useBooks(user?.id);
   const { badges, earnedBadges, loading: badgesLoading, checkAndAwardBadges } = useBadges(user?.id);
-  const { streakData, activityCalendar, refetchStreaks, useStreakFreeze } = useStreaks(user?.id);
+  const {
+    streakData,
+    activityCalendar,
+    refetchStreaks,
+    useStreakFreeze: applyStreakFreeze,
+    usingFreeze,
+  } = useStreaks(user?.id);
   const {
     activities,
     loading: activitiesLoading,
@@ -80,6 +88,12 @@ const Dashboard = () => {
     provisional: gamificationProvisional,
     refetch: refetchGamification,
   } = useGamification(user?.id);
+  const gamificationShop = useGamificationShop(
+    gamificationEnabled ? user?.id : undefined,
+  );
+  const streakFreezeItem = gamificationShop.data?.items.find(
+    (item) => item.code === GAMIFICATION_SHOP_ITEM_CODES.streakFreeze,
+  );
   const [goal, setGoal] = useState<Goal | null>(null);
   const [progressBook, setProgressBook] = useState<BookType | null>(null);
   const navigate = useNavigate();
@@ -125,6 +139,27 @@ const Dashboard = () => {
     navigate(`/book/${bookId}`);
   };
 
+  const handleUseStreakFreeze = async () => {
+    if (!streakFreezeItem || streakFreezeItem.quantity <= 0) {
+      if (gamificationShop.error) {
+        toast.error("Freeze inventory is unavailable. Reconnect and try again.");
+      } else {
+        toast.error("You need an owned Streak Freeze before using one.");
+        navigate("/achievements?tab=shop");
+      }
+      return false;
+    }
+
+    const used = await applyStreakFreeze();
+    if (used) {
+      await Promise.all([
+        gamificationShop.refetch(),
+        refetchGamification(),
+      ]);
+    }
+    return used;
+  };
+
   const handleProgressSuccess = async () => {
     setProgressBook(null);
     await Promise.all([
@@ -134,6 +169,7 @@ const Dashboard = () => {
       refetchActivity(),
       loadGoalData(),
       refetchGamification(),
+      ...(gamificationEnabled ? [gamificationShop.refetch()] : []),
     ]);
   };
 
@@ -144,6 +180,7 @@ const Dashboard = () => {
       refetchStreaks(),
       refetchActivity(),
       loadGoalData(),
+      ...(gamificationEnabled ? [gamificationShop.refetch()] : []),
     ]);
   };
 
@@ -161,7 +198,7 @@ const Dashboard = () => {
   );
 
   const todayActivity = useMemo(() => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = format(new Date(), "yyyy-MM-dd");
     return activityCalendar.find((activity) => activity.date === today) || null;
   }, [activityCalendar]);
 
@@ -244,7 +281,12 @@ const Dashboard = () => {
             streakData={streakData}
             todayActivity={todayActivity}
             onManageGoals={() => navigate("/goals-management")}
-            onUseFreeze={useStreakFreeze}
+            freezeQuantity={streakFreezeItem?.quantity ?? null}
+            freezeInventoryLoading={gamificationShop.isLoading}
+            freezeInventoryError={!gamificationEnabled || Boolean(gamificationShop.error)}
+            usingFreeze={usingFreeze}
+            onUseFreeze={handleUseStreakFreeze}
+            onOpenFreezeShop={() => navigate("/achievements?tab=shop")}
           />
 
           <section className="space-y-3">
@@ -344,8 +386,14 @@ const JourneyProgressStrip = ({
     <div className="min-w-0 space-y-2">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <span className="font-display text-lg font-semibold">Level {level}: {title}</span>
-        <span className="text-sm text-muted-foreground">{ink.toLocaleString()} Ink</span>
-        {goldLeaves > 0 && <span className="text-sm text-primary">{goldLeaves} Gold Leaves</span>}
+        <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+          <CurrencyIcon currency="ink" />
+          {ink.toLocaleString()} Ink
+        </span>
+        <span className="inline-flex items-center gap-1 text-sm text-primary">
+          <CurrencyIcon currency="goldLeaves" />
+          {goldLeaves.toLocaleString()} Gold Leaves
+        </span>
         {provisional && <Badge variant="secondary">Sync pending</Badge>}
       </div>
       <Progress value={levelProgress} className="h-1.5" />
@@ -632,7 +680,12 @@ interface TodaySectionProps {
   streakData: StreakData;
   todayActivity: DayActivity | null;
   onManageGoals: () => void;
+  freezeQuantity: number | null;
+  freezeInventoryLoading: boolean;
+  freezeInventoryError: boolean;
+  usingFreeze: boolean;
   onUseFreeze: () => Promise<boolean>;
+  onOpenFreezeShop: () => void;
 }
 
 const TodaySection = ({
@@ -643,7 +696,12 @@ const TodaySection = ({
   streakData,
   todayActivity,
   onManageGoals,
+  freezeQuantity,
+  freezeInventoryLoading,
+  freezeInventoryError,
+  usingFreeze,
   onUseFreeze,
+  onOpenFreezeShop,
 }: TodaySectionProps) => {
   return (
     <section className="space-y-3">
@@ -662,7 +720,12 @@ const TodaySection = ({
         <StreakStatusCard
           streakData={streakData}
           todayActivity={todayActivity}
+          freezeQuantity={freezeQuantity}
+          freezeInventoryLoading={freezeInventoryLoading}
+          freezeInventoryError={freezeInventoryError}
+          usingFreeze={usingFreeze}
           onUseFreeze={onUseFreeze}
+          onOpenFreezeShop={onOpenFreezeShop}
         />
       </div>
     </section>
@@ -741,13 +804,23 @@ const GoalStatusCard = ({
 interface StreakStatusCardProps {
   streakData: StreakData;
   todayActivity: DayActivity | null;
+  freezeQuantity: number | null;
+  freezeInventoryLoading: boolean;
+  freezeInventoryError: boolean;
+  usingFreeze: boolean;
   onUseFreeze: () => Promise<boolean>;
+  onOpenFreezeShop: () => void;
 }
 
 const StreakStatusCard = ({
   streakData,
   todayActivity,
+  freezeQuantity,
+  freezeInventoryLoading,
+  freezeInventoryError,
+  usingFreeze,
   onUseFreeze,
+  onOpenFreezeShop,
 }: StreakStatusCardProps) => {
   const streakImage = streakData.hasReadingToday
     ? BRACK_STREAK_HAPPY_IMAGE
@@ -802,14 +875,38 @@ const StreakStatusCard = ({
               <Badge variant="secondary" className="bg-primary/10 text-primary">
                 {statusLabel}
               </Badge>
+              <Badge variant="outline" className="gap-1.5">
+                <APP_ICONS.stats.freezeStatus className="h-3.5 w-3.5" />
+                {freezeInventoryLoading
+                  ? "Checking freezes"
+                  : freezeInventoryError
+                    ? "Inventory unavailable"
+                    : `${freezeQuantity ?? 0} owned`}
+              </Badge>
               {streakData.canUseFreezeToday && (
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={!streakData.freezeAvailable}
-                  onClick={() => void onUseFreeze()}
+                  disabled={
+                    !streakData.freezeAvailable
+                    || freezeInventoryLoading
+                    || freezeInventoryError
+                    || usingFreeze
+                  }
+                  onClick={() => {
+                    if ((freezeQuantity ?? 0) > 0) {
+                      void onUseFreeze();
+                    } else {
+                      onOpenFreezeShop();
+                    }
+                  }}
                 >
-                  Use Freeze
+                  <APP_ICONS.stats.useFreeze className="mr-1.5 h-4 w-4" />
+                  {usingFreeze
+                    ? "Using Freeze..."
+                    : (freezeQuantity ?? 0) > 0
+                      ? "Use Freeze"
+                      : "Get a Freeze"}
                 </Button>
               )}
             </div>

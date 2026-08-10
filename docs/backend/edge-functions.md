@@ -128,6 +128,7 @@ Brack currently has 56 maintained local Edge Function directories, excluding `_s
 | `leaderboard` | JWT required | League, mutual-friend, and Global Top 100 rankings. | Read-only; retry safe. |
 | `profile-gamification` | JWT required | Privacy-aware level/current rank for profile surfaces. | Read-only; retry safe. |
 | `update-gamification-settings` | JWT required | Timezone, Journey visibility, and next-cycle league opt-in. | Setting final state is retry safe. |
+| `gamification-shop` | JWT required | Gold Leaf catalog, balances, inventory, and atomic purchases. | Client idempotency keys prevent duplicate charges. |
 | `gamification-worker` | Worker secret | Drains rollover, quest reminder, and push jobs from `pgmq`. | Queue visibility and exactly-once ledger keys make retries safe; poison jobs stop after five reads. |
 
 ## Auth and Secrets Notes

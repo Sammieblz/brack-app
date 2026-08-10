@@ -1,6 +1,6 @@
 import { pullSyncChanges, pushSyncMutations } from "@/services/api/sync";
 import { getApiRetryAfterMs } from "@/services/api/client";
-import { emitBooksChanged } from "@/services/api/books";
+import { emitBooksChanged, fetchUserBooksPage } from "@/services/api/books";
 import { getCurrentAuthUser } from "@/services/api/auth";
 import {
   booksRepo,
@@ -8,6 +8,7 @@ import {
   bookListsRepo,
   goalsRepo,
   journalRepo,
+  pendingBookImportsRepo,
   profilePreferencesRepo,
   progressRepo,
   sessionsRepo,
@@ -24,7 +25,8 @@ import type { Book, BookList, BookListItem, Goal, ReadingSession } from "@/types
 import type { JournalEntry } from "@/services/api/journal";
 import { isConnectivityAvailable } from "@/services/connectivity";
 import { trackCoreEvent } from "@/services/telemetry";
-import { resolveBookSyncConflict } from "./conflicts";
+import { findExistingLibraryBook } from "@/utils/bookIdentity";
+import { isBookIdentityConflict } from "./bookConflict";
 
 export const SYNC_STATUS_EVENT = "brack:sync-status-changed";
 
@@ -36,6 +38,32 @@ export interface SyncStatusDetail {
   lastSyncedAt?: string | null;
 }
 
+export interface SyncOptions {
+  /** Ignore retry delays and reclaim in-flight records. Used only for an explicit retry. */
+  forcePending?: boolean;
+}
+
+export interface ServerBookCopySafety {
+  safe: boolean;
+  relatedChangeCount: number;
+}
+
+const SYNCING_STALE_AFTER_MS = 10 * 60_000;
+const MAX_TIMER_DELAY_MS = 2_147_483_647;
+const MIN_RETRY_DELAY_MS = 50;
+const BOOK_SYNC_SNAPSHOT_KEY = "__sync_snapshot";
+const BOOK_CONFLICT_LOOKUP_PAGE_SIZE = 100;
+
+interface SyncTimerApi {
+  setTimeout(callback: () => void, delayMs: number): number;
+  clearTimeout(timerId: number): void;
+}
+
+const browserTimerApi: SyncTimerApi = {
+  setTimeout: (callback, delayMs) => window.setTimeout(callback, delayMs),
+  clearTimeout: (timerId) => window.clearTimeout(timerId),
+};
+
 const notifySyncStatus = (detail: SyncStatusDetail) => {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent<SyncStatusDetail>(SYNC_STATUS_EVENT, { detail }));
@@ -44,34 +72,192 @@ const notifySyncStatus = (detail: SyncStatusDetail) => {
 const getRecordUserId = (record: { user_id?: string | null }, fallbackUserId: string) =>
   record.user_id || fallbackUserId;
 
-const applyPulledRecords = async (userId: string, response: SyncPullResponse) => {
-  const localBookRecords = new Map(
-    (await booksRepo.listRecords(userId, { includeDeleted: true })).map(
-      (record) => [record.id, record],
-    ),
-  );
-  for (const remoteBook of response.records.books as Book[]) {
-    const localBook = localBookRecords.get(remoteBook.id);
-    if (!localBook || localBook.status === "synced") {
-      await booksRepo.upsertRemote(userId, remoteBook);
-      continue;
-    }
+const asPayloadRecord = (payload: unknown): Record<string, unknown> =>
+  typeof payload === "object" && payload !== null && !Array.isArray(payload)
+    ? payload as Record<string, unknown>
+    : {};
 
-    const resolved = resolveBookSyncConflict(localBook, remoteBook);
-    if (resolved === remoteBook) {
-      await booksRepo.upsertRemote(userId, remoteBook);
+const isObjectRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const hasExactOutboxIdentity = (
+  responseItem: unknown,
+  sourceItem: OutboxItem,
+): responseItem is Record<string, unknown> =>
+  isObjectRecord(responseItem) &&
+  responseItem.id === sourceItem.id &&
+  responseItem.client_mutation_id === sourceItem.client_mutation_id &&
+  responseItem.entity === sourceItem.entity &&
+  responseItem.client_entity_id === sourceItem.client_entity_id;
+
+const getAcceptedRecordValidationError = (
+  userId: string,
+  accepted: SyncPushAcceptedItem,
+) => {
+  if (!isObjectRecord(accepted.record)) {
+    return "Sync server returned an accepted change without a valid record";
+  }
+
+  const rawRecordId =
+    typeof accepted.record.id === "string" ? accepted.record.id : "";
+  const recordId = rawRecordId.trim();
+  if (!recordId || rawRecordId !== recordId) {
+    return "Sync server returned an accepted change without a valid record id";
+  }
+
+  if (accepted.entity === "books") {
+    const rawServerEntityId =
+      typeof accepted.server_entity_id === "string"
+        ? accepted.server_entity_id
+        : "";
+    const serverEntityId = rawServerEntityId.trim();
+    if (
+      !serverEntityId ||
+      rawServerEntityId !== serverEntityId ||
+      serverEntityId !== recordId
+    ) {
+      return "Sync server returned an invalid canonical book id";
+    }
+    if (accepted.record.user_id !== userId) {
+      return "Sync server returned a book for a different account";
     }
   }
-  await sessionsRepo.upsertRemoteMany(userId, response.records.reading_sessions as ReadingSession[]);
-  await progressRepo.upsertRemoteMany(
+
+  return null;
+};
+
+const isStructurallyValidFailure = (
+  responseItem: unknown,
+): responseItem is SyncPushFailedItem =>
+  isObjectRecord(responseItem) &&
+  typeof responseItem.error === "string" &&
+  typeof responseItem.retryable === "boolean";
+
+const getBookConflictIdentity = async (item: OutboxItem) => {
+  const payload = asPayloadRecord(item.payload);
+  const snapshot = asPayloadRecord(payload[BOOK_SYNC_SNAPSHOT_KEY]);
+  const localBook = await booksRepo.get(item.client_entity_id);
+  const source = {
+    ...(localBook ?? {}),
+    ...snapshot,
+    ...payload,
+  };
+
+  return {
+    title: typeof source.title === "string" ? source.title : "",
+    author: typeof source.author === "string" ? source.author : null,
+    isbn: typeof source.isbn === "string" ? source.isbn : null,
+  };
+};
+
+const findServerBookForConflict = async (userId: string, item: OutboxItem) => {
+  const identity = await getBookConflictIdentity(item);
+  if (!identity.isbn && !identity.title.trim()) {
+    throw new Error("This local change does not contain enough book details to find the library copy");
+  }
+
+  let offset = 0;
+  while (true) {
+    const page = await fetchUserBooksPage(userId, offset, BOOK_CONFLICT_LOOKUP_PAGE_SIZE);
+    const match = findExistingLibraryBook(identity, page.books);
+    if (match) return match;
+    if (!page.hasMore || page.books.length === 0) return null;
+    offset += page.books.length;
+  }
+};
+
+const outboxReferencesBook = (item: OutboxItem, bookId: string) => {
+  if (item.entity === "books" && item.client_entity_id === bookId) return true;
+
+  const payload = asPayloadRecord(item.payload);
+  if (payload.book_id === bookId) return true;
+  return Array.isArray(payload.ordered_book_ids) && payload.ordered_book_ids.includes(bookId);
+};
+
+const getUnsyncedLocalBookReferences = async (userId: string, bookId: string) => {
+  const [sessions, progress, journal, listItems, pendingImports] = await Promise.all([
+    sessionsRepo.listRecords(userId, { includeDeleted: true }),
+    progressRepo.listRecords(userId, { includeDeleted: true }),
+    journalRepo.listRecords(userId, { includeDeleted: true }),
+    bookListItemsRepo.listRecords(userId, { includeDeleted: true }),
+    pendingBookImportsRepo.list(userId),
+  ]);
+
+  return [
+    ...sessions
+      .filter((record) => record.status !== "synced" && record.data.book_id === bookId)
+      .map((record) => `reading_sessions:${record.id}`),
+    ...progress
+      .filter((record) => record.status !== "synced" && record.data.book_id === bookId)
+      .map((record) => `progress_logs:${record.id}`),
+    ...journal
+      .filter((record) => record.status !== "synced" && record.data.book_id === bookId)
+      .map((record) => `journal_entries:${record.id}`),
+    ...listItems
+      .filter((record) => record.status !== "synced" && record.data.book_id === bookId)
+      .map((record) => `book_list_items:${record.id}`),
+    ...pendingImports
+      .filter((pendingImport) => pendingImport.resolved_book_id === bookId)
+      .map((pendingImport) => `pending_book_imports:${pendingImport.id}`),
+  ];
+};
+
+const addBookSyncSnapshot = async (userId: string, item: OutboxItem): Promise<OutboxItem> => {
+  if (item.entity !== "books" || item.operation !== "update") return item;
+
+  const payload = asPayloadRecord(item.payload);
+  if (payload[BOOK_SYNC_SNAPSHOT_KEY]) return item;
+
+  let book = await booksRepo.get(item.client_entity_id);
+  if (!book) {
+    const isbn = typeof payload.isbn === "string" ? payload.isbn : null;
+    const title = typeof payload.title === "string" ? payload.title : "";
+    const author = typeof payload.author === "string" ? payload.author : null;
+    if (isbn || title) {
+      book = findExistingLibraryBook(
+        { title, author, isbn },
+        await booksRepo.list(userId),
+      );
+    }
+  }
+
+  if (!book) return item;
+  return {
+    ...item,
+    payload: {
+      ...payload,
+      [BOOK_SYNC_SNAPSHOT_KEY]: {
+        ...book,
+        ...payload,
+      },
+    },
+  };
+};
+
+const applyPulledRecords = async (userId: string, response: SyncPullResponse) => {
+  await booksRepo.upsertRemoteManyPreservingLocal(
+    userId,
+    response.records.books as Book[],
+  );
+  await sessionsRepo.upsertRemoteManyPreservingLocal(
+    userId,
+    response.records.reading_sessions as ReadingSession[],
+  );
+  await progressRepo.upsertRemoteManyPreservingLocal(
     userId,
     (response.records.progress_logs as ProgressLogPayload[]).map((log) => ({
       ...log,
       id: log.id || crypto.randomUUID(),
     }))
   );
-  await journalRepo.upsertRemoteMany(userId, response.records.journal_entries as JournalEntry[]);
-  await goalsRepo.upsertRemoteMany(userId, response.records.goals as Goal[]);
+  await journalRepo.upsertRemoteManyPreservingLocal(
+    userId,
+    response.records.journal_entries as JournalEntry[],
+  );
+  await goalsRepo.upsertRemoteManyPreservingLocal(
+    userId,
+    response.records.goals as Goal[],
+  );
   await bookListsRepo.upsertRemoteManyPreservingLocal(
     userId,
     response.records.book_lists as BookList[],
@@ -114,19 +300,37 @@ const applyAcceptedRecord = async (
   accepted: SyncPushAcceptedItem,
   sourceItem: OutboxItem,
 ) => {
-  if (!accepted.record) return;
+  if (!accepted.record) return false;
+  let sourceOutboxDeleted = false;
 
   switch (accepted.entity) {
     case "books": {
       const book = accepted.record as Book;
+      const resolvedBook = await booksRepo.remapIdentity(
+        getRecordUserId(book, userId),
+        accepted.client_entity_id,
+        book,
+        {
+          sourceOutbox: {
+            id: sourceItem.id,
+            clientMutationId: sourceItem.client_mutation_id,
+            expectedStatus: "syncing",
+            expectedAttemptCount: sourceItem.attempt_count + 1,
+          },
+        },
+      );
+      sourceOutboxDeleted = true;
       if (accepted.client_entity_id !== book.id) {
-        await booksRepo.remove(accepted.client_entity_id);
+        emitBooksChanged({
+          type: "remove",
+          userId,
+          bookId: accepted.client_entity_id,
+        });
       }
-      await booksRepo.upsertRemote(getRecordUserId(book, userId), book);
-      if (book.deleted_at) {
-        emitBooksChanged({ type: "remove", userId, bookId: book.id });
+      if (resolvedBook.deleted_at) {
+        emitBooksChanged({ type: "remove", userId, bookId: resolvedBook.id });
       } else {
-        emitBooksChanged({ type: "upsert", userId, book });
+        emitBooksChanged({ type: "upsert", userId, book: resolvedBook });
       }
       break;
     }
@@ -245,12 +449,17 @@ const applyAcceptedRecord = async (
     default:
       break;
   }
+  return sourceOutboxDeleted;
 };
 
 export class ReadingCoreSyncEngine {
   private activeSync: Promise<SyncStatusDetail> | null = null;
   private activeUserId: string | null = null;
   private resyncRequested = false;
+  private forcePendingRequested = false;
+  private retryTimers = new Map<string, { id: number; dueAt: number }>();
+
+  constructor(private readonly timers: SyncTimerApi = browserTimerApi) {}
 
   private async notifyCurrentStatus(userId?: string | null) {
     const status = await this.getStatus(userId);
@@ -281,10 +490,10 @@ export class ReadingCoreSyncEngine {
     };
   }
 
-  async syncCurrentUser(): Promise<SyncStatusDetail> {
+  async syncCurrentUser(options: SyncOptions = {}): Promise<SyncStatusDetail> {
     const user = await getCurrentAuthUser();
     if (!user) return this.getStatus(null);
-    return this.syncUser(user.id);
+    return this.syncUser(user.id, options);
   }
 
   async listFailedCurrentUser(): Promise<OutboxItem[]> {
@@ -310,7 +519,101 @@ export class ReadingCoreSyncEngine {
     return this.notifyCurrentStatus(item.user_id);
   }
 
-  async syncUser(userId: string): Promise<SyncStatusDetail> {
+  async getServerBookCopySafety(item: OutboxItem): Promise<ServerBookCopySafety> {
+    if (!isBookIdentityConflict(item)) return { safe: false, relatedChangeCount: 0 };
+
+    const [outstanding, failed, localReferences] = await Promise.all([
+      syncRepo.listOutstanding(item.user_id),
+      syncRepo.listFailed(item.user_id),
+      getUnsyncedLocalBookReferences(item.user_id, item.client_entity_id),
+    ]);
+    const relatedOutbox = [...outstanding, ...failed]
+      .filter((candidate) => candidate.id !== item.id)
+      .filter((candidate) => outboxReferencesBook(candidate, item.client_entity_id));
+    const representedLocalChanges = new Set(
+      relatedOutbox.map((candidate) => `${candidate.entity}:${candidate.client_entity_id}`),
+    );
+    const orphanedLocalChangeCount = localReferences.filter(
+      (reference) => !representedLocalChanges.has(reference),
+    ).length;
+    const relatedChangeCount = new Set(relatedOutbox.map((candidate) => candidate.id)).size
+      + orphanedLocalChangeCount;
+
+    return {
+      safe: relatedChangeCount === 0,
+      relatedChangeCount,
+    };
+  }
+
+  /**
+   * Resolves a duplicate/stale book identity by keeping the authoritative active
+   * server row and removing only this device's conflicting row and failed mutation.
+   * Callers must explicitly confirm first because an update payload can contain
+   * edits that have never reached the server.
+   */
+  async useServerBookCopy(item: OutboxItem): Promise<{ book: Book; status: SyncStatusDetail }> {
+    if (item.status !== "failed" || !isBookIdentityConflict(item)) {
+      throw new Error("Only failed duplicate book creates, updates, or restores can use a server library copy");
+    }
+
+    const user = await getCurrentAuthUser().catch(() => null);
+    if (!user || user.id !== item.user_id) {
+      throw new Error("Sign in to the account that owns this reading change");
+    }
+    if (!isConnectivityAvailable()) {
+      throw new Error("Reconnect before loading the synced library copy");
+    }
+
+    const safety = await this.getServerBookCopySafety(item);
+    if (!safety.safe) {
+      throw new Error(
+        `${safety.relatedChangeCount} other unsynced reading change${
+          safety.relatedChangeCount === 1 ? "" : "s"
+        } still depend on this local book. Those changes were kept.`,
+      );
+    }
+
+    const serverBook = await findServerBookForConflict(item.user_id, item);
+    if (!serverBook) {
+      throw new Error("A matching synced library copy could not be found. Your local change was kept.");
+    }
+
+    const finalSafety = await this.getServerBookCopySafety(item);
+    if (!finalSafety.safe) {
+      throw new Error(
+        `${finalSafety.relatedChangeCount} other unsynced reading change${
+          finalSafety.relatedChangeCount === 1 ? "" : "s"
+        } appeared while the library copy was loading. Those changes were kept.`,
+      );
+    }
+
+    const resolvedBook = await booksRepo.remapIdentity(
+      item.user_id,
+      item.client_entity_id,
+      serverBook,
+      {
+        sourceOutbox: {
+          id: item.id,
+          clientMutationId: item.client_mutation_id,
+          expectedStatus: "failed",
+          expectedAttemptCount: item.attempt_count,
+        },
+        requireNoOtherUnsyncedReferences: true,
+      },
+    );
+
+    if (item.client_entity_id !== serverBook.id) {
+      emitBooksChanged({ type: "remove", userId: item.user_id, bookId: item.client_entity_id });
+    }
+    emitBooksChanged({ type: "upsert", userId: item.user_id, book: resolvedBook });
+
+    return {
+      book: resolvedBook,
+      status: await this.notifyCurrentStatus(item.user_id),
+    };
+  }
+
+  async syncUser(userId: string, options: SyncOptions = {}): Promise<SyncStatusDetail> {
     if (!isConnectivityAvailable()) {
       const status = await this.getStatus(userId);
       notifySyncStatus(status);
@@ -320,6 +623,7 @@ export class ReadingCoreSyncEngine {
     if (this.activeSync) {
       if (this.activeUserId === userId) {
         this.resyncRequested = true;
+        this.forcePendingRequested ||= options.forcePending === true;
         return this.activeSync;
       }
 
@@ -328,10 +632,11 @@ export class ReadingCoreSyncEngine {
       } catch {
         // A different signed-in user should still get an independent sync attempt.
       }
-      return this.syncUser(userId);
+      return this.syncUser(userId, options);
     }
 
-    const sync = this.runSync(userId);
+    this.clearRetryTimer(userId);
+    const sync = this.runSync(userId, options.forcePending === true);
     this.activeSync = sync;
     this.activeUserId = userId;
     try {
@@ -341,77 +646,151 @@ export class ReadingCoreSyncEngine {
         this.activeSync = null;
         this.activeUserId = null;
         this.resyncRequested = false;
+        this.forcePendingRequested = false;
       }
     }
   }
 
-  private async runSync(userId: string): Promise<SyncStatusDetail> {
+  private async runSync(userId: string, forcePending: boolean): Promise<SyncStatusDetail> {
     notifySyncStatus(await this.getStatus(userId));
 
     try {
       let status: SyncStatusDetail;
       do {
+        const forceThisPass = forcePending || this.forcePendingRequested;
+        forcePending = false;
+        this.forcePendingRequested = false;
         this.resyncRequested = false;
-        await this.pushPending(userId);
+        await this.pushPending(userId, forceThisPass);
         await this.pullLatest(userId);
         status = await this.getStatus(userId);
       } while (this.resyncRequested && isConnectivityAvailable());
 
       trackCoreEvent("sync_succeeded");
       notifySyncStatus(status);
+      await this.scheduleAutomaticRetry(userId);
       return status;
     } catch (error) {
       trackCoreEvent("sync_failed", {
         reason: error instanceof Error ? error.message.slice(0, 160) : "unknown",
       });
+      await this.notifyCurrentStatus(userId).catch(() => undefined);
+      await this.scheduleAutomaticRetry(userId).catch(() => undefined);
       throw error;
     }
   }
 
-  private async pushPending(userId: string) {
-    const pendingItems = await syncRepo.listPending(userId);
+  private async pushPending(userId: string, forcePending = false) {
+    const pendingItems = await syncRepo.listPending(userId, {
+      includeFreshSyncing: forcePending,
+    });
     if (pendingItems.length === 0) return;
 
-    const eligible = pendingItems.filter((item) => {
+    const eligible = forcePending ? pendingItems : pendingItems.filter((item) => {
       if (!item.next_attempt_at) return true;
-      return Date.parse(item.next_attempt_at) <= Date.now();
+      const nextAttemptAt = Date.parse(item.next_attempt_at);
+      return !Number.isFinite(nextAttemptAt) || nextAttemptAt <= Date.now();
     });
 
     if (eligible.length === 0) return;
 
     await Promise.all(eligible.map((item) => syncRepo.markSyncing(item)));
 
-    let response;
+    const settledIds = new Set<string>();
     try {
-      response = await pushSyncMutations({ items: eligible });
+      const pushItems = await Promise.all(
+        eligible.map((item) => addBookSyncSnapshot(userId, item)),
+      );
+      const response = await pushSyncMutations({ items: pushItems });
+      if (!response || !Array.isArray(response.accepted) || !Array.isArray(response.failed)) {
+        throw new Error("Sync server returned an invalid response");
+      }
+
+      for (const item of eligible) {
+        const accepted = response.accepted.find((responseItem) =>
+          hasExactOutboxIdentity(responseItem, item)
+        ) as SyncPushAcceptedItem | undefined;
+        if (accepted) {
+          const validationError = getAcceptedRecordValidationError(userId, accepted);
+          if (validationError) {
+            await syncRepo.deferRetry(item, validationError);
+            settledIds.add(item.id);
+            continue;
+          }
+
+          const sourceOutboxDeleted = await applyAcceptedRecord(userId, accepted, item);
+          if (!sourceOutboxDeleted) {
+            await syncRepo.delete(item.id);
+          }
+          settledIds.add(item.id);
+          continue;
+        }
+
+        const failedResponse = response.failed.find((responseItem) =>
+          hasExactOutboxIdentity(responseItem, item)
+        );
+        const failed = failedResponse && isStructurallyValidFailure(failedResponse)
+          ? failedResponse
+          : undefined;
+        if (failed?.retryable !== false) {
+          await syncRepo.deferRetry(item, failed?.error || "Sync server returned no result");
+        } else {
+          await syncRepo.markFailed(item, failed.error || "Sync failed");
+        }
+        settledIds.add(item.id);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Sync failed";
       const retryAfterMs = getApiRetryAfterMs(error) ?? undefined;
-      await Promise.all(eligible.map((item) => syncRepo.deferRetry(item, message, retryAfterMs)));
+      await Promise.all(
+        eligible
+          .filter((item) => !settledIds.has(item.id))
+          .map((item) => syncRepo.deferRetry(item, message, retryAfterMs)),
+      );
       throw error;
     }
-    const acceptedById = new Map<string, SyncPushAcceptedItem>(
-      response.accepted.map((item) => [item.id, item]),
-    );
-    const failedById = new Map<string, SyncPushFailedItem>(
-      response.failed.map((item) => [item.id, item]),
-    );
+  }
 
-    for (const item of eligible) {
-      const accepted = acceptedById.get(item.id);
-      if (accepted) {
-        await applyAcceptedRecord(userId, accepted, item);
-        await syncRepo.delete(item.id);
-        continue;
-      }
+  private clearRetryTimer(userId: string) {
+    const scheduled = this.retryTimers.get(userId);
+    if (!scheduled) return;
+    this.timers.clearTimeout(scheduled.id);
+    this.retryTimers.delete(userId);
+  }
 
-      const failed = failedById.get(item.id);
-      if (failed?.retryable !== false) {
-        await syncRepo.deferRetry(item, failed?.error || "Sync failed");
-      } else {
-        await syncRepo.markFailed(item, failed?.error || "Sync failed");
-      }
-    }
+  private async scheduleAutomaticRetry(userId: string) {
+    this.clearRetryTimer(userId);
+
+    const outstanding = await syncRepo.listOutstanding(userId);
+    if (outstanding.length === 0) return;
+
+    const now = Date.now();
+    const dueAt = Math.min(
+      ...outstanding.map((item) => {
+        if (item.status === "syncing") {
+          const updatedAt = Date.parse(item.updated_at);
+          return Number.isFinite(updatedAt) ? updatedAt + SYNCING_STALE_AFTER_MS : now;
+        }
+
+        const nextAttemptAt = item.next_attempt_at
+          ? Date.parse(item.next_attempt_at)
+          : now;
+        return Number.isFinite(nextAttemptAt) ? nextAttemptAt : now;
+      }),
+    );
+    const delay = Math.min(MAX_TIMER_DELAY_MS, Math.max(MIN_RETRY_DELAY_MS, dueAt - now));
+    const timerId = this.timers.setTimeout(async () => {
+      this.retryTimers.delete(userId);
+      if (!isConnectivityAvailable()) return;
+
+      const user = await getCurrentAuthUser().catch(() => null);
+      if (user?.id !== userId) return;
+
+      await this.syncUser(userId).catch(() => {
+        // runSync records the failure, restores the queue state, and schedules the next retry.
+      });
+    }, delay);
+    this.retryTimers.set(userId, { id: timerId, dueAt });
   }
 
   private async pullLatest(userId: string) {

@@ -38,12 +38,12 @@ export const OfflineIndicator = () => {
     };
   }, []);
 
-  const handleSync = useCallback(async () => {
+  const handleSync = useCallback(async (forcePending = false) => {
     if (syncing || !isOnline) return;
 
     setSyncing(true);
     try {
-      const nextStatus = await readingCoreSync.syncCurrentUser();
+      const nextStatus = await readingCoreSync.syncCurrentUser({ forcePending });
       setStatus(nextStatus);
       
       if (nextStatus.pending === 0 && nextStatus.failed === 0) {
@@ -72,13 +72,14 @@ export const OfflineIndicator = () => {
 
   useEffect(() => {
     const autoSyncDue = Date.now() - lastAutoSyncAtRef.current > 30_000;
-    if (isOnline && status.pending > 0 && autoSyncDue) {
+    if (isOnline && status.pending + status.syncing > 0 && autoSyncDue) {
       lastAutoSyncAtRef.current = Date.now();
-      void handleSync();
+      void handleSync(false);
     }
-  }, [handleSync, isOnline, status.pending]);
+  }, [handleSync, isOnline, status.pending, status.syncing]);
 
   const pendingCount = status.pending + status.failed + status.syncing;
+  const retryingCount = status.pending + status.syncing;
 
   if (isOnline && pendingCount === 0) {
     return null;
@@ -105,7 +106,14 @@ export const OfflineIndicator = () => {
                   <Refresh className="h-4 w-4 text-primary" />
                 )}
                 <AlertDescription className="font-sans text-current">
-                  {pendingCount > 0 ? (
+                  {hasFailures ? (
+                    <>
+                      {status.failed} reading change{status.failed === 1 ? " needs" : "s need"} review
+                      {retryingCount > 0
+                        ? `; ${retryingCount} ${retryingCount === 1 ? "is" : "are"} still syncing`
+                        : ""}
+                    </>
+                  ) : pendingCount > 0 ? (
                     <>
                       {pendingCount} reading change{pendingCount > 1 ? "s" : ""} to sync
                     </>
@@ -139,25 +147,27 @@ export const OfflineIndicator = () => {
                   Review
                 </Button>
               )}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleSync}
-                disabled={syncing}
-                className="h-8 bg-background/80"
-              >
-                {syncing ? (
-                  <>
-                    <Refresh className="h-3 w-3 mr-1 animate-spin" />
-                    Syncing...
-                  </>
-                ) : (
-                  <>
-                    <Refresh className="h-3 w-3 mr-1" />
-                    Sync Now
-                  </>
-                )}
-              </Button>
+              {retryingCount > 0 && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void handleSync(true)}
+                  disabled={syncing}
+                  className="h-8 bg-background/80"
+                >
+                  {syncing ? (
+                    <>
+                      <Refresh className="h-3 w-3 mr-1 animate-spin" />
+                      Syncing...
+                    </>
+                  ) : (
+                    <>
+                      <Refresh className="h-3 w-3 mr-1" />
+                      Sync Now
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           )}
         </div>

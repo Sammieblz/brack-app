@@ -139,6 +139,57 @@ export interface GamificationSettingsResponse {
   timezone: string;
 }
 
+export const GAMIFICATION_SHOP_ITEM_CODES = {
+  streakFreeze: "streak_freeze",
+} as const;
+
+export interface GamificationShopAccount {
+  user_id: string;
+  gold_leaves: number;
+}
+
+export interface GamificationShopItem {
+  code: string;
+  display_name: string;
+  description: string;
+  item_type: string;
+  gold_leaves_cost: number;
+  max_inventory: number;
+  quantity: number;
+  can_purchase: boolean;
+  config: Record<string, unknown>;
+}
+
+export interface GamificationShopResponse {
+  account: GamificationShopAccount;
+  items: GamificationShopItem[];
+}
+
+export interface GamificationShopPurchaseInput {
+  itemCode: string;
+  quantity: 1;
+  idempotencyKey: string;
+}
+
+export interface GamificationShopPurchaseResult {
+  success: boolean;
+  idempotent: boolean;
+  purchase: {
+    id: string;
+    item_code: string;
+    quantity: number;
+    unit_cost_gold_leaves: number;
+    gold_leaves_spent: number;
+    created_at: string;
+  };
+  account: GamificationShopAccount;
+  inventory: {
+    item_code: string;
+    quantity: number;
+    max_inventory: number;
+  };
+}
+
 const cacheKey = (userId: string) => `brack:gamification-home:${userId}`;
 
 export const readCachedGamificationHome = (
@@ -258,6 +309,22 @@ export const updateGamificationSettings = async (
   });
   void readingCoreSync.syncUser(user.id).catch(console.error);
   return response;
+};
+
+export const getGamificationShop = async (): Promise<GamificationShopResponse> =>
+  invokeFunction<GamificationShopResponse>("gamification-shop", {
+    method: "GET",
+  });
+
+export const purchaseGamificationShopItem = async (
+  input: GamificationShopPurchaseInput,
+): Promise<GamificationShopPurchaseResult> => {
+  const result = await invokeFunction<GamificationShopPurchaseResult>("gamification-shop", {
+    method: "POST",
+    body: input,
+  });
+  if (!result.success) throw new Error("Gamification shop purchase was not completed");
+  return result;
 };
 
 export const getPublicGamificationProfile = async (

@@ -9,7 +9,12 @@ import type {
   ReadingSession,
 } from "@/types";
 import type { JournalEntry } from "@/services/api/journal";
-import { localDriver, type LocalTableName, type OutboxCounts } from "./driver";
+import {
+  localDriver,
+  type LocalBookIdentityRemap,
+  type LocalTableName,
+  type OutboxCounts,
+} from "./driver";
 import type {
   LocalEntityStatus,
   LocalRecord,
@@ -219,7 +224,51 @@ const createEntityRepo = <T extends { id: string }>(table: LocalTableName, entit
   },
 });
 
-export const booksRepo = createEntityRepo<Book>("books", "books");
+const baseBooksRepo = createEntityRepo<Book>("books", "books");
+const MAX_BOOK_ALIAS_DEPTH = 16;
+export const booksRepo = {
+  ...baseBooksRepo,
+  async resolveIdentity(userId: string, bookId: string) {
+    const originalBookId = bookId;
+    let currentBookId = bookId;
+    const visited = new Set<string>();
+
+    for (let depth = 0; depth < MAX_BOOK_ALIAS_DEPTH; depth += 1) {
+      if (visited.has(currentBookId)) return originalBookId;
+      visited.add(currentBookId);
+
+      const alias = await localDriver.getSyncState(
+        userId,
+        `book_alias:${currentBookId}`,
+      );
+      const nextBookId = alias?.user_id === userId ? alias.cursor?.trim() : null;
+      if (!nextBookId) return currentBookId;
+      if (nextBookId === currentBookId || visited.has(nextBookId)) {
+        return originalBookId;
+      }
+      currentBookId = nextBookId;
+    }
+
+    return currentBookId;
+  },
+  async remapIdentity(
+    userId: string,
+    staleBookId: string,
+    canonicalBook: Book,
+    options: Pick<
+      LocalBookIdentityRemap,
+      "sourceOutbox" | "requireNoOtherUnsyncedReferences"
+    > = {},
+  ) {
+    const record = await localDriver.remapBookIdentity({
+      userId,
+      staleBookId,
+      canonicalBookRecord: toLocalRecord(userId, canonicalBook, "synced"),
+      ...options,
+    });
+    return record.data as Book;
+  },
+};
 const baseSessionsRepo = createEntityRepo<ReadingSession>("reading_sessions", "reading_sessions");
 const baseProgressRepo = createEntityRepo<ProgressLogPayload & { id: string }>(
   "progress_logs",
@@ -365,13 +414,17 @@ export const syncRepo = {
       makeOutboxItem(userId, entity, entityId, operation, payload)
     );
   },
-  listPending(userId: string) {
+  listPending(userId: string, options: { includeFreshSyncing?: boolean } = {}) {
     return localDriver.listOutbox(userId, ["pending", "syncing"]).then((items) =>
       items.filter((item) => {
         if (item.status === "pending") return true;
-        return Date.parse(item.updated_at) < Date.now() - 10 * 60_000;
+        return options.includeFreshSyncing
+          || Date.parse(item.updated_at) < Date.now() - 10 * 60_000;
       })
     );
+  },
+  listOutstanding(userId: string) {
+    return localDriver.listOutbox(userId, ["pending", "syncing"]);
   },
   listFailed(userId: string) {
     return localDriver.listOutbox(userId, ["failed"]);

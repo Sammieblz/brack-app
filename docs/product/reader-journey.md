@@ -9,7 +9,8 @@ product label is **Journey**.
 - **Ink** is permanent experience. It never resets.
 - **Competitive Ink** is the weekly leaderboard subset of Ink. It resets by
   week and is capped at 150 per user's local day before quest bonuses.
-- **Gold Leaves** are prestige currency. They are not spendable in v1.
+- **Gold Leaves** are spendable prestige currency. Purchases are server-owned,
+  idempotent, and recorded in the immutable gamification ledger.
 - Levels come from `gamification_levels`; clients must not calculate thresholds
   from a hardcoded formula.
 - Reward values come from `gamification_reward_rules`; clients must not award or
@@ -19,6 +20,11 @@ product label is **Journey**.
 `(user_id, event_key)` constraint makes canonical reading retries exactly once.
 Reading sessions, progress logs, status transitions, streak days, badges,
 quests, and league podiums emit stable event keys.
+
+The first shop item is a Streak Freeze. It costs one Gold Leaf, can be held in
+inventory up to the configured limit, and is consumed only when the owner uses
+it for their current local date. The database enforces prior-day activity,
+same-day inactivity, inventory ownership, and the rolling seven-day cooldown.
 
 Imported/restored/duplicate books and progress corrections do not earn rewards.
 Offline activity earns rewards only after the canonical reading mutation reaches
@@ -129,7 +135,8 @@ Required backend secrets:
 - `FCM_SERVICE_ACCOUNT_JSON`
 - `GAMIFICATION_WORKER_SECRET`
 
-Vault secrets used to create the hosted worker cron invocation:
+Vault secrets resolved by the worker-invocation helper at execution time (never
+embedded in `cron.job.command`):
 
 - `project_url`
 - `gamification_worker_secret`

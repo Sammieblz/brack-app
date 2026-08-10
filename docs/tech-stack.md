@@ -131,6 +131,7 @@ Brack uses modern, production-ready technologies for web and mobile development.
   - `gamification-home` / `gamification-history` - Reader Journey account, quests, and Ink ledger
   - `leaderboard` / `profile-gamification` - Privacy-aware league, friends, global, and profile progression reads
   - `update-gamification-settings` - Local-first Journey privacy, timezone, and league opt-in settings
+  - `gamification-shop` - Gold Leaf catalog, inventory, and idempotent purchases
   - `gamification-worker` - Supabase Queue worker for rollover, reminders, and FCM HTTP v1 delivery
   - `calculate-book-progress` - Progress analytics
 

@@ -1,5 +1,9 @@
 import type { LocalRecord, OutboxItem, SyncState } from "@/services/sync/types";
-import type { LocalMutationRecord, LocalTableName } from "@/services/local/driver";
+import type {
+  LocalBookIdentityRemap,
+  LocalMutationRecord,
+  LocalTableName,
+} from "@/services/local/driver";
 
 export type BrackRuntimePlatform = "web" | "ios" | "android" | "desktop";
 
@@ -23,6 +27,7 @@ export type BrackDesktopLocalDbRequest =
   | { operation: "removeRecord"; table: LocalTableName; id: string }
   | { operation: "enqueueOutbox"; item: OutboxItem }
   | { operation: "commitMutation"; records: LocalMutationRecord[]; item: OutboxItem }
+  | { operation: "remapBookIdentity"; request: LocalBookIdentityRemap }
   | { operation: "listOutbox"; userId: string; statuses?: OutboxItem["status"][] }
   | { operation: "updateOutbox"; id: string; updates: Partial<OutboxItem> }
   | { operation: "deleteOutbox"; id: string }

@@ -46,6 +46,19 @@ interface OutboxItem<TPayload = unknown> {
   next_attempt_at?: string | null;
 }
 
+interface LocalBookIdentityRemap {
+  userId: string;
+  staleBookId: string;
+  canonicalBookRecord: LocalRecord;
+  sourceOutbox?: {
+    id: string;
+    clientMutationId: string;
+    expectedStatus: OutboxStatus;
+    expectedAttemptCount: number;
+  };
+  requireNoOtherUnsyncedReferences?: boolean;
+}
+
 interface SyncState {
   key: string;
   user_id: string;
@@ -70,6 +83,7 @@ export type LocalDbRequest =
       records: Array<{ table: LocalTableName; record: LocalRecord }>;
       item: OutboxItem;
     }
+  | { operation: "remapBookIdentity"; request: LocalBookIdentityRemap }
   | { operation: "listOutbox"; userId: string; statuses?: OutboxStatus[] }
   | { operation: "updateOutbox"; id: string; updates: Partial<OutboxItem> }
   | { operation: "deleteOutbox"; id: string }
@@ -93,6 +107,14 @@ const ENTITY_TABLES: LocalTableName[] = [
 
 const ENTITY_TABLE_SET = new Set<string>(ENTITY_TABLES);
 const OUTBOX_STATUS_SET = new Set<string>(["pending", "syncing", "failed", "synced"]);
+const OUTSTANDING_OUTBOX_STATUSES = new Set<OutboxStatus>(["pending", "syncing", "failed"]);
+const BOOK_REFERENCE_TABLES = [
+  "reading_sessions",
+  "progress_logs",
+  "journal_entries",
+  "book_list_items",
+  "pending_book_imports",
+] as const satisfies readonly LocalTableName[];
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -133,6 +155,193 @@ const parseJson = <T,>(value: unknown, fallback: T): T => {
   } catch {
     return fallback;
   }
+};
+
+const remapLocalBookReference = (
+  table: (typeof BOOK_REFERENCE_TABLES)[number],
+  record: LocalRecord,
+  staleBookId: string,
+  canonicalBookId: string,
+): LocalRecord | null => {
+  const data = isObject(record.data) ? record.data : null;
+  if (!data) return null;
+  const referenceKey = table === "pending_book_imports" ? "resolved_book_id" : "book_id";
+  if (data[referenceKey] !== staleBookId) return null;
+  return {
+    ...record,
+    data: {
+      ...data,
+      [referenceKey]: canonicalBookId,
+    },
+  };
+};
+
+const remapOutboxBookReference = (
+  item: OutboxItem,
+  staleBookId: string,
+  canonicalBookId: string,
+): OutboxItem => {
+  const payload = isObject(item.payload) ? item.payload : null;
+  let clientEntityId = item.client_entity_id;
+  let nextPayload = payload;
+  let changed = false;
+
+  if (item.entity === "books" && clientEntityId === staleBookId) {
+    clientEntityId = canonicalBookId;
+    changed = true;
+  }
+  if (payload) {
+    if (payload.book_id === staleBookId) {
+      nextPayload = { ...nextPayload, book_id: canonicalBookId };
+      changed = true;
+    }
+    if (Array.isArray(payload.ordered_book_ids) && payload.ordered_book_ids.includes(staleBookId)) {
+      nextPayload = {
+        ...nextPayload,
+        ordered_book_ids: payload.ordered_book_ids.map((bookId) =>
+          bookId === staleBookId ? canonicalBookId : bookId
+        ),
+      };
+      changed = true;
+    }
+    if (item.entity === "books") {
+      if (payload.id === staleBookId) {
+        nextPayload = { ...nextPayload, id: canonicalBookId };
+        changed = true;
+      }
+      const snapshot = isObject(payload.__sync_snapshot) ? payload.__sync_snapshot : null;
+      if (snapshot?.id === staleBookId) {
+        nextPayload = {
+          ...nextPayload,
+          __sync_snapshot: {
+            ...snapshot,
+            id: canonicalBookId,
+          },
+        };
+        changed = true;
+      }
+    }
+  }
+
+  return changed
+    ? {
+        ...item,
+        client_entity_id: clientEntityId,
+        payload: nextPayload,
+      }
+    : item;
+};
+
+const outboxReferencesBook = (item: OutboxItem, bookId: string) => {
+  if (item.entity === "books" && item.client_entity_id === bookId) return true;
+  const payload = isObject(item.payload) ? item.payload : null;
+  if (!payload) return false;
+  if (payload.book_id === bookId) return true;
+  if (Array.isArray(payload.ordered_book_ids) && payload.ordered_book_ids.includes(bookId)) {
+    return true;
+  }
+  if (item.entity !== "books") return false;
+  const snapshot = isObject(payload.__sync_snapshot) ? payload.__sync_snapshot : null;
+  return payload.id === bookId || snapshot?.id === bookId;
+};
+
+const recordReferencesBook = (
+  table: (typeof BOOK_REFERENCE_TABLES)[number],
+  record: LocalRecord,
+  bookId: string,
+) => {
+  const data = isObject(record.data) ? record.data : null;
+  if (!data) return false;
+  return table === "pending_book_imports"
+    ? data.resolved_book_id === bookId
+    : data.book_id === bookId;
+};
+
+const selectCanonicalBookRecord = (
+  canonicalBookRecord: LocalRecord,
+  staleBookRecord: LocalRecord | null,
+  existingCanonicalRecord: LocalRecord | null,
+  hasRemainingBookMutation: boolean,
+  sourceBookIsCanonical: boolean,
+): LocalRecord => {
+  const unsyncedCanonical =
+    existingCanonicalRecord &&
+    existingCanonicalRecord.status !== "synced" &&
+    (!sourceBookIsCanonical || hasRemainingBookMutation)
+      ? existingCanonicalRecord
+      : null;
+  const localCandidate = unsyncedCanonical ?? (
+    hasRemainingBookMutation && staleBookRecord && staleBookRecord.status !== "synced"
+      ? staleBookRecord
+      : null
+  );
+  if (!localCandidate) return canonicalBookRecord;
+
+  const canonicalData = isObject(canonicalBookRecord.data) ? canonicalBookRecord.data : {};
+  const localData = isObject(localCandidate.data) ? localCandidate.data : {};
+  return {
+    ...localCandidate,
+    id: canonicalBookRecord.id,
+    user_id: canonicalBookRecord.user_id,
+    data: {
+      ...canonicalData,
+      ...localData,
+      id: canonicalBookRecord.id,
+      user_id: canonicalBookRecord.user_id,
+    },
+  };
+};
+
+const assertBookRemapCanProceed = (
+  request: LocalBookIdentityRemap,
+  recordsByTable: Map<(typeof BOOK_REFERENCE_TABLES)[number], LocalRecord[]>,
+  outboxItems: OutboxItem[],
+) => {
+  let sourceOutbox: OutboxItem | null = null;
+  if (request.sourceOutbox) {
+    const source = outboxItems.find((item) => item.id === request.sourceOutbox?.id);
+    if (
+      !source ||
+      source.client_mutation_id !== request.sourceOutbox.clientMutationId ||
+      source.status !== request.sourceOutbox.expectedStatus ||
+      source.attempt_count !== request.sourceOutbox.expectedAttemptCount
+    ) {
+      throw new Error(
+        "This reading change was updated in another tab or sync pass. Its local data was kept; refresh and review it again.",
+      );
+    }
+    sourceOutbox = source;
+  }
+  if (!request.requireNoOtherUnsyncedReferences) return sourceOutbox;
+
+  const relatedOutbox = outboxItems.filter(
+    (item) =>
+      item.id !== request.sourceOutbox?.id &&
+      OUTSTANDING_OUTBOX_STATUSES.has(item.status) &&
+      outboxReferencesBook(item, request.staleBookId),
+  );
+  const representedLocalChanges = new Set(
+    relatedOutbox.map((item) => `${item.entity}:${item.client_entity_id}`),
+  );
+  let orphanedLocalChangeCount = 0;
+  for (const [table, records] of recordsByTable) {
+    orphanedLocalChangeCount += records.filter(
+      (record) =>
+        (record.status !== "synced" || table === "pending_book_imports") &&
+        recordReferencesBook(table, record, request.staleBookId) &&
+        !representedLocalChanges.has(`${table}:${record.id}`),
+    ).length;
+  }
+  const relatedChangeCount =
+    new Set(relatedOutbox.map((item) => item.id)).size + orphanedLocalChangeCount;
+  if (relatedChangeCount > 0) {
+    throw new Error(
+      `${relatedChangeCount} other unsynced reading change${
+        relatedChangeCount === 1 ? "" : "s"
+      } appeared while the library copy was loading. Those changes were kept.`,
+    );
+  }
+  return sourceOutbox;
 };
 
 type DbRow = Record<string, unknown>;
@@ -181,6 +390,8 @@ export class DesktopLocalDb {
         return this.enqueueOutbox(request.item);
       case "commitMutation":
         return this.commitMutation(request.records, request.item);
+      case "remapBookIdentity":
+        return this.remapBookIdentity(request.request);
       case "listOutbox":
         return this.listOutbox(assertString(request.userId, "userId"), assertStatuses(request.statuses));
       case "updateOutbox":
@@ -413,6 +624,90 @@ export class DesktopLocalDb {
     });
     transaction();
     return null;
+  }
+
+  private remapBookIdentity(request: LocalBookIdentityRemap) {
+    if (!isObject(request)) {
+      throw new Error("Invalid local database request: remap must be an object");
+    }
+    const userId = assertString(request.userId, "request.userId");
+    const staleBookId = assertString(request.staleBookId, "request.staleBookId");
+    const canonicalBookRecord = request.canonicalBookRecord;
+    const canonicalBookId = assertString(
+      canonicalBookRecord?.id,
+      "request.canonicalBookRecord.id",
+    );
+    if (canonicalBookRecord.user_id !== userId) {
+      throw new Error("Invalid local book identity remap");
+    }
+
+    const transaction = this.connection().transaction(() => {
+      const recordsByTable = new Map<
+        (typeof BOOK_REFERENCE_TABLES)[number],
+        LocalRecord[]
+      >();
+      for (const table of BOOK_REFERENCE_TABLES) {
+        recordsByTable.set(
+          table,
+          this.listRecords(table, userId, { includeDeleted: true }) as LocalRecord[],
+        );
+      }
+      const outboxItems = this.listOutbox(userId, ["pending", "syncing", "failed"]);
+      const sourceOutbox = assertBookRemapCanProceed(request, recordsByTable, outboxItems);
+
+      const rewrittenOutbox = outboxItems
+        .filter((item) => item.id !== request.sourceOutbox?.id)
+        .map((item) => remapOutboxBookReference(item, staleBookId, canonicalBookId));
+      const hasRemainingBookMutation = rewrittenOutbox.some(
+        (item) => item.entity === "books" && item.client_entity_id === canonicalBookId,
+      );
+      const staleBookRecord = this.getRecord("books", staleBookId);
+      const existingCanonicalRecord = this.getRecord("books", canonicalBookId);
+      if (staleBookRecord && staleBookRecord.user_id !== userId) {
+        throw new Error("The stale local book belongs to a different account");
+      }
+      if (existingCanonicalRecord && existingCanonicalRecord.user_id !== userId) {
+        throw new Error("The canonical local book belongs to a different account");
+      }
+      const selectedCanonicalRecord = selectCanonicalBookRecord(
+        canonicalBookRecord,
+        staleBookRecord,
+        existingCanonicalRecord,
+        hasRemainingBookMutation,
+        sourceOutbox?.entity === "books" && sourceOutbox.client_entity_id === canonicalBookId,
+      );
+
+      for (const table of BOOK_REFERENCE_TABLES) {
+        for (const record of recordsByTable.get(table) ?? []) {
+          const rewritten = remapLocalBookReference(
+            table,
+            record,
+            staleBookId,
+            canonicalBookId,
+          );
+          if (rewritten) this.upsertRecord(table, rewritten);
+        }
+      }
+      for (const item of rewrittenOutbox) {
+        this.enqueueOutbox(item);
+      }
+
+      this.upsertRecord("books", selectedCanonicalRecord);
+      if (staleBookId !== canonicalBookId) {
+        this.setSyncState({
+          key: `${userId}:book_alias:${staleBookId}`,
+          user_id: userId,
+          cursor: canonicalBookId,
+          last_synced_at: new Date().toISOString(),
+        });
+        this.removeRecord("books", staleBookId);
+      }
+      if (request.sourceOutbox) {
+        this.deleteOutbox(request.sourceOutbox.id);
+      }
+      return selectedCanonicalRecord;
+    });
+    return transaction();
   }
 
   private listOutbox(userId: string, statuses: OutboxStatus[]) {

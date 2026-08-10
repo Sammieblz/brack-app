@@ -17,9 +17,23 @@ import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { BadgeDisplay } from "@/components/BadgeDisplay";
 import { BadgeDetailsDialog } from "@/components/BadgeDetailsDialog";
 import { AppIcon } from "@/components/ui/app-icon";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { CurrencyIcon, type BrackCurrency } from "@/components/CurrencyIcon";
 import { useAuth } from "@/hooks/useAuth";
 import { useBadges } from "@/hooks/useBadges";
-import { useGamification, useLeaderboard } from "@/hooks/useGamification";
+import {
+  useGamification,
+  useGamificationShop,
+  useLeaderboard,
+} from "@/hooks/useGamification";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { APP_ICONS } from "@/config/iconography";
@@ -27,12 +41,16 @@ import {
   gamificationQueryKey,
 } from "@/hooks/useGamification";
 import {
+  GAMIFICATION_SHOP_ITEM_CODES,
   updateGamificationSettings,
+  type GamificationShopItem,
   type LeaderboardScope,
   type QuestAssignment,
 } from "@/services/api/gamification";
 import type { Badge as BadgeType, UserBadge } from "@/types";
 import { toast } from "sonner";
+
+const JOURNEY_TABS = new Set(["overview", "quests", "shop", "badges", "rankings"]);
 
 const Achievements = () => {
   const { user } = useAuth();
@@ -50,11 +68,9 @@ const Achievements = () => {
   const [scope, setScope] = useState<LeaderboardScope>("league");
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState(
-    requestedTab && ["overview", "quests", "badges", "rankings"].includes(requestedTab)
-      ? requestedTab
-      : "overview",
-  );
+  const normalizedTab = requestedTab && JOURNEY_TABS.has(requestedTab)
+    ? requestedTab
+    : "overview";
   const leaderboard = useLeaderboard(
     user?.id,
     scope,
@@ -134,16 +150,19 @@ const Achievements = () => {
           />
         ) : (
           <Tabs
-            value={activeTab}
+            value={normalizedTab}
             onValueChange={(value) => {
-              setActiveTab(value);
               setSearchParams(value === "overview" ? {} : { tab: value }, { replace: true });
             }}
             className="space-y-5"
           >
-            <TabsList className="grid h-auto w-full grid-cols-4">
+            <TabsList className="grid h-auto w-full grid-cols-5">
               <JourneyTab value="overview" icon={APP_ICONS.journey.overview} label="Overview" />
               <JourneyTab value="quests" icon={APP_ICONS.journey.quests} label="Quests" />
+              <TabsTrigger value="shop" className="gap-2 px-2">
+                <CurrencyIcon currency="goldLeaves" />
+                <span className="hidden sm:inline">Shop</span>
+              </TabsTrigger>
               <JourneyTab value="badges" icon={APP_ICONS.journey.badges} label="Badges" />
               <JourneyTab value="rankings" icon={APP_ICONS.journey.rankings} label="Ranks" />
             </TabsList>
@@ -163,7 +182,10 @@ const Achievements = () => {
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
-                        <span>{data.account.lifetime_ink.toLocaleString()} Ink</span>
+                        <span className="inline-flex items-center gap-1">
+                          <CurrencyIcon currency="ink" />
+                          {data.account.lifetime_ink.toLocaleString()} Ink
+                        </span>
                         <span className="text-muted-foreground">
                           {data.account.next_level
                             ? `${data.account.next_level.ink_threshold.toLocaleString()} next level`
@@ -174,12 +196,12 @@ const Achievements = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <JourneyMetric
-                        icon={APP_ICONS.journey.ink}
+                        currency="ink"
                         value={data.account.lifetime_ink.toLocaleString()}
                         label="Lifetime Ink"
                       />
                       <JourneyMetric
-                        icon={APP_ICONS.journey.goldLeaf}
+                        currency="goldLeaves"
                         value={data.account.gold_leaves.toLocaleString()}
                         label="Gold Leaves"
                       />
@@ -202,7 +224,10 @@ const Achievements = () => {
                         </div>
                         <div className="flex items-end justify-between">
                           <span className="text-sm text-muted-foreground">Competitive Ink</span>
-                          <strong className="text-2xl">{data.league.score}</strong>
+                          <strong className="inline-flex items-center gap-1 text-2xl">
+                            <CurrencyIcon currency="ink" size="md" />
+                            {data.league.score.toLocaleString()}
+                          </strong>
                         </div>
                       </>
                     ) : (
@@ -249,9 +274,17 @@ const Achievements = () => {
                             </p>
                           </div>
                           <div className="shrink-0 text-right text-sm font-semibold">
-                            {reward.ink_delta > 0 && <span>+{reward.ink_delta} Ink</span>}
+                            {reward.ink_delta > 0 && (
+                              <span className="inline-flex items-center gap-1">
+                                <CurrencyIcon currency="ink" />
+                                +{reward.ink_delta} Ink
+                              </span>
+                            )}
                             {reward.gold_leaves_delta > 0 && (
-                              <span className="ml-2 text-primary">+{reward.gold_leaves_delta} Gold</span>
+                              <span className="ml-2 inline-flex items-center gap-1 text-primary">
+                                <CurrencyIcon currency="goldLeaves" />
+                                +{reward.gold_leaves_delta} Gold
+                              </span>
                             )}
                           </div>
                         </div>
@@ -280,6 +313,10 @@ const Achievements = () => {
                   </CardContent>
                 </Card>
               )}
+            </TabsContent>
+
+            <TabsContent value="shop" className="space-y-5">
+              <ShopSection userId={user.id} />
             </TabsContent>
 
             <TabsContent value="badges" className="space-y-5">
@@ -405,22 +442,197 @@ const JourneyTab = ({
 );
 
 const JourneyMetric = ({
-  icon,
+  currency,
   value,
   label,
 }: {
-  icon: typeof APP_ICONS.journey.ink;
+  currency: BrackCurrency;
   value: string;
   label: string;
 }) => (
   <div className="rounded-md border border-border/70 p-3">
     <div className="flex items-center gap-2 text-muted-foreground">
-      <AppIcon icon={icon} variant="inline" />
+      <CurrencyIcon currency={currency} size="md" />
       <span className="text-xs">{label}</span>
     </div>
     <p className="mt-2 text-2xl font-bold">{value}</p>
   </div>
 );
+
+const createPurchaseIdempotencyKey = () =>
+  typeof globalThis.crypto?.randomUUID === "function"
+    ? globalThis.crypto.randomUUID()
+    : `shop-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+const ShopSection = ({ userId }: { userId: string }) => {
+  const shop = useGamificationShop(userId);
+  const [purchaseTarget, setPurchaseTarget] = useState<{
+    item: GamificationShopItem;
+    idempotencyKey: string;
+  } | null>(null);
+
+  const handlePurchase = async () => {
+    if (!purchaseTarget) return;
+    const { item, idempotencyKey } = purchaseTarget;
+
+    try {
+      const result = await shop.purchaseMutation.mutateAsync({
+        itemCode: item.code,
+        idempotencyKey,
+      });
+      setPurchaseTarget(null);
+      toast.success(
+        result.idempotent
+          ? `${item.display_name} was already added`
+          : `${item.display_name} added to your inventory`,
+      );
+    } catch {
+      toast.error("Purchase did not complete. Your Gold Leaves were not spent.");
+    }
+  };
+
+  if (shop.isLoading) {
+    return (
+      <div className="flex min-h-72 items-center justify-center">
+        <LoadingSpinner text="Opening the Gold Leaf shop..." />
+      </div>
+    );
+  }
+
+  if (shop.error || !shop.data) {
+    return (
+      <PremiumEmptyState
+        asset="badConnection"
+        title="The Gold Leaf shop is unavailable"
+        description="Reconnect and try again. Your balance and inventory remain safe."
+        action={<Button onClick={() => void shop.refetch()}>Try again</Button>}
+        size="compact"
+      />
+    );
+  }
+
+  const { account, items } = shop.data;
+
+  return (
+    <>
+      <Card>
+        <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
+          <div>
+            <CardTitle className="text-lg">Gold Leaf shop</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Spend rare Gold Leaves on useful reading safeguards. Lifetime Ink is never spent.
+            </p>
+          </div>
+          <div className="inline-flex shrink-0 items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1.5 font-semibold text-primary">
+            <CurrencyIcon currency="goldLeaves" size="md" />
+            {account.gold_leaves.toLocaleString()} Gold {account.gold_leaves === 1 ? "Leaf" : "Leaves"}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {items.length === 0 ? (
+            <p className="rounded-md border border-dashed border-border/70 p-5 text-center text-sm text-muted-foreground">
+              No shop items are available right now.
+            </p>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2">
+              {items.map((item) => {
+                const inventoryFull =
+                  item.max_inventory > 0 && item.quantity >= item.max_inventory;
+                const canAfford = account.gold_leaves >= item.gold_leaves_cost;
+                const purchasingThisItem =
+                  shop.purchaseMutation.isPending
+                  && shop.purchaseMutation.variables?.itemCode === item.code;
+                const isStreakFreeze = item.code === GAMIFICATION_SHOP_ITEM_CODES.streakFreeze;
+
+                return (
+                  <div
+                    key={item.code}
+                    className="flex flex-col gap-4 rounded-md border border-border/70 bg-background/50 p-4 sm:flex-row sm:items-center"
+                  >
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      {isStreakFreeze ? (
+                        <APP_ICONS.stats.useFreeze className="h-6 w-6" />
+                      ) : (
+                        <CurrencyIcon currency="goldLeaves" size="lg" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <h3 className="font-medium">{item.display_name}</h3>
+                          <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                        </div>
+                        <Badge variant="secondary">
+                          {item.quantity} / {item.max_inventory} owned
+                        </Badge>
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                        <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                          <CurrencyIcon currency="goldLeaves" />
+                          {item.gold_leaves_cost.toLocaleString()} Gold {item.gold_leaves_cost === 1 ? "Leaf" : "Leaves"}
+                        </span>
+                        <Button
+                          size="sm"
+                          disabled={
+                            shop.purchaseMutation.isPending
+                            || !item.can_purchase
+                            || inventoryFull
+                            || !canAfford
+                          }
+                          onClick={() => setPurchaseTarget({
+                            item,
+                            idempotencyKey: createPurchaseIdempotencyKey(),
+                          })}
+                        >
+                          {purchasingThisItem
+                            ? "Buying..."
+                            : inventoryFull
+                              ? "Inventory full"
+                              : !canAfford
+                                ? "Not enough Leaves"
+                                : item.can_purchase
+                                  ? "Buy"
+                                  : "Unavailable"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <AlertDialog
+        open={Boolean(purchaseTarget)}
+        onOpenChange={(open) => {
+          if (!open && !shop.purchaseMutation.isPending) setPurchaseTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Buy {purchaseTarget?.item.display_name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will spend {purchaseTarget?.item.gold_leaves_cost.toLocaleString()} Gold {purchaseTarget?.item.gold_leaves_cost === 1 ? "Leaf" : "Leaves"}. Your Lifetime Ink and level will not change.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={shop.purchaseMutation.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <Button
+              disabled={shop.purchaseMutation.isPending}
+              onClick={() => void handlePurchase()}
+            >
+              {shop.purchaseMutation.isPending ? "Purchasing..." : "Confirm purchase"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+};
 
 const QuestGroup = ({
   title,
@@ -460,9 +672,17 @@ const QuestCard = ({ quest }: { quest: QuestAssignment }) => {
         <Progress value={percentage} className="h-2" />
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>{Math.min(quest.progress_value, quest.target_value)} / {quest.target_value}</span>
-          <span>
-            {quest.reward_ink} Ink
-            {quest.reward_gold_leaves > 0 ? ` + ${quest.reward_gold_leaves} Gold Leaf` : ""}
+          <span className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1">
+            <span className="inline-flex items-center gap-1">
+              <CurrencyIcon currency="ink" size="xs" />
+              {quest.reward_ink} Ink
+            </span>
+            {quest.reward_gold_leaves > 0 && (
+              <span className="inline-flex items-center gap-1 text-primary">
+                + <CurrencyIcon currency="goldLeaves" size="xs" />
+                {quest.reward_gold_leaves} Gold {quest.reward_gold_leaves === 1 ? "Leaf" : "Leaves"}
+              </span>
+            )}
           </span>
         </div>
       </div>
@@ -520,7 +740,10 @@ const LeaderboardTable = ({
                   </p>
                 </div>
               </div>
-              <strong>{entry.competitive_ink} Ink</strong>
+              <strong className="inline-flex items-center gap-1">
+                <CurrencyIcon currency="ink" />
+                {entry.competitive_ink.toLocaleString()} Ink
+              </strong>
             </div>
           ))}
         </div>

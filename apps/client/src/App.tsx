@@ -12,7 +12,7 @@ import { TimerProvider } from "@/contexts/TimerContext";
 import { FloatingTimerWidget } from "@/components/FloatingTimerWidget";
 import { SwipeBackHandler } from "@/components/SwipeBackHandler";
 import { JournalPromptHandler } from "@/components/JournalPromptHandler";
-import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { ReadingSyncIndicator } from "@/components/ReadingSyncIndicator";
 import { syncService } from "@/services/syncService";
 import { deepLinkService } from "@/services/deepLinkService";
 import { DeepLinkHandler } from "@/components/DeepLinkHandler";
@@ -26,7 +26,6 @@ import NotFound from "./screens/NotFound";
 
 import { ProfileProvider } from "./contexts/ProfileContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { useNetworkStatus } from "./hooks/useNetworkStatus";
 import { ConfirmDialogProvider } from "./contexts/ConfirmDialogContext";
 import { initSentry } from "./lib/sentry";
 import { usePushNotifications } from "./hooks/usePushNotifications";
@@ -87,7 +86,6 @@ const queryClient = new QueryClient({
 
 const App = () => {
   useAppViewportHeight();
-  useNetworkStatus();
   usePresenceHeartbeat();
   const { register: registerPushNotifications } = usePushNotifications();
   
@@ -170,7 +168,7 @@ const App = () => {
                         </PageTransition>
                         <FloatingTimerWidget />
                         <JournalPromptHandler />
-                        <OfflineIndicator />
+                        <ReadingSyncIndicator />
                       </SwipeBackHandler>
                       </BadgeCelebrationProvider>
                     </BrowserRouter>

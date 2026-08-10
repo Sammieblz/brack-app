@@ -602,6 +602,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - [ ] Book club scheduling
 - [ ] Reading groups (public clubs)
 - [x] Reader Journey: Ink levels, personalized quests, Gold Leaves, and opt-in Reader Leagues
+- [x] Gold Leaf shop with purchased, server-enforced Streak Freeze inventory
 
 ### Long Term (Ideas)
 - [ ] Browser extension

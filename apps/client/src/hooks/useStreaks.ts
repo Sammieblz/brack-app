@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import type { StreakData, DayActivity } from "@/utils/streakCalculation";
 import {
@@ -18,6 +19,7 @@ export const useStreaks = (userId?: string) => {
   });
   const [activityCalendar, setActivityCalendar] = useState<DayActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [usingFreeze, setUsingFreeze] = useState(false);
   const { toast } = useToast();
 
   const fetchStreakData = async () => {
@@ -72,12 +74,18 @@ export const useStreaks = (userId?: string) => {
   }, [userId]);
 
   const useStreakFreeze = async () => {
-    if (!userId || !streakData.freezeAvailable || !streakData.canUseFreezeToday) {
+    if (
+      !userId
+      || usingFreeze
+      || !streakData.freezeAvailable
+      || !streakData.canUseFreezeToday
+    ) {
       return false;
     }
 
+    setUsingFreeze(true);
     try {
-      const today = new Date().toISOString().split("T")[0];
+      const today = format(new Date(), "yyyy-MM-dd");
 
       await applyReadingStreakFreeze(userId, today);
 
@@ -96,6 +104,8 @@ export const useStreaks = (userId?: string) => {
         variant: "destructive",
       });
       return false;
+    } finally {
+      setUsingFreeze(false);
     }
   };
 
@@ -103,6 +113,7 @@ export const useStreaks = (userId?: string) => {
     streakData,
     activityCalendar,
     loading,
+    usingFreeze,
     refetchStreaks: fetchStreakData,
     useStreakFreeze,
   };

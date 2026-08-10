@@ -44,7 +44,9 @@ Source of truth: remote Supabase project `waftnaqgkcgufzapcihe`, public schema, 
 | `update_review_comments_count()` | Trigger | `review_comments` insert/delete | Trigger row | Updates `book_reviews.comments_count`. |
 | `update_review_likes_count()` | Trigger | `review_likes` insert/delete | Trigger row | Updates `book_reviews.likes_count`. |
 | `update_updated_at_column()` | Trigger helper | Updated row | Trigger row | Sets `updated_at = now()` on many tables. |
-| `use_reading_streak_freeze(p_user_id uuid, p_activity_date date)` | RPC | User id/date | `reading_streak_days` row | Writes freeze day and profile freeze timestamp; rejects days with real reading activity. |
+| `get_gamification_shop(p_user_id uuid)` | Backend RPC | User id | JSON shop snapshot | Returns the owner account, catalog, inventory, limits, and purchase availability. |
+| `purchase_gamification_item(p_user_id uuid, p_item_code text, p_quantity int, p_idempotency_key text)` | Backend RPC | User/item/quantity/key | JSON purchase receipt | Locks the account, debits Gold Leaves, records an immutable purchase/ledger entry, and grants inventory exactly once. |
+| `use_reading_streak_freeze(p_user_id uuid, p_activity_date date)` | Direct owner RPC | User id/date | `reading_streak_days` row | Consumes owned inventory; enforces local-current-date, prior activity, same-day inactivity, ownership, and rolling seven-day cooldown. |
 | `validate_reading_session_row()` | Trigger | `reading_sessions` insert/update row | Trigger row | Rejects impossible timer/session rows: duration below one minute, over 12 hours, future end time, end before start, or duration that does not match the time range. |
 
 ## Trigger Catalog
