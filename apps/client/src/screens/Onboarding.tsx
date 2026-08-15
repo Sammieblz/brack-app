@@ -460,7 +460,7 @@ const Onboarding = () => {
             onClick={() => navigate("/")}
             className="flex items-center gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted/60"
           >
-            <ThemeAwareLogo variant="icon" tone="theme" size="h-10 w-10" className="drop-shadow-sm" />
+            <ThemeAwareLogo variant="icon" size="h-10 w-10" className="drop-shadow-sm" />
             <span>
               <span className="block font-display text-xl font-bold leading-none">Brack</span>
               <span className="block font-sans text-xs text-muted-foreground">Reading tracker</span>
@@ -478,7 +478,7 @@ const Onboarding = () => {
             <div className="sticky top-8 space-y-5">
               <div className="rounded-lg border border-border/70 bg-card/80 p-5 shadow-sm backdrop-blur">
                 <div className="mb-5 flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-md bg-primary/12 text-primary">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-md bg-primary/[0.12] text-primary">
                     <StepIcon className="h-5 w-5" />
                   </div>
                   <div>
@@ -507,7 +507,7 @@ const Onboarding = () => {
                         disabled={saving}
                         className={cn(
                           "flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors disabled:pointer-events-none disabled:opacity-60",
-                          active ? "bg-primary/12 text-primary" : "hover:bg-muted/60",
+                          active ? "bg-primary/[0.12] text-primary" : "hover:bg-muted/60",
                         )}
                       >
                         <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border/70 bg-background">
@@ -744,7 +744,7 @@ const PaletteStep = ({
       </div>
       <div className="space-y-3 rounded-lg border border-border bg-card p-4">
         <div className="flex items-center gap-3">
-          <ThemeAwareLogo variant="icon" tone="theme" size="h-10 w-10" />
+          <ThemeAwareLogo variant="icon" size="h-10 w-10" />
           <div>
             <p className="font-display text-xl font-bold">Brack</p>
             <p className="font-sans text-xs text-muted-foreground">Your palette follows you.</p>
@@ -845,7 +845,7 @@ const TasteStep = ({
                 className={cn(
                   "rounded-md border p-3 text-left transition-colors",
                   formData.preferredBookLength === option.value
-                    ? "border-primary bg-primary/12 text-primary"
+                    ? "border-primary bg-primary/[0.12] text-primary"
                     : "border-border bg-background hover:bg-muted/60",
                 )}
               >
@@ -1184,7 +1184,7 @@ const OptionGrid = ({
           className={cn(
             "rounded-md border px-3 py-2 text-left font-sans text-sm transition-colors",
             value === option.value
-              ? "border-primary bg-primary/12 text-primary"
+              ? "border-primary bg-primary/[0.12] text-primary"
               : "border-border bg-background hover:bg-muted/60",
           )}
         >

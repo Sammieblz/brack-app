@@ -173,17 +173,22 @@ This project uses Supabase with PostgreSQL.
 ### Running Migrations
 
 ```bash
-# Link to your Supabase project
-npx supabase link --project-ref your-project-id
+# Create a forward-only migration with the pinned CLI
+npm run db:migration:new -- descriptive_name
 
-# Apply migrations
-npx supabase db push
+# After editing SQL and adding pgTAP coverage
+npm run db:migrations:lock
+node scripts/verify-migration-integrity.mjs --base-ref origin/main
 
-# Or reset database (development only)
-npx supabase db reset
+# Prove the full ledger locally (development only)
+npx supabase start
+npx supabase db reset --local --no-seed
+npx supabase test db --local
 ```
 
-See [Database Schema](./docs/database-schema.md) for complete schema documentation.
+Production migrations are applied only by the serialized, protected GitHub
+workflow. See [Database Migration Integrity](./docs/database-migrations.md) for
+the complete creation, deployment, and recovery procedure.
 
 ## 🧪 Testing
 

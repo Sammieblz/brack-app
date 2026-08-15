@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   completeGoal as completeGoalApi,
   createGoal as createGoalApi,
@@ -7,16 +8,18 @@ import {
   updateGoal as updateGoalApi,
   type Goal,
 } from "@/services/api";
+import { invalidateDashboardHomeQueries } from "@/lib/dashboardQueries";
 
 export type { Goal } from "@/services/api";
 
 export const useGoals = (userId?: string) => {
+  const queryClient = useQueryClient();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [activeGoals, setActiveGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchGoals = async () => {
+  const fetchGoals = useCallback(async () => {
     if (!userId) return;
     
     try {
@@ -29,11 +32,11 @@ export const useGoals = (userId?: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
-    fetchGoals();
-  }, [userId]);
+    void fetchGoals();
+  }, [fetchGoals]);
 
   const createGoal = async (goal: Partial<Goal>) => {
     if (!userId) return null;
@@ -41,6 +44,7 @@ export const useGoals = (userId?: string) => {
     try {
       const data = await createGoalApi(userId, goal);
       await fetchGoals();
+      void invalidateDashboardHomeQueries(queryClient, userId);
       return data;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -52,6 +56,7 @@ export const useGoals = (userId?: string) => {
     try {
       await updateGoalApi(goalId, updates);
       await fetchGoals();
+      void invalidateDashboardHomeQueries(queryClient, userId);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
@@ -61,6 +66,7 @@ export const useGoals = (userId?: string) => {
     try {
       await deleteGoalApi(goalId);
       await fetchGoals();
+      void invalidateDashboardHomeQueries(queryClient, userId);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
@@ -70,6 +76,7 @@ export const useGoals = (userId?: string) => {
     try {
       await completeGoalApi(goalId);
       await fetchGoals();
+      void invalidateDashboardHomeQueries(queryClient, userId);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     }

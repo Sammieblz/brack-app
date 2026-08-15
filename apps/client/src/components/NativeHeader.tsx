@@ -20,8 +20,10 @@ interface NativeHeaderProps {
   subtitle?: string;
   back?: BackButtonConfig;
   action?: ReactNode;
+  secondary?: ReactNode;
   scrollContainerId?: string;
   showUtilityActions?: boolean;
+  showTimerAction?: boolean;
 }
 
 const getBookTimestamp = (book: { updated_at?: string | null; created_at?: string | null }) => {
@@ -249,8 +251,10 @@ export const NativeHeader = ({
   subtitle,
   back,
   action,
+  secondary,
   scrollContainerId,
   showUtilityActions = false,
+  showTimerAction = true,
 }: NativeHeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -311,12 +315,17 @@ export const NativeHeader = ({
         </div>
         {(showUtilityActions || action) && (
           <div className="flex flex-shrink-0 items-center justify-end gap-2">
-            <HeaderTimerWidget />
+            {showTimerAction && <HeaderTimerWidget />}
             {showUtilityActions && <HeaderUtilityActions />}
             {action}
           </div>
         )}
       </div>
+      {secondary && (
+        <div className="app-page-header border-t border-border/60 py-2">
+          {secondary}
+        </div>
+      )}
     </header>
   );
 };

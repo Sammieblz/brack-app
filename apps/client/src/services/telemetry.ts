@@ -12,7 +12,10 @@ export type CoreTelemetryEvent =
   | "import_previewed"
   | "import_completed"
   | "import_failed"
-  | "duplicate_prevented";
+  | "duplicate_prevented"
+  | "journey_opened"
+  | "journey_tab_viewed"
+  | "daily_focus_started";
 
 export const trackCoreEvent = (
   eventName: CoreTelemetryEvent,

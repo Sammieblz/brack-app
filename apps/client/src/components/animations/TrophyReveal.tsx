@@ -3,6 +3,7 @@ import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
 import { cn } from "@/lib/utils";
 import { BRACK_TROPHY_IMAGE } from "@/config/brackAssets";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface TrophyRevealProps {
   show?: boolean;
@@ -20,9 +21,10 @@ export const TrophyReveal = ({
 }: TrophyRevealProps) => {
   const trophyRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
 
   useGSAP(() => {
-    if (!trophyRef.current || !glowRef.current || !show) return;
+    if (!trophyRef.current || !glowRef.current || !show || reducedMotion) return;
 
     const tl = gsap.timeline();
 
@@ -65,7 +67,7 @@ export const TrophyReveal = ({
       ease: "power1.inOut",
       delay: 1,
     });
-  }, { dependencies: [show] });
+  }, { dependencies: [show, reducedMotion] });
 
   if (!show) return null;
 
@@ -83,6 +85,8 @@ export const TrophyReveal = ({
           className="rounded-md object-cover shadow-soft"
           style={{ width: size, height: size }}
           draggable={false}
+          loading="lazy"
+          decoding="async"
         />
       </div>
     </div>

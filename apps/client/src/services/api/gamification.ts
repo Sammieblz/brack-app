@@ -1,7 +1,10 @@
-import { invokeFunction } from "./client";
+import { getApiErrorStatus, invokeFunction } from "./client";
 import { getCurrentAuthUser } from "./auth";
 import { profilePreferencesRepo } from "@/services/local";
-import { isConnectivityAvailable } from "@/services/connectivity";
+import {
+  isConnectivityAvailable,
+  isRetryableConnectivityError,
+} from "@/services/connectivity";
 import { readingCoreSync } from "@/services/sync/engine";
 
 export type QuestCadence = "daily" | "weekly";
@@ -98,6 +101,8 @@ export interface GamificationHomeResponse {
   week: GamificationWeek;
   server_time: string;
   timezone: string;
+  source?: "live" | "cached";
+  cached_at?: string | null;
 }
 
 export interface LeaderboardEntry {
@@ -118,6 +123,7 @@ export interface LeaderboardResponse {
   week: GamificationWeek;
   scope: LeaderboardScope;
   entries: LeaderboardEntry[];
+  source?: "live" | "cached";
 }
 
 export interface GamificationHistoryResponse {
@@ -163,6 +169,8 @@ export interface GamificationShopItem {
 export interface GamificationShopResponse {
   account: GamificationShopAccount;
   items: GamificationShopItem[];
+  source?: "live" | "cached";
+  cached_at?: string | null;
 }
 
 export interface GamificationShopPurchaseInput {
@@ -190,22 +198,82 @@ export interface GamificationShopPurchaseResult {
   };
 }
 
-const cacheKey = (userId: string) => `brack:gamification-home:${userId}`;
+interface GamificationHomeSnapshot {
+  version: 2;
+  savedAt: string;
+  data: Omit<GamificationHomeResponse, "source" | "cached_at">;
+}
+
+const cacheKey = (userId: string) => `brack:gamification-home:v2:${userId}`;
+const legacyCacheKey = (userId: string) => `brack:gamification-home:${userId}`;
+
+export function isGamificationFallbackEligible(error: unknown) {
+  const status = getApiErrorStatus(error);
+  return status === 429
+    || Boolean(status && status >= 500)
+    || isRetryableConnectivityError(error);
+}
+
+const isGamificationHomePayload = (
+  value: unknown,
+  userId: string,
+): value is Omit<GamificationHomeResponse, "source" | "cached_at"> => {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Partial<GamificationHomeResponse>;
+  return candidate.account?.user_id === userId
+    && Array.isArray(candidate.quests)
+    && Array.isArray(candidate.tomorrow_quests)
+    && Array.isArray(candidate.recent_rewards)
+    && typeof candidate.week?.scoring_closes_at === "string"
+    && typeof candidate.server_time === "string"
+    && Number.isFinite(Date.parse(candidate.server_time))
+    && typeof candidate.timezone === "string";
+};
 
 export const readCachedGamificationHome = (
   userId: string,
 ): GamificationHomeResponse | null => {
   try {
     const value = localStorage.getItem(cacheKey(userId));
-    return value ? JSON.parse(value) as GamificationHomeResponse : null;
+    if (value) {
+      const snapshot = JSON.parse(value) as Partial<GamificationHomeSnapshot>;
+      if (snapshot.version === 2
+        && typeof snapshot.savedAt === "string"
+        && Number.isFinite(Date.parse(snapshot.savedAt))
+        && isGamificationHomePayload(snapshot.data, userId)) {
+        return {
+          ...snapshot.data,
+          source: "cached",
+          cached_at: snapshot.savedAt,
+        };
+      }
+    }
+
+    // One-release migration path: balances remain useful, while a missing
+    // receipt timestamp makes quest and League freshness conservatively expired.
+    const legacyValue = localStorage.getItem(legacyCacheKey(userId));
+    if (!legacyValue) return null;
+    const legacy = JSON.parse(legacyValue) as unknown;
+    if (!isGamificationHomePayload(legacy, userId)) return null;
+    return { ...legacy, source: "cached", cached_at: null };
   } catch {
     return null;
   }
 };
 
-const cacheGamificationHome = (userId: string, data: GamificationHomeResponse) => {
+export const cacheGamificationHomeResponse = (
+  userId: string,
+  data: GamificationHomeResponse,
+) => {
+  if (!isGamificationHomePayload(data, userId)) return;
   try {
-    localStorage.setItem(cacheKey(userId), JSON.stringify(data));
+    const { source: _source, cached_at: _cachedAt, ...payload } = data;
+    const snapshot: GamificationHomeSnapshot = {
+      version: 2,
+      savedAt: new Date().toISOString(),
+      data: payload,
+    };
+    localStorage.setItem(cacheKey(userId), JSON.stringify(snapshot));
   } catch {
     // React Query persistence remains the secondary cache in constrained runtimes.
   }
@@ -218,11 +286,18 @@ export const getGamificationHome = async (
     const data = await invokeFunction<GamificationHomeResponse>("gamification-home", {
       method: "GET",
     });
-    cacheGamificationHome(userId, data);
-    return data;
+    const liveData: GamificationHomeResponse = {
+      ...data,
+      source: "live",
+      cached_at: null,
+    };
+    cacheGamificationHomeResponse(userId, liveData);
+    return liveData;
   } catch (error) {
-    const cached = readCachedGamificationHome(userId);
-    if (cached) return cached;
+    if (isGamificationFallbackEligible(error)) {
+      const cached = readCachedGamificationHome(userId);
+      if (cached) return cached;
+    }
     throw error;
   }
 };
@@ -235,23 +310,44 @@ export const getGamificationHistory = async (
   });
 
 export const getLeaderboard = async (
+  userId: string,
   scope: LeaderboardScope,
   weekId?: string | null,
 ): Promise<LeaderboardResponse> => {
-  const user = await getCurrentAuthUser();
-  const key = user
-    ? `brack:leaderboard:${user.id}:${scope}:${weekId ?? "current"}`
-    : null;
+  const key = `brack:leaderboard:${userId}:${scope}:${weekId ?? "current"}`;
   try {
     const response = await invokeFunction<LeaderboardResponse>("leaderboard", {
       body: { scope, week_id: weekId ?? null, limit: 100 },
     });
-    if (key) localStorage.setItem(key, JSON.stringify(response));
-    return response;
+    try {
+      localStorage.setItem(key, JSON.stringify(response));
+    } catch {
+      // Live standings remain usable when device storage is unavailable.
+    }
+    return { ...response, source: "live" };
   } catch (error) {
-    if (key) {
-      const cached = localStorage.getItem(key);
-      if (cached) return JSON.parse(cached) as LeaderboardResponse;
+    const status = getApiErrorStatus(error);
+    const canUseCache = status === 429
+      || Boolean(status && status >= 500)
+      || isRetryableConnectivityError(error);
+    if (canUseCache) {
+      try {
+        const cached = localStorage.getItem(key);
+        if (cached) {
+          const parsed = JSON.parse(cached) as LeaderboardResponse;
+          if (!Array.isArray(parsed.entries)
+            || parsed.scope !== scope
+            || (weekId && parsed.week?.id !== weekId)) {
+            throw new Error("Invalid leaderboard cache");
+          }
+          return {
+            ...parsed,
+            source: "cached",
+          };
+        }
+      } catch {
+        // Fall through to the original request error for malformed/unavailable storage.
+      }
     }
     throw error;
   }
@@ -311,10 +407,84 @@ export const updateGamificationSettings = async (
   return response;
 };
 
-export const getGamificationShop = async (): Promise<GamificationShopResponse> =>
-  invokeFunction<GamificationShopResponse>("gamification-shop", {
-    method: "GET",
-  });
+interface GamificationShopSnapshot {
+  version: 1;
+  savedAt: string;
+  data: Pick<GamificationShopResponse, "account" | "items">;
+}
+
+const gamificationShopCacheKey = (userId: string) =>
+  `brack:gamification-shop:v1:${userId}`;
+
+export const cacheGamificationShopResponse = (
+  userId: string,
+  response: GamificationShopResponse,
+) => {
+  try {
+    const snapshot: GamificationShopSnapshot = {
+      version: 1,
+      savedAt: new Date().toISOString(),
+      data: {
+        account: response.account,
+        items: response.items,
+      },
+    };
+    localStorage.setItem(gamificationShopCacheKey(userId), JSON.stringify(snapshot));
+  } catch {
+    // React Query remains the in-memory fallback when storage is unavailable.
+  }
+};
+
+const readGamificationShopSnapshot = (
+  userId: string,
+): GamificationShopSnapshot | null => {
+  try {
+    const raw = localStorage.getItem(gamificationShopCacheKey(userId));
+    if (!raw) return null;
+    const snapshot = JSON.parse(raw) as Partial<GamificationShopSnapshot>;
+    if (snapshot.version !== 1
+      || typeof snapshot.savedAt !== "string"
+      || !snapshot.data
+      || !Array.isArray(snapshot.data.items)
+      || typeof snapshot.data.account?.gold_leaves !== "number"
+      || snapshot.data.account.user_id !== userId) {
+      return null;
+    }
+    return snapshot as GamificationShopSnapshot;
+  } catch {
+    return null;
+  }
+};
+
+export const getGamificationShop = async (
+  userId?: string,
+): Promise<GamificationShopResponse> => {
+  try {
+    const response = await invokeFunction<GamificationShopResponse>("gamification-shop", {
+      method: "GET",
+    });
+    const liveResponse: GamificationShopResponse = {
+      account: response.account,
+      items: response.items,
+      source: "live",
+      cached_at: null,
+    };
+    if (userId) cacheGamificationShopResponse(userId, liveResponse);
+    return liveResponse;
+  } catch (error) {
+    if (userId && isGamificationFallbackEligible(error)) {
+      const snapshot = readGamificationShopSnapshot(userId);
+      if (snapshot) {
+        return {
+          ...snapshot.data,
+          source: "cached",
+          cached_at: snapshot.savedAt,
+        };
+      }
+    }
+    throw error;
+  }
+};
 
 export const purchaseGamificationShopItem = async (
   input: GamificationShopPurchaseInput,

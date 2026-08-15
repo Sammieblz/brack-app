@@ -3,6 +3,7 @@ import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
 import { FireFlame } from "iconoir-react";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface StreakFlameProps {
   active?: boolean;
@@ -19,9 +20,10 @@ export const StreakFlame = ({
   className,
 }: StreakFlameProps) => {
   const flameRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
 
   useGSAP(() => {
-    if (!flameRef.current || !active) return;
+    if (!flameRef.current || !active || reducedMotion) return;
 
     // Flickering animation
     gsap.to(flameRef.current, {
@@ -40,7 +42,7 @@ export const StreakFlame = ({
       yoyo: true,
       ease: "power2.inOut",
     });
-  }, { dependencies: [active, intensity] });
+  }, { dependencies: [active, intensity, reducedMotion] });
 
   return (
     <div

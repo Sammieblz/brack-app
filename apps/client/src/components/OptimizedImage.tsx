@@ -12,21 +12,24 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
 export const OptimizedImage = ({
   src,
   alt,
-  fallbackSrc = "/placeholder.svg",
+  fallbackSrc,
   enableCache = true,
   blurPlaceholder = true,
   showErrorState = true,
   className,
+  onError: onImageError,
+  onLoad: onImageLoad,
   ...rest
 }: OptimizedImageProps) => {
-  const [imgSrc, setImgSrc] = useState(src);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [imgSrc, setImgSrc] = useState(src ?? fallbackSrc);
+  const [loading, setLoading] = useState(Boolean(src || fallbackSrc));
+  const [error, setError] = useState(!src && !fallbackSrc);
 
   useEffect(() => {
     if (!src) {
       setImgSrc(fallbackSrc);
-      setLoading(false);
+      setLoading(Boolean(fallbackSrc));
+      setError(!fallbackSrc);
       return;
     }
 
@@ -75,15 +78,23 @@ export const OptimizedImage = ({
     });
   }, [src, enableCache, fallbackSrc]);
 
-  const handleError = () => {
-    setError(true);
-    setLoading(false);
+  const handleError: React.ReactEventHandler<HTMLImageElement> = (event) => {
+    onImageError?.(event);
+
     if (fallbackSrc && imgSrc !== fallbackSrc) {
       setImgSrc(fallbackSrc);
+      setLoading(true);
+      setError(false);
+      return;
     }
+
+    setImgSrc(undefined);
+    setError(true);
+    setLoading(false);
   };
 
-  const handleLoad = () => {
+  const handleLoad: React.ReactEventHandler<HTMLImageElement> = (event) => {
+    onImageLoad?.(event);
     setLoading(false);
     setError(false);
   };
@@ -106,20 +117,22 @@ export const OptimizedImage = ({
       )}
       
       {/* Main image */}
-      <img
-        src={imgSrc}
-        alt={alt || ''}
-        loading="lazy"
-        decoding="async"
-        onError={handleError}
-        onLoad={handleLoad}
-        className={cn(
-          "transition-opacity duration-300",
-          loading && !error ? "opacity-0" : "opacity-100",
-          error && showErrorState && "opacity-50"
-        )}
-        {...rest}
-      />
+      {imgSrc && (
+        <img
+          src={imgSrc}
+          alt={alt || ''}
+          loading="lazy"
+          decoding="async"
+          onError={handleError}
+          onLoad={handleLoad}
+          className={cn(
+            "transition-opacity duration-300",
+            loading && !error ? "opacity-0" : "opacity-100",
+            error && showErrorState && "opacity-50"
+          )}
+          {...rest}
+        />
+      )}
       
       {/* Error state overlay */}
       {error && showErrorState && (

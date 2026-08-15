@@ -308,17 +308,22 @@ npx supabase secrets list
 
 ### Database Migrations
 
-Apply to production:
+Database migrations deploy only through
+`.github/workflows/deploy-database.yml`. The workflow performs a clean replay,
+pgTAP tests, database lint, remote-history preflight, dry-run, serialized push,
+read-only production contracts, and a post-deployment schema comparison. It
+requires approval through the protected GitHub `production` environment.
 
 ```bash
-# Link to production project
-npx supabase link --project-ref production-project-id
-
-# Push migrations
-npx supabase db push
+# Local authoring and verification
+npm run db:migration:new -- descriptive_name
+npm run db:migrations:lock
+node scripts/verify-migration-integrity.mjs --base-ref origin/main
 ```
 
-**⚠️ Warning**: Always test migrations on staging first!
+Do not run `supabase db push`, `migration repair`, or linked resets manually in
+normal operation. See [Database Migration Integrity](./database-migrations.md)
+for the production controls and incident-recovery procedure.
 
 ## Environment-Specific Configuration
 

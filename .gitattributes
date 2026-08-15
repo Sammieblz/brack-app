@@ -1,0 +1,9 @@
+# Database history hashes must be identical on Windows, macOS, and Linux.
+/supabase/migrations/*.sql text eol=lf
+/supabase/tests/*.sql text eol=lf
+/supabase/migrations.lock.json text eol=lf
+/scripts/*migration*.mjs text eol=lf
+/scripts/verify-linked-schema-drift.mjs text eol=lf
+/scripts/verify-production-database-contracts.mjs text eol=lf
+/supabase/contracts/*.sql text eol=lf
+/.github/workflows/*.yml text eol=lf

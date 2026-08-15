@@ -64,6 +64,7 @@ export const BadgeDetailsDialog = ({
             <Progress
               value={earnedBadge ? 100 : badge.progress_percentage || 0}
               className="h-2"
+              aria-label={`${badge.title} progress`}
             />
           </div>
         </div>

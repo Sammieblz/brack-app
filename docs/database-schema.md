@@ -8,7 +8,7 @@ Complete database schema documentation for Brack.
 - **Total Tables**: 32
 - **Schema**: `public`
 - **Row Level Security**: Enabled on all tables
-- **Migrations**: 53 SQL files in `supabase/migrations/`
+- **Migrations**: SQL ledger in `supabase/migrations/`, protected by an immutable checksum manifest
 
 For the current audit-grade inventory, use [Table Catalog](./schema/table-catalog.md), [Functions and Triggers](./schema/functions-and-triggers.md), and [RLS Matrix](./security/rls-matrix.md). This page is a high-level schema overview.
 
@@ -720,10 +720,15 @@ Located in `supabase/migrations/`:
 5. New features (photos, notifications)
 6. Relationship fixes
 
-**Apply migrations**:
+**Create and validate migrations**:
 ```bash
-npx supabase db push
+npm run db:migration:new -- descriptive_name
+npm run db:migrations:lock
+node scripts/verify-migration-integrity.mjs --base-ref origin/main
 ```
+
+Production application is handled exclusively by the protected migration
+workflow. See [Database Migration Integrity](./database-migrations.md).
 
 ## Further Reading
 

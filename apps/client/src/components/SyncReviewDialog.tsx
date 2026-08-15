@@ -40,6 +40,10 @@ import {
 } from "@/services/sync/engine";
 import type { OutboxItem, SyncEntity, SyncOperation } from "@/services/sync/types";
 import { isBookIdentityConflict } from "@/services/sync/bookConflict";
+import {
+  getSyncFailurePresentation,
+  isSchemaCompatibilityFailure,
+} from "@/services/sync/failurePresentation";
 
 interface SyncReviewDialogProps {
   open: boolean;
@@ -51,6 +55,8 @@ type PayloadPreview = {
   title: string;
   subtitle?: string;
 };
+
+const SCHEMA_COMPATIBILITY_RETRY_ID = "schema-compatibility-retry";
 
 const ENTITY_LABELS: Record<SyncEntity, string> = {
   books: "Book",
@@ -90,12 +96,21 @@ const previewPayload = (item: OutboxItem): PayloadPreview => {
 
   switch (item.entity) {
     case "books": {
-      const title = getText(payload.title) || "Untitled book";
+      const shelfPosition = getNumber(payload.shelf_position);
+      const title =
+        getText(payload.title) ||
+        (shelfPosition !== null
+          ? "Library order change"
+          : item.operation === "update"
+            ? "Book update"
+            : "Untitled book");
       const author = getText(payload.author);
       const isbn = getText(payload.isbn);
       return {
         title,
-        subtitle: [author, isbn ? `ISBN ${isbn}` : ""].filter(Boolean).join(" · "),
+        subtitle:
+          [author, isbn ? `ISBN ${isbn}` : ""].filter(Boolean).join(" · ") ||
+          (shelfPosition !== null ? `Shelf position ${shelfPosition} waiting to sync` : undefined),
       };
     }
     case "reading_sessions": {
@@ -196,6 +211,23 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
     }, {});
   }, [items]);
 
+  const schemaCompatibilityItems = useMemo(
+    () => items.filter(isSchemaCompatibilityFailure),
+    [items],
+  );
+  const schemaCompatibilityErrors = useMemo(
+    () => Array.from(new Set(
+      schemaCompatibilityItems
+        .map((item) => item.last_error?.trim())
+        .filter((message): message is string => Boolean(message)),
+    )),
+    [schemaCompatibilityItems],
+  );
+  const individuallyReviewableItems = useMemo(
+    () => items.filter((item) => !isSchemaCompatibilityFailure(item)),
+    [items],
+  );
+
   const handleRetry = async (item: OutboxItem) => {
     setResolvingId(item.id);
     try {
@@ -266,6 +298,27 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
     }
   };
 
+  const handleSchemaCompatibilityRetry = async () => {
+    setResolvingId(SCHEMA_COMPATIBILITY_RETRY_ID);
+    try {
+      await readingCoreSync.syncCurrentUser({ forcePending: true });
+      await loadFailedItems();
+      onResolved?.();
+      toast({
+        title: "Library changes retried",
+        description: "Brack retried the affected library order changes together.",
+      });
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Retry could not finish",
+        description: "The changes are still safe on this device and will be retried later.",
+      });
+    } finally {
+      setResolvingId(null);
+    }
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -292,8 +345,52 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
               ))}
             </div>
           )}
+
+          {schemaCompatibilityItems.length > 0 && (
+            <div className="mt-4 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2.5">
+              <p className="font-sans text-sm font-semibold text-foreground">
+                Sync service update needed
+              </p>
+              <p className="mt-1 font-sans text-xs leading-relaxed text-muted-foreground">
+                {schemaCompatibilityItems.length} reading change
+                {schemaCompatibilityItems.length === 1 ? " is" : "s are"} safe on this device.{" "}
+                Brack&apos;s server needs an update before
+                {schemaCompatibilityItems.length === 1 ? " it" : " they"} can sync.
+              </p>
+              {schemaCompatibilityErrors.length > 0 && (
+                <details className="mt-1 font-sans text-[11px] text-muted-foreground">
+                  <summary className="flex min-h-11 cursor-pointer select-none items-center font-medium text-foreground/80">
+                    Technical details
+                  </summary>
+                  <div className="space-y-1 pb-1">
+                    {schemaCompatibilityErrors.map((message) => (
+                      <p key={message} className="break-words leading-relaxed">
+                        {message}
+                      </p>
+                    ))}
+                  </div>
+                </details>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-2 min-h-11"
+                onClick={() => void handleSchemaCompatibilityRetry()}
+                disabled={Boolean(resolvingId)}
+              >
+                <Refresh
+                  className={cn(
+                    "mr-1.5 h-4 w-4",
+                    resolvingId === SCHEMA_COMPATIBILITY_RETRY_ID && "animate-spin",
+                  )}
+                />
+                Retry affected changes
+              </Button>
+            </div>
+          )}
         </DialogHeader>
 
+        {(loading || items.length === 0 || individuallyReviewableItems.length > 0) && (
         <ScrollArea className="max-h-[62vh]">
           <div className="space-y-3 p-4 sm:p-5">
             {loading ? (
@@ -308,10 +405,11 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
                 size="compact"
               />
             ) : (
-              items.map((item) => {
+              individuallyReviewableItems.map((item) => {
                 const preview = previewPayload(item);
                 const Icon = ENTITY_ICONS[item.entity];
                 const bookIdentityConflict = isBookIdentityConflict(item);
+                const failure = getSyncFailurePresentation(item);
                 const copySafety = serverCopySafety[item.id];
                 const canUseServerCopy = bookIdentityConflict && copySafety?.safe;
 
@@ -356,7 +454,7 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
                           >
                             {bookIdentityConflict
                               ? "A synced copy of this book already exists in your library."
-                              : item.last_error || "This change could not sync."}
+                              : failure.message}
                           </p>
                           <p className="mt-1 font-sans text-[11px] text-muted-foreground">
                             {bookIdentityConflict
@@ -367,7 +465,7 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
                                       copySafety.relatedChangeCount === 1 ? "" : "s"
                                     } still depend on this copy. Retry will keep those changes together.`
                                   : "Brack could not verify a safe cleanup path. Retry keeps the local change intact."
-                              : `Attempted ${item.attempt_count} time${item.attempt_count === 1 ? "" : "s"}.`}
+                              : failure.detail}
                           </p>
                         </div>
 
@@ -431,6 +529,7 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
             )}
           </div>
         </ScrollArea>
+        )}
         </DialogContent>
       </Dialog>
 

@@ -66,7 +66,7 @@ The source artwork is the Brack `B` mark on the orange app field. Regenerate des
 npm run brand:icons
 ```
 
-In-app logos remain theme-aware through `apps/client/src/components/ThemeAwareLogo.tsx`; packaged app icons stay fixed so they remain legible in light and dark operating-system launchers.
+In-app logos remain theme-aware through `apps/client/src/components/ThemeAwareLogo.tsx` and use only the transparent `brack-mark.webp` and `brack-wordmark.webp` masks. Packaged app icons remain platform-specific derived files so installers and operating-system launchers receive the formats and background treatment they require.
 
 ## Packaging Targets
 

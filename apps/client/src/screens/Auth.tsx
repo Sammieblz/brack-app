@@ -235,7 +235,7 @@ const Auth = () => {
         {/* Logo Section — Brack icon + heading */}
         <div className="text-center mb-6 md:mb-8 animate-slide-up">
           <div className="flex flex-col items-center gap-3 mb-4">
-            <ThemeAwareLogo variant="icon" tone="theme" size="h-16 w-16" className="drop-shadow-lg" />
+            <ThemeAwareLogo variant="icon" size="h-16 w-16" className="drop-shadow-lg" />
             <span className="font-display text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               BRACK
             </span>

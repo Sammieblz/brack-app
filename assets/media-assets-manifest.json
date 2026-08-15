@@ -1,0 +1,1337 @@
+{
+  "schema_version": 2,
+  "generator": {
+    "path": "scripts/optimize-media-assets.mjs",
+    "sha256": "a38a83cfe98f86d2a89afc2292972a15d189093620b6977d1379fafd7195bed0",
+    "sharp": "0.32.6",
+    "vips": "8.14.5"
+  },
+  "transformations": {
+    "badge_fit": "contain",
+    "badge_size": 256,
+    "dashboard_artwork_size": 256,
+    "webp_lossless_collections": [
+      "brand",
+      "3dicons"
+    ],
+    "brand_background": "transparent",
+    "canonical_brand_assets": [
+      "brack-mark.webp",
+      "brack-wordmark.webp"
+    ],
+    "canonical_assets_are_never_recompressed": true
+  },
+  "excluded_generated_mirrors": [
+    "android/app/src/main/assets/public",
+    "ios/App/App/public"
+  ],
+  "budgets": {
+    "public_static_bytes": 6512089,
+    "native_static_bytes": 2399852,
+    "journey_largest_twelve_badges_bytes": 490322,
+    "journey_shell_bytes": 18572,
+    "journey_worst_case_viewport_bytes": 508894,
+    "dashboard_initial_bytes": 50368,
+    "brand_runtime_bytes": 50862,
+    "empty_state_runtime_bytes": 401742,
+    "video_runtime_bytes": 4531961
+  },
+  "inventory": [
+    {
+      "path": "android/app/src/main/res/drawable-land-hdpi/splash.png",
+      "role": "platform",
+      "sha256": "2b2a5c2535e17f21715f57d8efbca5cd848d8686a902eb3f2192df3831fea39f",
+      "bytes": 10866,
+      "format": "png",
+      "width": 800,
+      "height": 480
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-ldpi/splash.png",
+      "role": "platform",
+      "sha256": "2599b59d63d0646ec2aa1a0fe4b2ab2aedf024bfee1b086b5320468fb44bd464",
+      "bytes": 3012,
+      "format": "png",
+      "width": 320,
+      "height": 240
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-mdpi/splash.png",
+      "role": "platform",
+      "sha256": "485f1f62c3af891c86686dcbf4faa18ea11f2066b17f6b444f758a9039e84f34",
+      "bytes": 5114,
+      "format": "png",
+      "width": 480,
+      "height": 320
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-night-hdpi/splash.png",
+      "role": "platform",
+      "sha256": "62df892f76bb136567a2ad69e9f77d8527b1f0279b95c5d46772f2df8e39820e",
+      "bytes": 11893,
+      "format": "png",
+      "width": 800,
+      "height": 480
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-night-ldpi/splash.png",
+      "role": "platform",
+      "sha256": "a42d46ff69e86dc1b2f7568bc9acfcfde1064fd072de0b0540cc5e100fd0717f",
+      "bytes": 3260,
+      "format": "png",
+      "width": 320,
+      "height": 240
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-night-mdpi/splash.png",
+      "role": "platform",
+      "sha256": "24ac2ee2e7cc0192d9e63448ec73946e3fa188900a625e9197e683ae8be9dee9",
+      "bytes": 5486,
+      "format": "png",
+      "width": 480,
+      "height": 320
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-night-xhdpi/splash.png",
+      "role": "platform",
+      "sha256": "b5d32e442e4b7937b9a8b397b63bb210fd367edfceb388af56df1c793f1f769b",
+      "bytes": 27720,
+      "format": "png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-night-xxhdpi/splash.png",
+      "role": "platform",
+      "sha256": "9d6a26ac01ce7c23f78b78894cf47d1af2109b95564d6a981ee512aab92f11d3",
+      "bytes": 43436,
+      "format": "png",
+      "width": 1600,
+      "height": 960
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-night-xxxhdpi/splash.png",
+      "role": "platform",
+      "sha256": "3831d3d74f0de7db85d49cc54dfef506d3acbd768729974b498d4f155d6f54b8",
+      "bytes": 62020,
+      "format": "png",
+      "width": 1920,
+      "height": 1280
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-xhdpi/splash.png",
+      "role": "platform",
+      "sha256": "dc51b0d085bf1306087ecd0e26d9795e8d4f7cb6858a4ac85cbb1cc58d788745",
+      "bytes": 25555,
+      "format": "png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-xxhdpi/splash.png",
+      "role": "platform",
+      "sha256": "d21ebf8dcc0fc843547eff12bad323d4ff6941b1364fc33a67e582751820cfa3",
+      "bytes": 38158,
+      "format": "png",
+      "width": 1600,
+      "height": 960
+    },
+    {
+      "path": "android/app/src/main/res/drawable-land-xxxhdpi/splash.png",
+      "role": "platform",
+      "sha256": "f3f1ac176b023a9d975459aa6a73d521ca7affaf603d204b3593e3cdcb39bd9f",
+      "bytes": 55442,
+      "format": "png",
+      "width": 1920,
+      "height": 1280
+    },
+    {
+      "path": "android/app/src/main/res/drawable-night/splash.png",
+      "role": "platform",
+      "sha256": "a42d46ff69e86dc1b2f7568bc9acfcfde1064fd072de0b0540cc5e100fd0717f",
+      "bytes": 3260,
+      "format": "png",
+      "width": 320,
+      "height": 240
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-hdpi/splash.png",
+      "role": "platform",
+      "sha256": "fe583bef76f0d2d8544fcf49eaed27638ca0968e5e56f5a2a5c163ee1b535bc4",
+      "bytes": 6751,
+      "format": "png",
+      "width": 480,
+      "height": 800
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-ldpi/splash.png",
+      "role": "platform",
+      "sha256": "faaa87fd21fdeeba44fb863baa3f1962b8f26d32739b875b33c070317ffe2167",
+      "bytes": 2585,
+      "format": "png",
+      "width": 240,
+      "height": 320
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-mdpi/splash.png",
+      "role": "platform",
+      "sha256": "b3b951982643e7118e8aa3109755b6e4a1d00134ed56bfba9472aa4ad671e6c5",
+      "bytes": 3677,
+      "format": "png",
+      "width": 320,
+      "height": 480
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-night-hdpi/splash.png",
+      "role": "platform",
+      "sha256": "04370c8f7c932b0626a294b1ada647ceac18ab92d5de04a23a6e72a74d17b036",
+      "bytes": 6984,
+      "format": "png",
+      "width": 480,
+      "height": 800
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-night-ldpi/splash.png",
+      "role": "platform",
+      "sha256": "c17b4a9fdaf2d48afd9338e1c6ae0d8e8e79b5db8ab918b495f30b81fea8d174",
+      "bytes": 2613,
+      "format": "png",
+      "width": 240,
+      "height": 320
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-night-mdpi/splash.png",
+      "role": "platform",
+      "sha256": "13141bc1e3920182c8ad9b36421079f7bbf89dffce5d7ad6a3559e455699a181",
+      "bytes": 3871,
+      "format": "png",
+      "width": 320,
+      "height": 480
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-night-xhdpi/splash.png",
+      "role": "platform",
+      "sha256": "e399140e47d6b4c003c092d050f3b6a299cdfd473a20a4a26ec22a20b0b4c2e7",
+      "bytes": 13715,
+      "format": "png",
+      "width": 720,
+      "height": 1280
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-night-xxhdpi/splash.png",
+      "role": "platform",
+      "sha256": "3f53b2eaaf143066f2b0c7081503ecfa510c25742f917c63a15203b1c457cd36",
+      "bytes": 21767,
+      "format": "png",
+      "width": 960,
+      "height": 1600
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-night-xxxhdpi/splash.png",
+      "role": "platform",
+      "sha256": "814da20aabd39f50bf75a01604345b14982c0406f132ad847a35059bec639460",
+      "bytes": 35354,
+      "format": "png",
+      "width": 1280,
+      "height": 1920
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-xhdpi/splash.png",
+      "role": "platform",
+      "sha256": "731f0733d65c5011151d4aadf72d25f024876a9590109ac2acd068db21495afd",
+      "bytes": 13134,
+      "format": "png",
+      "width": 720,
+      "height": 1280
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-xxhdpi/splash.png",
+      "role": "platform",
+      "sha256": "4e01e4892e509ce9ae6a0acf26804eff395afdcb36841f6146e83ecab029ee0a",
+      "bytes": 21694,
+      "format": "png",
+      "width": 960,
+      "height": 1600
+    },
+    {
+      "path": "android/app/src/main/res/drawable-port-xxxhdpi/splash.png",
+      "role": "platform",
+      "sha256": "e5159f8fab944e7b9297fff4e43906325efae78547505a0ea8d926d28452f1e9",
+      "bytes": 33946,
+      "format": "png",
+      "width": 1280,
+      "height": 1920
+    },
+    {
+      "path": "android/app/src/main/res/drawable/splash.png",
+      "role": "platform",
+      "sha256": "b3b951982643e7118e8aa3109755b6e4a1d00134ed56bfba9472aa4ad671e6c5",
+      "bytes": 3677,
+      "format": "png",
+      "width": 320,
+      "height": 480
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-hdpi/ic_launcher_background.png",
+      "role": "platform",
+      "sha256": "5114452e28638af3568e0a05b5f687033cd7cd2eb90661af5ed2a5406fa9bfb1",
+      "bytes": 395,
+      "format": "png",
+      "width": 162,
+      "height": 162
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png",
+      "role": "platform",
+      "sha256": "dfdac296b93d9ec2fbb5834808d8c0017284fe88befa18fc8c3813ebcd5d90d3",
+      "bytes": 7386,
+      "format": "png",
+      "width": 162,
+      "height": 162
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png",
+      "role": "platform",
+      "sha256": "b5683092aa7b827b6ab8cfab6be630024dfb22dc5559f7070d393f4edd37568d",
+      "bytes": 2256,
+      "format": "png",
+      "width": 72,
+      "height": 72
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+      "role": "platform",
+      "sha256": "b5683092aa7b827b6ab8cfab6be630024dfb22dc5559f7070d393f4edd37568d",
+      "bytes": 2256,
+      "format": "png",
+      "width": 72,
+      "height": 72
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-ldpi/ic_launcher_background.png",
+      "role": "platform",
+      "sha256": "57ef625a79d49bf521614eba576df4cf23e89538eb130c8943d6b1616ae3e0e6",
+      "bytes": 207,
+      "format": "png",
+      "width": 81,
+      "height": 81
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-ldpi/ic_launcher_foreground.png",
+      "role": "platform",
+      "sha256": "d666792a898c49ff0e5c19bfd58bc14721da16b3f74a18df87d8d54316bdccec",
+      "bytes": 2771,
+      "format": "png",
+      "width": 81,
+      "height": 81
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-ldpi/ic_launcher_round.png",
+      "role": "platform",
+      "sha256": "0b452d2435b6d60be70913024499d64e04d1f80b1dc4b33e22ebf4fef4cc5c28",
+      "bytes": 1070,
+      "format": "png",
+      "width": 36,
+      "height": 36
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-ldpi/ic_launcher.png",
+      "role": "platform",
+      "sha256": "0b452d2435b6d60be70913024499d64e04d1f80b1dc4b33e22ebf4fef4cc5c28",
+      "bytes": 1070,
+      "format": "png",
+      "width": 36,
+      "height": 36
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-mdpi/ic_launcher_background.png",
+      "role": "platform",
+      "sha256": "8df057a72adfeec59f36fe99b339e2641c68f911738315fb9dcb03dae9649629",
+      "bytes": 260,
+      "format": "png",
+      "width": 108,
+      "height": 108
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png",
+      "role": "platform",
+      "sha256": "dd007e79ce3cd043429fde75a8f7576f505349139737b928fc4ef58b381df6ad",
+      "bytes": 4343,
+      "format": "png",
+      "width": 108,
+      "height": 108
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png",
+      "role": "platform",
+      "sha256": "1ff999804bd8a62219e085fecf054b77873a9fefa7fe7b4c7b0102da552b07a2",
+      "bytes": 1477,
+      "format": "png",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+      "role": "platform",
+      "sha256": "1ff999804bd8a62219e085fecf054b77873a9fefa7fe7b4c7b0102da552b07a2",
+      "bytes": 1477,
+      "format": "png",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_background.png",
+      "role": "platform",
+      "sha256": "895fe5208f4ebd61ad30643a56499c5595e7df30741428bc12dd837ddd4fcccd",
+      "bytes": 536,
+      "format": "png",
+      "width": 216,
+      "height": 216
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png",
+      "role": "platform",
+      "sha256": "603cb36df097520be9c214823a1cc35d28a425c9d4e8e50b78da265e57c467de",
+      "bytes": 13692,
+      "format": "png",
+      "width": 216,
+      "height": 216
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png",
+      "role": "platform",
+      "sha256": "80de58ae2deedefd280468a687d3c937da746c61f463948a34bbf51376f219fb",
+      "bytes": 3219,
+      "format": "png",
+      "width": 96,
+      "height": 96
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+      "role": "platform",
+      "sha256": "80de58ae2deedefd280468a687d3c937da746c61f463948a34bbf51376f219fb",
+      "bytes": 3219,
+      "format": "png",
+      "width": 96,
+      "height": 96
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_background.png",
+      "role": "platform",
+      "sha256": "2119d58d0fc839160b732963c5f980bd544c7f4fc376a32c20bda267892ec5ac",
+      "bytes": 923,
+      "format": "png",
+      "width": 324,
+      "height": 324
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png",
+      "role": "platform",
+      "sha256": "51e90560bdc3005f6483e7060a95e417196a70a403a2fa8dc8539254da15d50e",
+      "bytes": 26630,
+      "format": "png",
+      "width": 324,
+      "height": 324
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png",
+      "role": "platform",
+      "sha256": "ccd305370f3731ff7d18b6a678ce2a99ae5f095642b12fc794734d313d242e53",
+      "bytes": 5989,
+      "format": "png",
+      "width": 144,
+      "height": 144
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+      "role": "platform",
+      "sha256": "ccd305370f3731ff7d18b6a678ce2a99ae5f095642b12fc794734d313d242e53",
+      "bytes": 5989,
+      "format": "png",
+      "width": 144,
+      "height": 144
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_background.png",
+      "role": "platform",
+      "sha256": "295d07faeef16f5d58ef394d887e16b29c569e20228baa80307f48f4bb9044b1",
+      "bytes": 1377,
+      "format": "png",
+      "width": 432,
+      "height": 432
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png",
+      "role": "platform",
+      "sha256": "9f064ca8d0b45ebc2b99ec9c58e67c64eda1eb45b9ab5a32f6da35f0f2a741b2",
+      "bytes": 49190,
+      "format": "png",
+      "width": 432,
+      "height": 432
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png",
+      "role": "platform",
+      "sha256": "eb0bea4537781cbc8380c35fa8faf998d46a691fc593c40aad342ca41d89f180",
+      "bytes": 10470,
+      "format": "png",
+      "width": 192,
+      "height": 192
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+      "role": "platform",
+      "sha256": "eb0bea4537781cbc8380c35fa8faf998d46a691fc593c40aad342ca41d89f180",
+      "bytes": 10470,
+      "format": "png",
+      "width": 192,
+      "height": 192
+    },
+    {
+      "path": "apps/client/public/3dicons/3dicons-boy-front-clay.webp",
+      "role": "runtime",
+      "sha256": "a60de46620fc2e7bf88d37d5405b4f986e14d67cf589f2598457f62b5eeb7282",
+      "bytes": 30692,
+      "format": "webp",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "path": "apps/client/public/3dicons/3dicons-chart-front-clay.webp",
+      "role": "runtime",
+      "sha256": "9699149c3d32d773cf5b12dddb3e770c8ca539d2dda0bc7732263fbf66e97a73",
+      "bytes": 53252,
+      "format": "webp",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "path": "apps/client/public/3dicons/3dicons-chat-bubble-front-clay.webp",
+      "role": "runtime",
+      "sha256": "24d1c980fd71a16f3eaffe782748195c477b73b474b6b28fcf0db8bf369a527a",
+      "bytes": 41152,
+      "format": "webp",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "path": "apps/client/public/3dicons/3dicons-chat-front-clay.webp",
+      "role": "runtime",
+      "sha256": "8d21c70452f2b7f9153435dbc3a3bffd783310fabd4f40abb880d5a35ecb1a56",
+      "bytes": 44668,
+      "format": "webp",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "path": "apps/client/public/3dicons/3dicons-chat-text-front-clay.webp",
+      "role": "runtime",
+      "sha256": "fece1516e13e3c204a3b648e7e3fae6613dcb43e6ccb72def16094967612465a",
+      "bytes": 47272,
+      "format": "webp",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "path": "apps/client/public/3dicons/3dicons-file-front-clay.webp",
+      "role": "runtime",
+      "sha256": "ef01fd554712ba9b6c2c021370d896b9cec60989b2a9cf1d3fdd056805afd77e",
+      "bytes": 31570,
+      "format": "webp",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "path": "apps/client/public/3dicons/3dicons-notebook-front-clay.webp",
+      "role": "runtime",
+      "sha256": "da74af6933d92ea6d6a5e59b87dcf46b30cc7e73b3ca065853e625e68d2b8ffd",
+      "bytes": 33910,
+      "format": "webp",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "path": "apps/client/public/3dicons/3dicons-pencil-front-clay.webp",
+      "role": "runtime",
+      "sha256": "889bfabc30292ea759cb5289efc57a687916784c184e4ce3876a82421ba5b6bf",
+      "bytes": 19078,
+      "format": "webp",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "path": "apps/client/public/3dicons/3dicons-target-front-clay.webp",
+      "role": "runtime",
+      "sha256": "a9d4346502e8d7982e9a46fc802717fe684a3b92a09928c6abf790192e73ade8",
+      "bytes": 47760,
+      "format": "webp",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "path": "apps/client/public/3dicons/3dicons-tick-front-clay.webp",
+      "role": "runtime",
+      "sha256": "24320ce9bea51938bd0694c4a61bbf490a8e33cb2ac8e69cf55a42fec29fd3cd",
+      "bytes": 16014,
+      "format": "webp",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "path": "apps/client/public/3dicons/3dicons-wifi-front-clay.webp",
+      "role": "runtime",
+      "sha256": "75110b4f71f357dcd05560dc6d624e5edeb951881ec15c1614c3368399db353c",
+      "bytes": 36374,
+      "format": "webp",
+      "width": 500,
+      "height": 500
+    },
+    {
+      "path": "apps/client/public/achievement-badges/achievement_book_worm.webp",
+      "role": "canonical",
+      "sha256": "e6035edf866c3ce0853a72a7a494e568809c13a73b11aa5b863de0472547274a",
+      "bytes": 20690,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/achievement_century_reader.webp",
+      "role": "canonical",
+      "sha256": "60c69c1c6423c5b174f1c54a3b90527ca1957cfaa3316cbd9d6c95642e023b25",
+      "bytes": 22130,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/achievement_consistent_reader.webp",
+      "role": "canonical",
+      "sha256": "6e089d1dca29832253f9f5b7699044b53224a054ba12273f4ba4dab4986a98de",
+      "bytes": 17572,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/achievement_dedicated_reader.webp",
+      "role": "canonical",
+      "sha256": "a2aad796b5ac0192e5a219b5f7bba02c74584236cdda8aafb5d0fe30905d8033",
+      "bytes": 22846,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/achievement_early_bird.webp",
+      "role": "canonical",
+      "sha256": "494023ab4629b240cd6fa0da98b502fc6ba78ad59884680beeb797e472b6a40d",
+      "bytes": 21826,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/achievement_first_book.webp",
+      "role": "canonical",
+      "sha256": "1b547fa0178d8ac9d12a4d0504b4af87744b9d89f1fa77c4280a7173d5648c9c",
+      "bytes": 19774,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/achievement_genre_explorer.webp",
+      "role": "canonical",
+      "sha256": "06f75923ea2a572d8b8babdf437fac021a30c798c7ddb1ca107cbca86626b087",
+      "bytes": 19842,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/achievement_marathon_reader.webp",
+      "role": "canonical",
+      "sha256": "ad113626191e9ab8f4f1d0ff01c0a14bf6d250153afb87ebbefd1b0ec13ad3ef",
+      "bytes": 20540,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/achievement_night_owl.webp",
+      "role": "canonical",
+      "sha256": "3d95d8e64bf6e290a984a34c9be16deb8c12dad28b0811cc2f43bf1364d730b4",
+      "bytes": 19592,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/achievement_speed_reader.webp",
+      "role": "canonical",
+      "sha256": "d62d6f4a99fe148ddbc22c4d0070bfbd326e20385979d112278824db698ba9be",
+      "bytes": 21410,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/author_acquaintance.webp",
+      "role": "canonical",
+      "sha256": "de5b1a3b41d646d879a747c9b71a8e21d6a176e8571b21535685f4e2fd794ae2",
+      "bytes": 14524,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/author_atlas.webp",
+      "role": "canonical",
+      "sha256": "4c90f05d02e6c972e75faf9676961a5da3652034f66b74c0f205d5fe5e86a299",
+      "bytes": 17064,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/bibliophile.webp",
+      "role": "canonical",
+      "sha256": "771da8f243401051246ff77fcf04eb3803a0f0b7bee56cec55e71eaea83cc7e2",
+      "bytes": 38116,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/chapter_closer.webp",
+      "role": "canonical",
+      "sha256": "c55edd4731c7ed0677cb3dd3b41a5bc9b8ebefd90b38bb22d4a426ad58fc0415",
+      "bytes": 29996,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/curator.webp",
+      "role": "canonical",
+      "sha256": "f93e8c3bbfe1a76e91b6bc6a3da25e70aa950e231493a3c573ff2b2de53294a7",
+      "bytes": 13762,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/deep_focus.webp",
+      "role": "canonical",
+      "sha256": "1c3d9c2f4f44e072ec8d76f67e75ecf535807b87e85e1e17ee1eba07d195009b",
+      "bytes": 43904,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/first_edition_champion.webp",
+      "role": "canonical",
+      "sha256": "c38e1e7038ba652800b1e54741404f1bb654bb51f3129926be4529f83a335b8f",
+      "bytes": 12800,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/first_finish.webp",
+      "role": "canonical",
+      "sha256": "0ba88837ec3142f0195f5fbf5903481d13ed3c0339acfe41b81aaae0c1bd3756",
+      "bytes": 23572,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/first_hour.webp",
+      "role": "canonical",
+      "sha256": "d7aae39138c6245e474c0ff0b2f10443d189f85d886d7a538d43ba37cacb2dbf",
+      "bytes": 42766,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/first_review.webp",
+      "role": "canonical",
+      "sha256": "a528261205fa42cec951f2db4ae712d13d6de0283d9393f9e7845796a2363a65",
+      "bytes": 20508,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/five_thousand_pages.webp",
+      "role": "canonical",
+      "sha256": "e417b491deb01cffaf11c8dc434eaadae3c8f4a32f64facac62aa61e0c721c91",
+      "bytes": 33528,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/fortnight_focus.webp",
+      "role": "canonical",
+      "sha256": "fd7a5d7076fdb0ad13710068b7bd7703b0dbc328d3d118ee5c2c7c773ced787b",
+      "bytes": 39054,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/genre_hopper.webp",
+      "role": "canonical",
+      "sha256": "dd831bcf595de53e07810ac38a7e6fd7d6e39f99730daa89a08787479ec17bb4",
+      "bytes": 31052,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/goal_getter.webp",
+      "role": "canonical",
+      "sha256": "fc1232ffa48f6e501eb3b99b20855baba5849685798a1f07d2136b2be0da9429",
+      "bytes": 10606,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/goal_setter.webp",
+      "role": "canonical",
+      "sha256": "7d120996e4fef6320b0834de097e978696f1a50e755942ba9493e21b70a1f286",
+      "bytes": 26176,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/grand_library.webp",
+      "role": "canonical",
+      "sha256": "62b43aeb7ff52379f2788a7ac8480ee28688136707fbacedb4ae98a80b260bb2",
+      "bytes": 31022,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/home_library.webp",
+      "role": "canonical",
+      "sha256": "57b4517717ea0dcfbae47ecdf33e962dbb1d7d924fb6ed70d474d80e85a1c055",
+      "bytes": 25526,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/hundred_day_habit.webp",
+      "role": "canonical",
+      "sha256": "695a8a268cf619d5e77dcd39b32827ff605bbc7ffa7847c3e3bfc618b53cd21a",
+      "bytes": 42260,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/hundred_hour_reader.webp",
+      "role": "canonical",
+      "sha256": "2b86fb18615ecf4641e8284e40c2caf32313f0d1563ba8091d03de6c98233163",
+      "bytes": 38404,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/league_debut.webp",
+      "role": "canonical",
+      "sha256": "cc41d9aa0d96e3dce89fb63895de18ff0e2a138a83ca06da69c10ff8bb20a4a4",
+      "bytes": 14976,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/list_maker.webp",
+      "role": "canonical",
+      "sha256": "cf1cc001ae24084670346723fcf1af64b3cd5cda8d0b398451da7e51affeeb73",
+      "bytes": 17180,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/long_haul.webp",
+      "role": "canonical",
+      "sha256": "33c497473e62992e53ee59a212044507bf3f13ec074881189c99e5013e0f2e3b",
+      "bytes": 45056,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/margin_maker.webp",
+      "role": "canonical",
+      "sha256": "0644f90a9752c5db3b4361aa3837366158be76f05d9013574bcd17df0ecd349e",
+      "bytes": 20876,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/page_turner.webp",
+      "role": "canonical",
+      "sha256": "5882f4c46e9824528cc06f9edf80afbc2486b6bf0b18772010d585d07ee57536",
+      "bytes": 15958,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/page_voyager.webp",
+      "role": "canonical",
+      "sha256": "87bd28fe50a66caebe7713d72de728449ef19d2ba61e5483535d73773f02048e",
+      "bytes": 28686,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/podium_reader.webp",
+      "role": "canonical",
+      "sha256": "ecf04af48b122e7f47c2731d30231468ef4cfe4e63ce19125547ebc440cca108",
+      "bytes": 8876,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/quest_begun.webp",
+      "role": "canonical",
+      "sha256": "76b45b8fad8e4abb86ba57413b04bf68f49475234ef2121c441ea8dd46c30e5c",
+      "bytes": 17992,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/quest_master.webp",
+      "role": "canonical",
+      "sha256": "66f5052a8b7bb3c278f6cc25b76fa01040eded0340a66cea9354252d56b5fb82",
+      "bytes": 18946,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/quest_runner.webp",
+      "role": "canonical",
+      "sha256": "87123daedbecf48780d2d133e217558f779efb4d7897f3bd62fc2bcc261e4c98",
+      "bytes": 14134,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/reading_veteran.webp",
+      "role": "canonical",
+      "sha256": "faf0b0608d2345436016968b1bc787754fdb814cefac28d22ad7ec0d1222c13b",
+      "bytes": 34436,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/season_reader.webp",
+      "role": "canonical",
+      "sha256": "5df0f65179467439807f98fff05a405401a7b4ee7bf0aeb860baff3c307a162b",
+      "bytes": 40664,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/series_reader.webp",
+      "role": "canonical",
+      "sha256": "ebcda63a0b2de4c83339421f6e46898dabe92eed728189d789830918c54a376c",
+      "bytes": 16464,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/shelf_keeper.webp",
+      "role": "canonical",
+      "sha256": "a536dbd8992e682b405e9f317eadb9a4ca390ed77878f7c2388c4cc4eb635362",
+      "bytes": 30358,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/shelf_starter.webp",
+      "role": "canonical",
+      "sha256": "977712b3bbcc82727f3e214ef95e80efadcf8bcd4c35369a3ace7a4d504f9e94",
+      "bytes": 20384,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/ten_hour_reader.webp",
+      "role": "canonical",
+      "sha256": "63258ce1401bc7757dc10fa6a82c93213e285b70a4fa7fc059b8445f5b1f173d",
+      "bytes": 43774,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/ten_thousand_pages.webp",
+      "role": "canonical",
+      "sha256": "c7e58980da847a5bb29c5880afe9becc0e4ea206f123a317aacf8a74ae53941b",
+      "bytes": 36330,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/thoughtful_critic.webp",
+      "role": "canonical",
+      "sha256": "351e671b406785786f461530ea5915e88c136048831c84e59ea57bb9291e26bb",
+      "bytes": 23622,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/thousand_pages.webp",
+      "role": "canonical",
+      "sha256": "318d22db97e69e1eda6936507d18054c7c48880e8421b030aba07dc1fc5ae0e2",
+      "bytes": 27062,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/three_day_spark.webp",
+      "role": "canonical",
+      "sha256": "633767100e537b720f38419e2190862e0b8c58f6701988bd6668161c9350c848",
+      "bytes": 36604,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/wide_horizons.webp",
+      "role": "canonical",
+      "sha256": "0a08c9b3e8595fdfdd3979bd1daf100761423112e3073f2415241278dafdb2dc",
+      "bytes": 21586,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/achievement-badges/year_bound.webp",
+      "role": "canonical",
+      "sha256": "dffa446efe052555bcb4e18aa29f2015171e8e552b71882fe7d13da4d97337b6",
+      "bytes": 43390,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/brack-currency/gold_leaves_icon.webp",
+      "role": "runtime",
+      "sha256": "32341a5ac75a133f65d6086b6fa3f6f919bee9cffb4f55b0f67e01b95804d7de",
+      "bytes": 18572,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/brack-currency/lifetime_ink_icon.webp",
+      "role": "runtime",
+      "sha256": "b0de30257b393c4d045bc09f5fc15f8a75235942826b2bb8ba3446bcab9215db",
+      "bytes": 17874,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/brack-favicon/apple-touch-icon.png",
+      "role": "runtime",
+      "sha256": "37f61e72b81230e068b60500446081df0a7813fad2c35a6175289ae24224d055",
+      "bytes": 10268,
+      "format": "png",
+      "width": 180,
+      "height": 180
+    },
+    {
+      "path": "apps/client/public/brack-favicon/favicon-96x96.png",
+      "role": "runtime",
+      "sha256": "517fa62d211e3b523b31a2dc559024d00719cc49c241c530f727c24140d16072",
+      "bytes": 3344,
+      "format": "png",
+      "width": 96,
+      "height": 96
+    },
+    {
+      "path": "apps/client/public/brack-favicon/favicon.ico",
+      "role": "runtime",
+      "sha256": "098e4bfc143f0bf0d943ae04ee7ba77c662d84a1a0114aaeac197292e9c92514",
+      "bytes": 15086,
+      "format": "ico",
+      "width": null,
+      "height": null
+    },
+    {
+      "path": "apps/client/public/brack-favicon/web-app-manifest-192x192.png",
+      "role": "runtime",
+      "sha256": "d060061a6e48cea0b4ade35e1ef1ef9112d898074bf8dd3b056424808916a5d3",
+      "bytes": 11027,
+      "format": "png",
+      "width": 192,
+      "height": 192
+    },
+    {
+      "path": "apps/client/public/brack-favicon/web-app-manifest-512x512.png",
+      "role": "runtime",
+      "sha256": "5fb974a9264a721b2efff7dd285d02b593fcaf758b32ffebe681bc48d622220d",
+      "bytes": 82769,
+      "format": "png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "path": "apps/client/public/brack-landing-bg-video.mp4",
+      "role": "runtime",
+      "sha256": "660e5aead6b6b4f8e8d7ae476a169e21d68f0e9b8dc1d9067e88967917644511",
+      "bytes": 4531961,
+      "format": "mp4",
+      "width": null,
+      "height": null
+    },
+    {
+      "path": "apps/client/public/brack-mark.webp",
+      "role": "runtime",
+      "sha256": "55b17ab49375220040b8bbd0dcdfea361e194c4b1132ae20801f3267a24e85f4",
+      "bytes": 12002,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/brack-streak/brack-streak-image-happy.webp",
+      "role": "canonical",
+      "sha256": "34ff27fa06579adc653dfc7f57594c1acf5093aa0a0032dd3ca1aa6b46a12477",
+      "bytes": 14484,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/brack-streak/brack-streak-image-sad.webp",
+      "role": "canonical",
+      "sha256": "b82587dd2b6bd906701d620bc1d653ad842282859abb302da0382890e6afff2a",
+      "bytes": 15822,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/brack-trophy/brack-goals.webp",
+      "role": "canonical",
+      "sha256": "b1e674ce45766b946215f359ffddc3725ff6ff689cadc072417b477156cad1fe",
+      "bytes": 9482,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/brack-trophy/brack-trophy.webp",
+      "role": "canonical",
+      "sha256": "36753c6ce436e0d216d6b133d543488401acd5a67ba74b8e65022896aec4d414",
+      "bytes": 10580,
+      "format": "webp",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/brack-wordmark.webp",
+      "role": "runtime",
+      "sha256": "bb51d6967661ec26007a1715800f28f3e85f585150585c9c6319db3b657bf6d3",
+      "bytes": 38860,
+      "format": "webp",
+      "width": 418,
+      "height": 123
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
+      "role": "platform",
+      "sha256": "2fa699eef27de07ec64d086221059817b93d83c374ead992d23a9a7845f487c5",
+      "bytes": 311450,
+      "format": "png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/Splash.imageset/Default@1x~universal~anyany-dark.png",
+      "role": "platform",
+      "sha256": "b0a3e524c1440e4f8579c80fe48907a91e3af9acde577c3eb240978794d7a24d",
+      "bytes": 49702,
+      "format": "png",
+      "width": 2732,
+      "height": 2732
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/Splash.imageset/Default@1x~universal~anyany.png",
+      "role": "platform",
+      "sha256": "2df8ee00edc5763c126273de0859711781b5e261fc754fb494360cb784650b9b",
+      "bytes": 50027,
+      "format": "png",
+      "width": 2732,
+      "height": 2732
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/Splash.imageset/Default@2x~universal~anyany-dark.png",
+      "role": "platform",
+      "sha256": "b0a3e524c1440e4f8579c80fe48907a91e3af9acde577c3eb240978794d7a24d",
+      "bytes": 49702,
+      "format": "png",
+      "width": 2732,
+      "height": 2732
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/Splash.imageset/Default@2x~universal~anyany.png",
+      "role": "platform",
+      "sha256": "2df8ee00edc5763c126273de0859711781b5e261fc754fb494360cb784650b9b",
+      "bytes": 50027,
+      "format": "png",
+      "width": 2732,
+      "height": 2732
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/Splash.imageset/Default@3x~universal~anyany-dark.png",
+      "role": "platform",
+      "sha256": "b0a3e524c1440e4f8579c80fe48907a91e3af9acde577c3eb240978794d7a24d",
+      "bytes": 49702,
+      "format": "png",
+      "width": 2732,
+      "height": 2732
+    },
+    {
+      "path": "ios/App/App/Assets.xcassets/Splash.imageset/Default@3x~universal~anyany.png",
+      "role": "platform",
+      "sha256": "2df8ee00edc5763c126273de0859711781b5e261fc754fb494360cb784650b9b",
+      "bytes": 50027,
+      "format": "png",
+      "width": 2732,
+      "height": 2732
+    },
+    {
+      "path": "resources/icon.icns",
+      "role": "platform",
+      "sha256": "8b5f81d6be60758537a7ff26c6d1c7165f2db02ace7d4d15c496644e73939f81",
+      "bytes": 422109,
+      "format": "icns",
+      "width": null,
+      "height": null
+    },
+    {
+      "path": "resources/icon.ico",
+      "role": "platform",
+      "sha256": "fd6bb06f9402ad85e8bc6d10ef32c676235dcfc5dc4945d59c58f171d1b7f981",
+      "bytes": 28339,
+      "format": "ico",
+      "width": null,
+      "height": null
+    },
+    {
+      "path": "resources/icon.png",
+      "role": "platform",
+      "sha256": "2fa699eef27de07ec64d086221059817b93d83c374ead992d23a9a7845f487c5",
+      "bytes": 311450,
+      "format": "png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "path": "resources/linux-icons/1024x1024.png",
+      "role": "platform",
+      "sha256": "2fa699eef27de07ec64d086221059817b93d83c374ead992d23a9a7845f487c5",
+      "bytes": 311450,
+      "format": "png",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "path": "resources/linux-icons/128x128.png",
+      "role": "platform",
+      "sha256": "136acf6638da98c79be5d9187f96ca24f567d9b75c26101b79897314c03be0f6",
+      "bytes": 5312,
+      "format": "png",
+      "width": 128,
+      "height": 128
+    },
+    {
+      "path": "resources/linux-icons/16x16.png",
+      "role": "platform",
+      "sha256": "ec5a1c02948be60f7d5c6787fdebc4071611850385efc7c4e2ff1ecde150421c",
+      "bytes": 479,
+      "format": "png",
+      "width": 16,
+      "height": 16
+    },
+    {
+      "path": "resources/linux-icons/256x256.png",
+      "role": "platform",
+      "sha256": "a8d6ed099a4169301c0dd9aad7c1b26d8d2c3054a1b8ae1f0ba1830d73028dce",
+      "bytes": 17169,
+      "format": "png",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "path": "resources/linux-icons/32x32.png",
+      "role": "platform",
+      "sha256": "07980987815efe5a6024a86c51b21c9369403762d6c3d69f8efd9ba96e76107d",
+      "bytes": 952,
+      "format": "png",
+      "width": 32,
+      "height": 32
+    },
+    {
+      "path": "resources/linux-icons/48x48.png",
+      "role": "platform",
+      "sha256": "1ff999804bd8a62219e085fecf054b77873a9fefa7fe7b4c7b0102da552b07a2",
+      "bytes": 1477,
+      "format": "png",
+      "width": 48,
+      "height": 48
+    },
+    {
+      "path": "resources/linux-icons/512x512.png",
+      "role": "platform",
+      "sha256": "dad730c3510848e3131b95283204036e7402aa8f4b0c2a14b4b46b0e344c79e1",
+      "bytes": 66785,
+      "format": "png",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "path": "resources/linux-icons/64x64.png",
+      "role": "platform",
+      "sha256": "707763378f344b4e4305ecf4bf3d4b943fa586d1163b086478aeddfc579d7e50",
+      "bytes": 2031,
+      "format": "png",
+      "width": 64,
+      "height": 64
+    }
+  ]
+}

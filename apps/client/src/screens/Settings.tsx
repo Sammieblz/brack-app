@@ -240,7 +240,7 @@ const Settings = () => {
                       className={cn(
                         "flex w-full items-center gap-3 rounded-md px-3 py-3 text-left transition-colors",
                         active
-                          ? "bg-primary/12 text-primary"
+                          ? "bg-primary/[0.12] text-primary"
                           : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                       )}
                     >

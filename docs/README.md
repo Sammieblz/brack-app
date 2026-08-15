@@ -18,6 +18,7 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 ### Development
 - [File Structure](./file-structure.md) - Project organization and folder layout
 - [Database Schema](./database-schema.md) - Database tables and relationships
+- [Database Migration Integrity](./database-migrations.md) - Immutable history, CI gates, deployment, and recovery
 - [API Reference](./api-reference.md) - Edge Functions and endpoints
 - [Sprint Backlog](./backlog.md) - Prioritized backlog with ticket status ledger
 - [Table Catalog](./schema/table-catalog.md) - Remote public schema inventory
@@ -79,7 +80,7 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 - [Main README](../README.md)
 - [Quick Reference](./quick-reference.md) - Cheat sheet for common tasks
 - [Environment Variables](./getting-started.md#environment-variables)
-- [Database Migrations](./database-schema.md#migrations)
+- [Database Migrations](./database-migrations.md)
 - [Sprint Backlog](./backlog.md)
 - [RLS Matrix](./security/rls-matrix.md)
 - [Mobile Setup](./mobile-features.md#setup)
@@ -94,6 +95,7 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 | Monorepo and Turborepo | Complete | 2026-06-13 |
 | File Structure | ✅ Complete | 2026-06-13 |
 | Database Schema | ✅ Complete | 2026-02-04 |
+| Database Migration Integrity | Complete | 2026-08-15 |
 | API Reference | ✅ Complete | 2026-06-13 |
 | Mobile Features | ✅ Complete | 2026-02-04 |
 | Project Overview | ✅ Complete | 2026-02-04 |

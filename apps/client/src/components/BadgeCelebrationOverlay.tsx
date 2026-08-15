@@ -7,6 +7,7 @@ import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
 import { Confetti } from "@/components/animations/Confetti";
 import { useNavigate } from "react-router-dom";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface BadgeCelebrationOverlayProps {
   badge: Badge;
@@ -21,8 +22,9 @@ export const BadgeCelebrationOverlay = ({
 }: BadgeCelebrationOverlayProps) => {
   const badgeRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const reducedMotion = useReducedMotion();
   useGSAP(() => {
-    if (!badgeRef.current || !open) return;
+    if (!badgeRef.current || !open || reducedMotion) return;
 
     const tl = gsap.timeline();
 
@@ -41,7 +43,7 @@ export const BadgeCelebrationOverlay = ({
       repeat: 1,
       ease: "power1.inOut",
     });
-  }, [open]);
+  }, [open, reducedMotion]);
 
   const handleViewAchievements = () => {
     onClose();

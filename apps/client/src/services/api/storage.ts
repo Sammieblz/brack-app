@@ -1,4 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
+import {
+  isNormalizableUploadImage,
+  normalizeUploadMedia,
+} from "@/utils/normalizeUploadMedia";
 
 export interface StorageUploadOptions {
   cacheControl?: string;
@@ -36,6 +40,23 @@ export const uploadPublicStorageFile = async (
   file: Blob | File | ArrayBuffer,
   options?: StorageUploadOptions
 ): Promise<string> => {
-  await uploadStorageFile(bucket, path, file, options);
+  let uploadBody = file;
+  let uploadOptions = options;
+
+  if (file instanceof Blob && isNormalizableUploadImage(file)) {
+    const normalized = await normalizeUploadMedia(file, {
+      fileName: path.split("/").pop() || "upload",
+      maxDimension: bucket === "avatars" ? 1024 : 2560,
+      outputMimeType: "preserve",
+    });
+    uploadBody = normalized.body;
+    uploadOptions = {
+      ...options,
+      contentType: normalized.mimeType,
+    };
+  }
+
+  // Keep the caller-provided path stable for legacy/public bucket contracts.
+  await uploadStorageFile(bucket, path, uploadBody, uploadOptions);
   return getStoragePublicUrl(bucket, path);
 };

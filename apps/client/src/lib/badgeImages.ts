@@ -27,7 +27,7 @@ const CODE_FILE_OVERRIDES: Record<string, string> = {
 };
 
 const badgeImagePathFromCode = (code: string) =>
-  `${BADGE_IMAGE_BASE_PATH}/${CODE_FILE_OVERRIDES[code] || slugToFileName(code)}.png`;
+  `${BADGE_IMAGE_BASE_PATH}/${CODE_FILE_OVERRIDES[code] || slugToFileName(code)}.webp`;
 
 export function getBadgeImagePath(badge: Badge): string | null {
   if (badge.is_secret && !badge.earned_at) {
@@ -40,13 +40,12 @@ export function getBadgeImagePath(badge: Badge): string | null {
   const mappedByTitle = BADGE_IMAGE_MAP[badge.title];
   if (mappedByTitle) return mappedByTitle;
 
-  if (badge.code) {
-    return badgeImagePathFromCode(badge.code);
-  }
-
-  // Fallback to icon_url from the database if present
   if (badge.icon_url && badge.icon_url.trim().length > 0) {
     return badge.icon_url;
+  }
+
+  if (badge.code) {
+    return badgeImagePathFromCode(badge.code);
   }
 
   return null;

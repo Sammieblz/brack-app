@@ -67,17 +67,14 @@ npx supabase start
 # Stop local Supabase
 npx supabase stop
 
-# Link to remote project
-npx supabase link --project-ref your-project-id
-
-# Apply migrations
-npx supabase db push
-
-# Reset database (deletes all data!)
-npx supabase db reset
+# Replay migrations locally (deletes local data only)
+npx supabase db reset --local --no-seed
 
 # Create new migration
-npx supabase migration new migration_name
+npm run db:migration:new -- migration_name
+
+# Lock finalized migration contents
+npm run db:migrations:lock
 
 # Deploy Edge Functions
 npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api

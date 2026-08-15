@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +22,7 @@ import {
   type ReaderStatusBadge,
 } from "@/services/api";
 import type { User } from "@/types";
+import { invalidateDashboardHomeQueries } from "@/lib/dashboardQueries";
 import { toast } from "sonner";
 
 interface PrivacySettingsProps {
@@ -36,6 +38,7 @@ const initials = (name?: string | null) =>
     .slice(0, 2);
 
 export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
+  const queryClient = useQueryClient();
   const [publicProfile, setPublicProfile] = useState(true);
   const [showReadingActivity, setShowReadingActivity] = useState(true);
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
@@ -163,6 +166,7 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
     setLeaderboardOptIn(checked);
     try {
       const response = await updateGamificationSettings({ leaderboard_opt_in: checked });
+      void invalidateDashboardHomeQueries(queryClient, user.id);
       toast.success(
         checked
           ? response.leaderboard_eligible_from
@@ -183,6 +187,7 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
     setGamificationProfileVisible(checked);
     try {
       await updateGamificationSettings({ gamification_profile_visible: checked });
+      void invalidateDashboardHomeQueries(queryClient, user.id);
       toast.success(checked ? "Journey details are visible" : "Journey details are private");
     } catch {
       setGamificationProfileVisible(previous);

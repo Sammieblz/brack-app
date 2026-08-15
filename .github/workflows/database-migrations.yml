@@ -1,0 +1,73 @@
+name: Database Migration Integrity
+
+on:
+  pull_request:
+    branches: [main]
+  merge_group:
+    types: [checks_requested]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: database-migration-integrity-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Replay, pgTAP, and lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout complete migration history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pinned Supabase CLI
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
+        with:
+          version: 2.114.0
+
+      - name: Test migration integrity verifier
+        run: npm run db:migrations:test
+
+      - name: Verify committed migration lock
+        run: npm run db:migrations:verify
+
+      - name: Reject rewritten or backdated migrations
+        shell: bash
+        env:
+          MIGRATION_BASE_REF: ${{ github.event.pull_request.base.sha }}
+        run: |
+          base_ref="${MIGRATION_BASE_REF}"
+          if [[ -z "${base_ref}" ]]; then
+            base_ref="$(git rev-parse HEAD^)"
+          fi
+          node scripts/verify-migration-integrity.mjs --base-ref "${base_ref}"
+
+      - name: Start a clean local database
+        run: supabase db start
+
+      - name: Replay all migrations without seed data
+        run: supabase db reset --local --no-seed
+
+      - name: Verify complete local migration history
+        run: npm run db:migrations:local:postflight
+
+      - name: Verify local data and non-public schema contracts
+        run: npm run db:migrations:local:contracts
+
+      - name: Run database contract tests
+        run: supabase test db --local
+
+      - name: Lint the replayed schema
+        run: supabase db lint --local --level error --fail-on error

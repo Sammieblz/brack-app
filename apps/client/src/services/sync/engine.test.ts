@@ -266,6 +266,97 @@ describe("reading core sync behavior", () => {
     ]);
   });
 
+  it("keeps a bookshelf schema-cache rollout failure retryable", async () => {
+    const userId = `user-${crypto.randomUUID()}`;
+    const bookId = crypto.randomUUID();
+    const originalBook = makeBook({
+      id: bookId,
+      user_id: userId,
+      title: "Supernova",
+      shelf_position: null,
+    });
+    const reorderedBook = {
+      ...originalBook,
+      shelf_position: 3,
+      updated_at: "2026-08-14T12:00:00.000Z",
+    };
+    await booksRepo.upsertRemote(userId, originalBook);
+    await booksRepo.upsertLocal(userId, reorderedBook, "update");
+    pushSyncMutationsMock.mockImplementation(
+      ({ items }: { items: Array<Record<string, unknown>> }) => Promise.resolve({
+        accepted: [],
+        failed: items.map((item) => ({
+          id: item.id,
+          client_mutation_id: item.client_mutation_id,
+          entity: item.entity,
+          client_entity_id: item.client_entity_id,
+          error: "Could not find the 'shelf_position' column of 'books' in the schema cache",
+          retryable: false,
+        })),
+      }),
+    );
+
+    const engine = new ReadingCoreSyncEngine({
+      setTimeout: () => 1,
+      clearTimeout: vi.fn(),
+    });
+    const status = await engine.syncUser(userId);
+
+    expect(status).toMatchObject({ pending: 1, failed: 0, syncing: 0 });
+    expect(await syncRepo.listFailed(userId)).toEqual([]);
+    expect(await syncRepo.listPending(userId)).toEqual([
+      expect.objectContaining({
+        client_entity_id: bookId,
+        attempt_count: 1,
+        last_error: "Could not find the 'shelf_position' column of 'books' in the schema cache",
+      }),
+    ]);
+  });
+
+  it("automatically requeues a persisted bookshelf schema-cache failure", async () => {
+    const userId = `user-${crypto.randomUUID()}`;
+    const bookId = crypto.randomUUID();
+    const originalBook = makeBook({
+      id: bookId,
+      user_id: userId,
+      title: "Supernova",
+      shelf_position: null,
+    });
+    const reorderedBook = {
+      ...originalBook,
+      shelf_position: 4,
+      updated_at: "2026-08-14T12:01:00.000Z",
+    };
+    await booksRepo.upsertRemote(userId, originalBook);
+    await booksRepo.upsertLocal(userId, reorderedBook, "update");
+    const [pendingItem] = await syncRepo.listPending(userId);
+    await syncRepo.markFailed(
+      pendingItem,
+      "Could not find the 'shelf_position' column of 'books' in the schema cache",
+    );
+    pushSyncMutationsMock.mockImplementation(
+      ({ items }: { items: Array<Record<string, unknown>> }) => Promise.resolve({
+        accepted: items.map((item) => ({
+          id: item.id,
+          client_mutation_id: item.client_mutation_id,
+          entity: item.entity,
+          client_entity_id: item.client_entity_id,
+          server_entity_id: bookId,
+          record: reorderedBook,
+        })),
+        failed: [],
+      }),
+    );
+
+    const status = await new ReadingCoreSyncEngine().syncUser(userId);
+
+    expect(pushSyncMutationsMock).toHaveBeenCalledTimes(1);
+    expect(status).toMatchObject({ pending: 0, failed: 0, syncing: 0 });
+    expect(await syncRepo.listFailed(userId)).toEqual([]);
+    expect(await syncRepo.listPending(userId)).toEqual([]);
+    expect(await booksRepo.get(bookId)).toMatchObject({ shelf_position: 4 });
+  });
+
   it("returns in-flight items to pending when the server response is malformed", async () => {
     const userId = `user-${crypto.randomUUID()}`;
     await syncRepo.enqueueMutation(userId, "goals", "goal-malformed", "create", {

@@ -394,9 +394,9 @@ Capacitor launcher icons use the fixed Brack `B` mark on the orange app field:
 - iOS source icon: `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`
 - Android adaptive icon layers: `android/app/src/main/res/mipmap-*/ic_launcher_background.png` and `ic_launcher_foreground.png`
 - Android legacy launcher icons: `android/app/src/main/res/mipmap-*/ic_launcher.png` and `ic_launcher_round.png`
-- Reusable source layers: `assets/icon-only.png`, `assets/icon-background.png`, and `assets/icon-foreground.png`
+- Canonical source: `ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png`; run `npm run brand:icons` to regenerate platform-specific icon outputs.
 
-Run `npm run brand:icons` after changing Brack app icon artwork. Android adaptive icons include a monochrome layer through `ic_launcher_foreground` for themed launcher support. Runtime UI logos remain theme-aware through `apps/client/src/components/ThemeAwareLogo.tsx`.
+Run `npm run brand:icons` and then `npm run media:assets` after changing Brack app icon artwork. Android adaptive icons include a monochrome layer through `ic_launcher_foreground` for themed launcher support. Runtime UI logos remain theme-aware through `apps/client/src/components/ThemeAwareLogo.tsx`; the UI uses only the transparent `brack-mark.webp` and `brack-wordmark.webp` masks, while opaque launcher canvases remain platform-specific outputs.
 
 ## Deep Linking
 

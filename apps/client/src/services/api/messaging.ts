@@ -3,6 +3,7 @@ import { sanitizeInput } from "@/utils/sanitize";
 import { getCurrentAuthUser } from "./auth";
 import { invokeFunction } from "./client";
 import { withContentSnapshot } from "@/services/contentSnapshots";
+import { normalizeUploadMedia } from "@/utils/normalizeUploadMedia";
 
 export type MessageType = "text" | "media" | "gif";
 export type MessageReactionType = "like" | "dislike" | "heart" | "laugh" | "wow" | "thanks";
@@ -442,23 +443,33 @@ export const uploadMessageMediaFiles = async (files: File[]): Promise<MessageMed
       throw new Error(`${file.name} must be 8 MB or smaller`);
     }
 
-    const storagePath = `${user.id}/${crypto.randomUUID()}-${toSafeFileName(file.name)}`;
+    const prepared = await normalizeUploadMedia(file, {
+      maxDimension: 2048,
+      outputMimeType: "image/webp",
+    });
+    if (prepared.sizeBytes > MAX_MESSAGE_MEDIA_BYTES) {
+      throw new Error(`${file.name} could not be optimized below 8 MB`);
+    }
+
+    const storagePath = `${user.id}/${crypto.randomUUID()}-${toSafeFileName(prepared.fileName)}`;
     const { error } = await supabase.storage
       .from(MESSAGE_MEDIA_BUCKET)
-      .upload(storagePath, file, {
+      .upload(storagePath, prepared.body, {
         cacheControl: "31536000",
         upsert: false,
-        contentType: file.type,
+        contentType: prepared.mimeType,
       });
 
     if (error) throw error;
 
     uploaded.push({
       media_source: "upload",
-      media_type: file.type === "image/gif" ? "gif" : "image",
+      media_type: prepared.mimeType === "image/gif" ? "gif" : "image",
       storage_path: storagePath,
-      mime_type: file.type,
-      size_bytes: file.size,
+      mime_type: prepared.mimeType,
+      size_bytes: prepared.sizeBytes,
+      width: prepared.width,
+      height: prepared.height,
       position: index,
     });
   }

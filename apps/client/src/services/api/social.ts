@@ -4,6 +4,7 @@ import { sanitizeInput } from "@/utils/sanitize";
 import { getCurrentAuthUser } from "./auth";
 import type { RichTextDocument, RichTextFormat } from "@/types/richText";
 import { withContentSnapshot } from "@/services/contentSnapshots";
+import { normalizeUploadMedia } from "@/utils/normalizeUploadMedia";
 
 export type SocialActivityType =
   | "book_started"
@@ -247,13 +248,28 @@ export const uploadPostMediaFiles = async (files: File[]): Promise<PostMedia[]> 
       throw new Error(`${file.name} must be 60 MB or smaller`);
     }
 
-    const storagePath = `${user.id}/${crypto.randomUUID()}-${toSafeFileName(file.name)}`;
+    const prepared = isImage
+      ? await normalizeUploadMedia(file, {
+          maxDimension: 2560,
+          outputMimeType: "image/webp",
+        })
+      : null;
+    const uploadBody = prepared?.body ?? file;
+    const uploadName = prepared?.fileName ?? file.name;
+    const uploadMimeType = prepared?.mimeType ?? file.type;
+    const uploadSize = prepared?.sizeBytes ?? file.size;
+
+    if (isImage && uploadSize > MAX_IMAGE_BYTES) {
+      throw new Error(`${file.name} could not be optimized below 10 MB`);
+    }
+
+    const storagePath = `${user.id}/${crypto.randomUUID()}-${toSafeFileName(uploadName)}`;
     const { error } = await supabase.storage
       .from(POST_MEDIA_BUCKET)
-      .upload(storagePath, file, {
+      .upload(storagePath, uploadBody, {
         cacheControl: "31536000",
         upsert: false,
-        contentType: file.type,
+        contentType: uploadMimeType,
       });
 
     if (error) throw error;
@@ -261,8 +277,10 @@ export const uploadPostMediaFiles = async (files: File[]): Promise<PostMedia[]> 
     uploaded.push({
       storage_path: storagePath,
       media_type: isVideo ? "video" : "image",
-      mime_type: file.type,
-      size_bytes: file.size,
+      mime_type: uploadMimeType,
+      size_bytes: uploadSize,
+      width: prepared?.width,
+      height: prepared?.height,
       position: index,
     });
   }

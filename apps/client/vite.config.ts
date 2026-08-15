@@ -22,7 +22,6 @@ export default defineConfig(({ mode }) => {
       includeAssets: [
         "brack-favicon/favicon.ico",
         "brack-favicon/apple-touch-icon.png",
-        "brack-favicon/favicon.svg",
       ],
       manifest: {
         name: "Brack",
@@ -56,9 +55,6 @@ export default defineConfig(({ mode }) => {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,ico,svg,woff2}"],
         globIgnores: [
-          "**/achievement-badges/*.png",
-          "**/3dicons/*.png",
-          "**/brack-*.png",
           "**/assets/*scanner*",
           "**/assets/*tesseract*",
           "**/assets/ReactionBar-*.js",

@@ -17,7 +17,7 @@ export const ReadingProfileSettings = ({ user }: ReadingProfileSettingsProps) =>
   return (
     <div className="space-y-4">
       {shouldPrompt && (
-        <Card className="border-primary/40 bg-primary/8">
+        <Card className="border-primary/40 bg-primary/[0.08]">
           <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start">
               <div>

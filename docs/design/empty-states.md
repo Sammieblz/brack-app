@@ -4,8 +4,9 @@ Brack uses 3D illustrations for meaningful empty, no-results, connection, and co
 
 ## Asset Source
 
-- Use existing assets from `public/3dicons/`.
+- Use the optimized WebP assets from `public/3dicons/`.
 - Reference them only through `apps/client/src/config/emptyStateAssets.ts`.
+- Run `npm run media:assets` after adding or replacing an illustration.
 - Do not add third-party icon downloads that require attribution.
 - Do not point UI at generated `/empty-states` assets.
 

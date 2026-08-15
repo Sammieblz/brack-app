@@ -143,7 +143,7 @@ export const FloatingActionButton = () => {
                 <Button
                   size="icon"
                   onClick={action.onClick}
-                  className="h-12 w-12 rounded-full shadow-[0_18px_38px_rgba(0,0,0,0.45)] bg-primary text-primary-foreground hover:bg-primary/90 border border-white/12"
+                  className="h-12 w-12 rounded-full shadow-[0_18px_38px_rgba(0,0,0,0.45)] bg-primary text-primary-foreground hover:bg-primary/90 border border-white/[0.12]"
                 >
                   <Icon className="h-5 w-5" />
                 </Button>
@@ -158,7 +158,7 @@ export const FloatingActionButton = () => {
             size="icon"
             onClick={handleToggle}
             className={cn(
-              "h-16 w-16 rounded-full shadow-[0_22px_50px_rgba(0,0,0,0.48)] bg-primary text-primary-foreground transition-transform supports-[backdrop-filter]:backdrop-blur-xl border border-white/12",
+              "h-16 w-16 rounded-full shadow-[0_22px_50px_rgba(0,0,0,0.48)] bg-primary text-primary-foreground transition-transform supports-[backdrop-filter]:backdrop-blur-xl border border-white/[0.12]",
               isOpen && "rotate-45"
             )}
           >

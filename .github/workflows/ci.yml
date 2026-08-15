@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   quality-checks:
     name: Quality Checks
@@ -39,6 +42,9 @@ jobs:
 
       - name: Run TypeScript type check
         run: npm run check-types
+
+      - name: Verify optimized static media
+        run: npm run media:assets:check
 
       - name: Run unit tests
         run: npm test
@@ -299,27 +305,3 @@ jobs:
 
       - name: Run web smoke tests
         run: npx playwright test --project=chromium
-
-  database-tests:
-    name: Database Tests
-    runs-on: ubuntu-latest
-    needs: [quality-checks]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
-        with:
-          version: latest
-
-      - name: Start local Supabase
-        run: supabase start
-
-      - name: Reset and validate migrations
-        run: |
-          supabase db reset --local
-          supabase db lint --local
-
-      - name: Run pgTAP tests
-        run: supabase test db

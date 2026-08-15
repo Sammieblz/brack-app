@@ -49,11 +49,12 @@ For production apps, consider enabling strict mode gradually.
 
 ### How do I add a new database table?
 
-1. Create migration: `npx supabase migration new add_your_table`
+1. Create migration: `npm run db:migration:new -- add_your_table`
 2. Write SQL in the generated file
-3. Add RLS policies
-4. Apply migration: `npx supabase db push`
-5. Update types: The types in `apps/client/src/integrations/supabase/types.ts` should be regenerated
+3. Add RLS policies and pgTAP contracts
+4. Finalize the lock: `npm run db:migrations:lock`
+5. Open a pull request; the protected workflow validates and applies production migrations
+6. Update types: The types in `apps/client/src/integrations/supabase/types.ts` should be regenerated
 
 ### How do I update Supabase types?
 

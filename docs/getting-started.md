@@ -83,24 +83,21 @@ SUPABASE_DB_PASSWORD=your-linked-project-db-password
 1. Go to [supabase.com](https://supabase.com)
 2. Create a new project
 3. Copy your project URL and anon key to `.env`
-4. Run migrations:
-
-```bash
-npx supabase link --project-ref your-project-id
-npx supabase db push
-```
+4. Use the protected migration pipeline described in
+   [Database Migration Integrity](./database-migrations.md). Do not push schema
+   changes directly to a shared or production project.
 
 #### Option B: Local Supabase (Development)
 
 ```bash
-# Install Supabase CLI
-npm install -g supabase
+# Install the repository's pinned Supabase CLI
+npm ci
 
 # Start local Supabase
 npx supabase start
 
-# Apply migrations
-npx supabase db reset
+# Replay migrations without production seed data
+npx supabase db reset --local --no-seed
 ```
 
 ### 5. Run Development Server
@@ -189,11 +186,15 @@ npm run cap:open:android
 
 ### Running Migrations
 
-All migrations in `supabase/migrations/` will be applied automatically when you run:
+Replay all migrations locally with:
 
 ```bash
-npx supabase db push
+npx supabase start
+npx supabase db reset --local --no-seed
 ```
+
+Shared and production projects are updated only through the protected workflow;
+see [Database Migration Integrity](./database-migrations.md).
 
 ### Seeding Data (Optional)
 
@@ -324,8 +325,9 @@ npm run lint            # Run ESLint
 # Supabase
 npx supabase start      # Start local Supabase
 npx supabase stop       # Stop local Supabase
-npx supabase db push    # Apply migrations
-npx supabase db reset   # Reset database
+npm run db:migration:new -- descriptive_name # Create a migration
+npm run db:migrations:lock                  # Record finalized checksums
+npx supabase db reset --local --no-seed     # Reset local database only
 npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api # Deploy Edge Functions
 ```
 

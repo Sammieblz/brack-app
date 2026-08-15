@@ -108,12 +108,12 @@ VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
 
 **Solution**:
 ```bash
-# Apply all migrations
-npx supabase db push
-
-# Or reset database (WARNING: deletes all data)
-npx supabase db reset
+# Reapply all migrations to the local database only
+npx supabase db reset --local --no-seed
 ```
+
+For a shared or production database, create a forward repair migration and use
+the protected workflow in [Database Migration Integrity](./database-migrations.md).
 
 #### "Row level security policy violated"
 

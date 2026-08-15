@@ -77,6 +77,33 @@ const asPayloadRecord = (payload: unknown): Record<string, unknown> =>
     ? payload as Record<string, unknown>
     : {};
 
+/**
+ * A shelf migration can briefly reach the client/Edge Function before
+ * PostgREST has refreshed the books schema. That is an operator/deployment
+ * problem, not a local edit the reader can resolve by reviewing or discarding.
+ * Keep the check deliberately narrow so ordinary validation failures still
+ * move to review.
+ */
+const isRecoverableBookshelfSchemaFailure = (
+  item: Pick<OutboxItem, "entity" | "payload">,
+  error: string | null | undefined,
+) => {
+  if (item.entity !== "books" || !error) return false;
+
+  const payload = asPayloadRecord(item.payload);
+  if (!Object.prototype.hasOwnProperty.call(payload, "shelf_position")) {
+    return false;
+  }
+
+  const message = error.toLowerCase();
+  return (
+    message.includes("shelf_position") &&
+    message.includes("books") &&
+    message.includes("schema cache") &&
+    (message.includes("could not find") || message.includes("pgrst204"))
+  );
+};
+
 const isObjectRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -681,6 +708,16 @@ export class ReadingCoreSyncEngine {
   }
 
   private async pushPending(userId: string, forcePending = false) {
+    // Older app versions may already have classified this rollout mismatch as
+    // permanent. Promote those durable edits back to the retry queue before
+    // reading pending work so they recover without requiring 1-by-1 review.
+    const recoverableFailures = (await syncRepo.listFailed(userId)).filter((item) =>
+      isRecoverableBookshelfSchemaFailure(item, item.last_error)
+    );
+    if (recoverableFailures.length > 0) {
+      await Promise.all(recoverableFailures.map((item) => syncRepo.retry(item)));
+    }
+
     const pendingItems = await syncRepo.listPending(userId, {
       includeFreshSyncing: forcePending,
     });
@@ -732,7 +769,10 @@ export class ReadingCoreSyncEngine {
         const failed = failedResponse && isStructurallyValidFailure(failedResponse)
           ? failedResponse
           : undefined;
-        if (failed?.retryable !== false) {
+        if (
+          failed?.retryable !== false ||
+          (failed && isRecoverableBookshelfSchemaFailure(item, failed.error))
+        ) {
           await syncRepo.deferRetry(item, failed?.error || "Sync server returned no result");
         } else {
           await syncRepo.markFailed(item, failed.error || "Sync failed");

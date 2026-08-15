@@ -91,13 +91,13 @@ export const OfflineIndicator = () => {
     <>
       <Alert
         className={cn(
-          "fixed left-1/2 top-16 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 border border-primary/25 bg-background/90 text-foreground shadow-lg backdrop-blur",
+          "fixed inset-x-4 bottom-[calc(max(env(safe-area-inset-bottom),24px)+96px)] z-40 mx-auto w-auto max-w-md border border-primary/25 bg-background/90 text-foreground shadow-lg backdrop-blur md:bottom-4 md:left-auto md:right-4 md:mx-0 md:w-[calc(100%-2rem)]",
           !isOnline && "border-primary/35",
           hasFailures && "border-destructive/40"
         )}
       >
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             {isOnline ? (
               <>
                 {hasFailures ? (
@@ -105,7 +105,7 @@ export const OfflineIndicator = () => {
                 ) : (
                   <Refresh className="h-4 w-4 text-primary" />
                 )}
-                <AlertDescription className="font-sans text-current">
+                <AlertDescription className="min-w-0 font-sans leading-tight text-current">
                   {hasFailures ? (
                     <>
                       {status.failed} reading change{status.failed === 1 ? " needs" : "s need"} review
@@ -136,13 +136,14 @@ export const OfflineIndicator = () => {
           </div>
           
           {isOnline && pendingCount > 0 && (
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center justify-end gap-2">
               {hasFailures && (
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={() => setReviewOpen(true)}
-                  className="h-8"
+                  aria-label="Review reading changes"
+                  className="h-11 min-w-11"
                 >
                   Review
                 </Button>
@@ -153,17 +154,18 @@ export const OfflineIndicator = () => {
                   variant="outline"
                   onClick={() => void handleSync(true)}
                   disabled={syncing}
-                  className="h-8 bg-background/80"
+                  aria-label={syncing ? "Syncing reading changes" : "Sync reading changes now"}
+                  className="h-11 min-w-11 bg-background/80 px-3"
                 >
                   {syncing ? (
                     <>
-                      <Refresh className="h-3 w-3 mr-1 animate-spin" />
-                      Syncing...
+                      <Refresh className="h-4 w-4 animate-spin min-[380px]:mr-1" />
+                      <span className="hidden min-[380px]:inline">Syncing...</span>
                     </>
                   ) : (
                     <>
-                      <Refresh className="h-3 w-3 mr-1" />
-                      Sync Now
+                      <Refresh className="h-4 w-4 min-[380px]:mr-1" />
+                      <span className="hidden min-[380px]:inline">Sync now</span>
                     </>
                   )}
                 </Button>

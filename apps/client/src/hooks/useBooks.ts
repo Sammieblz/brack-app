@@ -12,7 +12,7 @@ import { isConnectivityAvailable } from "@/services/connectivity";
 
 const PAGE_SIZE = 20;
 
-export const useBooks = (userId?: string) => {
+export const useBooks = (userId?: string, enabled = true) => {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -26,7 +26,7 @@ export const useBooks = (userId?: string) => {
     silent = false,
     requestedOffset = 0
   ) => {
-    if (!userId) return;
+    if (!userId || !enabled) return;
 
     if (isInitial) {
       const localBooks = await booksRepo.list(userId);
@@ -75,14 +75,14 @@ export const useBooks = (userId?: string) => {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [userId]);
+  }, [enabled, userId]);
 
   useEffect(() => {
-    fetchBooks(true);
-  }, [fetchBooks]);
+    if (enabled) fetchBooks(true);
+  }, [enabled, fetchBooks]);
 
   useEffect(() => {
-    if (!userId || typeof window === "undefined") return;
+    if (!userId || !enabled || typeof window === "undefined") return;
 
     const handleBooksChanged = (event: Event) => {
       const detail = (event as CustomEvent<BooksChangedDetail>).detail;
@@ -114,7 +114,7 @@ export const useBooks = (userId?: string) => {
 
     window.addEventListener(BOOKS_CHANGED_EVENT, handleBooksChanged);
     return () => window.removeEventListener(BOOKS_CHANGED_EVENT, handleBooksChanged);
-  }, [fetchBooks, userId]);
+  }, [enabled, fetchBooks, userId]);
 
   const loadMore = useCallback(() => {
     if (!loadingMore && hasMore) {

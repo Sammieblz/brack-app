@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +13,15 @@ import { Confetti } from "@/components/animations/Confetti";
 import { useAuth } from "@/hooks/useAuth";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 import { useGamification } from "@/hooks/useGamification";
+import {
+  dashboardHomeQueryKey,
+  recordDashboardFetchObservation,
+} from "@/lib/dashboardQueries";
+import {
+  advanceJourneyLevelCursor,
+  isJourneyLevelObserverRoute,
+} from "@/lib/journeyLevelObserver";
+import { getDashboardExperience } from "@/services/api/dashboard";
 
 interface LevelUpState {
   level: number;
@@ -20,23 +30,53 @@ interface LevelUpState {
 
 export const JourneyLevelUpObserver = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { gamificationEnabled } = useFeatureFlags();
-  const { data } = useGamification(gamificationEnabled ? user?.id : undefined);
+  const observerEnabled = Boolean(user)
+    && gamificationEnabled
+    && isJourneyLevelObserverRoute(location.pathname);
+  const readsCombinedDashboard = observerEnabled && location.pathname === "/dashboard";
+  const { data: gamificationData } = useGamification(
+    observerEnabled && !readsCombinedDashboard ? user?.id : undefined,
+  );
+  const dashboardQuery = useQuery({
+    queryKey: dashboardHomeQueryKey(user?.id, true, 10),
+    queryFn: async () => {
+      try {
+        const result = await getDashboardExperience(user!.id, {
+          includeJourney: true,
+          recentLimit: 10,
+        });
+        recordDashboardFetchObservation(user!.id, result.source);
+        return result;
+      } catch (queryError) {
+        recordDashboardFetchObservation(user!.id, "error");
+        throw queryError;
+      }
+    },
+    enabled: observerEnabled && readsCombinedDashboard,
+    staleTime: 60_000,
+  });
+  const account = readsCombinedDashboard
+    ? dashboardQuery.data?.data.journey?.account
+    : gamificationData?.account;
   const [levelUp, setLevelUp] = useState<LevelUpState | null>(null);
 
   useEffect(() => {
-    if (!user || !data) return;
-    const key = `brack:journey-level:${user.id}`;
-    const previous = Number(localStorage.getItem(key) || 0);
-    const current = data.account.current_level;
-    localStorage.setItem(key, String(current));
-    if (previous > 0 && current > previous) {
-      setLevelUp({ level: current, title: data.account.level_title });
+    if (!observerEnabled) {
+      setLevelUp(null);
+      return;
     }
-  }, [data, user]);
+    if (!user || !account) return;
+    const current = account.current_level;
+    const previous = advanceJourneyLevelCursor(user.id, current);
+    if (previous !== null && previous > 0 && current > previous) {
+      setLevelUp({ level: current, title: account.level_title });
+    }
+  }, [account, observerEnabled, user]);
 
-  if (!levelUp) return null;
+  if (!observerEnabled || !levelUp) return null;
 
   return (
     <>

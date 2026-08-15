@@ -1,5 +1,10 @@
 project_id = "waftnaqgkcgufzapcihe"
 
+# Match the linked production database so clean CI replays exercise the same
+# PostgreSQL major-version behavior as deployment.
+[db]
+major_version = 17
+
 [functions.search-books]
 verify_jwt = false
 

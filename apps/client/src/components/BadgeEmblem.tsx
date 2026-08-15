@@ -43,10 +43,10 @@ const ICON_KEY_MAP: Record<string, AppIconType> = {
 
 const rarityClasses = {
   common: "border-border bg-muted/60 text-muted-foreground",
-  uncommon: "border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-  rare: "border-sky-500/40 bg-sky-500/10 text-sky-700 dark:text-sky-300",
-  epic: "border-violet-500/40 bg-violet-500/10 text-violet-700 dark:text-violet-300",
-  legendary: "border-amber-500/45 bg-amber-500/12 text-amber-700 dark:text-amber-300",
+  uncommon: "border-dashed border-primary/30 bg-primary/5 text-primary",
+  rare: "border-primary/40 bg-primary/10 text-primary ring-1 ring-primary/10",
+  epic: "border-[3px] border-double border-primary/50 bg-primary/10 text-primary",
+  legendary: "border-primary/60 bg-gradient-card text-primary ring-2 ring-primary/20",
 } as const;
 
 interface BadgeEmblemProps {

@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   getServerBookCopySafety: vi.fn(),
   listFailedCurrentUser: vi.fn(),
   retryFailedItem: vi.fn(),
+  syncCurrentUser: vi.fn(),
   toast: vi.fn(),
   useServerBookCopy: vi.fn(),
 }));
@@ -24,6 +25,7 @@ vi.mock("@/services/sync/engine", () => ({
     getServerBookCopySafety: mocks.getServerBookCopySafety,
     listFailedCurrentUser: mocks.listFailedCurrentUser,
     retryFailedItem: mocks.retryFailedItem,
+    syncCurrentUser: mocks.syncCurrentUser,
     useServerBookCopy: mocks.useServerBookCopy,
   },
   SYNC_STATUS_EVENT: "brack:sync-status-changed",
@@ -66,6 +68,7 @@ describe("SyncReviewDialog book conflicts", () => {
     mocks.listFailedCurrentUser.mockResolvedValue([failedUpdate]);
     mocks.getServerBookCopySafety.mockResolvedValue({ safe: true, relatedChangeCount: 0 });
     mocks.retryFailedItem.mockResolvedValue({ pending: 0, failed: 0, syncing: 0 });
+    mocks.syncCurrentUser.mockResolvedValue({ pending: 0, failed: 0, syncing: 0 });
     mocks.useServerBookCopy.mockResolvedValue({
       book: { id: "canonical-supernova", title: "Supernova" },
       status: { pending: 0, failed: 0, syncing: 0 },
@@ -128,5 +131,35 @@ describe("SyncReviewDialog book conflicts", () => {
     await waitFor(() => expect(mocks.retryFailedItem).toHaveBeenCalledWith(failedUpdate));
     expect(mocks.useServerBookCopy).not.toHaveBeenCalled();
     expect(onResolved).toHaveBeenCalled();
+  });
+
+  it("presents repeated schema-cache failures as a server update instead of broken books", async () => {
+    const user = userEvent.setup();
+    const schemaError = "Could not find the 'shelf_position' column of 'books' in the schema cache";
+    const orderChanges = [3, 4].map((shelfPosition, index): OutboxItem => ({
+      ...failedUpdate,
+      id: `outbox-order-${index}`,
+      client_mutation_id: `mutation-order-${index}`,
+      client_entity_id: `book-${index}`,
+      payload: { shelf_position: shelfPosition },
+      attempt_count: 1,
+      last_error: schemaError,
+    }));
+    mocks.listFailedCurrentUser.mockResolvedValue(orderChanges);
+
+    render(<SyncReviewDialog open onOpenChange={vi.fn()} />);
+
+    expect(await screen.findByText("Sync service update needed")).toBeInTheDocument();
+    expect(screen.getByText(/2 reading changes are safe on this device/i)).toBeInTheDocument();
+    expect(screen.getByText("Technical details")).toBeInTheDocument();
+    expect(screen.getByText(schemaError)).toBeInTheDocument();
+    expect(screen.queryByText("Attempted 1 time.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Untitled book")).not.toBeInTheDocument();
+    expect(screen.queryAllByRole("article")).toHaveLength(0);
+
+    await user.click(screen.getByRole("button", { name: "Retry affected changes" }));
+    await waitFor(() => {
+      expect(mocks.syncCurrentUser).toHaveBeenCalledWith({ forcePending: true });
+    });
   });
 });

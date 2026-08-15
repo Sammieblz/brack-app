@@ -132,7 +132,6 @@ export const BrandedLoadingScreen = ({
         <div className="relative">
           <ThemeAwareLogo
             variant="icon"
-            tone="theme"
             size="h-20 w-20 md:h-24 md:w-24"
             className="drop-shadow-lg"
           />

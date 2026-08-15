@@ -7,8 +7,12 @@ import { getStreakMilestones } from "@/utils/streakCalculation";
 import { Confetti } from "@/components/animations/Confetti";
 import { useGSAP } from "@/hooks/useGSAP";
 import { countUp } from "@/lib/animations/gsap-presets";
-import { BRACK_STREAK_HAPPY_IMAGE, BRACK_STREAK_SAD_IMAGE } from "@/config/brackAssets";
+import {
+  BRACK_STREAK_HAPPY_IMAGE,
+  BRACK_STREAK_SAD_IMAGE,
+} from "@/config/brackAssets";
 import { APP_ICONS } from "@/config/iconography";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface StreakDisplayProps {
   streakData: StreakData;
@@ -27,6 +31,7 @@ const formatLastRead = (date: string | null) => {
 };
 
 export const StreakDisplay = ({ streakData, onUseFreeze }: StreakDisplayProps) => {
+  const reducedMotion = useReducedMotion();
   const milestones = getStreakMilestones(streakData.currentStreak);
   const isStreakActive = streakData.currentStreak > 0;
   const isFollowingStreak = streakData.hasReadingToday;
@@ -62,19 +67,25 @@ export const StreakDisplay = ({ streakData, onUseFreeze }: StreakDisplayProps) =
 
   // Trigger confetti on milestone
   useEffect(() => {
+    let celebrationTimer: ReturnType<typeof setTimeout> | undefined;
     if (streakData.currentStreak > prevStreakRef.current && streakData.currentStreak > 0) {
       const milestoneStreaks = [7, 14, 30, 50, 100, 365];
       if (milestoneStreaks.includes(streakData.currentStreak)) {
         setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 3000);
+        celebrationTimer = setTimeout(() => setShowConfetti(false), 3000);
       }
     }
     prevStreakRef.current = streakData.currentStreak;
+    return () => {
+      if (celebrationTimer) clearTimeout(celebrationTimer);
+    };
   }, [streakData.currentStreak]);
 
   // Count up animation
   useGSAP(() => {
-    if (streakNumberRef.current && isStreakActive) {
+    if (reducedMotion) {
+      setDisplayedStreak(streakData.currentStreak);
+    } else if (streakNumberRef.current && isStreakActive) {
       countUp(streakNumberRef.current, 0, streakData.currentStreak, {
         duration: 1,
         onUpdate: (value) => setDisplayedStreak(Math.round(value)),
@@ -82,7 +93,7 @@ export const StreakDisplay = ({ streakData, onUseFreeze }: StreakDisplayProps) =
     } else {
       setDisplayedStreak(streakData.currentStreak);
     }
-  }, { dependencies: [streakData.currentStreak, isStreakActive] });
+  }, { dependencies: [streakData.currentStreak, isStreakActive, reducedMotion] });
 
   return (
     <>
@@ -139,6 +150,7 @@ export const StreakDisplay = ({ streakData, onUseFreeze }: StreakDisplayProps) =
                   alt={streakImageAlt}
                   className="h-full w-full object-contain p-2"
                   loading="lazy"
+                  decoding="async"
                   draggable={false}
                 />
               </div>

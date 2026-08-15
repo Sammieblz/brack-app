@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface ConfettiProps {
   trigger?: boolean;
@@ -11,12 +12,12 @@ interface ConfettiProps {
 }
 
 const DEFAULT_CONFETTI_COLORS = [
-  "#FF6B6B",
-  "#4ECDC4",
-  "#45B7D1",
-  "#FFA07A",
-  "#98D8C8",
-  "#F7DC6F",
+  "hsl(var(--primary))",
+  "hsl(var(--primary-glow))",
+  "hsl(var(--accent))",
+  "hsl(var(--secondary))",
+  "hsl(var(--foreground))",
+  "hsl(var(--muted-foreground))",
 ];
 
 /**
@@ -28,6 +29,7 @@ export const Confetti = ({
   colors = DEFAULT_CONFETTI_COLORS,
   className,
 }: ConfettiProps) => {
+  const reducedMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef(new Set<HTMLDivElement>());
   const cleanupTimersRef = useRef(new Set<ReturnType<typeof setTimeout>>());
@@ -45,7 +47,7 @@ export const Confetti = ({
   }, []);
 
   useGSAP(() => {
-    if (!containerRef.current || !trigger) return;
+    if (!containerRef.current || !trigger || reducedMotion) return;
 
     const particles: HTMLDivElement[] = [];
 
@@ -103,7 +105,9 @@ export const Confetti = ({
       cleanupTimersRef.current.delete(cleanup);
     }, 4000);
     cleanupTimersRef.current.add(cleanup);
-  }, { dependencies: [trigger, count, colors] });
+  }, { dependencies: [trigger, count, colors, reducedMotion] });
+
+  if (reducedMotion) return null;
 
   return (
     <div

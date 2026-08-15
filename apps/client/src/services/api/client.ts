@@ -25,6 +25,9 @@ export class ApiRateLimitError extends Error {
 }
 
 export const getApiErrorStatus = (error: unknown) => {
+  if (error === null || (typeof error !== "object" && typeof error !== "function")) {
+    return null;
+  }
   const candidate = error as {
     status?: number;
     statusCode?: number;
@@ -34,6 +37,9 @@ export const getApiErrorStatus = (error: unknown) => {
 };
 
 export const getApiRetryAfterMs = (error: unknown) => {
+  if (error === null || (typeof error !== "object" && typeof error !== "function")) {
+    return null;
+  }
   const candidate = error as {
     retryAfterSeconds?: number;
     context?: Response | { headers?: Headers };

@@ -18,6 +18,7 @@ interface MobileHeaderProps {
   showBack?: boolean;
   back?: BackButtonConfig;
   action?: ReactNode;
+  secondary?: ReactNode;
   className?: string;
 }
 
@@ -26,6 +27,7 @@ export const MobileHeader = ({
   showBack = false, 
   back,
   action,
+  secondary,
   className
 }: MobileHeaderProps) => {
   const { triggerHaptic } = useHapticFeedback();
@@ -97,6 +99,17 @@ export const MobileHeader = ({
             )}
           </div>
         </div>
+        {secondary && (
+          <div
+            className="border-t border-border/60 pb-2 pt-2"
+            style={{
+              paddingLeft: "max(0.75rem, env(safe-area-inset-left))",
+              paddingRight: "max(0.75rem, env(safe-area-inset-right))",
+            }}
+          >
+            {secondary}
+          </div>
+        )}
     </header>
     <ProfileDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
     </>

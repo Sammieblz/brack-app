@@ -3,6 +3,7 @@ import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
 import { Check } from "iconoir-react";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface SuccessCheckmarkProps {
   show?: boolean;
@@ -20,9 +21,10 @@ export const SuccessCheckmark = ({
 }: SuccessCheckmarkProps) => {
   const checkRef = useRef<HTMLDivElement>(null);
   const circleRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
 
   useGSAP(() => {
-    if (!checkRef.current || !circleRef.current || !show) return;
+    if (!checkRef.current || !circleRef.current || !show || reducedMotion) return;
 
     const tl = gsap.timeline();
 
@@ -60,7 +62,7 @@ export const SuccessCheckmark = ({
       repeat: 1,
       ease: "power2.inOut",
     });
-  }, { dependencies: [show] });
+  }, { dependencies: [show, reducedMotion] });
 
   if (!show) return null;
 
