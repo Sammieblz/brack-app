@@ -1,11 +1,12 @@
--- Read-only production contracts for invariants that schema diff cannot prove.
+-- Read-only production contracts for data and non-public invariants that the
+-- typed public-schema fingerprint cannot prove.
 -- This query must remain a single SELECT and must never mutate production data.
 WITH
 expected_functions(signature, authenticated_execute, service_execute, search_path_setting) AS (
   VALUES
     ('public.reorder_library_shelf(uuid,uuid[])', TRUE, FALSE, 'search_path=public, pg_temp'),
     ('public.add_library_book(uuid,jsonb)', FALSE, TRUE, 'search_path=public, pg_temp'),
-    ('public.add_library_book_without_series(uuid,jsonb)', FALSE, TRUE, 'search_path=public')
+    ('public.add_library_book_without_series(uuid,jsonb)', FALSE, TRUE, 'search_path=public, pg_temp')
 ),
 function_contracts AS (
   SELECT

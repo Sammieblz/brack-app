@@ -178,12 +178,14 @@ npm run db:migration:new -- descriptive_name
 
 # After editing SQL and adding pgTAP coverage
 npm run db:migrations:lock
-node scripts/verify-migration-integrity.mjs --base-ref origin/main
 
 # Prove the full ledger locally (development only)
-npx supabase start
-npx supabase db reset --local --no-seed
-npx supabase test db --local
+npx --no-install supabase start
+npx --no-install supabase db reset --local --no-seed
+npm run db:schema:lock
+npm run db:schema:local
+npx --no-install supabase test db --local
+node scripts/verify-migration-integrity.mjs --base-ref origin/main
 ```
 
 Production migrations are applied only by the serialized, protected GitHub

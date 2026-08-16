@@ -30,7 +30,6 @@ schema_objects(object_type, object_name, definition) AS (
     'column',
     FORMAT('%I.%I.%I', relation.schema_name, relation.relname, attribute.attname),
     jsonb_build_object(
-      'position', attribute.attnum,
       'type', format_type(attribute.atttypid, attribute.atttypmod),
       'not_null', attribute.attnotnull,
       'identity', attribute.attidentity,

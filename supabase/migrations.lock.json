@@ -476,6 +476,12 @@
       "description": "repair_bookshelf_schema_drift",
       "file": "20260815015012_repair_bookshelf_schema_drift.sql",
       "sha256": "523652b7c82ce611c17fa474c9c907a79dc7857743405dea063fba5e7f136095"
+    },
+    {
+      "version": "20260816001827",
+      "description": "reconcile_public_schema_integrity",
+      "file": "20260816001827_reconcile_public_schema_integrity.sql",
+      "sha256": "a1c5c7b3436715684b3cfe2517d937747e1923563ae550039b9d9df43286b18d"
     }
   ]
 }

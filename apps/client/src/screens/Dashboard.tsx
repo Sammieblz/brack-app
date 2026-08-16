@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { Link, useNavigate } from "react-router-dom";
 import { Clock, Medal1st, NavArrowRight } from "iconoir-react";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import { GoalsSheet } from "@/components/GoalsSheet";
 import { AppIcon } from "@/components/ui/app-icon";
 import { ReaderHud } from "@/components/ReaderHud";
 import { DailyFocusCard } from "@/components/DailyFocusCard";
+import { DashboardStreakCard } from "@/components/dashboard/DashboardStreakCard";
 import { CurrencyIcon } from "@/components/CurrencyIcon";
 import { DashboardCardSkeleton } from "@/components/skeletons/DashboardCardSkeleton";
 import { ActivityItemSkeleton } from "@/components/skeletons/ActivityItemSkeleton";
@@ -34,10 +35,8 @@ import type {
   DashboardJourneyFreshness,
   DashboardMilestone,
   DashboardRecentActivity,
-  DashboardStreakFreezeSummary,
 } from "@/services/api/dashboard";
-import type { DashboardStreakSummary } from "@/services/api/dashboard";
-import type { QuestAssignment, ReaderLeague } from "@/services/api/gamification";
+import type { QuestAssignment } from "@/services/api/gamification";
 import { applyReadingStreakFreeze } from "@/services/api";
 import { needsSetupPrompt } from "@/services/onboarding";
 import { trackCoreEvent } from "@/services/telemetry";
@@ -48,6 +47,7 @@ import {
   selectDailyFocusQuest,
   type DailyFocusAction,
 } from "@/lib/dashboardGamification";
+import { getDashboardStreakPresentation } from "@/lib/dashboardStreak";
 import { observeDashboardRewards } from "@/lib/dashboardRewards";
 import { APP_ICONS } from "@/config/iconography";
 
@@ -76,6 +76,12 @@ const Dashboard = () => {
   } = useDashboardHomeData(user?.id, gamificationEnabled);
   const [progressBook, setProgressBook] = useState<BookType | null>(null);
   const [usingFreeze, setUsingFreeze] = useState(false);
+  const [streakClock, setStreakClock] = useState(Date.now);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setStreakClock(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -95,6 +101,17 @@ const Dashboard = () => {
   );
   const timezone = journey?.timezone || profile?.timezone || "UTC";
   const journeyPeriodIsCurrent = journeyFreshness !== "expired";
+  const streakPresentation = useMemo(
+    () => dashboardHome
+      ? getDashboardStreakPresentation(dashboardHome.streak, {
+          timezone,
+          serverTime: journey?.server_time,
+          receivedAt: cachedAt,
+          nowMs: streakClock,
+        })
+      : null,
+    [cachedAt, dashboardHome, journey?.server_time, streakClock, timezone],
+  );
 
   useConfirmedRewardToast({
     userId: user?.id,
@@ -155,6 +172,16 @@ const Dashboard = () => {
     }
   };
 
+  const handleStreakRead = () => {
+    if (!primaryBook) {
+      navigate("/my-books");
+      return;
+    }
+
+    startTimer(primaryBook.book.id, primaryBook.book.title);
+    toast.success("Reading timer started", { description: primaryBook.book.title });
+  };
+
   const handleRefresh = async () => {
     await refetch({ forceRefresh: true });
   };
@@ -177,7 +204,7 @@ const Dashboard = () => {
   const readerHud = gamificationEnabled ? (
     <ReaderHud
       account={journey?.account}
-      currentStreak={dashboardHome?.streak.currentStreak}
+      currentStreak={streakPresentation?.currentStreak}
       freeze={journey?.streak_freeze}
       freshness={journeyFreshness}
       cachedAt={cachedAt}
@@ -255,14 +282,22 @@ const Dashboard = () => {
               className="grid gap-4"
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 28rem), 1fr))" }}
             >
-              <MomentumCard
+              <DashboardStreakCard
                 streak={dashboardHome.streak}
+                timezone={timezone}
+                serverTime={journey?.server_time}
+                receivedAt={cachedAt}
+                nowMs={streakClock}
+                source={source}
+                provisional={provisional}
+                hasCurrentBook={Boolean(primaryBook)}
                 showJourney={gamificationEnabled}
                 league={journeyPeriodIsCurrent ? journey?.league ?? null : null}
                 leagueCutoff={journeyPeriodIsCurrent ? journey?.week.scoring_closes_at ?? null : null}
                 freeze={journey?.streak_freeze ?? null}
                 canMutateFreeze={canMutateEconomy}
                 usingFreeze={usingFreeze}
+                onRead={handleStreakRead}
                 onUseFreeze={() => void handleUseFreeze()}
                 onOpenShop={() => navigate("/achievements?tab=shop")}
               />
@@ -585,121 +620,6 @@ const ExpiredJourneyCard = ({ onRetry }: { onRetry: () => void }) => (
     </CardContent>
   </Card>
 );
-
-interface MomentumCardProps {
-  streak: DashboardStreakSummary;
-  showJourney: boolean;
-  league: ReaderLeague | null;
-  leagueCutoff: string | null;
-  freeze: DashboardStreakFreezeSummary | null;
-  canMutateFreeze: boolean;
-  usingFreeze: boolean;
-  onUseFreeze: () => void;
-  onOpenShop: () => void;
-}
-
-export const MomentumCard = ({
-  streak,
-  showJourney,
-  league,
-  leagueCutoff,
-  freeze,
-  canMutateFreeze,
-  usingFreeze,
-  onUseFreeze,
-  onOpenShop,
-}: MomentumCardProps) => {
-  const inventoryIsKnown = Boolean(freeze);
-  const freezeQuantity = freeze?.quantity ?? 0;
-
-  return (
-    <Card className="h-full overflow-hidden">
-      <CardHeader className="border-b border-border/60 pb-3">
-        <CardTitle className="flex items-center gap-2 font-display text-lg">
-          <AppIcon icon={APP_ICONS.dashboard.streak} variant="inline" className="text-primary" />
-          Momentum
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4 p-4">
-        <div className="grid grid-cols-2 gap-3">
-          <Metric value={streak.currentStreak} label="day streak" primary />
-          <Metric value={streak.longestStreak} label="personal best" />
-        </div>
-
-        {showJourney && (
-          <>
-            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-muted/[0.35] p-3">
-            <Badge variant="outline" className="gap-1.5">
-              <AppIcon icon={APP_ICONS.stats.freezeStatus} variant="inline" size="xs" />
-              {inventoryIsKnown
-                ? `${freezeQuantity} ${freezeQuantity === 1 ? "Freeze" : "Freezes"}`
-                : "Inventory unavailable"}
-            </Badge>
-            {!inventoryIsKnown ? (
-              <Button variant="outline" size="sm" disabled>
-                Inventory unavailable
-              </Button>
-            ) : freezeQuantity > 0 ? (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!canMutateFreeze || usingFreeze}
-                onClick={onUseFreeze}
-              >
-                <AppIcon icon={APP_ICONS.stats.useFreeze} variant="inline" />
-                {usingFreeze
-                  ? "Protecting..."
-                  : canMutateFreeze
-                    ? "Use a Freeze"
-                    : "Reconnect to use"}
-              </Button>
-            ) : (
-              <Button variant="ghost" size="sm" onClick={onOpenShop}>
-                {canMutateFreeze ? "Get a Freeze" : "View shop"}
-              </Button>
-            )}
-            <span className="basis-full font-sans text-xs text-muted-foreground">
-              {!inventoryIsKnown
-                ? "Reconnect and refresh to check your Streak Freeze inventory."
-                : !canMutateFreeze
-                  ? "Cached count only. Reconnect before buying or using inventory."
-                  : freezeQuantity > 0
-                    ? "Brack checks your current local reading day, prior reading, and cooldown before consuming one."
-                    : "Buy protection before you need it; eligibility is checked when a Freeze is used."}
-            </span>
-            </div>
-
-            <Link
-              to="/achievements?tab=rankings"
-              className="flex min-h-16 items-center justify-between gap-3 rounded-lg border border-border/60 p-3 transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-            <span className="flex min-w-0 items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/[0.1] text-primary">
-                <Medal1st className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate font-display text-sm font-semibold">
-                  {league ? `${league.name} · Rank #${league.provisional_rank}` : "Weekly Reader League"}
-                </span>
-                <span className="block truncate font-sans text-xs text-muted-foreground">
-                  {league
-                    ? `${league.score.toLocaleString()} competitive Ink · ${league.member_count} readers`
-                    : "See how your weekly reading compares"}
-                </span>
-              </span>
-            </span>
-            <span className="shrink-0 text-right font-sans text-xs text-muted-foreground">
-              {leagueCutoff && Number.isFinite(Date.parse(leagueCutoff))
-                ? `Ends ${format(new Date(leagueCutoff), "MMM d")}`
-                : "View league"}
-            </span>
-            </Link>
-          </>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
 
 const GoalAndInsightCard = ({
   goalProgress,

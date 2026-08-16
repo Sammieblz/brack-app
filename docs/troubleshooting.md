@@ -109,7 +109,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
 **Solution**:
 ```bash
 # Reapply all migrations to the local database only
-npx supabase db reset --local --no-seed
+npx --no-install supabase db reset --local --no-seed
 ```
 
 For a shared or production database, create a forward repair migration and use
@@ -140,11 +140,12 @@ if (!user) {
 
 **Solution**:
 ```bash
-# Check migration status
-npx supabase db diff
+# Check the immutable ledger and local history
+npm run db:migrations:verify
+npm run db:migrations:local:postflight
 
 # Force reset (development only)
-npx supabase db reset
+npx --no-install supabase db reset --local --no-seed
 ```
 
 #### "Migration failed: syntax error"
@@ -154,8 +155,9 @@ npx supabase db reset
 **Solution**:
 1. Open the failing migration file
 2. Check SQL syntax
-3. Test SQL in Supabase SQL editor
-4. Fix and retry
+3. Re-run a clean local reset and the pgTAP suite
+4. Fix the unmerged migration and regenerate both locks; never test schema DDL
+   in a shared or production SQL editor
 
 ## Mobile Development Issues
 
@@ -620,8 +622,8 @@ npm run build:clean  # If script exists
 rm -rf node_modules apps/client/dist apps/desktop/dist apps/client/node_modules/.vite .turbo
 npm install
 
-# Reset database
-npx supabase db reset
+# Reset the local database
+npx --no-install supabase db reset --local --no-seed
 
 # Check Supabase status
 npx supabase status

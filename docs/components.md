@@ -142,6 +142,33 @@ Guide to key components in Brack and their usage.
 - Streak freeze button
 - Motivational messages
 
+#### DashboardStreakCard
+
+**Location**: `apps/client/src/components/dashboard/DashboardStreakCard.tsx`
+
+**Purpose**: Provide the authenticated Home page's stateful streak loop without
+adding the two direct streak queries used by `useStreaks`.
+
+The card consumes the snapshot-backed `dashboard-home` streak summary and the
+optional Journey inventory already loaded for Home. It shows:
+
+- The transparent happy Brack flame after reading or Freeze protection is
+  confirmed for the current streak day.
+- The transparent sad Brack flame when an active streak needs reading, when a
+  new streak can begin, or after a gap.
+- Current streak, personal best, last-reading context, and progress toward the
+  next 3/7/14/30/60/100/365-day milestone.
+- One contextual reading action and a server-validated Freeze action only in
+  the at-risk window.
+- Known cached inventory as read-only; unavailable inventory is never rendered
+  as a zero balance.
+- A collapsed explanation of counting actions, gaps, Gold Leaf purchases, and
+  Freeze consumption so the default card stays compact on phones and tablets.
+
+`apps/client/src/lib/dashboardStreak.ts` owns the deterministic visual-state
+mapping. It uses the Journey server clock when available and guards against a
+stale non-zero profile streak after the last contiguous day has elapsed.
+
 #### StreakCalendar
 
 **Location**: `apps/client/src/components/StreakCalendar.tsx`

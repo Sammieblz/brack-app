@@ -290,7 +290,7 @@ This documentation provides comprehensive coverage of:
 | Build prod | `npm run build` |
 | Sync mobile | `npm run cap:sync` |
 | Inspect Turbo graph | `npx turbo run build check-types --dry=json` |
-| Replay migrations locally | `npx supabase db reset --local --no-seed` |
+| Replay migrations locally | `npx --no-install supabase db reset --local --no-seed` |
 | Create a migration | `npm run db:migration:new -- descriptive_name` |
 | Deploy functions | `npx supabase functions deploy` |
 

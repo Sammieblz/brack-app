@@ -1,6 +1,8 @@
 # Streak Rules
 
-Source date: 2026-05-05  
+Source date: 2026-05-05
+
+Last UI review: 2026-08-16
 Scope: ticket 3.4, valid reading days, timezone handling, backfill, and ownership.
 
 ## Valid Reading Day
@@ -37,13 +39,22 @@ Non-counting actions:
 
 ## Timezone Handling
 
-Current implementation uses database/client UTC dates:
+Core reading-activity persistence still uses database/client UTC dates:
 - Backend streak refresh casts timestamps to `DATE`.
-- Frontend display helpers use `new Date().toISOString().split("T")[0]`.
-- `use_reading_streak_freeze` defaults to `CURRENT_DATE`.
+- The reusable activity-calendar helper uses
+  `new Date().toISOString().split("T")[0]`.
 
-Product rule for now:
-- Brack treats the streak day as a UTC calendar day until per-user timezone support is added.
+Journey-aware behavior is timezone-aware:
+
+- `use_reading_streak_freeze` resolves and validates the current day from
+  `profiles.timezone`, and checks session/progress timestamps in that timezone.
+- Dashboard Home corrects its visual date boundary with Journey `server_time`,
+  response receipt time, and the Journey/profile timezone.
+
+The mixed model is why the Dashboard presentation is a read-only guard rather
+than a new source of truth. A future migration must make canonical
+`reading_streak_days` generation timezone-native before removing the UTC
+compatibility behavior.
 
 Future timezone migration:
 - Add `profiles.timezone` or a dedicated user settings field.
@@ -79,3 +90,26 @@ Frontend responsibility:
 - Calculate display state and activity calendar.
 - Call `use_reading_streak_freeze` for freeze actions.
 - Never directly update `profiles.current_streak`, `profiles.longest_streak`, or `profiles.last_reading_date`.
+
+## Authenticated Home presentation
+
+Home maps the persisted summary to five explicit visual states:
+
+| State | Brack artwork | Meaning | Primary action |
+| --- | --- | --- | --- |
+| Secure today | Happy flame | Reading is recorded for the current streak day. | Keep reading. |
+| Protected today | Happy flame | A server-confirmed Freeze covers the current day. | Read anyway or return tomorrow. |
+| Needs a page today | Sad flame | Yesterday is contiguous and today's action is still missing. | Read/log progress; optionally request a Freeze. |
+| Start today | Sad flame | No streak exists yet. | Complete a timer session or save progress. |
+| Fresh chapter | Sad flame | A gap ended the current run; the personal best remains. | Start a new streak. |
+
+The state calculation lives in `apps/client/src/lib/dashboardStreak.ts`. It uses
+the combined Dashboard/Journey response, server clock receipt time, and the
+profile/Journey timezone. It also treats an old non-zero `profiles.current_streak`
+as lapsed once `last_reading_date` is older than yesterday; profile streaks are
+event-updated and otherwise may not decay exactly at midnight.
+
+Freeze eligibility is never decided by this presentation helper. Home offers
+the action only during the at-risk state, then `use_reading_streak_freeze`
+validates ownership, inventory, current date, reading activity, prior-day
+continuity, and cooldown atomically. Cached inventory is display-only.

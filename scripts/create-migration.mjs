@@ -74,7 +74,7 @@ async function main() {
   }
 
   process.stdout.write(
-    `Created supabase/migrations/${createdFile}. After editing it, add pgTAP coverage and run npm run db:migrations:lock.\n`,
+    `Created supabase/migrations/${createdFile}. Add pgTAP coverage, update the migration lock, clean-reset locally, then update the schema lock.\n`,
   );
 }
 

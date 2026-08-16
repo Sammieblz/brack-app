@@ -94,10 +94,10 @@ SUPABASE_DB_PASSWORD=your-linked-project-db-password
 npm ci
 
 # Start local Supabase
-npx supabase start
+npx --no-install supabase start
 
 # Replay migrations without production seed data
-npx supabase db reset --local --no-seed
+npx --no-install supabase db reset --local --no-seed
 ```
 
 ### 5. Run Development Server
@@ -189,8 +189,8 @@ npm run cap:open:android
 Replay all migrations locally with:
 
 ```bash
-npx supabase start
-npx supabase db reset --local --no-seed
+npx --no-install supabase start
+npx --no-install supabase db reset --local --no-seed
 ```
 
 Shared and production projects are updated only through the protected workflow;
@@ -205,7 +205,7 @@ Create a seed file for test data:
 echo "-- Seed data" > supabase/seed.sql
 
 # Run seed
-npx supabase db reset --seed
+npx --no-install supabase db reset --local
 ```
 
 ## Firebase Setup (Push Notifications)
@@ -323,11 +323,12 @@ npx turbo run build check-types --dry=json # Inspect selected tasks and dependen
 npm run lint            # Run ESLint
 
 # Supabase
-npx supabase start      # Start local Supabase
-npx supabase stop       # Stop local Supabase
+npx --no-install supabase start      # Start local Supabase
+npx --no-install supabase stop       # Stop local Supabase
 npm run db:migration:new -- descriptive_name # Create a migration
 npm run db:migrations:lock                  # Record finalized checksums
-npx supabase db reset --local --no-seed     # Reset local database only
+npx --no-install supabase db reset --local --no-seed # Reset local database only
+npm run db:schema:lock                      # Record the clean catalog fingerprint
 npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api # Deploy Edge Functions
 ```
 

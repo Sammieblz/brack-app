@@ -724,6 +724,8 @@ Located in `supabase/migrations/`:
 ```bash
 npm run db:migration:new -- descriptive_name
 npm run db:migrations:lock
+npx --no-install supabase db reset --local --no-seed
+npm run db:schema:lock
 node scripts/verify-migration-integrity.mjs --base-ref origin/main
 ```
 

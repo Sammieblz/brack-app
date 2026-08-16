@@ -13,6 +13,11 @@ database and compares the linked schema with that replay after deployment.
   branch. Never insert a migration into the middle of history.
 - `supabase/migrations.lock.json` records the filename and SHA-256 digest of
   every migration. A merged migration may not be renamed, edited, or deleted.
+- `supabase/public-schema.lock.json` records typed hashes for the clean public
+  schema: relations, columns, constraints, indexes, functions, effective API
+  function access, triggers, policies, sequences, enums, and domains. It
+  normalizes function line endings so cross-platform checkouts cannot create
+  false drift or conceal a semantic change.
 - Production schema changes are made only through a reviewed migration. Do not
   use the Dashboard SQL editor, direct `psql`, `db pull`, or schema-changing RPCs
   as a second deployment path.
@@ -28,6 +33,14 @@ detect its actual failure mode: recorded history that does not match deployed
 DDL or data invariants. Once merged, the checksum lock also prevents the old
 file from being silently rewritten during a repair.
 
+The August 2026 incident was closed with forward migrations
+`20260815015012_repair_bookshelf_schema_drift.sql` and
+`20260816001827_reconcile_public_schema_integrity.sql`. The latter reconciles
+the remaining index, foreign-key, activity-integrity, private helper, and
+trigger-permission differences. Production now has the same 1,753 typed public
+catalog objects as a clean replay, with 80 migration versions in exact order.
+The closure did not edit or repair-mark any historical version.
+
 ## Create and validate a migration
 
 From a current branch based on `main`:
@@ -36,25 +49,28 @@ From a current branch based on `main`:
 npm run db:migration:new -- descriptive_name
 # Edit the new SQL file and add pgTAP coverage under supabase/tests.
 npm run db:migrations:lock
+npm run db:schema:lock
 node scripts/verify-migration-integrity.mjs --base-ref origin/main
 ```
 
 Before opening a pull request, run the same database proof as CI:
 
 ```bash
-npx supabase start
-npx supabase db reset --local --no-seed
-npx supabase test db --local
-npx supabase db lint --local --level error --fail-on error
+npx --no-install supabase start
+npx --no-install supabase db reset --local --no-seed
+npx --no-install supabase test db --local
+npx --no-install supabase db lint --local --level error --fail-on error
 ```
 
 The Supabase CLI is an exact development dependency. Use `npx --no-install
 supabase` or the npm scripts so local work, CI, and deployment use the same
 version. Do not install or substitute a floating `latest` CLI in automation.
 
-When the migration changes after review, regenerate the lock file and rerun the
-proof. The lock command will not permit a previously locked base migration to be
-silently rewritten.
+Generate the schema lock only after a clean reset. When the migration changes
+after review, regenerate both locks and rerun the proof. CI recreates the
+database and refuses a schema lock that was generated from ad-hoc local state.
+The migration lock command will not permit a previously locked base migration
+to be silently rewritten.
 
 ## Design migrations for data safety
 
@@ -82,7 +98,8 @@ The pull-request workflow performs all of the following on a fresh runner:
 1. Verifies filenames, timestamps, checksums, and base-branch immutability.
 2. Rejects a migration whose version is not newer than the base branch maximum.
 3. Replays every migration into a clean PostgreSQL 17 database.
-4. Runs all pgTAP contracts and database lint at error severity.
+4. Compares the replayed catalog with the committed typed schema fingerprint.
+5. Runs all pgTAP contracts and database lint at error severity.
 
 The production workflow then:
 
@@ -94,7 +111,15 @@ The production workflow then:
 5. requires remote history to equal the local ledger; and
 6. verifies read-only production contracts for data backfills, protected
    functions, RLS, constraints/indexes, Storage, and Realtime; and
-7. fails if a linked public-schema diff remains after deployment.
+7. compares the linked catalog with the same typed schema fingerprint and fails
+   on missing, unexpected, or changed objects.
+
+The fingerprint intentionally compares effective `anon`, `authenticated`, and
+`service_role` function execution instead of raw ACL text. Supabase-managed
+default grants can be represented differently between local and hosted
+Postgres even when effective access is identical. Security-sensitive data,
+Storage, Realtime publications, RLS, grants, constraints, and indexes are also
+covered by the read-only production contracts and pgTAP suite.
 
 Configure the GitHub `production` environment with required reviewers, the
 `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD` secrets, and a protected
@@ -120,7 +145,7 @@ If history and schema disagree:
    file, because later migrations may depend on newer function definitions.
 5. Add a regression that proves the repaired data and security invariants.
 6. Deploy through the protected workflow and require both exact history and a
-   clean post-deployment schema comparison.
+   clean post-deployment schema fingerprint comparison.
 
 Use history repair only during an explicitly reviewed incident where the actual
 schema is already known to match the target state and only the ledger is wrong.

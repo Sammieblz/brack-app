@@ -9,7 +9,8 @@ on:
       - 'supabase/config.toml'
       - 'supabase/contracts/**'
       - 'scripts/*migration*.mjs'
-      - 'scripts/verify-linked-schema-drift.mjs'
+      - 'supabase/public-schema.lock.json'
+      - 'scripts/verify-schema-integrity.mjs'
       - 'scripts/verify-production-database-contracts.mjs'
       - '.github/workflows/deploy-database.yml'
   workflow_dispatch:
@@ -37,13 +38,13 @@ jobs:
           fi
 
       - name: Checkout complete migration history
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
 
@@ -53,10 +54,10 @@ jobs:
           version: 2.114.0
 
       - name: Test migration integrity verifier
-        run: npm run db:migrations:test
+        run: node --test scripts/verify-migration-integrity.test.mjs
 
       - name: Verify committed migration lock
-        run: npm run db:migrations:verify
+        run: node scripts/verify-migration-integrity.mjs
 
       - name: Reject rewritten or backdated migrations
         shell: bash
@@ -76,10 +77,13 @@ jobs:
         run: supabase db reset --local --no-seed
 
       - name: Verify complete local migration history
-        run: npm run db:migrations:local:postflight
+        run: node scripts/verify-supabase-migration-history.mjs --target local --mode postflight
 
       - name: Verify local data and non-public schema contracts
-        run: npm run db:migrations:local:contracts
+        run: node scripts/verify-production-database-contracts.mjs --target local
+
+      - name: Verify clean public schema fingerprint
+        run: node scripts/verify-schema-integrity.mjs --target local
 
       - name: Run database contract tests
         run: supabase test db --local
@@ -99,13 +103,13 @@ jobs:
 
     steps:
       - name: Checkout approved migration history
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
 
@@ -152,7 +156,7 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: npm run db:migrations:remote:preflight
+        run: node scripts/verify-supabase-migration-history.mjs --target linked --mode preflight
 
       - name: Preview pending production migrations
         env:
@@ -182,7 +186,7 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: npm run db:migrations:remote:contracts
+        run: node scripts/verify-production-database-contracts.mjs --target linked
 
       - name: Capture schema drift after a failed push
         if: steps.apply_migrations.outcome == 'failure'
@@ -190,7 +194,7 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: node scripts/verify-linked-schema-drift.mjs
+        run: node scripts/verify-schema-integrity.mjs --target linked
 
       - name: Fail a partially or unsuccessfully applied release
         if: steps.apply_migrations.outcome == 'failure'
@@ -204,4 +208,8 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: npm run db:migrations:remote:postflight
+        run: |
+          node scripts/verify-supabase-migration-history.mjs --target linked --mode postflight
+          node scripts/verify-production-database-contracts.mjs --target linked
+          supabase db lint --linked --schema public --level error --fail-on error
+          node scripts/verify-schema-integrity.mjs --target linked

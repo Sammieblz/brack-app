@@ -62,19 +62,22 @@ npm --workspace @brack/mobile exec cap run android
 
 ```bash
 # Start local Supabase
-npx supabase start
+npx --no-install supabase start
 
 # Stop local Supabase
-npx supabase stop
+npx --no-install supabase stop
 
 # Replay migrations locally (deletes local data only)
-npx supabase db reset --local --no-seed
+npx --no-install supabase db reset --local --no-seed
 
 # Create new migration
 npm run db:migration:new -- migration_name
 
 # Lock finalized migration contents
 npm run db:migrations:lock
+
+# After a clean local reset, lock the expected public catalog
+npm run db:schema:lock
 
 # Deploy Edge Functions
 npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api
@@ -608,8 +611,8 @@ rm -rf apps/client/dist apps/desktop/dist
 # Clear cache
 rm -rf .turbo apps/client/node_modules/.vite
 
-# Reset database
-npx supabase db reset
+# Reset the local database only
+npx --no-install supabase db reset --local --no-seed
 ```
 
 ### Fix TypeScript
