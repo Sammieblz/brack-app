@@ -15,11 +15,16 @@ import {
   assertSchemaMatches,
   buildSchemaLock,
   compareSchemaObjects,
+  executeFingerprintQuery,
   parseSchemaFingerprintOutput,
   verifySchemaIntegrity,
 } from "./verify-schema-integrity.mjs";
-import { verifySupabaseMigrationHistory } from "./verify-supabase-migration-history.mjs";
 import {
+  executeMigrationList,
+  verifySupabaseMigrationHistory,
+} from "./verify-supabase-migration-history.mjs";
+import {
+  executeContracts,
   verifyProductionContractOutput,
   verifyProductionDatabaseContracts,
 } from "./verify-production-database-contracts.mjs";
@@ -219,28 +224,18 @@ test("base-ref rejects changes to merged migration content and lock entries", as
   );
 });
 
-test("parses and verifies Supabase migration list text in preflight and postflight modes", async (t) => {
+test("parses and verifies current Supabase migration-list JSON in preflight and postflight modes", async (t) => {
   const root = await createFixture(t);
   await addMigration(root, "20260101000000_create_readers.sql");
   await addMigration(root, "20260102000000_add_reader_name.sql");
   await verifyMigrationIntegrity({ repoRoot: root, writeLock: true });
 
-  const aligned = `
-    LOCAL          │ REMOTE         │ TIME (UTC)
-  ─────────────────┼────────────────┼──────────────────────
-    20260101000000 │ 20260101000000 │ 2026-01-01 00:00:00
-    20260102000000 │ 20260102000000 │ 2026-01-02 00:00:00
-  `;
-  assert.deepEqual(parseSupabaseMigrationList(aligned), {
-    local: ["20260101000000", "20260102000000"],
-    remote: ["20260101000000", "20260102000000"],
-  });
   const alignedJson = JSON.stringify({
+    message: "Migrations listed",
     migrations: [
       { local: "20260101000000", remote: "20260101000000", time: "2026-01-01 00:00:00" },
       { local: "20260102000000", remote: "20260102000000", time: "2026-01-02 00:00:00" },
     ],
-    message: "Migrations listed",
   });
   assert.deepEqual(parseSupabaseMigrationList(alignedJson), {
     local: ["20260101000000", "20260102000000"],
@@ -252,57 +247,180 @@ test("parses and verifies Supabase migration list text in preflight and postflig
       { version: "20260102000000" },
     ]),
   );
-  await verifyMigrationIntegrity({ repoRoot: root, migrationListOutput: aligned });
+  await verifyMigrationIntegrity({ repoRoot: root, migrationListOutput: alignedJson });
 
-  const divergent = `
-    LOCAL          │ REMOTE         │ TIME (UTC)
-  ─────────────────┼────────────────┼──────────────────────
-    20260101000000 │ 20260101000000 │ 2026-01-01 00:00:00
-    20260102000000 │                │ 2026-01-02 00:00:00
-  `;
+  const pendingJson = JSON.stringify({
+    message: "Migrations listed",
+    migrations: [
+      { local: "20260101000000", remote: "20260101000000", time: "2026-01-01 00:00:00" },
+      { local: "20260102000000", remote: "", time: "2026-01-02 00:00:00" },
+    ],
+  });
   const migrations = [
     { version: "20260101000000" },
     { version: "20260102000000" },
   ];
   assert.throws(
-    () => verifySupabaseMigrationList(divergent, migrations),
+    () => verifySupabaseMigrationList(pendingJson, migrations),
     /Supabase REMOTE history is missing migration 20260102000000/u,
   );
   assert.doesNotThrow(
-    () => verifySupabaseMigrationList(divergent, migrations, { mode: "preflight" }),
-  );
-
-  const remoteGap = `
-    LOCAL          │ REMOTE         │ TIME (UTC)
-  ─────────────────┼────────────────┼──────────────────────
-    20260101000000 │ 20260101000000 │ 2026-01-01 00:00:00
-    20260102000000 │ 20260103000000 │ 2026-01-02 00:00:00
-  `;
-  assert.throws(
-    () => verifySupabaseMigrationList(remoteGap, migrations, { mode: "preflight" }),
-    /REMOTE history is not an exact ordered prefix/u,
-  );
-
-  const malformedRemote = `
-    LOCAL          │ REMOTE         │ TIME (UTC)
-  ─────────────────┼────────────────┼──────────────────────
-    20260101000000 │ bad-version    │ 2026-01-01 00:00:00
-  `;
-  assert.throws(
-    () => verifySupabaseMigrationList(malformedRemote, migrations, { mode: "preflight" }),
-    /Invalid Supabase REMOTE migration version/u,
+    () => verifySupabaseMigrationList(pendingJson, migrations, { mode: "preflight" }),
   );
 });
 
+test("preflight rejects malformed or incomplete Supabase migration-list JSON", () => {
+  const expected = [{ version: "20260101000000" }];
+  const validRow = {
+    local: "20260101000000",
+    remote: "20260101000000",
+    time: "2026-01-01 00:00:00",
+  };
+  const validPayload = {
+    message: "Migrations listed",
+    migrations: [validRow],
+  };
+  const withoutField = (field) => {
+    const row = { ...validRow };
+    delete row[field];
+    return row;
+  };
+  const cases = [
+    {
+      name: "missing message",
+      output: JSON.stringify({ migrations: [validRow] }),
+      pattern: /message must equal "Migrations listed"/u,
+    },
+    {
+      name: "wrong message",
+      output: JSON.stringify({ ...validPayload, message: "Migration list complete" }),
+      pattern: /message must equal "Migrations listed"/u,
+    },
+    {
+      name: "null message",
+      output: JSON.stringify({ ...validPayload, message: null }),
+      pattern: /message must equal "Migrations listed"/u,
+    },
+    {
+      name: "missing migrations",
+      output: JSON.stringify({ message: "Migrations listed" }),
+      pattern: /must contain a migrations array/u,
+    },
+    {
+      name: "null migrations",
+      output: JSON.stringify({ message: "Migrations listed", migrations: null }),
+      pattern: /must contain a migrations array/u,
+    },
+    {
+      name: "non-object payload",
+      output: JSON.stringify([validRow]),
+      pattern: /must be a plain object/u,
+    },
+    {
+      name: "null payload",
+      output: "null",
+      pattern: /must be a plain object/u,
+    },
+    {
+      name: "non-object migration row",
+      output: JSON.stringify({ ...validPayload, migrations: [[validRow.local]] }),
+      pattern: /migrations\[0\] must be a plain object/u,
+    },
+    {
+      name: "null migration row",
+      output: JSON.stringify({ ...validPayload, migrations: [null] }),
+      pattern: /migrations\[0\] must be a plain object/u,
+    },
+    {
+      name: "missing local",
+      output: JSON.stringify({ ...validPayload, migrations: [withoutField("local")] }),
+      pattern: /must own a local field/u,
+    },
+    {
+      name: "missing remote",
+      output: JSON.stringify({ ...validPayload, migrations: [withoutField("remote")] }),
+      pattern: /must own a remote field/u,
+    },
+    {
+      name: "missing time",
+      output: JSON.stringify({ ...validPayload, migrations: [withoutField("time")] }),
+      pattern: /must own a time field/u,
+    },
+    {
+      name: "null local",
+      output: JSON.stringify({ ...validPayload, migrations: [{ ...validRow, local: null }] }),
+      pattern: /Invalid Supabase LOCAL migration version/u,
+    },
+    {
+      name: "null remote",
+      output: JSON.stringify({ ...validPayload, migrations: [{ ...validRow, remote: null }] }),
+      pattern: /Invalid Supabase REMOTE migration version/u,
+    },
+    {
+      name: "null time",
+      output: JSON.stringify({ ...validPayload, migrations: [{ ...validRow, time: null }] }),
+      pattern: /time must be a string/u,
+    },
+    {
+      name: "both versions empty",
+      output: JSON.stringify({
+        ...validPayload,
+        migrations: [{ ...validRow, local: "", remote: "" }],
+      }),
+      pattern: /neither a local nor remote version/u,
+    },
+    {
+      name: "mismatched row versions",
+      output: JSON.stringify({
+        ...validPayload,
+        migrations: [{ ...validRow, remote: "20260102000000" }],
+      }),
+      pattern: /pairs different local and remote versions/u,
+    },
+    {
+      name: "invalid local version",
+      output: JSON.stringify({ ...validPayload, migrations: [{ ...validRow, local: "20260101" }] }),
+      pattern: /Invalid Supabase LOCAL migration version/u,
+    },
+    {
+      name: "invalid remote version",
+      output: JSON.stringify({ ...validPayload, migrations: [{ ...validRow, remote: "bad-version" }] }),
+      pattern: /Invalid Supabase REMOTE migration version/u,
+    },
+    {
+      name: "truncated JSON",
+      output: '{"message":"Migrations listed","migrations":[',
+      pattern: /migration-list JSON is invalid/u,
+    },
+    {
+      name: "extra text",
+      output: `${JSON.stringify(validPayload)}\nfinished`,
+      pattern: /migration-list JSON is invalid/u,
+    },
+    {
+      name: "ANSI decoration",
+      output: `\u001b[32m${JSON.stringify(validPayload)}\u001b[0m`,
+      pattern: /migration-list JSON is invalid/u,
+    },
+  ];
+
+  for (const { name, output, pattern } of cases) {
+    assert.throws(
+      () => verifySupabaseMigrationList(output, expected, { mode: "preflight" }),
+      (error) => error instanceof MigrationIntegrityError && pattern.test(error.message),
+      name,
+    );
+  }
+});
+
 test("post-deployment schema verification rejects typed object drift", () => {
-  const output = JSON.stringify({
-    rows: [
-      { object_type: "column", object_name: "public.books.title", definition: '{"type":"text"}' },
-      { object_type: "relation", object_name: "public.books", definition: '{"rls":true}' },
-    ],
-  });
-  const objects = parseSchemaFingerprintOutput(output);
+  const rows = [
+    { object_type: "column", object_name: "public.books.title", definition: '{"type":"text"}' },
+    { object_type: "relation", object_name: "public.books", definition: '{"rls":true}' },
+  ];
+  const objects = parseSchemaFingerprintOutput(JSON.stringify(rows));
   assert.equal(objects.length, 2);
+  assert.deepEqual(parseSchemaFingerprintOutput(JSON.stringify({ rows })), objects);
   assert.deepEqual(buildSchemaLock(objects).objects, objects);
   assert.deepEqual(compareSchemaObjects(objects, objects), {
     missing: [], unexpected: [], changed: [],
@@ -322,10 +440,22 @@ test("post-deployment schema verification rejects typed object drift", () => {
   );
 });
 
-test("schema verification never masks a failed query and cannot write from linked", async () => {
-  const validOutput = JSON.stringify({
-    rows: [{ object_type: "relation", object_name: "public.books", definition: "{}" }],
+test("schema verification never masks a failed query and cannot write from linked", async (t) => {
+  const validOutput = JSON.stringify([
+    { object_type: "relation", object_name: "public.books", definition: "{}" },
+  ]);
+  const root = await createFixture(t);
+  const success = await verifySchemaIntegrity({
+    target: "local",
+    writeLock: true,
+    repoRoot: root,
+    execute: () => ({
+      status: 0,
+      stdout: validOutput,
+      stderr: "Connecting to local database...\n",
+    }),
   });
+  assert.equal(success.objectCount, 1);
   await assert.rejects(
     () => verifySchemaIntegrity({
       target: "local",
@@ -344,7 +474,12 @@ test("history wrapper never masks a failed Supabase CLI command", async (t) => {
   await addMigration(root, "20260101000000_create_readers.sql");
   await verifyMigrationIntegrity({ repoRoot: root, writeLock: true });
   const validOutput = JSON.stringify({
-    migrations: [{ local: "20260101000000", remote: "20260101000000" }],
+    message: "Migrations listed",
+    migrations: [{
+      local: "20260101000000",
+      remote: "20260101000000",
+      time: "2026-01-01 00:00:00",
+    }],
   });
 
   await assert.rejects(
@@ -362,16 +497,92 @@ test("history wrapper never masks a failed Supabase CLI command", async (t) => {
     target: "linked",
     mode: "postflight",
     repoRoot: root,
-    execute: () => ({ status: 0, stdout: validOutput, stderr: "" }),
+    execute: () => ({
+      status: 0,
+      stdout: validOutput,
+      stderr: "Connecting to remote database...\n",
+    }),
   });
   assert.equal(result.migrationCount, 1);
 });
 
-test("production contracts require a successful CLI and all true typed rows", () => {
-  const validOutput = JSON.stringify({
-    rows: [{ contract: "books shelf", ok: true, detail: "valid" }],
+test("history wrapper requests JSON from the Supabase CLI", async (t) => {
+  const root = await createFixture(t);
+  const invocation = {};
+  const sentinel = { status: 0, stdout: "", stderr: "" };
+
+  const result = executeMigrationList("local", root, (command, args, options) => {
+    Object.assign(invocation, { command, args, options });
+    return sentinel;
   });
+
+  assert.equal(result, sentinel);
+  assert.equal(invocation.command, "supabase");
+  assert.deepEqual(invocation.args, [
+    "migration",
+    "list",
+    "--local",
+    "--output-format",
+    "json",
+  ]);
+  assert.equal(invocation.options.cwd, path.resolve(root));
+  assert.equal(invocation.options.encoding, "utf8");
+});
+
+test("database query wrappers request JSON from the Supabase CLI", async (t) => {
+  const root = await createFixture(t);
+  const invocations = [];
+  const capture = (command, args, options) => {
+    invocations.push({ command, args, options });
+    return { status: 0, stdout: "", stderr: "" };
+  };
+
+  executeContracts("local", root, capture);
+  executeFingerprintQuery("linked", root, capture);
+
+  assert.deepEqual(invocations.map(({ command, args }) => ({ command, args })), [
+    {
+      command: "supabase",
+      args: [
+        "db",
+        "query",
+        "--local",
+        "--file",
+        "supabase/contracts/production_integrity.sql",
+        "--output-format",
+        "json",
+      ],
+    },
+    {
+      command: "supabase",
+      args: [
+        "db",
+        "query",
+        "--linked",
+        "--file",
+        "supabase/contracts/public_schema_fingerprint.sql",
+        "--output-format",
+        "json",
+      ],
+    },
+  ]);
+  assert.ok(invocations.every(({ options }) => options.cwd === path.resolve(root)));
+  assert.ok(invocations.every(({ options }) => options.encoding === "utf8"));
+});
+
+test("production contracts require a successful CLI and all true typed rows", () => {
+  const rows = [{ contract: "books shelf", ok: true, detail: "valid" }];
+  const validOutput = JSON.stringify(rows);
   assert.deepEqual(verifyProductionContractOutput(validOutput), ["books shelf"]);
+  assert.deepEqual(verifyProductionContractOutput(JSON.stringify({ rows })), ["books shelf"]);
+  assert.deepEqual(verifyProductionDatabaseContracts({
+    target: "local",
+    execute: () => ({
+      status: 0,
+      stdout: validOutput,
+      stderr: "Connecting to local database...\n",
+    }),
+  }), ["books shelf"]);
   assert.throws(
     () => verifyProductionContractOutput(JSON.stringify({
       rows: [{ contract: "books shelf", ok: false, detail: "missing index" }],

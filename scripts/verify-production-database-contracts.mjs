@@ -16,11 +16,20 @@ function resolveSupabaseCommand(repoRoot) {
   return { command: "supabase", prefix: [] };
 }
 
-function executeContracts(target, repoRoot) {
+export function executeContracts(target, repoRoot, spawn = spawnSync) {
   const { command, prefix } = resolveSupabaseCommand(repoRoot);
-  return spawnSync(
+  return spawn(
     command,
-    [...prefix, "db", "query", `--${target}`, "--file", CONTRACT_FILE],
+    [
+      ...prefix,
+      "db",
+      "query",
+      `--${target}`,
+      "--file",
+      CONTRACT_FILE,
+      "--output-format",
+      "json",
+    ],
     {
       cwd: repoRoot,
       encoding: "utf8",
@@ -38,13 +47,14 @@ export function verifyProductionContractOutput(output) {
   } catch (error) {
     throw new Error(`Production contract output is not valid JSON: ${error.message}`);
   }
-  if (!payload || !Array.isArray(payload.rows) || payload.rows.length === 0) {
+  const rows = Array.isArray(payload) ? payload : payload?.rows;
+  if (!Array.isArray(rows) || rows.length === 0) {
     throw new Error("Production contract output does not contain any result rows.");
   }
 
   const invalidRows = [];
   const failedContracts = [];
-  for (const [index, row] of payload.rows.entries()) {
+  for (const [index, row] of rows.entries()) {
     if (
       !row
       || typeof row !== "object"
@@ -64,7 +74,7 @@ export function verifyProductionContractOutput(output) {
   if (failedContracts.length > 0) {
     throw new Error(`Production database contracts failed:\n- ${failedContracts.join("\n- ")}`);
   }
-  return payload.rows.map((row) => row.contract);
+  return rows.map((row) => row.contract);
 }
 
 export function verifyProductionDatabaseContracts({
