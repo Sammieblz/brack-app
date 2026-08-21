@@ -1,8 +1,21 @@
-import { useEffect, useRef } from "react";
-import { useGSAP } from "@/hooks/useGSAP";
-import { gsap } from "gsap";
+import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
-import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
+import { BRACK_MARK_IMAGE } from "@/config/brackAssets";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import "./BrackLoader.css";
+
+const BRACK_LOADER_MOTION = {
+  iterations: 2,
+  markDurationMs: 2_100,
+  orbitDurationMs: 2_400,
+  shadowDurationMs: 2_100,
+} as const;
+
+const BRACK_LOADER_MAX_MOTION_MS = Math.max(
+  BRACK_LOADER_MOTION.markDurationMs,
+  BRACK_LOADER_MOTION.orbitDurationMs,
+  BRACK_LOADER_MOTION.shadowDurationMs,
+) * BRACK_LOADER_MOTION.iterations;
 
 interface LogoSpinnerProps {
   size?: "sm" | "md" | "lg";
@@ -11,57 +24,43 @@ interface LogoSpinnerProps {
 }
 
 export const LogoSpinner = ({ size = "md", text, className }: LogoSpinnerProps) => {
-  const logoRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const sizeClasses = {
-    sm: "h-8 w-8",
-    md: "h-12 w-12",
-    lg: "h-16 w-16",
-  };
-
-  const textSizes = {
-    sm: "text-sm",
-    md: "text-base",
-    lg: "text-lg",
-  };
-
-  useGSAP(() => {
-    if (!logoRef.current) return;
-
-    // Continuous rotation
-    gsap.to(logoRef.current, {
-      rotation: 360,
-      duration: 2,
-      repeat: -1,
-      ease: "none",
-    });
-
-    // Subtle pulse
-    gsap.to(logoRef.current, {
-      scale: 1.1,
-      duration: 1,
-      repeat: -1,
-      yoyo: true,
-      ease: "power2.inOut",
-    });
-  }, { dependencies: [] });
+  const reducedMotion = useReducedMotion();
+  const announcement = text?.trim() || "Loading...";
+  const loaderStyle = {
+    "--brack-loader-mark": `url(${BRACK_MARK_IMAGE})`,
+    "--brack-loader-mark-duration": `${BRACK_LOADER_MOTION.markDurationMs}ms`,
+    "--brack-loader-orbit-duration": `${BRACK_LOADER_MOTION.orbitDurationMs}ms`,
+    "--brack-loader-shadow-duration": `${BRACK_LOADER_MOTION.shadowDurationMs}ms`,
+    "--brack-loader-motion-iterations": BRACK_LOADER_MOTION.iterations,
+  } as CSSProperties;
 
   return (
-    <div ref={containerRef} className={cn("flex flex-col items-center space-y-4", className)}>
-      <div ref={logoRef} className={cn("relative", sizeClasses[size])}>
-        <ThemeAwareLogo
-          variant="icon"
-          size={sizeClasses[size]}
-          className="h-full w-full"
-        />
-        {/* Glow effect - uses primary color from theme */}
-        <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg -z-10" />
+    <div
+      className={cn("brack-loader", className)}
+      style={loaderStyle}
+      data-size={size}
+      data-motion={reducedMotion ? "reduced" : "full"}
+      data-motion-limit-ms={BRACK_LOADER_MAX_MOTION_MS}
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <div className="brack-loader__stage" aria-hidden="true">
+        <span className="brack-loader__shadow" />
+        <span className="brack-loader__page brack-loader__page--left" />
+        <span className="brack-loader__page brack-loader__page--right" />
+        <span className="brack-loader__orbit" />
+        <span className="brack-loader__mark">
+          <span className="brack-loader__mark-art" />
+        </span>
       </div>
-      {text && (
-        <span className={cn(textSizes[size], "font-sans font-medium text-muted-foreground")}>
+
+      {text?.trim() ? (
+        <span className="brack-loader__message">
           {text}
         </span>
+      ) : (
+        <span className="sr-only">{announcement}</span>
       )}
     </div>
   );

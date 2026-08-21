@@ -1,8 +1,8 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "generator": {
     "path": "scripts/optimize-media-assets.mjs",
-    "sha256": "a38a83cfe98f86d2a89afc2292972a15d189093620b6977d1379fafd7195bed0",
+    "sha256": "663fe700ff06854e0c8371346e2b64307962e38d8379c6f945f8074eae133be9",
     "sharp": "0.32.6",
     "vips": "8.14.5"
   },
@@ -15,6 +15,9 @@
       "3dicons"
     ],
     "brand_background": "transparent",
+    "brand_mark_fit": "contain",
+    "brand_mark_size": 512,
+    "brand_mark_transparent_edges": true,
     "canonical_brand_assets": [
       "brack-mark.webp",
       "brack-wordmark.webp"
@@ -26,13 +29,13 @@
     "ios/App/App/public"
   ],
   "budgets": {
-    "public_static_bytes": 6512089,
+    "public_static_bytes": 6551871,
     "native_static_bytes": 2399852,
     "journey_largest_twelve_badges_bytes": 490322,
     "journey_shell_bytes": 18572,
     "journey_worst_case_viewport_bytes": 508894,
     "dashboard_initial_bytes": 50368,
-    "brand_runtime_bytes": 50862,
+    "brand_runtime_bytes": 90644,
     "empty_state_runtime_bytes": 401742,
     "video_runtime_bytes": 4531961
   },
@@ -1120,11 +1123,11 @@
     {
       "path": "apps/client/public/brack-mark.webp",
       "role": "runtime",
-      "sha256": "55b17ab49375220040b8bbd0dcdfea361e194c4b1132ae20801f3267a24e85f4",
-      "bytes": 12002,
+      "sha256": "26034e23fa1287114ffde5d8c3f0ebd6530df02de1008e9d0c9739c397d76fed",
+      "bytes": 51784,
       "format": "webp",
-      "width": 256,
-      "height": 256
+      "width": 512,
+      "height": 512
     },
     {
       "path": "apps/client/public/brack-streak/brack-streak-image-happy.webp",

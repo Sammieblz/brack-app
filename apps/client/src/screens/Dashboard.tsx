@@ -19,6 +19,7 @@ import { AppIcon } from "@/components/ui/app-icon";
 import { ReaderHud } from "@/components/ReaderHud";
 import { DailyFocusCard } from "@/components/DailyFocusCard";
 import { DashboardStreakCard } from "@/components/dashboard/DashboardStreakCard";
+import { StreakCelebrationOverlay } from "@/components/StreakCelebrationOverlay";
 import { CurrencyIcon } from "@/components/CurrencyIcon";
 import { DashboardCardSkeleton } from "@/components/skeletons/DashboardCardSkeleton";
 import { ActivityItemSkeleton } from "@/components/skeletons/ActivityItemSkeleton";
@@ -28,6 +29,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useDashboardHomeData, type DashboardBookCandidate } from "@/hooks/useDashboardHomeData";
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { useConfirmedRewardFeedback } from "@/hooks/useConfirmedRewardFeedback";
+import { useStreakCelebration } from "@/hooks/useStreakCelebration";
 import { useProfileContext } from "@/contexts/ProfileContext";
 import { useTimer } from "@/contexts/TimerContext";
 import type { Book as BookType, OnboardingStatus } from "@/types";
@@ -48,7 +51,6 @@ import {
   type DailyFocusAction,
 } from "@/lib/dashboardGamification";
 import { getDashboardStreakPresentation } from "@/lib/dashboardStreak";
-import { observeDashboardRewards } from "@/lib/dashboardRewards";
 import { APP_ICONS } from "@/config/iconography";
 
 const Dashboard = () => {
@@ -70,6 +72,7 @@ const Dashboard = () => {
     source,
     cachedAt,
     journeyFreshness,
+    hasCurrentSessionLiveResponse,
     canMutateEconomy,
     provisional,
     refetch,
@@ -112,13 +115,29 @@ const Dashboard = () => {
       : null,
     [cachedAt, dashboardHome, journey?.server_time, streakClock, timezone],
   );
-
-  useConfirmedRewardToast({
+  const streakCelebration = useStreakCelebration({
     userId: user?.id,
-    journey,
+    ready: Boolean(dashboardHome) && source === "live" && !provisional,
+    completedToday: Boolean(streakPresentation?.readToday),
+    currentStreak: streakPresentation?.currentStreak ?? 0,
+    completionKey: dashboardHome?.streak.lastReadingDate,
+  });
+
+  useConfirmedRewardFeedback({
+    userId: user?.id,
+    rewards: journey?.recent_rewards,
+    fallbackReward: journey?.latest_milestone?.kind === "reward"
+      ? {
+          id: journey.latest_milestone.id,
+          ink_delta: journey.latest_milestone.ink_delta,
+          gold_leaves_delta: journey.latest_milestone.gold_leaves_delta,
+        }
+      : null,
     source,
     provisional,
-    journeyFreshness,
+    freshness: journeyFreshness,
+    hasCurrentSessionLiveResponse,
+    blocked: streakCelebration.isOpen,
   });
 
   const telemetryFreshness = toTelemetryFreshness(journeyFreshness, provisional);
@@ -337,75 +356,14 @@ const Dashboard = () => {
           onSuccess={handleProgressSuccess}
         />
       )}
+
+      <StreakCelebrationOverlay
+        open={streakCelebration.isOpen}
+        streak={streakCelebration.streak}
+        onDismiss={streakCelebration.dismiss}
+      />
     </MobileLayout>
   );
-};
-
-interface RewardToastObserverProps {
-  userId?: string;
-  journey: ReturnType<typeof useDashboardHomeData>["journey"];
-  source: "live" | "cached" | null;
-  provisional: boolean;
-  journeyFreshness: DashboardJourneyFreshness;
-}
-
-const useConfirmedRewardToast = ({
-  userId,
-  journey,
-  source,
-  provisional,
-  journeyFreshness,
-}: RewardToastObserverProps) => {
-  useEffect(() => {
-    if (
-      !userId
-      || !journey
-      || source !== "live"
-      || journeyFreshness !== "live"
-      || provisional
-    ) return;
-
-    const rewards = journey.recent_rewards?.length
-      ? journey.recent_rewards
-      : journey.latest_milestone?.kind === "reward"
-        ? [{
-            id: journey.latest_milestone.id,
-            ink_delta: journey.latest_milestone.ink_delta,
-            gold_leaves_delta: journey.latest_milestone.gold_leaves_delta,
-          }]
-        : [];
-    if (rewards.length === 0) return;
-
-    const key = `brack:journey:last-seen-reward:${userId}`;
-    let previousId: string | null;
-    try {
-      previousId = localStorage.getItem(key);
-    } catch {
-      // Without a durable cursor, suppress feedback so old rewards cannot replay.
-      return;
-    }
-
-    const observation = observeDashboardRewards(rewards, previousId);
-    if (!observation.newestId) return;
-    try {
-      localStorage.setItem(key, observation.newestId);
-    } catch {
-      // A toast without a persisted cursor would replay on the next render.
-      return;
-    }
-    const confirmed = observation.confirmed;
-    if (confirmed.length === 0) return;
-
-    const ink = confirmed.reduce((total, reward) => total + Math.max(0, reward.ink_delta), 0);
-    const gold = confirmed.reduce((total, reward) => total + Math.max(0, reward.gold_leaves_delta), 0);
-    const rewardSummary = [
-      ink > 0 ? `+${ink.toLocaleString()} Ink` : null,
-      gold > 0 ? `+${gold.toLocaleString()} Gold Leaves` : null,
-    ].filter(Boolean).join(" and ");
-    toast.success(confirmed.length === 1 ? "Reward confirmed" : `${confirmed.length} rewards confirmed`, {
-      description: rewardSummary || "Your Reader Journey has been updated.",
-    });
-  }, [journey, journeyFreshness, provisional, source, userId]);
 };
 
 interface SetupPromptCardProps {

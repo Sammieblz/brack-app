@@ -113,3 +113,18 @@ Freeze eligibility is never decided by this presentation helper. Home offers
 the action only during the at-risk state, then `use_reading_streak_freeze`
 validates ownership, inventory, current date, reading activity, prior-day
 continuity, and cooldown atomically. Cached inventory is display-only.
+
+### Completion feedback
+
+Home celebrates a streak only when a mounted, authenticated Dashboard observes
+a **live server-confirmed** transition from no reading today to reading today.
+The first authoritative response establishes a baseline even when today is
+already complete; it never replays historical work on a cold load. Cached,
+expired, provisional, Freeze-protected, and initial snapshots do not trigger
+the animation.
+
+The completion overlay uses the existing transparent happy-flame asset for an
+approximately two-second, theme-aware 3D reveal. It can be dismissed by tapping
+anywhere, pressing Escape, or using its 44px close control. It announces the
+result once, emits one short success haptic, and substitutes a static treatment
+when the operating system requests reduced motion.

@@ -62,11 +62,16 @@ describe("ReaderHud", () => {
 
     expect(screen.getByRole("link", { name: /level 2, page turner.*100 ink to level 3/i }))
       .toHaveAttribute("href", "/achievements?tab=overview");
+    expect(screen.getByText("200 Ink")).toBeVisible();
     expect(screen.getByText("100 Ink to Level 3")).toBeVisible();
     expect(screen.getByRole("link", { name: /7 day reading streak.*2 streak freezes/i }))
       .toHaveAttribute("href", "/achievements?tab=quests");
     const wallet = screen.getByRole("link", { name: /45 gold leaves.*journey shop/i });
     expect(wallet).toHaveAttribute("href", "/achievements?tab=shop");
+    expect(document.querySelector('[data-reward-hud-target="ink"]'))
+      .toContainElement(document.querySelector('[data-reward-hud-value="ink"]'));
+    expect(document.querySelector('[data-reward-hud-target="goldLeaves"]'))
+      .toContainElement(document.querySelector('[data-reward-hud-value="goldLeaves"]'));
 
     await user.click(wallet);
     expect(screen.getByTestId("location-state")).toHaveTextContent(
@@ -82,7 +87,8 @@ describe("ReaderHud", () => {
     );
     expect(screen.getByRole("link", { name: /maximum level/i })).toBeInTheDocument();
     expect(screen.getByText("Maximum level")).toBeVisible();
-    expect(screen.getByRole("progressbar", { name: /level progress 100 percent/i })).toBeInTheDocument();
+    expect(screen.getByRole("progressbar", { name: /level progress 100 percent/i }))
+      .toHaveAttribute("data-variant", "default");
   });
 
   it("renders cache status in a dedicated footer instead of over wallet content", () => {
@@ -176,8 +182,10 @@ describe("DailyFocusCard", () => {
     expect(screen.getByText(/10 minutes/)).toBeInTheDocument();
     expect(screen.getByLabelText("30 Ink reward")).toBeInTheDocument();
     expect(screen.getByLabelText("2 Gold Leaves reward")).toBeInTheDocument();
-    expect(screen.getByRole("progressbar", { name: /twenty-minute chapter progress/i }))
-      .toHaveAttribute("aria-valuenow", "10");
+    const progressbar = screen.getByRole("progressbar", { name: /twenty-minute chapter progress/i });
+    expect(progressbar).toHaveAttribute("aria-valuenow", "10");
+    expect(progressbar).toHaveAttribute("aria-valuemax", "20");
+    expect(progressbar).toHaveAttribute("data-variant", "dimensional");
 
     await user.click(screen.getByRole("button", { name: "Start reading" }));
     expect(onAction).toHaveBeenCalledWith("timer", quest);

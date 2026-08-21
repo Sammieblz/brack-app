@@ -27,12 +27,18 @@ const manifestPath = path.join(repoRoot, "assets", "media-assets-manifest.json")
 const scriptPath = fileURLToPath(import.meta.url);
 const checkOnly = process.argv.includes("--check");
 const transparentBackground = { r: 0, g: 0, b: 0, alpha: 0 };
-const manifestVersion = 2;
+const manifestVersion = 3;
 
 const brandAssets = [
-  { name: "brack-mark.webp", width: 256, height: 256 },
+  {
+    name: "brack-mark.webp",
+    width: 512,
+    height: 512,
+    requireTransparentEdges: true,
+  },
   { name: "brack-wordmark.webp", width: 418, height: 123 },
 ];
+const brandMark = brandAssets[0];
 
 const emptyStateIconNames = [
   "3dicons-boy-front-clay",
@@ -238,8 +244,51 @@ const assertImage = async (
   return metadata;
 };
 
+const assertLosslessWebp = async (target) => {
+  const value = await readFile(target);
+  if (
+    value.length < 20
+    || value.subarray(0, 4).toString("ascii") !== "RIFF"
+    || value.subarray(8, 12).toString("ascii") !== "WEBP"
+  ) {
+    throw new Error(`Invalid WebP container: ${toRepoPath(target)}.`);
+  }
+
+  let offset = 12;
+  while (offset + 8 <= value.length) {
+    const chunk = value.subarray(offset, offset + 4).toString("ascii");
+    const chunkSize = value.readUInt32LE(offset + 4);
+    if (chunk === "VP8L") return;
+    offset += 8 + chunkSize + (chunkSize % 2);
+  }
+  throw new Error(`Canonical brand WebP must be lossless: ${toRepoPath(target)}.`);
+};
+
+const assertTransparentEdges = async (target) => {
+  const { data, info } = await sharp(target, { failOn: "error" })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const alphaAt = (x, y) => data[(y * info.width + x) * info.channels + 3];
+  for (let x = 0; x < info.width; x += 1) {
+    if (alphaAt(x, 0) !== 0 || alphaAt(x, info.height - 1) !== 0) {
+      throw new Error(`Brand artwork touches the canvas edge: ${toRepoPath(target)}.`);
+    }
+  }
+  for (let y = 0; y < info.height; y += 1) {
+    if (alphaAt(0, y) !== 0 || alphaAt(info.width - 1, y) !== 0) {
+      throw new Error(`Brand artwork touches the canvas edge: ${toRepoPath(target)}.`);
+    }
+  }
+};
+
 const assertTransparentImage = async (target, options = {}) => {
-  const metadata = await assertImage(target, options);
+  const {
+    lossless = false,
+    requireTransparentEdges = false,
+    ...imageOptions
+  } = options;
+  const metadata = await assertImage(target, imageOptions);
   if (!metadata.hasAlpha) {
     throw new Error(`Brand artwork must have an alpha channel: ${toRepoPath(target)}.`);
   }
@@ -247,6 +296,8 @@ const assertTransparentImage = async (target, options = {}) => {
   if (channels[3].min !== 0) {
     throw new Error(`Brand artwork must include transparent pixels: ${toRepoPath(target)}.`);
   }
+  if (requireTransparentEdges) await assertTransparentEdges(target);
+  if (lossless) await assertLosslessWebp(target);
   return metadata;
 };
 
@@ -310,6 +361,8 @@ const convertConfiguredMedia = async () => {
       format: "webp",
       width: item.width,
       height: item.height,
+      lossless: true,
+      requireTransparentEdges: item.requireTransparentEdges,
     });
   }
   const iconRoot = path.join(publicRoot, "3dicons");
@@ -322,11 +375,64 @@ const convertConfiguredMedia = async () => {
   }
 };
 
-const parseImportBadge = () => {
-  const inline = process.argv.find((argument) => argument.startsWith("--import-badge="));
-  if (inline) return inline.slice("--import-badge=".length);
-  const index = process.argv.indexOf("--import-badge");
+const parseCliValue = (name) => {
+  const inline = process.argv.find((argument) => argument.startsWith(`${name}=`));
+  if (inline) return inline.slice(`${name}=`.length);
+  const index = process.argv.indexOf(name);
   return index >= 0 ? process.argv[index + 1] : null;
+};
+
+const readStandardInput = async () => {
+  const chunks = [];
+  for await (const chunk of process.stdin) chunks.push(chunk);
+  return Buffer.concat(chunks);
+};
+
+const importBrandMark = async (sourceValue) => {
+  if (!sourceValue) return;
+  if (checkOnly) throw new Error("--import-brand-mark cannot be combined with --check.");
+  const output = path.join(publicRoot, brandMark.name);
+  let source;
+  let sourceLabel;
+  if (sourceValue === "-") {
+    source = await readStandardInput();
+    sourceLabel = "standard input";
+  } else {
+    const sourcePath = path.resolve(repoRoot, sourceValue);
+    if (!(await exists(sourcePath))) {
+      throw new Error(`Brand mark source not found: ${sourcePath}`);
+    }
+    if (sourcePath === output) {
+      throw new Error("Import the Brack mark from an external high-resolution master.");
+    }
+    source = await readFile(sourcePath);
+    sourceLabel = sourcePath;
+  }
+  const metadata = await sharp(source, { failOn: "error" }).metadata();
+  if (!metadata.hasAlpha) {
+    throw new Error(`Brand mark source must have an alpha channel: ${sourceLabel}.`);
+  }
+  const { channels } = await sharp(source, { failOn: "error" }).ensureAlpha().stats();
+  if (channels[3].min !== 0) {
+    throw new Error(`Brand mark source must include transparent pixels: ${sourceLabel}.`);
+  }
+  if (metadata.width < brandMark.width || metadata.height < brandMark.height) {
+    throw new Error(
+      `Brand mark source must be at least ${brandMark.width}x${brandMark.height}px; `
+        + `found ${metadata.width}x${metadata.height}px.`,
+    );
+  }
+  await writeBufferIfChanged(
+    output,
+    await sharp(source, { failOn: "error" })
+      .resize(brandMark.width, brandMark.height, {
+        fit: "contain",
+        background: transparentBackground,
+        withoutEnlargement: true,
+      })
+      .webp({ lossless: true, effort: 6 })
+      .toBuffer(),
+  );
 };
 
 const importBadge = async (sourceValue) => {
@@ -553,6 +659,9 @@ const buildManifest = async () => {
       dashboard_artwork_size: 256,
       webp_lossless_collections: ["brand", "3dicons"],
       brand_background: "transparent",
+      brand_mark_fit: "contain",
+      brand_mark_size: brandMark.width,
+      brand_mark_transparent_edges: true,
       canonical_brand_assets: brandAssets.map((item) => item.name),
       canonical_assets_are_never_recompressed: true,
     },
@@ -578,9 +687,10 @@ const verifyManifest = async (current) => {
 await ensureRepositoryRoot();
 for (const target of obsoleteFiles) await removeExactTarget(target);
 for (const target of obsoleteDirectories) await removeExactTarget(target, true);
+await importBrandMark(parseCliValue("--import-brand-mark"));
 await convertConfiguredMedia();
 await removeObsoleteBadgePngs();
-await importBadge(parseImportBadge());
+await importBadge(parseCliValue("--import-badge"));
 const badges = await validateBadgeArtwork();
 const dashboardCanonicals = await validateDashboardArtwork();
 await optimizeRequiredPngs();

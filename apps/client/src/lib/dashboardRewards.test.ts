@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { observeDashboardRewards, type DashboardRewardDelta } from "./dashboardRewards";
+import {
+  observeDashboardRewards,
+  summarizeDashboardRewards,
+  type DashboardRewardDelta,
+} from "./dashboardRewards";
 
 const reward = (id: string): DashboardRewardDelta => ({
   id,
@@ -34,6 +38,15 @@ describe("Dashboard reward observation", () => {
     expect(observeDashboardRewards(window, "newest").confirmed).toEqual([]);
   });
 
+  it("recognizes the first earning after this session observed an empty window", () => {
+    expect(observeDashboardRewards([reward("first")], null, { hasObservedWindow: true }))
+      .toEqual({
+        newestId: "first",
+        confirmed: [reward("first")],
+        initializesCursor: false,
+      });
+  });
+
   it("excludes shop debits and zero-value ledger rows from reward feedback", () => {
     const debitsAndReward: DashboardRewardDelta[] = [
       { id: "purchase", ink_delta: 0, gold_leaves_delta: -10 },
@@ -50,5 +63,20 @@ describe("Dashboard reward observation", () => {
       confirmed: [],
       initializesCursor: false,
     });
+  });
+
+  it("aggregates positive currency only and never includes debits", () => {
+    expect(summarizeDashboardRewards([
+      { id: "ink", ink_delta: 12, gold_leaves_delta: 0 },
+      { id: "mixed", ink_delta: -5, gold_leaves_delta: 2 },
+      { id: "purchase", ink_delta: 0, gold_leaves_delta: -10 },
+      { id: "neutral", ink_delta: 0, gold_leaves_delta: 0 },
+    ])).toEqual({ rewardCount: 2, ink: 12, goldLeaves: 2 });
+  });
+
+  it("ignores malformed non-finite reward amounts", () => {
+    expect(summarizeDashboardRewards([
+      { id: "malformed", ink_delta: Number.NaN, gold_leaves_delta: Number.POSITIVE_INFINITY },
+    ])).toEqual({ rewardCount: 0, ink: 0, goldLeaves: 0 });
   });
 });

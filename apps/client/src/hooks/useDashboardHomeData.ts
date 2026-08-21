@@ -294,10 +294,13 @@ export const useDashboardHomeData = (
           ? "cached"
           : query.data?.journeyFreshness ?? (query.error ? "unavailable" : "not_requested");
   const currentFetchObservation = getDashboardFetchObservation(userId);
+  const hasCurrentSessionLiveResponse =
+    currentFetchObservation.generation > fetchBaselineRef.current.generation
+    && currentFetchObservation.source === "live"
+    && effectiveSource === "live"
+    && !query.error;
   const canMutateEconomy = isDashboardEconomyMutationReady({
-    hasCurrentSessionLiveResponse:
-      currentFetchObservation.generation > fetchBaselineRef.current.generation
-      && currentFetchObservation.source === "live",
+    hasCurrentSessionLiveResponse,
     hasQueryError: Boolean(query.error),
     source: effectiveSource,
     journeyFreshness: effectiveJourneyFreshness,
@@ -320,6 +323,7 @@ export const useDashboardHomeData = (
     source: effectiveSource,
     cachedAt: query.data?.cachedAt ?? null,
     journeyFreshness: effectiveJourneyFreshness,
+    hasCurrentSessionLiveResponse,
     canMutateEconomy,
     provisional,
     refetch: refresh,

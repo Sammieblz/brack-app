@@ -24,9 +24,14 @@ The pipeline never recompresses canonical artwork during routine runs:
 - In-app branding has exactly two canonical runtime assets:
   `brack-mark.webp` and `brack-wordmark.webp`. Both are lossless WebP files with
   real transparent pixels. Theme colors are applied in CSS, so separate
-  light/dark/orange raster copies are neither needed nor allowed. The wordmark
+  light/dark/orange raster copies are neither needed nor allowed. The mark is a
+  single 512px square canonical, preserving the complete transparent master at
+  sufficient density for the largest loader on high-DPI screens; a separate
+  256px runtime copy would only duplicate bytes. Its outer pixel ring must stay
+  transparent, which makes accidental cropping fail validation. The wordmark
   canvas is trimmed to its 418x123 alpha bounds rather than retaining empty
-  square padding.
+  square padding. The critical mark URL is explicitly included in the PWA
+  precache, so offline loading uses this same canonical file.
 - Empty-state WebPs are lossless canonical runtime assets after their one-time
   PNG conversion.
 
@@ -43,6 +48,18 @@ npm run media:assets -- --import-badge C:\path\to\new_badge.png
 The import creates one transparent, contained 256px WebP. Archive
 high-resolution source artwork outside this repository if it may be needed
 later.
+
+To replace the Brack mark from an externally archived transparent master:
+
+```sh
+npm run media:assets -- --import-brand-mark C:\path\to\brack-mark-master.png
+```
+
+The source must be at least 512px in both dimensions. The pipeline contains the
+complete artwork on a transparent 512px canvas and encodes one lossless WebP;
+it does not retain or publish the source file or generate responsive copies.
+Automation may pass the source bytes on standard input by using
+`--import-brand-mark=-`.
 
 ## Other media
 

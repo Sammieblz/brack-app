@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { CurrencyIcon } from "@/components/CurrencyIcon";
 import { AppIcon } from "@/components/ui/app-icon";
+import { Progress } from "@/components/ui/progress";
 import { APP_ICONS } from "@/config/iconography";
 import { cn } from "@/lib/utils";
 import { getLevelProgressDetails } from "@/lib/dashboardGamification";
+import { useRewardHudTarget } from "@/contexts/RewardFeedbackContext";
 import type { GamificationAccount } from "@/services/api/gamification";
 import type { DashboardJourneyFreshness as JourneyFreshness } from "@/services/api/dashboard";
 
@@ -44,6 +46,9 @@ export const ReaderHud = ({
   onRetry,
   className,
 }: ReaderHudProps) => {
+  const inkHud = useRewardHudTarget("ink", account?.lifetime_ink);
+  const goldHud = useRewardHudTarget("goldLeaves", account?.gold_leaves);
+
   if (loading && !account) {
     return (
       <div
@@ -122,10 +127,16 @@ export const ReaderHud = ({
       }}
     >
       <Link
+        ref={inkHud.targetRef}
         to="/achievements?tab=overview"
         state={navigationState}
-        className="group min-w-0 border-r border-border/60 p-2.5 transition-colors hover:bg-primary/[0.07] focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring max-[359px]:p-1.5"
-        aria-label={`Level ${account.current_level}, ${account.level_title}. ${level.isMaximumLevel ? "Maximum level" : `${level.inkToNextLevel} Ink to level ${account.next_level?.level}`}`}
+        data-reward-hud-target="ink"
+        data-reward-pulsing={inkHud.isPulsing ? "true" : "false"}
+        className={cn(
+          "group min-w-0 border-r border-border/60 p-2.5 transition-colors hover:bg-primary/[0.07] focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring max-[359px]:p-1.5",
+          inkHud.isPulsing && "bg-primary/10 ring-2 ring-inset ring-primary/40",
+        )}
+        aria-label={`Level ${account.current_level}, ${account.level_title}. ${account.lifetime_ink.toLocaleString()} Lifetime Ink. ${level.isMaximumLevel ? "Maximum level" : `${level.inkToNextLevel} Ink to level ${account.next_level?.level}`}`}
       >
         <span className="flex min-w-0 items-center gap-2 max-[359px]:gap-1">
           <CurrencyIcon currency="ink" className="h-6 w-6 max-[359px]:h-[22px] max-[359px]:w-[22px]" />
@@ -133,31 +144,29 @@ export const ReaderHud = ({
             <span className="block truncate font-sans text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               Level {account.current_level}
             </span>
-            <span className="block truncate font-display text-sm font-bold max-[359px]:text-xs">
-              {account.level_title}
+            <span
+              aria-hidden="true"
+              className="block truncate font-display text-sm font-bold tabular-nums max-[359px]:text-xs"
+              data-reward-hud-value="ink"
+              title={`${account.lifetime_ink.toLocaleString()} Lifetime Ink`}
+            >
+              {inkHud.displayValue.toLocaleString()} Ink
             </span>
           </span>
         </span>
-        <span className="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
-          <span
-            className="block h-full rounded-full bg-primary"
-            style={{ width: `${level.percent}%` }}
-          />
-        </span>
-        <span
-          className="sr-only"
-          role="progressbar"
+        <Progress
+          value={level.percent}
+          className="mt-1.5"
           aria-label={`Level progress ${Math.round(level.percent)} percent`}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(level.percent)}
-        >
-          Level progress {Math.round(level.percent)} percent
-        </span>
+        />
         <span className="mt-1 block truncate font-sans text-[10px] text-muted-foreground max-[359px]:hidden">
-          {level.isMaximumLevel
-            ? "Maximum level"
-            : `${level.inkToNextLevel.toLocaleString()} Ink to Level ${account.next_level?.level}`}
+          <span>{account.level_title}</span>
+          <span aria-hidden="true">{" \u00b7 "}</span>
+          <span>
+            {level.isMaximumLevel
+              ? "Maximum level"
+              : `${level.inkToNextLevel.toLocaleString()} Ink to Level ${account.next_level?.level}`}
+          </span>
         </span>
       </Link>
 
@@ -187,9 +196,15 @@ export const ReaderHud = ({
       </Link>
 
       <Link
+        ref={goldHud.targetRef}
         to="/achievements?tab=shop"
         state={navigationState}
-        className="group flex min-w-0 items-center gap-2 p-2.5 transition-colors hover:bg-primary/[0.07] focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring max-[359px]:gap-1 max-[359px]:p-1.5"
+        data-reward-hud-target="goldLeaves"
+        data-reward-pulsing={goldHud.isPulsing ? "true" : "false"}
+        className={cn(
+          "group flex min-w-0 items-center gap-2 p-2.5 transition-colors hover:bg-primary/[0.07] focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring max-[359px]:gap-1 max-[359px]:p-1.5",
+          goldHud.isPulsing && "bg-primary/10 ring-2 ring-inset ring-primary/40",
+        )}
         aria-label={`${account.gold_leaves.toLocaleString()} Gold Leaves. Open Journey Shop`}
       >
         <CurrencyIcon currency="goldLeaves" className="h-6 w-6 max-[359px]:h-[22px] max-[359px]:w-[22px]" />
@@ -198,10 +213,12 @@ export const ReaderHud = ({
             Wallet
           </span>
           <span
-            className="block truncate font-display text-sm font-bold max-[359px]:text-xs"
+            aria-hidden="true"
+            className="block truncate font-display text-sm font-bold tabular-nums max-[359px]:text-xs"
+            data-reward-hud-value="goldLeaves"
             title={account.gold_leaves.toLocaleString()}
           >
-            {account.gold_leaves.toLocaleString()}
+            {goldHud.displayValue.toLocaleString()}
           </span>
           <span className="block truncate font-sans text-[10px] text-muted-foreground max-[359px]:hidden">Gold Leaves</span>
         </span>

@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => {
       VitePWA({
       registerType: "autoUpdate",
       includeAssets: [
+        "brack-mark.webp",
         "brack-favicon/favicon.ico",
         "brack-favicon/apple-touch-icon.png",
       ],

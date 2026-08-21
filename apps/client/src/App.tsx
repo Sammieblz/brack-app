@@ -32,6 +32,7 @@ import { usePushNotifications } from "./hooks/usePushNotifications";
 import { usePresenceHeartbeat } from "./hooks/usePresenceHeartbeat";
 import { LiveRegion } from "./components/ui/live-region";
 import { BadgeCelebrationProvider } from "./contexts/BadgeCelebrationContext";
+import { RewardFeedbackProvider } from "./contexts/RewardFeedbackContext";
 import { useAppViewportHeight } from "./hooks/useAppViewportHeight";
 import { OnboardingRouteGuard } from "./components/OnboardingRouteGuard";
 import { OnboardingEntryRedirect } from "./components/OnboardingEntryRedirect";
@@ -119,7 +120,8 @@ const App = () => {
                   <LiveRegion level="polite" />
                   <Suspense fallback={<div className="p-10 flex justify-center"><LoadingSpinner size="lg" /></div>}>
                     <BrowserRouter>
-                      <BadgeCelebrationProvider>
+                      <RewardFeedbackProvider>
+                        <BadgeCelebrationProvider>
                         <DeepLinkHandler />
                         <JourneyLevelUpObserver />
                         <OnboardingRouteGuard />
@@ -170,7 +172,8 @@ const App = () => {
                         <JournalPromptHandler />
                         <ReadingSyncIndicator />
                       </SwipeBackHandler>
-                      </BadgeCelebrationProvider>
+                        </BadgeCelebrationProvider>
+                      </RewardFeedbackProvider>
                     </BrowserRouter>
                   </Suspense>
                 </TooltipProvider>

@@ -238,11 +238,13 @@ export const DashboardStreakCard = ({
               </p>
             </div>
 
-            <div className="flex aspect-square w-full items-center justify-center rounded-2xl border border-primary/20 bg-background/70 p-1.5 shadow-sm">
+            <div className="streak-art-stage relative flex aspect-square w-full items-center justify-center" data-testid="streak-art-stage">
+              <span className="streak-art-aura" aria-hidden="true" />
+              <span className="streak-art-shadow" aria-hidden="true" />
               <img
                 src={imageSrc}
                 alt={copy.imageAlt}
-                className="h-full w-full object-contain"
+                className="streak-art-float relative h-[112%] w-[112%] max-w-none object-contain"
                 decoding="async"
                 draggable={false}
               />

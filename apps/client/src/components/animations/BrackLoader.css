@@ -1,0 +1,270 @@
+.brack-loader {
+  --brack-loader-stage-size: 4rem;
+  --brack-loader-message-size: 1rem;
+  --brack-loader-gap: 0.75rem;
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--brack-loader-gap);
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  text-align: center;
+  user-select: none;
+}
+
+.brack-loader[data-size="sm"] {
+  --brack-loader-stage-size: 2.75rem;
+  --brack-loader-message-size: 0.875rem;
+  --brack-loader-gap: 0.5rem;
+}
+
+.brack-loader[data-size="lg"] {
+  --brack-loader-stage-size: clamp(4.75rem, 12vw, 5.375rem);
+  --brack-loader-message-size: 1.125rem;
+  --brack-loader-gap: 1rem;
+}
+
+.brack-loader__stage {
+  position: relative;
+  isolation: isolate;
+  width: var(--brack-loader-stage-size);
+  height: var(--brack-loader-stage-size);
+  flex: 0 0 auto;
+  perspective: 720px;
+  perspective-origin: 50% 42%;
+  transform: translateZ(0);
+}
+
+.brack-loader__mark {
+  position: absolute;
+  z-index: 4;
+  inset: 14%;
+  display: block;
+  transform-style: preserve-3d;
+  transform-origin: 50% 58%;
+  filter:
+    drop-shadow(0 0.45rem 0.5rem hsl(var(--foreground) / 0.14))
+    drop-shadow(0 0 0.65rem hsl(var(--primary) / 0.18));
+  transform: translate3d(0, 1px, 28px) rotateX(3deg) rotateY(-6deg);
+  animation: brack-loader-mark-float var(--brack-loader-mark-duration, 2.1s) ease-in-out var(--brack-loader-motion-iterations, 2);
+  will-change: transform;
+}
+
+.brack-loader__mark-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: var(--gradient-primary);
+  -webkit-mask-image: var(--brack-loader-mark);
+  mask-image: var(--brack-loader-mark);
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.brack-loader__orbit {
+  position: absolute;
+  z-index: 3;
+  inset: 5% 1% 13%;
+  display: block;
+  border: 1px solid hsl(var(--primary) / 0.32);
+  border-radius: 50%;
+  transform-style: preserve-3d;
+  transform: rotateX(66deg) rotateZ(-8deg) translateZ(10px);
+  animation: brack-loader-orbit var(--brack-loader-orbit-duration, 2.4s) linear var(--brack-loader-motion-iterations, 2);
+  will-change: transform;
+}
+
+.brack-loader__orbit::after {
+  position: absolute;
+  top: -0.16rem;
+  left: 50%;
+  width: 0.34rem;
+  height: 0.34rem;
+  border-radius: 999px;
+  background: hsl(var(--primary-glow));
+  box-shadow:
+    0 0 0.45rem hsl(var(--primary-glow) / 0.9),
+    0 0 0.8rem hsl(var(--primary) / 0.5);
+  content: "";
+  transform: translateX(-50%);
+}
+
+.brack-loader__page {
+  position: absolute;
+  z-index: 2;
+  top: 51%;
+  display: block;
+  width: 48%;
+  height: 30%;
+  border: 1px solid hsl(var(--border) / 0.8);
+  background:
+    linear-gradient(
+      145deg,
+      hsl(var(--card) / 0.9),
+      hsl(var(--primary) / 0.1)
+    );
+  box-shadow: 0 0.35rem 0.8rem hsl(var(--foreground) / 0.08);
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.brack-loader__page--left {
+  left: 3%;
+  border-radius: 42% 8% 36% 18%;
+  transform: rotateX(64deg) rotateZ(8deg) translateZ(-18px);
+  transform-origin: 100% 78%;
+}
+
+.brack-loader__page--right {
+  right: 3%;
+  border-radius: 8% 42% 18% 36%;
+  transform: rotateX(64deg) rotateZ(-8deg) translateZ(-18px);
+  transform-origin: 0 78%;
+}
+
+.brack-loader__shadow {
+  position: absolute;
+  z-index: 1;
+  bottom: 8%;
+  left: 50%;
+  display: block;
+  width: 64%;
+  height: 9%;
+  border-radius: 50%;
+  background: hsl(var(--foreground) / 0.18);
+  filter: blur(0.35rem);
+  opacity: 0.58;
+  transform: translateX(-50%) rotateX(70deg) scaleX(0.88);
+  animation: brack-loader-shadow-breathe var(--brack-loader-shadow-duration, 2.1s) ease-in-out var(--brack-loader-motion-iterations, 2);
+  will-change: opacity, transform;
+}
+
+.brack-loader__message {
+  max-width: min(28rem, 100%);
+  padding-inline: 0.25rem;
+  overflow-wrap: anywhere;
+  color: hsl(var(--muted-foreground));
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-size: var(--brack-loader-message-size);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.brack-loader[data-motion="reduced"] .brack-loader__mark,
+.brack-loader[data-motion="reduced"] .brack-loader__orbit,
+.brack-loader[data-motion="reduced"] .brack-loader__shadow {
+  animation: none;
+  will-change: auto;
+}
+
+.brack-loader[data-motion="reduced"] .brack-loader__mark {
+  transform: translate3d(0, 0, 30px) rotateX(2deg) rotateY(-3deg);
+}
+
+.brack-loader[data-motion="reduced"] .brack-loader__orbit {
+  transform: rotateX(66deg) rotateZ(-8deg) translateZ(10px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brack-loader__mark,
+  .brack-loader__orbit,
+  .brack-loader__shadow {
+    animation: none;
+    will-change: auto;
+  }
+
+  .brack-loader__mark {
+    transform: translate3d(0, 0, 30px) rotateX(2deg) rotateY(-3deg);
+  }
+
+  .brack-loader__orbit {
+    transform: rotateX(66deg) rotateZ(-8deg) translateZ(10px);
+  }
+}
+
+@keyframes brack-loader-mark-float {
+  0%,
+  100% {
+    transform: translate3d(0, 1px, 28px) rotateX(3deg) rotateY(-6deg);
+  }
+
+  50% {
+    transform: translate3d(0, -3px, 40px) rotateX(-2deg) rotateY(6deg);
+  }
+}
+
+@keyframes brack-loader-orbit {
+  from {
+    transform: rotateX(66deg) rotateZ(-8deg) translateZ(10px);
+  }
+
+  to {
+    transform: rotateX(66deg) rotateZ(352deg) translateZ(10px);
+  }
+}
+
+@keyframes brack-loader-shadow-breathe {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: translateX(-50%) rotateX(70deg) scaleX(0.88);
+  }
+
+  50% {
+    opacity: 0.34;
+    transform: translateX(-50%) rotateX(70deg) scaleX(1.04);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .brack-loader__orbit,
+  .brack-loader__page {
+    border-width: 2px;
+  }
+
+  .brack-loader__message {
+    color: hsl(var(--foreground));
+  }
+}
+
+@media (forced-colors: active) {
+  .brack-loader {
+    color: CanvasText;
+    forced-color-adjust: none;
+  }
+
+  .brack-loader__mark-art {
+    background: CanvasText;
+  }
+
+  .brack-loader__orbit {
+    border-color: Highlight;
+  }
+
+  .brack-loader__orbit::after {
+    background: Highlight;
+    box-shadow: none;
+  }
+
+  .brack-loader__page {
+    border-color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+  }
+
+  .brack-loader__shadow {
+    background: CanvasText;
+    filter: none;
+  }
+
+  .brack-loader__message {
+    color: CanvasText;
+  }
+}

@@ -1,0 +1,637 @@
+.brack-progress,
+.brack-progress * {
+  box-sizing: border-box;
+}
+
+.brack-progress__track,
+.brack-progress__viewport {
+  position: absolute;
+  border-radius: inherit;
+}
+
+.brack-progress__viewport {
+  inset: 0;
+  overflow: hidden;
+}
+
+.brack-progress__indicator {
+  position: relative;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.brack-progress__texture,
+.brack-progress__specular,
+.brack-progress__cap {
+  position: absolute;
+  pointer-events: none;
+}
+
+.brack-progress__texture {
+  inset: 0;
+  opacity: 0.22;
+  background-image: repeating-linear-gradient(
+    118deg,
+    transparent 0 7px,
+    hsl(var(--primary-foreground) / 0.42) 7px 8px,
+    transparent 8px 15px
+  );
+}
+
+.brack-progress__specular {
+  top: -20%;
+  bottom: -20%;
+  left: -32%;
+  width: 26%;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--primary-foreground) / 0.68),
+    transparent
+  );
+  filter: blur(0.5px);
+  transform: skewX(-18deg);
+  animation: brack-progress-specular 720ms 120ms ease-out 1 both;
+}
+
+/* Compact progress: dense enough for cards, but no longer a flat 6px strip. */
+.brack-progress[data-variant="default"] {
+  height: clamp(0.625rem, calc(0.55rem + 0.2vw), 0.75rem);
+  min-height: 0.625rem;
+  contain: layout paint;
+  border: 1px solid hsl(var(--foreground) / 0.16);
+  background:
+    linear-gradient(180deg, hsl(var(--foreground) / 0.12), transparent 42%),
+    linear-gradient(180deg, hsl(var(--muted) / 0.96), hsl(var(--secondary) / 0.78));
+  box-shadow:
+    inset 0 1px 2px hsl(var(--foreground) / 0.2),
+    inset 0 -1px 0 hsl(var(--background) / 0.88),
+    0 1px 0 hsl(var(--background) / 0.86),
+    0 3px 8px -6px hsl(var(--foreground) / 0.5);
+}
+
+.brack-progress[data-variant="default"] .brack-progress__track {
+  inset: 1px;
+  overflow: hidden;
+  background: hsl(var(--muted) / 0.46);
+  box-shadow: inset 0 1px 1px hsl(var(--foreground) / 0.1);
+}
+
+.brack-progress__indicator--default {
+  background:
+    linear-gradient(
+      180deg,
+      hsl(var(--primary-glow) / 0.98) 0%,
+      hsl(var(--primary)) 43%,
+      hsl(var(--primary) / 0.88) 72%,
+      hsl(var(--primary) / 0.7) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 hsl(var(--primary-foreground) / 0.5),
+    inset 0 -1px 1px hsl(var(--foreground) / 0.24),
+    inset 0 0 0 1px hsl(var(--foreground) / 0.16),
+    0 0 7px hsl(var(--primary) / 0.3);
+  transition: transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.brack-progress__cap {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: clamp(0.45rem, 1.4vw, 0.7rem);
+  border-left: 1px solid hsl(var(--foreground) / 0.12);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 68% 36%, hsl(var(--primary-foreground) / 0.88), transparent 25%),
+    linear-gradient(90deg, transparent, hsl(var(--primary-glow) / 0.76));
+  box-shadow:
+    inset -1px 0 0 hsl(var(--primary-foreground) / 0.34),
+    -2px 0 6px hsl(var(--primary-glow) / 0.3);
+  transform-origin: right center;
+  animation: brack-progress-cap-arrive 520ms cubic-bezier(0.22, 1, 0.36, 1) 1 both;
+}
+
+.brack-progress[data-variant="default"][data-empty="true"] .brack-progress__cap {
+  visibility: hidden;
+  animation: none;
+}
+
+/* Prominent progress: a shallow 3D reading stage with physical step markers. */
+.brack-progress.brack-progress--dimensional {
+  --brack-progress-height: clamp(1.5rem, calc(1.1rem + 1vw), 2rem);
+  --brack-progress-node-size: clamp(0.625rem, calc(0.48rem + 0.35vw), 0.85rem);
+  --brack-progress-marker-width: clamp(1.08rem, calc(0.8rem + 0.8vw), 1.55rem);
+  --brack-progress-marker-height: clamp(0.75rem, calc(0.58rem + 0.5vw), 1.05rem);
+  height: var(--brack-progress-height);
+  min-height: 1.5rem;
+  contain: layout;
+  isolation: isolate;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.brack-progress--dimensional::before {
+  position: absolute;
+  z-index: 0;
+  right: 3%;
+  bottom: -0.24rem;
+  left: 3%;
+  height: 0.52rem;
+  border-radius: 999px;
+  background: hsl(var(--foreground) / 0.2);
+  content: "";
+  filter: blur(5px);
+  opacity: 0.62;
+  transform: perspective(8rem) rotateX(68deg);
+  pointer-events: none;
+}
+
+.brack-progress--dimensional::after {
+  position: absolute;
+  z-index: 1;
+  right: 0.3rem;
+  bottom: 0.05rem;
+  left: 0.3rem;
+  height: clamp(0.44rem, 32%, 0.64rem);
+  border: 1px solid hsl(var(--foreground) / 0.18);
+  border-top-color: hsl(var(--background) / 0.65);
+  border-radius: 0 0 999px 999px;
+  background:
+    linear-gradient(180deg, hsl(var(--secondary)), hsl(var(--muted) / 0.72)),
+    hsl(var(--secondary));
+  box-shadow:
+    inset 0 -2px 2px hsl(var(--foreground) / 0.12),
+    0 3px 7px -5px hsl(var(--foreground) / 0.7);
+  content: "";
+  transform: perspective(9rem) rotateX(-24deg);
+  transform-origin: top center;
+  pointer-events: none;
+}
+
+.brack-progress--dimensional .brack-progress__track {
+  z-index: 2;
+  top: 0.1rem;
+  right: 0.22rem;
+  bottom: clamp(0.36rem, 22%, 0.52rem);
+  left: 0.22rem;
+  overflow: visible;
+  border: 1px solid hsl(var(--foreground) / 0.2);
+  background:
+    linear-gradient(180deg, hsl(var(--foreground) / 0.14), transparent 44%),
+    linear-gradient(180deg, hsl(var(--muted) / 0.98), hsl(var(--secondary) / 0.86));
+  box-shadow:
+    inset 0 2px 4px hsl(var(--foreground) / 0.2),
+    inset 0 -1px 0 hsl(var(--background) / 0.9),
+    0 2px 3px hsl(var(--background) / 0.7),
+    0 5px 10px -7px hsl(var(--primary) / 0.72);
+}
+
+.brack-progress__indicator--dimensional {
+  background:
+    linear-gradient(
+      180deg,
+      hsl(var(--primary-glow) / 0.98) 0%,
+      hsl(var(--primary)) 42%,
+      hsl(var(--primary) / 0.86) 72%,
+      hsl(var(--primary) / 0.66) 100%
+    );
+  box-shadow:
+    inset 0 2px 0 hsl(var(--primary-foreground) / 0.48),
+    inset 0 -2px 3px hsl(var(--foreground) / 0.22),
+    inset 0 0 0 1px hsl(var(--foreground) / 0.18),
+    0 0 0 1px hsl(var(--foreground) / 0.12),
+    0 0 12px hsl(var(--primary) / 0.36);
+  transition: width 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.brack-progress__segments {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+}
+
+.brack-progress__segment {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  width: var(--brack-progress-node-size);
+  height: var(--brack-progress-node-size);
+  place-items: center;
+  border: 1px solid hsl(var(--foreground) / 0.28);
+  border-radius: 999px;
+  background: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)));
+  box-shadow:
+    inset 0 1px 0 hsl(var(--background) / 0.9),
+    0 1px 3px hsl(var(--foreground) / 0.2);
+  color: hsl(var(--muted-foreground));
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: clamp(0.4rem, 1vw, 0.55rem);
+  font-weight: 800;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+  transition:
+    border-color 220ms ease,
+    background-color 220ms ease,
+    box-shadow 220ms ease,
+    color 220ms ease;
+}
+
+.brack-progress__segment-number,
+.brack-progress__segment-check {
+  grid-area: 1 / 1;
+}
+
+.brack-progress__segment-number {
+  display: grid;
+  align-self: stretch;
+  justify-self: stretch;
+  place-items: center;
+  line-height: 1;
+}
+
+.brack-progress__segment-check {
+  display: none;
+  width: 48%;
+  height: 28%;
+  border-bottom: 1.5px solid currentColor;
+  border-left: 1.5px solid currentColor;
+  transform: translateY(-12%) rotate(-45deg);
+}
+
+.brack-progress__segment[data-segment-state="complete"] {
+  border-color: hsl(var(--foreground) / 0.34);
+  background: linear-gradient(145deg, hsl(var(--primary-glow)), hsl(var(--primary)));
+  box-shadow:
+    inset 0 1px 0 hsl(var(--primary-foreground) / 0.5),
+    0 0 0 1px hsl(var(--foreground) / 0.12),
+    0 2px 5px hsl(var(--primary) / 0.3);
+  color: hsl(var(--primary-foreground));
+}
+
+.brack-progress__segment[data-segment-state="complete"] .brack-progress__segment-number {
+  display: none;
+}
+
+.brack-progress__segment[data-segment-state="complete"] .brack-progress__segment-check {
+  display: block;
+}
+
+.brack-progress__segment[data-segment-state="current"] {
+  z-index: 1;
+  border-color: hsl(var(--foreground) / 0.42);
+  background: hsl(var(--card));
+  box-shadow:
+    inset 0 1px 0 hsl(var(--background)),
+    0 0 0 2px hsl(var(--primary) / 0.46),
+    0 0 10px hsl(var(--primary) / 0.42);
+  color: hsl(var(--primary));
+  animation: brack-progress-node-arrive 420ms cubic-bezier(0.22, 1, 0.36, 1) 1 both;
+}
+
+.brack-progress__segment[data-segment-state="unknown"] {
+  opacity: 0.62;
+}
+
+.brack-progress__marker-position {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transition: left 650ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.brack-progress__marker-position[data-empty="true"] {
+  opacity: 0;
+}
+
+.brack-progress__marker {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: block;
+  width: var(--brack-progress-marker-width);
+  height: var(--brack-progress-marker-height);
+  filter:
+    drop-shadow(0 2px 2px hsl(var(--foreground) / 0.28))
+    drop-shadow(0 0 4px hsl(var(--primary) / 0.22));
+  transform: translateY(-54%);
+  transform-origin: right bottom;
+  animation: brack-progress-marker-land 520ms cubic-bezier(0.22, 1, 0.36, 1) 1 both;
+}
+
+.brack-progress__page {
+  position: absolute;
+  top: 8%;
+  bottom: 8%;
+  width: 58%;
+  border: 1px solid hsl(var(--foreground) / 0.3);
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 0.2rem,
+      hsl(var(--primary) / 0.12) 0.2rem calc(0.2rem + 1px)
+    ),
+    linear-gradient(145deg, hsl(var(--card)), hsl(var(--background)));
+  box-shadow: inset 0 1px 0 hsl(var(--background));
+}
+
+.brack-progress__page--back {
+  left: 0;
+  border-radius: 0.18rem 0.05rem 0.08rem 0.2rem;
+  transform: perspective(3rem) rotateY(20deg) rotate(-7deg);
+  transform-origin: right bottom;
+}
+
+.brack-progress__page--front {
+  right: 0;
+  border-radius: 0.05rem 0.18rem 0.2rem 0.08rem;
+  transform: perspective(3rem) rotateY(-18deg) rotate(4deg);
+  transform-origin: left bottom;
+}
+
+.brack-progress__bookmark {
+  position: absolute;
+  z-index: 2;
+  top: 42%;
+  right: 12%;
+  width: clamp(0.14rem, 12%, 0.22rem);
+  height: 68%;
+  background: hsl(var(--primary));
+  box-shadow: 0 1px 2px hsl(var(--foreground) / 0.22);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 77%, 0 100%);
+}
+
+.brack-progress__marker-position[data-complete="true"] .brack-progress__marker::after {
+  position: absolute;
+  z-index: 3;
+  top: 48%;
+  right: 26%;
+  width: 0.42rem;
+  height: 0.24rem;
+  border-bottom: 2px solid hsl(var(--primary));
+  border-left: 2px solid hsl(var(--primary));
+  content: "";
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+.brack-progress__indicator--indeterminate {
+  animation: brack-progress-travel 1.45s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  will-change: transform;
+}
+
+.brack-progress__marker-position--indeterminate {
+  left: 12%;
+  animation: brack-progress-marker-travel 1.45s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.brack-progress__marker-position--indeterminate .brack-progress__marker {
+  animation: none;
+}
+
+.dark .brack-progress[data-variant="default"] {
+  border-color: hsl(var(--foreground) / 0.2);
+  background:
+    linear-gradient(180deg, hsl(var(--foreground) / 0.1), transparent 46%),
+    linear-gradient(180deg, hsl(var(--muted)), hsl(var(--background) / 0.82));
+  box-shadow:
+    inset 0 2px 3px hsl(0 0% 0% / 0.68),
+    inset 0 -1px 0 hsl(var(--foreground) / 0.08),
+    0 1px 0 hsl(var(--foreground) / 0.07);
+}
+
+.dark .brack-progress--dimensional .brack-progress__track {
+  border-color: hsl(var(--foreground) / 0.22);
+  background:
+    linear-gradient(180deg, hsl(var(--foreground) / 0.1), transparent 45%),
+    linear-gradient(180deg, hsl(var(--muted) / 0.96), hsl(var(--background) / 0.84));
+  box-shadow:
+    inset 0 2px 4px hsl(0 0% 0% / 0.68),
+    inset 0 -1px 0 hsl(var(--foreground) / 0.08),
+    0 1px 0 hsl(var(--foreground) / 0.08),
+    0 6px 14px -8px hsl(var(--primary) / 0.8);
+}
+
+.dark .brack-progress--dimensional::after {
+  border-color: hsl(var(--foreground) / 0.16);
+  border-top-color: hsl(var(--foreground) / 0.08);
+  background: linear-gradient(180deg, hsl(var(--muted)), hsl(var(--background)));
+}
+
+[data-brack-theme-style="glass"] .brack-progress[data-variant="default"],
+[data-brack-theme-style="glass"] .brack-progress--dimensional .brack-progress__track {
+  background: linear-gradient(180deg, hsl(var(--foreground) / 0.14), hsl(var(--card) / 0.5));
+  backdrop-filter: blur(10px) saturate(135%);
+}
+
+[data-brack-theme-style="comic"] .brack-progress[data-variant="default"] {
+  border-color: hsl(var(--foreground) / 0.66);
+  box-shadow: 1px 2px 0 hsl(var(--foreground) / 0.16);
+}
+
+[data-brack-theme-style="comic"] .brack-progress--dimensional .brack-progress__track {
+  border-width: 2px;
+  border-color: hsl(var(--foreground) / 0.72);
+  box-shadow: 2px 3px 0 hsl(var(--foreground) / 0.18);
+}
+
+[data-brack-theme-style="comic"] .brack-progress--dimensional::after {
+  border-width: 2px;
+  border-color: hsl(var(--foreground) / 0.58);
+}
+
+[data-brack-theme-style="coloring-book"] .brack-progress[data-variant="default"],
+[data-brack-theme-style="coloring-book"] .brack-progress--dimensional .brack-progress__track,
+[data-brack-theme-style="coloring-book"] .brack-progress--dimensional::after {
+  border-color: hsl(var(--foreground) / 0.72);
+  background: hsl(var(--background));
+  box-shadow: none;
+}
+
+@keyframes brack-progress-specular {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) skewX(-18deg);
+  }
+  38% {
+    opacity: 0.78;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(510%, 0, 0) skewX(-18deg);
+  }
+}
+
+@keyframes brack-progress-cap-arrive {
+  0% {
+    opacity: 0.45;
+    transform: scaleX(0.58);
+  }
+  62% {
+    opacity: 1;
+    transform: scaleX(1.16);
+  }
+  100% {
+    opacity: 0.92;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes brack-progress-node-arrive {
+  0% {
+    transform: translate(-50%, -50%) scale(0.72);
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(1.24);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+}
+
+@keyframes brack-progress-marker-land {
+  0% {
+    opacity: 0.62;
+    transform: translateY(-76%) rotate(-9deg) scale(0.84);
+  }
+  68% {
+    opacity: 1;
+    transform: translateY(-48%) rotate(3deg) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-54%) rotate(0) scale(1);
+  }
+}
+
+@keyframes brack-progress-travel {
+  0%,
+  100% {
+    transform: translate3d(-70%, 0, 0);
+  }
+  50% {
+    transform: translate3d(165%, 0, 0);
+  }
+}
+
+@keyframes brack-progress-marker-travel {
+  0%,
+  100% {
+    left: 12%;
+  }
+  50% {
+    left: 92%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brack-progress__indicator,
+  .brack-progress__marker-position {
+    transition: none;
+  }
+
+  .brack-progress__indicator--indeterminate,
+  .brack-progress__marker-position--indeterminate,
+  .brack-progress__specular,
+  .brack-progress__cap,
+  .brack-progress__segment,
+  .brack-progress__marker {
+    animation: none;
+  }
+
+  .brack-progress__indicator--indeterminate {
+    left: 31%;
+    transform: none;
+  }
+
+  .brack-progress__marker-position--indeterminate {
+    left: 50%;
+  }
+
+  .brack-progress__specular {
+    display: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .brack-progress[data-variant="default"],
+  .brack-progress--dimensional .brack-progress__track,
+  .brack-progress--dimensional::after {
+    border-color: hsl(var(--foreground) / 0.82);
+  }
+
+  .brack-progress__indicator--default,
+  .brack-progress__indicator--dimensional {
+    background: hsl(var(--primary));
+    box-shadow:
+      inset 0 0 0 1px hsl(var(--foreground) / 0.64),
+      0 0 0 1px hsl(var(--foreground) / 0.64);
+  }
+}
+
+@media (forced-colors: active) {
+  .brack-progress[data-variant="default"],
+  .brack-progress--dimensional .brack-progress__track,
+  .brack-progress--dimensional::after {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    box-shadow: none;
+  }
+
+  .brack-progress--dimensional::before {
+    display: none;
+  }
+
+  .brack-progress__indicator--default,
+  .brack-progress__indicator--dimensional {
+    background: Highlight;
+    box-shadow: none;
+  }
+
+  .brack-progress__texture,
+  .brack-progress__specular {
+    display: none;
+  }
+
+  .brack-progress__cap {
+    border-left-color: HighlightText;
+    background: HighlightText;
+    box-shadow: none;
+  }
+
+  .brack-progress__segment {
+    border-color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+    color: CanvasText;
+  }
+
+  .brack-progress__segment[data-segment-state="complete"],
+  .brack-progress__segment[data-segment-state="current"] {
+    border-color: Highlight;
+    background: Highlight;
+    box-shadow: none;
+    color: HighlightText;
+  }
+
+  .brack-progress__page {
+    border-color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+  }
+
+  .brack-progress__bookmark {
+    border-color: Highlight;
+    background: Highlight;
+  }
+
+  .brack-progress__marker-position[data-complete="true"] .brack-progress__marker::after {
+    border-color: Highlight;
+    background: transparent;
+  }
+}

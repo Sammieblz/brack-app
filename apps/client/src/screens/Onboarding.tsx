@@ -171,7 +171,6 @@ const Onboarding = () => {
   );
 
   const currentStep = ONBOARDING_STEPS[stepIndex];
-  const progress = Math.round(((stepIndex + 1) / ONBOARDING_STEPS.length) * 100);
   const entrySource = searchParams.get("from");
   const returnPath = entrySource === "settings" ? "/settings" : "/dashboard";
   const isCompletedEdit =
@@ -491,7 +490,14 @@ const Onboarding = () => {
                   </div>
                 </div>
 
-                <Progress value={progress} className="h-2" />
+                <Progress
+                  value={stepIndex + 1}
+                  max={ONBOARDING_STEPS.length}
+                  variant="dimensional"
+                  segments={ONBOARDING_STEPS.length}
+                  aria-label="Onboarding setup progress"
+                  getValueLabel={(step, total) => `Step ${step} of ${total}`}
+                />
                 <div className="mt-5 space-y-2">
                   {ONBOARDING_STEPS.map((step, index) => {
                     const MetaIcon = STEP_META[step].icon;
@@ -546,7 +552,14 @@ const Onboarding = () => {
                   </div>
                   <Badge variant="outline">{stepIndex + 1}/{ONBOARDING_STEPS.length}</Badge>
                 </div>
-                <Progress value={progress} className="h-2" />
+                <Progress
+                  value={stepIndex + 1}
+                  max={ONBOARDING_STEPS.length}
+                  variant="dimensional"
+                  segments={ONBOARDING_STEPS.length}
+                  aria-label="Onboarding setup progress"
+                  getValueLabel={(step, total) => `Step ${step} of ${total}`}
+                />
                 <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
                   {ONBOARDING_STEPS.map((step) => {
                     const MetaIcon = STEP_META[step].icon;
@@ -750,9 +763,13 @@ const PaletteStep = ({
             <p className="font-sans text-xs text-muted-foreground">Your palette follows you.</p>
           </div>
         </div>
-        <div className="h-2 rounded-full bg-muted">
-          <div className="h-full w-2/3 rounded-full bg-primary" />
-        </div>
+        <Progress
+          value={2}
+          max={3}
+          variant="dimensional"
+          segments={3}
+          aria-hidden="true"
+        />
         <div className="grid grid-cols-2 gap-2">
           <div className="rounded-md border border-border bg-background p-3">
             <p className="font-sans text-xs text-muted-foreground">Goal</p>

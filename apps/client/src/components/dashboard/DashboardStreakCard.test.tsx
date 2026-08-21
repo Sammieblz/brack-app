@@ -64,6 +64,8 @@ describe("DashboardStreakCard", () => {
 
     const artwork = screen.getByRole("img", { name: /happy brack flame/i });
     expect(artwork).toHaveAttribute("src", BRACK_STREAK_HAPPY_IMAGE);
+    expect(artwork).toHaveClass("streak-art-float");
+    expect(screen.getByTestId("streak-art-stage")).not.toHaveClass("border");
     expect(screen.getByText("Your flame is bright")).toBeVisible();
     expect(screen.getByText("Secure today")).toBeVisible();
     expect(screen.queryByRole("button", { name: /use a freeze/i })).not.toBeInTheDocument();

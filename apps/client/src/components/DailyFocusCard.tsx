@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { CheckCircle, Clock } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { CurrencyIcon } from "@/components/CurrencyIcon";
 import { cn } from "@/lib/utils";
 import {
@@ -138,16 +139,12 @@ export const DailyFocusCard = ({
               </span>
               <span className="tabular-nums text-muted-foreground">{Math.round(progress)}%</span>
             </div>
-            <div
-              className="h-2.5 overflow-hidden rounded-full bg-muted"
-              role="progressbar"
+            <Progress
+              value={Math.min(quest.progress_value, quest.target_value)}
+              max={quest.target_value}
+              variant="dimensional"
               aria-label={`${quest.title} progress`}
-              aria-valuemin={0}
-              aria-valuemax={quest.target_value}
-              aria-valuenow={Math.min(quest.progress_value, quest.target_value)}
-            >
-              <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
-            </div>
+            />
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 font-sans text-xs text-muted-foreground">
