@@ -128,7 +128,19 @@ Brack uses modern, production-ready technologies for web and mobile development.
   - `monthly-stats` - Statistics calculation
   - `social-feed` - Mutual-friend reading activity feed
   - `send-push-notification` - FCM integration
+  - `gamification-home` / `gamification-history` - Reader Journey account, quests, and Ink ledger
+  - `leaderboard` / `profile-gamification` - Privacy-aware league, friends, global, and profile progression reads
+  - `update-gamification-settings` - Local-first Journey privacy, timezone, and league opt-in settings
+  - `gamification-shop` - Gold Leaf catalog, inventory, and idempotent purchases
+  - `gamification-worker` - Supabase Queue worker for rollover, reminders, and FCM HTTP v1 delivery
   - `calculate-book-progress` - Progress analytics
+
+### Scheduled and Queued Work
+
+- **Supabase Cron / pg_cron** enqueues short Reader Journey rollover and reminder jobs.
+- **Supabase Queues / pgmq** provides durable retryable gamification jobs.
+- **pg_net** invokes the protected queue worker from hosted Cron.
+- Push delivery uses **FCM HTTP v1** with a backend-only Firebase service account.
 
 ## State Management
 

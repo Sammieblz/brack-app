@@ -1,10 +1,11 @@
 import type { Book } from "@/types";
 import type { GoogleBookResult } from "@/types/googleBooks";
+import { canonicalizeIsbn, normalizeIsbn } from "@/utils/isbn";
 
 type BookIdentityCandidate = Pick<GoogleBookResult, "title" | "author" | "isbn">;
 
 export const normalizeBookIsbn = (isbn?: string | null) => {
-  const normalized = isbn?.toLowerCase().replace(/[^0-9x]/g, "") ?? "";
+  const normalized = isbn ? canonicalizeIsbn(isbn) ?? normalizeIsbn(isbn) : "";
   return normalized || null;
 };
 

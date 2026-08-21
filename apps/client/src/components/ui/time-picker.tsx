@@ -21,7 +21,9 @@ const MINUTES = Array.from({ length: 12 }, (_, index) => index * 5);
 
 const pad = (value: number) => String(value).padStart(2, "0");
 
-const parseTimeValue = (value?: string | null) => {
+const parseTimeValue = (
+  value?: string | null,
+): { hour24: number; minute: number; period: "AM" | "PM"; hour12: number } | null => {
   if (!value) return null;
 
   const [hourPart, minutePart] = value.split(":");

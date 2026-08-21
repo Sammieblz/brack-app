@@ -183,7 +183,6 @@ export const useApexTheme = () => {
         hover: {
           filter: {
             type: "lighten",
-            value: mode === "dark" ? 0.08 : 0.04,
           },
         },
         active: {

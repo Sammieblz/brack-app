@@ -1,16 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Book,
+  CheckCircle,
   ClockRotateRight,
   JournalPage,
-  NavArrowRight,
+  List,
   Refresh,
   Settings,
   Trash,
   TriangleFlag,
   WarningTriangle,
 } from "iconoir-react";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,8 +33,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { readingCoreSync, SYNC_STATUS_EVENT } from "@/services/sync/engine";
+import {
+  readingCoreSync,
+  SYNC_STATUS_EVENT,
+  type ServerBookCopySafety,
+} from "@/services/sync/engine";
 import type { OutboxItem, SyncEntity, SyncOperation } from "@/services/sync/types";
+import { isBookIdentityConflict } from "@/services/sync/bookConflict";
+import {
+  getSyncFailurePresentation,
+  isSchemaCompatibilityFailure,
+} from "@/services/sync/failurePresentation";
 
 interface SyncReviewDialogProps {
   open: boolean;
@@ -36,8 +54,9 @@ interface SyncReviewDialogProps {
 type PayloadPreview = {
   title: string;
   subtitle?: string;
-  routeQuery?: string;
 };
+
+const SCHEMA_COMPATIBILITY_RETRY_ID = "schema-compatibility-retry";
 
 const ENTITY_LABELS: Record<SyncEntity, string> = {
   books: "Book",
@@ -46,6 +65,8 @@ const ENTITY_LABELS: Record<SyncEntity, string> = {
   journal_entries: "Journal entry",
   goals: "Goal",
   profile_preferences: "Preferences",
+  book_lists: "Book list",
+  book_list_items: "List book",
 };
 
 const OPERATION_LABELS: Record<SyncOperation, string> = {
@@ -53,6 +74,7 @@ const OPERATION_LABELS: Record<SyncOperation, string> = {
   update: "Update",
   delete: "Delete",
   restore: "Restore",
+  reorder: "Reorder",
 };
 
 const ENTITY_ICONS: Record<SyncEntity, typeof Book> = {
@@ -62,6 +84,8 @@ const ENTITY_ICONS: Record<SyncEntity, typeof Book> = {
   journal_entries: JournalPage,
   goals: TriangleFlag,
   profile_preferences: Settings,
+  book_lists: List,
+  book_list_items: List,
 };
 
 const getText = (value: unknown) => (typeof value === "string" && value.trim() ? value.trim() : "");
@@ -72,13 +96,21 @@ const previewPayload = (item: OutboxItem): PayloadPreview => {
 
   switch (item.entity) {
     case "books": {
-      const title = getText(payload.title) || "Untitled book";
+      const shelfPosition = getNumber(payload.shelf_position);
+      const title =
+        getText(payload.title) ||
+        (shelfPosition !== null
+          ? "Library order change"
+          : item.operation === "update"
+            ? "Book update"
+            : "Untitled book");
       const author = getText(payload.author);
       const isbn = getText(payload.isbn);
       return {
         title,
-        subtitle: [author, isbn ? `ISBN ${isbn}` : ""].filter(Boolean).join(" · "),
-        routeQuery: title || isbn,
+        subtitle:
+          [author, isbn ? `ISBN ${isbn}` : ""].filter(Boolean).join(" · ") ||
+          (shelfPosition !== null ? `Shelf position ${shelfPosition} waiting to sync` : undefined),
       };
     }
     case "reading_sessions": {
@@ -110,30 +142,54 @@ const previewPayload = (item: OutboxItem): PayloadPreview => {
         title: "App preferences",
         subtitle: "Theme or profile preference change waiting to sync",
       };
+    case "book_lists":
+      return {
+        title: getText(payload.name) || "Book list",
+        subtitle: getText(payload.description) || "List change waiting to sync",
+      };
+    case "book_list_items": {
+      const position = getNumber(payload.position);
+      return {
+        title: "Book in list",
+        subtitle:
+          position === null
+            ? "List membership change waiting to sync"
+            : `List position ${position + 1} waiting to sync`,
+      };
+    }
     default:
       return { title: "Reading change" };
   }
 };
 
-const isDuplicateBookFailure = (item: OutboxItem) =>
-  item.entity === "books" &&
-  item.operation === "create" &&
-  (item.last_error || "").toLowerCase().includes("already exists");
-
 const canDiscardCleanly = (item: OutboxItem) =>
   item.operation === "create" || item.operation === "restore" || item.operation === "delete";
 
 export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewDialogProps) => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [items, setItems] = useState<OutboxItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
+  const [serverCopyTarget, setServerCopyTarget] = useState<OutboxItem | null>(null);
+  const [serverCopySafety, setServerCopySafety] = useState<Record<string, ServerBookCopySafety>>({});
 
   const loadFailedItems = useCallback(async () => {
     setLoading(true);
     try {
-      setItems(await readingCoreSync.listFailedCurrentUser());
+      const nextItems = await readingCoreSync.listFailedCurrentUser();
+      const safetyEntries = await Promise.all(
+        nextItems
+          .filter(isBookIdentityConflict)
+          .map(async (item) => {
+            const safety = await readingCoreSync.getServerBookCopySafety(item).catch(() => ({
+              safe: false,
+              relatedChangeCount: 0,
+            }));
+            return [item.id, safety] as const;
+          }),
+      );
+      setServerCopySafety(Object.fromEntries(safetyEntries));
+      setItems(nextItems);
     } finally {
       setLoading(false);
     }
@@ -154,6 +210,23 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
       return acc;
     }, {});
   }, [items]);
+
+  const schemaCompatibilityItems = useMemo(
+    () => items.filter(isSchemaCompatibilityFailure),
+    [items],
+  );
+  const schemaCompatibilityErrors = useMemo(
+    () => Array.from(new Set(
+      schemaCompatibilityItems
+        .map((item) => item.last_error?.trim())
+        .filter((message): message is string => Boolean(message)),
+    )),
+    [schemaCompatibilityItems],
+  );
+  const individuallyReviewableItems = useMemo(
+    () => items.filter((item) => !isSchemaCompatibilityFailure(item)),
+    [items],
+  );
 
   const handleRetry = async (item: OutboxItem) => {
     setResolvingId(item.id);
@@ -197,15 +270,59 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
     }
   };
 
-  const handleFindExistingBook = async (item: OutboxItem, query?: string) => {
-    await handleDiscard(item);
-    onOpenChange(false);
-    navigate(`/my-books${query ? `?q=${encodeURIComponent(query)}` : ""}`);
+  const handleUseServerCopy = async () => {
+    if (!serverCopyTarget) return;
+
+    const item = serverCopyTarget;
+    setResolvingId(item.id);
+    try {
+      const { book } = await readingCoreSync.useServerBookCopy(item);
+      setServerCopyTarget(null);
+      await loadFailedItems();
+      onResolved?.();
+      toast({
+        title: "Synced library copy restored",
+        description: `${book.title} now uses the copy already saved to your library.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Library copy could not be restored",
+        description:
+          error instanceof Error
+            ? error.message
+            : "The local change is still available for review.",
+      });
+    } finally {
+      setResolvingId(null);
+    }
+  };
+
+  const handleSchemaCompatibilityRetry = async () => {
+    setResolvingId(SCHEMA_COMPATIBILITY_RETRY_ID);
+    try {
+      await readingCoreSync.syncCurrentUser({ forcePending: true });
+      await loadFailedItems();
+      onResolved?.();
+      toast({
+        title: "Library changes retried",
+        description: "Brack retried the affected library order changes together.",
+      });
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Retry could not finish",
+        description: "The changes are still safe on this device and will be retried later.",
+      });
+    } finally {
+      setResolvingId(null);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[88vh] w-[calc(100vw-1.5rem)] max-w-2xl gap-0 overflow-hidden p-0 sm:rounded-xl">
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-h-[88vh] w-[calc(100vw-1.5rem)] max-w-2xl gap-0 overflow-hidden p-0 sm:rounded-xl">
         <DialogHeader className="border-b border-border/70 px-5 py-4 text-left">
           <div className="flex items-start gap-3">
             <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-destructive/30 bg-destructive/10 text-destructive">
@@ -214,7 +331,7 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
             <div className="min-w-0">
               <DialogTitle className="font-display text-xl">Review sync changes</DialogTitle>
               <DialogDescription className="mt-1">
-                These reading changes are still saved on this device. Retry them, or discard local changes that cannot be synced.
+                These changes are still saved on this device. Brack keeps unsynced edits until you choose how to resolve them.
               </DialogDescription>
             </div>
           </div>
@@ -228,8 +345,52 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
               ))}
             </div>
           )}
+
+          {schemaCompatibilityItems.length > 0 && (
+            <div className="mt-4 rounded-lg border border-primary/25 bg-primary/5 px-3 py-2.5">
+              <p className="font-sans text-sm font-semibold text-foreground">
+                Sync service update needed
+              </p>
+              <p className="mt-1 font-sans text-xs leading-relaxed text-muted-foreground">
+                {schemaCompatibilityItems.length} reading change
+                {schemaCompatibilityItems.length === 1 ? " is" : "s are"} safe on this device.{" "}
+                Brack&apos;s server needs an update before
+                {schemaCompatibilityItems.length === 1 ? " it" : " they"} can sync.
+              </p>
+              {schemaCompatibilityErrors.length > 0 && (
+                <details className="mt-1 font-sans text-[11px] text-muted-foreground">
+                  <summary className="flex min-h-11 cursor-pointer select-none items-center font-medium text-foreground/80">
+                    Technical details
+                  </summary>
+                  <div className="space-y-1 pb-1">
+                    {schemaCompatibilityErrors.map((message) => (
+                      <p key={message} className="break-words leading-relaxed">
+                        {message}
+                      </p>
+                    ))}
+                  </div>
+                </details>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-2 min-h-11"
+                onClick={() => void handleSchemaCompatibilityRetry()}
+                disabled={Boolean(resolvingId)}
+              >
+                <Refresh
+                  className={cn(
+                    "mr-1.5 h-4 w-4",
+                    resolvingId === SCHEMA_COMPATIBILITY_RETRY_ID && "animate-spin",
+                  )}
+                />
+                Retry affected changes
+              </Button>
+            </div>
+          )}
         </DialogHeader>
 
+        {(loading || items.length === 0 || individuallyReviewableItems.length > 0) && (
         <ScrollArea className="max-h-[62vh]">
           <div className="space-y-3 p-4 sm:p-5">
             {loading ? (
@@ -244,10 +405,13 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
                 size="compact"
               />
             ) : (
-              items.map((item) => {
+              individuallyReviewableItems.map((item) => {
                 const preview = previewPayload(item);
                 const Icon = ENTITY_ICONS[item.entity];
-                const duplicateBook = isDuplicateBookFailure(item);
+                const bookIdentityConflict = isBookIdentityConflict(item);
+                const failure = getSyncFailurePresentation(item);
+                const copySafety = serverCopySafety[item.id];
+                const canUseServerCopy = bookIdentityConflict && copySafety?.safe;
 
                 return (
                   <article
@@ -274,27 +438,62 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
                           </p>
                         )}
 
-                        <div className="mt-3 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2">
-                          <p className="font-sans text-xs font-medium text-destructive">
-                            {duplicateBook
-                              ? "This book already exists in your library."
-                              : item.last_error || "This change could not sync."}
+                        <div
+                          className={cn(
+                            "mt-3 rounded-lg border px-3 py-2",
+                            bookIdentityConflict
+                              ? "border-primary/25 bg-primary/5"
+                              : "border-destructive/20 bg-destructive/5",
+                          )}
+                        >
+                          <p
+                            className={cn(
+                              "font-sans text-xs font-medium",
+                              bookIdentityConflict ? "text-foreground" : "text-destructive",
+                            )}
+                          >
+                            {bookIdentityConflict
+                              ? "A synced copy of this book already exists in your library."
+                              : failure.message}
                           </p>
                           <p className="mt-1 font-sans text-[11px] text-muted-foreground">
-                            Attempted {item.attempt_count} time{item.attempt_count === 1 ? "" : "s"}.
+                            {bookIdentityConflict
+                              ? copySafety?.safe
+                                ? "Retry to merge this device's edits into the library copy, or use the library copy to discard them."
+                                : copySafety?.relatedChangeCount
+                                  ? `${copySafety.relatedChangeCount} other unsynced reading change${
+                                      copySafety.relatedChangeCount === 1 ? "" : "s"
+                                    } still depend on this copy. Retry will keep those changes together.`
+                                  : "Brack could not verify a safe cleanup path. Retry keeps the local change intact."
+                              : failure.detail}
                           </p>
                         </div>
 
                         <div className="mt-4 flex flex-wrap gap-2">
-                          {duplicateBook ? (
-                            <Button
-                              size="sm"
-                              onClick={() => handleFindExistingBook(item, preview.routeQuery)}
-                              disabled={resolvingId === item.id}
-                            >
-                              <NavArrowRight className="mr-1.5 h-4 w-4" />
-                              Find in library
-                            </Button>
+                          {bookIdentityConflict ? (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => handleRetry(item)}
+                                disabled={resolvingId === item.id}
+                              >
+                                <Refresh
+                                  className={cn("mr-1.5 h-4 w-4", resolvingId === item.id && "animate-spin")}
+                                />
+                                Retry &amp; keep edits
+                              </Button>
+                              {canUseServerCopy && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setServerCopyTarget(item)}
+                                  disabled={resolvingId === item.id}
+                                >
+                                  <CheckCircle className="mr-1.5 h-4 w-4" />
+                                  Use library copy
+                                </Button>
+                              )}
+                            </>
                           ) : (
                             <Button
                               size="sm"
@@ -309,7 +508,7 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
                             </Button>
                           )}
 
-                          {canDiscardCleanly(item) && (
+                          {canDiscardCleanly(item) && !bookIdentityConflict && (
                             <Button
                               size="sm"
                               variant="ghost"
@@ -330,7 +529,47 @@ export const SyncReviewDialog = ({ open, onOpenChange, onResolved }: SyncReviewD
             )}
           </div>
         </ScrollArea>
-      </DialogContent>
-    </Dialog>
+        )}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={Boolean(serverCopyTarget)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen && !resolvingId) setServerCopyTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Use the synced library copy?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Brack will remove this device&apos;s conflicting copy
+              {serverCopyTarget?.operation === "update" ? " and its unsynced edits" : ""}.
+              The book already saved in your library and its reading history will stay intact.
+              This local change cannot be recovered after you confirm.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={Boolean(resolvingId)}>
+              Keep local change
+            </AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={() => void handleUseServerCopy()}
+              disabled={Boolean(resolvingId)}
+            >
+              {resolvingId ? (
+                <Refresh className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle className="mr-1.5 h-4 w-4" />
+              )}
+              Use library copy
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };

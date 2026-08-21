@@ -4,6 +4,10 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 import { createErrorResponse } from "../_shared/errorHandler.ts";
 import { enforceRateLimit } from "../_shared/rateLimit.ts";
 import { parseJsonBody, requireFields } from "../_shared/validation.ts";
+import {
+  canonicalizeIsbn,
+  extractIsbn,
+} from "../_shared/isbn.ts";
 
 interface GoogleBooksVolume {
   id: string;
@@ -34,6 +38,7 @@ interface OpenLibraryDoc {
   number_of_pages_median?: number;
   ratings_average?: number;
   ratings_count?: number;
+  series?: string[];
 }
 
 interface SearchRequest {
@@ -47,35 +52,6 @@ const limiterConfig = {
   name: "search-books",
   limit: 30,
   windowMs: 60_000,
-};
-
-const normalizeIsbn = (value: string) => value.toUpperCase().replace(/[^0-9X]/g, "");
-
-const isValidIsbn10 = (value: string) => {
-  if (!/^\d{9}[\dX]$/.test(value)) return false;
-  const total = value.split("").reduce((sum, character, index) => {
-    const digit = character === "X" ? 10 : Number(character);
-    return sum + digit * (10 - index);
-  }, 0);
-  return total % 11 === 0;
-};
-
-const isValidIsbn13 = (value: string) => {
-  if (!/^\d{13}$/.test(value)) return false;
-  const total = value
-    .slice(0, 12)
-    .split("")
-    .reduce((sum, character, index) => sum + Number(character) * (index % 2 === 0 ? 1 : 3), 0);
-  return (10 - (total % 10)) % 10 === Number(value[12]);
-};
-
-const extractIsbn = (query: string) => {
-  const candidate = normalizeIsbn(query.replace(/^isbn:/i, ""));
-  if (isValidIsbn13(candidate) || isValidIsbn10(candidate)) return candidate;
-  const embedded = query.match(/(?:97[89][\d\-\s]{10,}|[\dX][\dX\-\s]{8,})/i)?.[0];
-  if (!embedded) return null;
-  const normalized = normalizeIsbn(embedded);
-  return isValidIsbn13(normalized) || isValidIsbn10(normalized) ? normalized : null;
 };
 
 const normalizeGenre = (value?: string | null): string | null => {
@@ -160,13 +136,14 @@ const searchGoogleBooks = async (query: string, maxResults: number): Promise<Sea
     const volumeInfo = item.volumeInfo;
     const isbn13 = volumeInfo.industryIdentifiers?.find((id) => id.type === "ISBN_13")?.identifier;
     const isbn10 = volumeInfo.industryIdentifiers?.find((id) => id.type === "ISBN_10")?.identifier;
+    const isbn = canonicalizeIsbn(isbn13 || "") || canonicalizeIsbn(isbn10 || "");
     return {
       googleBooksId: item.id,
       source_provider: "google_books",
       source_id: item.id,
       title: volumeInfo.title,
       author: volumeInfo.authors?.join(", ") || null,
-      isbn: isbn13 || isbn10 || null,
+      isbn,
       genre: normalizeGenre(volumeInfo.categories?.[0] || null),
       pages: volumeInfo.pageCount || null,
       chapters: null,
@@ -200,6 +177,7 @@ const searchOpenLibrary = async (
     "number_of_pages_median",
     "ratings_average",
     "ratings_count",
+    "series",
   ].join(",");
   const apiUrl = new URL("https://openlibrary.org/search.json");
   if (isbn) apiUrl.searchParams.set("isbn", isbn);
@@ -211,16 +189,24 @@ const searchOpenLibrary = async (
   if (!response.ok) throw new Error(`Open Library API returned ${response.status}`);
   const data = await response.json();
   const docs = Array.isArray(data.docs) ? (data.docs as OpenLibraryDoc[]) : [];
+  const matchingDocs = isbn
+    ? docs.filter((doc) =>
+        doc.isbn?.some((candidate) => canonicalizeIsbn(candidate) === isbn),
+      )
+    : docs;
 
-  return docs.filter((doc) => doc.title).map((doc) => {
+  return matchingDocs.filter((doc) => doc.title).map((doc) => {
     const sourceId = doc.key || doc.isbn?.[0] || crypto.randomUUID();
+    const canonicalDocIsbn = doc.isbn
+      ?.map((candidate) => canonicalizeIsbn(candidate))
+      .find((candidate): candidate is string => Boolean(candidate));
     return {
       googleBooksId: sourceId,
       source_provider: "open_library",
       source_id: sourceId,
       title: doc.title,
       author: doc.author_name?.join(", ") || null,
-      isbn: isbn || doc.isbn?.find((value) => isValidIsbn13(normalizeIsbn(value))) || doc.isbn?.[0] || null,
+      isbn: isbn || canonicalDocIsbn || null,
       genre: normalizeGenre(doc.subject?.[0] || null),
       pages: doc.number_of_pages_median || null,
       chapters: null,
@@ -230,12 +216,15 @@ const searchOpenLibrary = async (
       published_date: doc.first_publish_year ? String(doc.first_publish_year) : null,
       average_rating: doc.ratings_average || null,
       ratings_count: doc.ratings_count || null,
+      series_name: doc.series?.[0] || null,
+      series_position: null,
+      series_total: null,
     };
   });
 };
 
 const createCacheKey = async (query: string, maxResults: number) => {
-  const bytes = new TextEncoder().encode(`${query.toLowerCase()}:${maxResults}`);
+  const bytes = new TextEncoder().encode(`v3:${query.toLowerCase()}:${maxResults}`);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 };
@@ -258,7 +247,10 @@ serve(async (req) => {
 
     const parsed = await parseJsonBody<SearchRequest>(req);
     if (parsed.error) return parsed.error;
-    const requiredError = requireFields(parsed.data, ["query"]);
+    const requiredError = requireFields(
+      parsed.data as unknown as Record<string, unknown>,
+      ["query"],
+    );
     if (requiredError) return requiredError;
 
     const trimmedQuery = parsed.data.query?.trim() ?? "";
@@ -300,6 +292,12 @@ serve(async (req) => {
 
     try {
       books = await searchGoogleBooks(providerQuery, maxResults);
+      if (isbn) {
+        books = books.filter(
+          (book) =>
+            typeof book.isbn === "string" && canonicalizeIsbn(book.isbn) === isbn,
+        );
+      }
     } catch (error) {
       providerError = error instanceof Error ? error.message : "Google Books failed";
     }

@@ -1,158 +1,214 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { formatDistanceToNow } from "date-fns";
+import { Link, useNavigate } from "react-router-dom";
+import { Clock, Medal1st, NavArrowRight } from "iconoir-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { NavArrowRight } from "iconoir-react";
 import { ProgressLogger } from "@/components/ProgressLogger";
-import { useAuth } from "@/hooks/useAuth";
-import { useBooks } from "@/hooks/useBooks";
-import { useBadges } from "@/hooks/useBadges";
-import { useStreaks } from "@/hooks/useStreaks";
-import { BadgeDisplay } from "@/components/BadgeDisplay";
-import { useRecentActivity } from "@/hooks/useRecentActivity";
-import { useChartData } from "@/hooks/useChartData";
-import { ReadingHeatmap } from "@/components/charts/ReadingHeatmap";
-import { toast } from "sonner";
-import LoadingSpinner from "@/components/LoadingSpinner";
-import type { Book as BookType, Goal, OnboardingStatus } from "@/types";
-import { DashboardCardSkeleton } from "@/components/skeletons/DashboardCardSkeleton";
-import { ActivityItemSkeleton } from "@/components/skeletons/ActivityItemSkeleton";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
-import { FloatingActionButton } from "@/components/FloatingActionButton";
-import { GoalsSheet } from "@/components/GoalsSheet";
-import { AppIcon } from "@/components/ui/app-icon";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { SwipeableBookListsCarousel } from "@/components/SwipeableBookListsCarousel";
 import { NativeHeader } from "@/components/NativeHeader";
 import { NativeScrollView } from "@/components/NativeScrollView";
-import { useProfileContext } from "@/contexts/ProfileContext";
-import { ReadingStatsWidget } from "@/components/ReadingStatsWidget";
-import {
-  BRACK_GOALS_IMAGE,
-  BRACK_STREAK_HAPPY_IMAGE,
-  BRACK_STREAK_SAD_IMAGE,
-  BRACK_TROPHY_IMAGE,
-} from "@/config/brackAssets";
-import { APP_ICONS } from "@/config/iconography";
-import {
-  type DashboardBookCandidate,
-  useDashboardHomeData,
-} from "@/hooks/useDashboardHomeData";
-import type { DayActivity, StreakData } from "@/utils/streakCalculation";
+import { GoalsSheet } from "@/components/GoalsSheet";
+import { AppIcon } from "@/components/ui/app-icon";
+import { ReaderHud } from "@/components/ReaderHud";
+import { DailyFocusCard } from "@/components/DailyFocusCard";
+import { DashboardStreakCard } from "@/components/dashboard/DashboardStreakCard";
+import { StreakCelebrationOverlay } from "@/components/StreakCelebrationOverlay";
+import { CurrencyIcon } from "@/components/CurrencyIcon";
+import { DashboardCardSkeleton } from "@/components/skeletons/DashboardCardSkeleton";
+import { ActivityItemSkeleton } from "@/components/skeletons/ActivityItemSkeleton";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useDashboardHomeData, type DashboardBookCandidate } from "@/hooks/useDashboardHomeData";
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { useConfirmedRewardFeedback } from "@/hooks/useConfirmedRewardFeedback";
+import { useStreakCelebration } from "@/hooks/useStreakCelebration";
+import { useProfileContext } from "@/contexts/ProfileContext";
+import { useTimer } from "@/contexts/TimerContext";
+import type { Book as BookType, OnboardingStatus } from "@/types";
+import type {
+  DashboardJourneyFreshness,
+  DashboardMilestone,
+  DashboardRecentActivity,
+} from "@/services/api/dashboard";
+import type { QuestAssignment } from "@/services/api/gamification";
+import { applyReadingStreakFreeze } from "@/services/api";
 import { needsSetupPrompt } from "@/services/onboarding";
-import { fetchLatestGoal } from "@/services/api";
+import { trackCoreEvent } from "@/services/telemetry";
+import {
+  getDateKeyInTimeZone,
+  getGoalProgressDetails,
+  getRecentActivityInsight,
+  selectDailyFocusQuest,
+  type DailyFocusAction,
+} from "@/lib/dashboardGamification";
+import { getDashboardStreakPresentation } from "@/lib/dashboardStreak";
+import { APP_ICONS } from "@/config/iconography";
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const isMobile = useIsMobile();
-  const { books, loading: booksLoading, refetchBooks } = useBooks(user?.id);
-  const { badges, earnedBadges, loading: badgesLoading, checkAndAwardBadges } = useBadges(user?.id);
-  const { streakData, activityCalendar, refetchStreaks, useStreakFreeze } = useStreaks(user?.id);
-  const {
-    activities,
-    loading: activitiesLoading,
-    formatTimeAgo,
-    refetchActivity,
-  } = useRecentActivity(user?.id);
-  const { heatmapData, loading: chartLoading } = useChartData(user?.id);
-  const {
-    primaryBook,
-    secondaryBooks,
-    loading: dashboardHomeLoading,
-    error: dashboardHomeError,
-    refetch: refetchDashboardHome,
-  } = useDashboardHomeData(user?.id);
+  const navigate = useNavigate();
   const { profile } = useProfileContext();
   const { status: onboardingStatus } = useOnboardingStatus(user?.id);
-  const [goal, setGoal] = useState<Goal | null>(null);
+  const { gamificationEnabled } = useFeatureFlags();
+  const { startTimer } = useTimer();
+  const {
+    dashboardHome,
+    journey,
+    primaryBook,
+    secondaryBooks,
+    loading,
+    error,
+    journeyError,
+    source,
+    cachedAt,
+    journeyFreshness,
+    hasCurrentSessionLiveResponse,
+    canMutateEconomy,
+    provisional,
+    refetch,
+  } = useDashboardHomeData(user?.id, gamificationEnabled);
   const [progressBook, setProgressBook] = useState<BookType | null>(null);
-  const navigate = useNavigate();
+  const [usingFreeze, setUsingFreeze] = useState(false);
+  const [streakClock, setStreakClock] = useState(Date.now);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/auth");
+    const timer = window.setInterval(() => setStreakClock(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!authLoading && !user) navigate("/auth");
+  }, [authLoading, navigate, user]);
+
+  const dailyFocus = useMemo(
+    () => selectDailyFocusQuest(journey?.quests),
+    [journey?.quests],
+  );
+  const goalProgress = useMemo(
+    () => getGoalProgressDetails(dashboardHome?.activeGoal, dashboardHome?.stats),
+    [dashboardHome?.activeGoal, dashboardHome?.stats],
+  );
+  const recentActivityInsight = useMemo(
+    () => getRecentActivityInsight(dashboardHome?.recentActivity),
+    [dashboardHome?.recentActivity],
+  );
+  const timezone = journey?.timezone || profile?.timezone || "UTC";
+  const journeyPeriodIsCurrent = journeyFreshness !== "expired";
+  const streakPresentation = useMemo(
+    () => dashboardHome
+      ? getDashboardStreakPresentation(dashboardHome.streak, {
+          timezone,
+          serverTime: journey?.server_time,
+          receivedAt: cachedAt,
+          nowMs: streakClock,
+        })
+      : null,
+    [cachedAt, dashboardHome, journey?.server_time, streakClock, timezone],
+  );
+  const streakCelebration = useStreakCelebration({
+    userId: user?.id,
+    ready: Boolean(dashboardHome) && source === "live" && !provisional,
+    completedToday: Boolean(streakPresentation?.readToday),
+    currentStreak: streakPresentation?.currentStreak ?? 0,
+    completionKey: dashboardHome?.streak.lastReadingDate,
+  });
+
+  useConfirmedRewardFeedback({
+    userId: user?.id,
+    rewards: journey?.recent_rewards,
+    fallbackReward: journey?.latest_milestone?.kind === "reward"
+      ? {
+          id: journey.latest_milestone.id,
+          ink_delta: journey.latest_milestone.ink_delta,
+          gold_leaves_delta: journey.latest_milestone.gold_leaves_delta,
+        }
+      : null,
+    source,
+    provisional,
+    freshness: journeyFreshness,
+    hasCurrentSessionLiveResponse,
+    blocked: streakCelebration.isOpen,
+  });
+
+  const telemetryFreshness = toTelemetryFreshness(journeyFreshness, provisional);
+  const handleFocusAction = (action: DailyFocusAction, quest: QuestAssignment) => {
+    const telemetryMetric = toTelemetryQuestMetric(quest.metric);
+    if (telemetryMetric) {
+      trackCoreEvent("daily_focus_started", {
+        source: "dashboard_daily_focus",
+        quest_metric: telemetryMetric,
+        ...(telemetryFreshness ? { freshness: telemetryFreshness } : {}),
+      });
+    }
+
+    if (action === "timer" && primaryBook) {
+      startTimer(primaryBook.book.id, primaryBook.book.title);
+      toast.success("Reading timer started", { description: primaryBook.book.title });
       return;
     }
-    if (user) {
-      loadGoalData();
+    if (action === "progress" && primaryBook) {
+      setProgressBook(primaryBook.book);
+      return;
     }
-  }, [user, authLoading, navigate]);
+    navigate("/my-books");
+  };
 
-  useEffect(() => {
-    if (user && books.length > 0) {
-      checkBadges();
+  const handleUseFreeze = async () => {
+    if (!user || !journey?.streak_freeze || journey.streak_freeze.quantity <= 0) {
+      navigate("/achievements?tab=shop");
+      return;
     }
-  }, [books, user]);
+    if (!canMutateEconomy || journeyFreshness !== "live") {
+      toast.error("Reconnect before using a Streak Freeze.");
+      return;
+    }
 
-  const checkBadges = async () => {
-    if (!user) return;
-
+    setUsingFreeze(true);
     try {
-      await checkAndAwardBadges();
-    } catch (error) {
-      console.error("Error checking badges:", error);
+      await applyReadingStreakFreeze(
+        user.id,
+        getDateKeyInTimeZone(new Date(), timezone),
+      );
+      toast.success("Streak protected", {
+        description: "One Streak Freeze protected your current local reading day.",
+      });
+      await refetch({ forceRefresh: true });
+    } catch (freezeError) {
+      console.error("Failed to use Streak Freeze", freezeError);
+      toast.error("Your current reading day is not eligible for a Streak Freeze, or your inventory changed. Refresh and try again.");
+    } finally {
+      setUsingFreeze(false);
     }
   };
 
-  const loadGoalData = async () => {
-    if (!user) return;
-
-    try {
-      setGoal(await fetchLatestGoal(user.id));
-    } catch (error: unknown) {
-      console.error("Error loading goal:", error);
-      toast.error("Failed to load goal data");
+  const handleStreakRead = () => {
+    if (!primaryBook) {
+      navigate("/my-books");
+      return;
     }
+
+    startTimer(primaryBook.book.id, primaryBook.book.title);
+    toast.success("Reading timer started", { description: primaryBook.book.title });
   };
 
-  const handleBookClick = (bookId: string) => {
-    navigate(`/book/${bookId}`);
+  const handleRefresh = async () => {
+    await refetch({ forceRefresh: true });
   };
 
   const handleProgressSuccess = async () => {
     setProgressBook(null);
-    await Promise.all([
-      refetchBooks(),
-      refetchDashboardHome(),
-      refetchStreaks(),
-      refetchActivity(),
-      loadGoalData(),
-    ]);
+    await refetch({ forceRefresh: true });
   };
-
-  const handleRefresh = async () => {
-    await Promise.all([
-      refetchBooks(),
-      refetchDashboardHome(),
-      refetchStreaks(),
-      refetchActivity(),
-      loadGoalData(),
-    ]);
-  };
-
-  const completedBooksCount = useMemo(
-    () => books.filter((book) => book.status === "completed").length,
-    [books]
-  );
-
-  const goalTarget = goal?.target_books || 0;
-  const progressPercentage = useMemo(
-    () => goalTarget > 0
-      ? Math.min(100, Math.round((completedBooksCount / goalTarget) * 100))
-      : 0,
-    [completedBooksCount, goalTarget]
-  );
-
-  const todayActivity = useMemo(() => {
-    const today = new Date().toISOString().split("T")[0];
-    return activityCalendar.find((activity) => activity.date === today) || null;
-  }, [activityCalendar]);
 
   if (authLoading) {
     return (
@@ -164,33 +220,39 @@ const Dashboard = () => {
     );
   }
 
+  const readerHud = gamificationEnabled ? (
+    <ReaderHud
+      account={journey?.account}
+      currentStreak={streakPresentation?.currentStreak}
+      freeze={journey?.streak_freeze}
+      freshness={journeyFreshness}
+      cachedAt={cachedAt}
+      provisional={provisional}
+      loading={loading}
+      error={journeyError || error}
+      onRetry={() => void refetch({ forceRefresh: true })}
+    />
+  ) : undefined;
+
+  const hasAnyBooks = (dashboardHome?.stats.totalBooks ?? 0) > 0;
+
   return (
     <MobileLayout>
       <PullToRefresh onRefresh={handleRefresh}>
         {isMobile ? (
-          <MobileHeader title="Home" action={<GoalsSheet />} />
+          <MobileHeader title="Home" action={<GoalsSheet />} secondary={readerHud} />
         ) : (
           <NativeHeader
-            title="Welcome back!"
-            subtitle="Pick up where you left off"
+            title={profile?.display_name ? `Welcome back, ${profile.display_name}` : "Welcome back"}
+            subtitle="Your next page, quest, and reward are ready"
             action={<GoalsSheet />}
+            secondary={readerHud}
             scrollContainerId="dashboard-scroll"
-            showUtilityActions
+            showTimerAction={false}
           />
         )}
 
-        <NativeScrollView id="dashboard-scroll" className="app-page space-y-5 md:space-y-7">
-          {isMobile && (
-            <div>
-              <h2 className="font-display text-xl font-bold">
-                Welcome back{profile?.display_name ? `, ${profile.display_name}` : ""}!
-              </h2>
-              <p className="font-sans text-sm text-muted-foreground">
-                Continue your current read first.
-              </p>
-            </div>
-          )}
-
+        <NativeScrollView id="dashboard-scroll" className="app-page space-y-5 md:space-y-6">
           {needsSetupPrompt(onboardingStatus?.onboarding_status) && (
             <SetupPromptCard
               status={onboardingStatus?.onboarding_status}
@@ -199,71 +261,83 @@ const Dashboard = () => {
           )}
 
           <ContinueReadingSection
-            loading={dashboardHomeLoading || booksLoading}
-            error={dashboardHomeError}
+            loading={loading}
+            error={error}
             primaryBook={primaryBook}
             secondaryBooks={secondaryBooks}
-            hasAnyBooks={books.length > 0}
-            formatTimeAgo={formatTimeAgo}
+            hasAnyBooks={hasAnyBooks}
             onAddBook={() => navigate("/add-book")}
-            onBookClick={handleBookClick}
+            onScanBook={() => navigate("/scan-barcode")}
             onLogProgress={(book) => setProgressBook(book)}
             onViewLibrary={() => navigate("/my-books")}
           />
 
-          <TodaySection
-            goal={goal}
-            completedBooksCount={completedBooksCount}
-            goalProgress={progressPercentage}
-            goalTarget={goalTarget}
-            streakData={streakData}
-            todayActivity={todayActivity}
-            onManageGoals={() => navigate("/goals-management")}
-            onUseFreeze={useStreakFreeze}
-          />
-
-          <section className="space-y-3">
-            <SectionHeader
-              title="Insights"
-              subtitle="Stats and trends for deeper review"
+          {gamificationEnabled && journey && journeyPeriodIsCurrent && (
+            <DailyFocusCard
+              quest={dailyFocus}
+              serverTime={journey.server_time}
+              timezone={journey.timezone}
+              receivedAt={cachedAt}
+              freshness={journeyFreshness}
+              provisional={provisional}
+              hasCurrentBook={Boolean(primaryBook)}
+              onAction={handleFocusAction}
             />
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)]">
-              {user && (
-                <ReadingStatsWidget
-                  userId={user.id}
-                  books={books}
-                  currentStreak={streakData.currentStreak}
-                  displayName={profile?.display_name}
-                />
-              )}
+          )}
 
-              <div className="space-y-4">
-                {!chartLoading && heatmapData.length > 0 && (
-                  <ReadingHeatmap
-                    data={heatmapData}
-                    title="Reading Heatmap"
-                    subtitle="Your recent reading activity"
-                    weeks={10}
-                    compact
-                  />
-                )}
+          {gamificationEnabled && journey && !journeyPeriodIsCurrent && (
+            <ExpiredJourneyCard onRetry={() => void refetch({ forceRefresh: true })} />
+          )}
 
-                <AchievementsPreview
-                  loading={badgesLoading}
-                  badges={badges}
-                  earnedBadges={earnedBadges}
-                  onViewAll={() => navigate("/achievements")}
-                />
-              </div>
+          {gamificationEnabled && !journey && !loading && (
+            <JourneyUnavailableCard
+              message={journeyError}
+              onRetry={() => void refetch({ forceRefresh: true })}
+            />
+          )}
+
+          {dashboardHome && (
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 28rem), 1fr))" }}
+            >
+              <DashboardStreakCard
+                streak={dashboardHome.streak}
+                timezone={timezone}
+                serverTime={journey?.server_time}
+                receivedAt={cachedAt}
+                nowMs={streakClock}
+                source={source}
+                provisional={provisional}
+                hasCurrentBook={Boolean(primaryBook)}
+                showJourney={gamificationEnabled}
+                league={journeyPeriodIsCurrent ? journey?.league ?? null : null}
+                leagueCutoff={journeyPeriodIsCurrent ? journey?.week.scoring_closes_at ?? null : null}
+                freeze={journey?.streak_freeze ?? null}
+                canMutateFreeze={canMutateEconomy}
+                usingFreeze={usingFreeze}
+                onRead={handleStreakRead}
+                onUseFreeze={() => void handleUseFreeze()}
+                onOpenShop={() => navigate("/achievements?tab=shop")}
+              />
+              <GoalAndInsightCard
+                goalProgress={goalProgress}
+                recentActivityCount={recentActivityInsight.activityCount}
+                recentSessionMinutes={recentActivityInsight.sessionMinutes}
+                milestone={journey?.latest_milestone ?? null}
+                onManageGoals={() => navigate("/goals-management")}
+              />
             </div>
-          </section>
+          )}
 
-          <section className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-            <SwipeableBookListsCarousel />
+          <section
+            className="grid gap-4"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 28rem), 1fr))" }}
+          >
+            <ListsShortcutCard />
             <RecentActivityCard
-              activities={activities}
-              loading={activitiesLoading}
-              formatTimeAgo={formatTimeAgo}
+              activities={dashboardHome?.recentActivity ?? []}
+              loading={loading}
               onViewHistory={() => navigate("/history")}
             />
           </section>
@@ -275,7 +349,7 @@ const Dashboard = () => {
           bookId={progressBook.id}
           bookTitle={progressBook.title}
           currentPage={progressBook.current_page || 0}
-          open={Boolean(progressBook)}
+          open
           onOpenChange={(open) => {
             if (!open) setProgressBook(null);
           }}
@@ -283,7 +357,11 @@ const Dashboard = () => {
         />
       )}
 
-      {isMobile && <FloatingActionButton />}
+      <StreakCelebrationOverlay
+        open={streakCelebration.isOpen}
+        streak={streakCelebration.streak}
+        onDismiss={streakCelebration.dismiss}
+      />
     </MobileLayout>
   );
 };
@@ -295,33 +373,21 @@ interface SetupPromptCardProps {
 
 const SetupPromptCard = ({ status, onResume }: SetupPromptCardProps) => {
   const isSkipped = status === "skipped";
-
   return (
-    <Card className="overflow-hidden border-primary/35 bg-primary/8">
-      <CardContent className="p-4">
-        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_6rem] sm:items-center">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <h2 className="font-display text-lg font-semibold">
-                {isSkipped ? "Finish your reading profile" : "Complete your setup"}
-              </h2>
-            </div>
-            <p className="font-sans text-sm text-muted-foreground">
-              Add taste, pace, and goal details so Brack can personalize your dashboard and discovery signals.
-            </p>
-            <Button size="sm" onClick={onResume}>
-              {isSkipped ? "Finish setup" : "Resume setup"}
-              <NavArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-          <img
-            src={BRACK_TROPHY_IMAGE}
-            alt=""
-            aria-hidden="true"
-            className="hidden h-24 w-24 rounded-md border border-border/70 object-cover sm:block"
-            draggable={false}
-          />
+    <Card className="overflow-hidden border-primary/35 bg-primary/[0.08]">
+      <CardContent className="flex items-center justify-between gap-4 p-4">
+        <div className="min-w-0">
+          <h2 className="font-display text-lg font-semibold">
+            {isSkipped ? "Finish your reading profile" : "Complete your setup"}
+          </h2>
+          <p className="mt-1 font-sans text-sm text-muted-foreground">
+            Add your taste, pace, and goals so Brack can personalize this daily reading loop.
+          </p>
         </div>
+        <Button size="sm" onClick={onResume} className="shrink-0">
+          {isSkipped ? "Finish" : "Resume"}
+          <NavArrowRight className="h-4 w-4" />
+        </Button>
       </CardContent>
     </Card>
   );
@@ -333,9 +399,8 @@ interface ContinueReadingSectionProps {
   primaryBook: DashboardBookCandidate | null;
   secondaryBooks: DashboardBookCandidate[];
   hasAnyBooks: boolean;
-  formatTimeAgo: (timestamp: string) => string;
   onAddBook: () => void;
-  onBookClick: (bookId: string) => void;
+  onScanBook: () => void;
   onLogProgress: (book: BookType) => void;
   onViewLibrary: () => void;
 }
@@ -346,168 +411,116 @@ const ContinueReadingSection = ({
   primaryBook,
   secondaryBooks,
   hasAnyBooks,
-  formatTimeAgo,
   onAddBook,
-  onBookClick,
+  onScanBook,
   onLogProgress,
   onViewLibrary,
-}: ContinueReadingSectionProps) => {
-  return (
-    <section className="space-y-3">
-      <SectionHeader
-        title={primaryBook?.book.status === "to_read" ? "Pick Up a Book" : "Continue Reading"}
-        subtitle="Your most recent reading activity appears first"
+}: ContinueReadingSectionProps) => (
+  <section className="space-y-3" aria-labelledby="continue-reading-heading">
+    <SectionHeader
+      id="continue-reading-heading"
+      title={primaryBook?.book.status === "to_read" ? "Pick up a book" : "Continue reading"}
+      subtitle="Your most useful next action, based on recent activity"
+      action={hasAnyBooks ? (
+        <Button variant="outline" size="sm" onClick={onViewLibrary}>
+          Library <NavArrowRight className="h-4 w-4" />
+        </Button>
+      ) : undefined}
+    />
+
+    {loading ? (
+      <DashboardCardSkeleton />
+    ) : primaryBook ? (
+      <div className="space-y-3">
+        <PrimaryContinueCard candidate={primaryBook} onLogProgress={onLogProgress} />
+        {secondaryBooks.length > 0 && (
+          <div
+            className="grid gap-3"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 18rem), 1fr))" }}
+            aria-label="More current books"
+          >
+            {secondaryBooks.map((candidate) => (
+              <SecondaryContinueCard key={candidate.book.id} candidate={candidate} />
+            ))}
+          </div>
+        )}
+      </div>
+    ) : (
+      <PremiumEmptyState
+        asset="emptyLibrary"
+        title={hasAnyBooks ? "Choose your next read" : "Add your first book"}
+        description={
+          <>
+            {hasAnyBooks
+              ? "Nothing is currently in progress. Choose a book from your library."
+              : "Start your library so Brack can build a useful daily reading loop."}
+            {error && <span className="mt-2 block text-xs text-destructive">{error}</span>}
+          </>
+        }
+        size="compact"
         action={
-          hasAnyBooks ? (
-            <Button variant="outline" size="sm" onClick={onViewLibrary}>
-              Library
-              <NavArrowRight className="ml-1 h-4 w-4" />
+          <>
+            <Button onClick={hasAnyBooks ? onViewLibrary : onAddBook}>
+              {hasAnyBooks ? "Open library" : "Add book"}
             </Button>
-          ) : undefined
+            {!hasAnyBooks && (
+              <Button variant="outline" onClick={onScanBook}>
+                Scan a book
+              </Button>
+            )}
+          </>
         }
       />
-
-      {loading ? (
-        <DashboardCardSkeleton />
-      ) : primaryBook ? (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
-          <PrimaryContinueCard
-            candidate={primaryBook}
-            formatTimeAgo={formatTimeAgo}
-            onBookClick={onBookClick}
-            onLogProgress={onLogProgress}
-          />
-
-          {secondaryBooks.length > 0 && (
-            <>
-              <div className="hidden gap-3 md:grid md:grid-cols-2 lg:grid-cols-1">
-                {secondaryBooks.map((candidate) => (
-                  <SecondaryContinueCard
-                    key={candidate.book.id}
-                    candidate={candidate}
-                    formatTimeAgo={formatTimeAgo}
-                    onBookClick={onBookClick}
-                  />
-                ))}
-              </div>
-
-              <div className="flex gap-3 overflow-x-auto pb-1 md:hidden">
-                {secondaryBooks.map((candidate) => (
-                  <div key={candidate.book.id} className="w-[82vw] max-w-sm shrink-0">
-                    <SecondaryContinueCard
-                      candidate={candidate}
-                      formatTimeAgo={formatTimeAgo}
-                      onBookClick={onBookClick}
-                    />
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      ) : (
-        <PremiumEmptyState
-          asset={hasAnyBooks ? "emptyLibrary" : "emptyLibrary"}
-          title={hasAnyBooks ? "Choose your next read" : "Add your first book"}
-          description={
-            <>
-              {hasAnyBooks
-                ? "Nothing is currently in progress. Pick a book from your library or add something new."
-                : "Start your library so Brack can build a useful home dashboard around your reading."}
-              {error && (
-                <span className="mt-2 block text-xs text-destructive">
-                  Dashboard activity could not load: {error}
-                </span>
-              )}
-            </>
-          }
-          size="compact"
-          action={
-            <>
-              <Button onClick={hasAnyBooks ? onViewLibrary : onAddBook}>
-                {hasAnyBooks ? "Open Library" : "Add Book"}
-              </Button>
-              {hasAnyBooks && (
-                <Button variant="outline" onClick={onAddBook}>
-                  <AppIcon icon={APP_ICONS.common.add} variant="action" className="mr-2" />
-                  Add Book
-                </Button>
-              )}
-            </>
-          }
-        />
-      )}
-    </section>
-  );
-};
-
-interface ContinueCardProps {
-  candidate: DashboardBookCandidate;
-  formatTimeAgo: (timestamp: string) => string;
-  onBookClick: (bookId: string) => void;
-  onLogProgress?: (book: BookType) => void;
-}
+    )}
+  </section>
+);
 
 const PrimaryContinueCard = ({
   candidate,
-  formatTimeAgo,
-  onBookClick,
   onLogProgress,
-}: ContinueCardProps) => {
+}: {
+  candidate: DashboardBookCandidate;
+  onLogProgress: (book: BookType) => void;
+}) => {
   const { book } = candidate;
-
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden border-border/70 shadow-sm">
       <CardContent className="p-4 md:p-5">
-        <div className="grid gap-4 sm:grid-cols-[6rem_minmax(0,1fr)] lg:grid-cols-[8rem_minmax(0,1fr)]">
-          <BookCover book={book} className="h-36 w-24 sm:h-40 sm:w-28 lg:h-48 lg:w-32" />
-
-          <div className="min-w-0 space-y-4">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary" className="capitalize">
-                  {book.status.replace("_", " ")}
-                </Badge>
+        <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-4 sm:grid-cols-[7rem_minmax(0,1fr)]">
+          <Link to={`/book/${book.id}`} aria-label={`Open ${book.title}`} className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <BookCover book={book} className="h-32 w-[5.5rem] sm:h-40 sm:w-28" />
+          </Link>
+          <div className="min-w-0 space-y-3">
+            <div>
+              <div className="mb-1 flex flex-wrap items-center gap-2">
+                <Badge variant="secondary" className="capitalize">{book.status.replace("_", " ")}</Badge>
                 <span className="font-sans text-xs text-muted-foreground">
                   {getActivityTypeLabel(candidate.lastActivityType)} {formatTimeAgo(candidate.lastActivityAt)}
                 </span>
               </div>
-
-              <div>
-                <h3 className="font-display text-2xl font-bold leading-tight md:text-3xl">
-                  {book.title}
-                </h3>
-                {book.author && (
-                  <p className="font-serif text-sm text-muted-foreground md:text-base">
-                    by {book.author}
-                  </p>
-                )}
-              </div>
+              <Link to={`/book/${book.id}`} className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <h3 className="line-clamp-2 font-display text-xl font-bold leading-tight sm:text-2xl">{book.title}</h3>
+              </Link>
+              {book.author && <p className="truncate font-serif text-sm text-muted-foreground">by {book.author}</p>}
             </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between font-sans text-sm">
-                <span className="text-muted-foreground">
-                  {book.pages ? `${book.current_page || 0} / ${book.pages} pages` : "Progress"}
+            <div>
+              <div className="mb-1 flex justify-between gap-3 font-sans text-xs">
+                <span className="truncate text-muted-foreground">
+                  {book.pages ? `${book.current_page || 0} of ${book.pages} pages` : "Reading progress"}
                 </span>
-                <span className="font-medium">{candidate.progressPercent}%</span>
+                <span className="font-semibold tabular-nums">{candidate.progressPercent}%</span>
               </div>
-              <Progress value={candidate.progressPercent} className="h-2" />
+              <Progress
+                value={candidate.progressPercent}
+                className="h-2"
+                aria-label={`${book.title} reading progress`}
+              />
             </div>
-
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => onBookClick(book.id)}>
-                {candidate.ctaLabel}
-                <NavArrowRight className="ml-2 h-4 w-4" />
+              <Button asChild>
+                <Link to={`/book/${book.id}`}>{candidate.ctaLabel}<NavArrowRight className="h-4 w-4" /></Link>
               </Button>
-              {onLogProgress && (
-                <Button variant="outline" onClick={() => onLogProgress(book)}>
-                  Log Progress
-                </Button>
-              )}
-              <Button variant="ghost" onClick={() => onBookClick(book.id)}>
-                View Details
-              </Button>
+              <Button variant="outline" onClick={() => onLogProgress(book)}>Log progress</Button>
             </div>
           </div>
         </div>
@@ -516,338 +529,165 @@ const PrimaryContinueCard = ({
   );
 };
 
-const SecondaryContinueCard = ({
-  candidate,
-  formatTimeAgo,
-  onBookClick,
-}: ContinueCardProps) => {
+const SecondaryContinueCard = ({ candidate }: { candidate: DashboardBookCandidate }) => {
   const { book } = candidate;
-
   return (
-    <Card
-      className="cursor-pointer transition-colors hover:bg-muted/30"
-      onClick={() => onBookClick(book.id)}
+    <Link
+      to={`/book/${book.id}`}
+      className="flex min-h-28 gap-3 rounded-xl border border-border/70 bg-card p-3 transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <CardContent className="p-3">
-        <div className="flex gap-3">
-          <BookCover book={book} className="h-20 w-14" />
-          <div className="min-w-0 flex-1 space-y-2">
-            <div>
-              <h4 className="font-serif text-sm font-semibold leading-snug line-clamp-2">
-                {book.title}
-              </h4>
-              {book.author && (
-                <p className="font-serif text-xs text-muted-foreground truncate">
-                  by {book.author}
-                </p>
-              )}
-            </div>
-            <Progress value={candidate.progressPercent} className="h-1.5" />
+      <BookCover book={book} className="h-20 w-14" />
+      <span className="min-w-0 flex-1 space-y-2">
+        <span>
+          <span className="block line-clamp-2 font-serif text-sm font-semibold leading-snug">{book.title}</span>
+          {book.author && <span className="block truncate font-serif text-xs text-muted-foreground">by {book.author}</span>}
+        </span>
+        <Progress value={candidate.progressPercent} className="h-1.5" aria-label={`${book.title} reading progress`} />
+        <span className="block font-sans text-xs text-muted-foreground">
+          {getActivityTypeLabel(candidate.lastActivityType)} {formatTimeAgo(candidate.lastActivityAt)}
+        </span>
+      </span>
+    </Link>
+  );
+};
+
+const JourneyUnavailableCard = ({ message, onRetry }: { message: string | null; onRetry: () => void }) => (
+  <Card className="border-dashed border-border/80">
+    <CardContent className="flex items-center justify-between gap-4 p-4">
+      <div>
+        <h2 className="font-display text-lg font-semibold">Daily Focus is taking a pause</h2>
+        <p className="font-sans text-sm text-muted-foreground">
+          {message || "Your books and reading progress are still available."}
+        </p>
+      </div>
+      <Button variant="outline" size="sm" onClick={onRetry}>Retry</Button>
+    </CardContent>
+  </Card>
+);
+
+const ExpiredJourneyCard = ({ onRetry }: { onRetry: () => void }) => (
+  <Card className="border-dashed border-border/80">
+    <CardContent className="flex items-center justify-between gap-4 p-4">
+      <div>
+        <h2 className="font-display text-lg font-semibold">Reconnect for today&apos;s Daily Focus</h2>
+        <p className="font-sans text-sm text-muted-foreground">
+          Your level and wallet are saved, but the cached quest and league period has ended.
+        </p>
+      </div>
+      <Button variant="outline" size="sm" onClick={onRetry}>Refresh</Button>
+    </CardContent>
+  </Card>
+);
+
+const GoalAndInsightCard = ({
+  goalProgress,
+  recentActivityCount,
+  recentSessionMinutes,
+  milestone,
+  onManageGoals,
+}: {
+  goalProgress: ReturnType<typeof getGoalProgressDetails>;
+  recentActivityCount: number;
+  recentSessionMinutes: number;
+  milestone: DashboardMilestone | null;
+  onManageGoals: () => void;
+}) => (
+  <Card className="h-full overflow-hidden">
+    <CardHeader className="border-b border-border/60 pb-3">
+      <div className="flex items-center justify-between gap-3">
+        <CardTitle className="font-display text-lg">Progress pulse</CardTitle>
+        <Button asChild variant="ghost" size="sm">
+          <Link to="/analytics">Analytics <NavArrowRight className="h-4 w-4" /></Link>
+        </Button>
+      </div>
+    </CardHeader>
+    <CardContent className="space-y-4 p-4">
+      <p className="font-sans text-xs text-muted-foreground">
+        A snapshot of the latest {recentActivityCount} {recentActivityCount === 1 ? "update" : "updates"} loaded on Home.
+      </p>
+      <div className="grid grid-cols-2 gap-3">
+        <Metric value={recentActivityCount} label="recent updates" primary />
+        <Metric value={recentSessionMinutes} label="session min in sample" />
+      </div>
+
+      <div className="rounded-lg border border-border/60 p-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="font-display text-sm font-semibold">Reading goal</h3>
             <p className="font-sans text-xs text-muted-foreground">
-              {getActivityTypeLabel(candidate.lastActivityType)} {formatTimeAgo(candidate.lastActivityAt)}
+              {goalProgress
+                ? `${goalProgress.current.toLocaleString()} of ${goalProgress.target.toLocaleString()} ${goalProgress.unit}`
+                : "Set a goal to give your reading a longer arc."}
             </p>
           </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-interface TodaySectionProps {
-  goal: Goal | null;
-  completedBooksCount: number;
-  goalProgress: number;
-  goalTarget: number;
-  streakData: StreakData;
-  todayActivity: DayActivity | null;
-  onManageGoals: () => void;
-  onUseFreeze: () => Promise<boolean>;
-}
-
-const TodaySection = ({
-  goal,
-  completedBooksCount,
-  goalProgress,
-  goalTarget,
-  streakData,
-  todayActivity,
-  onManageGoals,
-  onUseFreeze,
-}: TodaySectionProps) => {
-  return (
-    <section className="space-y-3">
-      <SectionHeader
-        title="Today"
-        subtitle="Momentum, streak, and goal status"
-      />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <GoalStatusCard
-          goal={goal}
-          completedBooksCount={completedBooksCount}
-          goalProgress={goalProgress}
-          goalTarget={goalTarget}
-          onManageGoals={onManageGoals}
-        />
-        <StreakStatusCard
-          streakData={streakData}
-          todayActivity={todayActivity}
-          onUseFreeze={onUseFreeze}
-        />
-      </div>
-    </section>
-  );
-};
-
-interface GoalStatusCardProps {
-  goal: Goal | null;
-  completedBooksCount: number;
-  goalProgress: number;
-  goalTarget: number;
-  onManageGoals: () => void;
-}
-
-const GoalStatusCard = ({
-  goal,
-  completedBooksCount,
-  goalProgress,
-  goalTarget,
-  onManageGoals,
-}: GoalStatusCardProps) => {
-  return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-4">
-        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_6rem] sm:items-center">
-          <div className="space-y-3">
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="font-display text-lg font-semibold">Reading Goal</h3>
-              <img
-                src={BRACK_GOALS_IMAGE}
-                alt=""
-                aria-hidden="true"
-                className="h-16 w-16 shrink-0 rounded-md border border-border/70 object-cover sm:hidden"
-                draggable={false}
-              />
-            </div>
-
-            {goal && goalTarget > 0 ? (
-              <>
-                <div className="flex items-center justify-between font-sans text-sm">
-                  <span className="text-muted-foreground">
-                    {completedBooksCount} / {goalTarget} books
-                  </span>
-                  <span className="font-medium">{goalProgress}%</span>
-                </div>
-                <Progress value={goalProgress} className="h-2" />
-                <Button variant="outline" size="sm" onClick={onManageGoals}>
-                  Manage goals
-                </Button>
-              </>
-            ) : (
-              <>
-                <p className="font-sans text-sm text-muted-foreground">
-                  Add a goal so your home page can track meaningful progress.
-                </p>
-                <Button size="sm" onClick={onManageGoals}>
-                  Set Goal
-                </Button>
-              </>
-            )}
-          </div>
-
-          <img
-            src={BRACK_GOALS_IMAGE}
-            alt=""
-            aria-hidden="true"
-            className="hidden h-24 w-24 rounded-md border border-border/70 object-cover sm:block"
-            draggable={false}
-          />
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-interface StreakStatusCardProps {
-  streakData: StreakData;
-  todayActivity: DayActivity | null;
-  onUseFreeze: () => Promise<boolean>;
-}
-
-const StreakStatusCard = ({
-  streakData,
-  todayActivity,
-  onUseFreeze,
-}: StreakStatusCardProps) => {
-  const streakImage = streakData.hasReadingToday
-    ? BRACK_STREAK_HAPPY_IMAGE
-    : BRACK_STREAK_SAD_IMAGE;
-  const statusLabel = streakData.hasReadingToday
-    ? "On track"
-    : streakData.usedFreezeToday
-    ? "Protected"
-    : streakData.canUseFreezeToday
-    ? "Needs reading"
-    : "Start today";
-  const todayMinutes = todayActivity?.totalMinutes || 0;
-
-  return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-4">
-        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_6rem] sm:items-center">
-          <div className="space-y-3">
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="font-display text-lg font-semibold">Reading Streak</h3>
-              <img
-                src={streakImage}
-                alt=""
-                aria-hidden="true"
-                className="h-16 w-16 shrink-0 rounded-md border border-border/70 bg-background object-contain p-1.5 sm:hidden"
-                draggable={false}
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <div className="font-sans text-2xl font-bold text-primary">
-                  {streakData.currentStreak}
-                </div>
-                <p className="font-sans text-xs text-muted-foreground">current</p>
-              </div>
-              <div>
-                <div className="font-sans text-2xl font-bold">
-                  {streakData.longestStreak}
-                </div>
-                <p className="font-sans text-xs text-muted-foreground">best</p>
-              </div>
-              <div>
-                <div className="font-sans text-2xl font-bold">
-                  {todayMinutes}
-                </div>
-                <p className="font-sans text-xs text-muted-foreground">min today</p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="bg-primary/10 text-primary">
-                {statusLabel}
-              </Badge>
-              {streakData.canUseFreezeToday && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={!streakData.freezeAvailable}
-                  onClick={() => void onUseFreeze()}
-                >
-                  Use Freeze
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <img
-            src={streakImage}
-            alt=""
-            aria-hidden="true"
-            className="hidden h-24 w-24 rounded-md border border-border/70 bg-background object-contain p-2 sm:block"
-            draggable={false}
-          />
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-interface AchievementsPreviewProps {
-  loading: boolean;
-  badges: Array<{ id: string; title: string; description: string | null; icon_url: string | null; created_at: string }>;
-  earnedBadges: Array<{ id: string; user_id: string; badge_id: string; earned_at: string }>;
-  onViewAll: () => void;
-}
-
-const AchievementsPreview = ({
-  loading,
-  badges,
-  earnedBadges,
-  onViewAll,
-}: AchievementsPreviewProps) => {
-  if (loading || badges.length === 0) return null;
-
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="font-display flex items-center justify-between text-base md:text-lg">
-          <span className="flex items-center">
-            <img
-              src={BRACK_TROPHY_IMAGE}
-              alt=""
-              aria-hidden="true"
-              className="mr-2 h-8 w-8 rounded-md border border-border/70 object-cover"
-              draggable={false}
-            />
-            Achievements
-          </span>
-          <Button variant="outline" size="sm" onClick={onViewAll}>
-            View All
-            <NavArrowRight className="ml-1 h-4 w-4" />
+          <Button variant="outline" size="sm" onClick={onManageGoals}>
+            {goalProgress ? "Manage" : "Set goal"}
           </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="font-sans mb-4 text-sm text-muted-foreground">
-          {earnedBadges.length} of {badges.length} badges earned
-        </p>
-        <BadgeDisplay badges={badges.slice(0, 4)} earnedBadges={earnedBadges} />
-      </CardContent>
-    </Card>
-  );
-};
+        </div>
+        {goalProgress && (
+          <Progress
+            value={goalProgress.percent}
+            className="mt-3 h-2"
+            aria-label={`Reading goal ${Math.round(goalProgress.percent)} percent complete`}
+          />
+        )}
+      </div>
 
-interface RecentActivityCardProps {
-  activities: Array<{ id: string; type?: string; description: string; timestamp: string; book_title?: string }>;
-  loading: boolean;
-  formatTimeAgo: (timestamp: string) => string;
-  onViewHistory: () => void;
-}
+      {milestone && (
+        <Link
+          to="/achievements"
+          className="flex min-h-16 items-center gap-3 rounded-lg border border-primary/20 bg-primary/[0.06] p-3 transition-colors hover:bg-primary/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/[0.12] text-primary">
+            {milestone.kind === "badge" ? <Medal1st className="h-5 w-5" /> : <CurrencyIcon currency="ink" className="h-7 w-7" />}
+          </span>
+          <span className="min-w-0">
+            <span className="block font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">
+              Latest {milestone.kind === "badge" ? "achievement" : "reward"}
+            </span>
+            <span className="block truncate font-display text-sm font-semibold">{milestone.title}</span>
+          </span>
+          <NavArrowRight className="ml-auto h-4 w-4 shrink-0" />
+        </Link>
+      )}
+    </CardContent>
+  </Card>
+);
+
+const Metric = ({ value, label, primary = false }: { value: number; label: string; primary?: boolean }) => (
+  <div className="min-w-0 rounded-lg border border-border/60 bg-muted/[0.25] p-3">
+    <div className={`truncate font-display text-2xl font-bold tabular-nums ${primary ? "text-primary" : "text-foreground"}`}>
+      {value.toLocaleString()}
+    </div>
+    <p className="truncate font-sans text-xs text-muted-foreground">{label}</p>
+  </div>
+);
 
 const RecentActivityCard = ({
   activities,
   loading,
-  formatTimeAgo,
   onViewHistory,
-}: RecentActivityCardProps) => {
+}: {
+  activities: DashboardRecentActivity[];
+  loading: boolean;
+  onViewHistory: () => void;
+}) => {
   const visibleActivities = activities.slice(0, 5);
-  const latestActivity = visibleActivities[0];
-
   return (
     <Card className="h-full overflow-hidden">
-      <CardHeader className="border-b border-border/55 pb-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-start gap-3">
-            <div className="min-w-0">
-              <CardTitle className="font-display text-base md:text-lg">
-                Recent Activity
-              </CardTitle>
-              <p className="font-sans text-sm text-muted-foreground">
-                {latestActivity
-                  ? `Latest update ${formatTimeAgo(latestActivity.timestamp)}`
-                  : "Your reading trail will appear here"}
-              </p>
-            </div>
+      <CardHeader className="border-b border-border/60 pb-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <CardTitle className="font-display text-lg">Recent activity</CardTitle>
+            <p className="font-sans text-sm text-muted-foreground">Your latest reading trail</p>
           </div>
-          <Button variant="outline" size="sm" onClick={onViewHistory} className="shrink-0 rounded-full">
-            History
-            <NavArrowRight className="ml-1 h-4 w-4" />
-          </Button>
+          <Button variant="outline" size="sm" onClick={onViewHistory}>History</Button>
         </div>
       </CardHeader>
       <CardContent className="p-4">
         {loading ? (
-          <div className="space-y-3">
-            <ActivityItemSkeleton />
-            <ActivityItemSkeleton />
-            <ActivityItemSkeleton />
-          </div>
-        ) : activities.length === 0 ? (
+          <div className="space-y-3"><ActivityItemSkeleton /><ActivityItemSkeleton /><ActivityItemSkeleton /></div>
+        ) : visibleActivities.length === 0 ? (
           <PremiumEmptyState
             asset="emptyProgress"
             title="No activity yet"
@@ -856,37 +696,22 @@ const RecentActivityCard = ({
             className="border-dashed bg-background/45"
           />
         ) : (
-          <ol className="relative space-y-1">
-            {visibleActivities.map((activity, index) => (
-              <li
-                key={activity.id}
-                className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-3"
-              >
-                <div className="relative flex justify-center">
-                  {index < visibleActivities.length - 1 && (
-                    <span className="absolute bottom-0 top-8 w-px bg-border" aria-hidden="true" />
-                  )}
-                  <span className="z-10 grid h-8 w-8 place-items-center bg-card text-primary">
+          <ol className="space-y-1">
+            {visibleActivities.map((activity) => {
+              const description = getActivityDescription(activity);
+              return (
+                <li key={activity.id} className="flex min-h-14 gap-3 rounded-lg p-2">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/[0.1] text-primary">
                     <ActivityIcon type={activity.type} />
                   </span>
-                </div>
-                <div className="rounded-xl px-1 pb-4">
-                  <div className="flex min-w-0 items-start justify-between gap-3">
-                    <p className="font-sans text-sm leading-relaxed text-foreground">
-                      {activity.description}
-                    </p>
-                    <span className="whitespace-nowrap rounded-full bg-muted px-2 py-0.5 font-sans text-[11px] text-muted-foreground">
-                      {formatTimeAgo(activity.timestamp)}
-                    </span>
-                  </div>
-                  {activity.book_title && (
-                    <p className="mt-1 truncate font-serif text-xs text-muted-foreground">
-                      {activity.book_title}
-                    </p>
-                  )}
-                </div>
-              </li>
-            ))}
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-sans text-sm">{description.label}</span>
+                    {description.bookTitle && <span className="block truncate font-serif text-xs text-muted-foreground">{description.bookTitle}</span>}
+                  </span>
+                  <span className="shrink-0 font-sans text-[11px] text-muted-foreground">{formatTimeAgo(activity.timestamp)}</span>
+                </li>
+              );
+            })}
           </ol>
         )}
       </CardContent>
@@ -894,79 +719,130 @@ const RecentActivityCard = ({
   );
 };
 
-const ActivityIcon = ({ type }: { type?: string }) => {
-  const Icon =
-    type === "goal_set"
-      ? APP_ICONS.dashboard.goal
-      : type === "book_completed"
-      ? APP_ICONS.stats.completed
-      : type === "book_started"
-      ? APP_ICONS.dashboard.continueReading
-      : APP_ICONS.dashboard.recentActivity;
+const ListsShortcutCard = () => (
+  <Card className="h-full overflow-hidden">
+    <CardContent className="flex h-full min-h-48 flex-col justify-between gap-5 p-5">
+      <div className="flex items-start gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/[0.1] text-primary">
+          <AppIcon icon={APP_ICONS.library.bookLists} variant="inline" />
+        </span>
+        <div>
+          <h2 className="font-display text-lg font-semibold">Reading lists</h2>
+          <p className="mt-1 max-w-md font-serif text-sm text-muted-foreground">
+            Shape your next reading arc without adding another feed to Home.
+          </p>
+        </div>
+      </div>
+      <Button asChild variant="outline" className="self-start">
+        <Link to="/book-lists">Open lists <NavArrowRight className="h-4 w-4" /></Link>
+      </Button>
+    </CardContent>
+  </Card>
+);
 
-  return <Icon className="h-4 w-4" />;
+const getActivityDescription = (activity: DashboardRecentActivity) => {
+  const title = typeof activity.details.title === "string" ? activity.details.title : null;
+  if (activity.type === "reading_session") {
+    const minutes = Number(activity.details.duration ?? 0);
+    return { label: minutes > 0 ? `Read for ${minutes} minutes` : "Finished a reading session", bookTitle: title };
+  }
+  if (activity.type === "progress_logged") {
+    const page = Number(activity.details.page_number ?? 0);
+    return { label: page > 0 ? `Logged progress to page ${page}` : "Logged reading progress", bookTitle: title };
+  }
+  return { label: "Updated reading activity", bookTitle: title };
 };
 
-interface SectionHeaderProps {
+const ActivityIcon = ({ type }: { type?: string }) => {
+  const Icon = type === "reading_session"
+    ? APP_ICONS.dashboard.continueReading
+    : type === "progress_logged"
+      ? APP_ICONS.bookDetail.logProgress
+      : APP_ICONS.dashboard.recentActivity;
+  return <Icon className="h-4 w-4" aria-hidden="true" />;
+};
+
+const SectionHeader = ({
+  id,
+  title,
+  subtitle,
+  action,
+}: {
+  id?: string;
   title: string;
   subtitle?: string;
   action?: React.ReactNode;
-}
-
-const SectionHeader = ({ title, subtitle, action }: SectionHeaderProps) => {
-  return (
-    <div className="flex items-start justify-between gap-3">
-      <div className="flex min-w-0 items-start gap-2">
-        <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold md:text-xl">{title}</h2>
-          {subtitle && (
-            <p className="font-sans text-sm text-muted-foreground">{subtitle}</p>
-          )}
-        </div>
-      </div>
-      {action && <div className="shrink-0">{action}</div>}
+}) => (
+  <div className="flex items-start justify-between gap-3">
+    <div className="min-w-0">
+      <h2 id={id} className="font-display text-lg font-semibold md:text-xl">{title}</h2>
+      {subtitle && <p className="font-sans text-sm text-muted-foreground">{subtitle}</p>}
     </div>
-  );
-};
+    {action && <div className="shrink-0">{action}</div>}
+  </div>
+);
 
-interface BookCoverProps {
-  book: BookType;
-  className: string;
-}
-
-const BookCover = ({ book, className }: BookCoverProps) => {
+const BookCover = ({ book, className }: { book: BookType; className: string }) => {
   if (book.cover_url) {
     return (
       <img
         src={book.cover_url}
-        alt={book.title}
+        alt=""
+        aria-hidden="true"
         className={`${className} rounded-md border border-border/70 object-cover shadow-sm`}
+        decoding="async"
         draggable={false}
       />
     );
   }
-
   return (
-    <div className={`${className} flex items-center justify-center rounded-md border border-border/70 bg-primary/10 text-primary`}>
-      <APP_ICONS.dashboard.coverFallback className="h-8 w-8" />
-    </div>
+    <span className={`${className} flex items-center justify-center rounded-md border border-border/70 bg-primary/[0.1] text-primary`}>
+      <APP_ICONS.dashboard.coverFallback className="h-8 w-8" aria-hidden="true" />
+    </span>
   );
 };
 
 const getActivityTypeLabel = (type: DashboardBookCandidate["lastActivityType"]) => {
   switch (type) {
-    case "progress_log":
-      return "Progress logged";
-    case "reading_session":
-      return "Read";
-    case "date_started":
-      return "Started";
-    case "created":
-      return "Added";
-    case "book_update":
-    default:
-      return "Updated";
+    case "progress_log": return "Progress logged";
+    case "reading_session": return "Read";
+    case "date_started": return "Started";
+    case "created": return "Added";
+    default: return "Updated";
   }
+};
+
+const formatTimeAgo = (timestamp: string) => {
+  const parsed = new Date(timestamp);
+  return Number.isNaN(parsed.getTime())
+    ? "recently"
+    : formatDistanceToNow(parsed, { addSuffix: true });
+};
+
+const toTelemetryFreshness = (
+  freshness: DashboardJourneyFreshness,
+  provisional: boolean,
+) => {
+  if (provisional) return "provisional";
+  return freshness === "not_requested" ? undefined : freshness;
+};
+
+const toTelemetryQuestMetric = (metric: string) => {
+  const aliases: Record<string, string> = {
+    minutes_read: "reading_minutes",
+    reading_sessions: "sessions",
+    reading_velocity: "velocity",
+  };
+  const normalized = aliases[metric] ?? metric;
+  return [
+    "reading_minutes",
+    "pages_read",
+    "reading_days",
+    "sessions",
+    "books_completed",
+    "velocity",
+    "series_books_completed",
+  ].includes(normalized) ? normalized : null;
 };
 
 export default Dashboard;

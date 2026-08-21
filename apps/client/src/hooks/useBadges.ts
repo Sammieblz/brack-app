@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import type { Badge, UserBadge } from "@/types";
 import { NewBadgeToast } from "@/components/NewBadgeToast";
@@ -8,14 +9,15 @@ import {
   fetchUserBadges,
   type AwardedBadge,
 } from "@/services/api";
-import { badgeNotificationService } from "@/services/badgeNotifications";
+import { invalidateDashboardHomeQueries } from "@/lib/dashboardQueries";
 
 interface BadgesAwardedEventDetail {
   userId?: string;
   badges?: AwardedBadge[];
 }
 
-export const useBadges = (userId?: string) => {
+export const useBadges = (userId?: string, enabled = true) => {
+  const queryClient = useQueryClient();
   const [badges, setBadges] = useState<Badge[]>([]);
   const [earnedBadges, setEarnedBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +25,7 @@ export const useBadges = (userId?: string) => {
   const { showCelebration } = useBadgeCelebration();
 
   const fetchBadges = useCallback(async () => {
-    if (!userId) return;
+    if (!userId || !enabled) return;
 
     try {
       setLoading(true);
@@ -36,13 +38,14 @@ export const useBadges = (userId?: string) => {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [enabled, userId]);
 
   const notifyNewBadges = useCallback(
     async (newBadges: AwardedBadge[]) => {
       if (!userId || newBadges.length === 0) return;
 
       await fetchBadges();
+      void invalidateDashboardHomeQueries(queryClient, userId);
 
       for (const badge of newBadges) {
         toast({
@@ -50,23 +53,17 @@ export const useBadges = (userId?: string) => {
           description: React.createElement(NewBadgeToast, { badge }),
         });
 
-        badgeNotificationService
-          .notifyBadgeEarned(userId, badge)
-          .catch((error) => {
-            console.error("Error sending badge push notification:", error);
-          });
-
         showCelebration(badge);
       }
     },
-    [fetchBadges, showCelebration, toast, userId]
+    [fetchBadges, queryClient, showCelebration, toast, userId]
   );
 
   useEffect(() => {
-    if (userId) {
+    if (userId && enabled) {
       void fetchBadges();
     }
-  }, [fetchBadges, userId]);
+  }, [enabled, fetchBadges, userId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -87,7 +84,7 @@ export const useBadges = (userId?: string) => {
 
   const checkAndAwardBadges = useCallback(
     async () => {
-      if (!userId) return;
+      if (!userId || !enabled) return;
 
       try {
         const result = await awardBadges("manual_check");
@@ -97,7 +94,7 @@ export const useBadges = (userId?: string) => {
         console.error("Error checking badges:", error);
       }
     },
-    [notifyNewBadges, userId]
+    [enabled, notifyNewBadges, userId]
   );
 
   return {

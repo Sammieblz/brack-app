@@ -9,7 +9,12 @@ import type {
   ReadingSession,
 } from "@/types";
 import type { JournalEntry } from "@/services/api/journal";
-import { localDriver, type LocalTableName, type OutboxCounts } from "./driver";
+import {
+  localDriver,
+  type LocalBookIdentityRemap,
+  type LocalTableName,
+  type OutboxCounts,
+} from "./driver";
 import type {
   LocalEntityStatus,
   LocalRecord,
@@ -22,6 +27,34 @@ import type {
 } from "@/services/sync/types";
 
 const nowIso = () => new Date().toISOString();
+
+const valuesEqual = (left: unknown, right: unknown) => {
+  if (Object.is(left, right)) return true;
+  if (
+    typeof left === "object" &&
+    left !== null &&
+    typeof right === "object" &&
+    right !== null
+  ) {
+    try {
+      return JSON.stringify(left) === JSON.stringify(right);
+    } catch {
+      return false;
+    }
+  }
+  return false;
+};
+
+const createUpdatePatch = <T extends { id: string }>(previous: T | null, next: T) => {
+  if (!previous) return next;
+  return Object.fromEntries(
+    Object.entries(next).filter(
+      ([key, value]) =>
+        !["id", "user_id", "created_at"].includes(key) &&
+        !valuesEqual((previous as Record<string, unknown>)[key], value),
+    ),
+  );
+};
 
 export const createLocalId = () => {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -91,17 +124,61 @@ const createEntityRepo = <T extends { id: string }>(table: LocalTableName, entit
     await localDriver.upsertRecords(table, items.map((item) => toLocalRecord(userId, item, "synced")));
   },
 
+  async upsertRemoteManyPreservingLocal(
+    userId: string,
+    items: (T & {
+      updated_at?: string | null;
+      created_at?: string | null;
+      deleted_at?: string | null;
+    })[],
+  ): Promise<T[]> {
+    const resolved: T[] = [];
+    const cleanRemoteItems: typeof items = [];
+
+    for (const item of items) {
+      const local = await localDriver.getRecord<T>(table, item.id);
+      if (local && local.status !== "synced") {
+        resolved.push(local.data);
+      } else {
+        cleanRemoteItems.push(item);
+        resolved.push(item);
+      }
+    }
+
+    if (cleanRemoteItems.length > 0) {
+      await localDriver.upsertRecords(
+        table,
+        cleanRemoteItems.map((item) => toLocalRecord(userId, item, "synced")),
+      );
+    }
+    return resolved;
+  },
+
   async upsertLocal(userId: string, item: T, operation: SyncOperation = "update") {
+    const existingRecord =
+      operation === "update" ? await localDriver.getRecord<T>(table, item.id) : null;
     const updatedItem = {
       ...item,
       updated_at: (item as T & { updated_at?: string }).updated_at || nowIso(),
     } as T & { updated_at?: string };
+    const mutationPayload =
+      operation === "update"
+        ? createUpdatePatch(existingRecord?.data ?? null, updatedItem)
+        : updatedItem;
 
-    await localDriver.upsertRecord<T>(
-      table,
-      toLocalRecord(userId, updatedItem, operation === "delete" ? "deleted" : "pending")
+    await localDriver.commitMutation(
+      [
+        {
+          table,
+          record: toLocalRecord(
+            userId,
+            updatedItem,
+            operation === "delete" ? "deleted" : "pending",
+          ),
+        },
+      ],
+      makeOutboxItem(userId, entity, item.id, operation, mutationPayload),
     );
-    await localDriver.enqueueOutbox(makeOutboxItem(userId, entity, item.id, operation, updatedItem));
     return updatedItem;
   },
 
@@ -113,8 +190,10 @@ const createEntityRepo = <T extends { id: string }>(table: LocalTableName, entit
       deleted_at: deletedAt,
     } as T & { updated_at: string; deleted_at: string };
 
-    await localDriver.upsertRecord<T>(table, toLocalRecord(userId, deletedItem, "deleted"));
-    await localDriver.enqueueOutbox(makeOutboxItem(userId, entity, item.id, "delete", deletedItem));
+    await localDriver.commitMutation(
+      [{ table, record: toLocalRecord(userId, deletedItem, "deleted") }],
+      makeOutboxItem(userId, entity, item.id, "delete", deletedItem),
+    );
     return deletedItem;
   },
 
@@ -145,7 +224,51 @@ const createEntityRepo = <T extends { id: string }>(table: LocalTableName, entit
   },
 });
 
-export const booksRepo = createEntityRepo<Book>("books", "books");
+const baseBooksRepo = createEntityRepo<Book>("books", "books");
+const MAX_BOOK_ALIAS_DEPTH = 16;
+export const booksRepo = {
+  ...baseBooksRepo,
+  async resolveIdentity(userId: string, bookId: string) {
+    const originalBookId = bookId;
+    let currentBookId = bookId;
+    const visited = new Set<string>();
+
+    for (let depth = 0; depth < MAX_BOOK_ALIAS_DEPTH; depth += 1) {
+      if (visited.has(currentBookId)) return originalBookId;
+      visited.add(currentBookId);
+
+      const alias = await localDriver.getSyncState(
+        userId,
+        `book_alias:${currentBookId}`,
+      );
+      const nextBookId = alias?.user_id === userId ? alias.cursor?.trim() : null;
+      if (!nextBookId) return currentBookId;
+      if (nextBookId === currentBookId || visited.has(nextBookId)) {
+        return originalBookId;
+      }
+      currentBookId = nextBookId;
+    }
+
+    return currentBookId;
+  },
+  async remapIdentity(
+    userId: string,
+    staleBookId: string,
+    canonicalBook: Book,
+    options: Pick<
+      LocalBookIdentityRemap,
+      "sourceOutbox" | "requireNoOtherUnsyncedReferences"
+    > = {},
+  ) {
+    const record = await localDriver.remapBookIdentity({
+      userId,
+      staleBookId,
+      canonicalBookRecord: toLocalRecord(userId, canonicalBook, "synced"),
+      ...options,
+    });
+    return record.data as Book;
+  },
+};
 const baseSessionsRepo = createEntityRepo<ReadingSession>("reading_sessions", "reading_sessions");
 const baseProgressRepo = createEntityRepo<ProgressLogPayload & { id: string }>(
   "progress_logs",
@@ -165,11 +288,57 @@ export const progressRepo = {
 };
 export const journalRepo = createEntityRepo<JournalEntry>("journal_entries", "journal_entries");
 export const goalsRepo = createEntityRepo<Goal>("goals", "goals");
-export const bookListsRepo = createEntityRepo<BookList>("book_lists", "book_lists");
-export const bookListItemsRepo = createEntityRepo<BookListItem>(
+const baseBookListsRepo = createEntityRepo<BookList>("book_lists", "book_lists");
+const baseBookListItemsRepo = createEntityRepo<BookListItem>(
   "book_list_items",
   "book_list_items"
 );
+export const bookListsRepo = {
+  ...baseBookListsRepo,
+  async commitReorder(
+    userId: string,
+    list: BookList,
+    items: BookListItem[],
+    payload: Record<string, unknown>,
+  ) {
+    const outboxItem = makeOutboxItem(userId, "book_lists", list.id, "reorder", payload);
+    await localDriver.commitMutation(
+      [
+        {
+          table: "book_lists",
+          record: toLocalRecord(userId, list, "pending"),
+        },
+        ...items.map((item) => ({
+          table: "book_list_items" as const,
+          record: toLocalRecord(userId, item, "pending"),
+        })),
+      ],
+      outboxItem,
+    );
+    return outboxItem;
+  },
+};
+export const bookListItemsRepo = {
+  ...baseBookListItemsRepo,
+  async markReorderSynced(userId: string, listId: string, mutationUpdatedAt: string) {
+    const records = await localDriver.listRecords<BookListItem>(
+      "book_list_items",
+      userId,
+      { includeDeleted: true },
+    );
+    const matching = records.filter(
+      (record) =>
+        record.status === "pending" &&
+        record.data.list_id === listId &&
+        record.data.updated_at === mutationUpdatedAt,
+    );
+    if (matching.length === 0) return;
+    await localDriver.upsertRecords(
+      "book_list_items",
+      matching.map((record) => toLocalRecord(userId, record.data, "synced")),
+    );
+  },
+};
 
 const createLocalOnlyRepo = <T extends { id: string }>(table: LocalTableName) => ({
   async list(userId: string): Promise<T[]> {
@@ -217,15 +386,16 @@ export const profilePreferencesRepo = {
       id: userId,
       updated_at: preferences.updated_at || nowIso(),
     };
-    await localDriver.upsertRecord("profile_preferences", {
+    const record = {
       id: userId,
       user_id: userId,
       data: payload,
       status: "pending",
       updated_at: payload.updated_at || nowIso(),
-    });
-    await localDriver.enqueueOutbox(
-      makeOutboxItem(userId, "profile_preferences", userId, "update", payload)
+    } satisfies LocalRecord<ProfilePreferencesPayload>;
+    await localDriver.commitMutation(
+      [{ table: "profile_preferences", record }],
+      makeOutboxItem(userId, "profile_preferences", userId, "update", payload),
     );
     return payload;
   },
@@ -244,8 +414,17 @@ export const syncRepo = {
       makeOutboxItem(userId, entity, entityId, operation, payload)
     );
   },
-  listPending(userId: string) {
-    return localDriver.listOutbox(userId, ["pending", "failed", "syncing"]);
+  listPending(userId: string, options: { includeFreshSyncing?: boolean } = {}) {
+    return localDriver.listOutbox(userId, ["pending", "syncing"]).then((items) =>
+      items.filter((item) => {
+        if (item.status === "pending") return true;
+        return options.includeFreshSyncing
+          || Date.parse(item.updated_at) < Date.now() - 10 * 60_000;
+      })
+    );
+  },
+  listOutstanding(userId: string) {
+    return localDriver.listOutbox(userId, ["pending", "syncing"]);
   },
   listFailed(userId: string) {
     return localDriver.listOutbox(userId, ["failed"]);
@@ -269,6 +448,18 @@ export const syncRepo = {
       last_error: error,
       updated_at: nowIso(),
       next_attempt_at: new Date(Date.now() + Math.min(300000, 5000 * (item.attempt_count + 1))).toISOString(),
+    });
+  },
+  deferRetry(item: OutboxItem, error: string, retryAfterMs?: number) {
+    const delayMs = Math.max(
+      5000,
+      Math.min(15 * 60_000, retryAfterMs ?? 5000 * (item.attempt_count + 1))
+    );
+    return localDriver.updateOutbox(item.id, {
+      status: "pending",
+      last_error: error,
+      updated_at: nowIso(),
+      next_attempt_at: new Date(Date.now() + delayMs).toISOString(),
     });
   },
   retry(item: OutboxItem) {

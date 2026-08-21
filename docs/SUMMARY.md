@@ -11,8 +11,7 @@ This documentation provides comprehensive coverage of:
 - **Deployment** - Ship to production
 - **Troubleshooting** - Solve common issues
 
-**Total Documents**: 57
-**Last Updated**: June 19, 2026
+**Last Updated**: August 15, 2026
 
 ---
 
@@ -31,11 +30,12 @@ This documentation provides comprehensive coverage of:
 
 1. **[Quick Reference](./quick-reference.md)** - Jump straight to common tasks
 2. **[Database Schema](./database-schema.md)** - Review data model
-3. **[API Reference](./api-reference.md)** - Edge Functions documentation
-4. **[Hooks Reference](./hooks.md)** - Custom hooks API
-5. **[Sprint Backlog](./backlog.md)** - Current implementation checklist and ticket statuses
-6. **[Table Catalog](./schema/table-catalog.md)** - Remote public schema inventory
-7. **[Monorepo and Turborepo](./monorepo.md)** - Workspace ownership and task graph
+3. **[Database Migration Integrity](./database-migrations.md)** - Safely author and deploy schema changes
+4. **[API Reference](./api-reference.md)** - Edge Functions documentation
+5. **[Hooks Reference](./hooks.md)** - Custom hooks API
+6. **[Sprint Backlog](./backlog.md)** - Current implementation checklist and ticket statuses
+7. **[Table Catalog](./schema/table-catalog.md)** - Remote public schema inventory
+8. **[Monorepo and Turborepo](./monorepo.md)** - Workspace ownership and task graph
 
 ### Mobile Developers
 
@@ -79,6 +79,7 @@ This documentation provides comprehensive coverage of:
 - [Hooks Reference](./hooks.md) - Custom React hooks
 - [State Management](./state-management.md) - State patterns
 - [Database Schema](./database-schema.md) - Data model
+- [Database Migration Integrity](./database-migrations.md) - Immutable migration and deployment controls
 - [API Reference](./api-reference.md) - Backend API
 - [Sprint Backlog](./backlog.md) - Ticket checklist and implementation status
 - [Table Catalog](./schema/table-catalog.md) - Public schema catalog
@@ -122,6 +123,7 @@ This documentation provides comprehensive coverage of:
 
 ### Operations
 - [Deployment](./deployment.md) - Production deployment
+- [Database Migration Integrity](./database-migrations.md) - Database release and recovery procedure
 - [Testing](./testing.md) - Testing strategies
 - [Troubleshooting](./troubleshooting.md) - Problem solving
 
@@ -288,7 +290,8 @@ This documentation provides comprehensive coverage of:
 | Build prod | `npm run build` |
 | Sync mobile | `npm run cap:sync` |
 | Inspect Turbo graph | `npx turbo run build check-types --dry=json` |
-| Run migrations | `npx supabase db push` |
+| Replay migrations locally | `npx --no-install supabase db reset --local --no-seed` |
+| Create a migration | `npm run db:migration:new -- descriptive_name` |
 | Deploy functions | `npx supabase functions deploy` |
 
 ### File Locations

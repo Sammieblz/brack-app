@@ -18,6 +18,12 @@ The response shape remains the dashboard contract:
 - `recentActivity`
 - `achievements`
 
+When `include_journey` is enabled, the Edge Function adds the versioned Journey
+summary and Streak Freeze inventory. Home's streak card intentionally derives
+its emotional state from this combined response; it must not reintroduce the
+separate `reading_streak_days` and `profiles` browser queries that the old
+Dashboard used.
+
 ## Snapshot Table
 
 `dashboard_home_snapshots` stores one user-scoped JSON response:
@@ -40,6 +46,20 @@ RLS allows users to select their own snapshot. Writes happen through security-de
 | `get_dashboard_home_snapshot(p_user_id, p_recent_limit, p_max_age_seconds)` | Returns a fresh snapshot when available, otherwise refreshes it. |
 
 `dashboard-home` currently uses `p_max_age_seconds = 300`, so normal dashboard refreshes reuse snapshots for five minutes.
+
+## Home streak presentation
+
+`DashboardStreakCard` uses `streak.currentStreak`, `longestStreak`,
+`lastReadingDate`, and `freezeUsedAt`, plus the Journey timezone/server clock.
+The UI refreshes its date boundary once per minute and normalizes an event-stale
+profile streak to zero when the last reading day is no longer today or
+yesterday. This is a presentation safeguard; it does not mutate profile or
+streak-day records.
+
+Freeze balances retain their response provenance. Cached quantities may be
+shown, but purchase/consumption controls remain disabled until the current app
+session has received a live inventory response. Unknown inventory is labelled
+unavailable rather than `0`.
 
 ## Validation
 

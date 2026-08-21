@@ -16,9 +16,9 @@ export const MobileBottomNav = () => {
       style={{ bottom: "max(env(safe-area-inset-bottom), 24px)" }}
     >
       <div className="relative pointer-events-auto px-2 sm:px-3 py-2">
-        <div className="absolute inset-0 bg-gradient-to-tr from-primary/18 via-background/70 to-primary/22 opacity-95 blur-xl pointer-events-none rounded-[32px]" />
-        <div className="absolute inset-0 rounded-[32px] border border-white/12 shadow-[0_14px_50px_rgba(0,0,0,0.45)] supports-[backdrop-filter]:backdrop-blur-2xl bg-background/75" />
-        <div className="absolute inset-x-8 top-[16%] h-px bg-white/14 rounded-full pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-primary/[0.18] via-background/70 to-primary/[0.22] opacity-95 blur-xl pointer-events-none rounded-[32px]" />
+        <div className="absolute inset-0 rounded-[32px] border border-white/[0.12] shadow-[0_14px_50px_rgba(0,0,0,0.45)] supports-[backdrop-filter]:backdrop-blur-2xl bg-background/75" />
+        <div className="absolute inset-x-8 top-[16%] h-px bg-white/[0.14] rounded-full pointer-events-none" />
 
         <div className="relative flex items-center justify-around h-[72px] max-w-4xl mx-auto gap-0.5 rounded-[28px] max-[400px]:h-16">
         {mobileNavItems.map((tab) => {
@@ -40,7 +40,7 @@ export const MobileBottomNav = () => {
               aria-current={active ? "page" : undefined}
             >
               {active && (
-                <span className="absolute inset-0 rounded-2xl bg-primary/12 shadow-inner shadow-primary/10 supports-[backdrop-filter]:backdrop-blur-md transition-all duration-200 animate-in fade-in" />
+                <span className="absolute inset-0 rounded-2xl bg-primary/[0.12] shadow-inner shadow-primary/10 supports-[backdrop-filter]:backdrop-blur-md transition-all duration-200 animate-in fade-in" />
               )}
               <Icon className={cn(
                 "h-5 w-5 sm:h-6 sm:w-6 z-10 transition-all duration-200",

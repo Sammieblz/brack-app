@@ -2,11 +2,12 @@ import { useRef } from "react";
 import type { Badge } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { getBadgeImagePath } from "@/lib/badgeImages";
+import { BadgeEmblem } from "@/components/BadgeEmblem";
 import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
 import { Confetti } from "@/components/animations/Confetti";
 import { useNavigate } from "react-router-dom";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface BadgeCelebrationOverlayProps {
   badge: Badge;
@@ -21,10 +22,9 @@ export const BadgeCelebrationOverlay = ({
 }: BadgeCelebrationOverlayProps) => {
   const badgeRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const imagePath = getBadgeImagePath(badge);
-
+  const reducedMotion = useReducedMotion();
   useGSAP(() => {
-    if (!badgeRef.current || !open) return;
+    if (!badgeRef.current || !open || reducedMotion) return;
 
     const tl = gsap.timeline();
 
@@ -43,7 +43,7 @@ export const BadgeCelebrationOverlay = ({
       repeat: 1,
       ease: "power1.inOut",
     });
-  }, [open]);
+  }, [open, reducedMotion]);
 
   const handleViewAchievements = () => {
     onClose();
@@ -65,13 +65,7 @@ export const BadgeCelebrationOverlay = ({
             ref={badgeRef}
             className="mt-4 flex flex-col items-center gap-4"
           >
-            {imagePath && (
-              <img
-                src={imagePath}
-                alt={badge.title}
-                className="h-32 w-32 object-contain drop-shadow-xl"
-              />
-            )}
+            <BadgeEmblem badge={badge} earned size="lg" />
             <div className="space-y-1">
               <div className="font-sans text-lg font-semibold">
                 {badge.title}

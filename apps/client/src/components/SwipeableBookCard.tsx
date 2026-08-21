@@ -71,7 +71,7 @@ export const SwipeableBookCard = ({
       description: `Are you sure you want to delete "${book.title}"? This action cannot be undone.`,
       confirmText: "Delete",
       cancelText: "Cancel",
-      variant: 'destructive',
+      variant: "destructive",
     });
     if (confirmed) {
       onDelete?.(book.id);

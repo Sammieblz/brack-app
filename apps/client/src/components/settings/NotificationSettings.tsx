@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { CurrencyIcon } from "@/components/CurrencyIcon";
 import type { User } from "@/types";
 import {
   DEFAULT_NOTIFICATION_PREFERENCES,
@@ -105,6 +106,94 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                         unregister().catch(console.error);
                       }
                     }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="badges_enabled">Badge Unlocks</Label>
+                    <p className="font-sans text-sm text-muted-foreground">
+                      New badges earned through your Reader Journey
+                    </p>
+                  </div>
+                  <Switch
+                    id="badges_enabled"
+                    checked={notificationPrefs.badges_enabled}
+                    onCheckedChange={(checked) =>
+                      setNotificationPrefs(prev => ({ ...prev, badges_enabled: checked }))
+                    }
+                    disabled={!notificationPrefs.push_enabled}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="quests_enabled">Quest Updates</Label>
+                    <p className="font-sans text-sm text-muted-foreground">
+                      Quest reminders and completion summaries
+                    </p>
+                  </div>
+                  <Switch
+                    id="quests_enabled"
+                    checked={notificationPrefs.quests_enabled}
+                    onCheckedChange={(checked) =>
+                      setNotificationPrefs(prev => ({ ...prev, quests_enabled: checked }))
+                    }
+                    disabled={!notificationPrefs.push_enabled}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="rank_movement_enabled">Rank Movement</Label>
+                    <p className="font-sans text-sm text-muted-foreground">
+                      Important changes in your weekly league position
+                    </p>
+                  </div>
+                  <Switch
+                    id="rank_movement_enabled"
+                    checked={notificationPrefs.rank_movement_enabled}
+                    onCheckedChange={(checked) =>
+                      setNotificationPrefs(prev => ({ ...prev, rank_movement_enabled: checked }))
+                    }
+                    disabled={!notificationPrefs.push_enabled}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="weekly_results_enabled">Weekly Results</Label>
+                    <p className="font-sans text-sm text-muted-foreground">
+                      Final Reader League rank and promotion result
+                    </p>
+                  </div>
+                  <Switch
+                    id="weekly_results_enabled"
+                    checked={notificationPrefs.weekly_results_enabled}
+                    onCheckedChange={(checked) =>
+                      setNotificationPrefs(prev => ({ ...prev, weekly_results_enabled: checked }))
+                    }
+                    disabled={!notificationPrefs.push_enabled}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="gold_leaves_enabled" className="inline-flex items-center gap-1.5">
+                      <CurrencyIcon currency="goldLeaves" />
+                      Gold Leaves
+                    </Label>
+                    <p className="font-sans text-sm text-muted-foreground">
+                      Notify me when a rare Gold Leaf is earned
+                    </p>
+                  </div>
+                  <Switch
+                    id="gold_leaves_enabled"
+                    checked={notificationPrefs.gold_leaves_enabled}
+                    onCheckedChange={(checked) =>
+                      setNotificationPrefs(prev => ({ ...prev, gold_leaves_enabled: checked }))
+                    }
+                    disabled={!notificationPrefs.push_enabled}
                   />
                 </div>
 

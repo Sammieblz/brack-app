@@ -1,294 +1,70 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { getCorsHeaders } from "../_shared/cors.ts";
+import {
+  createServiceClient,
+  getAuthenticatedUser,
+  jsonResponse,
+  optionsResponse,
+  parseJsonBody,
+} from "../_shared/appEndpoint.ts";
+import { sendFcmNotifications, type FcmNotification } from "../_shared/fcm.ts";
 import { enforceRateLimit } from "../_shared/rateLimit.ts";
+
+interface PushBody {
+  user_ids?: unknown;
+  notification?: FcmNotification;
+  platform?: unknown;
+}
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
-  const corsHeaders = getCorsHeaders(origin);
-
-interface NotificationPayload {
-  title: string;
-  body: string;
-  data?: Record<string, unknown>;
-  badge?: number;
-  sound?: string;
-  // Optional rich image URL (e.g. achievement badge)
-  image?: string;
-}
-
-  // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return optionsResponse(origin);
+  if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405, origin);
 
   try {
-    // Get authorization header
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Missing authorization header" }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Create Supabase client with service role for admin operations
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    );
-
-    // Verify the JWT token from the Authorization header
-    const jwt = authHeader.replace("Bearer ", "");
-
-    // Get current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser(jwt);
-
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        {
-          status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    const limited = await enforceRateLimit(req, supabaseClient, {
+    const client = createServiceClient();
+    const auth = await getAuthenticatedUser(req, client, origin);
+    if ("response" in auth) return auth.response;
+    const limited = await enforceRateLimit(req, client, {
       name: "send-push-notification",
-      identifier: user.id,
+      identifier: auth.user.id,
       limit: 20,
       windowMs: 60_000,
     });
     if (limited) return limited;
 
-    // Parse request body
-    const body = await req.json();
-    const { user_ids, notification, platform } = body;
-
-    if (!user_ids || !Array.isArray(user_ids) || user_ids.length === 0) {
-      return new Response(
-        JSON.stringify({ error: "user_ids array is required" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+    const body = await parseJsonBody<PushBody>(req);
+    const userIds = Array.isArray(body.user_ids)
+      ? [...new Set(body.user_ids.filter((id): id is string => typeof id === "string"))]
+      : [];
+    if (userIds.length !== 1 || userIds[0] !== auth.user.id) {
+      return jsonResponse(
+        { error: "Push notifications can only target the authenticated user" },
+        403,
+        origin,
       );
     }
-
-    const targetUserIds = [...new Set(user_ids.filter((id) => typeof id === "string"))];
-    if (targetUserIds.length === 0 || targetUserIds.some((id) => id !== user.id)) {
-      return new Response(
-        JSON.stringify({ error: "Push notifications can only target the authenticated user" }),
-        {
-          status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+    if (!body.notification?.title || !body.notification.body) {
+      return jsonResponse({ error: "notification title and body are required" }, 400, origin);
     }
 
-    if (!notification || !notification.title || !notification.body) {
-      return new Response(
-        JSON.stringify({ error: "notification with title and body is required" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Fetch push tokens for target users
-    let query = supabaseClient
+    let tokenQuery = client
       .from("push_tokens")
-      .select("token, platform")
-      .in("user_id", targetUserIds);
+      .select("token")
+      .eq("user_id", auth.user.id);
+    if (typeof body.platform === "string") tokenQuery = tokenQuery.eq("platform", body.platform);
+    const { data: tokens, error } = await tokenQuery;
+    if (error) throw error;
 
-    if (platform) {
-      query = query.eq("platform", platform);
-    }
-
-    const { data: tokens, error: tokensError } = await query;
-
-    if (tokensError) {
-      throw tokensError;
-    }
-
-    if (!tokens || tokens.length === 0) {
-      return new Response(
-        JSON.stringify({ message: "No push tokens found for target users" }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Group tokens by platform
-    const iosTokens = tokens.filter((t) => t.platform === "ios").map((t) => t.token);
-    const androidTokens = tokens.filter((t) => t.platform === "android").map((t) => t.token);
-
-    const results = {
-      ios: { tokens: iosTokens.length, sent: 0, failed: 0 },
-      android: { tokens: androidTokens.length, sent: 0, failed: 0 },
-    };
-
-    // Send iOS notifications via FCM (FCM supports both iOS and Android)
-    if (iosTokens.length > 0) {
-      const fcmServerKey = Deno.env.get("FCM_SERVER_KEY");
-      
-      if (fcmServerKey) {
-        const fcmResults = await sendFCMNotifications(
-          iosTokens,
-          notification,
-          "ios",
-          fcmServerKey
-        );
-        results.ios.sent = fcmResults.sent;
-        results.ios.failed = fcmResults.failed;
-      } else {
-        console.warn("No FCM credentials configured for iOS notifications");
-      }
-    }
-
-    // Send Android notifications via FCM
-    if (androidTokens.length > 0) {
-      const fcmServerKey = Deno.env.get("FCM_SERVER_KEY");
-      
-      if (fcmServerKey) {
-        const fcmResults = await sendFCMNotifications(
-          androidTokens,
-          notification,
-          "android",
-          fcmServerKey
-        );
-        results.android.sent = fcmResults.sent;
-        results.android.failed = fcmResults.failed;
-      } else {
-        console.warn("No FCM credentials configured for Android notifications");
-      }
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "Notifications queued",
-        results,
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+    const results = await sendFcmNotifications(
+      (tokens || []).map((token) => token.token),
+      body.notification,
     );
-  } catch (error: unknown) {
-    console.error("Error sending push notification:", error);
-    return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : "Internal server error",
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+    return jsonResponse({ success: true, results }, 200, origin);
+  } catch (error) {
+    console.error("send-push-notification failed", error);
+    return jsonResponse(
+      { error: error instanceof Error ? error.message : "Push delivery failed" },
+      500,
+      origin,
     );
   }
 });
-
-// Helper function to send FCM notifications
-async function sendFCMNotifications(
-  tokens: string[],
-  notification: NotificationPayload,
-  platform: "ios" | "android",
-  serverKey: string
-): Promise<{ sent: number; failed: number }> {
-  let sent = 0;
-  let failed = 0;
-
-  // FCM allows up to 500 tokens per batch
-  const batchSize = 500;
-  for (let i = 0; i < tokens.length; i += batchSize) {
-    const batch = tokens.slice(i, i + batchSize);
-
-    const payload: {
-      registration_ids: string[];
-      notification: {
-        title: string;
-        body: string;
-        sound: string;
-        badge?: number;
-        image?: string;
-      };
-      data: Record<string, unknown>;
-      apns?: {
-        payload: {
-          aps: {
-            sound: string;
-            badge?: number;
-            "content-available": number;
-          };
-        };
-      };
-    } = {
-      registration_ids: batch,
-      notification: {
-        title: notification.title,
-        body: notification.body,
-        sound: notification.sound || "default",
-        badge: notification.badge,
-        image: notification.image,
-      },
-      data: notification.data || {},
-    };
-
-    // Platform-specific configuration
-    if (platform === "ios") {
-      payload.apns = {
-        payload: {
-          aps: {
-            sound: notification.sound || "default",
-            badge: notification.badge,
-            "content-available": 1,
-          },
-        },
-      };
-    }
-
-    try {
-      const response = await fetch("https://fcm.googleapis.com/fcm/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `key=${serverKey}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(`FCM request failed: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      
-      // Count successful and failed sends
-      if (result.results) {
-        result.results.forEach((r: { error?: string }) => {
-          if (r.error) {
-            failed++;
-          } else {
-            sent++;
-          }
-        });
-      }
-    } catch (error) {
-      console.error(`Error sending FCM batch ${i / batchSize + 1}:`, error);
-      failed += batch.length;
-    }
-  }
-
-  return { sent, failed };
-}
-

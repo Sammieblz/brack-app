@@ -45,7 +45,10 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
         ? `"${quote.content}"\n\n— ${quote.title}${quote.book_title ? `, ${quote.book_title}` : ''}`
         : `"${quote.content}"${quote.book_title ? `\n\n— ${quote.book_title}` : ''}`;
       
-      await shareService.shareReadingQuote(quoteText);
+      await shareService.share({
+        title: "Reading Quote",
+        text: quoteText,
+      });
     } catch (error) {
       console.error('Error sharing quote:', error);
     }

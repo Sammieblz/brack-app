@@ -49,11 +49,13 @@ For production apps, consider enabling strict mode gradually.
 
 ### How do I add a new database table?
 
-1. Create migration: `npx supabase migration new add_your_table`
+1. Create migration: `npm run db:migration:new -- add_your_table`
 2. Write SQL in the generated file
-3. Add RLS policies
-4. Apply migration: `npx supabase db push`
-5. Update types: The types in `apps/client/src/integrations/supabase/types.ts` should be regenerated
+3. Add RLS policies and pgTAP contracts
+4. Finalize the migration lock: `npm run db:migrations:lock`
+5. Clean-reset locally and finalize the catalog lock: `npx --no-install supabase db reset --local --no-seed && npm run db:schema:lock`
+6. Open a pull request; the protected workflow validates and applies production migrations
+7. Update types: The types in `apps/client/src/integrations/supabase/types.ts` should be regenerated
 
 ### How do I update Supabase types?
 
@@ -76,12 +78,22 @@ See [Offline Support](./offline-support.md) for details.
 
 ### How are reading streaks calculated?
 
-- Reading on consecutive days increases streak
-- Missing a day breaks the streak
-- Streak Freeze: Save your streak once per week
-- Calculated from `reading_sessions` table
+- A completed reading session or a full saved progress log creates a streak
+  day. A quick page correction by itself does not.
+- Consecutive streak days increase the current streak. A missed, unprotected
+  day resets the current run, while the personal best remains saved.
+- Home uses the happy Brack flame when today's state is secure or protected and
+  the sad flame when reading is needed or a new run can begin.
+- Streak Freezes are consumable Journey items bought with Gold Leaves. Buying a
+  Freeze stores it; Brack never spends it automatically.
+- A manual Freeze request succeeds only when the server confirms ownership,
+  inventory, no reading today, reading on the prior eligible day, and the
+  seven-day cooldown.
+- Cached Freeze quantities are read-only until the app refreshes them online.
 
-See `apps/client/src/utils/streakCalculation.ts` for implementation.
+Persistence is derived through `reading_streak_days`; Home's visual-state guard
+lives in `apps/client/src/lib/dashboardStreak.ts`. See
+[Streak Rules](./product/streak-rules.md) for the complete ownership model.
 
 ### How does the reading timer work?
 
@@ -163,8 +175,11 @@ npm run cap:sync
 
 **⚠️ Warning**: This deletes all data!
 
+This operation is local-only. Shared and production databases must never be
+reset from a developer shell.
+
 ```bash
-npx supabase db reset
+npx --no-install supabase db reset --local --no-seed
 ```
 
 ### How do I backup the database?

@@ -68,7 +68,8 @@ VITE_SENTRY_DSN=your-sentry-dsn
 # For Edge Functions
 ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com,brack-app://brack
 ENVIRONMENT=development
-FCM_SERVER_KEY=your-fcm-server-key
+FCM_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
+GAMIFICATION_WORKER_SECRET=replace-with-a-random-worker-secret
 
 # For Supabase CLI automation
 SUPABASE_ACCESS_TOKEN=your-supabase-cli-token
@@ -82,24 +83,21 @@ SUPABASE_DB_PASSWORD=your-linked-project-db-password
 1. Go to [supabase.com](https://supabase.com)
 2. Create a new project
 3. Copy your project URL and anon key to `.env`
-4. Run migrations:
-
-```bash
-npx supabase link --project-ref your-project-id
-npx supabase db push
-```
+4. Use the protected migration pipeline described in
+   [Database Migration Integrity](./database-migrations.md). Do not push schema
+   changes directly to a shared or production project.
 
 #### Option B: Local Supabase (Development)
 
 ```bash
-# Install Supabase CLI
-npm install -g supabase
+# Install the repository's pinned Supabase CLI
+npm ci
 
 # Start local Supabase
-npx supabase start
+npx --no-install supabase start
 
-# Apply migrations
-npx supabase db reset
+# Replay migrations without production seed data
+npx --no-install supabase db reset --local --no-seed
 ```
 
 ### 5. Run Development Server
@@ -188,11 +186,15 @@ npm run cap:open:android
 
 ### Running Migrations
 
-All migrations in `supabase/migrations/` will be applied automatically when you run:
+Replay all migrations locally with:
 
 ```bash
-npx supabase db push
+npx --no-install supabase start
+npx --no-install supabase db reset --local --no-seed
 ```
+
+Shared and production projects are updated only through the protected workflow;
+see [Database Migration Integrity](./database-migrations.md).
 
 ### Seeding Data (Optional)
 
@@ -203,7 +205,7 @@ Create a seed file for test data:
 echo "-- Seed data" > supabase/seed.sql
 
 # Run seed
-npx supabase db reset --seed
+npx --no-install supabase db reset --local
 ```
 
 ## Firebase Setup (Push Notifications)
@@ -215,7 +217,9 @@ npx supabase db reset --seed
 3. Download `google-services.json`
 4. Place in `android/app/google-services.json`
 5. Get Server Key from Firebase Console → Project Settings → Cloud Messaging
-6. Add to `.env` as `FCM_SERVER_KEY`
+6. Download a Firebase service-account JSON document and add it to the backend
+   environment as `FCM_SERVICE_ACCOUNT_JSON`. Never expose it through a
+   `VITE_` variable.
 
 ### iOS (APNs via FCM)
 
@@ -319,10 +323,12 @@ npx turbo run build check-types --dry=json # Inspect selected tasks and dependen
 npm run lint            # Run ESLint
 
 # Supabase
-npx supabase start      # Start local Supabase
-npx supabase stop       # Stop local Supabase
-npx supabase db push    # Apply migrations
-npx supabase db reset   # Reset database
+npx --no-install supabase start      # Start local Supabase
+npx --no-install supabase stop       # Stop local Supabase
+npm run db:migration:new -- descriptive_name # Create a migration
+npm run db:migrations:lock                  # Record finalized checksums
+npx --no-install supabase db reset --local --no-seed # Reset local database only
+npm run db:schema:lock                      # Record the clean catalog fingerprint
 npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api # Deploy Edge Functions
 ```
 

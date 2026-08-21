@@ -142,6 +142,43 @@ Guide to key components in Brack and their usage.
 - Streak freeze button
 - Motivational messages
 
+#### DashboardStreakCard
+
+**Location**: `apps/client/src/components/dashboard/DashboardStreakCard.tsx`
+
+**Purpose**: Provide the authenticated Home page's stateful streak loop without
+adding the two direct streak queries used by `useStreaks`.
+
+The card consumes the snapshot-backed `dashboard-home` streak summary and the
+optional Journey inventory already loaded for Home. It shows:
+
+- The transparent happy Brack flame after reading or Freeze protection is
+  confirmed for the current streak day. The art is deliberately frameless and
+  uses a semantic-theme aura, ground shadow, perspective, and a subtle
+  reduced-motion-aware float so the character reads as a 3D object in space.
+- The transparent sad Brack flame when an active streak needs reading, when a
+  new streak can begin, or after a gap.
+- Current streak, personal best, last-reading context, and progress toward the
+  next 3/7/14/30/60/100/365-day milestone.
+- One contextual reading action and a server-validated Freeze action only in
+  the at-risk window.
+- Known cached inventory as read-only; unavailable inventory is never rendered
+  as a zero balance.
+- A collapsed explanation of counting actions, gaps, Gold Leaf purchases, and
+  Freeze consumption so the default card stays compact on phones and tablets.
+
+`apps/client/src/lib/dashboardStreak.ts` owns the deterministic visual-state
+mapping. It uses the Journey server clock when available and guards against a
+stale non-zero profile streak after the last contiguous day has elapsed.
+
+`StreakCelebrationOverlay` and `useStreakCelebration` add the completion beat.
+The first live snapshot is baseline-only; the overlay opens only after a later
+server-confirmed incomplete-to-complete transition, so cached state and cold
+loads never replay an old streak. The happy flame appears in a two-second GSAP
+3D reveal with one success haptic, then dismisses automatically or by tapping,
+pressing Escape, or using the 44px close control. Reduced-motion users receive
+the same announcement and static confirmation without spatial travel.
+
 #### StreakCalendar
 
 **Location**: `apps/client/src/components/StreakCalendar.tsx`
@@ -491,17 +528,58 @@ Guide to key components in Brack and their usage.
 - Error fallback
 - Placeholder
 
+#### Progress
+
+**Location**: `apps/client/src/components/ui/progress.tsx`
+
+**Purpose**: Accessible determinate or indeterminate progress display
+
+```tsx
+<Progress
+  value={currentStep}
+  max={totalSteps}
+  variant="dimensional"
+  segments={totalSteps}
+  aria-label="Onboarding setup progress"
+  getValueLabel={(step, total) => `Step ${step} of ${total}`}
+/>
+```
+
+The default variant is a compact 10–12px 3D rail for books, badges, HUD level
+progress, goal snapshots, and dense data cards. It uses a recessed track,
+layered theme-gradient fill, texture, a brief specular pass, and a leading cap
+without changing the existing component API. Use `variant="dimensional"` for
+prominent progress such as onboarding, Daily Focus, active goals, and branded
+route transitions. That variant adds a raised front lip and cast shadow, a
+code-rendered open-page/bookmark marker at the exact value, and numbered step
+nodes when `segments` is supplied. Unknown values use Radix's true
+indeterminate state; finite values are clamped to `0..max`. Reduced-motion,
+high-contrast, forced-colors, dark, and Brack surface-theme treatments are
+included. Decorative preview bars must use `aria-hidden="true"`; real progress
+must provide a contextual accessible name and, where useful, value text.
+
 #### LoadingSpinner
 
 **Location**: `apps/client/src/components/LoadingSpinner.tsx`
 
-**Purpose**: Loading indicator
+**Purpose**: Theme-aware Brack loading status for route and data waits
 
 ```tsx
 <LoadingSpinner size="lg" text="Loading..." />
 ```
 
 **Sizes**: `sm`, `md`, `lg`
+
+The spinner uses the transparent Brack mark above two code-rendered page planes,
+an orbital highlight, and a soft ground shadow to create restrained depth
+without adding image variants. Motion is finite for inline loaders, reacts to
+the shared reduced-motion preference, and never rotates or crops the mark.
+Decorative geometry is hidden from assistive technology; the component exposes
+one polite status message and does not take focus or intercept input. The single
+512px lossless transparent mark is about 52KB and is explicitly included in the
+PWA shell so high-DPI and offline loading keep the same sharp identity.
+`BrandedLoadingScreen` composes this loader with the dimensional `Progress`
+variant instead of maintaining a separate animation or flat progress rail.
 
 #### ErrorBoundary
 

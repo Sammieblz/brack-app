@@ -3,6 +3,7 @@ import { invokeFunction } from "./client";
 import { getCurrentAuthUser } from "./auth";
 import type { RichTextDocument, RichTextFormat } from "@/types/richText";
 import { withContentSnapshot } from "@/services/contentSnapshots";
+import { normalizeUploadMedia } from "@/utils/normalizeUploadMedia";
 
 export type ClubMemberRole = "admin" | "moderator" | "member";
 export type ClubJoinStatus = "none" | "member" | "requested" | "invited";
@@ -85,7 +86,7 @@ export interface ClubMedia {
   alt_text?: string | null;
 }
 
-export interface GifSearchResult {
+export interface ClubGifSearchResult {
   id: string;
   provider: "tenor";
   provider_id: string;
@@ -96,8 +97,8 @@ export interface GifSearchResult {
   height?: number | null;
 }
 
-export interface GifSearchResponse {
-  results: GifSearchResult[];
+export interface ClubGifSearchResponse {
+  results: ClubGifSearchResult[];
   next?: string | null;
 }
 
@@ -201,7 +202,7 @@ export interface SendClubChatMessageRequest {
   club_id: string;
   content?: string | null;
   media?: ClubChatMedia[];
-  gif?: GifSearchResult | null;
+  gif?: ClubGifSearchResult | null;
   reply_to_message_id?: string | null;
   mention_ids?: string[];
   client_message_id?: string | null;
@@ -366,13 +367,21 @@ export const uploadClubImageFile = async (
     throw new Error("Club images must be 10 MB or smaller");
   }
 
-  const storagePath = `${user.id}/clubs/${clubId || "new"}/${purpose}-${crypto.randomUUID()}-${toSafeFileName(file.name)}`;
+  const prepared = await normalizeUploadMedia(file, {
+    maxDimension: purpose === "avatar" ? 1024 : 2560,
+    outputMimeType: "image/webp",
+  });
+  if (prepared.sizeBytes > MAX_IMAGE_BYTES) {
+    throw new Error("Club image could not be optimized below 10 MB");
+  }
+
+  const storagePath = `${user.id}/clubs/${clubId || "new"}/${purpose}-${crypto.randomUUID()}-${toSafeFileName(prepared.fileName)}`;
   const { error } = await supabase.storage
     .from(CLUB_MEDIA_BUCKET)
-    .upload(storagePath, file, {
+    .upload(storagePath, prepared.body, {
       cacheControl: "31536000",
       upsert: false,
-      contentType: file.type,
+      contentType: prepared.mimeType,
     });
   if (error) throw error;
   return storagePath;
@@ -401,21 +410,37 @@ export const uploadClubDiscussionMediaFiles = async (
     if (isImage && file.size > MAX_IMAGE_BYTES) throw new Error(`${file.name} must be 10 MB or smaller`);
     if (isVideo && file.size > MAX_VIDEO_BYTES) throw new Error(`${file.name} must be 60 MB or smaller`);
 
-    const storagePath = `${user.id}/clubs/${clubId}/discussions/${crypto.randomUUID()}-${toSafeFileName(file.name)}`;
+    const prepared = isImage
+      ? await normalizeUploadMedia(file, {
+          maxDimension: 2560,
+          outputMimeType: "image/webp",
+        })
+      : null;
+    const uploadBody = prepared?.body ?? file;
+    const uploadName = prepared?.fileName ?? file.name;
+    const uploadMimeType = prepared?.mimeType ?? file.type;
+    const uploadSize = prepared?.sizeBytes ?? file.size;
+    if (isImage && uploadSize > MAX_IMAGE_BYTES) {
+      throw new Error(`${file.name} could not be optimized below 10 MB`);
+    }
+
+    const storagePath = `${user.id}/clubs/${clubId}/discussions/${crypto.randomUUID()}-${toSafeFileName(uploadName)}`;
     const { error } = await supabase.storage
       .from(CLUB_MEDIA_BUCKET)
-      .upload(storagePath, file, {
+      .upload(storagePath, uploadBody, {
         cacheControl: "31536000",
         upsert: false,
-        contentType: file.type,
+        contentType: uploadMimeType,
       });
     if (error) throw error;
 
     uploaded.push({
       storage_path: storagePath,
       media_type: isVideo ? "video" : "image",
-      mime_type: file.type,
-      size_bytes: file.size,
+      mime_type: uploadMimeType,
+      size_bytes: uploadSize,
+      width: prepared?.width,
+      height: prepared?.height,
       position: index,
     });
   }
@@ -440,22 +465,32 @@ export const uploadClubChatMediaFiles = async (
       throw new Error(`${file.name} must be 10 MB or smaller`);
     }
 
-    const storagePath = `${user.id}/clubs/${clubId}/chat/${crypto.randomUUID()}-${toSafeFileName(file.name)}`;
+    const prepared = await normalizeUploadMedia(file, {
+      maxDimension: 2048,
+      outputMimeType: "image/webp",
+    });
+    if (prepared.sizeBytes > MAX_CHAT_MEDIA_BYTES) {
+      throw new Error(`${file.name} could not be optimized below 10 MB`);
+    }
+
+    const storagePath = `${user.id}/clubs/${clubId}/chat/${crypto.randomUUID()}-${toSafeFileName(prepared.fileName)}`;
     const { error } = await supabase.storage
       .from(CLUB_MEDIA_BUCKET)
-      .upload(storagePath, file, {
+      .upload(storagePath, prepared.body, {
         cacheControl: "31536000",
         upsert: false,
-        contentType: file.type,
+        contentType: prepared.mimeType,
       });
     if (error) throw error;
 
     uploaded.push({
       media_source: "upload",
-      media_type: file.type === "image/gif" ? "gif" : "image",
+      media_type: prepared.mimeType === "image/gif" ? "gif" : "image",
       storage_path: storagePath,
-      mime_type: file.type,
-      size_bytes: file.size,
+      mime_type: prepared.mimeType,
+      size_bytes: prepared.sizeBytes,
+      width: prepared.width,
+      height: prepared.height,
       position: index,
     });
   }
@@ -666,8 +701,8 @@ export const updateClubChatSettings = async (
 export const searchGifs = async (
   query: string,
   pos?: string | null
-): Promise<GifSearchResponse> => {
-  return invokeFunction<GifSearchResponse>("search-gifs", {
+): Promise<ClubGifSearchResponse> => {
+  return invokeFunction<ClubGifSearchResponse>("search-gifs", {
     body: { query, pos: pos || null, limit: 18 },
   });
 };

@@ -568,7 +568,7 @@ Persist a completed timer session through `create_reading_session`, which delega
   book_id: string;
   start_time: string;
   end_time: string;
-  duration_minutes: number;
+  duration_minutes: number; // 1-720
   client_session_id?: string;
 }
 ```
@@ -581,9 +581,17 @@ Persist a completed timer session through `create_reading_session`, which delega
 }
 ```
 
+**Validation and safety**:
+- Sessions are capped at 12 hours. A forgotten persisted timer must be reviewed client-side before saving.
+- `end_time` must be after `start_time`, cannot be more than five minutes in the future, and `duration_minutes` must match the wall-clock range within a two-minute tolerance.
+- The Edge Function validates the payload before calling the RPC, and `validate_reading_session_row()` enforces the same rule on the `reading_sessions` table.
+- Validation failures are non-retryable for `sync-push`.
+
 ### award-badges
 
-Evaluate and award badges for the authenticated user.
+Evaluate and award applicable categorized badges for the authenticated user.
+Eligibility is derived from canonical books, sessions, progress, streaks,
+lists, reviews, goals, quests, and finalized Reader League results.
 
 **Endpoint**: `GET /award-badges?event=event-name` or `POST /award-badges`
 
@@ -598,9 +606,27 @@ Evaluate and award badges for the authenticated user.
 ```typescript
 {
   success: boolean;
-  awarded_badges: Array<Record<string, unknown>>;
+  event?: string;
+  awarded_count: number;
+  awarded_badges: Array<{
+    id: string;
+    code: string;
+    title: string;
+    description: string | null;
+    category: string;
+    tier: number;
+    rarity: string;
+    progress_value: number;
+    target_value: number;
+    earned_at: string;
+  }>;
 }
 ```
+
+The client badge service also calls the authenticated
+`get_user_badge_catalog(user_id)` RPC. It returns all active badges with
+progress percentages plus the user's earned badge rows. The RPC rejects
+cross-user reads.
 
 ### discover-readers
 
@@ -1005,7 +1031,8 @@ const { success, results } = await response.json();
 ```
 
 **Environment Variables**:
-- `FCM_SERVER_KEY` (required) - Firebase Cloud Messaging server key
+- `FCM_SERVICE_ACCOUNT_JSON` (required) - Firebase service account used to mint
+  OAuth tokens for FCM HTTP v1
 
 **Platforms**: Android and iOS (via FCM)
 
@@ -1108,6 +1135,8 @@ Pull reading-core records changed since the client's cursor.
   cursor: string;
   records: {
     books: unknown[];
+    book_lists: unknown[];
+    book_list_items: unknown[];
     reading_sessions: unknown[];
     progress_logs: unknown[];
     journal_entries: unknown[];
@@ -1119,7 +1148,7 @@ Pull reading-core records changed since the client's cursor.
 
 **Notes**:
 - Uses the authenticated user ID only.
-- Includes soft-delete tombstones for books, journal entries, and goals.
+- Includes soft-delete tombstones for books, book lists, list items, journal entries, and goals.
 - Cursor-based filtering uses `updated_at` for mutable entities and `created_at` for immutable session/log history.
 
 ### sync-push
@@ -1136,7 +1165,7 @@ Push reading-core outbox mutations from the local device.
     client_mutation_id: string;
     client_entity_id: string;
     user_id: string;
-    entity: 'books' | 'reading_sessions' | 'progress_logs' | 'journal_entries' | 'goals' | 'profile_preferences';
+    entity: 'books' | 'book_lists' | 'book_list_items' | 'reading_sessions' | 'progress_logs' | 'journal_entries' | 'goals' | 'profile_preferences';
     operation: 'create' | 'update' | 'delete' | 'restore';
     payload: Record<string, unknown>;
   }>;
@@ -1171,7 +1200,95 @@ Push reading-core outbox mutations from the local device.
 - The server rejects items whose `user_id` does not match the authenticated user.
 - Book creates/restores route through `add_library_book`.
 - Progress logs route through `log_progress_transaction` with client log IDs.
+- Reading sessions are validated with the same 12-hour/time-range guard used by `create-reading-session`.
+- Retryable failures return `retryable: true`; the client defers them with backoff and honors `Retry-After` on rate limits.
+- Validation and authorization failures return `retryable: false`; the client leaves those in Sync Review instead of auto-retrying.
 - Journal and goal deletes are soft deletes, not hard deletes.
+
+## Reader Journey APIs
+
+All public Journey endpoints require an authenticated Supabase JWT. Reward
+mutation functions are service-role-only and are never exposed to the client.
+
+### `gamification-home`
+
+`GET` or `POST /functions/v1/gamification-home`
+
+Returns the current Ink account, level thresholds, Gold Leaves, today's quests,
+weekly quests, tomorrow's prefetched daily quests, recent ledger entries,
+current UTC week, and the user's Reader League snapshot.
+
+### `gamification-history`
+
+`POST /functions/v1/gamification-history`
+
+```json
+{ "before": "2026-06-21T12:00:00Z", "limit": 30 }
+```
+
+Returns owner-only Ink ledger history.
+
+### `leaderboard`
+
+`POST /functions/v1/leaderboard`
+
+```json
+{ "scope": "league", "week_id": null, "limit": 100 }
+```
+
+`scope` is `league`, `friends`, or `global`. Friends are mutual follows.
+Results exclude blocks in both directions and anonymize profiles whose Journey
+visibility does not permit details.
+
+### `update-gamification-settings`
+
+`POST /functions/v1/update-gamification-settings`
+
+```json
+{
+  "leaderboard_opt_in": true,
+  "gamification_profile_visible": true,
+  "timezone": "America/New_York"
+}
+```
+
+New leaderboard opt-ins become eligible at the next Monday UTC cycle. Timezone
+must be a valid IANA identifier.
+
+### `profile-gamification`
+
+`POST /functions/v1/profile-gamification`
+
+```json
+{ "user_id": "target-profile-uuid" }
+```
+
+Returns a privacy-aware level and optional current league rank. Gold Leaves are
+returned only for the owner.
+
+### `gamification-shop`
+
+`GET /functions/v1/gamification-shop` returns the authenticated reader's Gold
+Leaf balance, enabled catalog items, inventory quantities, and purchase limits.
+
+`POST /functions/v1/gamification-shop` purchases a consumable atomically:
+
+```json
+{
+  "itemCode": "streak_freeze",
+  "quantity": 1,
+  "idempotencyKey": "shop:streak_freeze:client-generated-id"
+}
+```
+
+The same idempotency key returns the original purchase without charging twice.
+Insufficient balance and inventory-limit responses use HTTP `409`.
+
+### `gamification-worker`
+
+Internal `POST` endpoint protected by `X-Brack-Worker-Secret`. It drains the
+`gamification_jobs` Supabase Queue, runs rollover/reminder jobs, and delivers
+FCM HTTP v1 notifications. It is not a client endpoint.
 
 ## Authentication
 
@@ -1210,6 +1327,11 @@ All functions return errors in a consistent format:
 - `429` - Too Many Requests (rate limited)
 - `500` - Internal Server Error
 
+The client API wrapper treats `429` differently from connectivity failures. It
+honors `Retry-After` when present, starts a per-function cooldown, and disables
+React Query retries for that request. Do not mark the app as offline merely
+because an Edge Function is rate-limited.
+
 **Example Error**:
 ```json
 {
@@ -1242,7 +1364,8 @@ npx supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 npx supabase secrets set ALLOWED_ORIGINS=https://yourdomain.com
 npx supabase secrets set ENVIRONMENT=production
 npx supabase secrets set GOOGLE_BOOKS_API_KEY=your-key
-npx supabase secrets set FCM_SERVER_KEY=your-fcm-key
+npx supabase secrets set FCM_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}'
+npx supabase secrets set GAMIFICATION_WORKER_SECRET=your-random-worker-secret
 npx supabase secrets set TENOR_API_KEY=your-tenor-key
 ```
 

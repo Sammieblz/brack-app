@@ -4,7 +4,6 @@ import {
   bookListsRepo,
   booksRepo,
   createLocalId,
-  syncRepo,
 } from "@/services/local";
 import { readingCoreSync } from "@/services/sync/engine";
 import { isConnectivityAvailable } from "@/services/connectivity";
@@ -80,7 +79,12 @@ export const fetchBookListsPage = async (
   offset: number,
   pageSize: number
 ): Promise<BookListsPageResult> => {
-  const localLists = await bookListsRepo.list(userId);
+  const localListRecords = await bookListsRepo.listRecords(userId, {
+    includeDeleted: true,
+  });
+  const localLists = localListRecords
+    .filter((record) => record.status !== "deleted")
+    .map((record) => record.data);
   const localItems = await listLocalItems(userId);
   const withLocalCounts = localLists.map((list) => ({
     ...list,
@@ -99,6 +103,7 @@ export const fetchBookListsPage = async (
     .select("*, book_list_items(count)")
     .eq("user_id", userId)
     .is("deleted_at", null)
+    .is("book_list_items.deleted_at", null)
     .order("updated_at", { ascending: false })
     .range(offset, offset + pageSize - 1);
 
@@ -115,8 +120,19 @@ export const fetchBookListsPage = async (
   const lists = (data ?? []).map((list) =>
     normalizeRemoteList(list as unknown as Record<string, unknown>)
   );
-  await bookListsRepo.upsertRemoteMany(userId, lists);
-  return { lists, hasMore: lists.length === pageSize };
+  const reconciled = await bookListsRepo.upsertRemoteManyPreservingLocal(userId, lists);
+  const remoteIds = new Set(lists.map((list) => list.id));
+  const pendingLocalLists =
+    offset === 0
+      ? withLocalCounts.filter((list) => {
+          const record = localListRecords.find((candidate) => candidate.id === list.id);
+          return record?.status !== "synced" && !remoteIds.has(list.id);
+        })
+      : [];
+  const visibleLists = [...pendingLocalLists, ...reconciled].filter(
+    (list) => !list.deleted_at,
+  );
+  return { lists: visibleLists, hasMore: lists.length === pageSize };
 };
 
 export const createBookList = async (
@@ -228,32 +244,32 @@ export const reorderBookListItems = async (
   const timestamp = new Date().toISOString();
   const positions = new Map(items.map((item) => [item.book_id, item.position]));
 
-  await Promise.all(
-    existingItems.map((item) =>
-      bookListItemsRepo.upsertRemote(user.id, {
-        ...item,
-        position: positions.get(item.book_id) ?? item.position,
-        updated_at: timestamp,
-      })
-    )
-  );
-
   const nextVersion = list.order_version + 1;
-  await bookListsRepo.upsertRemote(user.id, {
+  const reorderedItems = existingItems.map((item) => ({
+    ...item,
+    position: positions.get(item.book_id) ?? item.position,
+    updated_at: timestamp,
+  }));
+  const reorderedList = {
     ...list,
     order_version: nextVersion,
     updated_at: timestamp,
-  });
-  await syncRepo.enqueueMutation(user.id, "book_lists", listId, "reorder", {
-    list_id: listId,
-    ordered_book_ids: items
-      .slice()
-      .sort((a, b) => a.position - b.position)
-      .map((item) => item.book_id),
-    expected_version: list.order_version,
-    order_version: nextVersion,
-    updated_at: timestamp,
-  });
+  };
+  await bookListsRepo.commitReorder(
+    user.id,
+    reorderedList,
+    reorderedItems,
+    {
+      list_id: listId,
+      ordered_book_ids: items
+        .slice()
+        .sort((a, b) => a.position - b.position)
+        .map((item) => item.book_id),
+      expected_version: list.order_version,
+      order_version: nextVersion,
+      updated_at: timestamp,
+    },
+  );
 
   emitListsChanged(user.id);
   syncInBackground(user.id);
@@ -282,21 +298,36 @@ export const fetchListBooks = async (listId: string): Promise<Book[]> => {
   const user = await requireUser();
   let items = await listLocalItems(user.id, listId);
 
-  if (items.length === 0 && isConnectivityAvailable()) {
+  if (isConnectivityAvailable()) {
     const { data, error } = await supabase
       .from("book_list_items")
       .select("*")
       .eq("list_id", listId)
-      .is("deleted_at", null)
       .order("position", { ascending: true });
     if (!error && data) {
-      items = data.map((item) =>
+      const remoteItems = data.map((item) =>
         normalizeRemoteItem(item as unknown as Record<string, unknown>, user.id)
       );
-      await bookListItemsRepo.upsertRemoteMany(user.id, items);
+      await bookListItemsRepo.upsertRemoteManyPreservingLocal(user.id, remoteItems);
+      items = await listLocalItems(user.id, listId);
     }
   }
 
-  const books = await Promise.all(items.map((item) => booksRepo.get(item.book_id)));
+  let books = await Promise.all(items.map((item) => booksRepo.get(item.book_id)));
+  const missingBookIds = items
+    .filter((_, index) => !books[index])
+    .map((item) => item.book_id);
+  if (missingBookIds.length > 0 && isConnectivityAvailable()) {
+    const { data, error } = await supabase
+      .from("books")
+      .select("*")
+      .eq("user_id", user.id)
+      .in("id", missingBookIds)
+      .is("deleted_at", null);
+    if (!error && data) {
+      await booksRepo.upsertRemoteMany(user.id, data as Book[]);
+      books = await Promise.all(items.map((item) => booksRepo.get(item.book_id)));
+    }
+  }
   return books.filter((book): book is Book => Boolean(book && !book.deleted_at));
 };

@@ -429,7 +429,7 @@ INSERT INTO books (user_id, title, author, status) VALUES
 
 Apply seed:
 ```bash
-npx supabase db reset --seed
+npx --no-install supabase db reset --local
 ```
 
 ## Further Reading

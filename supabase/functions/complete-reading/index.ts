@@ -6,6 +6,7 @@ import {
   parseJsonBody,
 } from "../_shared/appEndpoint.ts";
 import { enforceRateLimit } from "../_shared/rateLimit.ts";
+import { validateReadingSessionInput } from "../_shared/readingSessionValidation.ts";
 
 interface CompleteReadingBody {
   book_id?: unknown;
@@ -82,6 +83,17 @@ Deno.serve(async (req) => {
         400,
         origin
       );
+    }
+
+    if (hasSessionInput) {
+      const validationError = validateReadingSessionInput({
+        startTime: optionalString(body.start_time)!,
+        endTime: optionalString(body.end_time)!,
+        durationMinutes: durationMinutes!,
+      });
+      if (validationError) {
+        return jsonResponse({ error: validationError }, 400, origin);
+      }
     }
 
     if (pageNumber !== null && pageNumber < 1) {

@@ -1,7 +1,7 @@
-const ISBN_URL_PATTERNS = [
-  /(?:isbn(?:-1[03])?[:/\s-]*)?(\d{9}[\dXx]|\d{13})/,
-  /\/isbn\/(\d{9}[\dXx]|\d{13})(?:[/?#]|$)/i,
-];
+const collectMatches = (value: string, pattern: RegExp, group: number) =>
+  Array.from(value.matchAll(pattern), (match) => match[group]).filter(
+    (candidate): candidate is string => Boolean(candidate)
+  );
 
 export const normalizeIsbn = (value: string | null | undefined) =>
   String(value ?? "")
@@ -24,7 +24,7 @@ export const isValidIsbn10 = (value: string) => {
 
 export const isValidIsbn13 = (value: string) => {
   const isbn = normalizeIsbn(value);
-  if (!/^\d{13}$/.test(isbn)) return false;
+  if (!/^97[89]\d{10}$/.test(isbn)) return false;
   const total = isbn
     .slice(0, 12)
     .split("")
@@ -56,11 +56,24 @@ export const canonicalizeIsbn = (value: string) => {
 };
 
 export const extractIsbnFromScan = (rawValue: string) => {
-  const decoded = decodeURIComponent(rawValue.trim());
-  const candidates = [decoded, ...ISBN_URL_PATTERNS.flatMap((pattern) => {
-    const match = decoded.match(pattern);
-    return match?.[1] ? [match[1]] : [];
-  })];
+  const trimmed = rawValue.trim();
+  let decoded = trimmed;
+  try {
+    decoded = decodeURIComponent(trimmed);
+  } catch {
+    // Some QR payloads contain a literal "%" that is not URL encoded.
+  }
+
+  const candidates = [
+    decoded,
+    ...collectMatches(decoded, /(^|[^0-9])(97[89]\d{10})(?!\d)/g, 2),
+    ...collectMatches(decoded, /(^|[^0-9])(\d{9}[\dXx])(?![0-9Xx])/g, 2),
+    ...collectMatches(
+      decoded,
+      /(^|[^0-9Xx])([0-9Xx](?:[0-9Xx -]{8,28})[0-9Xx])(?![0-9Xx])/g,
+      2
+    ),
+  ];
 
   for (const candidate of candidates) {
     const isbn = canonicalizeIsbn(candidate);

@@ -31,7 +31,9 @@ class ImageCacheService {
             directory: Directory.Cache,
             encoding: Encoding.UTF8,
           });
-          const parsed = JSON.parse(data);
+          const parsed = JSON.parse(
+            typeof data === "string" ? data : await data.text()
+          );
           this.metadata = new Map(Object.entries(parsed));
           this.calculateTotalSize();
         } catch (error) {

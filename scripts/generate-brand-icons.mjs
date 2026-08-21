@@ -3,7 +3,6 @@ import path from "node:path";
 import sharp from "sharp";
 
 const ROOT = process.cwd();
-const CLIENT_PUBLIC = path.join(ROOT, "apps", "client", "public");
 const BRAND_ORANGE = "#F97316";
 const APP_ICON_SOURCE = path.join(
   ROOT,
@@ -24,7 +23,6 @@ const ANDROID_MIPMAPS = {
   xxxhdpi: { legacy: 192, adaptive: 432 },
 };
 
-const WEBP_ICON_SIZES = [48, 72, 96, 128, 192, 256, 512];
 const LINUX_ICON_SIZES = [16, 32, 48, 64, 128, 256, 512, 1024];
 
 const ensureParentDir = async (filePath) => {
@@ -39,7 +37,7 @@ const writeFile = async (filePath, contents) => {
 const resizePng = (input, size) =>
   sharp(input)
     .resize(size, size, { fit: "cover", kernel: sharp.kernel.lanczos3 })
-    .png()
+    .png({ compressionLevel: 9, adaptiveFiltering: true })
     .toBuffer();
 
 const solidPng = (size, color = BRAND_ORANGE) =>
@@ -51,7 +49,7 @@ const solidPng = (size, color = BRAND_ORANGE) =>
       background: color,
     },
   })
-    .png()
+    .png({ compressionLevel: 9, adaptiveFiltering: true })
     .toBuffer();
 
 const isOrangeBackground = (red, green, blue) =>
@@ -77,7 +75,7 @@ const makeTransparentMark = async (input) => {
       channels: 4,
     },
   })
-    .png()
+    .png({ compressionLevel: 9, adaptiveFiltering: true })
     .toBuffer();
 };
 
@@ -155,22 +153,6 @@ const main = async () => {
       await writeFile(
         path.join(ROOT, "resources", "linux-icons", `${size}x${size}.png`),
         await resizePng(source, size)
-      );
-    })
-  );
-
-  await writeFile(path.join(ROOT, "assets", "icon-only.png"), await resizePng(source, 1024));
-  await writeFile(path.join(ROOT, "assets", "icon-foreground.png"), await resizePng(transparentMark, 1024));
-  await writeFile(path.join(ROOT, "assets", "icon-background.png"), await solidPng(1024));
-
-  await Promise.all(
-    WEBP_ICON_SIZES.map(async (size) => {
-      await writeFile(
-        path.join(CLIENT_PUBLIC, "icons", `icon-${size}.webp`),
-        await sharp(source)
-          .resize(size, size, { fit: "cover", kernel: sharp.kernel.lanczos3 })
-          .webp({ quality: 92 })
-          .toBuffer()
       );
     })
   );

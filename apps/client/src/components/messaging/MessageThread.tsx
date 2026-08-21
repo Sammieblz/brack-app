@@ -332,7 +332,7 @@ export const MessageThread = ({
 
       <div className={cn("min-h-0 flex-1 overflow-y-auto", isMobile ? "p-3" : "p-5")}>
         {isBlocked && (
-          <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/8 p-3">
+          <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/[0.08] p-3">
             <p className="font-sans text-sm text-destructive">
               Messaging is disabled because one of you blocked the other. Existing text history is
               still visible.
@@ -489,7 +489,9 @@ export const MessageThread = ({
                           <PopoverContent className="w-auto p-2">
                             <ReactionBar
                               currentReaction={message.current_user_reaction}
-                              onToggle={(reactionType) => onToggleReaction(message.id, reactionType)}
+                              onToggle={async (reactionType) => {
+                                await onToggleReaction(message.id, reactionType);
+                              }}
                             />
                             <div className="mt-2 grid gap-1 border-t border-border pt-2">
                               <button
@@ -548,7 +550,9 @@ export const MessageThread = ({
                             compact
                             currentReaction={message.current_user_reaction}
                             reactionCounts={message.reaction_counts}
-                            onToggle={(reactionType) => onToggleReaction(message.id, reactionType)}
+                            onToggle={async (reactionType) => {
+                              await onToggleReaction(message.id, reactionType);
+                            }}
                           />
                         )}
                     </div>

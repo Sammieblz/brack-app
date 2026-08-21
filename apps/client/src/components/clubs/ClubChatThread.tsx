@@ -43,8 +43,8 @@ import {
   uploadClubChatMediaFiles,
   type ClubChatMessage,
   type ClubChatReactionType,
+  type ClubGifSearchResult,
   type ClubMember,
-  type GifSearchResult,
 } from "@/services/api";
 import { toast } from "sonner";
 
@@ -103,7 +103,7 @@ export const ClubChatThread = ({
   const [previewMedia, setPreviewMedia] = useState<string | null>(null);
   const [gifOpen, setGifOpen] = useState(false);
   const [gifQuery, setGifQuery] = useState("");
-  const [gifResults, setGifResults] = useState<GifSearchResult[]>([]);
+  const [gifResults, setGifResults] = useState<ClubGifSearchResult[]>([]);
   const [gifSearching, setGifSearching] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [mentionIds, setMentionIds] = useState<string[]>([]);
@@ -230,7 +230,7 @@ export const ClubChatThread = ({
     typingTimeoutRef.current = setTimeout(() => void setTyping(false), 2200);
   };
 
-  const handleSend = async (gif?: GifSearchResult) => {
+  const handleSend = async (gif?: ClubGifSearchResult) => {
     if (sending || !isOnline) return;
     if (!content.trim() && files.length === 0 && !gif) return;
     try {

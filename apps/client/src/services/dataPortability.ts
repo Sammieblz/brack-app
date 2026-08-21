@@ -72,6 +72,23 @@ const sha256 = async (bytes: Uint8Array) => {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 };
 
+const createDeterministicImportId = async (
+  userId: string,
+  entity: string,
+  sourceIdentity: string,
+) => {
+  const digest = new Uint8Array(
+    await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(`${userId}:${entity}:${sourceIdentity}`),
+    ),
+  ).slice(0, 16);
+  digest[6] = (digest[6] & 0x0f) | 0x50;
+  digest[8] = (digest[8] & 0x3f) | 0x80;
+  const hex = Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+};
+
 const deriveEncryptionKey = async (passphrase: string, salt: Uint8Array, usages: KeyUsage[]) => {
   const keyMaterial = await crypto.subtle.importKey(
     "raw",
@@ -198,6 +215,10 @@ export const collectReadingBackup = async (
   userId: string,
   options: { includeMedia?: boolean } = {}
 ): Promise<{ payload: ReadingBackupPayloadV1; archive: Uint8Array; csv: string }> => {
+  if (isConnectivityAvailable()) {
+    await readingCoreSync.syncUser(userId);
+  }
+
   const [
     books,
     bookLists,
@@ -217,12 +238,18 @@ export const collectReadingBackup = async (
     goalsRepo.list(userId),
     profilePreferencesRepo.get(userId),
   ]);
+  const progressLogRecords: Array<Record<string, unknown>> = progressLogs.map(
+    (record) => ({ ...record }),
+  );
+  const journalEntryRecords: Array<Record<string, unknown>> = journalEntries.map(
+    (record) => ({ ...record }),
+  );
+  const preferenceRecord: Record<string, unknown> | null = preferences
+    ? { ...preferences }
+    : null;
 
   const media = options.includeMedia
-    ? await collectMedia(
-        progressLogs as Array<Record<string, unknown>>,
-        journalEntries as Array<Record<string, unknown>>
-      )
+    ? await collectMedia(progressLogRecords, journalEntryRecords)
     : { manifest: [], files: {} };
   const manifest: ReadingBackupManifestV1 = {
     format: BACKUP_FORMAT,
@@ -248,11 +275,11 @@ export const collectReadingBackup = async (
     books,
     book_lists: bookLists,
     book_list_items: bookListItems,
-    progress_logs: progressLogs as Array<Record<string, unknown>>,
+    progress_logs: progressLogRecords,
     reading_sessions: readingSessions,
-    journal_entries: journalEntries as Array<Record<string, unknown>>,
+    journal_entries: journalEntryRecords,
     goals,
-    preferences: preferences as Record<string, unknown> | null,
+    preferences: preferenceRecord,
   };
   const csv = createLibraryCsv(books);
   const archive = zipSync(
@@ -473,26 +500,86 @@ export const previewReadingImport = async (
 };
 
 const mergeBookState = (existing: Book, incoming: Book): Book => {
-  const incomingIsNewer = Date.parse(incoming.updated_at || "") > Date.parse(existing.updated_at || "");
-  const completed = existing.status === "completed" || incoming.status === "completed";
-  const result = {
+  const statusPriority = { to_read: 0, reading: 1, completed: 2 } as const;
+  const existingPriority =
+    statusPriority[existing.status as keyof typeof statusPriority] ?? -1;
+  const incomingPriority =
+    statusPriority[incoming.status as keyof typeof statusPriority] ?? -1;
+  const status = incomingPriority > existingPriority ? incoming.status : existing.status;
+  const tags = Array.from(new Set([...(existing.tags ?? []), ...(incoming.tags ?? [])]));
+  const metadata =
+    existing.metadata || incoming.metadata
+      ? {
+          ...(incoming.metadata ?? {}),
+          ...(existing.metadata ?? {}),
+          import_source:
+            incoming.metadata?.import_source ??
+            existing.metadata?.import_source ??
+            "brack",
+        }
+      : null;
+
+  return {
     ...existing,
-    ...(incomingIsNewer ? incoming : {}),
     id: existing.id,
     user_id: existing.user_id,
-    title: incoming.title || existing.title,
-    author: incoming.author || existing.author,
-    isbn: incoming.isbn || existing.isbn,
-    cover_url: incoming.cover_url || existing.cover_url,
-    pages: incoming.pages || existing.pages,
+    title: existing.title || incoming.title,
+    author: existing.author || incoming.author,
+    isbn: existing.isbn || incoming.isbn,
+    genre: existing.genre || incoming.genre,
+    pages: existing.pages || incoming.pages,
+    chapters: existing.chapters || incoming.chapters,
+    cover_url: existing.cover_url || incoming.cover_url,
+    description: existing.description || incoming.description,
+    tags: tags.length > 0 ? tags : null,
+    metadata,
     current_page: Math.max(existing.current_page || 0, incoming.current_page || 0),
-    status: completed ? "completed" : incomingIsNewer ? incoming.status : existing.status,
-    date_finished: completed
+    status,
+    date_started: existing.date_started || incoming.date_started,
+    date_finished: status === "completed"
       ? existing.date_finished || incoming.date_finished || new Date().toISOString().split("T")[0]
       : existing.date_finished,
+    rating: existing.rating ?? incoming.rating,
+    notes: existing.notes || incoming.notes,
+    source_provider: existing.source_provider || incoming.source_provider,
+    source_id: existing.source_id || incoming.source_id,
+    shelf_position: existing.shelf_position ?? incoming.shelf_position,
+    series_name: existing.series_name || incoming.series_name,
+    series_position: existing.series_position ?? incoming.series_position,
+    series_total: existing.series_total ?? incoming.series_total,
     deleted_at: null,
     updated_at: new Date().toISOString(),
   };
+};
+
+const validateImportedSession = (session: {
+  start_time?: string | null;
+  end_time?: string | null;
+  duration?: number | null;
+}) => {
+  const startTime = Date.parse(session.start_time ?? "");
+  const endTime = Date.parse(session.end_time ?? "");
+  const duration = Number(session.duration);
+  if (
+    !Number.isFinite(startTime) ||
+    !Number.isFinite(endTime) ||
+    !Number.isFinite(duration)
+  ) {
+    throw new Error("Reading session has an invalid time or duration");
+  }
+  if (duration < 1 || duration > 12 * 60) {
+    throw new Error("Reading session duration must be between 1 minute and 12 hours");
+  }
+  if (endTime < startTime) {
+    throw new Error("Reading session ends before it starts");
+  }
+  if (endTime > Date.now() + 5 * 60_000) {
+    throw new Error("Reading session ends in the future");
+  }
+  const wallClockMinutes = Math.max(1, Math.ceil((endTime - startTime) / 60_000));
+  if (duration > wallClockMinutes + 2) {
+    throw new Error("Reading session duration does not match its time range");
+  }
 };
 
 export const commitReadingImport = async (
@@ -507,18 +594,26 @@ export const commitReadingImport = async (
   const bookIdMap = new Map<string, string>();
 
   for (const item of preview.books) {
-    const incoming = parsed.payload.books[item.source_index];
-    if (!incoming || item.action === "invalid") {
+    const sourceBook = parsed.payload.books[item.source_index];
+    if (!sourceBook || item.action === "invalid") {
       skipped += 1;
       continue;
     }
+    const incoming: Book = {
+      ...sourceBook,
+      isbn: sourceBook.isbn ? canonicalizeIsbn(sourceBook.isbn) : null,
+      metadata: {
+        ...(sourceBook.metadata ?? {}),
+        import_source: parsed.sourceFormat,
+      },
+    };
     try {
       if (item.existing_book_id) {
         const existing = await booksRepo.get(item.existing_book_id);
         if (!existing) throw new Error("Existing book disappeared during import");
         const mergedBook = mergeBookState(existing, incoming);
         await booksRepo.upsertLocal(userId, mergedBook, "update");
-        bookIdMap.set(incoming.id, existing.id);
+        bookIdMap.set(sourceBook.id, existing.id);
         merged += 1;
       } else {
         const newId = createLocalId();
@@ -531,7 +626,7 @@ export const commitReadingImport = async (
           updated_at: new Date().toISOString(),
         };
         await booksRepo.upsertLocal(userId, importedBook, "create");
-        bookIdMap.set(incoming.id, newId);
+        bookIdMap.set(sourceBook.id, newId);
         created += 1;
       }
     } catch (error) {
@@ -544,9 +639,8 @@ export const commitReadingImport = async (
   }
 
   const listIdMap = new Map<string, string>();
-  for (const list of parsed.payload.book_lists) {
-    const id = createLocalId();
-    listIdMap.set(list.id, id);
+  for (const [index, list] of parsed.payload.book_lists.entries()) {
+    const id = await createDeterministicImportId(userId, "book_list", list.id);
     const importedList: BookList = {
       ...list,
       id,
@@ -557,16 +651,30 @@ export const commitReadingImport = async (
       created_at: list.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
-    await bookListsRepo.upsertLocal(userId, importedList, "create");
+    try {
+      await bookListsRepo.upsertLocal(userId, importedList, "create");
+      listIdMap.set(list.id, id);
+    } catch (error) {
+      errors.push({
+        row: index + 1,
+        code: "book_list_import_failed",
+        message: error instanceof Error ? error.message : "Book list import failed",
+      });
+    }
   }
 
-  for (const item of parsed.payload.book_list_items) {
+  for (const [index, item] of parsed.payload.book_list_items.entries()) {
     const listId = listIdMap.get(item.list_id);
     const bookId = bookIdMap.get(item.book_id);
     if (!listId || !bookId) continue;
+    const itemId = await createDeterministicImportId(
+      userId,
+      "book_list_item",
+      item.id || `${item.list_id}:${item.book_id}`,
+    );
     const importedItem: BookListItem = {
       ...item,
-      id: createLocalId(),
+      id: itemId,
       user_id: userId,
       list_id: listId,
       book_id: bookId,
@@ -574,30 +682,63 @@ export const commitReadingImport = async (
       added_at: item.added_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
-    await bookListItemsRepo.upsertLocal(userId, importedItem, "create");
+    try {
+      await bookListItemsRepo.upsertLocal(userId, importedItem, "create");
+    } catch (error) {
+      errors.push({
+        row: index + 1,
+        code: "book_list_item_import_failed",
+        message: error instanceof Error ? error.message : "Book list item import failed",
+      });
+    }
   }
 
   const importMappedRecords = async (
     records: Array<Record<string, unknown>>,
     type: "progress" | "journal"
   ) => {
-    for (const record of records) {
+    for (const [index, record] of records.entries()) {
       const sourceBookId = String(record.book_id || "");
       const bookId = bookIdMap.get(sourceBookId);
       if (!bookId) continue;
+      const sourceIdentity = String(
+        record.id ||
+          `${sourceBookId}:${record.logged_at || record.created_at || ""}:${index}`,
+      );
+      const importedId = await createDeterministicImportId(
+        userId,
+        type === "progress" ? "progress_log" : "journal_entry",
+        sourceIdentity,
+      );
       const imported = {
         ...record,
-        id: createLocalId(),
+        id: importedId,
         user_id: userId,
         book_id: bookId,
         created_at: String(record.created_at || new Date().toISOString()),
         updated_at: String(record.updated_at || new Date().toISOString()),
         deleted_at: null,
       };
-      if (type === "progress") {
-        await progressRepo.upsertLocal(userId, imported as never, "create");
-      } else {
-        await journalRepo.upsertLocal(userId, imported as never, "create");
+      try {
+        if (type === "progress") {
+          const pageNumber = Number(record.page_number);
+          if (!Number.isFinite(pageNumber) || pageNumber < 0) {
+            throw new Error("Progress log has an invalid page number");
+          }
+          await progressRepo.upsertLocal(
+            userId,
+            { ...imported, page_number: pageNumber, client_log_id: importedId, log_type: "import" } as never,
+            "create",
+          );
+        } else {
+          await journalRepo.upsertLocal(userId, imported as never, "create");
+        }
+      } catch (error) {
+        errors.push({
+          row: index + 1,
+          code: `${type}_import_failed`,
+          message: error instanceof Error ? error.message : `${type} import failed`,
+        });
       }
     }
   };
@@ -605,43 +746,74 @@ export const commitReadingImport = async (
   await importMappedRecords(parsed.payload.progress_logs, "progress");
   await importMappedRecords(parsed.payload.journal_entries, "journal");
 
-  for (const session of parsed.payload.reading_sessions) {
+  for (const [index, session] of parsed.payload.reading_sessions.entries()) {
     const bookId = bookIdMap.get(session.book_id);
     if (!bookId) continue;
-    await sessionsRepo.upsertLocal(userId, {
-      ...session,
-      id: createLocalId(),
-      user_id: userId,
-      book_id: bookId,
-      client_session_id: createLocalId(),
-    }, "create");
+    const importedId = await createDeterministicImportId(
+      userId,
+      "reading_session",
+      session.id || session.client_session_id || `${session.book_id}:${session.start_time}`,
+    );
+    try {
+      validateImportedSession(session);
+      await sessionsRepo.upsertLocal(userId, {
+        ...session,
+        id: importedId,
+        user_id: userId,
+        book_id: bookId,
+        client_session_id: `import:${importedId}`,
+      }, "create");
+    } catch (error) {
+      errors.push({
+        row: index + 1,
+        code: "reading_session_import_failed",
+        message: error instanceof Error ? error.message : "Reading session import failed",
+      });
+    }
   }
 
-  for (const goal of parsed.payload.goals) {
-    await goalsRepo.upsertLocal(userId, {
-      ...goal,
-      id: createLocalId(),
-      user_id: userId,
-      deleted_at: null,
-      updated_at: new Date().toISOString(),
-    }, "create");
+  for (const [index, goal] of parsed.payload.goals.entries()) {
+    const importedId = await createDeterministicImportId(userId, "goal", goal.id);
+    try {
+      await goalsRepo.upsertLocal(userId, {
+        ...goal,
+        id: importedId,
+        user_id: userId,
+        deleted_at: null,
+        updated_at: new Date().toISOString(),
+      }, "create");
+    } catch (error) {
+      errors.push({
+        row: index + 1,
+        code: "goal_import_failed",
+        message: error instanceof Error ? error.message : "Goal import failed",
+      });
+    }
   }
 
   if (parsed.payload.preferences) {
-    const current = await profilePreferencesRepo.get(userId);
-    await profilePreferencesRepo.upsertLocal(userId, {
-      ...current,
-      ...parsed.payload.preferences,
-      id: userId,
-      updated_at: new Date().toISOString(),
-    });
+    try {
+      const current = await profilePreferencesRepo.get(userId);
+      await profilePreferencesRepo.upsertLocal(userId, {
+        ...current,
+        ...parsed.payload.preferences,
+        id: userId,
+        updated_at: new Date().toISOString(),
+      });
+    } catch (error) {
+      errors.push({
+        row: null,
+        code: "preferences_import_failed",
+        message: error instanceof Error ? error.message : "Preferences import failed",
+      });
+    }
   }
 
   if (isConnectivityAvailable()) {
     void readingCoreSync.syncUser(userId).catch(console.error);
   }
 
-  return {
+  const result = {
     import_id: preview.import_id,
     created,
     merged,

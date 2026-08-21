@@ -63,7 +63,13 @@ Deno.serve(async (req) => {
       try {
         const { data, error: addError } = await client.rpc("add_library_book", {
           p_user_id: auth.user.id,
-          p_book: item.book,
+          p_book: {
+            ...item.book,
+            metadata: {
+              ...(item.book?.metadata || {}),
+              import_source: job.source_format || "server_import",
+            },
+          },
         });
         if (addError) throw addError;
         if (data?.code === "book_exists") merged += 1;

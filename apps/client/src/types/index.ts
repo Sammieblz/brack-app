@@ -27,6 +27,10 @@ export interface Profile {
   profile_visibility: string | null;
   show_reading_activity: boolean | null;
   show_currently_reading: boolean | null;
+  leaderboard_opt_in?: boolean;
+  leaderboard_eligible_from?: string | null;
+  gamification_profile_visible?: boolean;
+  timezone?: string;
   allow_friend_requests: boolean | null;
   is_active: boolean;
   current_streak: number;
@@ -64,6 +68,9 @@ export interface Book {
   source_provider: string | null;
   source_id: string | null;
   shelf_position: number | null;
+  series_name?: string | null;
+  series_position?: number | null;
+  series_total?: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -73,13 +80,19 @@ export interface Goal {
   id: string;
   user_id: string;
   target_books: number | null;
+  target_pages: number | null;
+  target_minutes: number | null;
   start_date: string | null;
   end_date: string | null;
   reminder_time: string | null;
-  is_completed: boolean;
   created_at: string;
-  updated_at?: string | null;
-  deleted_at?: string | null;
+  is_completed: boolean;
+  goal_type: "books_count" | "pages_count" | "reading_time";
+  period_type: "monthly" | "quarterly" | "yearly" | "custom";
+  is_active: boolean;
+  completed_at: string | null;
+  updated_at: string | null;
+  deleted_at: string | null;
 }
 
 export interface ReadingHabits {
@@ -161,9 +174,23 @@ export interface ReadingStreakDay {
 
 export interface Badge {
   id: string;
+  code: string;
   title: string;
   description: string | null;
   icon_url: string | null;
+  icon_key: string | null;
+  category: BadgeCategory;
+  tier: number;
+  rarity: BadgeRarity;
+  metric_key: string;
+  target_value: number;
+  event_types: string[];
+  sort_order: number;
+  is_active: boolean;
+  is_secret: boolean;
+  progress_value?: number;
+  progress_percentage?: number;
+  earned_at?: string | null;
   created_at: string;
 }
 
@@ -172,7 +199,27 @@ export interface UserBadge {
   user_id: string;
   badge_id: string;
   earned_at: string;
+  source?: string;
+  reward_eligible?: boolean;
+  progress_value?: number | null;
 }
+
+export type BadgeCategory =
+  | 'collection'
+  | 'completion'
+  | 'streak'
+  | 'time'
+  | 'pages'
+  | 'exploration'
+  | 'craft'
+  | 'journey';
+
+export type BadgeRarity =
+  | 'common'
+  | 'uncommon'
+  | 'rare'
+  | 'epic'
+  | 'legendary';
 
 export type BookStatus = 'reading' | 'completed' | 'to_read';
 export type LibraryViewMode = 'flat' | 'bookshelf' | 'carousel';

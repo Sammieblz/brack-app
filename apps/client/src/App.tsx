@@ -12,7 +12,7 @@ import { TimerProvider } from "@/contexts/TimerContext";
 import { FloatingTimerWidget } from "@/components/FloatingTimerWidget";
 import { SwipeBackHandler } from "@/components/SwipeBackHandler";
 import { JournalPromptHandler } from "@/components/JournalPromptHandler";
-import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { ReadingSyncIndicator } from "@/components/ReadingSyncIndicator";
 import { syncService } from "@/services/syncService";
 import { deepLinkService } from "@/services/deepLinkService";
 import { DeepLinkHandler } from "@/components/DeepLinkHandler";
@@ -26,17 +26,19 @@ import NotFound from "./screens/NotFound";
 
 import { ProfileProvider } from "./contexts/ProfileContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { useNetworkStatus } from "./hooks/useNetworkStatus";
 import { ConfirmDialogProvider } from "./contexts/ConfirmDialogContext";
 import { initSentry } from "./lib/sentry";
 import { usePushNotifications } from "./hooks/usePushNotifications";
 import { usePresenceHeartbeat } from "./hooks/usePresenceHeartbeat";
 import { LiveRegion } from "./components/ui/live-region";
 import { BadgeCelebrationProvider } from "./contexts/BadgeCelebrationContext";
+import { RewardFeedbackProvider } from "./contexts/RewardFeedbackContext";
 import { useAppViewportHeight } from "./hooks/useAppViewportHeight";
 import { OnboardingRouteGuard } from "./components/OnboardingRouteGuard";
 import { OnboardingEntryRedirect } from "./components/OnboardingEntryRedirect";
 import { FeatureGate } from "./components/FeatureGate";
+import { JourneyLevelUpObserver } from "./components/JourneyLevelUpObserver";
+import { getApiErrorStatus } from "@/services/api/client";
 
 // Initialize Sentry error tracking
 initSentry();
@@ -73,19 +75,18 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 1000 * 60 * 5,
       gcTime: 1000 * 60 * 30,
-      retry: 1,
+      retry: (failureCount, error) => getApiErrorStatus(error) !== 429 && failureCount < 1,
       refetchOnWindowFocus: false,
       refetchOnReconnect: "always",
     },
     mutations: {
-      retry: 1,
+      retry: (failureCount, error) => getApiErrorStatus(error) !== 429 && failureCount < 1,
     },
   },
 });
 
 const App = () => {
   useAppViewportHeight();
-  useNetworkStatus();
   usePresenceHeartbeat();
   const { register: registerPushNotifications } = usePushNotifications();
   
@@ -119,8 +120,10 @@ const App = () => {
                   <LiveRegion level="polite" />
                   <Suspense fallback={<div className="p-10 flex justify-center"><LoadingSpinner size="lg" /></div>}>
                     <BrowserRouter>
-                      <BadgeCelebrationProvider>
+                      <RewardFeedbackProvider>
+                        <BadgeCelebrationProvider>
                         <DeepLinkHandler />
+                        <JourneyLevelUpObserver />
                         <OnboardingRouteGuard />
                         <SwipeBackHandler>
                           <PageTransition>
@@ -147,7 +150,7 @@ const App = () => {
                             <Route path="/history" element={<ReadingHistory />} />
                             <Route path="/profile" element={<Profile />} />
                             <Route path="/settings" element={<Settings />} />
-                            <Route path="/achievements" element={<Achievements />} />
+                            <Route path="/achievements" element={<FeatureGate feature="gamification"><Achievements /></FeatureGate>} />
                             <Route path="/book-lists" element={<BookLists />} />
                             <Route path="/lists" element={<BookLists />} />
                             <Route path="/lists/:listId" element={<BookListDetail />} />
@@ -167,9 +170,10 @@ const App = () => {
                         </PageTransition>
                         <FloatingTimerWidget />
                         <JournalPromptHandler />
-                        <OfflineIndicator />
+                        <ReadingSyncIndicator />
                       </SwipeBackHandler>
-                      </BadgeCelebrationProvider>
+                        </BadgeCelebrationProvider>
+                      </RewardFeedbackProvider>
                     </BrowserRouter>
                   </Suspense>
                 </TooltipProvider>

@@ -12,6 +12,7 @@ Brack supports offline-first reading workflows for the data users are most likel
 - Journal entries
 - Goals
 - Profile theme preferences
+- Book lists and list membership
 
 Social, discovery, clubs, messages, reviews, search, push notifications, and image uploads are still online-first unless a specific screen adds its own cache.
 
@@ -81,9 +82,13 @@ Outbox items use these fields:
 - `status` as `pending`, `syncing`, `failed`, or `synced`
 - retry metadata such as `attempt_count`, `last_error`, and `next_attempt_at`
 
+Only `pending` items and stale `syncing` items are selected for automatic push. `failed` items are intentionally excluded from automatic retry and require Sync Review, because they normally represent validation, duplicate, or authorization problems.
+
 Supported entities are:
 
 - `books`
+- `book_lists`
+- `book_list_items`
 - `reading_sessions`
 - `progress_logs`
 - `journal_entries`
@@ -102,9 +107,12 @@ Important behavior:
 - Uses `add_library_book` for book creates/restores so duplicate prevention stays centralized.
 - Uses `create_reading_session` for timer sessions.
 - Uses `log_progress_transaction` for progress logs.
+- Validates reading sessions before calling RPCs: duration must be 1-720 minutes, match the saved time range, and not end in the future.
 - Soft-deletes books, journal entries, and goals by setting `deleted_at`.
 - Marks deleted goals inactive with `is_active = false`.
-- Returns accepted and failed item lists so the client can clear, retry, or review failures.
+- Returns accepted and failed item lists so the client can clear, defer retryable work, or review non-retryable failures.
+
+Retryable network, timeout, 429, and server failures stay `pending` with `next_attempt_at` backoff. The client honors `Retry-After` when available and caps local retry delay at 15 minutes. Non-retryable validation failures, such as an impossible stale timer session, become `failed` review items.
 
 ### sync-pull
 
@@ -138,7 +146,8 @@ The migration `20260505070118_journal_goal_delete_tombstones.sql` adds `deleted_
 Current conflict handling is intentionally lightweight:
 
 - Remote pull applies newer remote rows into local repositories.
-- Push failures stay in the outbox as `failed`.
+- Retryable push failures are deferred and retried later.
+- Non-retryable push failures stay in the outbox as `failed`.
 - `SyncReviewDialog` lets users retry or discard failed local changes.
 - There is not yet a full field-by-field manual merge UI.
 
@@ -149,7 +158,7 @@ Sync can run when:
 - The app starts or regains focus.
 - Network connectivity returns.
 - A screen or user action explicitly requests sync.
-- `OfflineIndicator` triggers manual sync.
+- `OfflineIndicator` triggers manual sync and may auto-sync pending items at most once every 30 seconds.
 
 The sync engine skips work while another sync is already running or while `navigator.onLine` is false.
 
@@ -227,6 +236,7 @@ iOS requires macOS, CocoaPods, and Xcode. JavaScript sync behavior is implemente
 - Hard-delete semantics are avoided for reading-core entities that must sync across devices.
 - Native SQLite behavior still needs real-device validation, especially iOS.
 - Desktop packaging is unsigned in the first pass; signing and notarization are separate release hardening work.
+- Local Supabase database tests require Docker Desktop or another working Docker engine. If `supabase test db` fails before connecting to Postgres, start Docker and rerun before treating database validation as complete.
 
 ## Related Docs
 

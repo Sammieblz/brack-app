@@ -171,7 +171,6 @@ const Onboarding = () => {
   );
 
   const currentStep = ONBOARDING_STEPS[stepIndex];
-  const progress = Math.round(((stepIndex + 1) / ONBOARDING_STEPS.length) * 100);
   const entrySource = searchParams.get("from");
   const returnPath = entrySource === "settings" ? "/settings" : "/dashboard";
   const isCompletedEdit =
@@ -237,7 +236,9 @@ const Onboarding = () => {
       },
     });
 
-    return () => tween.kill();
+    return () => {
+      tween.kill();
+    };
   }, [formData.goalTargetBooks, reducedMotion]);
 
   useEffect(() => {
@@ -458,7 +459,7 @@ const Onboarding = () => {
             onClick={() => navigate("/")}
             className="flex items-center gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted/60"
           >
-            <ThemeAwareLogo variant="icon" tone="theme" size="h-10 w-10" className="drop-shadow-sm" />
+            <ThemeAwareLogo variant="icon" size="h-10 w-10" className="drop-shadow-sm" />
             <span>
               <span className="block font-display text-xl font-bold leading-none">Brack</span>
               <span className="block font-sans text-xs text-muted-foreground">Reading tracker</span>
@@ -476,7 +477,7 @@ const Onboarding = () => {
             <div className="sticky top-8 space-y-5">
               <div className="rounded-lg border border-border/70 bg-card/80 p-5 shadow-sm backdrop-blur">
                 <div className="mb-5 flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-md bg-primary/12 text-primary">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-md bg-primary/[0.12] text-primary">
                     <StepIcon className="h-5 w-5" />
                   </div>
                   <div>
@@ -489,7 +490,14 @@ const Onboarding = () => {
                   </div>
                 </div>
 
-                <Progress value={progress} className="h-2" />
+                <Progress
+                  value={stepIndex + 1}
+                  max={ONBOARDING_STEPS.length}
+                  variant="dimensional"
+                  segments={ONBOARDING_STEPS.length}
+                  aria-label="Onboarding setup progress"
+                  getValueLabel={(step, total) => `Step ${step} of ${total}`}
+                />
                 <div className="mt-5 space-y-2">
                   {ONBOARDING_STEPS.map((step, index) => {
                     const MetaIcon = STEP_META[step].icon;
@@ -505,7 +513,7 @@ const Onboarding = () => {
                         disabled={saving}
                         className={cn(
                           "flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors disabled:pointer-events-none disabled:opacity-60",
-                          active ? "bg-primary/12 text-primary" : "hover:bg-muted/60",
+                          active ? "bg-primary/[0.12] text-primary" : "hover:bg-muted/60",
                         )}
                       >
                         <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border/70 bg-background">
@@ -544,7 +552,14 @@ const Onboarding = () => {
                   </div>
                   <Badge variant="outline">{stepIndex + 1}/{ONBOARDING_STEPS.length}</Badge>
                 </div>
-                <Progress value={progress} className="h-2" />
+                <Progress
+                  value={stepIndex + 1}
+                  max={ONBOARDING_STEPS.length}
+                  variant="dimensional"
+                  segments={ONBOARDING_STEPS.length}
+                  aria-label="Onboarding setup progress"
+                  getValueLabel={(step, total) => `Step ${step} of ${total}`}
+                />
                 <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
                   {ONBOARDING_STEPS.map((step) => {
                     const MetaIcon = STEP_META[step].icon;
@@ -742,15 +757,19 @@ const PaletteStep = ({
       </div>
       <div className="space-y-3 rounded-lg border border-border bg-card p-4">
         <div className="flex items-center gap-3">
-          <ThemeAwareLogo variant="icon" tone="theme" size="h-10 w-10" />
+          <ThemeAwareLogo variant="icon" size="h-10 w-10" />
           <div>
             <p className="font-display text-xl font-bold">Brack</p>
             <p className="font-sans text-xs text-muted-foreground">Your palette follows you.</p>
           </div>
         </div>
-        <div className="h-2 rounded-full bg-muted">
-          <div className="h-full w-2/3 rounded-full bg-primary" />
-        </div>
+        <Progress
+          value={2}
+          max={3}
+          variant="dimensional"
+          segments={3}
+          aria-hidden="true"
+        />
         <div className="grid grid-cols-2 gap-2">
           <div className="rounded-md border border-border bg-background p-3">
             <p className="font-sans text-xs text-muted-foreground">Goal</p>
@@ -843,7 +862,7 @@ const TasteStep = ({
                 className={cn(
                   "rounded-md border p-3 text-left transition-colors",
                   formData.preferredBookLength === option.value
-                    ? "border-primary bg-primary/12 text-primary"
+                    ? "border-primary bg-primary/[0.12] text-primary"
                     : "border-border bg-background hover:bg-muted/60",
                 )}
               >
@@ -1182,7 +1201,7 @@ const OptionGrid = ({
           className={cn(
             "rounded-md border px-3 py-2 text-left font-sans text-sm transition-colors",
             value === option.value
-              ? "border-primary bg-primary/12 text-primary"
+              ? "border-primary bg-primary/[0.12] text-primary"
               : "border-border bg-background hover:bg-muted/60",
           )}
         >

@@ -9,10 +9,14 @@ const getInitialState = (): ConnectivityState => {
 
 let currentState = getInitialState();
 let lastSuccessfulProbeAt = 0;
+let successfulConnectivityVersion = 0;
+let probeInFlight: Promise<ConnectivityState> | null = null;
 let monitoringReferences = 0;
 let monitoringCleanup: (() => void) | null = null;
 
 const emitState = (state: ConnectivityState) => {
+  if (state === currentState) return;
+
   currentState = state;
   if (typeof window !== "undefined") {
     window.dispatchEvent(
@@ -23,12 +27,30 @@ const emitState = (state: ConnectivityState) => {
 
 const withTimeout = async (input: RequestInfo | URL, init: RequestInit, timeoutMs: number) => {
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+  const timeout = globalThis.setTimeout(() => controller.abort(), timeoutMs);
   try {
     return await fetch(input, { ...init, signal: controller.signal });
   } finally {
-    window.clearTimeout(timeout);
+    globalThis.clearTimeout(timeout);
   }
+};
+
+const markConfirmedConnectivityFailure = (successfulVersionAtProbeStart?: number) => {
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    emitState("offline");
+    return;
+  }
+
+  // A request that completed after this probe began is stronger evidence than
+  // the stale probe result. Do not let the older failure overwrite it.
+  if (
+    successfulVersionAtProbeStart !== undefined &&
+    successfulConnectivityVersion > successfulVersionAtProbeStart
+  ) {
+    return;
+  }
+
+  emitState("degraded");
 };
 
 export const getConnectivityState = () => currentState;
@@ -40,16 +62,24 @@ export const markAuthenticationRequired = () => emitState("authentication_requir
 
 export const markConnectivitySuccess = () => {
   lastSuccessfulProbeAt = Date.now();
+  successfulConnectivityVersion += 1;
   emitState("online");
 };
 
 export const markConnectivityFailure = () => {
-  emitState(typeof navigator !== "undefined" && navigator.onLine ? "degraded" : "offline");
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    emitState("offline");
+    return;
+  }
+
+  // An individual API request can fail for application, rate-limit, or server
+  // reasons while the connection itself is healthy. Confirm reachability before
+  // changing the global connectivity state.
+  void probeConnectivity();
 };
 
 export const isRetryableConnectivityError = (error: unknown) => {
   if (error instanceof DOMException && error.name === "AbortError") return true;
-  if (error instanceof TypeError) return true;
 
   const candidate = error as {
     status?: number;
@@ -84,36 +114,50 @@ export const probeConnectivity = async (force = false): Promise<ConnectivityStat
     return currentState;
   }
 
+  if (probeInFlight) return probeInFlight;
+
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
   const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
   if (!supabaseUrl) {
-    markConnectivityFailure();
+    // A missing build-time setting is a configuration problem, not evidence of
+    // a lost network connection.
     return currentState;
   }
 
-  try {
-    const response = await withTimeout(
-      `${supabaseUrl}/auth/v1/health`,
-      {
-        method: "GET",
-        headers: publishableKey ? { apikey: publishableKey } : undefined,
-        cache: "no-store",
-      },
-      5_000
-    );
+  const successfulVersionAtProbeStart = successfulConnectivityVersion;
+  const probe = (async () => {
+    try {
+      const response = await withTimeout(
+        `${supabaseUrl}/auth/v1/health`,
+        {
+          method: "GET",
+          headers: publishableKey ? { apikey: publishableKey } : undefined,
+          cache: "no-store",
+        },
+        5_000
+      );
 
-    if (response.ok) {
-      markConnectivitySuccess();
-    } else if (response.status === 401 || response.status === 403) {
-      markAuthenticationRequired();
-    } else {
-      markConnectivityFailure();
+      if (response.ok || (response.status >= 400 && response.status < 500)) {
+        // Any non-server HTTP response confirms that the service is reachable.
+        // Authentication state is determined by authenticated API calls, not by
+        // this public health endpoint.
+        markConnectivitySuccess();
+      } else {
+        markConfirmedConnectivityFailure(successfulVersionAtProbeStart);
+      }
+    } catch {
+      markConfirmedConnectivityFailure(successfulVersionAtProbeStart);
     }
-  } catch {
-    markConnectivityFailure();
-  }
 
-  return currentState;
+    return currentState;
+  })();
+
+  probeInFlight = probe;
+  try {
+    return await probe;
+  } finally {
+    if (probeInFlight === probe) probeInFlight = null;
+  }
 };
 
 export const initializeConnectivityMonitoring = () => {
@@ -138,7 +182,7 @@ export const initializeConnectivityMonitoring = () => {
   window.addEventListener("online", handleOnline);
   window.addEventListener("offline", handleOffline);
   document.addEventListener("visibilitychange", handleVisibility);
-  void probeConnectivity(true);
+  void probeConnectivity();
 
   monitoringCleanup = () => {
     window.removeEventListener("online", handleOnline);

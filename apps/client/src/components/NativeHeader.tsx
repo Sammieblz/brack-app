@@ -13,14 +13,17 @@ import { useBooks } from "@/hooks/useBooks";
 import type { BackButtonConfig } from "@/hooks/useAppBack";
 import { cn } from "@/lib/utils";
 import { addScrollListener, getScrollParent, getScrollTop } from "@/utils/scroll";
+import { UserNotificationsPopover } from "@/components/UserNotificationsPopover";
 
 interface NativeHeaderProps {
   title: string;
   subtitle?: string;
   back?: BackButtonConfig;
   action?: ReactNode;
+  secondary?: ReactNode;
   scrollContainerId?: string;
   showUtilityActions?: boolean;
+  showTimerAction?: boolean;
 }
 
 const getBookTimestamp = (book: { updated_at?: string | null; created_at?: string | null }) => {
@@ -238,17 +241,7 @@ const HeaderUtilityActions = () => {
         <AppIcon icon={APP_ICONS.common.chat} variant="action" />
       </Button>
 
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        onClick={() => navigate("/settings?section=notifications")}
-        className="rounded-full border-border/70 bg-card/45 shadow-none hover:bg-accent"
-        aria-label="Open notification settings"
-        title="Notifications"
-      >
-        <AppIcon icon={APP_ICONS.settings.notifications} variant="action" />
-      </Button>
+      <UserNotificationsPopover />
     </div>
   );
 };
@@ -258,8 +251,10 @@ export const NativeHeader = ({
   subtitle,
   back,
   action,
+  secondary,
   scrollContainerId,
   showUtilityActions = false,
+  showTimerAction = true,
 }: NativeHeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -320,12 +315,17 @@ export const NativeHeader = ({
         </div>
         {(showUtilityActions || action) && (
           <div className="flex flex-shrink-0 items-center justify-end gap-2">
-            <HeaderTimerWidget />
+            {showTimerAction && <HeaderTimerWidget />}
             {showUtilityActions && <HeaderUtilityActions />}
             {action}
           </div>
         )}
       </div>
+      {secondary && (
+        <div className="app-page-header border-t border-border/60 py-2">
+          {secondary}
+        </div>
+      )}
     </header>
   );
 };

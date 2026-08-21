@@ -28,7 +28,7 @@ import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 const renderNavGroup = (label: string, items: NavItem[], pathname: string) => (
-  <SidebarGroup className="px-2 py-1.5">
+  <SidebarGroup className="px-2 py-1.5 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
     <SidebarGroupLabel>{label}</SidebarGroupLabel>
     <SidebarGroupContent>
       <SidebarMenu>
@@ -83,7 +83,7 @@ export const AppSidebar = () => {
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
-      <SidebarHeader className="px-2 py-3 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-2">
+      <SidebarHeader className="px-2 py-3 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
         <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
           <SidebarMenuButton
             asChild
@@ -95,7 +95,6 @@ export const AppSidebar = () => {
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md p-1.5 text-primary">
                 <ThemeAwareLogo
                   variant="icon"
-                  tone="theme"
                   size="h-full w-full"
                 />
               </div>
@@ -111,11 +110,10 @@ export const AppSidebar = () => {
             aria-label="Open sidebar"
             title="Open sidebar"
             onClick={() => setOpen(true)}
-            className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-md p-1.5 text-primary transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:flex"
+            className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-md p-2 text-primary transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:flex"
           >
             <ThemeAwareLogo
               variant="icon"
-              tone="theme"
               size="h-full w-full"
               className="drop-shadow-sm"
             />
@@ -138,7 +136,7 @@ export const AppSidebar = () => {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="px-2 py-3">
+      <SidebarFooter className="px-2 py-3 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Profile" isActive={location.pathname === "/profile"}>

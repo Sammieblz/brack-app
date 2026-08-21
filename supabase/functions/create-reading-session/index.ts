@@ -6,6 +6,7 @@ import {
   parseJsonBody,
 } from "../_shared/appEndpoint.ts";
 import { enforceRateLimit } from "../_shared/rateLimit.ts";
+import { validateReadingSessionInput } from "../_shared/readingSessionValidation.ts";
 
 interface CreateReadingSessionBody {
   book_id?: unknown;
@@ -55,6 +56,15 @@ Deno.serve(async (req) => {
         400,
         origin
       );
+    }
+
+    const validationError = validateReadingSessionInput({
+      startTime,
+      endTime,
+      durationMinutes,
+    });
+    if (validationError) {
+      return jsonResponse({ error: validationError }, 400, origin);
     }
 
     const { data, error } = await supabaseClient.rpc("create_reading_session", {

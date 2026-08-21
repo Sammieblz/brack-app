@@ -3,30 +3,14 @@ import { createLocalId, goalsRepo } from "@/services/local";
 import { getCurrentAuthUser } from "./auth";
 import { isConnectivityAvailable } from "@/services/connectivity";
 import { readingCoreSync } from "@/services/sync/engine";
+import type { Goal } from "@/types";
 
 const syncGoals = (userId: string) => {
   if (!isConnectivityAvailable()) return;
   void readingCoreSync.syncUser(userId).catch(console.error);
 };
 
-export interface Goal {
-  id: string;
-  user_id: string;
-  target_books: number | null;
-  target_pages: number | null;
-  target_minutes: number | null;
-  start_date: string | null;
-  end_date: string | null;
-  reminder_time: string | null;
-  created_at: string;
-  is_completed: boolean;
-  goal_type: "books_count" | "pages_count" | "reading_time";
-  period_type: "monthly" | "quarterly" | "yearly" | "custom";
-  is_active: boolean;
-  completed_at: string | null;
-  updated_at: string | null;
-  deleted_at: string | null;
-}
+export type { Goal } from "@/types";
 
 export const fetchGoals = async (userId: string): Promise<Goal[]> => {
   const localGoals = await goalsRepo.list(userId);

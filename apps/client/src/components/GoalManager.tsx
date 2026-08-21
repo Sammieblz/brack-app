@@ -8,10 +8,10 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Confetti } from "@/components/animations/Confetti";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
-import { ProgressBarFill } from "@/components/animations/ProgressBarFill";
 import { TrophyReveal } from "@/components/animations/TrophyReveal";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { APP_ICONS } from "@/config/iconography";
@@ -341,9 +341,14 @@ const GoalCard = ({
                 </div>
                 <p className="font-sans text-sm text-muted-foreground">{target - current} remaining</p>
               </div>
-              <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-background/80">
-                <ProgressBarFill progress={Math.min(progress, 100)} duration={1} />
-              </div>
+              <Progress
+                value={Math.min(current, target)}
+                max={target}
+                variant="dimensional"
+                className="mt-3"
+                aria-label={`${getPeriodTypeLabel(goal.period_type)} ${unit} goal progress`}
+                getValueLabel={(value, maximum) => `${value} of ${maximum} ${unit}`}
+              />
             </div>
 
             {completedGoalId === goal.id && (
@@ -467,12 +472,13 @@ const GoalSnapshot = ({
               {completedGoals.length}/{totalGoals || 0}
             </span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${completedRate}%` }}
-            />
-          </div>
+          <Progress
+            value={completedGoals.length}
+            max={totalGoals || 1}
+            className="h-2"
+            aria-label="Completed goals"
+            getValueLabel={() => `${completedGoals.length} of ${totalGoals} goals completed`}
+          />
         </div>
       </CardContent>
     </Card>

@@ -11,12 +11,14 @@ import { getInitials } from "@/lib/avatarUtils";
 import { cn } from "@/lib/utils";
 import { AppBackButton } from "@/components/AppBackButton";
 import type { BackButtonConfig } from "@/hooks/useAppBack";
+import { UserNotificationsPopover } from "@/components/UserNotificationsPopover";
 
 interface MobileHeaderProps {
   title: string;
   showBack?: boolean;
   back?: BackButtonConfig;
   action?: ReactNode;
+  secondary?: ReactNode;
   className?: string;
 }
 
@@ -25,6 +27,7 @@ export const MobileHeader = ({
   showBack = false, 
   back,
   action,
+  secondary,
   className
 }: MobileHeaderProps) => {
   const { triggerHaptic } = useHapticFeedback();
@@ -69,30 +72,44 @@ export const MobileHeader = ({
           <div className="flex items-center gap-2 shrink-0 ml-2">
             {action}
             {showAvatar && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  triggerHaptic("selection");
-                  setDrawerOpen(true);
-                }}
-                className="shrink-0"
-                aria-label="Open profile menu"
-              >
-                {profileLoading ? (
-                  <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
-                ) : (
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
-                    <AvatarFallback name={displayName} className="text-xs">
-                      {getInitials(displayName)}
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-              </Button>
+              <>
+                <UserNotificationsPopover />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    triggerHaptic("selection");
+                    setDrawerOpen(true);
+                  }}
+                  className="shrink-0"
+                  aria-label="Open profile menu"
+                >
+                  {profileLoading ? (
+                    <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                  ) : (
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
+                      <AvatarFallback name={displayName} className="text-xs">
+                        {getInitials(displayName)}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                </Button>
+              </>
             )}
           </div>
         </div>
+        {secondary && (
+          <div
+            className="border-t border-border/60 pb-2 pt-2"
+            style={{
+              paddingLeft: "max(0.75rem, env(safe-area-inset-left))",
+              paddingRight: "max(0.75rem, env(safe-area-inset-right))",
+            }}
+          >
+            {secondary}
+          </div>
+        )}
     </header>
     <ProfileDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
     </>

@@ -14,4 +14,7 @@ export interface GoogleBookResult {
   published_date: string | null;
   average_rating: number | null;
   ratings_count: number | null;
+  series_name?: string | null;
+  series_position?: number | null;
+  series_total?: number | null;
 }

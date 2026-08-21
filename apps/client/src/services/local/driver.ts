@@ -37,6 +37,259 @@ export interface OutboxCounts {
   syncing: number;
 }
 
+export interface LocalMutationRecord {
+  table: LocalTableName;
+  record: LocalRecord<unknown>;
+}
+
+export interface LocalBookIdentityRemap {
+  userId: string;
+  staleBookId: string;
+  canonicalBookRecord: LocalRecord<unknown>;
+  sourceOutbox?: {
+    id: string;
+    clientMutationId: string;
+    expectedStatus: OutboxItem["status"];
+    expectedAttemptCount: number;
+  };
+  requireNoOtherUnsyncedReferences?: boolean;
+}
+
+const BOOK_REFERENCE_TABLES = [
+  "reading_sessions",
+  "progress_logs",
+  "journal_entries",
+  "book_list_items",
+  "pending_book_imports",
+] as const satisfies readonly LocalTableName[];
+
+const OUTSTANDING_OUTBOX_STATUSES = new Set<OutboxItem["status"]>([
+  "pending",
+  "syncing",
+  "failed",
+]);
+
+const bookAliasState = (userId: string, staleBookId: string, canonicalBookId: string): SyncState => ({
+  key: `${userId}:book_alias:${staleBookId}`,
+  user_id: userId,
+  cursor: canonicalBookId,
+  last_synced_at: new Date().toISOString(),
+});
+
+const asObject = (value: unknown): Record<string, unknown> | null =>
+  typeof value === "object" && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null;
+
+const remapLocalBookReference = (
+  table: (typeof BOOK_REFERENCE_TABLES)[number],
+  record: LocalRecord,
+  staleBookId: string,
+  canonicalBookId: string,
+): LocalRecord | null => {
+  const data = asObject(record.data);
+  if (!data) return null;
+
+  const referenceKey = table === "pending_book_imports" ? "resolved_book_id" : "book_id";
+  if (data[referenceKey] !== staleBookId) return null;
+
+  return {
+    ...record,
+    data: {
+      ...data,
+      [referenceKey]: canonicalBookId,
+    },
+  };
+};
+
+const remapOutboxBookReference = (
+  item: OutboxItem,
+  staleBookId: string,
+  canonicalBookId: string,
+): OutboxItem => {
+  const payload = asObject(item.payload);
+  let clientEntityId = item.client_entity_id;
+  let nextPayload = payload;
+  let changed = false;
+
+  if (item.entity === "books" && clientEntityId === staleBookId) {
+    clientEntityId = canonicalBookId;
+    changed = true;
+  }
+
+  if (payload) {
+    if (payload.book_id === staleBookId) {
+      nextPayload = { ...nextPayload, book_id: canonicalBookId };
+      changed = true;
+    }
+
+    if (Array.isArray(payload.ordered_book_ids) && payload.ordered_book_ids.includes(staleBookId)) {
+      nextPayload = {
+        ...nextPayload,
+        ordered_book_ids: payload.ordered_book_ids.map((bookId) =>
+          bookId === staleBookId ? canonicalBookId : bookId
+        ),
+      };
+      changed = true;
+    }
+
+    if (item.entity === "books") {
+      if (payload.id === staleBookId) {
+        nextPayload = { ...nextPayload, id: canonicalBookId };
+        changed = true;
+      }
+
+      const snapshot = asObject(payload.__sync_snapshot);
+      if (snapshot?.id === staleBookId) {
+        nextPayload = {
+          ...nextPayload,
+          __sync_snapshot: {
+            ...snapshot,
+            id: canonicalBookId,
+          },
+        };
+        changed = true;
+      }
+    }
+  }
+
+  return changed
+    ? {
+        ...item,
+        client_entity_id: clientEntityId,
+        payload: nextPayload,
+      }
+    : item;
+};
+
+const outboxReferencesBook = (item: OutboxItem, bookId: string) => {
+  if (item.entity === "books" && item.client_entity_id === bookId) return true;
+  const payload = asObject(item.payload);
+  if (!payload) return false;
+  if (payload.book_id === bookId) return true;
+  if (Array.isArray(payload.ordered_book_ids) && payload.ordered_book_ids.includes(bookId)) {
+    return true;
+  }
+  if (item.entity !== "books") return false;
+  return payload.id === bookId || asObject(payload.__sync_snapshot)?.id === bookId;
+};
+
+const recordReferencesBook = (
+  table: (typeof BOOK_REFERENCE_TABLES)[number],
+  record: LocalRecord,
+  bookId: string,
+) => {
+  const data = asObject(record.data);
+  if (!data) return false;
+  return table === "pending_book_imports"
+    ? data.resolved_book_id === bookId
+    : data.book_id === bookId;
+};
+
+const selectCanonicalBookRecord = (
+  canonicalBookRecord: LocalRecord,
+  staleBookRecord: LocalRecord | null,
+  existingCanonicalRecord: LocalRecord | null,
+  hasRemainingBookMutation: boolean,
+  sourceBookIsCanonical: boolean,
+): LocalRecord => {
+  const unsyncedCanonical =
+    existingCanonicalRecord &&
+    existingCanonicalRecord.status !== "synced" &&
+    (!sourceBookIsCanonical || hasRemainingBookMutation)
+      ? existingCanonicalRecord
+      : null;
+  const localCandidate = unsyncedCanonical ?? (
+    hasRemainingBookMutation && staleBookRecord && staleBookRecord.status !== "synced"
+      ? staleBookRecord
+      : null
+  );
+  if (!localCandidate) return canonicalBookRecord;
+
+  const canonicalData = asObject(canonicalBookRecord.data) ?? {};
+  const localData = asObject(localCandidate.data) ?? {};
+  return {
+    ...localCandidate,
+    id: canonicalBookRecord.id,
+    user_id: canonicalBookRecord.user_id,
+    data: {
+      ...canonicalData,
+      ...localData,
+      id: canonicalBookRecord.id,
+      user_id: canonicalBookRecord.user_id,
+    },
+  };
+};
+
+const countBlockingBookReferences = (
+  recordsByTable: Map<(typeof BOOK_REFERENCE_TABLES)[number], LocalRecord[]>,
+  outboxItems: OutboxItem[],
+  sourceOutboxId: string | undefined,
+  staleBookId: string,
+) => {
+  const relatedOutbox = outboxItems.filter(
+    (item) =>
+      item.id !== sourceOutboxId &&
+      OUTSTANDING_OUTBOX_STATUSES.has(item.status) &&
+      outboxReferencesBook(item, staleBookId),
+  );
+  const representedLocalChanges = new Set(
+    relatedOutbox.map((item) => `${item.entity}:${item.client_entity_id}`),
+  );
+  let orphanedLocalChangeCount = 0;
+
+  for (const [table, records] of recordsByTable) {
+    orphanedLocalChangeCount += records.filter(
+      (record) =>
+        (record.status !== "synced" || table === "pending_book_imports") &&
+        recordReferencesBook(table, record, staleBookId) &&
+        !representedLocalChanges.has(`${table}:${record.id}`),
+    ).length;
+  }
+
+  return new Set(relatedOutbox.map((item) => item.id)).size + orphanedLocalChangeCount;
+};
+
+const assertBookRemapCanDiscardSourceOnly = (
+  request: LocalBookIdentityRemap,
+  recordsByTable: Map<(typeof BOOK_REFERENCE_TABLES)[number], LocalRecord[]>,
+  outboxItems: OutboxItem[],
+) => {
+  if (!request.requireNoOtherUnsyncedReferences) return;
+  const relatedChangeCount = countBlockingBookReferences(
+    recordsByTable,
+    outboxItems,
+    request.sourceOutbox?.id,
+    request.staleBookId,
+  );
+  if (relatedChangeCount > 0) {
+    throw new Error(
+      `${relatedChangeCount} other unsynced reading change${
+        relatedChangeCount === 1 ? "" : "s"
+      } appeared while the library copy was loading. Those changes were kept.`,
+    );
+  }
+};
+
+const assertBookRemapSourceIsCurrent = (
+  request: LocalBookIdentityRemap,
+  outboxItems: OutboxItem[],
+) => {
+  if (!request.sourceOutbox) return null;
+  const source = outboxItems.find((item) => item.id === request.sourceOutbox?.id);
+  if (
+    !source ||
+    source.client_mutation_id !== request.sourceOutbox.clientMutationId ||
+    source.status !== request.sourceOutbox.expectedStatus ||
+    source.attempt_count !== request.sourceOutbox.expectedAttemptCount
+  ) {
+    throw new Error(
+      "This reading change was updated in another tab or sync pass. Its local data was kept; refresh and review it again.",
+    );
+  }
+  return source;
+};
+
 export interface LocalDriver {
   init(): Promise<void>;
   upsertRecord<T>(table: LocalTableName, record: LocalRecord<T>): Promise<void>;
@@ -49,6 +302,8 @@ export interface LocalDriver {
   ): Promise<LocalRecord<T>[]>;
   removeRecord(table: LocalTableName, id: string): Promise<void>;
   enqueueOutbox(item: OutboxItem): Promise<void>;
+  commitMutation(records: LocalMutationRecord[], item: OutboxItem): Promise<void>;
+  remapBookIdentity(request: LocalBookIdentityRemap): Promise<LocalRecord<unknown>>;
   listOutbox(userId: string, statuses?: OutboxItem["status"][]): Promise<OutboxItem[]>;
   updateOutbox(id: string, updates: Partial<OutboxItem>): Promise<void>;
   deleteOutbox(id: string): Promise<void>;
@@ -154,6 +409,114 @@ class DexieLocalDriver implements LocalDriver {
   async enqueueOutbox(item: OutboxItem) {
     await this.init();
     await this.db.outbox.put(item);
+  }
+
+  async commitMutation(records: LocalMutationRecord[], item: OutboxItem) {
+    await this.init();
+    const tables = Array.from(new Set(records.map(({ table }) => table))).map((table) =>
+      this.table(table)
+    );
+    await this.db.transaction("rw", [...tables, this.db.outbox], async () => {
+      for (const { table, record } of records) {
+        await this.table(table).put(record);
+      }
+      await this.db.outbox.put(item);
+    });
+  }
+
+  async remapBookIdentity(request: LocalBookIdentityRemap) {
+    await this.init();
+    const canonicalBookId = request.canonicalBookRecord.id;
+    if (!canonicalBookId || request.canonicalBookRecord.user_id !== request.userId) {
+      throw new Error("Invalid local book identity remap");
+    }
+
+    const referenceTables = BOOK_REFERENCE_TABLES.map((table) => this.table(table));
+    return this.db.transaction(
+      "rw",
+      [this.db.books, ...referenceTables, this.db.outbox, this.db.sync_state],
+      async () => {
+        const recordsByTable = new Map<
+          (typeof BOOK_REFERENCE_TABLES)[number],
+          LocalRecord[]
+        >();
+        for (const table of BOOK_REFERENCE_TABLES) {
+          recordsByTable.set(
+            table,
+            await this.table(table).where("user_id").equals(request.userId).toArray(),
+          );
+        }
+        const outboxItems = await this.db.outbox
+          .where("user_id")
+          .equals(request.userId)
+          .toArray();
+
+        const sourceOutbox = assertBookRemapSourceIsCurrent(request, outboxItems);
+        assertBookRemapCanDiscardSourceOnly(request, recordsByTable, outboxItems);
+
+        const rewrittenOutbox = outboxItems
+          .filter(
+            (item) =>
+              item.id !== request.sourceOutbox?.id &&
+              OUTSTANDING_OUTBOX_STATUSES.has(item.status),
+          )
+          .map((item) =>
+            remapOutboxBookReference(item, request.staleBookId, canonicalBookId)
+          );
+        const hasRemainingBookMutation = rewrittenOutbox.some(
+          (item) => item.entity === "books" && item.client_entity_id === canonicalBookId,
+        );
+        const [staleBookRecord, existingCanonicalRecord] = await Promise.all([
+          this.db.books.get(request.staleBookId),
+          this.db.books.get(canonicalBookId),
+        ]);
+        if (staleBookRecord && staleBookRecord.user_id !== request.userId) {
+          throw new Error("The stale local book belongs to a different account");
+        }
+        if (existingCanonicalRecord && existingCanonicalRecord.user_id !== request.userId) {
+          throw new Error("The canonical local book belongs to a different account");
+        }
+        const canonicalBookRecord = selectCanonicalBookRecord(
+          request.canonicalBookRecord,
+          staleBookRecord ?? null,
+          existingCanonicalRecord ?? null,
+          hasRemainingBookMutation,
+          sourceOutbox?.entity === "books" &&
+            sourceOutbox.client_entity_id === canonicalBookId,
+        );
+
+        for (const table of BOOK_REFERENCE_TABLES) {
+          const rewrittenRecords = (recordsByTable.get(table) ?? [])
+            .map((record) =>
+              remapLocalBookReference(
+                table,
+                record,
+                request.staleBookId,
+                canonicalBookId,
+              )
+            )
+            .filter((record): record is LocalRecord => Boolean(record));
+          if (rewrittenRecords.length > 0) {
+            await this.table(table).bulkPut(rewrittenRecords);
+          }
+        }
+        if (rewrittenOutbox.length > 0) {
+          await this.db.outbox.bulkPut(rewrittenOutbox);
+        }
+
+        await this.db.books.put(canonicalBookRecord);
+        if (request.staleBookId !== canonicalBookId) {
+          await this.db.sync_state.put(
+            bookAliasState(request.userId, request.staleBookId, canonicalBookId),
+          );
+          await this.db.books.delete(request.staleBookId);
+        }
+        if (request.sourceOutbox) {
+          await this.db.outbox.delete(request.sourceOutbox.id);
+        }
+        return canonicalBookRecord;
+      },
+    );
   }
 
   async listOutbox(userId: string, statuses: OutboxItem["status"][] = ["pending", "failed"]) {
@@ -292,14 +655,64 @@ class SQLiteLocalDriver implements LocalDriver {
     };
   }
 
-  async upsertRecord<T>(table: LocalTableName, record: LocalRecord<T>) {
-    await this.init();
+  private async writeRecord<T>(
+    table: LocalTableName,
+    record: LocalRecord<T>,
+    transaction = true,
+  ) {
     await this.connection().run(
       `INSERT OR REPLACE INTO ${table}
        (id, user_id, data, status, updated_at, deleted_at, last_synced_at)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      this.serializeRecord(record)
+      this.serializeRecord(record),
+      transaction,
     );
+  }
+
+  private async writeOutbox(item: OutboxItem, transaction = true) {
+    await this.connection().run(
+      `INSERT OR REPLACE INTO outbox
+       (id, client_mutation_id, client_entity_id, user_id, entity, operation, payload, status,
+        attempt_count, last_error, created_at, updated_at, next_attempt_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        item.id,
+        item.client_mutation_id,
+        item.client_entity_id,
+        item.user_id,
+        item.entity,
+        item.operation,
+        JSON.stringify(item.payload),
+        item.status,
+        item.attempt_count,
+        item.last_error ?? null,
+        item.created_at,
+        item.updated_at,
+        item.next_attempt_at ?? null,
+      ],
+      transaction,
+    );
+  }
+
+  private async deleteRecord(table: LocalTableName, id: string, transaction = true) {
+    await this.connection().run(`DELETE FROM ${table} WHERE id = ?`, [id], transaction);
+  }
+
+  private async deleteOutboxRecord(id: string, transaction = true) {
+    await this.connection().run("DELETE FROM outbox WHERE id = ?", [id], transaction);
+  }
+
+  private async writeSyncState(state: SyncState, transaction = true) {
+    await this.connection().run(
+      "INSERT OR REPLACE INTO sync_state (key, user_id, cursor, last_synced_at) VALUES (?, ?, ?, ?)",
+      [state.key, state.user_id, state.cursor, state.last_synced_at],
+      transaction,
+    );
+  }
+
+  async upsertRecord<T>(table: LocalTableName, record: LocalRecord<T>) {
+    await this.init();
+    await this.writeRecord(table, record);
   }
 
   async upsertRecords<T>(table: LocalTableName, records: LocalRecord<T>[]) {
@@ -332,32 +745,127 @@ class SQLiteLocalDriver implements LocalDriver {
 
   async removeRecord(table: LocalTableName, id: string) {
     await this.init();
-    await this.connection().run(`DELETE FROM ${table} WHERE id = ?`, [id]);
+    await this.deleteRecord(table, id);
   }
 
   async enqueueOutbox(item: OutboxItem) {
     await this.init();
-    await this.connection().run(
-      `INSERT OR REPLACE INTO outbox
-       (id, client_mutation_id, client_entity_id, user_id, entity, operation, payload, status,
-        attempt_count, last_error, created_at, updated_at, next_attempt_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        item.id,
-        item.client_mutation_id,
-        item.client_entity_id,
-        item.user_id,
-        item.entity,
-        item.operation,
-        JSON.stringify(item.payload),
-        item.status,
-        item.attempt_count,
-        item.last_error ?? null,
-        item.created_at,
-        item.updated_at,
-        item.next_attempt_at ?? null,
-      ]
-    );
+    await this.writeOutbox(item);
+  }
+
+  async commitMutation(records: LocalMutationRecord[], item: OutboxItem) {
+    await this.init();
+    const connection = this.connection();
+    await connection.beginTransaction();
+    try {
+      for (const { table, record } of records) {
+        await this.writeRecord(table, record, false);
+      }
+      await this.writeOutbox(item, false);
+      await connection.commitTransaction();
+    } catch (error) {
+      try {
+        await connection.rollbackTransaction();
+      } catch (rollbackError) {
+        console.error("Failed to roll back local mutation:", rollbackError);
+      }
+      throw error;
+    }
+  }
+
+  async remapBookIdentity(request: LocalBookIdentityRemap) {
+    await this.init();
+    const canonicalBookId = request.canonicalBookRecord.id;
+    if (!canonicalBookId || request.canonicalBookRecord.user_id !== request.userId) {
+      throw new Error("Invalid local book identity remap");
+    }
+
+    const connection = this.connection();
+    await connection.beginTransaction();
+    try {
+      const recordsByTable = new Map<
+        (typeof BOOK_REFERENCE_TABLES)[number],
+        LocalRecord[]
+      >();
+      for (const table of BOOK_REFERENCE_TABLES) {
+        recordsByTable.set(
+          table,
+          await this.listRecords(table, request.userId, { includeDeleted: true }),
+        );
+      }
+      const outboxItems = await this.listOutbox(request.userId, [
+        "pending",
+        "syncing",
+        "failed",
+      ]);
+
+      const sourceOutbox = assertBookRemapSourceIsCurrent(request, outboxItems);
+      assertBookRemapCanDiscardSourceOnly(request, recordsByTable, outboxItems);
+
+      const rewrittenOutbox = outboxItems
+        .filter((item) => item.id !== request.sourceOutbox?.id)
+        .map((item) =>
+          remapOutboxBookReference(item, request.staleBookId, canonicalBookId)
+        );
+      const hasRemainingBookMutation = rewrittenOutbox.some(
+        (item) => item.entity === "books" && item.client_entity_id === canonicalBookId,
+      );
+      const staleBookRecord = await this.getRecord("books", request.staleBookId);
+      const existingCanonicalRecord = await this.getRecord("books", canonicalBookId);
+      if (staleBookRecord && staleBookRecord.user_id !== request.userId) {
+        throw new Error("The stale local book belongs to a different account");
+      }
+      if (existingCanonicalRecord && existingCanonicalRecord.user_id !== request.userId) {
+        throw new Error("The canonical local book belongs to a different account");
+      }
+      const canonicalBookRecord = selectCanonicalBookRecord(
+        request.canonicalBookRecord,
+        staleBookRecord,
+        existingCanonicalRecord,
+        hasRemainingBookMutation,
+        sourceOutbox?.entity === "books" && sourceOutbox.client_entity_id === canonicalBookId,
+      );
+
+      for (const table of BOOK_REFERENCE_TABLES) {
+        const rewrittenRecords = (recordsByTable.get(table) ?? [])
+          .map((record) =>
+            remapLocalBookReference(
+              table,
+              record,
+              request.staleBookId,
+              canonicalBookId,
+            )
+          )
+          .filter((record): record is LocalRecord => Boolean(record));
+        for (const record of rewrittenRecords) {
+          await this.writeRecord(table, record, false);
+        }
+      }
+      for (const item of rewrittenOutbox) {
+        await this.writeOutbox(item, false);
+      }
+
+      await this.writeRecord("books", canonicalBookRecord, false);
+      if (request.staleBookId !== canonicalBookId) {
+        await this.writeSyncState(
+          bookAliasState(request.userId, request.staleBookId, canonicalBookId),
+          false,
+        );
+        await this.deleteRecord("books", request.staleBookId, false);
+      }
+      if (request.sourceOutbox) {
+        await this.deleteOutboxRecord(request.sourceOutbox.id, false);
+      }
+      await connection.commitTransaction();
+      return canonicalBookRecord;
+    } catch (error) {
+      try {
+        await connection.rollbackTransaction();
+      } catch (rollbackError) {
+        console.error("Failed to roll back local book identity remap:", rollbackError);
+      }
+      throw error;
+    }
   }
 
   async listOutbox(userId: string, statuses: OutboxItem["status"][] = ["pending", "failed"]) {
@@ -390,7 +898,7 @@ class SQLiteLocalDriver implements LocalDriver {
 
   async deleteOutbox(id: string) {
     await this.init();
-    await this.connection().run("DELETE FROM outbox WHERE id = ?", [id]);
+    await this.deleteOutboxRecord(id);
   }
 
   async getOutboxCounts(userId: string) {
@@ -413,10 +921,91 @@ class SQLiteLocalDriver implements LocalDriver {
 
   async setSyncState(state: SyncState) {
     await this.init();
-    await this.connection().run(
-      "INSERT OR REPLACE INTO sync_state (key, user_id, cursor, last_synced_at) VALUES (?, ?, ?, ?)",
-      [state.key, state.user_id, state.cursor, state.last_synced_at]
+    await this.writeSyncState(state);
+  }
+}
+
+/**
+ * Capacitor SQLite transactions are connection-wide. Queue every externally
+ * visible operation so no read or write can join another operation's manual
+ * transaction while it is awaiting the native bridge.
+ */
+class SerializedLocalDriver implements LocalDriver {
+  private tail: Promise<void> = Promise.resolve();
+
+  constructor(private readonly delegate: LocalDriver) {}
+
+  private run<T>(operation: () => Promise<T>): Promise<T> {
+    const result = this.tail.then(operation);
+    this.tail = result.then(
+      () => undefined,
+      () => undefined,
     );
+    return result;
+  }
+
+  init() {
+    return this.run(() => this.delegate.init());
+  }
+
+  upsertRecord<T>(table: LocalTableName, record: LocalRecord<T>) {
+    return this.run(() => this.delegate.upsertRecord(table, record));
+  }
+
+  upsertRecords<T>(table: LocalTableName, records: LocalRecord<T>[]) {
+    return this.run(() => this.delegate.upsertRecords(table, records));
+  }
+
+  getRecord<T>(table: LocalTableName, id: string) {
+    return this.run(() => this.delegate.getRecord<T>(table, id));
+  }
+
+  listRecords<T>(
+    table: LocalTableName,
+    userId: string,
+    options?: { includeDeleted?: boolean },
+  ) {
+    return this.run(() => this.delegate.listRecords<T>(table, userId, options));
+  }
+
+  removeRecord(table: LocalTableName, id: string) {
+    return this.run(() => this.delegate.removeRecord(table, id));
+  }
+
+  enqueueOutbox(item: OutboxItem) {
+    return this.run(() => this.delegate.enqueueOutbox(item));
+  }
+
+  commitMutation(records: LocalMutationRecord[], item: OutboxItem) {
+    return this.run(() => this.delegate.commitMutation(records, item));
+  }
+
+  remapBookIdentity(request: LocalBookIdentityRemap) {
+    return this.run(() => this.delegate.remapBookIdentity(request));
+  }
+
+  listOutbox(userId: string, statuses?: OutboxItem["status"][]) {
+    return this.run(() => this.delegate.listOutbox(userId, statuses));
+  }
+
+  updateOutbox(id: string, updates: Partial<OutboxItem>) {
+    return this.run(() => this.delegate.updateOutbox(id, updates));
+  }
+
+  deleteOutbox(id: string) {
+    return this.run(() => this.delegate.deleteOutbox(id));
+  }
+
+  getOutboxCounts(userId: string) {
+    return this.run(() => this.delegate.getOutboxCounts(userId));
+  }
+
+  getSyncState(userId: string, scope: string) {
+    return this.run(() => this.delegate.getSyncState(userId, scope));
+  }
+
+  setSyncState(state: SyncState) {
+    return this.run(() => this.delegate.setSyncState(state));
   }
 }
 
@@ -477,6 +1066,14 @@ class ElectronSQLiteLocalDriver implements LocalDriver {
     await this.invoke({ operation: "enqueueOutbox", item });
   }
 
+  async commitMutation(records: LocalMutationRecord[], item: OutboxItem) {
+    await this.invoke({ operation: "commitMutation", records, item });
+  }
+
+  async remapBookIdentity(request: LocalBookIdentityRemap) {
+    return this.invoke<LocalRecord<unknown>>({ operation: "remapBookIdentity", request });
+  }
+
   async listOutbox(userId: string, statuses: OutboxItem["status"][] = ["pending", "failed"]) {
     return this.invoke<OutboxItem[]>({ operation: "listOutbox", userId, statuses });
   }
@@ -506,7 +1103,7 @@ const driver: LocalDriver =
   isDesktopRuntime()
     ? new ElectronSQLiteLocalDriver()
     : Capacitor.isNativePlatform()
-      ? new SQLiteLocalDriver()
+      ? new SerializedLocalDriver(new SQLiteLocalDriver())
       : new DexieLocalDriver();
 
 export const localDriver = driver;

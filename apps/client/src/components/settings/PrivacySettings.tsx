@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,10 +17,12 @@ import {
   getBlockedUsers,
   unblockUser,
   updatePresence,
+  updateGamificationSettings,
   type BlockedUser,
   type ReaderStatusBadge,
 } from "@/services/api";
 import type { User } from "@/types";
+import { invalidateDashboardHomeQueries } from "@/lib/dashboardQueries";
 import { toast } from "sonner";
 
 interface PrivacySettingsProps {
@@ -35,11 +38,14 @@ const initials = (name?: string | null) =>
     .slice(0, 2);
 
 export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
+  const queryClient = useQueryClient();
   const [publicProfile, setPublicProfile] = useState(true);
   const [showReadingActivity, setShowReadingActivity] = useState(true);
   const [showOnlineStatus, setShowOnlineStatus] = useState(true);
   const [readerStatus, setReaderStatus] = useState<ReaderStatusBadge>("available");
   const [showLocation, setShowLocation] = useState(true);
+  const [leaderboardOptIn, setLeaderboardOptIn] = useState(false);
+  const [gamificationProfileVisible, setGamificationProfileVisible] = useState(true);
   const [hasSavedLocation, setHasSavedLocation] = useState(false);
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +56,7 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
       const [{ data: profile, error }, blocks] = await Promise.all([
         supabase
           .from("profiles")
-          .select("profile_visibility, show_reading_activity, show_online_status, reader_status, show_location, latitude, longitude")
+          .select("profile_visibility, show_reading_activity, show_online_status, reader_status, show_location, latitude, longitude, leaderboard_opt_in, gamification_profile_visible")
           .eq("id", user.id)
           .maybeSingle(),
         getBlockedUsers(),
@@ -62,6 +68,8 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
       setShowOnlineStatus(profile?.show_online_status ?? true);
       setReaderStatus((profile?.reader_status as ReaderStatusBadge | null) ?? "available");
       setShowLocation(profile?.show_location ?? true);
+      setLeaderboardOptIn(profile?.leaderboard_opt_in ?? false);
+      setGamificationProfileVisible(profile?.gamification_profile_visible ?? true);
       setHasSavedLocation(profile?.latitude != null && profile?.longitude != null);
       setBlockedUsers(blocks);
     } catch (error) {
@@ -153,6 +161,40 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
     }
   };
 
+  const toggleLeaderboard = async (checked: boolean) => {
+    const previous = leaderboardOptIn;
+    setLeaderboardOptIn(checked);
+    try {
+      const response = await updateGamificationSettings({ leaderboard_opt_in: checked });
+      void invalidateDashboardHomeQueries(queryClient, user.id);
+      toast.success(
+        checked
+          ? response.leaderboard_eligible_from
+            ? `Your first league begins the week of ${new Date(
+                `${response.leaderboard_eligible_from}T00:00:00`,
+              ).toLocaleDateString()}.`
+            : "Reader Leagues enabled"
+          : "Reader Leagues disabled",
+      );
+    } catch {
+      setLeaderboardOptIn(previous);
+      toast.error("Failed to update Reader League participation");
+    }
+  };
+
+  const toggleGamificationVisibility = async (checked: boolean) => {
+    const previous = gamificationProfileVisible;
+    setGamificationProfileVisible(checked);
+    try {
+      await updateGamificationSettings({ gamification_profile_visible: checked });
+      void invalidateDashboardHomeQueries(queryClient, user.id);
+      toast.success(checked ? "Journey details are visible" : "Journey details are private");
+    } catch {
+      setGamificationProfileVisible(previous);
+      toast.error("Failed to update Journey visibility");
+    }
+  };
+
   const handleUnblock = async (userId: string) => {
     const previous = blockedUsers;
     setBlockedUsers((current) => current.filter((blocked) => blocked.user_id !== userId));
@@ -223,6 +265,43 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
               )}
             </div>
             <Switch checked={showLocation} disabled={loading} onCheckedChange={toggleLocation} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Reader Journey & Rankings</CardTitle>
+          <CardDescription>
+            Ink and quests remain available even when public competition is disabled.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <Label>Join Reader Leagues</Label>
+              <p className="font-sans text-sm text-muted-foreground">
+                Enter optional weekly leagues using qualifying reading activity. New opt-ins start next week.
+              </p>
+            </div>
+            <Switch
+              checked={leaderboardOptIn}
+              disabled={loading}
+              onCheckedChange={toggleLeaderboard}
+            />
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <Label>Show Journey on Profile</Label>
+              <p className="font-sans text-sm text-muted-foreground">
+                Let eligible readers see your level and league rank.
+              </p>
+            </div>
+            <Switch
+              checked={gamificationProfileVisible}
+              disabled={loading}
+              onCheckedChange={toggleGamificationVisibility}
+            />
           </div>
         </CardContent>
       </Card>

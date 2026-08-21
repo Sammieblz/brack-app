@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface PageTransitionProps {
   children: ReactNode;
@@ -14,11 +15,15 @@ interface PageTransitionProps {
  */
 export const PageTransition = ({ children, className }: PageTransitionProps) => {
   const location = useLocation();
+  const reducedMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
   const prevLocationRef = useRef(location.pathname);
 
   useGSAP(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || reducedMotion) {
+      prevLocationRef.current = location.pathname;
+      return;
+    }
 
     // Only animate if pathname changed
     if (prevLocationRef.current !== location.pathname) {
@@ -42,7 +47,7 @@ export const PageTransition = ({ children, className }: PageTransitionProps) => 
     }
 
     prevLocationRef.current = location.pathname;
-  }, { dependencies: [location.pathname] });
+  }, { dependencies: [location.pathname, reducedMotion] });
 
   return (
     <div ref={containerRef} className={cn("min-h-full w-full", className)}>

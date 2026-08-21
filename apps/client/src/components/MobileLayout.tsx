@@ -7,6 +7,7 @@ import { useNativeApp } from "@/hooks/useNativeApp";
 import { usePersistentScrollPosition } from "@/hooks/useScrollPosition";
 import { useLocation } from "react-router-dom";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { useBreakpoint } from "@/hooks/useBreakpoint";
 
 interface MobileLayoutProps {
   children: ReactNode;
@@ -21,6 +22,7 @@ export const MobileLayout = ({
 }: MobileLayoutProps) => {
   const isMobile = useIsMobile();
   const isNative = useNativeApp();
+  const { isTablet } = useBreakpoint();
   const location = useLocation();
   const scrollRef = usePersistentScrollPosition(location.pathname);
 
@@ -71,7 +73,7 @@ export const MobileLayout = ({
 
   // Tablet and desktop layout
   return (
-    <SidebarProvider defaultOpen>
+    <SidebarProvider defaultOpen={!isTablet}>
       <AppSidebar />
       <SidebarInset className="app-viewport min-h-0 min-w-0 overflow-hidden">
         <main

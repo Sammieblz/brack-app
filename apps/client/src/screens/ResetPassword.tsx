@@ -160,7 +160,7 @@ const ResetPassword = () => {
       <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg relative z-10 animate-fade-in safe-top">
         <div className="text-center mb-6 md:mb-8 animate-slide-up">
           <div className="flex flex-col items-center gap-3 mb-4">
-            <ThemeAwareLogo variant="icon" tone="theme" size="h-16 w-16" className="drop-shadow-lg" />
+            <ThemeAwareLogo variant="icon" size="h-16 w-16" className="drop-shadow-lg" />
             <span className="font-display text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               BRACK
             </span>

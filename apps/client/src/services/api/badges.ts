@@ -22,21 +22,25 @@ export const awardBadges = async (event?: string): Promise<AwardBadgesResponse> 
 export interface UserBadgesResult {
   badges: Badge[];
   earnedBadges: UserBadge[];
+  metrics: Record<string, number>;
 }
 
 export const fetchUserBadges = async (
   userId: string
 ): Promise<UserBadgesResult> => {
-  const [allBadgesRes, earnedBadgesRes] = await Promise.all([
-    supabase.from("badges").select("*"),
-    supabase.from("user_badges").select("*").eq("user_id", userId),
-  ]);
-
-  if (allBadgesRes.error) throw allBadgesRes.error;
-  if (earnedBadgesRes.error) throw earnedBadgesRes.error;
+  const { data, error } = await supabase.rpc("get_user_badge_catalog", {
+    p_user_id: userId,
+  });
+  if (error) throw error;
+  const result = (data || {}) as {
+    badges?: Badge[];
+    earned_badges?: UserBadge[];
+    metrics?: Record<string, number>;
+  };
 
   return {
-    badges: allBadgesRes.data || [],
-    earnedBadges: earnedBadgesRes.data || [],
+    badges: result.badges || [],
+    earnedBadges: result.earned_badges || [],
+    metrics: result.metrics || {},
   };
 };

@@ -1,198 +1,420 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
+import { NativeHeader } from "@/components/NativeHeader";
+import { NativeScrollView } from "@/components/NativeScrollView";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
+import { BadgeDetailsDialog } from "@/components/BadgeDetailsDialog";
+import { JourneyBadges } from "@/components/journey/JourneyBadges";
+import { JourneyFreshnessNotice } from "@/components/journey/JourneyFreshnessNotice";
+import { JourneyLeague } from "@/components/journey/JourneyLeague";
+import { JourneyOverview } from "@/components/journey/JourneyOverview";
+import {
+  JourneyQuestBookPicker,
+  JourneyQuests,
+} from "@/components/journey/JourneyQuests";
+import { JourneyShop } from "@/components/journey/JourneyShop";
+import {
+  JourneyTabsRail,
+} from "@/components/journey/JourneyTabsRail";
 import { useAuth } from "@/hooks/useAuth";
 import { useBadges } from "@/hooks/useBadges";
-import { BadgeDisplay } from "@/components/BadgeDisplay";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { useBooks } from "@/hooks/useBooks";
+import {
+  gamificationQueryKey,
+  useGamification,
+  useLeaderboard,
+} from "@/hooks/useGamification";
 import { useIsMobile } from "@/hooks/use-mobile";
-import LoadingSpinner from "@/components/LoadingSpinner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Badge, UserBadge } from "@/types";
-import { BadgeDetailsDialog } from "@/components/BadgeDetailsDialog";
-import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
-import { BRACK_TROPHY_IMAGE } from "@/config/brackAssets";
+import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { useTimer } from "@/contexts/TimerContext";
+import {
+  isGamificationFallbackEligible,
+  updateGamificationSettings,
+  type LeaderboardScope,
+  type QuestAssignment,
+} from "@/services/api/gamification";
+import { trackCoreEvent } from "@/services/telemetry";
+import {
+  JOURNEY_TAB_VALUES,
+  getJourneyEntryTelemetrySource,
+  getQuestAction,
+  selectDailyFocus,
+  type JourneyTabValue,
+} from "@/lib/journey";
+import { invalidateDashboardHomeQueries } from "@/lib/dashboardQueries";
+import type { Badge as BadgeType, Book, UserBadge } from "@/types";
+import { toast } from "sonner";
+
+const TRACKABLE_QUEST_METRICS = new Set([
+  "reading_minutes",
+  "pages_read",
+  "reading_days",
+  "sessions",
+  "books_completed",
+  "velocity",
+  "series_books_completed",
+]);
 
 const Achievements = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const { badges, earnedBadges, loading } = useBadges(user?.id);
-  const [filter, setFilter] = useState<'all' | 'earned' | 'unearned'>('all');
-  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
-  const [selectedEarnedBadge, setSelectedEarnedBadge] = useState<UserBadge | undefined>(undefined);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const queryClient = useQueryClient();
+  const { leaderboardsEnabled } = useFeatureFlags();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const normalizedTab: JourneyTabValue = requestedTab
+    && JOURNEY_TAB_VALUES.has(requestedTab as JourneyTabValue)
+    ? requestedTab as JourneyTabValue
+    : "overview";
+  const shouldLoadBadges = normalizedTab === "badges";
+  const shouldLoadBooks = normalizedTab === "overview" || normalizedTab === "quests";
+  const { badges, earnedBadges, loading: badgesLoading } = useBadges(
+    user?.id,
+    shouldLoadBadges,
+  );
+  const { books, loading: booksLoading } = useBooks(user?.id, shouldLoadBooks);
+  const { startTimer } = useTimer();
+  const {
+    data,
+    isLoading,
+    error,
+    provisional,
+    freshness,
+    isFetching,
+    refetch,
+  } = useGamification(user?.id);
+  const [scope, setScope] = useState<LeaderboardScope>("league");
+  const leaderboard = useLeaderboard(
+    user?.id,
+    scope,
+    data?.week.id,
+    normalizedTab === "rankings"
+      && leaderboardsEnabled
+      && Boolean(data?.account.leaderboard_opt_in),
+  );
+  const [selectedBadge, setSelectedBadge] = useState<BadgeType | null>(null);
+  const [selectedEarnedBadge, setSelectedEarnedBadge] = useState<UserBadge>();
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [savingOptIn, setSavingOptIn] = useState(false);
+  const [questPicker, setQuestPicker] = useState<"timer" | "progress" | null>(null);
+  const openedTrackedRef = useRef(false);
+  const lastTrackedTabRef = useRef<JourneyTabValue | null>(null);
+  const entryTelemetrySourceRef = useRef(
+    getJourneyEntryTelemetrySource(location.state, Boolean(requestedTab)),
+  );
 
-  if (!user) {
-    return null;
-  }
+  useEffect(() => {
+    if (!user || !data) return;
+    const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const key = `brack:gamification-timezone:${user.id}`;
+    let savedTimezone: string | null = null;
+    try {
+      savedTimezone = localStorage.getItem(key);
+    } catch {
+      // Timezone synchronization can continue without device storage.
+    }
+    if (!detectedTimezone
+      || detectedTimezone === data.timezone
+      || savedTimezone === detectedTimezone) {
+      return;
+    }
+    try {
+      localStorage.setItem(key, detectedTimezone);
+    } catch {
+      // The server update remains authoritative in restricted storage contexts.
+    }
+    void updateGamificationSettings({ timezone: detectedTimezone })
+      .then(() => Promise.all([
+        queryClient.invalidateQueries({ queryKey: gamificationQueryKey(user.id) }),
+        invalidateDashboardHomeQueries(queryClient, user.id),
+      ]))
+      .catch(() => {
+        try {
+          localStorage.removeItem(key);
+        } catch {
+          // No persisted attempt marker to clear.
+        }
+      });
+  }, [data, queryClient, user]);
 
-  const earnedBadgeIds = new Set(earnedBadges.map(eb => eb.badge_id));
-  const filteredBadges = badges.filter(badge => {
-    const isEarned = earnedBadgeIds.has(badge.id);
-    if (filter === 'earned') return isEarned;
-    if (filter === 'unearned') return !isEarned;
-    return true;
-  });
+  useEffect(() => {
+    if (!user || !data || openedTrackedRef.current) return;
+    openedTrackedRef.current = true;
+    trackCoreEvent("journey_opened", {
+      source: entryTelemetrySourceRef.current,
+      freshness: provisional ? "provisional" : freshness,
+    });
+  }, [data, freshness, provisional, user]);
 
-  const earnedCount = earnedBadges.length;
-  const totalCount = badges.length;
-  const progressPercentage = totalCount > 0 ? Math.round((earnedCount / totalCount) * 100) : 0;
+  useEffect(() => {
+    if (!user || !data || lastTrackedTabRef.current === normalizedTab) return;
+    const isInitialTab = lastTrackedTabRef.current === null;
+    lastTrackedTabRef.current = normalizedTab;
+    trackCoreEvent("journey_tab_viewed", {
+      source: isInitialTab ? entryTelemetrySourceRef.current : "journey",
+      destination_tab: normalizedTab,
+      freshness: provisional ? "provisional" : freshness,
+    });
+    if (isInitialTab && entryTelemetrySourceRef.current === "dashboard_hud") {
+      navigate(
+        {
+          pathname: location.pathname,
+          search: location.search,
+          hash: location.hash,
+        },
+        { replace: true, state: null },
+      );
+    }
+  }, [
+    data,
+    freshness,
+    location.hash,
+    location.pathname,
+    location.search,
+    navigate,
+    normalizedTab,
+    provisional,
+    user,
+  ]);
 
-  const handleBadgeClick = (badge: Badge, earnedBadge?: UserBadge) => {
-    if (!earnedBadge) return; // Only show details for earned badges
+  const dailyQuests = data?.quests.filter((quest) => quest.cadence === "daily") ?? [];
+  const weeklyQuests = data?.quests.filter((quest) => quest.cadence === "weekly") ?? [];
+  const dailyFocus = useMemo(
+    () => freshness === "expired" ? null : selectDailyFocus(data?.quests ?? []),
+    [data?.quests, freshness],
+  );
+  const readingBooks = useMemo(
+    () => books.filter((book) => book.status === "reading"),
+    [books],
+  );
+  const retainedRetryableSnapshot = Boolean(
+    data && error && isGamificationFallbackEligible(error),
+  );
+
+  if (!user) return null;
+
+  const setJourneyTab = (value: JourneyTabValue) => {
+    setSearchParams(value === "overview" ? {} : { tab: value }, { replace: true });
+  };
+
+  const handleBadgeClick = (badge: BadgeType, earned?: UserBadge) => {
     setSelectedBadge(badge);
-    setSelectedEarnedBadge(earnedBadge);
+    setSelectedEarnedBadge(earned);
     setDetailsOpen(true);
+  };
+
+  const handleLeaderboardOptIn = async (checked: boolean) => {
+    setSavingOptIn(true);
+    try {
+      await updateGamificationSettings({ leaderboard_opt_in: checked });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: gamificationQueryKey(user.id) }),
+        queryClient.invalidateQueries({ queryKey: ["reader-leaderboard", user.id] }),
+        invalidateDashboardHomeQueries(queryClient, user.id),
+      ]);
+      toast.success(
+        checked
+          ? "Reader League participation starts next week"
+          : "Reader Leagues disabled",
+      );
+    } catch {
+      toast.error("Could not update Reader League participation");
+    } finally {
+      setSavingOptIn(false);
+    }
+  };
+
+  const completeQuestAction = (mode: "timer" | "progress", book: Book) => {
+    if (mode === "timer") {
+      startTimer(book.id, book.title);
+      toast.success(`Reading timer started for ${book.title}`);
+    } else {
+      navigate(`/book/${book.id}/progress`);
+    }
+    setQuestPicker(null);
+  };
+
+  const handleQuestAction = (quest: QuestAssignment) => {
+    if (normalizedTab === "overview"
+      && quest.id === dailyFocus?.id
+      && TRACKABLE_QUEST_METRICS.has(quest.metric)) {
+      trackCoreEvent("daily_focus_started", {
+        source: "journey_overview",
+        quest_metric: quest.metric,
+        freshness: provisional ? "provisional" : freshness,
+      });
+    }
+
+    const action = getQuestAction(quest.metric);
+    if (action === "library") {
+      navigate("/my-books");
+      return;
+    }
+    if (readingBooks.length === 0) {
+      toast.info("Choose a book to begin this quest");
+      navigate("/my-books");
+      return;
+    }
+    if (readingBooks.length === 1) {
+      completeQuestAction(action, readingBooks[0]);
+      return;
+    }
+    setQuestPicker(action);
   };
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Achievements" />}
-      
-      <div className="app-page">
-        {!isMobile && (
-          <div className="mb-6">
-            <div>
-              <h1 className="font-display text-3xl font-bold">Achievements</h1>
-              <p className="font-sans text-muted-foreground mt-1">
-                Track your reading milestones and accomplishments
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Progress Overview */}
-        <Card className="mb-6 overflow-hidden">
-          <CardContent className="p-0">
-            <div className="grid md:grid-cols-[minmax(0,1fr)_12rem]">
-              <div className="space-y-4 p-5 md:p-6">
-                <div className="flex items-start justify-between gap-3">
-                  <CardTitle>Your Progress</CardTitle>
-                  <img
-                    src={BRACK_TROPHY_IMAGE}
-                    alt=""
-                    aria-hidden="true"
-                    className="h-16 w-16 shrink-0 rounded-md border border-border/70 object-cover md:hidden"
-                    draggable={false}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-sans text-3xl font-bold text-primary">
-                      {earnedCount} / {totalCount}
-                    </div>
-                    <div className="font-sans text-sm text-muted-foreground">
-                      Badges Earned
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-sans text-3xl font-bold">{progressPercentage}%</div>
-                    <div className="font-sans text-sm text-muted-foreground">Complete</div>
-                  </div>
-                </div>
-                <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all duration-500"
-                    style={{ width: `${progressPercentage}%` }}
-                  />
-                </div>
+      <Tabs
+        value={normalizedTab}
+        onValueChange={(value) => setJourneyTab(value as JourneyTabValue)}
+        asChild
+      >
+        <div className="contents">
+          {isMobile ? (
+            <MobileHeader
+              title="Reader Journey"
+              secondary={data ? <JourneyTabsRail activeTab={normalizedTab} /> : undefined}
+            />
+          ) : (
+            <NativeHeader
+              title="Reader Journey"
+              subtitle="Turn reading momentum into lasting progress"
+              scrollContainerId="journey-scroll"
+              secondary={data ? <JourneyTabsRail activeTab={normalizedTab} /> : undefined}
+            />
+          )}
+          <NativeScrollView id="journey-scroll" className="app-page [container-type:inline-size]">
+            {isLoading ? (
+              <div className="flex min-h-[28rem] items-center justify-center">
+                <LoadingSpinner size="lg" text="Preparing your Reader Journey..." />
               </div>
-              <div className="hidden border-l border-border/70 bg-muted/20 p-4 md:block">
-                <img
-                  src={BRACK_TROPHY_IMAGE}
-                  alt=""
-                  aria-hidden="true"
-                  className="h-full min-h-40 w-full rounded-md object-cover"
-                  draggable={false}
+            ) : !data || (error && !retainedRetryableSnapshot) ? (
+              <PremiumEmptyState
+                asset="badConnection"
+                title="Reader Journey is unavailable"
+                description="Reconnect and try again. Your reading data remains safe."
+                action={<Button className="min-h-11" onClick={() => void refetch()}>Try again</Button>}
+              />
+            ) : (
+              <div className="space-y-5">
+                <JourneyFreshnessNotice
+                  freshness={freshness}
+                  cachedAt={data.cached_at}
+                  refreshing={isFetching}
+                  onRefresh={() => void refetch()}
                 />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                <TabsContent value="overview" className="focus-visible:outline-none">
+                  <JourneyOverview
+                    data={data}
+                    dailyFocus={dailyFocus}
+                    provisional={provisional}
+                    leaderboardsEnabled={leaderboardsEnabled}
+                    savingOptIn={savingOptIn}
+                    actionLoading={booksLoading}
+                    currentCycleAvailable={freshness !== "expired"}
+                    onQuestAction={handleQuestAction}
+                    onJoinLeague={() => void handleLeaderboardOptIn(true)}
+                    onOpenTab={setJourneyTab}
+                  />
+                </TabsContent>
 
-        {/* Filter Tabs */}
-        <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)} className="mb-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="all">All ({totalCount})</TabsTrigger>
-            <TabsTrigger value="earned">Earned ({earnedCount})</TabsTrigger>
-            <TabsTrigger value="unearned">Locked ({totalCount - earnedCount})</TabsTrigger>
-          </TabsList>
-          
-          {/* Badges Grid */}
-          <TabsContent value="all" className="mt-6">
-            {loading ? (
-              <div className="flex items-center justify-center h-96">
-                <LoadingSpinner size="lg" text="Loading achievements..." />
-              </div>
-            ) : badges.length === 0 ? (
-              <PremiumEmptyState
-                asset="emptyGoals"
-                title="No badges available"
-                description="Reading achievements will appear here when they are configured."
-                size="compact"
-              />
-            ) : (
-              <BadgeDisplay
-                badges={badges}
-                earnedBadges={earnedBadges}
-                onBadgeClick={handleBadgeClick}
-              />
-            )}
-          </TabsContent>
-          
-          <TabsContent value="earned" className="mt-6">
-            {loading ? (
-              <div className="flex items-center justify-center h-96">
-                <LoadingSpinner size="lg" text="Loading achievements..." />
-              </div>
-            ) : earnedBadges.length === 0 ? (
-              <PremiumEmptyState
-                asset="emptyGoals"
-                title="No badges earned yet"
-                description="Keep reading, logging progress, and finishing books to unlock achievements."
-                size="compact"
-              />
-            ) : (
-              <BadgeDisplay 
-                badges={badges.filter(badge => earnedBadgeIds.has(badge.id))} 
-                earnedBadges={earnedBadges}
-                onBadgeClick={handleBadgeClick}
-              />
-            )}
-          </TabsContent>
-          
-          <TabsContent value="unearned" className="mt-6">
-            {loading ? (
-              <div className="flex items-center justify-center h-96">
-                <LoadingSpinner size="lg" text="Loading achievements..." />
-              </div>
-            ) : badges.filter(badge => !earnedBadgeIds.has(badge.id)).length === 0 ? (
-              <PremiumEmptyState
-                asset="syncReviewClear"
-                title="All badges earned"
-                description="You have unlocked every available achievement."
-                size="compact"
-              />
-            ) : (
-              <BadgeDisplay 
-                badges={badges.filter(badge => !earnedBadgeIds.has(badge.id))} 
-                earnedBadges={earnedBadges} 
-                // Locked badges won't trigger details since earnedBadge will be undefined
-                onBadgeClick={handleBadgeClick}
-              />
-            )}
-          </TabsContent>
-        </Tabs>
+                <TabsContent value="quests" className="focus-visible:outline-none">
+                  {freshness === "expired" ? (
+                    <PremiumEmptyState
+                      asset="badConnection"
+                      title="Refresh to see current quests"
+                      description="Saved level and wallet balances remain available on Overview."
+                      size="compact"
+                      action={<Button className="min-h-11" onClick={() => void refetch()}>Refresh quests</Button>}
+                    />
+                  ) : (
+                    <JourneyQuests
+                      dailyQuests={dailyQuests}
+                      weeklyQuests={weeklyQuests}
+                      tomorrowQuests={data.tomorrow_quests}
+                      serverTime={data.server_time}
+                      timezone={data.timezone}
+                      receivedAt={data.cached_at}
+                      collapseWeekly={isMobile}
+                      onAction={handleQuestAction}
+                      actionLoading={booksLoading}
+                    />
+                  )}
+                </TabsContent>
 
-        {selectedBadge && (
-          <BadgeDetailsDialog
-            badge={selectedBadge}
-            earnedBadge={selectedEarnedBadge}
-            open={detailsOpen}
-            onOpenChange={(open) => setDetailsOpen(open)}
-          />
-        )}
-      </div>
+                <TabsContent value="shop" className="focus-visible:outline-none">
+                  <JourneyShop userId={user.id} />
+                </TabsContent>
+
+                <TabsContent value="badges" className="focus-visible:outline-none">
+                  <JourneyBadges
+                    badges={badges}
+                    earnedBadges={earnedBadges}
+                    loading={badgesLoading}
+                    onBadgeClick={handleBadgeClick}
+                  />
+                </TabsContent>
+
+                <TabsContent value="rankings" className="focus-visible:outline-none">
+                  {freshness === "expired" ? (
+                    <PremiumEmptyState
+                      asset="badConnection"
+                      title="Refresh to see current standings"
+                      description="Reader League periods may have changed since this Journey was saved."
+                      size="compact"
+                      action={<Button className="min-h-11" onClick={() => void refetch()}>Refresh League</Button>}
+                    />
+                  ) : (
+                    <JourneyLeague
+                      enabled={leaderboardsEnabled}
+                      account={data.account}
+                      league={data.league}
+                      cutoff={data.week.scoring_closes_at}
+                      serverTime={data.server_time}
+                      receivedAt={data.cached_at}
+                      scope={scope}
+                      mobile={isMobile}
+                      savingOptIn={savingOptIn}
+                      loading={leaderboard.isLoading}
+                      refreshing={leaderboard.isFetching && Boolean(leaderboard.data)}
+                      cached={leaderboard.data?.source === "cached"}
+                      error={leaderboard.error}
+                      entries={leaderboard.data?.entries ?? []}
+                      onScopeChange={setScope}
+                      onOptInChange={handleLeaderboardOptIn}
+                      onRetry={() => void leaderboard.refetch()}
+                    />
+                  )}
+                </TabsContent>
+              </div>
+            )}
+          </NativeScrollView>
+        </div>
+      </Tabs>
+
+      <JourneyQuestBookPicker
+        mode={questPicker}
+        books={readingBooks}
+        onOpenChange={(open) => { if (!open) setQuestPicker(null); }}
+        onSelect={completeQuestAction}
+      />
+
+      {selectedBadge && (
+        <BadgeDetailsDialog
+          badge={selectedBadge}
+          earnedBadge={selectedEarnedBadge}
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+        />
+      )}
     </MobileLayout>
   );
 };

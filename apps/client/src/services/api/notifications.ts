@@ -33,6 +33,11 @@ export interface NotificationPreferences {
   goals_enabled: boolean;
   streaks_enabled: boolean;
   reading_reminders_enabled: boolean;
+  badges_enabled: boolean;
+  quests_enabled: boolean;
+  rank_movement_enabled: boolean;
+  weekly_results_enabled: boolean;
+  gold_leaves_enabled: boolean;
   quiet_hours_start: string | null;
   quiet_hours_end: string | null;
 }
@@ -45,6 +50,11 @@ export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
   goals_enabled: true,
   streaks_enabled: true,
   reading_reminders_enabled: false,
+  badges_enabled: true,
+  quests_enabled: true,
+  rank_movement_enabled: true,
+  weekly_results_enabled: true,
+  gold_leaves_enabled: true,
   quiet_hours_start: null,
   quiet_hours_end: null,
 };
@@ -70,6 +80,11 @@ export const fetchNotificationPreferences = async (
     goals_enabled: data.goals_enabled ?? true,
     streaks_enabled: data.streaks_enabled ?? true,
     reading_reminders_enabled: data.reading_reminders_enabled ?? false,
+    badges_enabled: data.badges_enabled ?? true,
+    quests_enabled: data.quests_enabled ?? true,
+    rank_movement_enabled: data.rank_movement_enabled ?? true,
+    weekly_results_enabled: data.weekly_results_enabled ?? true,
+    gold_leaves_enabled: data.gold_leaves_enabled ?? true,
     quiet_hours_start: data.quiet_hours_start || null,
     quiet_hours_end: data.quiet_hours_end || null,
   };

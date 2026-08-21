@@ -86,7 +86,7 @@ export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
   };
 
   const handleSignOut = async () => {
-    triggerHaptic("impact");
+    triggerHaptic("medium");
     await signOut();
     navigate("/");
     onOpenChange(false);

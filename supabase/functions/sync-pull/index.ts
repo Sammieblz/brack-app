@@ -74,7 +74,7 @@ const DEFINITIONS: SyncDefinition[] = [
     key: "profile_preferences",
     table: "profiles",
     timestampColumn: "updated_at",
-    select: "id, color_theme, theme_mode, library_view_mode, updated_at",
+    select: "id, color_theme, theme_mode, library_view_mode, timezone, leaderboard_opt_in, leaderboard_eligible_from, gamification_profile_visible, updated_at",
     userColumn: "id",
   },
 ];
@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
       const { data, error } = await query;
       if (error) throw error;
 
-      const page = (data ?? []) as Record<string, unknown>[];
+      const page = (data ?? []) as unknown as Record<string, unknown>[];
       if (page.length > PAGE_SIZE) hasMore = true;
       const acceptedPage = page.slice(0, PAGE_SIZE);
       records[definition.key] = acceptedPage;

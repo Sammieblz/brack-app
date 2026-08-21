@@ -1,4 +1,4 @@
-import { App, AppUrlOpen } from "@capacitor/app";
+import { App, type URLOpenListenerEvent } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import {
   isAuthRouteUrl,
@@ -54,7 +54,7 @@ class DeepLinkService {
       }
 
       // Listen for app URL open events (native)
-      const listener = await App.addListener('appUrlOpen', (event: AppUrlOpen) => {
+      const listener = await App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
         console.log('Deep link received:', event.url);
         routeIncomingUrl(event.url);
       });

@@ -1,0 +1,13 @@
+# Database history and deployment controls require an explicit owner review.
+/supabase/migrations/ @Sammieblz
+/supabase/migrations.lock.json @Sammieblz
+/supabase/public-schema.lock.json @Sammieblz
+/supabase/tests/ @Sammieblz
+/supabase/contracts/ @Sammieblz
+/supabase/config.toml @Sammieblz
+/scripts/*migration*.mjs @Sammieblz
+/scripts/verify-schema-integrity.mjs @Sammieblz
+/scripts/verify-production-database-contracts.mjs @Sammieblz
+/.github/workflows/database-migrations.yml @Sammieblz
+/.github/workflows/deploy-database.yml @Sammieblz
+/docs/database-migrations.md @Sammieblz

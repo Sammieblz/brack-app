@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useGSAP } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface ConfettiProps {
   trigger?: boolean;
@@ -10,19 +11,43 @@ interface ConfettiProps {
   className?: string;
 }
 
+const DEFAULT_CONFETTI_COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--primary-glow))",
+  "hsl(var(--accent))",
+  "hsl(var(--secondary))",
+  "hsl(var(--foreground))",
+  "hsl(var(--muted-foreground))",
+];
+
 /**
  * Confetti animation for celebrations
  */
 export const Confetti = ({
   trigger = true,
   count = 50,
-  colors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8", "#F7DC6F"],
+  colors = DEFAULT_CONFETTI_COLORS,
   className,
 }: ConfettiProps) => {
+  const reducedMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
+  const particlesRef = useRef(new Set<HTMLDivElement>());
+  const cleanupTimersRef = useRef(new Set<ReturnType<typeof setTimeout>>());
+
+  useEffect(() => {
+    const cleanupTimers = cleanupTimersRef.current;
+    const particles = particlesRef.current;
+
+    return () => {
+      cleanupTimers.forEach((timer) => clearTimeout(timer));
+      cleanupTimers.clear();
+      particles.forEach((particle) => particle.remove());
+      particles.clear();
+    };
+  }, []);
 
   useGSAP(() => {
-    if (!containerRef.current || !trigger) return;
+    if (!containerRef.current || !trigger || reducedMotion) return;
 
     const particles: HTMLDivElement[] = [];
 
@@ -46,6 +71,7 @@ export const Confetti = ({
 
       containerRef.current.appendChild(particle);
       particles.push(particle);
+      particlesRef.current.add(particle);
 
       // Animate particle
       gsap.to(particle, {
@@ -72,14 +98,16 @@ export const Confetti = ({
 
     // Cleanup after animation
     const cleanup = setTimeout(() => {
-      particles.forEach((p) => p.remove());
+      particles.forEach((particle) => {
+        particle.remove();
+        particlesRef.current.delete(particle);
+      });
+      cleanupTimersRef.current.delete(cleanup);
     }, 4000);
+    cleanupTimersRef.current.add(cleanup);
+  }, { dependencies: [trigger, count, colors, reducedMotion] });
 
-    return () => {
-      clearTimeout(cleanup);
-      particles.forEach((p) => p.remove());
-    };
-  }, { dependencies: [trigger, count, colors] });
+  if (reducedMotion) return null;
 
   return (
     <div

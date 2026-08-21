@@ -6,6 +6,7 @@ type ConfirmOptions = {
   description?: string;
   confirmText?: string;
   cancelText?: string;
+  variant?: "default" | "destructive";
 };
 
 type ConfirmContextValue = {
@@ -41,6 +42,7 @@ export const ConfirmDialogProvider = ({ children }: { children: ReactNode }) => 
         description={pending?.options.description}
         cancelText={pending?.options.cancelText ?? "Cancel"}
         confirmText={pending?.options.confirmText ?? "Confirm"}
+        variant={pending?.options.variant}
         onConfirm={() => handleClose(true)}
         onCancel={() => handleClose(false)}
       />

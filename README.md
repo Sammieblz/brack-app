@@ -62,7 +62,8 @@ GOOGLE_BOOKS_API_KEY=your-google-books-api-key
 VITE_SENTRY_DSN=your-sentry-dsn
 ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com
 ENVIRONMENT=development
-FCM_SERVER_KEY=your-fcm-server-key
+FCM_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
+GAMIFICATION_WORKER_SECRET=replace-with-a-random-worker-secret
 SUPABASE_ACCESS_TOKEN=your-supabase-cli-token
 SUPABASE_DB_PASSWORD=your-linked-project-db-password
 ```
@@ -172,17 +173,24 @@ This project uses Supabase with PostgreSQL.
 ### Running Migrations
 
 ```bash
-# Link to your Supabase project
-npx supabase link --project-ref your-project-id
+# Create a forward-only migration with the pinned CLI
+npm run db:migration:new -- descriptive_name
 
-# Apply migrations
-npx supabase db push
+# After editing SQL and adding pgTAP coverage
+npm run db:migrations:lock
 
-# Or reset database (development only)
-npx supabase db reset
+# Prove the full ledger locally (development only)
+npx --no-install supabase start
+npx --no-install supabase db reset --local --no-seed
+npm run db:schema:lock
+npm run db:schema:local
+npx --no-install supabase test db --local
+node scripts/verify-migration-integrity.mjs --base-ref origin/main
 ```
 
-See [Database Schema](./docs/database-schema.md) for complete schema documentation.
+Production migrations are applied only by the serialized, protected GitHub
+workflow. See [Database Migration Integrity](./docs/database-migrations.md) for
+the complete creation, deployment, and recovery procedure.
 
 ## 🧪 Testing
 

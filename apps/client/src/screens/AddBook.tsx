@@ -27,6 +27,7 @@ import { useReadingProfile } from "@/hooks/useReadingProfile";
 import { useBooks } from "@/hooks/useBooks";
 import { findExistingLibraryBook } from "@/utils/bookIdentity";
 import { normalizeGenre } from "@/utils/genres";
+import { canonicalizeIsbn } from "@/utils/isbn";
 import { booksRepo } from "@/services/local";
 
 const AddBook = () => {
@@ -58,6 +59,9 @@ const AddBook = () => {
     description: "",
     source_provider: null as string | null,
     source_id: null as string | null,
+    series_name: "",
+    series_position: "",
+    series_total: "",
   });
   const scannedBook = (
     location.state as { scannedBook?: GoogleBookResult } | null
@@ -105,6 +109,9 @@ const AddBook = () => {
       description: scannedBook.description || "",
       source_provider: scannedBook.source_provider || "google_books",
       source_id: scannedBook.source_id || scannedBook.googleBooksId,
+      series_name: scannedBook.series_name || "",
+      series_position: scannedBook.series_position?.toString() || "",
+      series_total: scannedBook.series_total?.toString() || "",
     });
     setActiveTab("manual");
     toast.success("Book details loaded from the scan");
@@ -116,11 +123,17 @@ const AddBook = () => {
     
     setLoading(true);
     try {
+      const isbn = formData.isbn.trim() ? canonicalizeIsbn(formData.isbn) : null;
+      if (formData.isbn.trim() && !isbn) {
+        toast.error("Enter a valid ISBN-10 or ISBN-13");
+        return;
+      }
+
       const localDuplicate = findExistingLibraryBook(
         {
           title: formData.title,
           author: formData.author || null,
-          isbn: formData.isbn || null,
+          isbn,
         },
         books
       );
@@ -135,7 +148,7 @@ const AddBook = () => {
         user_id: user.id,
         title: formData.title,
         author: formData.author || null,
-        isbn: formData.isbn || null,
+        isbn,
         genre: normalizeGenre(formData.genre),
         pages: formData.pages ? parseInt(formData.pages) : null,
         chapters: formData.chapters ? parseInt(formData.chapters) : null,
@@ -151,6 +164,9 @@ const AddBook = () => {
         notes: null,
         source_provider: formData.source_provider,
         source_id: formData.source_id,
+        series_name: formData.series_name || null,
+        series_position: formData.series_position ? Number(formData.series_position) : null,
+        series_total: formData.series_total ? parseInt(formData.series_total) : null,
       };
 
       const addedBook = await bookOperations.create(bookData);
@@ -196,6 +212,9 @@ const AddBook = () => {
       description: book.description || "",
       source_provider: book.source_provider || "google_books",
       source_id: book.source_id || book.googleBooksId,
+      series_name: book.series_name || "",
+      series_position: book.series_position?.toString() || "",
+      series_total: book.series_total?.toString() || "",
     });
     setActiveTab("manual");
     toast.success("Book details loaded! Review and save.");
@@ -231,6 +250,9 @@ const AddBook = () => {
       notes: null,
       source_provider: book.source_provider || "google_books",
       source_id: book.source_id || book.googleBooksId,
+      series_name: book.series_name || null,
+      series_position: book.series_position || null,
+      series_total: book.series_total || null,
     };
 
     try {
@@ -272,6 +294,9 @@ const AddBook = () => {
       description: book.description || "",
       source_provider: book.source_provider || "google_books",
       source_id: book.source_id || book.googleBooksId,
+      series_name: book.series_name || "",
+      series_position: book.series_position?.toString() || "",
+      series_total: book.series_total?.toString() || "",
     });
     setActiveTab("manual");
     toast.success("Book details loaded from scan. Review and save.");
@@ -452,6 +477,37 @@ const AddBook = () => {
                     placeholder="Enter chapter count"
                     min="1"
                   />
+
+                  <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_8rem_8rem]">
+                    <MobileInput
+                      id="series_name"
+                      label="Series"
+                      value={formData.series_name}
+                      onChange={(e) => setFormData({ ...formData, series_name: e.target.value })}
+                      placeholder="Optional series name"
+                    />
+                    <MobileInput
+                      id="series_position"
+                      label="Book #"
+                      type="number"
+                      inputMode="decimal"
+                      value={formData.series_position}
+                      onChange={(e) => setFormData({ ...formData, series_position: e.target.value })}
+                      placeholder="1"
+                      min="0"
+                      step="0.5"
+                    />
+                    <MobileInput
+                      id="series_total"
+                      label="Series total"
+                      type="number"
+                      inputMode="numeric"
+                      value={formData.series_total}
+                      onChange={(e) => setFormData({ ...formData, series_total: e.target.value })}
+                      placeholder="3"
+                      min="1"
+                    />
+                  </div>
 
                   {/* Spacer for fixed button */}
                   <div className="h-24 md:h-4" />

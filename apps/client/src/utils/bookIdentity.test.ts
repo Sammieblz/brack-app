@@ -39,6 +39,15 @@ describe("book duplicate identity", () => {
     ).toBe(baseBook.id);
   });
 
+  it("treats equivalent ISBN-10 and ISBN-13 values as the same book", () => {
+    expect(
+      findExistingLibraryBook(
+        { title: "Different metadata", author: null, isbn: "0-306-40615-2" },
+        [{ ...baseBook, isbn: "9780306406157" }]
+      )?.id
+    ).toBe(baseBook.id);
+  });
+
   it("falls back to normalized title and author only when ISBN is absent", () => {
     const withoutIsbn = { ...baseBook, isbn: null };
     expect(
