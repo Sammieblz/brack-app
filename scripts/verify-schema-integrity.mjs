@@ -29,11 +29,20 @@ function resolveSupabaseCommand(repoRoot) {
   return { command: "supabase", prefix: [] };
 }
 
-function executeFingerprintQuery(target, repoRoot) {
+export function executeFingerprintQuery(target, repoRoot, spawn = spawnSync) {
   const { command, prefix } = resolveSupabaseCommand(repoRoot);
-  return spawnSync(
+  return spawn(
     command,
-    [...prefix, "db", "query", `--${target}`, "--file", FINGERPRINT_QUERY],
+    [
+      ...prefix,
+      "db",
+      "query",
+      `--${target}`,
+      "--file",
+      FINGERPRINT_QUERY,
+      "--output-format",
+      "json",
+    ],
     {
       cwd: repoRoot,
       encoding: "utf8",
@@ -51,13 +60,14 @@ export function parseSchemaFingerprintOutput(output) {
   } catch (error) {
     throw new Error(`Schema fingerprint output is not valid JSON: ${error.message}`);
   }
-  if (!payload || !Array.isArray(payload.rows) || payload.rows.length === 0) {
+  const rows = Array.isArray(payload) ? payload : payload?.rows;
+  if (!Array.isArray(rows) || rows.length === 0) {
     throw new Error("Schema fingerprint output does not contain any rows.");
   }
 
   const objects = [];
   const seen = new Set();
-  for (const [index, row] of payload.rows.entries()) {
+  for (const [index, row] of rows.entries()) {
     if (
       !row
       || typeof row !== "object"

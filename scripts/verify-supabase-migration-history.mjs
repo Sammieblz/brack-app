@@ -19,15 +19,19 @@ function resolveSupabaseCommand(repoRoot) {
   return { command: "supabase", prefix: [] };
 }
 
-function executeMigrationList(target, repoRoot) {
+export function executeMigrationList(target, repoRoot, spawn = spawnSync) {
   const { command, prefix } = resolveSupabaseCommand(repoRoot);
-  return spawnSync(command, [...prefix, "migration", "list", `--${target}`], {
-    cwd: repoRoot,
-    encoding: "utf8",
-    env: process.env,
-    maxBuffer: 64 * 1024 * 1024,
-    windowsHide: true,
-  });
+  return spawn(
+    command,
+    [...prefix, "migration", "list", `--${target}`, "--output-format", "json"],
+    {
+      cwd: repoRoot,
+      encoding: "utf8",
+      env: process.env,
+      maxBuffer: 64 * 1024 * 1024,
+      windowsHide: true,
+    },
+  );
 }
 
 export async function verifySupabaseMigrationHistory({

@@ -66,6 +66,20 @@ The Supabase CLI is an exact development dependency. Use `npx --no-install
 supabase` or the npm scripts so local work, CI, and deployment use the same
 version. Do not install or substitute a floating `latest` CLI in automation.
 
+Automated local and linked migration-history checks use the pinned Supabase CLI
+2.114.0 machine contract: `supabase migration list --<target> --output-format
+json`. The verifier parses only the JSON payload written to stdout and treats
+stderr as diagnostic output. It fails closed when the command exits nonzero or
+when stdout is empty, malformed, or does not satisfy the expected migration
+schema. Automation must never parse the CLI's human-readable tables because
+their formatting is agent-sensitive and may change between terminal contexts.
+Use `--output-format json` specifically; the legacy `--output json` flag is a
+different output mechanism and does not provide this migration-list contract.
+The production-contract and schema-fingerprint query wrappers also request
+`--output-format json` explicitly. Their validators accept the two JSON payload
+shapes emitted by the pinned CLI in ordinary and agent-aware environments,
+then validate every row; any other payload shape remains a hard failure.
+
 Generate the schema lock only after a clean reset. When the migration changes
 after review, regenerate both locks and rerun the proof. CI recreates the
 database and refuses a schema lock that was generated from ad-hoc local state.

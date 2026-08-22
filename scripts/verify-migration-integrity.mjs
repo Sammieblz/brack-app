@@ -14,7 +14,6 @@ const DEFAULT_MIGRATIONS_DIRECTORY = "supabase/migrations";
 const DEFAULT_LOCK_FILE = "supabase/migrations.lock.json";
 const MIGRATION_FILENAME_PATTERN = /^(\d{14})_([a-z0-9]+(?:[_-][a-z0-9]+)*)\.sql$/;
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
-const ANSI_ESCAPE_PATTERN = /\u001b\[[0-?]*[ -/]*[@-~]/g;
 const MAX_FUTURE_TIMESTAMP_SKEW_MS = 24 * 60 * 60 * 1000;
 const LEGACY_NON_CALENDAR_MIGRATIONS = new Set([
   "20260505106000_prevent_public_storage_listing.sql",
@@ -430,64 +429,80 @@ function verifyAgainstBase(baseSnapshot, currentMigrations, currentManifest, dis
 }
 
 export function parseSupabaseMigrationList(output) {
-  const cleanOutput = output.replace(ANSI_ESCAPE_PATTERN, "");
-  const trimmedOutput = cleanOutput.trim();
-  if (trimmedOutput.startsWith("{")) {
-    let payload;
-    try {
-      payload = JSON.parse(trimmedOutput);
-    } catch (error) {
-      throw new MigrationIntegrityError(`Supabase migration-list JSON is invalid: ${error.message}`);
-    }
-    if (!payload || !Array.isArray(payload.migrations)) {
-      throw new MigrationIntegrityError("Supabase migration-list JSON does not contain a migrations array.");
-    }
-
-    const local = [];
-    const remote = [];
-    const errors = [];
-    for (const [index, entry] of payload.migrations.entries()) {
-      if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
-        errors.push(`Supabase migration-list JSON migrations[${index}] must be an object.`);
-        continue;
-      }
-      for (const [label, values] of [["local", local], ["remote", remote]]) {
-        const value = entry[label];
-        if (value === null || value === undefined || value === "") continue;
-        if (typeof value !== "string" || !/^\d{14}$/u.test(value)) {
-          errors.push(
-            `Invalid Supabase ${label.toUpperCase()} migration version: ${JSON.stringify(value)}.`,
-          );
-        } else {
-          values.push(value);
-        }
-      }
-    }
-    if (errors.length > 0) throw new MigrationIntegrityError(errors);
-    return { local, remote };
+  const trimmedOutput = String(output).trim();
+  let payload;
+  try {
+    payload = JSON.parse(trimmedOutput);
+  } catch (error) {
+    throw new MigrationIntegrityError(`Supabase migration-list JSON is invalid: ${error.message}`);
   }
 
-  const lines = cleanOutput.split(/\r?\n/u);
-  const headerIndex = lines.findIndex((line) => /\bLOCAL\b/u.test(line) && /\bREMOTE\b/u.test(line));
-  if (headerIndex < 0) {
-    throw new MigrationIntegrityError("Supabase migration-list output does not contain LOCAL and REMOTE columns.");
+  const isPlainObject = (value) => value !== null
+    && typeof value === "object"
+    && !Array.isArray(value)
+    && Object.getPrototypeOf(value) === Object.prototype;
+  if (!isPlainObject(payload)) {
+    throw new MigrationIntegrityError("Supabase migration-list JSON must be a plain object.");
   }
+
+  const errors = [];
+  if (!Object.hasOwn(payload, "message") || payload.message !== "Migrations listed") {
+    errors.push('Supabase migration-list JSON message must equal "Migrations listed".');
+  }
+  if (!Object.hasOwn(payload, "migrations") || !Array.isArray(payload.migrations)) {
+    errors.push("Supabase migration-list JSON must contain a migrations array.");
+  }
+  if (!Array.isArray(payload.migrations)) throw new MigrationIntegrityError(errors);
 
   const local = [];
   const remote = [];
-  const errors = [];
-  for (const line of lines.slice(headerIndex + 1)) {
-    const columns = line.split(/[|\u2502]/u);
-    if (columns.length < 2) continue;
-    const localValue = columns[0].trim();
-    const remoteValue = columns[1].trim();
-    if (!/[a-z0-9]/iu.test(localValue) && !/[a-z0-9]/iu.test(remoteValue)) continue;
-    const localMatch = /^(\d{14})$/u.exec(localValue);
-    const remoteMatch = /^(\d{14})$/u.exec(remoteValue);
-    if (localMatch) local.push(localMatch[1]);
-    else if (localValue) errors.push(`Invalid Supabase LOCAL migration version: ${JSON.stringify(localValue)}.`);
-    if (remoteMatch) remote.push(remoteMatch[1]);
-    else if (remoteValue) errors.push(`Invalid Supabase REMOTE migration version: ${JSON.stringify(remoteValue)}.`);
+  for (const [index, entry] of payload.migrations.entries()) {
+    if (!isPlainObject(entry)) {
+      errors.push(`Supabase migration-list JSON migrations[${index}] must be a plain object.`);
+      continue;
+    }
+
+    let rowIsValid = true;
+    for (const field of ["local", "remote", "time"]) {
+      if (!Object.hasOwn(entry, field)) {
+        errors.push(`Supabase migration-list JSON migrations[${index}] must own a ${field} field.`);
+        rowIsValid = false;
+      }
+    }
+    if (!Object.hasOwn(entry, "local") || !Object.hasOwn(entry, "remote") || !Object.hasOwn(entry, "time")) {
+      continue;
+    }
+
+    for (const label of ["local", "remote"]) {
+      const value = entry[label];
+      if (typeof value !== "string" || (value !== "" && !/^\d{14}$/u.test(value))) {
+        errors.push(
+          `Invalid Supabase ${label.toUpperCase()} migration version at migrations[${index}]: ${JSON.stringify(value)}.`,
+        );
+        rowIsValid = false;
+      }
+    }
+    if (typeof entry.time !== "string") {
+      errors.push(`Supabase migration-list JSON migrations[${index}].time must be a string.`);
+      rowIsValid = false;
+    }
+
+    if (typeof entry.local === "string" && typeof entry.remote === "string") {
+      if (entry.local === "" && entry.remote === "") {
+        errors.push(`Supabase migration-list JSON migrations[${index}] has neither a local nor remote version.`);
+        rowIsValid = false;
+      } else if (entry.local !== "" && entry.remote !== "" && entry.local !== entry.remote) {
+        errors.push(
+          `Supabase migration-list JSON migrations[${index}] pairs different local and remote versions.`,
+        );
+        rowIsValid = false;
+      }
+    }
+
+    if (rowIsValid) {
+      if (entry.local !== "") local.push(entry.local);
+      if (entry.remote !== "") remote.push(entry.remote);
+    }
   }
 
   if (errors.length > 0) throw new MigrationIntegrityError(errors);
@@ -642,7 +657,7 @@ function usage() {
 Options:
   --write-lock                   Deterministically rewrite supabase/migrations.lock.json
   --base-ref <git-ref>           Enforce immutability and forward-only timestamps from a Git base
-  --migration-list-file <path>   Verify saved Supabase migration list output (use - for stdin)
+  --migration-list-file <path>   Verify saved Supabase migration-list JSON (use - for stdin)
   --migration-list-mode <mode>   preflight (REMOTE prefix) or postflight (exact; default)
   --repo-root <path>             Repository root (defaults to the current directory)
   --migrations-dir <path>        Migrations path relative to the repository root
