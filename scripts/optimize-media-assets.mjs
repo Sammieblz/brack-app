@@ -140,8 +140,13 @@ const sharpExtensions = new Set([
 const toRepoPath = (target) =>
   path.relative(repoRoot, target).split(path.sep).join("/");
 
+const compareText = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 const sha256File = async (target) => sha256(await readFile(target));
+const sha256TextFile = async (target) => {
+  const value = await readFile(target, "utf8");
+  return sha256(value.replace(/\r\n?/g, "\n"));
+};
 
 const exists = async (target) => {
   try {
@@ -476,7 +481,7 @@ const validateBadgeArtwork = async () => {
   const badges = entries
     .filter((entry) => entry.isFile() && entry.name.endsWith(".webp"))
     .map((entry) => path.join(badgeRoot, entry.name))
-    .sort((left, right) => left.localeCompare(right));
+    .sort((left, right) => compareText(toRepoPath(left), toRepoPath(right)));
   if (badges.length === 0) throw new Error("No canonical badge artwork was found.");
   for (const target of badges) {
     await assertTransparentImage(target, {
@@ -609,7 +614,7 @@ const buildManifest = async () => {
     })).filter((target) => mediaExtensions.has(path.extname(target).toLowerCase())));
   }
   const allFiles = [...new Set([...publicFiles, ...nativeFiles])]
-    .sort((left, right) => toRepoPath(left).localeCompare(toRepoPath(right)));
+    .sort((left, right) => compareText(toRepoPath(left), toRepoPath(right)));
   const inventory = await Promise.all(allFiles.map(describeMedia));
   const publicInventory = inventory.filter((item) => item.path.startsWith("apps/client/public/"));
   const nativeInventory = inventory.filter((item) => item.role === "platform");
@@ -649,7 +654,9 @@ const buildManifest = async () => {
     schema_version: manifestVersion,
     generator: {
       path: toRepoPath(scriptPath),
-      sha256: await sha256File(scriptPath),
+      // Git may materialize text files with CRLF on Windows and LF in CI.
+      // Hash canonical text so the manifest is portable across platforms.
+      sha256: await sha256TextFile(scriptPath),
       sharp: sharp.versions.sharp,
       vips: sharp.versions.vips,
     },
