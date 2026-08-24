@@ -8,6 +8,9 @@ major_version = 17
 [functions.search-books]
 verify_jwt = false
 
+[functions.auth-email-availability]
+verify_jwt = false
+
 [functions.add-book]
 verify_jwt = true
 

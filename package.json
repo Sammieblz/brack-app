@@ -30,7 +30,7 @@
     "test:e2e": "playwright test",
     "test:electron": "playwright test --config=playwright.electron.config.ts",
     "test:db": "supabase test db",
-    "test:edge": "deno test supabase/functions/dashboard-home supabase/functions/core-telemetry",
+    "test:edge": "deno test supabase/functions/auth-email-availability supabase/functions/dashboard-home supabase/functions/core-telemetry",
     "db:migration:new": "node scripts/create-migration.mjs",
     "db:migrations:lock": "node scripts/verify-migration-integrity.mjs --write-lock",
     "db:migrations:verify": "node scripts/verify-migration-integrity.mjs",

@@ -5295,6 +5295,11 @@
     },
     {
       "type": "function",
+      "name": "public.auth_email_exists(p_email text)",
+      "sha256": "c607237781f2153040329ca4149b94c6ca4a178d5e3e93c534e8f0ac3eb31df5"
+    },
+    {
+      "type": "function",
       "name": "public.award_badges(p_user_id uuid, p_event text)",
       "sha256": "4306cfba42672d7806d231eef6034f6983f7f279def15ce1e73dd1cacfff6e89"
     },

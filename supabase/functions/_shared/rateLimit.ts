@@ -9,6 +9,8 @@ type RateLimitOptions = {
   name?: string;
   /** Optional explicit identifier (e.g., user id). */
   identifier?: string;
+  /** Reject requests when the distributed limiter cannot be verified. */
+  failClosed?: boolean;
 };
 
 type Bucket = {
@@ -23,6 +25,15 @@ type DistributedRateLimitResult = {
   reset_at?: string;
   retry_after_seconds?: number;
 };
+
+export class DistributedRateLimitUnavailableError extends Error {
+  retryAfterSeconds = 60;
+
+  constructor() {
+    super("Distributed rate limit unavailable");
+    this.name = "DistributedRateLimitUnavailableError";
+  }
+}
 
 type RateLimitClient = {
   rpc: (...args: any[]) => unknown;
@@ -112,7 +123,13 @@ export const enforceRateLimit = async (
   supabaseClient: RateLimitClient,
   options: RateLimitOptions,
 ): Promise<Response | null> => {
-  const { limit, windowMs, name = "global", identifier } = options;
+  const {
+    limit,
+    windowMs,
+    name = "global",
+    identifier,
+    failClosed = false,
+  } = options;
   const bucketKey = `${name}:${identifier || getClientIdentifier(req)}`;
 
   try {
@@ -127,6 +144,10 @@ export const enforceRateLimit = async (
     if (error) throw error;
 
     const result = (data ?? {}) as DistributedRateLimitResult;
+    if (failClosed && typeof result.allowed !== "boolean") {
+      throw new Error("Invalid distributed rate limit response");
+    }
+
     if (result.allowed === false) {
       return rateLimitResponse(
         req,
@@ -139,10 +160,20 @@ export const enforceRateLimit = async (
 
     return null;
   } catch (error) {
-    console.warn("Distributed rate limit unavailable; falling back to instance limiter", {
-      bucketKey,
-      error: error instanceof Error ? error.message : error,
-    });
+    if (failClosed) {
+      console.warn("Distributed rate limit unavailable; rejecting request", {
+        name,
+      });
+      throw new DistributedRateLimitUnavailableError();
+    }
+
+    console.warn(
+      "Distributed rate limit unavailable; falling back to instance limiter",
+      {
+        bucketKey,
+        error: error instanceof Error ? error.message : error,
+      },
+    );
     return rateLimit(req, options);
   }
 };

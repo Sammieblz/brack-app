@@ -1,13 +1,16 @@
 # Edge Function Catalog
 
-Source of truth: local `supabase/functions/`, `supabase/config.toml`, and remote project `waftnaqgkcgufzapcihe`, last aligned on 2026-06-13.
+Source of truth: local `supabase/functions/`, `supabase/config.toml`, and remote project `waftnaqgkcgufzapcihe`, reviewed on 2026-08-23.
 
-Brack currently has 56 maintained local Edge Function directories, excluding `_shared`. All maintained functions use the shared distributed limiter in `_shared/rateLimit.ts`. The limiter stores buckets in `api_rate_limits` through the service-role-only `check_api_rate_limit` RPC, with an instance-memory fallback if the RPC is temporarily unavailable.
+Maintained app-facing functions use the shared distributed limiter in `_shared/rateLimit.ts`. The limiter stores buckets in `api_rate_limits` through the service-role-only `check_api_rate_limit` RPC, with an instance-memory fallback if the RPC is temporarily unavailable. Auth email availability additionally fails closed when its protected lookup cannot return a valid boolean.
 
 ## Current Remote State
 
-- `search-books` is public with `verify_jwt = false`.
-- All other maintained functions require JWT verification.
+- `auth-email-availability`, `search-books`, `feature-flags`, and
+  `core-telemetry` are public with `verify_jwt = false`.
+- `gamification-worker` also disables JWT verification but requires its private
+  worker secret and is not a public client endpoint.
+- All remaining maintained functions require JWT verification.
 - The direct-message function group was deployed on 2026-06-13.
 - The `modern_direct_messaging` database migration is applied remotely.
 - The private `message-media` storage bucket exists remotely.
@@ -27,6 +30,12 @@ Brack currently has 56 maintained local Edge Function directories, excluding `_s
 | `_shared/reviews.ts` | Review feed cursor, visibility, enrichment, and summary helpers. |
 
 ## Maintained Functions
+
+### Authentication
+
+| Function | Auth | Purpose | Retry concerns |
+| --- | --- | --- | --- |
+| `auth-email-availability` | Public | Returns only `{ exists: boolean }` for a normalized signup email through service-role-only `public.auth_email_exists(text)`. This intentionally reveals account existence for confirmed, unconfirmed, and Google-created users. | Limited to 5 requests/IP/minute and 30/IP/hour. Do not automatically retry `429`; lookup failures fail closed and must stop signup. Responses are private and non-cacheable. |
 
 ### Reading and Library
 
@@ -136,6 +145,10 @@ Brack currently has 56 maintained local Edge Function directories, excluding `_s
 - Local JWT settings live in `supabase/config.toml`.
 - Backend-only secrets must not be exposed with `VITE_` prefixes.
 - `SUPABASE_SERVICE_ROLE_KEY` is required for trusted functions that bypass caller RLS after authenticating the user.
+- `auth-email-availability` is intentionally anonymous, but its
+  `auth_email_exists` RPC revokes execute from `PUBLIC`, `anon`, and
+  `authenticated` and grants it only to `service_role`. Never log submitted
+  emails or expand its response with user/provider data.
 - `GOOGLE_BOOKS_API_KEY` is optional but recommended for `search-books`.
 - `FCM_SERVICE_ACCOUNT_JSON` is required for FCM HTTP v1 push delivery.
 - `GAMIFICATION_WORKER_SECRET` protects the internal Reader Journey queue worker.
@@ -147,6 +160,7 @@ Use these checks when a function works locally but fails remotely:
 
 ```bash
 npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api
+npx supabase functions deploy auth-email-availability --project-ref waftnaqgkcgufzapcihe --use-api
 npx supabase functions deploy conversations-home --project-ref waftnaqgkcgufzapcihe --use-api
 npx supabase functions deploy reviews-feed --project-ref waftnaqgkcgufzapcihe --use-api
 npx supabase secrets list

@@ -49,6 +49,8 @@ export const supabase = createClient<Database>(
       storage: localStorage,      // Store tokens in localStorage
       persistSession: true,       // Persist across page reloads
       autoRefreshToken: true,     // Auto-refresh before expiry
+      detectSessionInUrl: false,  // Brack's cross-platform callback owns completion
+      flowType: 'implicit',       // Explicit compatibility mode for current links
     }
   }
 );
@@ -56,7 +58,10 @@ export const supabase = createClient<Database>(
 
 ## Sign Up
 
-### Basic Sign Up
+### Underlying Supabase Sign Up
+
+The client calls this only after `auth-email-availability` confirms that the
+normalized address is not already registered:
 
 ```typescript
 const { data, error } = await supabase.auth.signUp({
@@ -81,6 +86,97 @@ const { data, error } = await supabase.auth.signUp({
   },
 });
 ```
+
+### Brack Signup Outcome Contract
+
+The application layer returns an `EmailSignUpOutcome` instead of exposing the
+raw Supabase signup response:
+
+```typescript
+type EmailSignUpOutcome =
+  | { kind: 'signed_in'; session: Session }
+  | { kind: 'email_exists'; email: string }
+  | { kind: 'confirmation_pending'; email: string };
+```
+
+`signed_in` continues into onboarding or the dashboard.
+`confirmation_pending` opens the email-actions screen for a new, unconfirmed
+signup. `email_exists` keeps the reader on the signup form and shows **Email
+already exists** with the instruction to sign in or continue with Google.
+
+Before calling Supabase Auth, `signUpWithEmail` invokes the public
+`auth-email-availability` Edge Function with only the normalized email address.
+The function calls the backend-only `public.auth_email_exists(text)` RPC with a
+service-role client and returns only `{ exists: boolean }`. An existing
+confirmed account, unconfirmed account, or Google-created account therefore
+produces `email_exists` before Auth can create a user or resend confirmation.
+
+Supabase can also return an obfuscated user with an empty identities array for
+an existing address. Brack retains that response, plus the
+`user_already_exists` and `email_exists` Auth codes, as race-condition and
+provider-behavior fallbacks. An ambiguous response without one of those signals
+remains `confirmation_pending` rather than guessing.
+
+The neutral screen conditionally explains that a confirmation message may
+arrive and offers the same options for every pending outcome: request another
+confirmation, continue with Google, sign in, reset the password, or use another
+email address.
+
+This product decision intentionally reveals whether an email belongs to a Brack
+reader. That account-enumeration tradeoff is limited to the signup flow: the
+endpoint returns no user, provider, profile, or confirmation details; responses
+use `Cache-Control: private, no-store`; and requests are limited to 5 per client
+IP per minute and 30 per client IP per hour. The privileged RPC is executable
+only by `service_role`; `PUBLIC`, `anon`, and `authenticated` have no direct
+execute permission, and no service-role credential reaches the client.
+
+Availability checks fail closed. A rate-limit response, lookup error, malformed
+response, or unavailable function prevents the subsequent Auth signup call.
+The UI reports that Brack could not verify the address and explicitly states
+that no account was created.
+
+Changing first name, last name, password, or letter casing does not bypass Auth
+identity ownership. On a repeated signup, Supabase does not create or update the
+existing user; submitted profile metadata is ignored. Brack trims accidental
+email whitespace before Auth calls and leaves canonicalization to Supabase.
+
+### Account and profile uniqueness
+
+Brack's invariant is one Auth user and one profile per reader identity:
+
+- Supabase Auth owns email uniqueness and automatic same-email OAuth identity
+  linking. Brack intentionally exposes only the rate-limited
+  `auth-email-availability` boolean for signup; it does not duplicate email into
+  `public.profiles` or expose Auth rows through the Data API.
+- `public.profiles.id` is both its primary key and a validated, cascading foreign
+  key to `auth.users.id`.
+- `on_auth_user_created` runs only after a real `auth.users` insert. The trigger
+  and client fallback are idempotent on the Auth user UUID.
+- `supabase/contracts/production_integrity.sql` continuously checks normalized
+  non-SSO Auth email uniqueness, cross-user identity email uniqueness, missing
+  or orphaned profiles, the profile PK/FK, and the insert trigger.
+
+A hosted read-only audit on 2026-08-23 found zero normalized duplicate Auth
+emails, zero identity emails mapped to multiple users, and a one-to-one mapping
+between six Auth users and six profiles. The two recent repeated submissions
+were `user_repeated_signup` events: they created zero users/profiles and updated
+neither existing row.
+
+### Adding password login to a Google account
+
+An existing Google reader must not use public signup to add password login.
+Supabase intentionally returns an obfuscated response and sends no signup email
+for that attempt. The supported flow is:
+
+1. Continue with Google to authenticate the existing account.
+2. Open **Settings > Account**.
+3. Add a Brack password. The authenticated `updateUser({ password })` call adds
+   password login to the same Auth user and the same profile.
+
+The availability response intentionally does not identify Google as the owning
+provider. The duplicate error offers both sign-in and Google recovery paths;
+after Google authentication, adding a password still occurs through the
+authenticated account settings flow.
 
 ## Sign In
 
@@ -148,6 +244,37 @@ brack://auth/reset-password
 
 For preview deployments, add the hosting provider's exact preview pattern if needed. Keep production URLs exact rather than broad wildcard patterns.
 
+The SDK URL detector is intentionally disabled. `AuthCallback`, the Capacitor
+deep-link handler, and the Electron protocol handler all delegate to the same
+manual callback completion service. This gives one owner to single-use callback
+credentials and prevents the SDK and application from consuming the same code
+or token payload twice.
+
+## Production Email Delivery
+
+Supabase's built-in Auth mailer is intended for development and has a very low,
+project-wide delivery limit. Public email signup must not launch on that sender.
+
+Before enabling production signup:
+
+1. Configure a verified custom SMTP provider in **Supabase Dashboard → Project Settings → Auth → SMTP Settings**.
+2. Set **Site URL** to `https://brack.app`.
+3. Keep the exact web, local-development, Capacitor, and Electron callback URLs listed above in the redirect allowlist.
+4. Set an intentional email-send rate limit that matches the provider's capacity and Brack's abuse controls.
+5. Enable CAPTCHA with production keys before opening unrestricted public signup.
+6. Exercise signup, confirmation resend, password reset, expired-link, and already-used-link flows in staging before promotion.
+
+The client never automatically retries Auth `429` responses. It maps
+`over_email_send_rate_limit` and `over_request_rate_limit` to an actionable
+try-later message and does not invent a 60-second recovery time. A 60-second
+client resend guard is applied only after Supabase accepts a signup or resend
+request; it is not presented as evidence that delivery occurred or that a
+server-side quota will recover when the timer ends. After an email-delivery
+rate limit, the mounted Auth screen disables further signup, reset, and resend
+delivery attempts without displaying a recovery countdown. Sign in remains
+available because it does not send email. Repeated client retries cannot repair
+an exhausted server-side email quota.
+
 ## Sign Out
 
 ```typescript
@@ -206,6 +333,15 @@ const { data: { subscription } } = supabase.auth.onAuthStateChange(
 // Cleanup
 subscription.unsubscribe();
 ```
+
+### Offline Sync and Signed-out State
+
+The reading-core queue is account-scoped and remains on the device when a user
+signs out. App startup, foreground, and reconnect events treat a missing Auth
+session as a normal no-op; they do not inspect, mutate, or delete any user's
+queue. Once a verified session becomes available, Brack resumes only the queue
+owned by that user. Auth or connectivity failures other than the official
+missing-session state remain visible as errors.
 
 ## useAuth Hook
 
@@ -360,6 +496,19 @@ const { error } = await supabase.auth.resetPasswordForEmail(
 );
 ```
 
+Password-reset requests use enumeration-safe messaging. A successful API
+response is presented conditionally: if the address is connected to Brack, a
+reset link may arrive. The UI never confirms whether an account exists and never
+states that a reset message was sent. Confirmation resend acknowledgements use
+the same conditional delivery language.
+
+Opening the password-reset form also requires a short-lived, user-scoped
+recovery authorization created by a successfully completed recovery callback.
+An unrelated signed-in session cannot authorize this form. Callback credentials
+are removed from the browser URL immediately, replayed callbacks are coalesced,
+and the recovery authorization is consumed only after the password update
+succeeds.
+
 ### Update Password
 
 `apps/client/src/screens/ResetPassword.tsx` handles Supabase recovery callback parameters, confirms an active recovery session, validates the new password, and updates the logged-in recovery user:
@@ -509,6 +658,22 @@ try {
 }
 ```
 
+### "Email rate limit exceeded" During Signup
+
+**Cause**: Supabase rejected `/auth/v1/signup` with
+`over_email_send_rate_limit`. The encoded `redirect_to=/auth/callback` value may
+make the failed request look like a callback failure in a narrow browser
+console, but the rejected operation is signup email delivery.
+
+**Solution**:
+
+1. Do not repeatedly submit or automatically retry the request.
+2. Tell the reader that email is temporarily unavailable and to try again later; do not start a guessed 60-second recovery countdown.
+3. Do not infer whether the address already has an account or whether an earlier message was delivered.
+4. Offer sign in, password reset, and another-email paths while the reader waits.
+5. For production, configure custom SMTP and verify the sender/domain.
+6. Review Auth logs for the structured error code rather than diagnosing from a truncated DevTools URL.
+
 ## Auth Screen
 
 **Location**: `apps/client/src/screens/Auth.tsx`
@@ -516,6 +681,10 @@ try {
 **Features**:
 - Email/password sign in
 - Email/password sign up
+- Explicit duplicate-email rejection with sign-in and Google recovery paths
+- Neutral confirmation-pending handling for genuinely ambiguous responses
+- Conditional confirmation resend and password-reset messaging
+- In-flight duplicate request prevention without automatic `429` retries
 - Form validation
 - Error handling
 - Auto-redirect on success

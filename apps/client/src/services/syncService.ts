@@ -2,6 +2,7 @@ import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { readingCoreSync } from "@/services/sync/engine";
 import { isDesktopRuntime, onDesktopForeground } from "@/services/platform";
+import { getOptionalCurrentAuthUser } from "@/services/api/auth";
 
 interface SyncProgress {
   total: number;
@@ -10,7 +11,7 @@ interface SyncProgress {
   inProgress: boolean;
 }
 
-class SyncService {
+export class SyncService {
   private syncInProgress = false;
   private progress: SyncProgress = {
     total: 0,
@@ -58,45 +59,52 @@ class SyncService {
       return;
     }
 
-    this.lastSyncTime = now;
-
-    await this.syncOfflineQueue();
+    const attempted = await this.syncOfflineQueue();
+    if (attempted) this.lastSyncTime = Date.now();
   }
 
-  async syncOfflineQueue(): Promise<void> {
+  async syncOfflineQueue(): Promise<boolean> {
     if (this.syncInProgress) {
-      return;
+      return false;
     }
 
     this.syncInProgress = true;
-    const before = await readingCoreSync.getStatus();
-    
-    this.updateProgress({
-      total: before.pending + before.failed,
-      completed: 0,
-      failed: before.failed,
-      inProgress: true,
-    });
+    let queuedTotal = 0;
 
     try {
-      const after = await readingCoreSync.syncCurrentUser();
+      const user = await getOptionalCurrentAuthUser();
+      if (!user) return false;
+
+      const before = await readingCoreSync.getStatus(user.id);
+      queuedTotal = before.pending + before.failed;
+
+      this.updateProgress({
+        total: queuedTotal,
+        completed: 0,
+        failed: before.failed,
+        inProgress: true,
+      });
+
+      const after = await readingCoreSync.syncUser(user.id);
       const remaining = after.pending + after.failed;
       const completed = Math.max(0, before.pending + before.failed - remaining);
       
       this.updateProgress({
-        total: before.pending + before.failed,
+        total: queuedTotal,
         completed,
         failed: after.failed,
         inProgress: false,
       });
+      return true;
     } catch (error) {
       console.error('Sync error:', error);
       this.updateProgress({
-        total: before.pending + before.failed,
+        total: queuedTotal,
         completed: 0,
-        failed: before.pending + before.failed,
+        failed: queuedTotal,
         inProgress: false,
       });
+      return true;
     } finally {
       this.syncInProgress = false;
     }

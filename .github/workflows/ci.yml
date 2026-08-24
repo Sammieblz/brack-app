@@ -23,6 +23,11 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
       - name: Cache Turborepo
         uses: actions/cache@v4
         with:
@@ -48,6 +53,9 @@ jobs:
 
       - name: Run unit tests
         run: npm test
+
+      - name: Run Edge Function tests
+        run: npm run test:edge
 
   build-web:
     name: Build Web

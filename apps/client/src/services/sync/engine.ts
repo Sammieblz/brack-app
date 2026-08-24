@@ -1,7 +1,7 @@
 import { pullSyncChanges, pushSyncMutations } from "@/services/api/sync";
 import { getApiRetryAfterMs } from "@/services/api/client";
 import { emitBooksChanged, fetchUserBooksPage } from "@/services/api/books";
-import { getCurrentAuthUser } from "@/services/api/auth";
+import { getOptionalCurrentAuthUser } from "@/services/api/auth";
 import {
   booksRepo,
   bookListItemsRepo,
@@ -497,7 +497,7 @@ export class ReadingCoreSyncEngine {
   async getStatus(userId?: string | null): Promise<SyncStatusDetail> {
     let resolvedUserId = userId;
     if (typeof resolvedUserId === "undefined") {
-      const user = await getCurrentAuthUser().catch(() => null);
+      const user = await getOptionalCurrentAuthUser();
       resolvedUserId = user?.id ?? null;
     }
 
@@ -518,13 +518,13 @@ export class ReadingCoreSyncEngine {
   }
 
   async syncCurrentUser(options: SyncOptions = {}): Promise<SyncStatusDetail> {
-    const user = await getCurrentAuthUser();
+    const user = await getOptionalCurrentAuthUser();
     if (!user) return this.getStatus(null);
     return this.syncUser(user.id, options);
   }
 
   async listFailedCurrentUser(): Promise<OutboxItem[]> {
-    const user = await getCurrentAuthUser().catch(() => null);
+    const user = await getOptionalCurrentAuthUser();
     if (!user) return [];
     return syncRepo.listFailed(user.id);
   }
@@ -583,7 +583,7 @@ export class ReadingCoreSyncEngine {
       throw new Error("Only failed duplicate book creates, updates, or restores can use a server library copy");
     }
 
-    const user = await getCurrentAuthUser().catch(() => null);
+    const user = await getOptionalCurrentAuthUser();
     if (!user || user.id !== item.user_id) {
       throw new Error("Sign in to the account that owns this reading change");
     }
@@ -823,7 +823,7 @@ export class ReadingCoreSyncEngine {
       this.retryTimers.delete(userId);
       if (!isConnectivityAvailable()) return;
 
-      const user = await getCurrentAuthUser().catch(() => null);
+      const user = await getOptionalCurrentAuthUser();
       if (user?.id !== userId) return;
 
       await this.syncUser(userId).catch(() => {

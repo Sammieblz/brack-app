@@ -6,7 +6,8 @@ expected_functions(signature, authenticated_execute, service_execute, search_pat
   VALUES
     ('public.reorder_library_shelf(uuid,uuid[])', TRUE, FALSE, 'search_path=public, pg_temp'),
     ('public.add_library_book(uuid,jsonb)', FALSE, TRUE, 'search_path=public, pg_temp'),
-    ('public.add_library_book_without_series(uuid,jsonb)', FALSE, TRUE, 'search_path=public, pg_temp')
+    ('public.add_library_book_without_series(uuid,jsonb)', FALSE, TRUE, 'search_path=public, pg_temp'),
+    ('public.auth_email_exists(text)', FALSE, TRUE, 'search_path=pg_catalog, pg_temp')
 ),
 function_contracts AS (
   SELECT
@@ -90,6 +91,35 @@ duplicate_shelf_positions AS (
   WHERE books.deleted_at IS NULL
   GROUP BY books.user_id, books.shelf_position
   HAVING COUNT(*) > 1
+),
+duplicate_auth_email_users AS (
+  SELECT LOWER(BTRIM(users.email)) AS normalized_email
+  FROM auth.users AS users
+  WHERE users.email IS NOT NULL
+    AND BTRIM(users.email) <> ''
+    AND NOT COALESCE(users.is_sso_user, FALSE)
+  GROUP BY LOWER(BTRIM(users.email))
+  HAVING COUNT(*) > 1
+),
+duplicate_identity_email_users AS (
+  SELECT LOWER(BTRIM(identities.identity_data->>'email')) AS normalized_email
+  FROM auth.identities AS identities
+  WHERE COALESCE(BTRIM(identities.identity_data->>'email'), '') <> ''
+  GROUP BY LOWER(BTRIM(identities.identity_data->>'email'))
+  HAVING COUNT(DISTINCT identities.user_id) > 1
+),
+auth_profile_link_violations AS (
+  SELECT users.id
+  FROM auth.users AS users
+  LEFT JOIN public.profiles AS profiles ON profiles.id = users.id
+  WHERE profiles.id IS NULL
+
+  UNION ALL
+
+  SELECT profiles.id
+  FROM public.profiles AS profiles
+  LEFT JOIN auth.users AS users ON users.id = profiles.id
+  WHERE users.id IS NULL
 )
 SELECT
   'books.shelf_position column'::TEXT AS contract,
@@ -138,8 +168,8 @@ SELECT
   'valid partial user/order index required'
 UNION ALL
 SELECT
-  'protected library functions',
-  COALESCE(BOOL_AND(ok), FALSE) AND COUNT(*) = 3,
+  'protected application functions',
+  COALESCE(BOOL_AND(ok), FALSE) AND COUNT(*) = 4,
   COALESCE(STRING_AGG(signature, ', ' ORDER BY signature) FILTER (WHERE NOT ok), 'all valid')
 FROM function_contracts
 UNION ALL
@@ -169,6 +199,57 @@ SELECT
       AND pg_get_triggerdef(trigger_state.oid) LIKE '%AFTER INSERT%'
   ),
   'enabled AFTER INSERT trigger on auth.users required'
+UNION ALL
+SELECT
+  'auth emails map to one non-SSO user',
+  NOT EXISTS (SELECT 1 FROM duplicate_auth_email_users),
+  FORMAT(
+    'normalized_duplicate_groups=%s',
+    (SELECT COUNT(*) FROM duplicate_auth_email_users)
+  )
+UNION ALL
+SELECT
+  'auth identity emails map to one user',
+  NOT EXISTS (SELECT 1 FROM duplicate_identity_email_users),
+  FORMAT(
+    'cross_user_duplicate_groups=%s',
+    (SELECT COUNT(*) FROM duplicate_identity_email_users)
+  )
+UNION ALL
+SELECT
+  'auth users and profiles are one-to-one',
+  NOT EXISTS (SELECT 1 FROM auth_profile_link_violations),
+  FORMAT(
+    'missing_or_orphaned_profiles=%s',
+    (SELECT COUNT(*) FROM auth_profile_link_violations)
+  )
+UNION ALL
+SELECT
+  'profiles use auth user identity as primary key',
+  EXISTS (
+    SELECT 1
+    FROM pg_constraint AS constraint_state
+    WHERE constraint_state.conname = 'profiles_pkey'
+      AND constraint_state.conrelid = to_regclass('public.profiles')
+      AND constraint_state.contype = 'p'
+      AND constraint_state.conkey = ARRAY[
+        (SELECT attribute.attnum
+         FROM pg_attribute AS attribute
+         WHERE attribute.attrelid = to_regclass('public.profiles')
+           AND attribute.attname = 'id')
+      ]::SMALLINT[]
+  )
+  AND EXISTS (
+    SELECT 1
+    FROM pg_constraint AS constraint_state
+    WHERE constraint_state.conname = 'profiles_id_fkey'
+      AND constraint_state.conrelid = to_regclass('public.profiles')
+      AND constraint_state.confrelid = to_regclass('auth.users')
+      AND constraint_state.contype = 'f'
+      AND constraint_state.confdeltype = 'c'
+      AND constraint_state.convalidated
+  ),
+  'profiles.id must be the PK and a validated cascading FK to auth.users.id'
 UNION ALL
 SELECT
   'required storage buckets',

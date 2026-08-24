@@ -3,30 +3,62 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { fetchProfile, sendPasswordResetEmail } from "@/services/api";
+import { fetchProfile, sendPasswordResetEmail, updatePassword } from "@/services/api";
 import { getPasswordResetRedirectUrl } from "@/services/platform";
 import { useToast } from "@/hooks/use-toast";
+import { validatePassword } from "@/utils/authValidation";
 import type { User, Profile } from "@/types";
 
 interface AccountSettingsProps {
   user: User;
 }
 
+const getIdentityProviders = (user: User): Set<string> => {
+  const providers = new Set<string>();
+
+  user.identities?.forEach((identity) => {
+    if (identity.provider) providers.add(identity.provider);
+  });
+
+  if (user.app_metadata?.provider) {
+    providers.add(user.app_metadata.provider);
+  }
+
+  user.app_metadata?.providers?.forEach((provider) => providers.add(provider));
+
+  return providers;
+};
+
+const isGoogleOnlyAccount = (user: User): boolean => {
+  const providers = getIdentityProviders(user);
+  return providers.has("google") && !providers.has("email");
+};
+
 export const AccountSettings = ({ user }: AccountSettingsProps) => {
   const { toast } = useToast();
   const [email, setEmail] = useState(user?.email || "");
   const [loading, setLoading] = useState(false);
+  const [addingPassword, setAddingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [needsPassword, setNeedsPassword] = useState(() => isGoogleOnlyAccount(user));
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
-    loadProfile();
-  }, [user]);
+    let active = true;
 
-  const loadProfile = async () => {
-    if (!user) return;
-    const data = await fetchProfile(user.id);
-    if (data) setProfile(data);
-  };
+    setEmail(user?.email || "");
+    setNeedsPassword(isGoogleOnlyAccount(user));
+    setNewPassword("");
+    setConfirmPassword("");
+    void fetchProfile(user.id).then((data) => {
+      if (active && data) setProfile(data);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   const handlePasswordReset = async () => {
     if (!user?.email) return;
@@ -47,6 +79,49 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddPassword = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Passwords do not match",
+        description: "Enter the same password in both fields.",
+      });
+      return;
+    }
+
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.valid) {
+      toast({
+        variant: "destructive",
+        title: "Invalid password",
+        description: passwordValidation.error,
+      });
+      return;
+    }
+
+    setAddingPassword(true);
+    try {
+      await updatePassword(newPassword);
+      setNeedsPassword(false);
+      setNewPassword("");
+      setConfirmPassword("");
+      toast({
+        title: "Brack password added",
+        description: "You can now sign in with Google or your email and password. Your account and profile stay the same.",
+      });
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Password could not be added",
+        description: "Sign in with Google again, then return here and retry.",
+      });
+    } finally {
+      setAddingPassword(false);
     }
   };
 
@@ -82,19 +157,62 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
       {/* Password */}
       <Card>
         <CardHeader>
-          <CardTitle className="font-display">Password</CardTitle>
+          <CardTitle className="font-display">
+            {needsPassword ? "Add a Brack password" : "Password"}
+          </CardTitle>
           <CardDescription className="font-sans">
-            Change your password to keep your account secure
+            {needsPassword
+              ? "Add email-and-password sign-in to this same Brack account. This does not create another account or profile, and Google sign-in will keep working."
+              : "Change your password to keep your account secure"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button
-            onClick={handlePasswordReset}
-            disabled={loading}
-            variant="outline"
-          >
-            {loading ? "Sending..." : "Send Password Reset Email"}
-          </Button>
+          {needsPassword ? (
+            <form className="space-y-4" onSubmit={handleAddPassword}>
+              <div className="space-y-2">
+                <Label htmlFor="account-new-password">New password</Label>
+                <Input
+                  id="account-new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                  autoComplete="new-password"
+                  aria-describedby="account-password-requirements"
+                  required
+                />
+                <p
+                  id="account-password-requirements"
+                  className="text-xs text-muted-foreground"
+                >
+                  Use 8 to 128 characters with uppercase, lowercase, and a number.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="account-confirm-password">Confirm password</Label>
+                <Input
+                  id="account-confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+
+              <Button type="submit" disabled={addingPassword}>
+                {addingPassword ? "Adding password..." : "Add password to this account"}
+              </Button>
+            </form>
+          ) : (
+            <Button
+              onClick={handlePasswordReset}
+              disabled={loading}
+              variant="outline"
+            >
+              {loading ? "Sending..." : "Send Password Reset Email"}
+            </Button>
+          )}
         </CardContent>
       </Card>
 

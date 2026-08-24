@@ -39,6 +39,7 @@ import { OnboardingEntryRedirect } from "./components/OnboardingEntryRedirect";
 import { FeatureGate } from "./components/FeatureGate";
 import { JourneyLevelUpObserver } from "./components/JourneyLevelUpObserver";
 import { getApiErrorStatus } from "@/services/api/client";
+import { useAuth } from "@/hooks/useAuth";
 
 // Initialize Sentry error tracking
 initSentry();
@@ -89,12 +90,20 @@ const App = () => {
   useAppViewportHeight();
   usePresenceHeartbeat();
   const { register: registerPushNotifications } = usePushNotifications();
+  const { user, loading: authLoading } = useAuth();
+  const authenticatedUserId = user?.id;
   
   // Register for push notifications on app start (native only)
   useEffect(() => {
     registerPushNotifications().catch(console.error);
-    syncService.manualSync().catch(console.error);
   }, [registerPushNotifications]);
+
+  // Preserve account-scoped offline changes while signed out, then resume them
+  // exactly when a verified session becomes available.
+  useEffect(() => {
+    if (authLoading || !authenticatedUserId) return;
+    syncService.manualSync().catch(console.error);
+  }, [authLoading, authenticatedUserId]);
 
   const persister = useMemo(
     () => createSyncStoragePersister({ storage: window.localStorage }),

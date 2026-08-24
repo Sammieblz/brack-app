@@ -11,10 +11,14 @@ import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTran
 import { useToast } from "@/hooks/use-toast";
 import {
   getAuthSession,
-  handleAuthCallbackUrl,
   updatePassword,
 } from "@/services/api";
-import { resolvePostAuthPath } from "@/services/authRedirect";
+import {
+  completeAuthCallback,
+  consumePasswordRecoveryAuthorization,
+  hasPasswordRecoveryAuthorization,
+  resolvePostAuthPath,
+} from "@/services/authRedirect";
 import { validatePassword } from "@/utils/authValidation";
 
 type ResetTransition = {
@@ -28,11 +32,26 @@ const hasAuthParams = (url: string) => {
   return Boolean(
     parsed.searchParams.get("code") ||
       parsed.searchParams.get("access_token") ||
+      parsed.searchParams.get("refresh_token") ||
       hashParams.get("code") ||
       hashParams.get("access_token") ||
+      hashParams.get("refresh_token") ||
       parsed.searchParams.get("error") ||
       hashParams.get("error")
   );
+};
+
+const INVALID_RECOVERY_MESSAGE =
+  "This reset link is invalid or has expired. Request a new password reset link.";
+
+const sanitizeResetUrl = () => {
+  if (window.location.pathname === "/auth/reset-password") {
+    window.history.replaceState(
+      window.history.state,
+      "",
+      "/auth/reset-password",
+    );
+  }
 };
 
 const ResetPassword = () => {
@@ -44,29 +63,36 @@ const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [transition, setTransition] = useState<ResetTransition | null>(null);
+  const [recoveryUserId, setRecoveryUserId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     const prepareRecoverySession = async () => {
+      const callbackUrl = window.location.href;
+      const shouldProcessCallback = hasAuthParams(callbackUrl);
+      if (shouldProcessCallback) {
+        sanitizeResetUrl();
+      }
+
       try {
-        if (hasAuthParams(window.location.href)) {
-          await handleAuthCallbackUrl(window.location.href);
-          navigate("/auth/reset-password", { replace: true });
+        if (shouldProcessCallback) {
+          await completeAuthCallback(callbackUrl);
         }
 
         const session = await getAuthSession();
-        if (!session) {
-          throw new Error("This reset link is invalid or has expired. Request a new password reset link.");
+        const userId = session?.user?.id;
+        if (!userId || !hasPasswordRecoveryAuthorization(userId)) {
+          throw new Error(INVALID_RECOVERY_MESSAGE);
+        }
+
+        if (!cancelled) {
+          setRecoveryUserId(userId);
         }
       } catch (resetError) {
         console.error("Failed to prepare password reset:", resetError);
         if (!cancelled) {
-          setError(
-            resetError instanceof Error
-              ? resetError.message
-              : "This reset link is invalid or has expired."
-          );
+          setError(INVALID_RECOVERY_MESSAGE);
         }
       } finally {
         if (!cancelled) {
@@ -80,7 +106,7 @@ const ResetPassword = () => {
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -107,13 +133,37 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
+      const session = await getAuthSession();
+      if (
+        !recoveryUserId ||
+        session?.user?.id !== recoveryUserId ||
+        !hasPasswordRecoveryAuthorization(recoveryUserId)
+      ) {
+        setError(INVALID_RECOVERY_MESSAGE);
+        toast({
+          variant: "destructive",
+          title: "Reset link unavailable",
+          description: INVALID_RECOVERY_MESSAGE,
+        });
+        return;
+      }
+
       await updatePassword(newPassword);
+      consumePasswordRecoveryAuthorization(recoveryUserId);
       toast({
         title: "Password updated",
         description: "Your Brack password has been changed.",
       });
 
-      const nextPath = await resolvePostAuthPath();
+      let nextPath = "/dashboard";
+      try {
+        nextPath = await resolvePostAuthPath();
+      } catch (bootstrapError) {
+        console.error(
+          "Password updated, but post-auth account setup failed:",
+          bootstrapError,
+        );
+      }
       setTransition({
         to: nextPath,
         message:
@@ -122,11 +172,12 @@ const ResetPassword = () => {
             : "Opening your reading dashboard...",
       });
     } catch (updateError) {
+      console.error("Failed to update password:", updateError);
       toast({
         variant: "destructive",
         title: "Password update failed",
         description:
-          updateError instanceof Error ? updateError.message : "Unable to update your password.",
+          "Brack could not update your password. Request a fresh reset link and try again.",
       });
     } finally {
       setLoading(false);

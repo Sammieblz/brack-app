@@ -11,13 +11,13 @@ import type { Book } from "@/types";
 const {
   emitBooksChangedMock,
   fetchUserBooksPageMock,
-  getCurrentAuthUserMock,
+  getOptionalCurrentAuthUserMock,
   pullSyncChangesMock,
   pushSyncMutationsMock,
 } = vi.hoisted(() => ({
   emitBooksChangedMock: vi.fn(),
   fetchUserBooksPageMock: vi.fn(),
-  getCurrentAuthUserMock: vi.fn(),
+  getOptionalCurrentAuthUserMock: vi.fn(),
   pullSyncChangesMock: vi.fn(),
   pushSyncMutationsMock: vi.fn(),
 }));
@@ -28,7 +28,7 @@ vi.mock("@/services/api/sync", () => ({
 }));
 
 vi.mock("@/services/api/auth", () => ({
-  getCurrentAuthUser: getCurrentAuthUserMock,
+  getOptionalCurrentAuthUser: getOptionalCurrentAuthUserMock,
 }));
 
 vi.mock("@/services/api/books", () => ({
@@ -107,8 +107,8 @@ const makeBook = (overrides: Partial<Book> & Pick<Book, "id" | "user_id" | "titl
 
 describe("reading core sync behavior", () => {
   beforeEach(() => {
-    getCurrentAuthUserMock.mockReset();
-    getCurrentAuthUserMock.mockResolvedValue(null);
+    getOptionalCurrentAuthUserMock.mockReset();
+    getOptionalCurrentAuthUserMock.mockResolvedValue(null);
     pullSyncChangesMock.mockReset();
     pushSyncMutationsMock.mockReset();
     emitBooksChangedMock.mockReset();
@@ -120,6 +120,59 @@ describe("reading core sync behavior", () => {
   afterEach(() => {
     vi.clearAllTimers();
     vi.useRealTimers();
+  });
+
+  it("treats a signed-out sync as a no-op and preserves the account queue", async () => {
+    const userId = `user-${crypto.randomUUID()}`;
+    await syncRepo.enqueueMutation(userId, "goals", "goal-signed-out", "create", {
+      id: "goal-signed-out",
+    });
+    const before = await syncRepo.listPending(userId);
+
+    const result = await new ReadingCoreSyncEngine().syncCurrentUser();
+
+    expect(result).toEqual({ userId: null, pending: 0, failed: 0, syncing: 0 });
+    expect(await syncRepo.listPending(userId)).toEqual(before);
+    expect(pushSyncMutationsMock).not.toHaveBeenCalled();
+    expect(pullSyncChangesMock).not.toHaveBeenCalled();
+  });
+
+  it("does not disguise unexpected authentication failures as sign-out", async () => {
+    getOptionalCurrentAuthUserMock.mockRejectedValueOnce(
+      new Error("Auth service unavailable"),
+    );
+
+    await expect(new ReadingCoreSyncEngine().syncCurrentUser()).rejects.toThrow(
+      "Auth service unavailable",
+    );
+    expect(pushSyncMutationsMock).not.toHaveBeenCalled();
+    expect(pullSyncChangesMock).not.toHaveBeenCalled();
+  });
+
+  it("syncs only the queue owned by the authenticated account", async () => {
+    const firstUserId = `user-${crypto.randomUUID()}`;
+    const activeUserId = `user-${crypto.randomUUID()}`;
+    await syncRepo.enqueueMutation(firstUserId, "goals", "goal-first", "create", {
+      id: "goal-first",
+    });
+    await syncRepo.enqueueMutation(activeUserId, "goals", "goal-active", "create", {
+      id: "goal-active",
+    });
+    getOptionalCurrentAuthUserMock.mockResolvedValue({ id: activeUserId });
+    pushSyncMutationsMock.mockImplementation(
+      ({ items }: { items: Array<Record<string, unknown>> }) =>
+        Promise.resolve(acceptItems(items)),
+    );
+
+    await new ReadingCoreSyncEngine().syncCurrentUser();
+
+    expect(await syncRepo.listPending(firstUserId)).toHaveLength(1);
+    expect(await syncRepo.listPending(activeUserId)).toEqual([]);
+    expect(pushSyncMutationsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: [expect.objectContaining({ user_id: activeUserId })],
+      }),
+    );
   });
 
   it("runs another pass when a mutation arrives during an active push", async () => {
@@ -186,7 +239,7 @@ describe("reading core sync behavior", () => {
 
   it("automatically retries an item when its backoff expires", async () => {
     const userId = `user-${crypto.randomUUID()}`;
-    getCurrentAuthUserMock.mockResolvedValue({ id: userId });
+    getOptionalCurrentAuthUserMock.mockResolvedValue({ id: userId });
     await syncRepo.enqueueMutation(userId, "goals", "goal-auto", "create", {
       id: "goal-auto",
     });
@@ -892,7 +945,7 @@ describe("reading core sync behavior", () => {
     const [pendingItem] = await syncRepo.listPending(userId);
     await syncRepo.markFailed(pendingItem, "Book already exists in your library");
     const [failedItem] = await syncRepo.listFailed(userId);
-    getCurrentAuthUserMock.mockResolvedValue({ id: userId });
+    getOptionalCurrentAuthUserMock.mockResolvedValue({ id: userId });
     fetchUserBooksPageMock
       .mockResolvedValueOnce({ books: [unrelatedBook], hasMore: true })
       .mockResolvedValueOnce({ books: [canonicalBook], hasMore: false });
@@ -968,7 +1021,7 @@ describe("reading core sync behavior", () => {
     const [pendingItem] = await syncRepo.listPending(userId);
     await syncRepo.markFailed(pendingItem, "Book already exists in your library");
     const [failedItem] = await syncRepo.listFailed(userId);
-    getCurrentAuthUserMock.mockResolvedValue({ id: userId });
+    getOptionalCurrentAuthUserMock.mockResolvedValue({ id: userId });
 
     const engine = new ReadingCoreSyncEngine();
     await expect(engine.useServerBookCopy(failedItem)).rejects.toThrow(
@@ -995,7 +1048,7 @@ describe("reading core sync behavior", () => {
     const [pendingItem] = await syncRepo.listPending(userId);
     await syncRepo.markFailed(pendingItem, "Book already exists in your library");
     const [failedItem] = await syncRepo.listFailed(userId);
-    getCurrentAuthUserMock.mockResolvedValue({ id: userId });
+    getOptionalCurrentAuthUserMock.mockResolvedValue({ id: userId });
     fetchUserBooksPageMock.mockImplementation(async () => {
       await syncRepo.enqueueMutation(userId, "progress_logs", crypto.randomUUID(), "create", {
         book_id: staleBook.id,
