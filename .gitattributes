@@ -6,5 +6,7 @@
 /scripts/*migration*.mjs text eol=lf
 /scripts/verify-schema-integrity.mjs text eol=lf
 /scripts/verify-production-database-contracts.mjs text eol=lf
+/scripts/optimize-media-assets.mjs text eol=lf
+/assets/media-assets-manifest.json text eol=lf
 /supabase/contracts/*.sql text eol=lf
 /.github/workflows/*.yml text eol=lf

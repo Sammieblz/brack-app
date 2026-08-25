@@ -17,5 +17,10 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
+    // Brack owns callback completion across web, Capacitor, and Electron.
+    // Disable the SDK's URL detector so one-time callback credentials cannot
+    // be consumed once automatically and then again by our callback handler.
+    detectSessionInUrl: false,
+    flowType: 'implicit',
   }
 });

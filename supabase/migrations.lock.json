@@ -482,6 +482,12 @@
       "description": "reconcile_public_schema_integrity",
       "file": "20260816001827_reconcile_public_schema_integrity.sql",
       "sha256": "a1c5c7b3436715684b3cfe2517d937747e1923563ae550039b9d9df43286b18d"
+    },
+    {
+      "version": "20260823054807",
+      "description": "auth_email_availability",
+      "file": "20260823054807_auth_email_availability.sql",
+      "sha256": "c3aaa431383fa68dfbe565b6471ccf196f98e80c443a413ca0ccea4dff80edd1"
     }
   ]
 }

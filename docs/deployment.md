@@ -259,12 +259,31 @@ Deploy specific function:
 
 ```bash
 npx supabase functions deploy search-books --project-ref waftnaqgkcgufzapcihe --use-api
+npx supabase functions deploy auth-email-availability --project-ref waftnaqgkcgufzapcihe --use-api
 ```
 
 Function JWT settings are controlled in `supabase/config.toml`. The current intended state is:
 
-- `search-books`: `verify_jwt = false` because it is public book search.
-- All other functions: `verify_jwt = true`.
+- `auth-email-availability`: `verify_jwt = false` because signup occurs before a
+  user session. It exposes only the intentionally public `{ exists: boolean }`
+  result and calls a service-role-only RPC.
+- `search-books`, `feature-flags`, and `core-telemetry`: `verify_jwt = false` for
+  their bounded public contracts.
+- `gamification-worker`: `verify_jwt = false`, protected by its private worker
+  secret rather than a user JWT.
+- All remaining functions: `verify_jwt = true`.
+
+Deploy email availability in dependency order:
+
+1. Apply and verify the migration defining
+   `public.auth_email_exists(text)` with execute granted only to `service_role`.
+2. Deploy `auth-email-availability` and verify both the 5/IP/minute and
+   30/IP/hour buckets.
+3. Smoke-test known confirmed, unconfirmed, and Google-created addresses as
+   `exists: true`, and a fresh address as `exists: false`. The lookup must not
+   change Auth or profile row counts.
+4. Deploy the client. Availability errors and invalid responses must stop signup
+   and state that no account was created.
 
 After deployment, verify remote drift with the Supabase dashboard, MCP, or CLI before relying on protected user data. As of June 13, 2026, the direct-message Edge Functions are deployed to project `waftnaqgkcgufzapcihe` and the `modern_direct_messaging` migration has been applied remotely.
 

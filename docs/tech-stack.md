@@ -101,6 +101,7 @@ Brack uses modern, production-ready technologies for web and mobile development.
 - **Runtime**: Deno 1.x
 - **Language**: TypeScript
 - **Functions**:
+  - `auth-email-availability` - Public, non-cacheable signup duplicate check backed by a service-role-only RPC; intentionally reveals only `{ exists: boolean }`, with 5/IP/minute and 30/IP/hour limits and fail-closed client behavior
   - `search-books` - Google Books/Open Library gateway with ISBN lookup and metadata cache
   - `add-book` - Protected library insertion and duplicate handling
   - `dashboard-home` - Dashboard aggregate data

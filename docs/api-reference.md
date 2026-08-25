@@ -44,7 +44,7 @@ export function createErrorResponse(
 
 ### rateLimit.ts
 
-Distributed Edge Function rate limiting backed by the `api_rate_limits` table and `check_api_rate_limit` RPC. An in-memory limiter remains as a fallback if the distributed RPC is temporarily unavailable.
+Distributed Edge Function rate limiting backed by the `api_rate_limits` table and `check_api_rate_limit` RPC. An in-memory limiter remains as a fallback if the distributed RPC is temporarily unavailable. `auth-email-availability` also treats lookup/RPC failures as unavailable and prevents signup.
 
 ```typescript
 export function enforceRateLimit(
@@ -76,6 +76,7 @@ App-facing function summary. The complete maintained inventory is in [Edge Funct
 
 | Function | Purpose | JWT |
 | --- | --- | --- |
+| `auth-email-availability` | Signup-only duplicate email predicate with bounded account-existence disclosure | No |
 | `search-books` | Book search and ISBN lookup gateway with Google Books primary, Open Library fallback, and metadata caching | No |
 | `feature-flags` | Remotely controlled release flags, including social availability | No |
 | `core-telemetry` | Whitelisted, rate-limited reading-core reliability events | No |
@@ -136,12 +137,53 @@ App-facing function summary. The complete maintained inventory is in [Edge Funct
 | `sync-push` | Push reading-core outbox mutations | Yes |
 
 Local JWT settings live in `supabase/config.toml`. Public functions are limited to
-`search-books`, `feature-flags`, and `core-telemetry`; telemetry accepts only a fixed
-event allowlist and is rate-limited. All user-data functions require JWT validation.
+`auth-email-availability`, `search-books`, `feature-flags`, and `core-telemetry`;
+telemetry accepts only a fixed event allowlist and is rate-limited.
+`gamification-worker` is separately protected by its worker secret. All user-data
+functions require JWT validation.
 See [Edge Function Catalog](./backend/edge-functions.md) for the full maintained
 inventory and operational checks.
 
 The legacy 2025 functions `get-book-details`, `update-reading-progress`, and `daily-summary` were deleted remotely after confirming there are no local consumers.
+
+### auth-email-availability
+
+Check a normalized email immediately before email/password signup. This public
+endpoint deliberately reveals whether an address belongs to a Brack reader so
+the UI can reject duplicates consistently, including confirmed, unconfirmed,
+and Google-created accounts.
+
+**Endpoint**: `POST /auth-email-availability`
+
+**Request**:
+
+```typescript
+{ email: string }
+```
+
+**Response**:
+
+```typescript
+{ exists: boolean }
+```
+
+When `exists` is `true`, the client does not call Supabase Auth and shows
+**Email already exists** with **This email is already used by another reader.**
+When it is `false`, normal Supabase signup may proceed. Supabase existence error
+codes and empty-identity responses remain race-condition fallbacks.
+
+**Rate limits**: 5 requests per client IP per minute and 30 per client IP per
+hour. Clients must not automatically retry `429` responses.
+
+**Auth and security**: Public (`verify_jwt = false`). The Edge Function alone
+uses the service-role-only `public.auth_email_exists(text)` RPC. `PUBLIC`,
+`anon`, and `authenticated` cannot execute that RPC directly. The endpoint
+returns no user, provider, confirmation, or profile data and sets
+`Cache-Control: private, no-store`.
+
+This is an intentional account-enumeration tradeoff. Any invalid response,
+lookup failure, or unavailable function fails closed: Auth signup is not called
+and the reader is told that no account was created.
 
 ### search-books
 
@@ -1292,7 +1334,10 @@ FCM HTTP v1 notifications. It is not a client endpoint.
 
 ## Authentication
 
-All protected functions require a valid Supabase JWT token in the `Authorization` header. `search-books` is intentionally public and has `verify_jwt = false`.
+All protected functions require a valid Supabase JWT token in the
+`Authorization` header. `auth-email-availability`, `search-books`,
+`feature-flags`, and `core-telemetry` intentionally have `verify_jwt = false`;
+`gamification-worker` uses its private worker secret instead of a user JWT.
 
 ```typescript
 headers: {

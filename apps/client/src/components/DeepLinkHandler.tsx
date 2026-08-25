@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { completeAuthCallback } from "@/services/authRedirect";
+import {
+  AuthCallbackBootstrapError,
+  completeAuthCallback,
+} from "@/services/authRedirect";
 import { deepLinkService } from "@/services/deepLinkService";
 import { closeExternalAuthSession, onDesktopAuthCallback } from "@/services/platform";
 
@@ -24,7 +27,12 @@ export const DeepLinkHandler = () => {
         navigate(nextPath, { replace: true });
       } catch (error) {
         console.error(`Failed to handle ${source} auth callback:`, error);
-        navigate("/auth", { replace: true });
+        navigate(
+          error instanceof AuthCallbackBootstrapError
+            ? error.fallbackPath
+            : "/auth?auth_error=callback",
+          { replace: true },
+        );
       } finally {
         if (source === "native") {
           await closeExternalAuthSession();

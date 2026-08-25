@@ -1,6 +1,14 @@
 export interface User {
   id: string;
   email?: string;
+  app_metadata?: {
+    provider?: string;
+    providers?: string[];
+    [key: string]: unknown;
+  };
+  identities?: Array<{
+    provider?: string;
+  }> | null;
   user_metadata?: {
     full_name?: string;
     name?: string;

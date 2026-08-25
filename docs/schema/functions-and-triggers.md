@@ -1,6 +1,7 @@
 # Database Functions and Triggers Catalog
 
-Source of truth: remote Supabase project `waftnaqgkcgufzapcihe`, public schema, inspected on 2026-05-05.
+Source of truth: the migration ledger and remote Supabase project
+`waftnaqgkcgufzapcihe`, reviewed on 2026-08-23.
 
 ## Function Catalog
 
@@ -8,6 +9,7 @@ Source of truth: remote Supabase project `waftnaqgkcgufzapcihe`, public schema, 
 | --- | --- | --- | --- | --- |
 | `add_club_creator_as_admin()` | Trigger | `book_clubs` insert row | `book_club_members` | Adds creator as club admin after club creation. |
 | `add_library_book(p_user_id uuid, p_book jsonb)` | RPC | User id and book payload | JSON result with book/status | Central duplicate-safe library insert/restore path. Writes `books`; uses normalized ISBN/title-author identity. |
+| `auth_email_exists(p_email text)` | Backend RPC | Normalized signup email | Boolean | Read-only predicate over `auth.users` used only by `auth-email-availability`. `SECURITY DEFINER` with a fixed search path; execute is revoked from `PUBLIC`, `anon`, and `authenticated` and granted only to `service_role`. |
 | `award_badges(p_user_id uuid, p_event text)` | RPC | User id and optional event | JSON award summary | Evaluates active event-scoped badge metrics and inserts exactly-once `user_badges`; organic awards trigger Ink, notification, and badge activity. |
 | `get_badge_metric_snapshot(p_user_id uuid)` | Private helper | User id | JSON metric map | Aggregates canonical collection, completion, streak, time, page, exploration, craft, quest, and league metrics. |
 | `get_user_badge_catalog(p_user_id uuid)` | Authenticated RPC | Owner user id | JSON catalog/progress payload | Returns the active categorized badge catalog, earned rows, metric values, and progress percentages. |
