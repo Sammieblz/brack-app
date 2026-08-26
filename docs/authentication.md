@@ -307,16 +307,45 @@ Before enabling production signup:
 5. Keep the hosted Site URL on the previous origin until the domain-cutover checklist above passes, then switch it to `https://brack-app.com`.
 6. Keep the exact web, local-development, Capacitor, and Electron callback URLs listed above in the redirect allowlist during their supported lifetimes.
 7. Set Supabase's email-send rate limit within the verified Brevo plan quota; SMTP capacity and Supabase Auth rate limiting are separate controls.
-8. Enable Cloudflare Turnstile in Supabase and the client together before unrestricted public signup. Passing a widget token without enabling server-side verification, or enabling verification before the client can supply tokens, breaks Auth.
+8. Keep Cloudflare Turnstile enabled in Supabase and the client together before unrestricted public signup. Passing a widget token without server-side verification, or enabling verification before the deployed client has its sitekey, breaks Auth.
 9. Exercise signup, confirmation resend, invite, magic link, email change, password reset, reauthentication, expired-link, already-used-link, bounce, and provider-outage flows before promotion.
 
-Turnstile is deliberately staged, not active. The Auth API wrappers already
-accept an optional `captchaToken`, but the client does not render a widget and
-the repository does not define a site-key placeholder; hosted CAPTCHA must stay
-disabled until the Cloudflare site key and Supabase secret exist, supported web
-hostnames are registered, and the Capacitor/Electron challenge behavior has
-been tested. Roll out the widget, token forwarding/reset behavior, and hosted
-verification as one change rather than enabling either side alone.
+### Cloudflare Turnstile
+
+Turnstile is integrated into email/password signup, sign-in, password recovery,
+confirmation/recovery resend, and the current-password reauthentication step in
+Account Settings. `VITE_TURNSTILE_SITE_KEY` supplies the browser-visible widget
+identifier at build time. It must be configured in each Cloudflare Pages and
+native/desktop build environment; never put the Turnstile secret in a `VITE_`
+variable. The secret remains only in **Supabase Auth > Bot and Abuse Protection**.
+
+Supabase Auth is the backend verifier for these forms. The client passes the
+fresh token as `captchaToken`, and Supabase performs the canonical Cloudflare
+Siteverify request with the configured secret. Do not add a Worker that redeems
+the same token before Supabase: Turnstile tokens are single-use and the second
+verification would fail. Client service types require a token, reject empty or
+oversized values before making an Auth request, and reset the widget after every
+attempt so a retry cannot reuse a spent token.
+
+The SPA uses explicit, theme-aware rendering with flexible sizing and a compact
+fallback below 300px. Web/PWA and local development render directly. Packaged
+Android, iOS, and Electron use `https://brack-app.com/turnstile.html` because
+Turnstile supports HTTP(S) pages, not `capacitor://` or `brack-app://` pages.
+That bridge accepts initialization only from the exact packaged-app origins,
+uses a per-instance cryptographic channel, validates every message, is framed
+by a restrictive CSP, and is served with `Cache-Control: no-store`. The service
+worker must never precache it.
+
+Deployment order is mandatory:
+
+1. Configure the existing production widget for `brack-app.com`; use Cloudflare test keys or a separate widget for ordinary localhost development.
+2. Store the existing widget secret in Supabase Bot and Abuse Protection and keep Turnstile selected as the provider.
+3. Set `VITE_TURNSTILE_SITE_KEY` in the production Pages build and packaged-app build environment.
+4. Deploy and verify `/turnstile.html` over HTTPS before releasing packaged mobile or desktop clients.
+5. Smoke-test each protected flow and confirm the widget is reset after an accepted, rejected, rate-limited, or network-failed request.
+
+Production Vite builds fail closed when the sitekey is absent. CI uses
+Cloudflare's published always-pass test widget, never the production widget.
 
 The client never automatically retries Auth `429` responses. It maps
 `over_email_send_rate_limit` and `over_request_rate_limit` to an actionable

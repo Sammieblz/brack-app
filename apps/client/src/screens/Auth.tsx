@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +15,10 @@ import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
+import {
+  AuthTurnstile,
+  type AuthTurnstileHandle,
+} from "@/components/auth/AuthTurnstile";
 import {
   resendSignUpEmail,
   sendPasswordResetEmail,
@@ -34,6 +38,10 @@ import {
   type AuthFailurePresentation,
 } from "@/services/authFailure";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  isValidTurnstileToken,
+  type TurnstileAction,
+} from "@/utils/turnstile";
 import { Mail } from "iconoir-react";
 
 type AuthTransition = {
@@ -77,12 +85,24 @@ const Auth = () => {
   const [resendCountdown, setResendCountdown] = useState(0);
   const [authFailure, setAuthFailure] = useState<AuthFailurePresentation | null>(null);
   const [emailDeliveryBlocked, setEmailDeliveryBlocked] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<AuthTurnstileHandle>(null);
   const authRequestInFlightRef = useRef(false);
   const recoveryOtpInFlightRef = useRef(false);
   const postAuthResolutionRef = useRef<Promise<AuthTransition> | null>(null);
   const { toast } = useToast();
   const { resetToDefaultTheme } = useTheme();
   const { user: authUser, loading: authLoading } = useAuth();
+  const captchaAction: TurnstileAction = emailChallenge
+    ? emailChallenge.type === "signup"
+      ? "resend_sign_up"
+      : "resend_recovery"
+    : isPasswordResetRequest
+      ? "password_reset"
+      : isSignUp
+        ? "sign_up"
+        : "sign_in";
+  const captchaReady = isValidTurnstileToken(captchaToken);
 
   const resolveSignedInTransition = useCallback(async () => {
     if (!postAuthResolutionRef.current) {
@@ -163,6 +183,10 @@ const Auth = () => {
     return () => window.clearTimeout(timer);
   }, [resendCountdown]);
 
+  useLayoutEffect(() => {
+    setCaptchaToken(null);
+  }, [captchaAction]);
+
   if (transition) {
     return <BrandedRouteTransition to={transition.to} message={transition.message} />;
   }
@@ -184,13 +208,51 @@ const Auth = () => {
       return;
     }
 
+    const normalizedFirstName = firstName.trim();
+    const normalizedLastName = lastName.trim();
+    if (isSignUp && !isPasswordResetRequest) {
+      if (!normalizedFirstName || !normalizedLastName) {
+        toast({
+          variant: "destructive",
+          title: "Enter your name",
+          description: "First and last name cannot be blank.",
+        });
+        return;
+      }
+
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.valid) {
+        toast({
+          variant: "destructive",
+          title: "Invalid password",
+          description: passwordValidation.error,
+        });
+        return;
+      }
+    }
+
+    if (!captchaReady) {
+      setAuthFailure({
+        title: "Security check needed",
+        description: "Wait for the security check to finish, then try again.",
+        rateLimited: false,
+      });
+      return;
+    }
+
+    const requestCaptchaToken = captchaToken;
+
     authRequestInFlightRef.current = true;
     setLoading(true);
     setAuthFailure(null);
 
     try {
       if (isPasswordResetRequest) {
-        await sendPasswordResetEmail(email, getPasswordResetRedirectUrl());
+        await sendPasswordResetEmail({
+          email,
+          redirectTo: getPasswordResetRedirectUrl(),
+          captchaToken: requestCaptchaToken,
+        });
 
         toast({
           title: "Reset request received",
@@ -202,30 +264,10 @@ const Auth = () => {
         setResendCountdown(60);
         setPassword("");
       } else if (isSignUp) {
-        const normalizedFirstName = firstName.trim();
-        const normalizedLastName = lastName.trim();
-        if (!normalizedFirstName || !normalizedLastName) {
-          toast({
-            variant: "destructive",
-            title: "Enter your name",
-            description: "First and last name cannot be blank.",
-          });
-          return;
-        }
-
-        const passwordValidation = validatePassword(password);
-        if (!passwordValidation.valid) {
-          toast({
-            variant: "destructive",
-            title: "Invalid password",
-            description: passwordValidation.error,
-          });
-          return;
-        }
-
         const outcome = await signUpWithEmail({
           email,
           password,
+          captchaToken: requestCaptchaToken,
           redirectTo: getAuthRedirectUrl(),
           metadata: {
             first_name: normalizedFirstName,
@@ -263,6 +305,7 @@ const Auth = () => {
         await signInWithEmailPassword({
           email,
           password,
+          captchaToken: requestCaptchaToken,
         });
 
         setTransition(await resolveSignedInTransition());
@@ -295,6 +338,7 @@ const Auth = () => {
     } finally {
       authRequestInFlightRef.current = false;
       setLoading(false);
+      captchaRef.current?.reset();
     }
   };
 
@@ -387,10 +431,13 @@ const Auth = () => {
       !emailChallenge ||
       resendCountdown > 0 ||
       emailDeliveryBlocked ||
-      authRequestInFlightRef.current
+      authRequestInFlightRef.current ||
+      !captchaReady
     ) {
       return;
     }
+
+    const requestCaptchaToken = captchaToken;
 
     authRequestInFlightRef.current = true;
     setLoading(true);
@@ -401,12 +448,14 @@ const Auth = () => {
         await resendSignUpEmail({
           email: emailChallenge.email,
           redirectTo: getAuthRedirectUrl(),
+          captchaToken: requestCaptchaToken,
         });
       } else {
-        await sendPasswordResetEmail(
-          emailChallenge.email,
-          getPasswordResetRedirectUrl(),
-        );
+        await sendPasswordResetEmail({
+          email: emailChallenge.email,
+          redirectTo: getPasswordResetRedirectUrl(),
+          captchaToken: requestCaptchaToken,
+        });
       }
       setEmailOtp("");
       setResendCountdown(60);
@@ -433,6 +482,7 @@ const Auth = () => {
     } finally {
       authRequestInFlightRef.current = false;
       setLoading(false);
+      captchaRef.current?.reset();
     }
   };
 
@@ -571,11 +621,31 @@ const Auth = () => {
                   </Button>
                 )}
 
+                {resendCountdown <= 0 && !emailDeliveryBlocked && (
+                  <div className="space-y-2">
+                    <p className="text-center text-xs text-muted-foreground">
+                      A new email requires a fresh security check.
+                    </p>
+                    <AuthTurnstile
+                      key={captchaAction}
+                      ref={captchaRef}
+                      action={captchaAction}
+                      onTokenChange={setCaptchaToken}
+                      disabled={loading}
+                    />
+                  </div>
+                )}
+
                 <Button
                   type="button"
                   variant="outline"
                   className="h-12 w-full"
-                  disabled={loading || resendCountdown > 0 || emailDeliveryBlocked}
+                  disabled={
+                    loading ||
+                    resendCountdown > 0 ||
+                    emailDeliveryBlocked ||
+                    !captchaReady
+                  }
                   onClick={handleResendEmailChallenge}
                 >
                   {loading
@@ -782,12 +852,21 @@ const Auth = () => {
                   />
                 </div>
               )}
+
+              <AuthTurnstile
+                key={captchaAction}
+                ref={captchaRef}
+                action={captchaAction}
+                onTokenChange={setCaptchaToken}
+                disabled={loading}
+              />
               
               <Button 
                 type="submit" 
                 className="w-full h-12 bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium" 
                 disabled={
                   loading ||
+                  !captchaReady ||
                   (emailDeliveryBlocked && (isSignUp || isPasswordResetRequest))
                 }
               >

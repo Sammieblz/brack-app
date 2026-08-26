@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { fetchProfile, signInWithEmailPassword, updatePassword } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { validatePassword } from "@/utils/authValidation";
+import {
+  AuthTurnstile,
+  type AuthTurnstileHandle,
+} from "@/components/auth/AuthTurnstile";
+import { isValidTurnstileToken } from "@/utils/turnstile";
+import { presentAuthFailure } from "@/services/authFailure";
+import { isAuthError } from "@supabase/supabase-js";
 import type { User, Profile } from "@/types";
 
 interface AccountSettingsProps {
@@ -41,6 +48,8 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<AuthTurnstileHandle>(null);
   const [needsPassword, setNeedsPassword] = useState(() => isGoogleOnlyAccount(user));
   const [profile, setProfile] = useState<Profile | null>(null);
 
@@ -88,6 +97,16 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
     event.preventDefault();
 
     if (!user.email || !validateNewPassword()) return;
+    if (!isValidTurnstileToken(captchaToken)) {
+      toast({
+        variant: "destructive",
+        title: "Security check needed",
+        description: "Wait for the security check to finish, then try again.",
+      });
+      return;
+    }
+
+    const requestCaptchaToken = captchaToken;
 
     setChangingPassword(true);
     try {
@@ -95,13 +114,20 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
         await signInWithEmailPassword({
           email: user.email,
           password: currentPassword,
+          captchaToken: requestCaptchaToken,
         });
-      } catch {
+      } catch (error: unknown) {
+        const invalidCurrentPassword =
+          isAuthError(error) && error.code === "invalid_credentials";
+        const failure = presentAuthFailure(error, "sign_in");
         toast({
           variant: "destructive",
-          title: "Current password not accepted",
-          description:
-            "Check your current password and try again. If you have forgotten it, use the reset option below.",
+          title: invalidCurrentPassword
+            ? "Current password not accepted"
+            : failure.title,
+          description: invalidCurrentPassword
+            ? "Check your current password and try again. If you have forgotten it, use the reset option below."
+            : failure.description,
         });
         return;
       }
@@ -122,6 +148,7 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
       });
     } finally {
       setChangingPassword(false);
+      captchaRef.current?.reset();
     }
   };
 
@@ -275,8 +302,18 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
                 />
               </div>
 
+              <AuthTurnstile
+                ref={captchaRef}
+                action="change_password"
+                onTokenChange={setCaptchaToken}
+                disabled={changingPassword}
+              />
+
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <Button type="submit" disabled={changingPassword}>
+                <Button
+                  type="submit"
+                  disabled={changingPassword || !isValidTurnstileToken(captchaToken)}
+                >
                   {changingPassword ? "Updating password..." : "Update password"}
                 </Button>
                 <Button asChild type="button" variant="ghost">

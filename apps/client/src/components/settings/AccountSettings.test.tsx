@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { AuthApiError } from "@supabase/supabase-js";
 
 import type { User } from "@/types";
 
@@ -24,6 +25,27 @@ vi.mock("@/services/api", () => ({
 vi.mock("@/hooks/use-toast", () => ({
   useToast: () => ({ toast: toastMock }),
 }));
+
+vi.mock("@/components/auth/AuthTurnstile", async () => {
+  const React = await import("react");
+  const AuthTurnstile = React.forwardRef<
+    { reset: () => void },
+    { onTokenChange: (token: string | null) => void }
+  >(({ onTokenChange }, ref) => {
+    React.useImperativeHandle(ref, () => ({
+      reset: () => {
+        onTokenChange(null);
+        onTokenChange("test-turnstile-token");
+      },
+    }), [onTokenChange]);
+    React.useEffect(() => {
+      onTokenChange("test-turnstile-token");
+    }, [onTokenChange]);
+    return <div data-testid="turnstile" />;
+  });
+  AuthTurnstile.displayName = "MockAuthTurnstile";
+  return { AuthTurnstile };
+});
 
 import { AccountSettings } from "./AccountSettings";
 
@@ -138,6 +160,7 @@ describe("AccountSettings password identities", () => {
       expect(signInWithEmailPasswordMock).toHaveBeenCalledWith({
         email: "password@example.com",
         password: "CurrentPass1!",
+        captchaToken: "test-turnstile-token",
       });
       expect(updatePasswordMock).toHaveBeenCalledWith("NewStrongPass2!");
     });
@@ -154,7 +177,9 @@ describe("AccountSettings password identities", () => {
   });
 
   it("does not update when the current password cannot be verified", async () => {
-    signInWithEmailPasswordMock.mockRejectedValue(new Error("Invalid login credentials"));
+    signInWithEmailPasswordMock.mockRejectedValue(
+      new AuthApiError("Invalid login credentials", 400, "invalid_credentials"),
+    );
     render(<AccountSettings user={passwordUser} />);
 
     fireEvent.change(screen.getByLabelText("Current password"), {

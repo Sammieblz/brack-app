@@ -14,19 +14,22 @@ import {
 } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { isCustomSchemeAuthRuntime, openExternalUrl } from "@/services/platform";
+import { isValidTurnstileToken } from "@/utils/turnstile";
 
-export interface EmailSignUpRequest {
+interface CaptchaProtectedAuthRequest {
+  captchaToken: string;
+}
+
+export interface EmailSignUpRequest extends CaptchaProtectedAuthRequest {
   email: string;
   password: string;
   redirectTo?: string;
   metadata?: Record<string, unknown>;
-  captchaToken?: string;
 }
 
-export interface EmailPasswordSignInRequest {
+export interface EmailPasswordSignInRequest extends CaptchaProtectedAuthRequest {
   email: string;
   password: string;
-  captchaToken?: string;
 }
 
 export interface OAuthSignInRequest {
@@ -39,10 +42,14 @@ export type EmailSignUpOutcome =
   | { kind: "email_exists"; email: string }
   | { kind: "confirmation_pending"; email: string };
 
-export interface SignUpEmailResendRequest {
+export interface SignUpEmailResendRequest extends CaptchaProtectedAuthRequest {
   email: string;
   redirectTo?: string;
-  captchaToken?: string;
+}
+
+export interface PasswordResetEmailRequest extends CaptchaProtectedAuthRequest {
+  email: string;
+  redirectTo?: string;
 }
 
 export interface VerifyEmailOtpRequest {
@@ -91,6 +98,16 @@ let verifiedUserCacheGeneration = 0;
 // Remove accidental form whitespace while leaving provider-level email
 // canonicalization to Supabase Auth.
 const normalizeAuthEmail = (email: string) => email.trim();
+
+const requireCaptchaToken = (captchaToken: string) => {
+  if (!isValidTurnstileToken(captchaToken)) {
+    throw new AuthProtocolError(
+      "Complete a fresh security check before submitting this request.",
+    );
+  }
+
+  return captchaToken;
+};
 
 export const getAuthSession = async (): Promise<Session | null> => {
   const {
@@ -241,6 +258,7 @@ export const signUpWithEmail = async ({
   captchaToken,
 }: EmailSignUpRequest): Promise<EmailSignUpOutcome> => {
   const normalizedEmail = normalizeAuthEmail(email);
+  const verifiedCaptchaToken = requireCaptchaToken(captchaToken);
 
   const { data, error } = await supabase.auth.signUp({
     email: normalizedEmail,
@@ -248,7 +266,7 @@ export const signUpWithEmail = async ({
     options: {
       emailRedirectTo: redirectTo,
       data: metadata,
-      ...(captchaToken ? { captchaToken } : {}),
+      captchaToken: verifiedCaptchaToken,
     },
   });
 
@@ -289,12 +307,13 @@ export const resendSignUpEmail = async ({
   redirectTo,
   captchaToken,
 }: SignUpEmailResendRequest): Promise<void> => {
+  const verifiedCaptchaToken = requireCaptchaToken(captchaToken);
   const { error } = await supabase.auth.resend({
     type: "signup",
     email: normalizeAuthEmail(email),
     options: {
       emailRedirectTo: redirectTo,
-      ...(captchaToken ? { captchaToken } : {}),
+      captchaToken: verifiedCaptchaToken,
     },
   });
 
@@ -341,10 +360,11 @@ export const signInWithEmailPassword = async ({
   password,
   captchaToken,
 }: EmailPasswordSignInRequest) => {
+  const verifiedCaptchaToken = requireCaptchaToken(captchaToken);
   const { data, error } = await supabase.auth.signInWithPassword({
     email: normalizeAuthEmail(email),
     password,
-    ...(captchaToken ? { options: { captchaToken } } : {}),
+    options: { captchaToken: verifiedCaptchaToken },
   });
 
   throwIfAuthError(error);
@@ -465,15 +485,19 @@ export const signOut = async () => {
   clearVerifiedAuthUserCache();
 };
 
-export const sendPasswordResetEmail = async (
-  email: string,
-  redirectTo?: string,
-  captchaToken?: string,
-) => {
-  const { data, error } = await supabase.auth.resetPasswordForEmail(normalizeAuthEmail(email), {
-    redirectTo,
-    ...(captchaToken ? { captchaToken } : {}),
-  });
+export const sendPasswordResetEmail = async ({
+  email,
+  redirectTo,
+  captchaToken,
+}: PasswordResetEmailRequest) => {
+  const verifiedCaptchaToken = requireCaptchaToken(captchaToken);
+  const { data, error } = await supabase.auth.resetPasswordForEmail(
+    normalizeAuthEmail(email),
+    {
+      redirectTo,
+      captchaToken: verifiedCaptchaToken,
+    },
+  );
 
   throwIfAuthError(error);
   return data;

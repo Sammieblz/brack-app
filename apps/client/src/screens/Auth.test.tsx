@@ -27,6 +27,10 @@ const {
   verifyEmailOtpMock: vi.fn(),
 }));
 
+const { captchaControl } = vi.hoisted(() => ({
+  captchaControl: { autoSolve: true },
+}));
+
 vi.mock("@/services/api", () => ({
   getAuthSession: getAuthSessionMock,
   onAuthStateChange: () => ({ unsubscribe: vi.fn() }),
@@ -72,6 +76,41 @@ vi.mock("@/components/ThemeToggle", () => ({
 vi.mock("@/components/animations/BrandedRouteTransition", () => ({
   BrandedRouteTransition: () => <div>Opening Brack</div>,
 }));
+
+vi.mock("@/components/auth/AuthTurnstile", async () => {
+  const React = await import("react");
+  const AuthTurnstile = React.forwardRef<
+    { reset: () => void },
+    {
+      action: string;
+      onTokenChange: (token: string | null) => void;
+    }
+  >(({ action, onTokenChange }, ref) => {
+    React.useImperativeHandle(ref, () => ({
+      reset: () => {
+        onTokenChange(null);
+        onTokenChange("test-turnstile-token");
+      },
+    }), [onTokenChange]);
+    React.useEffect(() => {
+      if (captchaControl.autoSolve) {
+        onTokenChange("test-turnstile-token");
+      }
+    }, [action, onTokenChange]);
+    return (
+      <div data-testid="turnstile" data-action={action}>
+        <button
+          type="button"
+          onClick={() => onTokenChange("test-turnstile-token")}
+        >
+          Complete security check
+        </button>
+      </div>
+    );
+  });
+  AuthTurnstile.displayName = "MockAuthTurnstile";
+  return { AuthTurnstile };
+});
 
 import Auth from "./Auth";
 
@@ -127,6 +166,7 @@ describe("Auth email flows", () => {
     resolvePostAuthPathMock.mockResolvedValue("/dashboard");
     toastMock.mockReset();
     verifyEmailOtpMock.mockReset();
+    captchaControl.autoSolve = true;
   });
 
   afterEach(() => {
@@ -172,6 +212,7 @@ describe("Auth email flows", () => {
       expect(signUpWithEmailMock).toHaveBeenCalledWith({
         email: "ada@example.com",
         password: "StrongPass1!",
+        captchaToken: "test-turnstile-token",
         redirectTo: "https://brack-app.com/auth/callback",
         metadata: {
           first_name: "Ada",
@@ -270,6 +311,23 @@ describe("Auth email flows", () => {
     });
   });
 
+  it("does not submit password Auth before the security check completes", async () => {
+    captchaControl.autoSolve = false;
+    renderAuth();
+    await fillSignUpForm();
+    const submit = screen.getByRole("button", { name: "Create Account" });
+    const form = submit.closest("form");
+
+    expect(submit).toBeDisabled();
+    fireEvent.submit(form!);
+    expect(signUpWithEmailMock).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Complete security check" }),
+    );
+    expect(submit).toBeEnabled();
+  });
+
   it("confirms signup in the requesting window with the emailed OTP", async () => {
     verifyEmailOtpMock.mockResolvedValue({
       user: { id: "signup-reader" },
@@ -328,7 +386,11 @@ describe("Auth email flows", () => {
     fireEvent.click(screen.getByRole("button", { name: "Send Reset Code" }));
 
     await waitFor(() => {
-      expect(sendPasswordResetEmailMock).toHaveBeenCalledOnce();
+      expect(sendPasswordResetEmailMock).toHaveBeenCalledWith({
+        email: "ada@example.com",
+        redirectTo: "https://brack-app.com/auth/reset-password",
+        captchaToken: "test-turnstile-token",
+      });
     });
     expect(toastMock).toHaveBeenCalledWith({
       title: "Reset request received",
@@ -427,7 +489,11 @@ describe("Auth email flows", () => {
       await Promise.resolve();
     });
 
-    expect(resendSignUpEmailMock).toHaveBeenCalledOnce();
+    expect(resendSignUpEmailMock).toHaveBeenCalledWith({
+      email: "ada@example.com",
+      redirectTo: "https://brack-app.com/auth/callback",
+      captchaToken: "test-turnstile-token",
+    });
     expect(toastMock).toHaveBeenLastCalledWith({
       title: "Confirmation request received",
       description:

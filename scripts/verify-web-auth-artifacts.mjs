@@ -10,6 +10,11 @@ const manifest = JSON.parse(
   await readFile(path.join(distRoot, "manifest.webmanifest"), "utf8"),
 );
 const serviceWorker = await readFile(path.join(distRoot, "sw.js"), "utf8");
+const turnstileBridge = await readFile(
+  path.join(distRoot, "turnstile.html"),
+  "utf8",
+);
+const pagesHeaders = await readFile(path.join(distRoot, "_headers"), "utf8");
 const compactServiceWorker = serviceWorker.replace(/\s+/g, "");
 
 assert.equal(
@@ -29,6 +34,25 @@ assert.ok(
 assert.ok(
   !serviceWorker.includes("env.VITE_SUPABASE_URL"),
   "The generated service worker contains an unresolved build-time env reference.",
+);
+assert.ok(
+  !serviceWorker.includes("turnstile.html"),
+  "The one-time Turnstile bridge must not be precached by the service worker.",
+);
+assert.match(
+  turnstileBridge,
+  /Brack security check/,
+  "The dedicated Turnstile bridge was not emitted by the client build.",
+);
+assert.match(
+  pagesHeaders,
+  /\/turnstile\.html[\s\S]*Cache-Control: no-store/,
+  "The Turnstile bridge must be served with a no-store policy.",
+);
+assert.match(
+  pagesHeaders,
+  /frame-ancestors https:\/\/localhost capacitor:\/\/localhost brack-app:\/\/brack/,
+  "The Turnstile bridge must restrict framing to packaged Brack origins.",
 );
 
 console.log("Verified web Auth/PWA build artifacts.");

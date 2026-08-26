@@ -84,10 +84,12 @@ the cutover is complete.
    - Build command: `npm run build`
    - Build output: `apps/client/dist`
 5. **Set environment variables**
+   - Set `VITE_TURNSTILE_SITE_KEY` to the existing production widget's sitekey. It is a browser-visible identifier; the widget secret stays only in Supabase Auth.
 6. **Deploy and connect `brack-app.com` as the production custom domain**
 7. **Verify production routes before changing Auth**:
    - `https://brack-app.com/` resolves over HTTPS.
    - `/auth/callback` and `/auth/reset-password` return the SPA rather than a hosting 404.
+   - `/turnstile.html` returns the dedicated challenge bridge with `Cache-Control: no-store` and the scoped `frame-ancestors` policy from `apps/client/public/_headers`.
    - `www.brack-app.com` either redirects once to the canonical apex or is not advertised.
 8. **Enable the free security baseline**:
    - SSL/TLS mode **Full (strict)**, Always Use HTTPS, TLS 1.3, and a minimum of TLS 1.2.
@@ -98,8 +100,11 @@ Cloudflare should serve the web client, not proxy Supabase Auth. Authentication
 requests continue directly to the configured Supabase project. Do not add a
 cache-everything rule for auth routes, and make `/auth/callback` and
 `/auth/reset-password` non-cacheable if custom Pages cache rules are introduced.
-Turnstile must be integrated with Supabase CAPTCHA validation; challenging the
-static `/auth` page alone does not protect the Auth API.
+Turnstile is integrated at each password-based Auth form and verified by
+Supabase CAPTCHA protection. Challenging the static `/auth` route or adding a
+generic Cloudflare interstitial does not protect direct Auth API calls. Keep
+`/turnstile.html` out of service-worker and edge caches; packaged mobile and
+desktop releases depend on that canonical HTTPS bridge.
 
 ### Progressive Web App (PWA)
 

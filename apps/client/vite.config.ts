@@ -8,6 +8,12 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => {
   const repoRoot = path.resolve(__dirname, "../..");
   const env = loadEnv(mode, repoRoot, "");
+  const configuredTurnstileSiteKey = env.VITE_TURNSTILE_SITE_KEY?.trim();
+  if (mode === "production" && !configuredTurnstileSiteKey) {
+    throw new Error(
+      "Missing VITE_TURNSTILE_SITE_KEY. Production Auth builds must include the existing Turnstile widget sitekey.",
+    );
+  }
   const configuredSupabaseUrl = env.VITE_SUPABASE_URL?.replace(/\/$/, "");
   const escapedSupabaseUrl = configuredSupabaseUrl?.replace(
     /[.*+?^${}()|[\]\\]/g,
@@ -77,6 +83,9 @@ export default defineConfig(({ mode }) => {
         navigateFallbackDenylist: [/^\/auth(?:\/|$)/],
         globPatterns: ["**/*.{js,css,html,ico,svg,woff2}"],
         globIgnores: [
+          // The native/Electron Turnstile bridge carries one-time challenge
+          // state and must always be fetched from the canonical HTTPS origin.
+          "turnstile.html",
           "**/assets/*scanner*",
           "**/assets/*tesseract*",
           "**/assets/ReactionBar-*.js",
@@ -148,6 +157,10 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       rollupOptions: {
+        input: {
+          app: path.resolve(__dirname, "index.html"),
+          turnstile: path.resolve(__dirname, "turnstile.html"),
+        },
         output: {
           manualChunks: {
             // Vendor chunks for better caching

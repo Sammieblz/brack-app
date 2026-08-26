@@ -9,6 +9,11 @@ on:
 permissions:
   contents: read
 
+env:
+  # Cloudflare's documented always-pass test widget. Production deployments
+  # must replace this with the existing Brack widget through the build env.
+  VITE_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+
 jobs:
   quality-checks:
     name: Quality Checks

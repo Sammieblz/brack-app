@@ -5,16 +5,20 @@ const {
   exchangeCodeForSessionMock,
   getSessionMock,
   getUserMock,
+  resetPasswordForEmailMock,
   resendMock,
   setSessionMock,
+  signInWithPasswordMock,
   signUpMock,
   verifyOtpMock,
 } = vi.hoisted(() => ({
   exchangeCodeForSessionMock: vi.fn(),
   getSessionMock: vi.fn(),
   getUserMock: vi.fn(),
+  resetPasswordForEmailMock: vi.fn(),
   resendMock: vi.fn(),
   setSessionMock: vi.fn(),
+  signInWithPasswordMock: vi.fn(),
   signUpMock: vi.fn(),
   verifyOtpMock: vi.fn(),
 }));
@@ -25,8 +29,10 @@ vi.mock("@/integrations/supabase/client", () => ({
       exchangeCodeForSession: exchangeCodeForSessionMock,
       getSession: getSessionMock,
       getUser: getUserMock,
+      resetPasswordForEmail: resetPasswordForEmailMock,
       resend: resendMock,
       setSession: setSessionMock,
+      signInWithPassword: signInWithPasswordMock,
       signUp: signUpMock,
       verifyOtp: verifyOtpMock,
     },
@@ -46,17 +52,23 @@ import {
   getOptionalCurrentAuthUser,
   handleAuthCallbackUrl,
   resendSignUpEmail,
+  sendPasswordResetEmail,
+  signInWithEmailPassword,
   signUpWithEmail,
   verifyEmailOtp,
 } from "./auth";
+
+const TEST_CAPTCHA_TOKEN = "test-turnstile-token";
 
 describe("optional authentication and callback handling", () => {
   beforeEach(() => {
     exchangeCodeForSessionMock.mockReset();
     getSessionMock.mockReset();
     getUserMock.mockReset();
+    resetPasswordForEmailMock.mockReset();
     resendMock.mockReset();
     setSessionMock.mockReset();
+    signInWithPasswordMock.mockReset();
     signUpMock.mockReset();
     verifyOtpMock.mockReset();
     clearVerifiedAuthUserCache();
@@ -156,6 +168,7 @@ describe("optional authentication and callback handling", () => {
       signUpWithEmail({
         email: "reader@example.com",
         password: "strong-password",
+        captchaToken: TEST_CAPTCHA_TOKEN,
         redirectTo: "https://brack-app.com/auth/callback",
         metadata: { full_name: "Reader One" },
       }),
@@ -165,10 +178,63 @@ describe("optional authentication and callback handling", () => {
       email: "reader@example.com",
       password: "strong-password",
       options: {
+        captchaToken: TEST_CAPTCHA_TOKEN,
         emailRedirectTo: "https://brack-app.com/auth/callback",
         data: { full_name: "Reader One" },
       },
     });
+  });
+
+  it("rejects malformed challenge tokens before calling Supabase Auth", async () => {
+    await expect(
+      signUpWithEmail({
+        email: "reader@example.com",
+        password: "strong-password",
+        captchaToken: " ",
+      }),
+    ).rejects.toMatchObject({
+      name: "AuthProtocolError",
+      message: "Complete a fresh security check before submitting this request.",
+    });
+
+    expect(signUpMock).not.toHaveBeenCalled();
+  });
+
+  it("passes a fresh challenge token to password sign-in", async () => {
+    signInWithPasswordMock.mockResolvedValue({
+      data: { session: null, user: null },
+      error: null,
+    });
+
+    await signInWithEmailPassword({
+      email: " reader@example.com ",
+      password: "strong-password",
+      captchaToken: TEST_CAPTCHA_TOKEN,
+    });
+
+    expect(signInWithPasswordMock).toHaveBeenCalledWith({
+      email: "reader@example.com",
+      password: "strong-password",
+      options: { captchaToken: TEST_CAPTCHA_TOKEN },
+    });
+  });
+
+  it("passes a fresh challenge token to password recovery", async () => {
+    resetPasswordForEmailMock.mockResolvedValue({ data: {}, error: null });
+
+    await sendPasswordResetEmail({
+      email: " reader@example.com ",
+      redirectTo: "https://brack-app.com/auth/reset-password",
+      captchaToken: TEST_CAPTCHA_TOKEN,
+    });
+
+    expect(resetPasswordForEmailMock).toHaveBeenCalledWith(
+      "reader@example.com",
+      {
+        redirectTo: "https://brack-app.com/auth/reset-password",
+        captchaToken: TEST_CAPTCHA_TOKEN,
+      },
+    );
   });
 
   it("uses Supabase Auth as the single duplicate-email authority", async () => {
@@ -184,6 +250,7 @@ describe("optional authentication and callback handling", () => {
       signUpWithEmail({
         email: " Reader@Example.com ",
         password: "strong-password",
+        captchaToken: TEST_CAPTCHA_TOKEN,
       }),
     ).resolves.toEqual({
       kind: "email_exists",
@@ -206,6 +273,7 @@ describe("optional authentication and callback handling", () => {
       signUpWithEmail({
         email: " reader@example.com ",
         password: "strong-password",
+        captchaToken: TEST_CAPTCHA_TOKEN,
       }),
     ).resolves.toEqual({
       kind: "confirmation_pending",
@@ -216,6 +284,7 @@ describe("optional authentication and callback handling", () => {
       email: "reader@example.com",
       password: "strong-password",
       options: {
+        captchaToken: TEST_CAPTCHA_TOKEN,
         emailRedirectTo: undefined,
         data: undefined,
       },
@@ -235,6 +304,7 @@ describe("optional authentication and callback handling", () => {
       signUpWithEmail({
         email: "reader@example.com",
         password: "strong-password",
+        captchaToken: TEST_CAPTCHA_TOKEN,
       }),
     ).resolves.toEqual({
       kind: "email_exists",
@@ -258,6 +328,7 @@ describe("optional authentication and callback handling", () => {
         signUpWithEmail({
           email: "reader@example.com",
           password: "strong-password",
+          captchaToken: TEST_CAPTCHA_TOKEN,
         }),
       ).resolves.toEqual({
         kind: "email_exists",
@@ -281,6 +352,7 @@ describe("optional authentication and callback handling", () => {
       signUpWithEmail({
         email: "reader@example.com",
         password: "strong-password",
+        captchaToken: TEST_CAPTCHA_TOKEN,
       }),
     ).rejects.toBe(error);
   });
@@ -295,6 +367,7 @@ describe("optional authentication and callback handling", () => {
       signUpWithEmail({
         email: "reader@example.com",
         password: "strong-password",
+        captchaToken: TEST_CAPTCHA_TOKEN,
       }),
     ).rejects.toBeInstanceOf(AuthProtocolError);
   });
@@ -510,13 +583,17 @@ describe("optional authentication and callback handling", () => {
       resendSignUpEmail({
         email: "reader@example.com",
         redirectTo: "https://brack-app.com/auth/callback",
+        captchaToken: TEST_CAPTCHA_TOKEN,
       }),
     ).resolves.toBeUndefined();
 
     expect(resendMock).toHaveBeenCalledWith({
       type: "signup",
       email: "reader@example.com",
-      options: { emailRedirectTo: "https://brack-app.com/auth/callback" },
+      options: {
+        captchaToken: TEST_CAPTCHA_TOKEN,
+        emailRedirectTo: "https://brack-app.com/auth/callback",
+      },
     });
   });
 
@@ -532,7 +609,10 @@ describe("optional authentication and callback handling", () => {
     });
 
     await expect(
-      resendSignUpEmail({ email: "reader@example.com" }),
+      resendSignUpEmail({
+        email: "reader@example.com",
+        captchaToken: TEST_CAPTCHA_TOKEN,
+      }),
     ).rejects.toBe(error);
   });
 });
