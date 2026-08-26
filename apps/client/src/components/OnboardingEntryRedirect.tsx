@@ -3,11 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { getAuthSession } from "@/services/api";
-import {
-  ensureUserProfile,
-  isOnboardingBackendUnavailable,
-  shouldEnterFirstRunOnboarding,
-} from "@/services/onboarding";
+import { resolvePostAuthPath } from "@/services/authRedirect";
+import { isOnboardingBackendUnavailable } from "@/services/onboarding";
 
 export const OnboardingEntryRedirect = () => {
   const navigate = useNavigate();
@@ -19,12 +16,11 @@ export const OnboardingEntryRedirect = () => {
       const user = session?.user;
 
       if (!user) {
-        navigate("/auth?mode=signup", { replace: true });
+        setTarget("/onboarding");
         return;
       }
 
-      const status = await ensureUserProfile(user);
-      setTarget(shouldEnterFirstRunOnboarding(user, status) ? "/onboarding" : "/dashboard");
+      setTarget(await resolvePostAuthPath());
     };
 
     resolveTarget().catch((err) => {
@@ -49,7 +45,13 @@ export const OnboardingEntryRedirect = () => {
   return (
     <BrandedRouteTransition
       to={target}
-      message={target === "/onboarding" ? "Opening setup..." : "Opening your dashboard..."}
+      message={
+        target.startsWith("/onboarding")
+          ? "Opening setup..."
+          : target === "/app-permissions"
+            ? "Preparing Brack for this device..."
+            : "Opening your dashboard..."
+      }
     />
   );
 };

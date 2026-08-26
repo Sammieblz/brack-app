@@ -1,10 +1,13 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthApiError } from "@supabase/supabase-js";
 
 const {
   authorizePasswordRecoverySessionMock,
+  beginOnboardingSignupAttemptMock,
+  canAccessOnboardingSignupMock,
+  cancelOnboardingSignupAttemptMock,
   getAuthSessionMock,
   resendSignUpEmailMock,
   resolvePostAuthPathMock,
@@ -16,6 +19,9 @@ const {
   verifyEmailOtpMock,
 } = vi.hoisted(() => ({
   authorizePasswordRecoverySessionMock: vi.fn(),
+  beginOnboardingSignupAttemptMock: vi.fn(),
+  canAccessOnboardingSignupMock: vi.fn(),
+  cancelOnboardingSignupAttemptMock: vi.fn(),
   getAuthSessionMock: vi.fn(),
   resendSignUpEmailMock: vi.fn(),
   resolvePostAuthPathMock: vi.fn(),
@@ -45,6 +51,12 @@ vi.mock("@/services/api", () => ({
 vi.mock("@/services/authRedirect", () => ({
   authorizePasswordRecoverySession: authorizePasswordRecoverySessionMock,
   resolvePostAuthPath: resolvePostAuthPathMock,
+}));
+
+vi.mock("@/services/onboardingDraft", () => ({
+  beginOnboardingSignupAttempt: beginOnboardingSignupAttemptMock,
+  canAccessOnboardingSignup: canAccessOnboardingSignupMock,
+  cancelOnboardingSignupAttempt: cancelOnboardingSignupAttemptMock,
 }));
 
 vi.mock("@/services/platform", () => ({
@@ -114,10 +126,16 @@ vi.mock("@/components/auth/AuthTurnstile", async () => {
 
 import Auth from "./Auth";
 
+const LocationProbe = () => {
+  const location = useLocation();
+  return <output data-testid="current-location">{location.pathname}{location.search}</output>;
+};
+
 const renderAuth = (entry = "/auth?mode=signup") =>
   render(
     <MemoryRouter initialEntries={[entry]}>
       <Auth />
+      <LocationProbe />
     </MemoryRouter>,
   );
 
@@ -151,6 +169,11 @@ const enterConfirmationPending = async () => {
 describe("Auth email flows", () => {
   beforeEach(() => {
     authorizePasswordRecoverySessionMock.mockReset();
+    beginOnboardingSignupAttemptMock.mockReset();
+    beginOnboardingSignupAttemptMock.mockReturnValue({ flowId: "draft-one" });
+    canAccessOnboardingSignupMock.mockReset();
+    canAccessOnboardingSignupMock.mockReturnValue(true);
+    cancelOnboardingSignupAttemptMock.mockReset();
     getAuthSessionMock.mockReset();
     getAuthSessionMock.mockResolvedValue(null);
     resendSignUpEmailMock.mockReset();

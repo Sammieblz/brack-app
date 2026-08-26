@@ -13,6 +13,7 @@ import {
   upsertOnboardingReadingHabits,
   type OnboardingStatusRecord,
 } from "@/services/api/onboarding";
+import { upsertThemePreferences } from "@/services/api/profiles";
 import type { OnboardingFormData, OnboardingStatus } from "@/types";
 
 export const ONBOARDING_VERSION = 1;
@@ -223,10 +224,13 @@ export const skipOnboarding = async (
   }
 };
 
-export const saveOnboardingProfile = async (
-  userId: string,
-  formData: OnboardingFormData,
-) => {
+export type NormalizedOnboardingFormData = OnboardingFormData & {
+  goalTargetBooks: number;
+  goalStartDate: string;
+  goalEndDate: string;
+};
+
+export const normalizeOnboardingFormData = (formData: OnboardingFormData) => {
   const favoriteGenres = formData.favoriteGenres.slice(0, 12);
   const goalTargetBooks = clampNumber(formData.goalTargetBooks, 1, 365);
   const averageDaysPerBook = clampNumber(formData.averageDaysPerBook, 1, 365);
@@ -251,7 +255,7 @@ export const saveOnboardingProfile = async (
     throw new Error("Add a positive book target before completing onboarding.");
   }
 
-  const normalized: OnboardingFormData = {
+  const normalized: NormalizedOnboardingFormData = {
     ...formData,
     favoriteGenres,
     colorTheme: formData.colorTheme || "default",
@@ -281,10 +285,30 @@ export const saveOnboardingProfile = async (
     setupConfidence: "high",
   };
 
+  return {
+    normalized,
+    derivedPreferences,
+    avgLength,
+  };
+};
+
+interface SaveOnboardingProfileOptions {
+  /** Stable draft UUID makes a retried pre-auth handoff reuse its goal row. */
+  goalId?: string;
+}
+
+export const saveOnboardingProfile = async (
+  userId: string,
+  formData: OnboardingFormData,
+  { goalId }: SaveOnboardingProfileOptions = {},
+) => {
+  const { normalized, derivedPreferences, avgLength } =
+    normalizeOnboardingFormData(formData);
+
   await upsertOnboardingReadingHabits({
     user_id: userId,
     avg_time_per_book: normalized.averageDaysPerBook,
-    genres: favoriteGenres,
+    genres: normalized.favoriteGenres,
     avg_length: avgLength,
     books_6mo: normalized.booksReadSixMonths,
     books_1yr: normalized.booksReadYear,
@@ -299,8 +323,9 @@ export const saveOnboardingProfile = async (
   await deactivateActiveBookCountGoals(userId);
 
   await createOnboardingBookGoal({
+    id: goalId,
     user_id: userId,
-    target_books: goalTargetBooks,
+    target_books: normalized.goalTargetBooks,
     start_date: normalized.goalStartDate,
     end_date: normalized.goalEndDate,
     reminder_time: normalized.reminderTime,
@@ -311,6 +336,10 @@ export const saveOnboardingProfile = async (
   });
 
   await upsertOnboardingNotificationPreferences(userId, normalized.reminderEnabled);
+
+  // Authenticated onboarding used to persist this incidentally when the
+  // palette was clicked. Pre-auth onboarding requires an explicit final write.
+  await upsertThemePreferences(userId, { color_theme: normalized.colorTheme });
 
   const completedAt = new Date().toISOString();
 

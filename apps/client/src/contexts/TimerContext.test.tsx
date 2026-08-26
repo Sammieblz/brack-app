@@ -81,9 +81,14 @@ const makeBook = (userId: string, id: string): Book => ({
 const TimerProbe = () => {
   const timer = useTimer();
   return (
-    <button type="button" onClick={() => void timer.finishTimer(true)}>
-      Finish {timer.bookId ?? "none"}
-    </button>
+    <>
+      <button type="button" onClick={() => timer.startTimer("book-1", "Supernova")}>
+        Start timer
+      </button>
+      <button type="button" onClick={() => void timer.finishTimer(true)}>
+        Finish {timer.bookId ?? "none"}
+      </button>
+    </>
   );
 };
 
@@ -131,6 +136,21 @@ describe("TimerProvider remapped book identities", () => {
   afterEach(() => {
     cleanup();
     localStorage.clear();
+  });
+
+  it("waits for a deliberate timer start before requesting notification access", async () => {
+    render(
+      <TimerProvider>
+        <TimerProbe />
+      </TimerProvider>,
+    );
+
+    expect(mocks.requestNotificationPermissions).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Start timer" }));
+
+    await waitFor(() => {
+      expect(mocks.requestNotificationPermissions).toHaveBeenCalledOnce();
+    });
   });
 
   it("saves a persisted stale-ID timer against the canonical book", async () => {

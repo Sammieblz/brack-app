@@ -1,24 +1,40 @@
 # Onboarding and Auth Write-Path Audit
 
-Source date: 2026-08-23
+Source date: 2026-08-26
 
-Scope: ticket 2.2, auth signup/profile creation/onboarding defaults.
+Scope: onboarding-first acquisition, Auth signup/profile creation, idempotent
+draft finalization, and post-signup permission routing.
 
 ## Current Flow
 
 | Step | Owner | Path | Writes | Notes |
 | --- | --- | --- | --- | --- |
+| Start acquisition | Landing/client router | `Get Started` -> `/onboarding` | None | Anonymous onboarding is allowed; Sign In remains a direct Auth path. |
+| Collect onboarding | `apps/client/src/services/onboardingDraft.ts` | Anonymous `/onboarding` | Versioned local draft only | Schema-validated localStorage record with a UUID flow id and rolling seven-day expiry; no database call. |
+| Begin signup | Auth screen | `/auth?mode=signup&from=onboarding` | Local draft attempt metadata | Direct signup requires a ready completed-or-skipped draft. Email attempts bind the normalized email; OAuth attempts bind the provider and time window. |
 | Email sign-up | Supabase Auth via `apps/client/src/services/api/auth.ts` | `signUpWithEmail` | `auth.users` | One normalized `signUp` request; duplicate UI derives from explicit/obfuscated Auth responses. |
 | Auth trigger | Database | `handle_new_user()` | `profiles` | Creates or updates profile defaults with display/avatar/name and onboarding fields. |
 | Profile fallback | App service | `ensureUserProfile` in `apps/client/src/services/onboarding.ts` | `profiles` | If the trigger did not create a row, client upserts a profile with `ignoreDuplicates`. |
-| First-run route decision | App service | `shouldEnterFirstRunOnboarding` | None | New accounts after `2026-05-01T00:00:00.000Z` enter onboarding when status is `not_started` or `in_progress`. |
+| Post-auth decision | `resolvePostAuthPath` | Auth callback, sign-in, and restored session | None | Checks a pending native permission intro, ensures the profile, validates any bound draft, and returns one canonical destination. |
+| Draft finalization | `resolvePostAuthPath` / onboarding service | Verified new account with a bound draft | Onboarding tables below | Single-flight; applies skip or completion only to a qualifying newly created account. Uses the draft UUID as the goal UUID for retry idempotency. |
+| First-run fallback | App service | `shouldEnterFirstRunOnboarding` | None | A new account without an applicable local draft enters authenticated onboarding. Existing accounts are not overwritten by a guest draft. |
 | Mark in progress | API service | `updateOnboardingInProgress` | `profiles` | Only updates `not_started` or `in_progress` profiles. |
 | Skip onboarding | App service/API service | `skipOnboarding` | `profiles`, `user_learning_profiles` | Dashboard access remains allowed after status `skipped`. |
 | Complete onboarding | App service/API service | `saveOnboardingProfile` | `reading_habits`, `goals`, `notification_preferences`, `user_learning_profiles`, `profiles` | Deactivates active yearly book-count goals, creates one new active goal, then marks profile complete. |
+| Native permission education | Client-only `/app-permissions` | Capacitor iOS/Android | Per-user/device local marker; push token only after consent | Optional; web/PWA/Electron bypass it. Camera/photos/location remain contextual. |
 
 ## Determinism
 
 Profile creation is deterministic because:
+- Anonymous answers are isolated in a schema-validated version-1 local draft.
+  The draft expires after seven days, and invalid/future-version records are
+  removed rather than partially interpreted.
+- The draft contains onboarding answers and narrowly scoped attempt metadata,
+  never a password, session, access/refresh token, Turnstile token, or backend
+  credential.
+- Auth finalization verifies the account creation time and email/provider bind,
+  then requires first-run profile status before applying the draft. A stale
+  guest draft cannot mutate an established account.
 - `profiles.id` is the user id.
 - `profiles.id` is both the primary key and the cascading foreign key to
   `auth.users.id`; `profiles` intentionally has no email column.
@@ -26,6 +42,8 @@ Profile creation is deterministic because:
 - `ensureUserProfile()` reads first and then upserts with `onConflict: "id"` and `ignoreDuplicates: true`.
 - Onboarding status has a check constraint limited to `not_started`, `in_progress`, `completed`, and `skipped`.
 - Existing profiles were migrated to `completed` so older users are not trapped in first-run onboarding.
+- The draft `flowId` becomes the initial goal id. Repeating finalization upserts
+  that same goal instead of inserting another one.
 
 ## Default Records
 
@@ -36,6 +54,20 @@ Profile creation is deterministic because:
 | `user_learning_profiles` | Conditional | Created on skip or completion. |
 | `goals` | No | Created on completion only. |
 | `notification_preferences` | No | Upserted on completion based on reminder choice. |
+
+### Local-only state
+
+The pre-auth draft lives under `brack:pre-auth-onboarding:v1` in the current
+runtime's `localStorage`. It is cleared after successful finalization and on
+schema/version/expiry failure. Email signup cancellation returns it to the
+ready state instead of consuming it. A missing cross-device draft falls back to
+authenticated onboarding; the server never trusts a client draft as proof of
+identity.
+
+Native permission education uses a separate per-user/device marker. That marker
+does not store OS permission grants and is not part of `profiles`. Cloudflare
+Turnstile state is also separate: a fresh single-use captcha token protects the
+Auth request and is never written into either local record.
 
 ## RLS Review
 
@@ -51,7 +83,14 @@ No missing RLS policy was identified from the current remote matrix. `profiles` 
 ## Risks
 
 - The auth trigger has existed in multiple migrations. The latest definition in `20260501010000_unified_onboarding_flow.sql` should be treated as canonical.
-- Completion is not one database transaction. `saveOnboardingProfile` performs several sequential client-side writes, so a network failure can leave habits/goals/preferences saved while profile status remains `in_progress`.
+- Completion is not one database transaction. `saveOnboardingProfile` performs
+  several sequential owner-scoped writes, so a network failure can leave
+  habits/goals/preferences saved while profile status remains `in_progress`.
+  The finalizer keeps the draft for an authenticated retry, and the stable goal
+  UUID prevents duplicate goals, but the retry path must remain tested.
+- `localStorage` is origin/runtime scoped. Clearing site data, using another
+  device, or a seven-day expiry removes the anonymous draft; the supported
+  fallback is authenticated onboarding, not a partial server-side draft.
 - `skipOnboarding` tolerates learning-profile write failure and still saves skipped status. This is intentional for dashboard access, but setup confidence can be missing.
 - Controlled remote Auth tests verified profile creation and cleanup:
   - Direct auth-table trigger validation inserted and removed a temporary `auth.users` row.
@@ -74,6 +113,20 @@ No missing RLS policy was identified from the current remote matrix. `profiles` 
   identity email mappings, broken profile-to-Auth linkage, or missing identity
   PK/FK/trigger enforcement.
 
+## Device-token ownership
+
+Push registration happens only after an authenticated reader explicitly grants
+notifications. `public.claim_push_token(text, text)` atomically assigns an
+installation token to `auth.uid()`; a global token uniqueness constraint means
+one device token cannot remain attached to two readers after an account switch.
+The function validates token/platform input, has a fixed empty `search_path`,
+revokes `PUBLIC`/`anon`, and grants execution only to `authenticated`.
+
+The owner UPDATE policy has both `USING` and `WITH CHECK`. Sign-out removes the
+current installation token while the session can still authorize the delete,
+then unregisters the native provider. It does not delete tokens belonging to
+the reader's other devices.
+
 ## Test Checklist
 
 Remote validation completed on 2026-05-05:
@@ -84,6 +137,11 @@ Remote validation completed on 2026-05-05:
 - Test auth/profile records were cleaned up.
 
 Manual UI release smoke outside this backlog checklist:
+- Landing **Get Started** enters anonymous onboarding, while **Sign In** remains
+  a direct established-reader path.
+- Reload restores a valid draft at the saved step; malformed, incompatible, or
+  expired drafts are discarded without a database write.
+- Direct signup without a ready onboarding draft returns to onboarding.
 - One submission sends one Supabase Auth signup request; there is no separate
   email-availability call.
 - Known confirmed, unconfirmed, and Google-created emails map explicit or
@@ -93,7 +151,18 @@ Manual UI release smoke outside this backlog checklist:
   user/profile.
 - Auth delivery/request `429` responses are caught, shown once, and never
   automatically retried; failed attempts create no user/profile.
-- New account routes to `/onboarding`.
-- Skip writes `profiles.onboarding_status = 'skipped'` and allows `/dashboard`.
-- Complete writes `reading_habits`, `user_learning_profiles`, one active `books_count` goal, notification preferences, and `profiles.onboarding_status = 'completed'`.
+- A verified new account with a completed draft writes `reading_habits`,
+  `user_learning_profiles`, one stable active `books_count` goal, notification
+  preferences, and `profiles.onboarding_status = 'completed'` before routing.
+- A verified new account with a skipped draft writes skipped status without
+  inventing completed answers.
+- A missing or rejected draft routes a qualifying new account to authenticated
+  `/onboarding`; an established account bypasses it without consuming the draft.
+- Finalization failure retains the draft and `/onboarding?resume=draft` retry
+  creates no duplicate goal.
+- Capacitor sends a successfully finalized new reader to optional
+  `/app-permissions`; web/PWA/Electron go directly to `/dashboard`.
+- Notifications are never requested on app boot. Denial is respected; timer
+  start is the contextual retry. Camera/photo/location prompts occur only from
+  the corresponding feature action.
 - Existing users created before 2026-05-01 bypass forced onboarding.

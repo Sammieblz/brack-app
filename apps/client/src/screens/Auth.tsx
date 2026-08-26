@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect, useLayoutEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,11 @@ import {
   type TurnstileAction,
 } from "@/utils/turnstile";
 import { Mail } from "iconoir-react";
+import {
+  beginOnboardingSignupAttempt,
+  canAccessOnboardingSignup,
+  cancelOnboardingSignupAttempt,
+} from "@/services/onboardingDraft";
 
 type AuthTransition = {
   to: string;
@@ -71,6 +76,7 @@ const EMAIL_EXISTS_FAILURE: AuthFailurePresentation = {
 };
 
 const Auth = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isSignUp, setIsSignUp] = useState(false);
   const [isPasswordResetRequest, setIsPasswordResetRequest] = useState(false);
@@ -109,9 +115,11 @@ const Auth = () => {
       postAuthResolutionRef.current = resolvePostAuthPath()
         .then((path) => ({
           to: path,
-          message: path === "/onboarding"
+          message: path.startsWith("/onboarding")
             ? "Setting up your Brack profile..."
-            : "Opening your reading dashboard...",
+            : path === "/app-permissions"
+              ? "Preparing Brack for this device..."
+              : "Opening your reading dashboard...",
         }))
         .catch((error) => {
           postAuthResolutionRef.current = null;
@@ -139,6 +147,16 @@ const Auth = () => {
         rateLimited: false,
       });
     }
+    if (
+      mode === "signup" &&
+      !authLoading &&
+      !authUser &&
+      !canAccessOnboardingSignup()
+    ) {
+      navigate("/onboarding?from=auth", { replace: true });
+      return;
+    }
+
     if (mode === "signup") {
       setIsSignUp(true);
       setIsPasswordResetRequest(false);
@@ -150,7 +168,7 @@ const Auth = () => {
       setIsPasswordResetRequest(true);
     }
     // If no mode param, keep default (sign-in)
-  }, [searchParams]);
+  }, [authLoading, authUser, navigate, searchParams]);
 
   useEffect(() => {
     if (authLoading || !authUser || recoveryOtpInFlightRef.current) return;
@@ -246,6 +264,21 @@ const Auth = () => {
     setLoading(true);
     setAuthFailure(null);
 
+    const isOnboardingSignup =
+      isSignUp || emailChallenge?.type === "signup";
+    if (isOnboardingSignup) {
+      const signupDraft = beginOnboardingSignupAttempt({
+        kind: "oauth",
+        provider: "google",
+      });
+      if (!signupDraft) {
+        authRequestInFlightRef.current = false;
+        setLoading(false);
+        navigate("/onboarding?from=auth", { replace: true });
+        return;
+      }
+    }
+
     try {
       if (isPasswordResetRequest) {
         await sendPasswordResetEmail({
@@ -264,6 +297,15 @@ const Auth = () => {
         setResendCountdown(60);
         setPassword("");
       } else if (isSignUp) {
+        const signupDraft = beginOnboardingSignupAttempt({
+          kind: "email",
+          email,
+        });
+        if (!signupDraft) {
+          navigate("/onboarding?from=auth", { replace: true });
+          return;
+        }
+
         const outcome = await signUpWithEmail({
           email,
           password,
@@ -282,6 +324,7 @@ const Auth = () => {
         }
 
         if (outcome.kind === "email_exists") {
+          cancelOnboardingSignupAttempt();
           setAuthFailure(EMAIL_EXISTS_FAILURE);
           setPassword("");
           toast({
@@ -317,6 +360,13 @@ const Auth = () => {
           ? "sign_up"
           : "sign_in";
       const failure = presentAuthFailure(error, operation);
+      if (
+        operation === "sign_up" &&
+        (failure.rateLimited ||
+          (!failure.confirmationRequired && failure.title !== "Sign-up failed"))
+      ) {
+        cancelOnboardingSignupAttempt();
+      }
       setAuthFailure(failure);
       if (failure.confirmationRequired) {
         setEmailChallenge({ email: email.trim(), type: "signup" });
@@ -413,6 +463,7 @@ const Auth = () => {
         redirectTo: getAuthRedirectUrl(),
       });
     } catch (error: unknown) {
+      if (isOnboardingSignup) cancelOnboardingSignupAttempt();
       const failure = presentAuthFailure(error, "oauth");
       setAuthFailure(failure);
       toast({
@@ -665,6 +716,9 @@ const Auth = () => {
                     className="h-11 w-full"
                     disabled={loading}
                     onClick={() => {
+                      if (emailChallenge.type === "signup") {
+                        cancelOnboardingSignupAttempt();
+                      }
                       setEmailChallenge(null);
                       setEmailOtp("");
                       setIsSignUp(false);
@@ -672,6 +726,7 @@ const Auth = () => {
                       setPassword("");
                       setAuthFailure(null);
                       setResendCountdown(0);
+                      navigate("/auth?mode=signin", { replace: true });
                     }}
                   >
                     Sign in instead
@@ -683,6 +738,7 @@ const Auth = () => {
                       className="h-11 w-full"
                       disabled={loading}
                       onClick={() => {
+                        cancelOnboardingSignupAttempt();
                         setEmailChallenge(null);
                         setEmailOtp("");
                         setIsSignUp(false);
@@ -730,6 +786,7 @@ const Auth = () => {
                       setLastName("");
                       setAuthFailure(null);
                       setResendCountdown(0);
+                      cancelOnboardingSignupAttempt();
                     }}
                   >
                     Use a different email
@@ -901,9 +958,15 @@ const Auth = () => {
                 setIsPasswordResetRequest(false);
                 setAuthFailure(null);
                 setResendCountdown(0);
+                navigate("/auth?mode=signin", { replace: true });
                 return;
               }
-              setIsSignUp(!isSignUp);
+              if (isSignUp) {
+                cancelOnboardingSignupAttempt();
+                navigate("/auth?mode=signin", { replace: true });
+              } else {
+                navigate("/onboarding?from=auth");
+              }
               setAuthFailure(null);
               setResendCountdown(0);
             }}

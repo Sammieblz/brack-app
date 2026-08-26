@@ -7,6 +7,7 @@ import {
   signOut as signOutUser,
 } from "@/services/api";
 import type { User } from "@/types";
+import { pushNotificationsService } from "@/services/pushNotifications";
 
 type AuthSnapshot = {
   user: User | null;
@@ -73,6 +74,12 @@ const subscribe = (listener: () => void) => {
 const getSnapshot = () => snapshot;
 
 const signOut = async () => {
+  // Release this installation while the Supabase session can still authorize
+  // the owner-scoped token delete. Native cleanup is best effort and never
+  // prevents a reader from signing out.
+  if (pushNotificationsService.isNative()) {
+    await pushNotificationsService.unregister();
+  }
   await signOutUser();
   // Clear cached presentation preferences only after sign-out succeeds.
   localStorage.removeItem("color_theme");

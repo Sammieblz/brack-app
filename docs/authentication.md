@@ -15,24 +15,64 @@ Brack uses Supabase Auth for user authentication and Row Level Security (RLS) fo
 
 ## Authentication Flow
 
+Brack separates acquisition from authentication. A new reader can experience
+and personalize onboarding before deciding to create an account, while an
+established reader still reaches sign-in directly.
+
+```text
+Landing "Get Started"
+  -> anonymous /onboarding
+  -> versioned local draft
+  -> /auth?mode=signup&from=onboarding
+  -> Supabase Auth / email confirmation or OAuth
+  -> authenticated, idempotent draft finalization
+  -> native permission education (iOS/Android only)
+  -> /dashboard
+
+Landing "Sign In" or a protected-route redirect
+  -> /auth?mode=signin
+  -> post-auth route resolver
+  -> /dashboard, unfinished authenticated onboarding, or pending native setup
 ```
-User visits app
-       ↓
-Check session
-       ↓
-┌──────────────┐
-│  Has valid   │
-│   session?   │
-└──┬───────┬───┘
-   │ Yes   │ No
-   │       │
-   │       └────► Redirect to /auth
-   │
-   ▼
-Load user data
-   ↓
-Render dashboard
-```
+
+Web/PWA and Electron skip the native permission page. Capacitor iOS and Android
+show it once per new reader/device after onboarding has been applied. A reader
+may continue without granting any optional permission.
+
+### Pre-auth onboarding draft
+
+`apps/client/src/services/onboardingDraft.ts` owns the anonymous draft. The
+record is schema-validated, versioned, assigned a UUID flow id, and stored in
+origin-scoped `localStorage` with a rolling seven-day expiry. It records the
+complete onboarding form, last step, completion-or-skip outcome, and narrowly
+scoped signup-attempt metadata. An email attempt stores only the normalized
+address needed to bind the draft to the resulting new account; an OAuth attempt
+stores the provider and start time.
+
+The draft never contains a password, Supabase session, access/refresh token,
+Turnstile token, SMTP credential, or other secret. Invalid, incompatible, or
+expired records are discarded. It is local to the current browser, PWA,
+desktop renderer, or native WebView, so it is a convenience handoff rather than
+a server-authoritative profile or a cross-device backup.
+
+The post-auth resolver applies a draft only when all of these are true:
+
+- the reader explicitly completed or skipped onboarding and then started
+  signup from that draft;
+- the verified Auth account was created within the bounded signup-attempt
+  window and matches the submitted email or OAuth provider;
+- the profile still qualifies for first-run onboarding.
+
+An established account signing in on the same device cannot consume or
+overwrite the anonymous draft. Successful finalization clears it. A transient
+write failure keeps the validated draft and routes the authenticated reader to
+`/onboarding?resume=draft` so the same data can be retried deliberately.
+
+Finalization is single-flight in the client. The draft flow UUID is also reused
+as the initial goal UUID, so retrying cannot create another onboarding goal.
+The remaining onboarding writes are still separate owner-scoped operations,
+not one database transaction; completion status is written last and the retry
+path remains required for partial network failures.
 
 ## Setup
 
@@ -99,7 +139,9 @@ type EmailSignUpOutcome =
   | { kind: 'confirmation_pending'; email: string };
 ```
 
-`signed_in` continues into onboarding or the dashboard.
+`signed_in` delegates to the shared post-auth resolver. A newly created account
+with a bound onboarding draft is finalized before it reaches the dashboard;
+native clients then receive the optional device-permission education step.
 `confirmation_pending` opens the email-actions screen for a new, unconfirmed
 signup. `email_exists` keeps the reader on the signup form and shows **Email
 already exists** with the instruction to sign in or continue with Google.
@@ -172,6 +214,13 @@ after Google authentication, adding a password still occurs through the
 authenticated account settings flow.
 
 ## Sign In
+
+Sign-in remains intentionally direct. It does not require a reader to repeat
+the anonymous acquisition questionnaire. After Supabase verifies the session,
+the shared resolver sends the reader to the dashboard, an already-pending
+authenticated onboarding recovery, or an unfinished native permission intro.
+The signup affordance on the sign-in screen starts `/onboarding`; direct signup
+routes require a valid ready onboarding draft.
 
 ### Email/Password
 
@@ -357,6 +406,31 @@ rate limit, the mounted Auth screen disables further signup, reset, and resend
 delivery attempts without displaying a recovery countdown. Sign in remains
 available because it does not send email. Repeated client retries cannot repair
 an exhausted server-side email quota.
+
+## Post-signup device permissions
+
+Permissions are not part of identity proofing and do not gate account creation.
+Cloudflare Turnstile protects selected Supabase Auth requests; the native
+permission screen explains optional device capabilities only after a verified
+new account and its onboarding data have been finalized.
+
+On Capacitor iOS and Android, `/app-permissions` is tracked locally per Auth user
+and installation. It offers one explicit notification action and a clear
+continue-without-notifications path. The app checks existing OS state without
+prompting, does not request notification access at startup, and does not nag
+after a denial. If the reader skips the intro, the first deliberate reading
+timer start may request local-notification access in that feature context.
+
+Camera, photo-library, and foreground-location access are never requested by
+the post-signup page. They are requested just in time after the reader chooses
+Scan barcode/Cover, Choose image, or Use current location. Brack does not request
+background location, broad media-library access, exact alarms, or unrelated
+permissions. Web/PWA and Electron use their browser/desktop fallbacks and never
+enter `/app-permissions`.
+
+Permission state remains OS-authoritative and device-specific. Brack's local
+marker records only whether the education screen is pending or complete; it is
+not copied into profile data and cannot grant a permission.
 
 ## Sign Out
 
@@ -787,7 +861,9 @@ console, but the rejected operation is signup email delivery.
 
 **Features**:
 - Email/password sign in
-- Email/password sign up
+- Email/password sign up after a completed or skipped local onboarding draft
+- Direct sign-in for established readers without repeating onboarding
+- Shared post-auth draft finalization and native permission routing
 - Explicit duplicate-email rejection with sign-in and Google recovery paths
 - Neutral confirmation-pending handling for genuinely ambiguous responses
 - Conditional confirmation resend and password-reset messaging

@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { MapPin } from "iconoir-react";
+import { Capacitor } from "@capacitor/core";
+import { Geolocation } from "@capacitor/geolocation";
 import { useToast } from "@/hooks/use-toast";
 import type { User, Profile } from "@/types";
 import { fetchProfile, type PersonalInfoUpdate, upsertPersonalInfo } from "@/services/api";
@@ -93,14 +95,38 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
     }
   };
 
-  const getCurrentPosition = () =>
-    new Promise<GeolocationPosition>((resolve, reject) => {
+  const getCurrentPosition = async () => {
+    if (Capacitor.isNativePlatform()) {
+      let permission = await Geolocation.checkPermissions();
+      if (
+        permission.location === "prompt" ||
+        permission.location === "prompt-with-rationale"
+      ) {
+        permission = await Geolocation.requestPermissions({
+          permissions: ["location"],
+        });
+      }
+      if (permission.location !== "granted") {
+        throw new Error(
+          "Location access was not allowed. You can enter your city manually or change access in device settings.",
+        );
+      }
+
+      return Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        maximumAge: 60_000,
+        timeout: 15_000,
+      });
+    }
+
+    return new Promise<GeolocationPosition>((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(resolve, reject, {
         enableHighAccuracy: true,
         maximumAge: 60_000,
         timeout: 15_000,
       });
     });
+  };
 
   const savePersonalInfo = async (
     data = formData,
@@ -165,7 +191,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
   };
 
   const handleGetCurrentLocation = async () => {
-    if (!navigator.geolocation) {
+    if (!Capacitor.isNativePlatform() && !navigator.geolocation) {
       toast({
         variant: "destructive",
         title: "Geolocation not supported",
@@ -177,8 +203,8 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
     setLocating(true);
     try {
       toast({
-        title: "Getting location...",
-        description: "Please allow location access",
+        title: "Use your current location?",
+        description: "Brack requests location only for this action. You control whether nearby discovery is visible.",
       });
 
       const position = await getCurrentPosition();
@@ -343,7 +369,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
 
           {locationAccuracy !== null && (
             <p className="font-sans text-xs text-muted-foreground">
-              Browser accuracy estimate: within {Math.round(locationAccuracy)} meters.
+              Device accuracy estimate: within {Math.round(locationAccuracy)} meters.
             </p>
           )}
 
@@ -360,7 +386,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
 
           <div className="bg-muted/50 p-3 rounded-lg space-y-1">
             <p className="font-sans text-xs text-muted-foreground">
-              <strong>Privacy Note:</strong> Your location data is used only for reader discovery features.
+              <strong>Privacy Note:</strong> Brack asks for location only after you choose Use Current Location. Your saved area is used for reader discovery features.
             </p>
             {locationIsHidden && (
               <p className="font-sans text-xs text-muted-foreground">

@@ -339,10 +339,6 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       });
   }, [state.isRunning, state.isVisible, notificationMinute, state.bookTitle, state.bookId]);
 
-  useEffect(() => {
-    timerNativeService.requestNotificationPermissions().catch(console.error);
-  }, []);
-
   const startTimer = (bookId: string, bookTitle: string) => {
     const handleStart = async () => {
       if (stateRef.current.isVisible && stateRef.current.bookId) {
@@ -354,6 +350,12 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
         });
         if (!confirmed) return;
       }
+
+      // A timer start is a deliberate feature action. Readers who skipped the
+      // post-signup notification step are prompted here, never at app launch.
+      await timerNativeService.requestNotificationPermissions().catch((error) => {
+        console.error("Unable to request timer notification permission:", error);
+      });
 
       const now = new Date();
       const nextState: TimerState = {

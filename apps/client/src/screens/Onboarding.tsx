@@ -52,10 +52,19 @@ import {
   ONBOARDING_STEPS,
   getOnboardingErrorMessage,
   markOnboardingInProgress,
+  normalizeOnboardingFormData,
   saveOnboardingProfile,
   skipOnboarding,
   type OnboardingStepId,
 } from "@/services/onboarding";
+import {
+  clearOnboardingDraft,
+  loadOnboardingDraft,
+  markOnboardingDraftReady,
+  saveOnboardingDraftCollection,
+} from "@/services/onboardingDraft";
+import { markPostSignupPermissionsPending } from "@/services/postSignupPermissions";
+import { isMobileNativeRuntime } from "@/services/platform";
 import type {
   OnboardingFormData,
   PreferredBookFormat,
@@ -171,12 +180,13 @@ const Onboarding = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { currentTheme, resolvedTheme, setTheme } = useTheme();
+  const { currentTheme, previewTheme, resolvedTheme, setTheme } = useTheme();
   const [stepIndex, setStepIndex] = useState(0);
   const [formData, setFormData] = useState<OnboardingFormData>(DEFAULT_ONBOARDING_FORM);
   const [saving, setSaving] = useState(false);
   const [transition, setTransition] = useState<OnboardingTransition | null>(null);
   const [completionBurst, setCompletionBurst] = useState(false);
+  const [guestDraftHydrated, setGuestDraftHydrated] = useState(false);
   const onboardingExitCommittedRef = useRef(false);
   const hydratedRef = useRef(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -188,7 +198,9 @@ const Onboarding = () => {
   const reducedMotion = useReducedMotion();
 
   const currentStep = ONBOARDING_STEPS[stepIndex];
+  const isGuestOnboarding = !authLoading && !user;
   const entrySource = searchParams.get("from");
+  const shouldResumeDraft = searchParams.get("resume") === "draft";
   const returnPath = entrySource === "settings" ? "/settings" : "/dashboard";
   const isCompletedEdit =
     status?.onboarding_status === "completed" &&
@@ -280,10 +292,39 @@ const Onboarding = () => {
   }, [currentTheme]);
 
   useEffect(() => {
-    if (!user && !authLoading) {
-      navigate("/auth?mode=signup", { replace: true });
+    if (authLoading || user || guestDraftHydrated) return;
+
+    const draft = loadOnboardingDraft();
+    if (draft) {
+      setFormData(draft.formData);
+      const restoredStep = ONBOARDING_STEPS.indexOf(draft.lastStep);
+      if (restoredStep >= 0) setStepIndex(restoredStep);
+      previewTheme(draft.formData.colorTheme);
     }
-  }, [authLoading, navigate, user]);
+    setGuestDraftHydrated(true);
+  }, [authLoading, guestDraftHydrated, previewTheme, user]);
+
+  useEffect(() => {
+    if (!isGuestOnboarding || !guestDraftHydrated) return;
+
+    try {
+      saveOnboardingDraftCollection({ formData, lastStep: currentStep });
+    } catch (error) {
+      console.error("Unable to save the local onboarding draft:", error);
+    }
+  }, [currentStep, formData, guestDraftHydrated, isGuestOnboarding]);
+
+  useEffect(() => {
+    if (!user || !shouldResumeDraft || hydratedRef.current) return;
+
+    const draft = loadOnboardingDraft();
+    if (!draft?.outcome) return;
+
+    hydratedRef.current = true;
+    setFormData(draft.formData);
+    setStepIndex(Math.max(0, ONBOARDING_STEPS.indexOf(draft.lastStep)));
+    previewTheme(draft.formData.colorTheme);
+  }, [previewTheme, shouldResumeDraft, user]);
 
   useEffect(() => {
     if (
@@ -326,11 +367,13 @@ const Onboarding = () => {
     return <OnboardingRouteTransition to={transition.to} message={transition.message} minDisplayTime={950} />;
   }
 
-  if (authLoading || statusLoading || profileLoading) {
+  if (
+    authLoading ||
+    (Boolean(user) && (statusLoading || profileLoading)) ||
+    (isGuestOnboarding && !guestDraftHydrated)
+  ) {
     return <OnboardingLoadingState />;
   }
-
-  if (!user) return null;
 
   const updateField = <K extends keyof OnboardingFormData>(key: K, value: OnboardingFormData[K]) => {
     setFormData((current) => ({ ...current, [key]: value }));
@@ -370,7 +413,11 @@ const Onboarding = () => {
   const handlePaletteSelect = async (themeId: string) => {
     try {
       updateField("colorTheme", themeId);
-      await setTheme(themeId);
+      if (user) {
+        await setTheme(themeId);
+      } else {
+        previewTheme(themeId);
+      }
     } catch (err) {
       toast({
         variant: "destructive",
@@ -402,13 +449,34 @@ const Onboarding = () => {
     try {
       setSaving(true);
 
+      if (!user) {
+        saveOnboardingDraftCollection({ formData, lastStep: currentStep });
+        const draft = markOnboardingDraftReady({
+          outcome: "skipped",
+          lastStep: currentStep,
+        });
+        if (!draft) throw new Error("Brack could not preserve this setup before sign-up.");
+        setTransition({
+          to: "/auth?mode=signup&from=onboarding",
+          message: "Opening secure sign-up…",
+        });
+        return;
+      }
+
       if (!isCompletedEdit) {
         await skipOnboarding(user.id, currentStep);
         onboardingExitCommittedRef.current = true;
         await Promise.all([refetchStatus(), refetchProfile()]);
       }
 
-      navigate(returnPath, { replace: true });
+      const destination = !isCompletedEdit && isMobileNativeRuntime()
+        ? "/app-permissions"
+        : returnPath;
+      if (!isCompletedEdit && isMobileNativeRuntime()) {
+        markPostSignupPermissionsPending(user.id);
+      }
+      if (shouldResumeDraft) clearOnboardingDraft();
+      navigate(destination, { replace: true });
     } catch (err) {
       toast({
         variant: "destructive",
@@ -423,22 +491,64 @@ const Onboarding = () => {
   const handleComplete = async () => {
     try {
       setSaving(true);
-      await saveOnboardingProfile(user.id, formData);
+      const { normalized } = normalizeOnboardingFormData(formData);
+
+      if (!user) {
+        saveOnboardingDraftCollection({ formData: normalized, lastStep: "review" });
+        const draft = markOnboardingDraftReady({
+          outcome: "completed",
+          lastStep: "review",
+        });
+        if (!draft) throw new Error("Brack could not preserve this setup before sign-up.");
+
+        if (!reducedMotion) {
+          setCompletionBurst(true);
+          window.setTimeout(() => {
+            setTransition({
+              to: "/auth?mode=signup&from=onboarding",
+              message: "Your reading profile is ready. Opening secure sign-up…",
+            });
+          }, 520);
+        } else {
+          setTransition({
+            to: "/auth?mode=signup&from=onboarding",
+            message: "Your reading profile is ready. Opening secure sign-up…",
+          });
+        }
+        return;
+      }
+
+      const resumedDraft = shouldResumeDraft ? loadOnboardingDraft() : null;
+      await saveOnboardingProfile(user.id, normalized, {
+        goalId: resumedDraft?.flowId,
+      });
       onboardingExitCommittedRef.current = true;
       await Promise.all([refetchStatus(), refetchProfile()]);
+
+      if (resumedDraft) clearOnboardingDraft();
+      const destination = !isCompletedEdit && isMobileNativeRuntime()
+        ? "/app-permissions"
+        : returnPath;
+      if (!isCompletedEdit && isMobileNativeRuntime()) {
+        markPostSignupPermissionsPending(user.id);
+      }
 
       if (!reducedMotion) {
         setCompletionBurst(true);
         window.setTimeout(() => {
           setTransition({
-            to: "/dashboard",
-            message: "Personalizing your dashboard...",
+            to: destination,
+            message: destination === "/app-permissions"
+              ? "Your profile is ready. One last device choice…"
+              : "Personalizing your dashboard…",
           });
         }, 520);
       } else {
         setTransition({
-          to: "/dashboard",
-          message: "Personalizing your dashboard...",
+          to: destination,
+          message: destination === "/app-permissions"
+            ? "Your profile is ready. One last device choice…"
+            : "Personalizing your dashboard…",
         });
       }
     } catch (err) {
@@ -505,7 +615,7 @@ const Onboarding = () => {
             className="min-h-11 shrink-0 px-3"
           >
             <SkipNext className="mr-2 h-4 w-4" />
-            {isCompletedEdit ? "Close" : "Skip for now"}
+            {isCompletedEdit ? "Close" : isGuestOnboarding ? "Skip to sign up" : "Skip for now"}
           </Button>
         </header>
 
@@ -535,8 +645,8 @@ const Onboarding = () => {
                   {currentStep === "welcome" && (
                     <WelcomeStep
                       userName={
-                        (user.user_metadata as Record<string, string | undefined> | undefined)?.first_name ||
-                        user.email?.split("@")[0]
+                        (user?.user_metadata as Record<string, string | undefined> | undefined)?.first_name ||
+                        user?.email?.split("@")[0]
                       }
                     />
                   )}
@@ -575,7 +685,9 @@ const Onboarding = () => {
                     />
                   )}
 
-                  {currentStep === "review" && <ReviewStep formData={formData} />}
+                  {currentStep === "review" && (
+                    <ReviewStep formData={formData} isPreAuth={isGuestOnboarding} />
+                  )}
                 </div>
               </div>
 
@@ -602,7 +714,7 @@ const Onboarding = () => {
                     </>
                   ) : stepIndex === ONBOARDING_STEPS.length - 1 ? (
                     <>
-                      Finish setup
+                      {isGuestOnboarding ? "Continue to sign up" : "Finish setup"}
                       <Check className="ml-2 h-4 w-4" />
                     </>
                   ) : (
@@ -1013,13 +1125,21 @@ const GoalStep = ({
   </div>
 );
 
-const ReviewStep = ({ formData }: { formData: OnboardingFormData }) => (
+const ReviewStep = ({
+  formData,
+  isPreAuth = false,
+}: {
+  formData: OnboardingFormData;
+  isPreAuth?: boolean;
+}) => (
   <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_17rem]">
     <div className="space-y-5">
       <div>
         <h2 className="font-display text-2xl font-bold">This is the starting profile Brack will use</h2>
         <p className="font-sans text-sm text-muted-foreground">
-          You can edit this from Settings later. Completing now removes the dashboard setup prompt.
+          {isPreAuth
+            ? "Your choices stay on this device until your account is verified, then Brack applies them once."
+            : "You can edit this from Settings later. Completing now removes the dashboard setup prompt."}
         </p>
       </div>
 
@@ -1040,7 +1160,9 @@ const ReviewStep = ({ formData }: { formData: OnboardingFormData }) => (
 
         <SummaryCard title="Palette" icon={Palette}>
           <p>{themes.find((theme) => theme.id === formData.colorTheme)?.name ?? "Warm Sunset"}</p>
-          <p className="text-muted-foreground">Saved to your app appearance</p>
+          <p className="text-muted-foreground">
+            {isPreAuth ? "Applied after secure sign-up" : "Saved to your app appearance"}
+          </p>
         </SummaryCard>
 
         <SummaryCard title="Pace" icon={Clock}>
@@ -1074,7 +1196,9 @@ const ReviewStep = ({ formData }: { formData: OnboardingFormData }) => (
       />
       <p className="font-display text-xl font-bold">Ready to personalize</p>
       <p className="font-sans text-sm text-muted-foreground">
-        Habits, goal, notification preference, and learning signals will be saved together.
+        {isPreAuth
+          ? "Next, create your account. Brack applies these choices only after verification."
+          : "Habits, goal, notification preference, and learning signals will be saved together."}
       </p>
     </div>
   </div>

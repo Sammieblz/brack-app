@@ -10,6 +10,8 @@ const PUBLIC_THEME_MODE_TOUCHED_KEY = 'brack_public_theme_mode_touched';
 interface ThemeContextType {
   currentTheme: string;
   setTheme: (themeId: string) => Promise<void>;
+  /** Applies a temporary palette without writing an unauthenticated preference. */
+  previewTheme: (themeId: string) => void;
   themeMode: string | undefined;
   setThemeMode: (mode: 'light' | 'dark' | 'system') => Promise<void>;
   resolvedTheme: string | undefined;
@@ -159,19 +161,23 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     // Wait for resolvedTheme to be available before applying colors
     if (!resolvedTheme) return;
 
-    const theme = getTheme(user ? currentTheme : 'default');
+    const theme = getTheme(currentTheme);
     const isDark = resolvedTheme === 'dark';
     applyTheme(theme.id, isDark);
   }, [currentTheme, user, resolvedTheme]);
+
+  const previewTheme = useCallback((themeId: string) => {
+    const isDark = document.documentElement.classList.contains('dark');
+    applyTheme(themeId, isDark);
+    setCurrentTheme(themeId);
+  }, []);
 
   const setTheme = async (themeId: string) => {
     if (!user) return;
 
     try {
       // Apply theme immediately, respecting current theme mode (light/dark)
-      const isDark = document.documentElement.classList.contains('dark');
-      applyTheme(themeId, isDark);
-      setCurrentTheme(themeId);
+      previewTheme(themeId);
       
       // Cache in localStorage for instant load on next visit
       localStorage.setItem('color_theme', themeId);
@@ -215,7 +221,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <ThemeContext.Provider value={{ 
-      currentTheme, setTheme, themeMode, setThemeMode, 
+      currentTheme, setTheme, previewTheme, themeMode, setThemeMode, 
       resolvedTheme, isLoading, resetToDefaultTheme 
     }}>
       {children}

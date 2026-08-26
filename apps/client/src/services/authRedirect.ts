@@ -4,9 +4,20 @@ import {
 } from "@/services/api/auth";
 import {
   ensureUserProfile,
+  saveOnboardingProfile,
   shouldEnterFirstRunOnboarding,
+  skipOnboarding,
 } from "@/services/onboarding";
-import { isPasswordResetUrl } from "@/services/platform";
+import {
+  clearOnboardingDraft,
+  loadOnboardingDraft,
+  type OnboardingDraft,
+} from "@/services/onboardingDraft";
+import {
+  arePostSignupPermissionsPending,
+  markPostSignupPermissionsPending,
+} from "@/services/postSignupPermissions";
+import { isMobileNativeRuntime, isPasswordResetUrl } from "@/services/platform";
 
 const CALLBACK_REPLAY_TTL_MS = 5 * 60 * 1000;
 const MAX_CALLBACK_REPLAYS = 32;
@@ -31,6 +42,7 @@ type AuthCallbackResult = {
 };
 
 const callbackCompletions = new Map<string, CallbackCompletion>();
+const onboardingFinalizations = new Map<string, Promise<string>>();
 let inMemoryRecoveryAuthorization: RecoveryAuthorization | null = null;
 
 export class AuthCallbackCredentialError extends Error {
@@ -219,6 +231,77 @@ export const consumePasswordRecoveryAuthorization = (userId: string) => {
   return true;
 };
 
+const isDraftForNewlyCreatedUser = (
+  draft: OnboardingDraft,
+  user: Awaited<ReturnType<typeof getCurrentAuthUser>>,
+) => {
+  if (!user || draft.stage !== "auth_started" || !draft.authAttempt) return false;
+
+  const userCreatedAt = Date.parse(user.created_at);
+  const attemptStartedAt = Date.parse(draft.authAttempt.startedAt);
+  if (!Number.isFinite(userCreatedAt) || !Number.isFinite(attemptStartedAt)) return false;
+
+  // Server/client clocks may differ. A genuine account creation still occurs
+  // close to the signup request, while an established Google/email account does not.
+  const earliestAllowed = attemptStartedAt - 10 * 60_000;
+  const latestAllowed = attemptStartedAt + 30 * 60_000;
+  if (userCreatedAt < earliestAllowed || userCreatedAt > latestAllowed) return false;
+
+  if (draft.authAttempt.kind === "email") {
+    return user.email?.trim().toLowerCase() === draft.authAttempt.email;
+  }
+
+  return draft.authAttempt.provider === "google";
+};
+
+const finalizeOnboardingDraft = async (
+  draft: OnboardingDraft,
+  user: NonNullable<Awaited<ReturnType<typeof getCurrentAuthUser>>>,
+  status: Awaited<ReturnType<typeof ensureUserProfile>>,
+) => {
+  const finalizationKey = `${user.id}:${draft.flowId}`;
+  const active = onboardingFinalizations.get(finalizationKey);
+  if (active) return active;
+
+  const completion = (async () => {
+    if (!shouldEnterFirstRunOnboarding(user, status)) {
+      clearOnboardingDraft();
+      return "/dashboard";
+    }
+
+    if (!isDraftForNewlyCreatedUser(draft, user)) {
+      clearOnboardingDraft();
+      return "/onboarding";
+    }
+
+    try {
+      if (draft.outcome === "skipped") {
+        await skipOnboarding(user.id, draft.lastStep);
+      } else {
+        await saveOnboardingProfile(user.id, draft.formData, {
+          goalId: draft.flowId,
+        });
+      }
+
+      if (isMobileNativeRuntime()) {
+        markPostSignupPermissionsPending(user.id);
+      }
+      clearOnboardingDraft();
+      return isMobileNativeRuntime() ? "/app-permissions" : "/dashboard";
+    } catch (error) {
+      console.error("Unable to apply the pre-auth onboarding profile:", error);
+      // Keep the validated draft so authenticated onboarding can retry without
+      // asking the reader to reconstruct their answers.
+      return "/onboarding?resume=draft";
+    }
+  })().finally(() => {
+    onboardingFinalizations.delete(finalizationKey);
+  });
+
+  onboardingFinalizations.set(finalizationKey, completion);
+  return completion;
+};
+
 export const resolvePostAuthPath = async () => {
   const user = await getCurrentAuthUser();
 
@@ -226,7 +309,18 @@ export const resolvePostAuthPath = async () => {
     return "/auth";
   }
 
+  if (arePostSignupPermissionsPending(user.id)) return "/app-permissions";
+
   const status = await ensureUserProfile(user);
+  const draft = loadOnboardingDraft();
+  if (draft?.stage === "auth_started") {
+    return finalizeOnboardingDraft(draft, user, status);
+  }
+
+  if (draft && (status.onboarding_status === "completed" || status.onboarding_status === "skipped")) {
+    clearOnboardingDraft();
+  }
+
   return shouldEnterFirstRunOnboarding(user, status) ? "/onboarding" : "/dashboard";
 };
 
