@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "templates": [
+    {
+      "id": "confirmation",
+      "kind": "authentication",
+      "file": "confirmation.html",
+      "subject": "Confirm Your Signup",
+      "subject_field": "mailer_subjects_confirmation",
+      "content_field": "mailer_templates_confirmation_content"
+    },
+    {
+      "id": "invite",
+      "kind": "authentication",
+      "file": "invite.html",
+      "subject": "You have been invited",
+      "subject_field": "mailer_subjects_invite",
+      "content_field": "mailer_templates_invite_content"
+    },
+    {
+      "id": "magic_link",
+      "kind": "authentication",
+      "file": "magic-link.html",
+      "subject": "Your Magic Link",
+      "subject_field": "mailer_subjects_magic_link",
+      "content_field": "mailer_templates_magic_link_content"
+    },
+    {
+      "id": "email_change",
+      "kind": "authentication",
+      "file": "email-change.html",
+      "subject": "Confirm Email Change",
+      "subject_field": "mailer_subjects_email_change",
+      "content_field": "mailer_templates_email_change_content"
+    },
+    {
+      "id": "recovery",
+      "kind": "authentication",
+      "file": "recovery.html",
+      "subject": "Reset Your Password",
+      "subject_field": "mailer_subjects_recovery",
+      "content_field": "mailer_templates_recovery_content"
+    },
+    {
+      "id": "reauthentication",
+      "kind": "authentication",
+      "file": "reauthentication.html",
+      "subject": "Confirm Reauthentication",
+      "subject_field": "mailer_subjects_reauthentication",
+      "content_field": "mailer_templates_reauthentication_content"
+    },
+    {
+      "id": "password_changed",
+      "kind": "security_notification",
+      "file": "notification-password-changed.html",
+      "enabled": true,
+      "enabled_field": "mailer_notifications_password_changed_enabled",
+      "subject": "Your password has been changed",
+      "subject_field": "mailer_subjects_password_changed_notification",
+      "content_field": "mailer_templates_password_changed_notification_content"
+    },
+    {
+      "id": "email_changed",
+      "kind": "security_notification",
+      "file": "notification-email-changed.html",
+      "enabled": true,
+      "enabled_field": "mailer_notifications_email_changed_enabled",
+      "subject": "Your email address has been changed",
+      "subject_field": "mailer_subjects_email_changed_notification",
+      "content_field": "mailer_templates_email_changed_notification_content"
+    },
+    {
+      "id": "phone_changed",
+      "kind": "security_notification",
+      "file": "notification-phone-changed.html",
+      "enabled": true,
+      "enabled_field": "mailer_notifications_phone_changed_enabled",
+      "subject": "Your phone number has been changed",
+      "subject_field": "mailer_subjects_phone_changed_notification",
+      "content_field": "mailer_templates_phone_changed_notification_content"
+    },
+    {
+      "id": "identity_linked",
+      "kind": "security_notification",
+      "file": "notification-identity-linked.html",
+      "enabled": true,
+      "enabled_field": "mailer_notifications_identity_linked_enabled",
+      "subject": "A new identity has been linked",
+      "subject_field": "mailer_subjects_identity_linked_notification",
+      "content_field": "mailer_templates_identity_linked_notification_content"
+    },
+    {
+      "id": "identity_unlinked",
+      "kind": "security_notification",
+      "file": "notification-identity-unlinked.html",
+      "enabled": true,
+      "enabled_field": "mailer_notifications_identity_unlinked_enabled",
+      "subject": "An identity has been unlinked",
+      "subject_field": "mailer_subjects_identity_unlinked_notification",
+      "content_field": "mailer_templates_identity_unlinked_notification_content"
+    },
+    {
+      "id": "mfa_factor_enrolled",
+      "kind": "security_notification",
+      "file": "notification-mfa-factor-enrolled.html",
+      "enabled": true,
+      "enabled_field": "mailer_notifications_mfa_factor_enrolled_enabled",
+      "subject": "A new MFA factor has been enrolled",
+      "subject_field": "mailer_subjects_mfa_factor_enrolled_notification",
+      "content_field": "mailer_templates_mfa_factor_enrolled_notification_content"
+    },
+    {
+      "id": "mfa_factor_unenrolled",
+      "kind": "security_notification",
+      "file": "notification-mfa-factor-unenrolled.html",
+      "enabled": true,
+      "enabled_field": "mailer_notifications_mfa_factor_unenrolled_enabled",
+      "subject": "An MFA factor has been unenrolled",
+      "subject_field": "mailer_subjects_mfa_factor_unenrolled_notification",
+      "content_field": "mailer_templates_mfa_factor_unenrolled_notification_content"
+    }
+  ]
+}

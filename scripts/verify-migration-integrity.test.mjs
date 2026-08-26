@@ -50,7 +50,7 @@ function git(root, ...args) {
 
 async function commitFixture(root) {
   git(root, "init", "--quiet");
-  git(root, "config", "user.email", "migration-tests@brack.app");
+  git(root, "config", "user.email", "migration-tests@brack-app.com");
   git(root, "config", "user.name", "Brack Migration Tests");
   git(root, "config", "core.autocrlf", "false");
   git(root, "add", "supabase");

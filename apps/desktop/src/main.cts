@@ -44,8 +44,10 @@ const isAuthRouteUrl = (url: string) => {
     const parsed = new URL(url);
     return (
       parsed.protocol === `${DEEP_LINK_SCHEME}:` &&
+      !parsed.username &&
+      !parsed.password &&
       parsed.hostname.toLowerCase() === "auth" &&
-      (parsed.pathname.startsWith("/callback") || parsed.pathname === "/reset-password")
+      (parsed.pathname === "/callback" || parsed.pathname === "/reset-password")
     );
   } catch {
     return false;

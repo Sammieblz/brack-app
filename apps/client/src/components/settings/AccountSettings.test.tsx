@@ -5,26 +5,20 @@ import type { User } from "@/types";
 
 const {
   fetchProfileMock,
-  getPasswordResetRedirectUrlMock,
-  sendPasswordResetEmailMock,
+  signInWithEmailPasswordMock,
   toastMock,
   updatePasswordMock,
 } = vi.hoisted(() => ({
   fetchProfileMock: vi.fn(),
-  getPasswordResetRedirectUrlMock: vi.fn(),
-  sendPasswordResetEmailMock: vi.fn(),
+  signInWithEmailPasswordMock: vi.fn(),
   toastMock: vi.fn(),
   updatePasswordMock: vi.fn(),
 }));
 
 vi.mock("@/services/api", () => ({
   fetchProfile: fetchProfileMock,
-  sendPasswordResetEmail: sendPasswordResetEmailMock,
+  signInWithEmailPassword: signInWithEmailPasswordMock,
   updatePassword: updatePasswordMock,
-}));
-
-vi.mock("@/services/platform", () => ({
-  getPasswordResetRedirectUrl: getPasswordResetRedirectUrlMock,
 }));
 
 vi.mock("@/hooks/use-toast", () => ({
@@ -56,16 +50,12 @@ const passwordUser: User = {
 describe("AccountSettings password identities", () => {
   beforeEach(() => {
     fetchProfileMock.mockReset();
-    getPasswordResetRedirectUrlMock.mockReset();
-    sendPasswordResetEmailMock.mockReset();
+    signInWithEmailPasswordMock.mockReset();
     toastMock.mockReset();
     updatePasswordMock.mockReset();
 
     fetchProfileMock.mockResolvedValue(null);
-    getPasswordResetRedirectUrlMock.mockReturnValue(
-      "https://brack.app/auth/reset-password",
-    );
-    sendPasswordResetEmailMock.mockResolvedValue({});
+    signInWithEmailPasswordMock.mockResolvedValue(undefined);
     updatePasswordMock.mockResolvedValue({ user: googleOnlyUser });
   });
 
@@ -79,7 +69,7 @@ describe("AccountSettings password identities", () => {
       screen.getByText(/does not create another account or profile/i),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Send Password Reset Email" }),
+      screen.queryByLabelText("Current password"),
     ).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("New password"), {
@@ -101,8 +91,8 @@ describe("AccountSettings password identities", () => {
         "You can now sign in with Google or your email and password. Your account and profile stay the same.",
     });
     expect(
-      await screen.findByRole("button", { name: "Send Password Reset Email" }),
-    ).toBeEnabled();
+      await screen.findByLabelText("Current password"),
+    ).toBeInTheDocument();
   });
 
   it("validates a new password before changing the authenticated account", () => {
@@ -126,24 +116,76 @@ describe("AccountSettings password identities", () => {
     });
   });
 
-  it("keeps the password reset path when Google and email identities are linked", async () => {
+  it("reauthenticates and changes a linked password in the current context", async () => {
     render(<AccountSettings user={passwordUser} />);
 
     expect(
       screen.queryByRole("heading", { name: "Add a Brack password" }),
     ).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("New password")).not.toBeInTheDocument();
 
-    fireEvent.click(
-      screen.getByRole("button", { name: "Send Password Reset Email" }),
-    );
+    fireEvent.change(screen.getByLabelText("Current password"), {
+      target: { value: "CurrentPass1!" },
+    });
+    fireEvent.change(screen.getByLabelText("New password"), {
+      target: { value: "NewStrongPass2!" },
+    });
+    fireEvent.change(screen.getByLabelText("Confirm new password"), {
+      target: { value: "NewStrongPass2!" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Update password" }));
 
     await waitFor(() => {
-      expect(sendPasswordResetEmailMock).toHaveBeenCalledWith(
-        "password@example.com",
-        "https://brack.app/auth/reset-password",
-      );
+      expect(signInWithEmailPasswordMock).toHaveBeenCalledWith({
+        email: "password@example.com",
+        password: "CurrentPass1!",
+      });
+      expect(updatePasswordMock).toHaveBeenCalledWith("NewStrongPass2!");
     });
+    expect(signInWithEmailPasswordMock.mock.invocationCallOrder[0]).toBeLessThan(
+      updatePasswordMock.mock.invocationCallOrder[0],
+    );
+    expect(toastMock).toHaveBeenCalledWith({
+      title: "Password updated",
+      description: "Your new password is ready to use on this account.",
+    });
+    expect(screen.getByLabelText("Current password")).toHaveValue("");
+    expect(screen.getByLabelText("New password")).toHaveValue("");
+    expect(screen.getByLabelText("Confirm new password")).toHaveValue("");
+  });
+
+  it("does not update when the current password cannot be verified", async () => {
+    signInWithEmailPasswordMock.mockRejectedValue(new Error("Invalid login credentials"));
+    render(<AccountSettings user={passwordUser} />);
+
+    fireEvent.change(screen.getByLabelText("Current password"), {
+      target: { value: "WrongPass1!" },
+    });
+    fireEvent.change(screen.getByLabelText("New password"), {
+      target: { value: "NewStrongPass2!" },
+    });
+    fireEvent.change(screen.getByLabelText("Confirm new password"), {
+      target: { value: "NewStrongPass2!" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Update password" }));
+
+    await waitFor(() => {
+      expect(toastMock).toHaveBeenCalledWith({
+        variant: "destructive",
+        title: "Current password not accepted",
+        description:
+          "Check your current password and try again. If you have forgotten it, use the reset option below.",
+      });
+    });
+    expect(updatePasswordMock).not.toHaveBeenCalled();
+  });
+
+  it("offers forgotten-password recovery without sending mail from settings", () => {
+    render(<AccountSettings user={passwordUser} />);
+
+    expect(
+      screen.getByRole("link", { name: "Forgot current password?" }),
+    ).toHaveAttribute("href", "/auth?mode=reset");
+    expect(signInWithEmailPasswordMock).not.toHaveBeenCalled();
     expect(updatePasswordMock).not.toHaveBeenCalled();
   });
 });

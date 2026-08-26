@@ -1,8 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -11,26 +16,34 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
 import {
-  getAuthSession,
-  onAuthStateChange,
   resendSignUpEmail,
   sendPasswordResetEmail,
   signInWithEmailPassword,
   signInWithOAuth,
   signUpWithEmail,
+  verifyEmailOtp,
 } from "@/services/api";
-import { resolvePostAuthPath } from "@/services/authRedirect";
+import {
+  authorizePasswordRecoverySession,
+  resolvePostAuthPath,
+} from "@/services/authRedirect";
 import { getAuthRedirectUrl, getPasswordResetRedirectUrl } from "@/services/platform";
 import { validatePassword } from "@/utils/authValidation";
 import {
   presentAuthFailure,
   type AuthFailurePresentation,
 } from "@/services/authFailure";
+import { useAuth } from "@/hooks/useAuth";
 import { Mail } from "iconoir-react";
 
 type AuthTransition = {
   to: string;
   message: string;
+};
+
+type EmailChallenge = {
+  email: string;
+  type: "signup" | "recovery";
 };
 
 const GoogleMark = () => (
@@ -58,39 +71,42 @@ const Auth = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
   const [transition, setTransition] = useState<AuthTransition | null>(null);
-  const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
+  const [emailChallenge, setEmailChallenge] = useState<EmailChallenge | null>(null);
+  const [emailOtp, setEmailOtp] = useState("");
   const [resendCountdown, setResendCountdown] = useState(0);
   const [authFailure, setAuthFailure] = useState<AuthFailurePresentation | null>(null);
   const [emailDeliveryBlocked, setEmailDeliveryBlocked] = useState(false);
   const authRequestInFlightRef = useRef(false);
+  const recoveryOtpInFlightRef = useRef(false);
+  const postAuthResolutionRef = useRef<Promise<AuthTransition> | null>(null);
   const { toast } = useToast();
   const { resetToDefaultTheme } = useTheme();
+  const { user: authUser, loading: authLoading } = useAuth();
 
-  const resolveSignedInTransition = async () => {
-    const path = await resolvePostAuthPath();
-    const needsOnboarding = path === "/onboarding";
+  const resolveSignedInTransition = useCallback(async () => {
+    if (!postAuthResolutionRef.current) {
+      postAuthResolutionRef.current = resolvePostAuthPath()
+        .then((path) => ({
+          to: path,
+          message: path === "/onboarding"
+            ? "Setting up your Brack profile..."
+            : "Opening your reading dashboard...",
+        }))
+        .catch((error) => {
+          postAuthResolutionRef.current = null;
+          throw error;
+        });
+    }
 
-    return {
-      to: path,
-      message: needsOnboarding
-        ? "Setting up your Brack profile..."
-        : "Opening your reading dashboard...",
-    };
-  };
+    return postAuthResolutionRef.current;
+  }, []);
 
-  // Force default theme on auth page (only if not authenticated)
+  // Force the public theme only after the single shared Auth store has
+  // conclusively restored (or not restored) the local session.
   useEffect(() => {
-    const checkAndResetTheme = async () => {
-      const session = await getAuthSession();
-      // Only reset theme if user is not authenticated
-      if (!session) {
-        resetToDefaultTheme();
-      }
-    };
-    checkAndResetTheme();
-  }, [resetToDefaultTheme]);
+    if (!authLoading && !authUser) resetToDefaultTheme();
+  }, [authLoading, authUser, resetToDefaultTheme]);
 
   // Read URL params to set sign-up/sign-in mode
   useEffect(() => {
@@ -117,43 +133,27 @@ const Auth = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    // Check if user is already logged in
-    const checkUser = async () => {
-      try {
-        const session = await getAuthSession();
-        if (session) {
-          setTransition(await resolveSignedInTransition());
-          return;
+    if (authLoading || !authUser || recoveryOtpInFlightRef.current) return;
+
+    let active = true;
+    resolveSignedInTransition()
+      .then((nextTransition) => {
+        if (active) setTransition((current) => current ?? nextTransition);
+      })
+      .catch((error) => {
+        console.error("Failed to resolve post-auth route:", error);
+        if (active) {
+          setTransition((current) => current ?? {
+            to: "/dashboard",
+            message: "Opening your reading dashboard...",
+          });
         }
-      } catch (error) {
-        console.error("Error checking session:", error);
-      } finally {
-        setPageLoading(false);
-      }
+      });
+
+    return () => {
+      active = false;
     };
-    checkUser();
-
-    // Listen for auth changes
-    const subscription = onAuthStateChange(
-      (event, session) => {
-        if (session && event === 'SIGNED_IN') {
-          resolveSignedInTransition()
-            .then((nextTransition) => {
-              setTransition((current) => current ?? nextTransition);
-            })
-            .catch((error) => {
-              console.error("Failed to resolve post-auth route:", error);
-              setTransition((current) => current ?? {
-                to: "/dashboard",
-                message: "Opening your reading dashboard...",
-              });
-            });
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, [isSignUp]);
+  }, [authLoading, authUser, resolveSignedInTransition]);
 
   useEffect(() => {
     if (resendCountdown <= 0) return;
@@ -167,7 +167,7 @@ const Auth = () => {
     return <BrandedRouteTransition to={transition.to} message={transition.message} />;
   }
 
-  if (pageLoading) {
+  if (authLoading) {
     return (
       <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background">
         <LoadingSpinner size="lg" text="Loading..." />
@@ -195,9 +195,11 @@ const Auth = () => {
         toast({
           title: "Reset request received",
           description:
-            "If this address is connected to a Brack account, a reset link may arrive shortly.",
+            "If this address is connected to Brack, enter the six-digit code from the newest email here.",
         });
-        setIsPasswordResetRequest(false);
+        setEmailChallenge({ email: email.trim(), type: "recovery" });
+        setEmailOtp("");
+        setResendCountdown(60);
         setPassword("");
       } else if (isSignUp) {
         const normalizedFirstName = firstName.trim();
@@ -251,10 +253,11 @@ const Auth = () => {
         toast({
           title: "Account request received",
           description:
-            "This does not mean a second account was created. Check your inbox, sign in, or use your original provider.",
+            "Check your inbox and enter the six-digit confirmation code here. You can also use the email link as a fallback.",
         });
         setPassword("");
-        setConfirmationEmail(outcome.email);
+        setEmailChallenge({ email: outcome.email, type: "signup" });
+        setEmailOtp("");
         setResendCountdown(60);
       } else {
         await signInWithEmailPassword({
@@ -273,7 +276,8 @@ const Auth = () => {
       const failure = presentAuthFailure(error, operation);
       setAuthFailure(failure);
       if (failure.confirmationRequired) {
-        setConfirmationEmail(email.trim());
+        setEmailChallenge({ email: email.trim(), type: "signup" });
+        setEmailOtp("");
         setPassword("");
         setResendCountdown(0);
       }
@@ -283,6 +287,64 @@ const Auth = () => {
           setEmailDeliveryBlocked(true);
         }
       }
+      toast({
+        variant: "destructive",
+        title: failure.title,
+        description: failure.description,
+      });
+    } finally {
+      authRequestInFlightRef.current = false;
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyEmailOtp = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!emailChallenge || authRequestInFlightRef.current) return;
+
+    if (!/^\d{6}$/.test(emailOtp)) {
+      setAuthFailure({
+        title: "Enter the complete code",
+        description: "Use the six-digit code from the newest Brack email.",
+        rateLimited: false,
+      });
+      return;
+    }
+
+    authRequestInFlightRef.current = true;
+    recoveryOtpInFlightRef.current = emailChallenge.type === "recovery";
+    setLoading(true);
+    setAuthFailure(null);
+
+    try {
+      const result = await verifyEmailOtp({
+        email: emailChallenge.email,
+        token: emailOtp,
+        type: emailChallenge.type,
+      });
+
+      if (emailChallenge.type === "recovery") {
+        const userId = result.user?.id ?? result.session?.user?.id;
+        if (!userId) {
+          throw new Error("The recovery code did not establish a verified session.");
+        }
+
+        authorizePasswordRecoverySession(userId);
+        setTransition({
+          to: "/auth/reset-password",
+          message: "Opening your secure password change...",
+        });
+        return;
+      }
+
+      setTransition(await resolveSignedInTransition());
+    } catch (error: unknown) {
+      recoveryOtpInFlightRef.current = false;
+      const failure = presentAuthFailure(
+        error,
+        emailChallenge.type === "recovery" ? "password_reset" : "sign_up",
+      );
+      setAuthFailure(failure);
       toast({
         variant: "destructive",
         title: failure.title,
@@ -320,9 +382,9 @@ const Auth = () => {
     }
   };
 
-  const handleResendConfirmation = async () => {
+  const handleResendEmailChallenge = async () => {
     if (
-      !confirmationEmail ||
+      !emailChallenge ||
       resendCountdown > 0 ||
       emailDeliveryBlocked ||
       authRequestInFlightRef.current
@@ -335,15 +397,26 @@ const Auth = () => {
     setAuthFailure(null);
 
     try {
-      await resendSignUpEmail({
-        email: confirmationEmail,
-        redirectTo: getAuthRedirectUrl(),
-      });
+      if (emailChallenge.type === "signup") {
+        await resendSignUpEmail({
+          email: emailChallenge.email,
+          redirectTo: getAuthRedirectUrl(),
+        });
+      } else {
+        await sendPasswordResetEmail(
+          emailChallenge.email,
+          getPasswordResetRedirectUrl(),
+        );
+      }
+      setEmailOtp("");
       setResendCountdown(60);
       toast({
-        title: "Confirmation request received",
+        title:
+          emailChallenge.type === "signup"
+            ? "Confirmation request received"
+            : "Reset request received",
         description:
-          "If a confirmation message can be delivered for this address, use the newest Brack link that arrives.",
+          "If a message can be delivered for this address, use the newest six-digit code that arrives.",
       });
     } catch (error: unknown) {
       const failure = presentAuthFailure(error, "resend");
@@ -385,8 +458,10 @@ const Auth = () => {
           </div>
           <div className="space-y-2">
             <h1 className="font-display text-2xl font-bold text-foreground">
-              {confirmationEmail
-                ? "Check your sign-in options"
+              {emailChallenge
+                ? emailChallenge.type === "recovery"
+                  ? "Enter your reset code"
+                  : "Confirm in this window"
                 : isPasswordResetRequest
                   ? "Reset Password"
                   : isSignUp
@@ -394,10 +469,10 @@ const Auth = () => {
                     : "Welcome Back"}
             </h1>
             <p className="font-sans text-muted-foreground text-sm">
-              {confirmationEmail
-                ? "Choose the next step that works for you"
+              {emailChallenge
+                ? "Stay here and use the six-digit code from your email"
                 : isPasswordResetRequest
-                  ? "Enter your email to request a secure reset link"
+                  ? "Request a code and reset your password in this window"
                   : isSignUp
                     ? "Start your reading journey today"
                     : "Continue your reading adventure"}
@@ -408,23 +483,21 @@ const Auth = () => {
         {/* Auth Card */}
         <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in" style={{ animationDelay: '0.2s' }}>
           <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
-            {confirmationEmail ? (
-              <div className="space-y-5" role="status" aria-live="polite">
+            {emailChallenge ? (
+              <div className="space-y-5">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-3xl shadow-soft">
                   <Mail className="h-8 w-8 text-primary" aria-hidden="true" />
                 </div>
-                <div className="space-y-2 text-center">
+                <div className="space-y-2 text-center" aria-live="polite">
                   <p className="text-sm text-muted-foreground">
-                    If a confirmation message can be delivered for
+                    If a Brack message can be delivered for
                   </p>
                   <p className="break-all font-semibold text-foreground">
-                    {confirmationEmail}
+                    {emailChallenge.email}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    it may arrive shortly. Use only the newest Brack link that arrives.
-                  </p>
-                  <p className="rounded-xl border border-border/60 bg-muted/35 px-3 py-2 text-left text-xs text-muted-foreground">
-                    This request does not confirm that a new account was created. Brack keeps one account and one profile per email. If this address already belongs to Brack, including through Google, the names and password entered in this request were ignored.
+                    enter its newest six-digit code below. You can finish in
+                    this {emailChallenge.type === "recovery" ? "password-reset" : "signup"} window without opening another app.
                   </p>
                 </div>
 
@@ -438,23 +511,72 @@ const Auth = () => {
                   </div>
                 )}
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-12 w-full gap-3 bg-white text-gray-700 hover:bg-gray-50"
-                  disabled={loading}
-                  onClick={handleGoogleAuth}
-                >
-                  <GoogleMark />
-                  Continue with Google
-                </Button>
+                <form className="space-y-4" onSubmit={handleVerifyEmailOtp}>
+                  <div className="space-y-2">
+                    <Label htmlFor="email-auth-code" className="sr-only">
+                      Six-digit email code
+                    </Label>
+                    <InputOTP
+                      id="email-auth-code"
+                      value={emailOtp}
+                      onChange={setEmailOtp}
+                      maxLength={6}
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      containerClassName="justify-center"
+                      disabled={loading}
+                      aria-describedby="email-auth-code-help"
+                    >
+                      <InputOTPGroup>
+                        {Array.from({ length: 6 }, (_, index) => (
+                          <InputOTPSlot
+                            key={index}
+                            index={index}
+                            className="h-11 w-10 text-base sm:w-11"
+                          />
+                        ))}
+                      </InputOTPGroup>
+                    </InputOTP>
+                    <p
+                      id="email-auth-code-help"
+                      className="text-center text-xs text-muted-foreground"
+                    >
+                      Codes expire after one hour. Only the newest email code works.
+                    </p>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="h-12 w-full bg-gradient-primary text-white hover:shadow-glow"
+                    disabled={loading || emailOtp.length !== 6}
+                  >
+                    {loading
+                      ? "Verifying..."
+                      : emailChallenge.type === "recovery"
+                        ? "Continue password reset"
+                        : "Confirm and continue"}
+                  </Button>
+                </form>
+
+                {emailChallenge.type === "signup" && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-12 w-full gap-3 bg-white text-gray-700 hover:bg-gray-50"
+                    disabled={loading}
+                    onClick={handleGoogleAuth}
+                  >
+                    <GoogleMark />
+                    Continue with Google
+                  </Button>
+                )}
 
                 <Button
                   type="button"
                   variant="outline"
                   className="h-12 w-full"
                   disabled={loading || resendCountdown > 0 || emailDeliveryBlocked}
-                  onClick={handleResendConfirmation}
+                  onClick={handleResendEmailChallenge}
                 >
                   {loading
                     ? "Requesting..."
@@ -462,7 +584,9 @@ const Auth = () => {
                       ? "Resend unavailable — try later"
                     : resendCountdown > 0
                       ? `Resend available in ${resendCountdown}s`
-                      : "Resend confirmation"}
+                      : emailChallenge.type === "recovery"
+                        ? "Resend reset code"
+                        : "Resend confirmation code"}
                 </Button>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <Button
@@ -471,7 +595,8 @@ const Auth = () => {
                     className="h-11 w-full"
                     disabled={loading}
                     onClick={() => {
-                      setConfirmationEmail(null);
+                      setEmailChallenge(null);
+                      setEmailOtp("");
                       setIsSignUp(false);
                       setIsPasswordResetRequest(false);
                       setPassword("");
@@ -481,42 +606,65 @@ const Auth = () => {
                   >
                     Sign in instead
                   </Button>
+                  {emailChallenge.type === "signup" ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="h-11 w-full"
+                      disabled={loading}
+                      onClick={() => {
+                        setEmailChallenge(null);
+                        setEmailOtp("");
+                        setIsSignUp(false);
+                        setIsPasswordResetRequest(true);
+                        setPassword("");
+                        setAuthFailure(null);
+                        setResendCountdown(0);
+                      }}
+                    >
+                      Reset password
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="h-11 w-full"
+                      disabled={loading}
+                      onClick={() => {
+                        setEmailChallenge(null);
+                        setEmailOtp("");
+                        setIsPasswordResetRequest(true);
+                        setEmail("");
+                        setAuthFailure(null);
+                        setResendCountdown(0);
+                      }}
+                    >
+                      Use another email
+                    </Button>
+                  )}
+                </div>
+                {emailChallenge.type === "signup" && (
                   <Button
                     type="button"
-                    variant="secondary"
+                    variant="ghost"
                     className="h-11 w-full"
                     disabled={loading}
                     onClick={() => {
-                      setConfirmationEmail(null);
-                      setIsSignUp(false);
-                      setIsPasswordResetRequest(true);
-                      setPassword("");
-                      setAuthFailure(null);
-                      setResendCountdown(0);
-                    }}
-                  >
-                    Reset password
-                  </Button>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="h-11 w-full"
-                  disabled={loading}
-                  onClick={() => {
-                    setConfirmationEmail(null);
-                    setIsSignUp(true);
+                      setEmailChallenge(null);
+                      setEmailOtp("");
+                      setIsSignUp(true);
                       setIsPasswordResetRequest(false);
                       setEmail("");
                       setPassword("");
                       setFirstName("");
                       setLastName("");
                       setAuthFailure(null);
-                    setResendCountdown(0);
-                  }}
-                >
-                  Use a different email
-                </Button>
+                      setResendCountdown(0);
+                    }}
+                  >
+                    Use a different email
+                  </Button>
+                )}
               </div>
             ) : (
               <>
@@ -547,7 +695,7 @@ const Auth = () => {
 
             {isPasswordResetRequest && (
               <div className="rounded-md border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
-                If this address is connected to Brack, a reset link may arrive shortly. Brack does not reveal whether an account exists.
+                If this address is connected to Brack, the email includes a six-digit code so you can remain in this window. A secure link is also included as a fallback. Brack does not reveal whether an account exists.
               </div>
             )}
 
@@ -651,7 +799,7 @@ const Auth = () => {
                 ) : emailDeliveryBlocked && (isSignUp || isPasswordResetRequest) ? (
                   "Email unavailable — try later"
                 ) : isPasswordResetRequest ? (
-                  "Send Reset Link"
+                  "Send Reset Code"
                 ) : isSignUp ? (
                   "Create Account"
                 ) : (
@@ -665,7 +813,7 @@ const Auth = () => {
         </Card>
         
         {/* Switch Mode */}
-        {!confirmationEmail && (
+        {!emailChallenge && (
         <div className="text-center mt-6 animate-fade-in" style={{ animationDelay: '0.4s' }}>
           <button
             type="button"

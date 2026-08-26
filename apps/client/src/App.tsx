@@ -86,6 +86,10 @@ const queryClient = new QueryClient({
   },
 });
 
+// Bump whenever persisted query ownership/key semantics change. Version 2
+// removes the legacy unscoped notification cache from existing devices.
+const QUERY_CACHE_BUSTER = "brack-query-cache-v2";
+
 const App = () => {
   useAppViewportHeight();
   usePresenceHeartbeat();
@@ -117,6 +121,7 @@ const App = () => {
         persistOptions={{
           persister,
           maxAge: 1000 * 60 * 60 * 24,
+          buster: QUERY_CACHE_BUSTER,
         }}
       >
         <ConfirmDialogProvider>

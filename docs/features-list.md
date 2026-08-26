@@ -644,7 +644,12 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 
 This list highlights core app-facing endpoints. See [Edge Function Catalog](./backend/edge-functions.md) for the full maintained function inventory.
 
-All maintained Edge Functions use distributed rate limiting through `api_rate_limits`; every maintained function except public `search-books` requires JWT verification.
+Maintained app-facing Edge Functions use the shared distributed rate limiter
+where their contracts require it. The retained legacy
+`auth-email-availability`, `search-books`, `feature-flags`, and
+`core-telemetry` functions intentionally have `verify_jwt = false`;
+`gamification-worker` instead requires its private worker secret. All remaining
+user-data functions require JWT verification.
 
 ---
 

@@ -51,6 +51,12 @@ jobs:
       - name: Verify optimized static media
         run: npm run media:assets:check
 
+      - name: Validate Auth email templates
+        run: npm run auth:emails:validate
+
+      - name: Test Auth email synchronization guardrails
+        run: npm run auth:emails:test
+
       - name: Run unit tests
         run: npm test
 
@@ -85,6 +91,9 @@ jobs:
       - name: Build web app
         run: npm run build
 
+      - name: Verify Auth and PWA build artifacts
+        run: npm run web:auth-artifacts:check
+
       - name: Validate build output
         run: |
           if [ ! -d "apps/client/dist" ]; then
@@ -93,6 +102,10 @@ jobs:
           fi
           if [ ! -f "apps/client/dist/index.html" ]; then
             echo "Error: apps/client/dist/index.html not found"
+            exit 1
+          fi
+          if [ ! -f "apps/client/dist/_headers" ]; then
+            echo "Error: Cloudflare Pages security headers were not copied"
             exit 1
           fi
           echo "Build validation successful"

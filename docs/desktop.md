@@ -106,8 +106,8 @@ Supabase Auth must allow these redirect URLs for desktop and web:
 ```text
 brack://auth/callback
 brack://auth/reset-password
-https://brack.app/auth/callback
-https://brack.app/auth/reset-password
+https://brack-app.com/auth/callback
+https://brack-app.com/auth/reset-password
 http://localhost:8080/auth/callback
 http://localhost:8080/auth/reset-password
 http://127.0.0.1:8080/auth/callback
@@ -123,6 +123,13 @@ brack-app://brack
 ```
 
 Keep service role keys and CLI tokens out of desktop/browser-exposed variables. Desktop uses the same `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` as web.
+
+Electron retains the Supabase session in its renderer storage. OAuth and secure
+email-link fallbacks must use the system browser, then return through the exact
+`brack://auth/callback` or `brack://auth/reset-password` routes. Signup and
+recovery codes can instead be entered directly in the still-open renderer,
+which avoids leaving the desktop window. Callback URLs are parsed exactly and
+credentials are removed before any diagnostic logging.
 
 ## Security Rules
 

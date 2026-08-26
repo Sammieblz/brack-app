@@ -2,9 +2,10 @@ import { createRoot } from 'react-dom/client'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import { registerSW } from 'virtual:pwa-register'
 import App from './App.tsx'
+import { shouldRegisterPwaServiceWorker } from './services/platform.ts'
 import './index.css'
 
-if (import.meta.env.PROD && !window.brackDesktop) {
+if (import.meta.env.PROD && shouldRegisterPwaServiceWorker()) {
   registerSW({
     immediate: true,
   });

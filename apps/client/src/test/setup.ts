@@ -22,3 +22,18 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => false,
   }),
 });
+
+// jsdom does not implement ResizeObserver. Components such as the segmented
+// one-time-code input use it to keep their visual slots aligned with the real
+// accessible input, so tests need the browser contract even though no layout
+// measurements are performed.
+class TestResizeObserver implements ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+Object.defineProperty(globalThis, "ResizeObserver", {
+  configurable: true,
+  value: TestResizeObserver,
+});

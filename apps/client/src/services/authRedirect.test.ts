@@ -27,6 +27,7 @@ vi.mock("@/services/platform", () => ({
 }));
 
 import {
+  authorizePasswordRecoverySession,
   AuthCallbackBootstrapError,
   AuthCallbackCredentialError,
   completeAuthCallback,
@@ -61,6 +62,24 @@ describe("completeAuthCallback", () => {
     vi.useRealTimers();
   });
 
+  it("records recovery authorization for a Supabase-verified user", () => {
+    authorizePasswordRecoverySession("verified-recovery-user");
+
+    expect(hasPasswordRecoveryAuthorization("verified-recovery-user")).toBe(
+      true,
+    );
+    expect(hasPasswordRecoveryAuthorization("different-user")).toBe(false);
+    expect(consumePasswordRecoveryAuthorization("verified-recovery-user")).toBe(
+      true,
+    );
+  });
+
+  it("refuses to authorize recovery without a verified user id", () => {
+    expect(() => authorizePasswordRecoverySession("")).toThrow(
+      AuthCallbackCredentialError,
+    );
+  });
+
   it("coalesces simultaneous processing of the same one-time callback", async () => {
     let finishExchange: ((value: ReturnType<typeof callbackData>) => void) | undefined;
     handleAuthCallbackUrlMock.mockImplementation(
@@ -70,7 +89,7 @@ describe("completeAuthCallback", () => {
         }),
     );
     const callbackUrl =
-      "https://brack.app/auth/reset-password?code=simultaneous-code";
+      "https://brack-app.com/auth/reset-password?code=simultaneous-code";
 
     const first = completeAuthCallback(callbackUrl);
     const second = completeAuthCallback(callbackUrl);
@@ -86,7 +105,7 @@ describe("completeAuthCallback", () => {
 
   it("replays a settled callback result without exchanging its code again", async () => {
     const callbackUrl =
-      "https://brack.app/auth/reset-password?code=sequential-code";
+      "https://brack-app.com/auth/reset-password?code=sequential-code";
 
     await expect(completeAuthCallback(callbackUrl)).resolves.toBe(
       "/auth/reset-password",
@@ -102,7 +121,7 @@ describe("completeAuthCallback", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-23T00:00:00Z"));
     const callbackUrl =
-      "https://brack.app/auth/reset-password?code=expired-replay-code";
+      "https://brack-app.com/auth/reset-password?code=expired-replay-code";
 
     await completeAuthCallback(callbackUrl);
     vi.advanceTimersByTime(5 * 60 * 1000 + 1);
@@ -113,7 +132,7 @@ describe("completeAuthCallback", () => {
 
   it("rejects a bare callback instead of accepting an unrelated session", async () => {
     await expect(
-      completeAuthCallback("https://brack.app/auth/callback?source=unrelated"),
+      completeAuthCallback("https://brack-app.com/auth/callback?source=unrelated"),
     ).rejects.toBeInstanceOf(AuthCallbackCredentialError);
 
     expect(handleAuthCallbackUrlMock).not.toHaveBeenCalled();
@@ -123,7 +142,7 @@ describe("completeAuthCallback", () => {
   it("rejects an incomplete implicit token pair", async () => {
     await expect(
       completeAuthCallback(
-        "https://brack.app/auth/callback#access_token=access-only",
+        "https://brack-app.com/auth/callback#access_token=access-only",
       ),
     ).rejects.toMatchObject({
       name: "AuthCallbackCredentialError",
@@ -136,7 +155,7 @@ describe("completeAuthCallback", () => {
   it("distinguishes post-auth profile bootstrap failures from bad credentials", async () => {
     getCurrentAuthUserMock.mockRejectedValue(new Error("profile service unavailable"));
     const callbackUrl =
-      "https://brack.app/auth/callback?code=bootstrap-failure-code";
+      "https://brack-app.com/auth/callback?code=bootstrap-failure-code";
 
     await expect(completeAuthCallback(callbackUrl)).rejects.toMatchObject({
       name: "AuthCallbackBootstrapError",
@@ -154,7 +173,7 @@ describe("completeAuthCallback", () => {
 
     await expect(
       completeAuthCallback(
-        "https://brack.app/auth/reset-password?code=recovery-marker-code",
+        "https://brack-app.com/auth/reset-password?code=recovery-marker-code",
       ),
     ).resolves.toBe("/auth/reset-password");
 
@@ -175,7 +194,7 @@ describe("completeAuthCallback", () => {
     );
 
     await completeAuthCallback(
-      "https://brack.app/auth/reset-password?code=expiring-marker-code",
+      "https://brack-app.com/auth/reset-password?code=expiring-marker-code",
     );
     expect(hasPasswordRecoveryAuthorization("expiring-recovery-user")).toBe(
       true,
@@ -192,7 +211,7 @@ describe("completeAuthCallback", () => {
 
     await expect(
       completeAuthCallback(
-        "https://brack.app/auth/reset-password?code=missing-user-code",
+        "https://brack-app.com/auth/reset-password?code=missing-user-code",
       ),
     ).rejects.toBeInstanceOf(AuthCallbackCredentialError);
 

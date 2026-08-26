@@ -1,42 +1,23 @@
-import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   getOnboardingErrorMessage,
   getOnboardingStatus,
-  type OnboardingStatusRecord,
 } from "@/services/onboarding";
 
 export const useOnboardingStatus = (userId?: string) => {
-  const [status, setStatus] = useState<OnboardingStatusRecord | null>(null);
-  const [loading, setLoading] = useState(Boolean(userId));
-  const [error, setError] = useState<string | null>(null);
-
-  const refetch = useCallback(async () => {
-    if (!userId) {
-      setStatus(null);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-      setStatus(await getOnboardingStatus(userId));
-    } catch (err) {
-      setError(getOnboardingErrorMessage(err, "Unable to load onboarding status"));
-      setStatus(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    void refetch();
-  }, [refetch]);
+  const query = useQuery({
+    queryKey: ["onboarding-status", userId],
+    queryFn: () => getOnboardingStatus(userId!),
+    enabled: Boolean(userId),
+    staleTime: 5 * 60_000,
+  });
 
   return {
-    status,
-    loading,
-    error,
-    refetch,
+    status: query.data ?? null,
+    loading: Boolean(userId) && query.isLoading,
+    error: query.error
+      ? getOnboardingErrorMessage(query.error, "Unable to load onboarding status")
+      : null,
+    refetch: query.refetch,
   };
 };

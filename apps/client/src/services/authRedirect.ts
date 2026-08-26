@@ -165,6 +165,20 @@ const writeRecoveryAuthorization = (userId: string) => {
   }
 };
 
+/**
+ * Record a short-lived password-reset authorization after Supabase has
+ * verified a recovery OTP or recovery callback for this exact user.
+ */
+export const authorizePasswordRecoverySession = (userId: string) => {
+  if (!userId) {
+    throw new AuthCallbackCredentialError(
+      "A verified recovery user is required to authorize a password reset.",
+    );
+  }
+
+  writeRecoveryAuthorization(userId);
+};
+
 const readRecoveryAuthorization = (): RecoveryAuthorization | null => {
   let authorization = inMemoryRecoveryAuthorization;
 
@@ -239,7 +253,7 @@ const processAuthCallback = async (callbackUrl: string) => {
       );
     }
 
-    writeRecoveryAuthorization(userId);
+    authorizePasswordRecoverySession(userId);
     return "/auth/reset-password";
   }
 

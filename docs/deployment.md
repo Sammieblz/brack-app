@@ -70,6 +70,13 @@ netlify deploy --prod
 
 ### Deploy to Cloudflare Pages
 
+**Cutover status (2026-08-25):** Cloudflare is authoritative for
+`brack-app.com` and the mail records exist, but the apex has no web A/AAAA/CNAME
+answer and `www` is not configured. Hosted Supabase Auth therefore remains on
+the previous Site URL. Complete and verify the following steps before changing
+Auth, `PUBLIC_APP_URL`, or production CORS secrets; replace this status note when
+the cutover is complete.
+
 1. **Login to Cloudflare Dashboard**
 2. **Create new Pages project**
 3. **Connect GitHub repository**
@@ -77,7 +84,22 @@ netlify deploy --prod
    - Build command: `npm run build`
    - Build output: `apps/client/dist`
 5. **Set environment variables**
-6. **Deploy**
+6. **Deploy and connect `brack-app.com` as the production custom domain**
+7. **Verify production routes before changing Auth**:
+   - `https://brack-app.com/` resolves over HTTPS.
+   - `/auth/callback` and `/auth/reset-password` return the SPA rather than a hosting 404.
+   - `www.brack-app.com` either redirects once to the canonical apex or is not advertised.
+8. **Enable the free security baseline**:
+   - SSL/TLS mode **Full (strict)**, Always Use HTTPS, TLS 1.3, and a minimum of TLS 1.2.
+   - Cloudflare Free Managed Ruleset and DNSSEC.
+   - Add HSTS only after every in-use hostname works permanently over HTTPS.
+
+Cloudflare should serve the web client, not proxy Supabase Auth. Authentication
+requests continue directly to the configured Supabase project. Do not add a
+cache-everything rule for auth routes, and make `/auth/callback` and
+`/auth/reset-password` non-cacheable if custom Pages cache rules are introduced.
+Turnstile must be integrated with Supabase CAPTCHA validation; challenging the
+static `/auth` page alone does not protect the Auth API.
 
 ### Progressive Web App (PWA)
 
@@ -109,18 +131,24 @@ npm run cap:open:ios
 
 1. **Signing**:
    - Select your team
-   - Set bundle identifier (e.g., `com.yourcompany.brack`)
+   - Keep the registered bundle identifier `com.brack.app`
    - Enable automatic signing
 
 2. **Capabilities**:
    - Push Notifications
    - Background Modes → Remote notifications
-   - Associated Domains (for deep links)
+   - Associated Domains with `applinks:brack-app.com`
 
 3. **Info.plist**:
    - Verify all permission descriptions
    - Add deep link URL types
    - Configure Firebase (GoogleService-Info.plist)
+
+The production site must serve an extensionless
+`/.well-known/apple-app-site-association` file over HTTPS with status 200, JSON
+content type, no authentication, and no redirect. Populate it with the real
+Apple Team ID and `com.brack.app`; never commit a guessed Team ID. Keep the
+`brack://` custom URL scheme as a desktop/mobile fallback.
 
 4. **Version**:
    - Set version number (e.g., 1.0.0)
@@ -186,7 +214,13 @@ npm run cap:open:android
 2. **Firebase**:
    - Add `google-services.json` to `android/app/`
 
-3. **Version**:
+3. **App Links**:
+   - Keep the registered application ID `com.brack.app`.
+   - Keep `android:autoVerify="true"` on the `https://brack-app.com` intent filter.
+   - Serve `/.well-known/assetlinks.json` over HTTPS with status 200 and no redirect.
+   - Use the real Play App Signing/release certificate SHA-256 fingerprint; never commit a placeholder or a debug fingerprint for production verification.
+
+4. **Version**:
    - Update `versionCode` and `versionName` in `build.gradle`
 
 #### 3. Build Release APK/AAB
@@ -241,7 +275,11 @@ Targets:
 
 Linux `.deb` builds require package maintainer metadata. Brack declares this in `package.json` and `electron-builder.yml`, so CI can create AppImage and deb artifacts without interactive packaging prompts.
 
-Desktop auth requires `brack://auth/callback` and `brack://auth/reset-password` in Supabase Auth redirect URLs. Web auth uses `/auth/callback` and `/auth/reset-password`, so production and local callback/reset URLs should also be listed. If Edge Function CORS is restricted, include `brack-app://brack` in `ALLOWED_ORIGINS`.
+Desktop auth requires `brack://auth/callback` and `brack://auth/reset-password`
+in Supabase Auth redirect URLs. Web auth uses the exact
+`https://brack-app.com/auth/callback` and
+`https://brack-app.com/auth/reset-password` URLs. If Edge Function CORS is
+restricted, include the packaged renderer origin `brack-app://brack`.
 
 Signing, notarization, auto-update, and store/repository publishing are intentionally deferred until the internal artifacts pass QA.
 
@@ -259,31 +297,27 @@ Deploy specific function:
 
 ```bash
 npx supabase functions deploy search-books --project-ref waftnaqgkcgufzapcihe --use-api
-npx supabase functions deploy auth-email-availability --project-ref waftnaqgkcgufzapcihe --use-api
 ```
 
 Function JWT settings are controlled in `supabase/config.toml`. The current intended state is:
 
-- `auth-email-availability`: `verify_jwt = false` because signup occurs before a
-  user session. It exposes only the intentionally public `{ exists: boolean }`
-  result and calls a service-role-only RPC.
+- `auth-email-availability`: retained legacy endpoint with `verify_jwt = false`.
+  It is not on the active signup path. Keep its existing rate limits and
+  service-role-only RPC grants intact while older clients or rollback support
+  remain in scope.
 - `search-books`, `feature-flags`, and `core-telemetry`: `verify_jwt = false` for
   their bounded public contracts.
 - `gamification-worker`: `verify_jwt = false`, protected by its private worker
   secret rather than a user JWT.
 - All remaining functions: `verify_jwt = true`.
 
-Deploy email availability in dependency order:
-
-1. Apply and verify the migration defining
-   `public.auth_email_exists(text)` with execute granted only to `service_role`.
-2. Deploy `auth-email-availability` and verify both the 5/IP/minute and
-   30/IP/hour buckets.
-3. Smoke-test known confirmed, unconfirmed, and Google-created addresses as
-   `exists: true`, and a fresh address as `exists: false`. The lookup must not
-   change Auth or profile row counts.
-4. Deploy the client. Availability errors and invalid responses must stop signup
-   and state that no account was created.
+The active email/password signup path has no Edge Function prerequisite. Deploy
+the client and verify that one form submission produces one Supabase `signUp`
+request, maps explicit/obfuscated duplicate responses to the reader-facing
+error, and creates at most one Auth user/profile. Do not redeploy
+`auth-email-availability` as a signup dependency. Retire that endpoint and
+`public.auth_email_exists(text)` only in a later release/migration after
+supported-client telemetry confirms no calls remain.
 
 After deployment, verify remote drift with the Supabase dashboard, MCP, or CLI before relying on protected user data. As of June 13, 2026, the direct-message Edge Functions are deployed to project `waftnaqgkcgufzapcihe` and the `modern_direct_messaging` migration has been applied remotely.
 
@@ -307,7 +341,12 @@ The legacy 2025 functions (`get-book-details`, `update-reading-progress`, `daily
 
 ### Environment Secrets
 
-Set production secrets:
+The commands below describe the post-cutover production target. Do not apply the
+`PUBLIC_APP_URL` or canonical-domain `ALLOWED_ORIGINS` values until
+`https://brack-app.com` and both Auth routes pass the verification steps above;
+until then, preserve the currently working production origin values.
+
+Set production secrets at the appropriate release stage:
 
 ```bash
 npx supabase secrets set SUPABASE_URL=https://your-project.supabase.co
@@ -316,8 +355,15 @@ npx supabase secrets set ENVIRONMENT=production
 npx supabase secrets set GOOGLE_BOOKS_API_KEY=your-key
 npx supabase secrets set FCM_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}'
 npx supabase secrets set GAMIFICATION_WORKER_SECRET=your-random-worker-secret
-npx supabase secrets set ALLOWED_ORIGINS=https://yourdomain.com
+npx supabase secrets set PUBLIC_APP_URL=https://brack-app.com
+npx supabase secrets set ALLOWED_ORIGINS=https://brack-app.com,https://localhost,capacitor://localhost,brack-app://brack
 ```
+
+`https://localhost` is the configured Android Capacitor WebView origin;
+`capacitor://localhost` is the iOS WebView origin. Add local HTTP development
+origins to production only when developers intentionally use the production
+backend. CORS is a browser boundary, not authorization; authenticated functions
+must continue validating JWTs and user ownership server-side.
 
 List secrets:
 

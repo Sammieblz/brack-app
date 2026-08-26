@@ -94,9 +94,9 @@ describe("ResetPassword", () => {
     renderReset();
 
     expect(
-      await screen.findByText(/This reset link is invalid or has expired/i),
+      await screen.findByText(/password-reset authorization is invalid or has expired/i),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Request New Link" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Request New Code" })).toBeEnabled();
     expect(screen.queryByLabelText("New password")).not.toBeInTheDocument();
     expect(updatePasswordMock).not.toHaveBeenCalled();
   });
@@ -112,7 +112,7 @@ describe("ResetPassword", () => {
     renderReset();
 
     expect(
-      await screen.findByText(/This reset link is invalid or has expired/i),
+      await screen.findByText(/password-reset authorization is invalid or has expired/i),
     ).toBeInTheDocument();
     expect(screen.queryByText("expired reset link")).not.toBeInTheDocument();
     expect(window.location.pathname).toBe("/auth/reset-password");

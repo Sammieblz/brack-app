@@ -8,8 +8,7 @@ Scope: ticket 2.2, auth signup/profile creation/onboarding defaults.
 
 | Step | Owner | Path | Writes | Notes |
 | --- | --- | --- | --- | --- |
-| Email availability | Public Edge Function | `auth-email-availability` -> `public.auth_email_exists(text)` | Rate-limit buckets only | Returns only `{ exists: boolean }`; the RPC is service-role-only. |
-| Email sign-up | Supabase Auth via `apps/client/src/services/api/auth.ts` | `signUpWithEmail` | `auth.users` | Runs only after availability returns `false`; client passes optional metadata. |
+| Email sign-up | Supabase Auth via `apps/client/src/services/api/auth.ts` | `signUpWithEmail` | `auth.users` | One normalized `signUp` request; duplicate UI derives from explicit/obfuscated Auth responses. |
 | Auth trigger | Database | `handle_new_user()` | `profiles` | Creates or updates profile defaults with display/avatar/name and onboarding fields. |
 | Profile fallback | App service | `ensureUserProfile` in `apps/client/src/services/onboarding.ts` | `profiles` | If the trigger did not create a row, client upserts a profile with `ignoreDuplicates`. |
 | First-run route decision | App service | `shouldEnterFirstRunOnboarding` | None | New accounts after `2026-05-01T00:00:00.000Z` enter onboarding when status is `not_started` or `in_progress`. |
@@ -58,19 +57,16 @@ No missing RLS policy was identified from the current remote matrix. `profiles` 
   - Direct auth-table trigger validation inserted and removed a temporary `auth.users` row.
   - Supabase Admin Auth creation inserted and removed a temporary Auth user through the Auth service.
   - Both paths verified `handle_new_user()` creates one profile with `onboarding_status = 'not_started'` and `onboarding_version = 1`.
-- Repeated email signup is intentionally obfuscated by Supabase Auth. Brack's
-  explicit product behavior instead checks `auth-email-availability` before
-  signup. Its service-role-only `public.auth_email_exists(text)` predicate covers
-  confirmed, unconfirmed, and Google-created Auth users without exposing rows or
-  provider details. An existing address shows **Email already exists** and
-  **This email is already used by another reader.** Changing submitted names or
-  passwords cannot create or update another profile.
-- The visible boolean intentionally permits account enumeration. Exposure is
-  bounded to 5 requests per client IP per minute and 30 per hour, with
-  non-cacheable responses and no identity metadata. Lookup, malformed-response,
-  and availability-service failures stop before Supabase Auth; the UI states
-  that no account was created. Supabase's explicit existence codes and empty-
-  identity response remain race-condition fallbacks.
+- Repeated email signup is intentionally obfuscated by Supabase Auth. Brack maps
+  explicit existence codes and the empty-identities response from its single
+  `signUp` request to **Email already exists** and **This email is already used
+  by another reader.** Changing submitted names or passwords cannot create or
+  update another profile.
+- The public `auth-email-availability` endpoint and service-role-only
+  `public.auth_email_exists(text)` predicate remain temporarily for rollback and
+  older clients, but they are not on the active write path. Preserve their
+  rate limits and grants until a later release/migration removes them after
+  supported-client telemetry shows no callers.
 - A 2026-08-23 hosted audit found 0 normalized duplicate Auth email groups,
   0 identity emails mapped across users, 0 missing/orphaned profiles, and 2
   recent `user_repeated_signup` events with no Auth/profile inserts or updates.
@@ -88,11 +84,15 @@ Remote validation completed on 2026-05-05:
 - Test auth/profile records were cleaned up.
 
 Manual UI release smoke outside this backlog checklist:
-- Known confirmed, unconfirmed, and Google-created emails return `exists: true`,
-  show the duplicate copy, and never call Auth signup.
-- A new email returns `exists: false` and proceeds to normal confirmation.
-- Availability `429` and service/RPC failures stop signup; no user or profile is
-  created.
+- One submission sends one Supabase Auth signup request; there is no separate
+  email-availability call.
+- Known confirmed, unconfirmed, and Google-created emails map explicit or
+  obfuscated repeated-signup responses to the duplicate copy without creating
+  or updating an Auth user/profile.
+- A new email proceeds to normal confirmation and creates exactly one Auth
+  user/profile.
+- Auth delivery/request `429` responses are caught, shown once, and never
+  automatically retried; failed attempts create no user/profile.
 - New account routes to `/onboarding`.
 - Skip writes `profiles.onboarding_status = 'skipped'` and allows `/dashboard`.
 - Complete writes `reading_habits`, `user_learning_profiles`, one active `books_count` goal, notification preferences, and `profiles.onboarding_status = 'completed'`.

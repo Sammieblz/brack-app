@@ -3,8 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { fetchProfile, sendPasswordResetEmail, updatePassword } from "@/services/api";
-import { getPasswordResetRedirectUrl } from "@/services/platform";
+import { fetchProfile, signInWithEmailPassword, updatePassword } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { validatePassword } from "@/utils/authValidation";
 import type { User, Profile } from "@/types";
@@ -37,8 +36,9 @@ const isGoogleOnlyAccount = (user: User): boolean => {
 export const AccountSettings = ({ user }: AccountSettingsProps) => {
   const { toast } = useToast();
   const [email, setEmail] = useState(user?.email || "");
-  const [loading, setLoading] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
   const [addingPassword, setAddingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [needsPassword, setNeedsPassword] = useState(() => isGoogleOnlyAccount(user));
@@ -49,6 +49,7 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
 
     setEmail(user?.email || "");
     setNeedsPassword(isGoogleOnlyAccount(user));
+    setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
     void fetchProfile(user.id).then((data) => {
@@ -60,38 +61,14 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
     };
   }, [user]);
 
-  const handlePasswordReset = async () => {
-    if (!user?.email) return;
-    
-    setLoading(true);
-    try {
-      await sendPasswordResetEmail(user.email, getPasswordResetRedirectUrl());
-
-      toast({
-        title: "Password reset email sent",
-        description: "Check your email for instructions to reset your password.",
-      });
-    } catch (error: unknown) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send password reset email",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAddPassword = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const validateNewPassword = (): boolean => {
     if (newPassword !== confirmPassword) {
       toast({
         variant: "destructive",
         title: "Passwords do not match",
         description: "Enter the same password in both fields.",
       });
-      return;
+      return false;
     }
 
     const passwordValidation = validatePassword(newPassword);
@@ -101,8 +78,57 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
         title: "Invalid password",
         description: passwordValidation.error,
       });
-      return;
+      return false;
     }
+
+    return true;
+  };
+
+  const handleChangePassword = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!user.email || !validateNewPassword()) return;
+
+    setChangingPassword(true);
+    try {
+      try {
+        await signInWithEmailPassword({
+          email: user.email,
+          password: currentPassword,
+        });
+      } catch {
+        toast({
+          variant: "destructive",
+          title: "Current password not accepted",
+          description:
+            "Check your current password and try again. If you have forgotten it, use the reset option below.",
+        });
+        return;
+      }
+
+      await updatePassword(newPassword);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      toast({
+        title: "Password updated",
+        description: "Your new password is ready to use on this account.",
+      });
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Password could not be updated",
+        description: "Your current password was verified, but Brack could not save the new one. Try again.",
+      });
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  const handleAddPassword = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!validateNewPassword()) return;
 
     setAddingPassword(true);
     try {
@@ -205,13 +231,59 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
               </Button>
             </form>
           ) : (
-            <Button
-              onClick={handlePasswordReset}
-              disabled={loading}
-              variant="outline"
-            >
-              {loading ? "Sending..." : "Send Password Reset Email"}
-            </Button>
+            <form className="space-y-4" onSubmit={handleChangePassword}>
+              <div className="space-y-2">
+                <Label htmlFor="account-current-password">Current password</Label>
+                <Input
+                  id="account-current-password"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(event) => setCurrentPassword(event.target.value)}
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="account-change-new-password">New password</Label>
+                <Input
+                  id="account-change-new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                  autoComplete="new-password"
+                  aria-describedby="account-change-password-requirements"
+                  required
+                />
+                <p
+                  id="account-change-password-requirements"
+                  className="text-xs text-muted-foreground"
+                >
+                  Use 8 to 128 characters with uppercase, lowercase, and a number.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="account-change-confirm-password">Confirm new password</Label>
+                <Input
+                  id="account-change-confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  autoComplete="new-password"
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Button type="submit" disabled={changingPassword}>
+                  {changingPassword ? "Updating password..." : "Update password"}
+                </Button>
+                <Button asChild type="button" variant="ghost">
+                  <a href="/auth?mode=reset">Forgot current password?</a>
+                </Button>
+              </div>
+            </form>
           )}
         </CardContent>
       </Card>

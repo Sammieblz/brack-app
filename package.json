@@ -8,10 +8,10 @@
   "description": "Brack reading tracker app for web, mobile, and desktop.",
   "author": {
     "name": "Brack",
-    "email": "support@brack.app",
-    "url": "https://brack.app"
+    "email": "support@brack-app.com",
+    "url": "https://brack-app.com"
   },
-  "homepage": "https://brack.app",
+  "homepage": "https://brack-app.com",
   "license": "UNLICENSED",
   "main": "apps/desktop/dist/main.cjs",
   "type": "module",
@@ -48,6 +48,11 @@
     "brand:icons": "node scripts/generate-brand-icons.mjs",
     "media:assets": "node scripts/optimize-media-assets.mjs",
     "media:assets:check": "node scripts/optimize-media-assets.mjs --check",
+    "auth:emails:validate": "node scripts/sync-supabase-auth-emails.mjs --validate",
+    "auth:emails:check": "node scripts/sync-supabase-auth-emails.mjs --check --project-ref waftnaqgkcgufzapcihe",
+    "auth:emails:apply": "node scripts/sync-supabase-auth-emails.mjs --apply --project-ref waftnaqgkcgufzapcihe",
+    "auth:emails:test": "node --test scripts/sync-supabase-auth-emails.test.mjs",
+    "web:auth-artifacts:check": "node scripts/verify-web-auth-artifacts.mjs",
     "desktop:typecheck": "turbo run check-types --filter=@brack/desktop",
     "desktop:build": "turbo run build --filter=@brack/desktop",
     "desktop:rebuild": "electron-rebuild -f -w better-sqlite3",

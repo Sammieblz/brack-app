@@ -25,11 +25,38 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="brack" />
             </intent-filter>
-            <intent-filter>
+            <!-- Browser Auth routes are deliberately excluded. Native Auth
+                 returns through brack://, while verified HTTPS handling is
+                 limited to content links that benefit from opening the app. -->
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="brack.app" android:pathPrefix="/" />
+                <data android:scheme="https" android:host="brack-app.com" android:pathPrefix="/book/" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="brack-app.com" android:pathPrefix="/user/" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="brack-app.com" android:pathPrefix="/message/" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="brack-app.com" android:pathPrefix="/club/" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="brack-app.com" android:pathPrefix="/list/" />
             </intent-filter>
         </activity>
 

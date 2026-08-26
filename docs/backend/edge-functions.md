@@ -2,11 +2,11 @@
 
 Source of truth: local `supabase/functions/`, `supabase/config.toml`, and remote project `waftnaqgkcgufzapcihe`, reviewed on 2026-08-23.
 
-Maintained app-facing functions use the shared distributed limiter in `_shared/rateLimit.ts`. The limiter stores buckets in `api_rate_limits` through the service-role-only `check_api_rate_limit` RPC, with an instance-memory fallback if the RPC is temporarily unavailable. Auth email availability additionally fails closed when its protected lookup cannot return a valid boolean.
+Maintained app-facing functions use the shared distributed limiter in `_shared/rateLimit.ts`. The limiter stores buckets in `api_rate_limits` through the service-role-only `check_api_rate_limit` RPC, with an instance-memory fallback if the RPC is temporarily unavailable. The retained legacy Auth email-availability endpoint fails closed when its protected lookup cannot return a valid boolean; current clients do not call it.
 
 ## Current Remote State
 
-- `auth-email-availability`, `search-books`, `feature-flags`, and
+- The legacy, inactive `auth-email-availability`, plus `search-books`, `feature-flags`, and
   `core-telemetry` are public with `verify_jwt = false`.
 - `gamification-worker` also disables JWT verification but requires its private
   worker secret and is not a public client endpoint.
@@ -35,7 +35,7 @@ Maintained app-facing functions use the shared distributed limiter in `_shared/r
 
 | Function | Auth | Purpose | Retry concerns |
 | --- | --- | --- | --- |
-| `auth-email-availability` | Public | Returns only `{ exists: boolean }` for a normalized signup email through service-role-only `public.auth_email_exists(text)`. This intentionally reveals account existence for confirmed, unconfirmed, and Google-created users. | Limited to 5 requests/IP/minute and 30/IP/hour. Do not automatically retry `429`; lookup failures fail closed and must stop signup. Responses are private and non-cacheable. |
+| `auth-email-availability` | Public, legacy/inactive | Returns only `{ exists: boolean }` for a normalized signup email through service-role-only `public.auth_email_exists(text)`. Retained temporarily for rollback/older clients; current signup does not call it. | Limited to 5 requests/IP/minute and 30/IP/hour. Older callers must not retry `429`; responses are private and non-cacheable. |
 
 ### Reading and Library
 
@@ -145,7 +145,7 @@ Maintained app-facing functions use the shared distributed limiter in `_shared/r
 - Local JWT settings live in `supabase/config.toml`.
 - Backend-only secrets must not be exposed with `VITE_` prefixes.
 - `SUPABASE_SERVICE_ROLE_KEY` is required for trusted functions that bypass caller RLS after authenticating the user.
-- `auth-email-availability` is intentionally anonymous, but its
+- The retained `auth-email-availability` endpoint is intentionally anonymous, but its
   `auth_email_exists` RPC revokes execute from `PUBLIC`, `anon`, and
   `authenticated` and grants it only to `service_role`. Never log submitted
   emails or expand its response with user/provider data.
@@ -160,7 +160,6 @@ Use these checks when a function works locally but fails remotely:
 
 ```bash
 npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api
-npx supabase functions deploy auth-email-availability --project-ref waftnaqgkcgufzapcihe --use-api
 npx supabase functions deploy conversations-home --project-ref waftnaqgkcgufzapcihe --use-api
 npx supabase functions deploy reviews-feed --project-ref waftnaqgkcgufzapcihe --use-api
 npx supabase secrets list

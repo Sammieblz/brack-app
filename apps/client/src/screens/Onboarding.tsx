@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ElementType, ReactNode, RefObject } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { gsap } from "gsap";
@@ -10,7 +10,6 @@ import {
   Palette,
   Refresh,
   SkipNext,
-  Xmark,
 } from "iconoir-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,19 +17,26 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { TimePicker } from "@/components/ui/time-picker";
+import {
+  OnboardingChapterIndicator,
+  type OnboardingChapter,
+} from "@/components/onboarding/OnboardingChapterIndicator";
+import {
+  OnboardingLoadingState,
+  OnboardingRouteTransition,
+} from "@/components/onboarding/OnboardingLoadingState";
+import "@/components/onboarding/onboarding.css";
 import { ThemePaletteCarousel } from "@/components/ThemePaletteCarousel";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
-import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
-import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useGSAP } from "@/hooks/useGSAP";
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
 import { useReadingProfile } from "@/hooks/useReadingProfile";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { themes } from "@/lib/themes";
@@ -105,6 +111,13 @@ const STEP_LABELS: Record<OnboardingStepId, string> = {
   review: "Review",
 };
 
+const ONBOARDING_CHAPTERS: readonly OnboardingChapter[] = ONBOARDING_STEPS.map((step) => ({
+  id: step,
+  label: STEP_LABELS[step],
+  eyebrow: STEP_META[step].eyebrow,
+  icon: STEP_META[step].icon,
+}));
+
 const BOOK_LENGTH_OPTIONS: Array<{ value: PreferredBookLength; label: string; description: string }> = [
   { value: "short", label: "Short", description: "Under 250 pages" },
   { value: "medium", label: "Medium", description: "250-400 pages" },
@@ -150,7 +163,11 @@ const Onboarding = () => {
     loading: statusLoading,
     refetch: refetchStatus,
   } = useOnboardingStatus(user?.id);
-  const { habits, loading: profileLoading } = useReadingProfile(user?.id);
+  const {
+    habits,
+    loading: profileLoading,
+    refetch: refetchProfile,
+  } = useReadingProfile(user?.id);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -160,15 +177,15 @@ const Onboarding = () => {
   const [saving, setSaving] = useState(false);
   const [transition, setTransition] = useState<OnboardingTransition | null>(null);
   const [completionBurst, setCompletionBurst] = useState(false);
+  const onboardingExitCommittedRef = useRef(false);
   const hydratedRef = useRef(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
+  const contentScrollRef = useRef<HTMLDivElement>(null);
+  const previousStepIndexRef = useRef(stepIndex);
   const selectedGenresRef = useRef<HTMLDivElement>(null);
   const goalNumberRef = useRef<HTMLSpanElement>(null);
-  const reducedMotion = useMemo(
-    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    [],
-  );
+  const reducedMotion = useReducedMotion();
 
   const currentStep = ONBOARDING_STEPS[stepIndex];
   const entrySource = searchParams.get("from");
@@ -242,6 +259,21 @@ const Onboarding = () => {
   }, [formData.goalTargetBooks, reducedMotion]);
 
   useEffect(() => {
+    if (previousStepIndexRef.current === stepIndex) return;
+
+    previousStepIndexRef.current = stepIndex;
+    if (contentScrollRef.current) {
+      contentScrollRef.current.scrollTop = 0;
+    }
+
+    const focusFrame = window.requestAnimationFrame(() => {
+      pageRef.current?.focus({ preventScroll: true });
+    });
+
+    return () => window.cancelAnimationFrame(focusFrame);
+  }, [stepIndex]);
+
+  useEffect(() => {
     setFormData((current) =>
       current.colorTheme === currentTheme ? current : { ...current, colorTheme: currentTheme },
     );
@@ -257,6 +289,7 @@ const Onboarding = () => {
     if (
       !user?.id ||
       saving ||
+      onboardingExitCommittedRef.current ||
       isCompletedEdit ||
       !status?.onboarding_status ||
       status.onboarding_status === "completed" ||
@@ -290,15 +323,11 @@ const Onboarding = () => {
   }, [habits, profileLoading]);
 
   if (transition) {
-    return <BrandedRouteTransition to={transition.to} message={transition.message} minDisplayTime={950} />;
+    return <OnboardingRouteTransition to={transition.to} message={transition.message} minDisplayTime={950} />;
   }
 
-  if (authLoading || statusLoading) {
-    return (
-      <div className="flex min-h-app-viewport items-center justify-center bg-background">
-        <LoadingSpinner size="lg" text="Preparing your setup..." />
-      </div>
-    );
+  if (authLoading || statusLoading || profileLoading) {
+    return <OnboardingLoadingState />;
   }
 
   if (!user) return null;
@@ -375,7 +404,8 @@ const Onboarding = () => {
 
       if (!isCompletedEdit) {
         await skipOnboarding(user.id, currentStep);
-        await refetchStatus();
+        onboardingExitCommittedRef.current = true;
+        await Promise.all([refetchStatus(), refetchProfile()]);
       }
 
       navigate(returnPath, { replace: true });
@@ -394,6 +424,8 @@ const Onboarding = () => {
     try {
       setSaving(true);
       await saveOnboardingProfile(user.id, formData);
+      onboardingExitCommittedRef.current = true;
+      await Promise.all([refetchStatus(), refetchProfile()]);
 
       if (!reducedMotion) {
         setCompletionBurst(true);
@@ -420,7 +452,6 @@ const Onboarding = () => {
     }
   };
 
-  const StepIcon = STEP_META[currentStep].icon;
   const selectStep = (step: OnboardingStepId) => {
     const nextIndex = ONBOARDING_STEPS.indexOf(step);
     if (nextIndex >= 0) setStepIndex(nextIndex);
@@ -429,7 +460,7 @@ const Onboarding = () => {
   return (
     <div
       ref={rootRef}
-      className="relative min-h-app-viewport overflow-x-hidden overflow-y-auto bg-gradient-background px-3 py-4 safe-bottom safe-top sm:px-5 md:px-8"
+      className="onboarding-root relative overflow-hidden bg-gradient-background px-3 sm:px-5 md:px-8"
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-[8%] top-[8%] h-40 w-40 rounded-full border border-primary/15" />
@@ -452,146 +483,61 @@ const Onboarding = () => {
         </div>
       )}
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(var(--app-viewport-height,100dvh)-2rem)] w-full max-w-7xl flex-col">
-        <header className="onboarding-logo flex items-center justify-between py-2">
+      <div className="relative z-10 mx-auto flex h-full w-full max-w-7xl flex-col">
+        <header className="onboarding-logo flex shrink-0 items-center justify-between gap-3 py-1">
           <button
             type="button"
             onClick={() => navigate("/")}
-            className="flex items-center gap-3 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted/60"
+            className="flex min-h-11 items-center gap-2 rounded-md px-2 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:gap-3"
+            aria-label="Return to Brack home"
           >
-            <ThemeAwareLogo variant="icon" size="h-10 w-10" className="drop-shadow-sm" />
-            <span>
+            <ThemeAwareLogo variant="icon" size="h-9 w-9 sm:h-10 sm:w-10" className="drop-shadow-sm" />
+            <span aria-hidden="true">
               <span className="block font-display text-xl font-bold leading-none">Brack</span>
-              <span className="block font-sans text-xs text-muted-foreground">Reading tracker</span>
+              <span className="hidden font-sans text-xs text-muted-foreground sm:block">Reading tracker</span>
             </span>
           </button>
 
-          <Button variant="ghost" size="sm" onClick={handleSkip} disabled={saving}>
+          <Button
+            variant="ghost"
+            onClick={handleSkip}
+            disabled={saving}
+            className="min-h-11 shrink-0 px-3"
+          >
             <SkipNext className="mr-2 h-4 w-4" />
             {isCompletedEdit ? "Close" : "Skip for now"}
           </Button>
         </header>
 
-        <main className="onboarding-shell grid flex-1 items-center gap-5 py-4 lg:grid-cols-[minmax(18rem,0.82fr)_minmax(0,1.18fr)] lg:py-8">
-          <aside className="hidden lg:block">
-            <div className="sticky top-8 space-y-5">
-              <div className="rounded-lg border border-border/70 bg-card/80 p-5 shadow-sm backdrop-blur">
-                <div className="mb-5 flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-md bg-primary/[0.12] text-primary">
-                    <StepIcon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="font-sans text-xs font-semibold uppercase tracking-wide text-primary">
-                      {STEP_META[currentStep].eyebrow}
-                    </p>
-                    <h1 className="font-display text-2xl font-bold leading-tight">
-                      {STEP_META[currentStep].title}
-                    </h1>
-                  </div>
-                </div>
-
-                <Progress
-                  value={stepIndex + 1}
-                  max={ONBOARDING_STEPS.length}
-                  variant="dimensional"
-                  segments={ONBOARDING_STEPS.length}
-                  aria-label="Onboarding setup progress"
-                  getValueLabel={(step, total) => `Step ${step} of ${total}`}
+        <main className="onboarding-shell flex min-h-0 flex-1 py-3 sm:py-4 lg:py-5">
+          <Card className="mx-auto flex h-full w-full max-w-6xl overflow-hidden rounded-xl border-border/70 bg-card/95 shadow-medium backdrop-blur">
+            <CardContent className="flex h-full min-h-0 w-full flex-col p-0">
+              <div className="shrink-0 border-b border-border/70 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+                <OnboardingChapterIndicator
+                  chapters={ONBOARDING_CHAPTERS}
+                  currentStep={currentStep}
+                  disabled={saving}
+                  onStepSelect={selectStep}
                 />
-                <div className="mt-5 space-y-2">
-                  {ONBOARDING_STEPS.map((step, index) => {
-                    const MetaIcon = STEP_META[step].icon;
-                    const active = index === stepIndex;
-                    const done = index < stepIndex;
-
-                    return (
-                      <button
-                        key={step}
-                        type="button"
-                        onClick={() => selectStep(step)}
-                        aria-current={active ? "step" : undefined}
-                        disabled={saving}
-                        className={cn(
-                          "flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors disabled:pointer-events-none disabled:opacity-60",
-                          active ? "bg-primary/[0.12] text-primary" : "hover:bg-muted/60",
-                        )}
-                      >
-                        <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border/70 bg-background">
-                          {done ? <Check className="h-4 w-4" /> : <MetaIcon className="h-4 w-4" />}
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block font-sans text-sm font-semibold">
-                            {STEP_LABELS[step]}
-                          </span>
-                          <span className="block truncate font-sans text-xs text-muted-foreground">
-                            {STEP_META[step].eyebrow}
-                          </span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
               </div>
 
-              <VisualLearningCard formData={formData} />
-            </div>
-          </aside>
-
-          <Card className="mx-auto w-full max-w-4xl overflow-hidden rounded-xl border-border/70 bg-card/95 shadow-sm backdrop-blur">
-            <CardContent className="p-0">
-              <div className="border-b border-border/70 p-4 lg:hidden">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <StepIcon className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="font-sans text-xs font-semibold uppercase text-primary">
-                        {STEP_META[currentStep].eyebrow}
-                      </p>
-                      <h1 className="font-display text-xl font-bold">{STEP_META[currentStep].title}</h1>
-                    </div>
-                  </div>
-                  <Badge variant="outline">{stepIndex + 1}/{ONBOARDING_STEPS.length}</Badge>
-                </div>
-                <Progress
-                  value={stepIndex + 1}
-                  max={ONBOARDING_STEPS.length}
-                  variant="dimensional"
-                  segments={ONBOARDING_STEPS.length}
-                  aria-label="Onboarding setup progress"
-                  getValueLabel={(step, total) => `Step ${step} of ${total}`}
-                />
-                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-                  {ONBOARDING_STEPS.map((step) => {
-                    const MetaIcon = STEP_META[step].icon;
-                    const active = step === currentStep;
-
-                    return (
-                      <Button
-                        key={step}
-                        type="button"
-                        size="sm"
-                        variant={active ? "default" : "outline"}
-                        className="shrink-0 gap-1.5"
-                        onClick={() => selectStep(step)}
-                        disabled={saving}
-                      >
-                        <MetaIcon className="h-3.5 w-3.5" />
-                        {STEP_LABELS[step]}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="relative p-4 sm:p-6 lg:p-8">
-                <div ref={pageRef} className="onboarding-page min-h-[29rem]">
+              <div
+                ref={contentScrollRef}
+                className="onboarding-content-scroll relative min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 lg:p-8"
+              >
+                <div
+                  ref={pageRef}
+                  className="onboarding-page min-h-full focus:outline-none"
+                  role="region"
+                  aria-label={`${STEP_LABELS[currentStep]} onboarding chapter`}
+                  tabIndex={-1}
+                >
                   {currentStep === "welcome" && (
                     <WelcomeStep
                       userName={
                         (user.user_metadata as Record<string, string | undefined> | undefined)?.first_name ||
                         user.email?.split("@")[0]
                       }
-                      onStepSelect={selectStep}
                     />
                   )}
 
@@ -633,18 +579,22 @@ const Onboarding = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col-reverse gap-3 border-t border-border/70 bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleBack} disabled={saving}>
-                    <NavArrowLeft className="mr-2 h-4 w-4" />
-                    {stepIndex === 0 ? "Home" : "Back"}
-                  </Button>
-                  <Button variant="ghost" onClick={handleSkip} disabled={saving}>
-                    {isCompletedEdit ? "Close" : "Skip"}
-                  </Button>
-                </div>
+              <div className="onboarding-action-dock flex shrink-0 items-center gap-3 border-t border-border/70 bg-card/95 px-4 pt-3 backdrop-blur sm:justify-between sm:px-6 sm:pt-4 lg:px-8">
+                <Button
+                  variant="outline"
+                  onClick={handleBack}
+                  disabled={saving}
+                  className="min-h-11 shrink-0"
+                >
+                  <NavArrowLeft className="mr-2 h-4 w-4" />
+                  {stepIndex === 0 ? "Home" : "Back"}
+                </Button>
 
-                <Button onClick={handleNext} disabled={saving} className="min-w-[9rem]">
+                <Button
+                  onClick={handleNext}
+                  disabled={saving}
+                  className="min-h-11 min-w-0 flex-1 sm:min-w-[10rem] sm:flex-none"
+                >
                   {saving ? (
                     <>
                       <Refresh className="mr-2 h-4 w-4 animate-spin" />
@@ -671,54 +621,50 @@ const Onboarding = () => {
   );
 };
 
-const WelcomeStep = ({
-  userName,
-  onStepSelect,
-}: {
-  userName?: string;
-  onStepSelect: (step: OnboardingStepId) => void;
-}) => (
-  <div className="grid h-full gap-6 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-center">
-    <div className="space-y-5">
+const WelcomeStep = ({ userName }: { userName?: string }) => (
+  <div className="grid min-h-full gap-6 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-center lg:gap-10">
+    <div className="space-y-5 lg:py-4">
       <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-sm text-primary">
         <APP_ICONS.dashboard.insights className="h-4 w-4" />
-        First-run reading profile
+        Your first reading profile
       </div>
       <div className="space-y-3">
-        <h2 className="font-display text-3xl font-bold leading-tight md:text-5xl">
+        <h1 className="max-w-3xl font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
           {userName ? `${userName}, ` : ""}make Brack feel like it already knows your library.
-        </h2>
-        <p className="max-w-2xl font-sans text-base text-muted-foreground md:text-lg">
-          This setup seeds your goals, recommendations, discovery matches, and empty states with real reading signals.
-          You can skip now and finish it later from Settings.
+        </h1>
+        <p className="max-w-2xl font-sans text-base text-muted-foreground sm:text-lg">
+          A few thoughtful choices shape your goals, recommendations, and daily reading rhythm. You can change
+          everything later in Settings.
         </p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-3">
         {[
-          ["Palette", "The app color Brack should use", "palette"],
-          ["Taste", "Favorite genres and format", "taste"],
-          ["Pace", "How often and how long you read", "pace"],
-          ["Goals", "A target your dashboard can use", "goal"],
-        ].map(([title, body, step]) => (
-          <button
+          ["Make it yours", "Choose a palette and the books you love."],
+          ["Find your rhythm", "Set a pace that fits your real life."],
+          ["Read with direction", "Give your dashboard a useful first goal."],
+        ].map(([title, body], index) => (
+          <div
             key={title}
-            type="button"
-            onClick={() => onStepSelect(step as OnboardingStepId)}
-            className="rounded-md bg-muted/35 p-3 text-left transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="rounded-lg border border-border/65 bg-muted/25 p-3.5"
           >
-            <p className="font-sans text-sm font-semibold">{title}</p>
-            <p className="font-sans text-xs text-muted-foreground">{body}</p>
-          </button>
+            <span className="mb-2 grid h-7 w-7 place-items-center rounded-md bg-primary/10 font-sans text-xs font-bold text-primary">
+              {index + 1}
+            </span>
+            <p className="font-sans text-sm font-semibold text-foreground">{title}</p>
+            <p className="mt-1 font-sans text-xs text-muted-foreground">{body}</p>
+          </div>
         ))}
       </div>
     </div>
 
-    <div className="mx-auto hidden w-full max-w-[17rem] lg:block">
+    <div className="streak-art-stage mx-auto w-[clamp(8.5rem,28vw,13rem)] self-center" aria-hidden="true">
+      <span className="streak-art-aura" />
+      <span className="streak-art-shadow" />
       <img
         src={BRACK_STREAK_HAPPY_IMAGE}
         alt=""
-        aria-hidden="true"
-        className="aspect-square w-full object-contain drop-shadow-[0_18px_38px_hsl(var(--primary)/0.16)]"
+        className="streak-art-float onboarding-floating-art aspect-square w-full object-contain"
+        decoding="async"
       />
     </div>
   </div>
@@ -763,13 +709,11 @@ const PaletteStep = ({
             <p className="font-sans text-xs text-muted-foreground">Your palette follows you.</p>
           </div>
         </div>
-        <Progress
-          value={2}
-          max={3}
-          variant="dimensional"
-          segments={3}
-          aria-hidden="true"
-        />
+        <div className="onboarding-preview-meter" aria-hidden="true">
+          <span data-complete="true" />
+          <span data-complete="true" />
+          <span />
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <div className="rounded-md border border-border bg-background p-3">
             <p className="font-sans text-xs text-muted-foreground">Goal</p>
@@ -810,7 +754,7 @@ const TasteStep = ({
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Favorite genres">
         {GENRES.map((genre) => {
           const selected = formData.favoriteGenres.includes(genre);
           return (
@@ -818,8 +762,9 @@ const TasteStep = ({
               key={genre}
               type="button"
               onClick={() => onToggleGenre(genre)}
+              aria-pressed={selected}
               className={cn(
-                "rounded-full border px-3 py-2 font-sans text-sm transition-all",
+                "min-h-11 rounded-full border px-3 py-2 font-sans text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                 selected
                   ? "border-primary bg-primary text-primary-foreground shadow-sm"
                   : "border-border bg-background hover:border-primary/60 hover:bg-primary/10",
@@ -833,12 +778,12 @@ const TasteStep = ({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label>Slowest genre</Label>
+          <Label htmlFor="slowestGenre">Slowest genre</Label>
           <Select
             value={formData.slowestGenre}
             onValueChange={(value) => onFieldChange("slowestGenre", value)}
           >
-            <SelectTrigger>
+            <SelectTrigger id="slowestGenre" className="min-h-11">
               <SelectValue placeholder="Select a genre" />
             </SelectTrigger>
             <SelectContent>
@@ -851,16 +796,19 @@ const TasteStep = ({
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label>Preferred book length</Label>
+        <fieldset className="space-y-2">
+          <legend className="font-sans text-sm font-medium leading-none text-foreground">
+            Preferred book length
+          </legend>
           <div className="grid grid-cols-2 gap-2">
             {BOOK_LENGTH_OPTIONS.map((option) => (
               <button
                 key={option.value}
                 type="button"
                 onClick={() => onFieldChange("preferredBookLength", option.value)}
+                aria-pressed={formData.preferredBookLength === option.value}
                 className={cn(
-                  "rounded-md border p-3 text-left transition-colors",
+                  "min-h-11 rounded-md border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   formData.preferredBookLength === option.value
                     ? "border-primary bg-primary/[0.12] text-primary"
                     : "border-border bg-background hover:bg-muted/60",
@@ -871,23 +819,22 @@ const TasteStep = ({
               </button>
             ))}
           </div>
-        </div>
+        </fieldset>
       </div>
     </div>
 
     <div className="rounded-lg bg-muted/30 p-4">
       <div className="mb-3 flex items-center gap-2">
         <APP_ICONS.readers.similarTaste className="h-5 w-5 text-primary" />
-        <h3 className="font-display text-lg font-semibold">Taste constellation</h3>
+        <h3 className="font-display text-lg font-semibold">Selected genres</h3>
       </div>
-      <div ref={selectedGenresRef} className="flex min-h-40 flex-wrap content-start gap-2">
+      <div ref={selectedGenresRef} className="flex min-h-20 flex-wrap content-start gap-2">
         {formData.favoriteGenres.length === 0 ? (
-          <p className="font-sans text-sm text-muted-foreground">Selected genres fly here.</p>
+          <p className="font-sans text-sm text-muted-foreground">Your choices will collect here.</p>
         ) : (
           formData.favoriteGenres.map((genre) => (
             <Badge key={genre} className="selected-genre-chip">
               {genre}
-              <Xmark className="ml-1 h-3 w-3" />
             </Badge>
           ))
         )}
@@ -967,6 +914,7 @@ const PaceStep = ({ formData, onFieldChange, onNumberFieldChange }: PaceStepProp
       <Label htmlFor="motivation">What are you reading toward?</Label>
       <Input
         id="motivation"
+        className="min-h-11"
         value={formData.motivation}
         onChange={(event) => onFieldChange("motivation", event.target.value)}
         placeholder="Learning, focus, joy, school, career, community..."
@@ -1022,15 +970,17 @@ const GoalStep = ({
 
       <div className="rounded-lg bg-muted/30 p-4">
         <div className="flex items-center justify-between gap-4">
-          <div>
-            <Label className="font-sans text-base">Daily reminder</Label>
+          <Label htmlFor="onboarding-reminder" className="min-h-11 cursor-pointer py-1">
+            <span className="block font-sans text-base font-medium text-foreground">Daily reminder</span>
             <p className="font-sans text-sm text-muted-foreground">
               This seeds notification preferences; you can edit it later.
             </p>
-          </div>
+          </Label>
           <Switch
+            id="onboarding-reminder"
             checked={formData.reminderEnabled}
             onCheckedChange={(checked) => onFieldChange("reminderEnabled", checked)}
+            aria-label="Enable daily reading reminder"
           />
         </div>
         {formData.reminderEnabled && (
@@ -1051,7 +1001,8 @@ const GoalStep = ({
         src={BRACK_GOALS_IMAGE}
         alt=""
         aria-hidden="true"
-        className="mx-auto mb-4 h-36 w-36 rounded-md object-cover"
+        className="onboarding-floating-art mx-auto mb-4 h-36 w-36 object-contain"
+        decoding="async"
       />
       <div className="font-sans text-sm text-muted-foreground">Current target</div>
       <div className="font-display text-5xl font-bold text-primary">
@@ -1118,34 +1069,14 @@ const ReviewStep = ({ formData }: { formData: OnboardingFormData }) => (
         src={BRACK_TROPHY_IMAGE}
         alt=""
         aria-hidden="true"
-        className="mx-auto mb-4 h-36 w-36 rounded-md object-cover"
+        className="onboarding-floating-art mx-auto mb-4 h-36 w-36 object-contain"
+        decoding="async"
       />
       <p className="font-display text-xl font-bold">Ready to personalize</p>
       <p className="font-sans text-sm text-muted-foreground">
         Habits, goal, notification preference, and learning signals will be saved together.
       </p>
     </div>
-  </div>
-);
-
-const VisualLearningCard = ({ formData }: { formData: OnboardingFormData }) => (
-  <div className="rounded-lg border border-border/70 bg-card/80 p-4 backdrop-blur">
-    <div className="mb-3 flex items-center gap-2">
-      <APP_ICONS.dashboard.insights className="h-5 w-5 text-primary" />
-      <h2 className="font-display text-lg font-semibold">Profile signal</h2>
-    </div>
-    <div className="grid grid-cols-3 gap-2">
-      <SignalMetric label="Genres" value={formData.favoriteGenres.length} />
-      <SignalMetric label="Goal" value={formData.goalTargetBooks ?? 0} />
-      <SignalMetric label="Minutes" value={formData.preferredSessionMinutes ?? 0} />
-    </div>
-  </div>
-);
-
-const SignalMetric = ({ label, value }: { label: string; value: number }) => (
-  <div className="rounded-md border border-border/70 bg-background/75 p-3 text-center">
-    <div className="font-sans text-xl font-bold text-primary">{value}</div>
-    <div className="font-sans text-xs text-muted-foreground">{label}</div>
   </div>
 );
 
@@ -1168,6 +1099,7 @@ const NumberField = ({
     <Label htmlFor={id}>{label}</Label>
     <Input
       id={id}
+      className="min-h-11"
       type="number"
       min={required ? 1 : 0}
       inputMode="numeric"
@@ -1190,16 +1122,17 @@ const OptionGrid = ({
   options: Array<{ value: string; label: string }>;
   onChange: (value: string) => void;
 }) => (
-  <div className="space-y-2">
-    <Label>{label}</Label>
+  <fieldset className="space-y-2">
+    <legend className="font-sans text-sm font-medium leading-none text-foreground">{label}</legend>
     <div className="grid gap-2">
       {options.map((option) => (
         <button
           key={option.value}
           type="button"
           onClick={() => onChange(option.value)}
+          aria-pressed={value === option.value}
           className={cn(
-            "rounded-md border px-3 py-2 text-left font-sans text-sm transition-colors",
+            "min-h-11 rounded-md border px-3 py-2 text-left font-sans text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
             value === option.value
               ? "border-primary bg-primary/[0.12] text-primary"
               : "border-border bg-background hover:bg-muted/60",
@@ -1209,7 +1142,7 @@ const OptionGrid = ({
         </button>
       ))}
     </div>
-  </div>
+  </fieldset>
 );
 
 const SummaryCard = ({

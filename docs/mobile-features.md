@@ -402,6 +402,9 @@ Run `npm run brand:icons` and then `npm run media:assets` after changing Brack a
 
 **URL Scheme**: `brack://`
 
+**Verified-link target**: `https://brack-app.com` (not active until the web
+domain and platform association documents are deployed and verified)
+
 **Supported Links**:
 - `brack://book/123` - Open book detail
 - `brack://user/456` - Open user profile
@@ -436,10 +439,29 @@ Android (`AndroidManifest.xml`):
 </intent-filter>
 ```
 
+Production content links can also use verified HTTPS links:
+
+- Android declares `android:autoVerify="true"` App Links only for the supported
+  `/book/`, `/user/`, `/message/`, `/club/`, and `/list/` content paths. It does
+  not claim `/auth/*`, so an HTTPS email fallback stays in the browser. The site must serve
+  `/.well-known/assetlinks.json` containing `com.brack.app` and the real release
+  signing certificate SHA-256 fingerprint.
+- iOS requires the Associated Domains entitlement
+  `applinks:brack-app.com`. The site must serve the extensionless
+  `/.well-known/apple-app-site-association` document containing the real Apple
+  Team ID and bundle ID `com.brack.app`. When Universal Links are enabled, the
+  association rules must likewise exclude `/auth/*`; current Auth return uses
+  the registered `brack://` scheme.
+- Both association documents must be public HTTPS responses with status 200,
+  the correct JSON content type, and no redirect. Do not commit placeholder
+  identifiers. Keep `brack://` as the installed-app fallback.
+
 **Services**:
 - `apps/client/src/services/deepLinkService.ts` routes content deep links and forwards auth callbacks.
 - `apps/client/src/components/DeepLinkHandler.tsx` completes `brack://auth/callback` and `brack://auth/reset-password` by exchanging the Supabase code/session and routing to onboarding, dashboard, or password reset.
 - `@capacitor/browser` opens OAuth providers outside the WebView and closes on return where supported.
+- The PWA service worker is not registered inside Capacitor. Native Auth state
+  remains in the WebView while only flows that require a provider/browser leave it.
 
 ## Offline Support
 

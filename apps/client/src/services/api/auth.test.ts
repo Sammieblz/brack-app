@@ -5,24 +5,18 @@ const {
   exchangeCodeForSessionMock,
   getSessionMock,
   getUserMock,
-  invokeFunctionMock,
   resendMock,
   setSessionMock,
   signUpMock,
+  verifyOtpMock,
 } = vi.hoisted(() => ({
   exchangeCodeForSessionMock: vi.fn(),
   getSessionMock: vi.fn(),
   getUserMock: vi.fn(),
-  invokeFunctionMock: vi.fn(),
   resendMock: vi.fn(),
   setSessionMock: vi.fn(),
   signUpMock: vi.fn(),
-}));
-
-vi.mock("./client", () => ({
-  getApiErrorStatus: (error: { status?: number; statusCode?: number }) =>
-    error?.status ?? error?.statusCode ?? null,
-  invokeFunction: invokeFunctionMock,
+  verifyOtpMock: vi.fn(),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
@@ -34,6 +28,7 @@ vi.mock("@/integrations/supabase/client", () => ({
       resend: resendMock,
       setSession: setSessionMock,
       signUp: signUpMock,
+      verifyOtp: verifyOtpMock,
     },
   },
 }));
@@ -46,10 +41,13 @@ vi.mock("@/services/platform", () => ({
 import {
   AuthCallbackError,
   AuthProtocolError,
+  clearVerifiedAuthUserCache,
+  getCurrentAuthUser,
   getOptionalCurrentAuthUser,
   handleAuthCallbackUrl,
   resendSignUpEmail,
   signUpWithEmail,
+  verifyEmailOtp,
 } from "./auth";
 
 describe("optional authentication and callback handling", () => {
@@ -57,11 +55,94 @@ describe("optional authentication and callback handling", () => {
     exchangeCodeForSessionMock.mockReset();
     getSessionMock.mockReset();
     getUserMock.mockReset();
-    invokeFunctionMock.mockReset();
-    invokeFunctionMock.mockResolvedValue({ exists: false });
     resendMock.mockReset();
     setSessionMock.mockReset();
     signUpMock.mockReset();
+    verifyOtpMock.mockReset();
+    clearVerifiedAuthUserCache();
+  });
+
+  it.each(["signup", "recovery"] as const)(
+    "verifies a six-digit %s code and primes the verified-user cache",
+    async (type) => {
+      const user = { id: `${type}-user`, email: "reader@example.com" };
+      const session = { access_token: `${type}-access`, user };
+      verifyOtpMock.mockResolvedValue({
+        data: { session, user },
+        error: null,
+      });
+      getSessionMock.mockResolvedValue({ data: { session }, error: null });
+
+      await expect(
+        verifyEmailOtp({
+          email: " Reader@Example.com ",
+          token: " 123 456 ",
+          type,
+        }),
+      ).resolves.toEqual({ session, user });
+
+      expect(verifyOtpMock).toHaveBeenCalledWith({
+        email: "Reader@Example.com",
+        token: "123456",
+        type,
+      });
+      await expect(getCurrentAuthUser()).resolves.toEqual(user);
+      expect(getUserMock).not.toHaveBeenCalled();
+    },
+  );
+
+  it("rejects an incomplete email code before calling Supabase", async () => {
+    await expect(
+      verifyEmailOtp({
+        email: "reader@example.com",
+        token: "12345",
+        type: "signup",
+      }),
+    ).rejects.toMatchObject({
+      name: "AuthProtocolError",
+      message: "Enter the complete six-digit email code.",
+    });
+
+    expect(verifyOtpMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps an invalid or expired email-code error observable", async () => {
+    const error = new AuthApiError(
+      "Token has expired or is invalid",
+      403,
+      "otp_expired",
+    );
+    verifyOtpMock.mockResolvedValue({
+      data: { session: null, user: null },
+      error,
+    });
+
+    await expect(
+      verifyEmailOtp({
+        email: "reader@example.com",
+        token: "123456",
+        type: "recovery",
+      }),
+    ).rejects.toBe(error);
+  });
+
+  it("rejects an email-code success response without a session", async () => {
+    verifyOtpMock.mockResolvedValue({
+      data: { session: null, user: { id: "user-1" } },
+      error: null,
+    });
+
+    await expect(
+      verifyEmailOtp({
+        email: "reader@example.com",
+        token: "123456",
+        type: "signup",
+      }),
+    ).rejects.toMatchObject({
+      name: "AuthProtocolError",
+      message:
+        "Email verification completed without an authenticated session.",
+    });
   });
 
   it("returns a signed-in outcome when signup creates a session", async () => {
@@ -75,7 +156,7 @@ describe("optional authentication and callback handling", () => {
       signUpWithEmail({
         email: "reader@example.com",
         password: "strong-password",
-        redirectTo: "https://brack.app/auth/callback",
+        redirectTo: "https://brack-app.com/auth/callback",
         metadata: { full_name: "Reader One" },
       }),
     ).resolves.toEqual({ kind: "signed_in", session });
@@ -84,18 +165,20 @@ describe("optional authentication and callback handling", () => {
       email: "reader@example.com",
       password: "strong-password",
       options: {
-        emailRedirectTo: "https://brack.app/auth/callback",
+        emailRedirectTo: "https://brack-app.com/auth/callback",
         data: { full_name: "Reader One" },
       },
     });
-    expect(invokeFunctionMock).toHaveBeenCalledWith(
-      "auth-email-availability",
-      { body: { email: "reader@example.com" } },
-    );
   });
 
-  it("does not call Auth signup when the preflight finds an existing email", async () => {
-    invokeFunctionMock.mockResolvedValue({ exists: true });
+  it("uses Supabase Auth as the single duplicate-email authority", async () => {
+    signUpMock.mockResolvedValue({
+      data: {
+        session: null,
+        user: { id: "obfuscated-user", identities: [] },
+      },
+      error: null,
+    });
 
     await expect(
       signUpWithEmail({
@@ -107,53 +190,7 @@ describe("optional authentication and callback handling", () => {
       email: "Reader@Example.com",
     });
 
-    expect(signUpMock).not.toHaveBeenCalled();
-  });
-
-  it("fails closed when the availability service is unavailable", async () => {
-    invokeFunctionMock.mockRejectedValue({ status: 503 });
-
-    await expect(
-      signUpWithEmail({
-        email: "reader@example.com",
-        password: "strong-password",
-      }),
-    ).rejects.toMatchObject({
-      code: "email_availability_unavailable",
-      status: 503,
-    });
-
-    expect(signUpMock).not.toHaveBeenCalled();
-  });
-
-  it("preserves availability rate limits and never calls Auth signup", async () => {
-    const rateLimitError = { status: 429, retryAfterSeconds: 60 };
-    invokeFunctionMock.mockRejectedValue(rateLimitError);
-
-    await expect(
-      signUpWithEmail({
-        email: "reader@example.com",
-        password: "strong-password",
-      }),
-    ).rejects.toBe(rateLimitError);
-
-    expect(signUpMock).not.toHaveBeenCalled();
-  });
-
-  it("fails closed on a malformed availability response", async () => {
-    invokeFunctionMock.mockResolvedValue({ available: true });
-
-    await expect(
-      signUpWithEmail({
-        email: "reader@example.com",
-        password: "strong-password",
-      }),
-    ).rejects.toMatchObject({
-      code: "email_availability_unavailable",
-      status: 503,
-    });
-
-    expect(signUpMock).not.toHaveBeenCalled();
+    expect(signUpMock).toHaveBeenCalledOnce();
   });
 
   it("returns a neutral pending outcome for a normal no-session signup", async () => {
@@ -312,12 +349,115 @@ describe("optional authentication and callback handling", () => {
     });
   });
 
+  it("single-flights and briefly reuses verified-user lookups for one token", async () => {
+    const session = {
+      access_token: "token-one",
+      user: { id: "user-1" },
+    };
+    const verifiedUser = { id: "user-1", email: "reader@example.com" };
+    getSessionMock.mockResolvedValue({ data: { session }, error: null });
+    getUserMock.mockResolvedValue({ data: { user: verifiedUser }, error: null });
+
+    const [first, second] = await Promise.all([
+      getCurrentAuthUser(),
+      getCurrentAuthUser(),
+    ]);
+    const third = await getCurrentAuthUser();
+
+    expect(first).toEqual(verifiedUser);
+    expect(second).toEqual(verifiedUser);
+    expect(third).toEqual(verifiedUser);
+    expect(getUserMock).toHaveBeenCalledOnce();
+    expect(getUserMock).toHaveBeenCalledWith("token-one");
+  });
+
+  it("drops the verified-user cache when the optional session disappears", async () => {
+    const session = {
+      access_token: "token-one",
+      user: { id: "user-1" },
+    };
+    getSessionMock
+      .mockResolvedValueOnce({ data: { session }, error: null })
+      .mockResolvedValueOnce({ data: { session: null }, error: null })
+      .mockResolvedValueOnce({ data: { session }, error: null });
+    getUserMock.mockResolvedValue({
+      data: { user: { id: "user-1", email: "reader@example.com" } },
+      error: null,
+    });
+
+    await getCurrentAuthUser();
+    await expect(getOptionalCurrentAuthUser()).resolves.toBeNull();
+    await getCurrentAuthUser();
+
+    expect(getUserMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not let an invalidated lookup clear its replacement single-flight", async () => {
+    type LookupResult = {
+      data: { user: { id: string } };
+      error: null;
+    };
+    const session = {
+      access_token: "same-token",
+      user: { id: "user-1" },
+    };
+    let resolveFirst: ((value: LookupResult) => void) | undefined;
+    let resolveSecond: ((value: LookupResult) => void) | undefined;
+    getSessionMock.mockResolvedValue({ data: { session }, error: null });
+    getUserMock
+      .mockImplementationOnce(() => new Promise<LookupResult>((resolve) => {
+        resolveFirst = resolve;
+      }))
+      .mockImplementationOnce(() => new Promise<LookupResult>((resolve) => {
+        resolveSecond = resolve;
+      }));
+
+    const first = getCurrentAuthUser();
+    await vi.waitFor(() => expect(getUserMock).toHaveBeenCalledTimes(1));
+    clearVerifiedAuthUserCache();
+    const second = getCurrentAuthUser();
+    await vi.waitFor(() => expect(getUserMock).toHaveBeenCalledTimes(2));
+
+    resolveFirst?.({ data: { user: { id: "stale-user" } }, error: null });
+    await first;
+    const third = getCurrentAuthUser();
+    expect(getUserMock).toHaveBeenCalledTimes(2);
+
+    resolveSecond?.({ data: { user: { id: "user-1" } }, error: null });
+    await expect(Promise.all([second, third])).resolves.toEqual([
+      { id: "user-1" },
+      { id: "user-1" },
+    ]);
+  });
+
+  it("does not reuse a verified user after the access token changes", async () => {
+    getSessionMock
+      .mockResolvedValueOnce({
+        data: { session: { access_token: "token-one", user: { id: "user-1" } } },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: { session: { access_token: "token-two", user: { id: "user-1" } } },
+        error: null,
+      });
+    getUserMock.mockResolvedValue({
+      data: { user: { id: "user-1" } },
+      error: null,
+    });
+
+    await getCurrentAuthUser();
+    await getCurrentAuthUser();
+
+    expect(getUserMock).toHaveBeenNthCalledWith(1, "token-one");
+    expect(getUserMock).toHaveBeenNthCalledWith(2, "token-two");
+  });
+
   it("exchanges an authorization code once through the manual callback owner", async () => {
     const callbackData = { session: { access_token: "token" }, user: { id: "user-1" } };
     exchangeCodeForSessionMock.mockResolvedValue({ data: callbackData, error: null });
 
     await expect(
-      handleAuthCallbackUrl("https://brack.app/auth/callback?code=one-time-code"),
+      handleAuthCallbackUrl("https://brack-app.com/auth/callback?code=one-time-code"),
     ).resolves.toEqual(callbackData);
     expect(exchangeCodeForSessionMock).toHaveBeenCalledOnce();
     expect(exchangeCodeForSessionMock).toHaveBeenCalledWith("one-time-code");
@@ -330,7 +470,7 @@ describe("optional authentication and callback handling", () => {
 
     await expect(
       handleAuthCallbackUrl(
-        "https://brack.app/auth/callback#access_token=access&refresh_token=refresh",
+        "https://brack-app.com/auth/callback#access_token=access&refresh_token=refresh",
       ),
     ).resolves.toEqual(callbackData);
     expect(setSessionMock).toHaveBeenCalledWith({
@@ -343,7 +483,7 @@ describe("optional authentication and callback handling", () => {
     getSessionMock.mockResolvedValue({ data: { session: null }, error: null });
 
     await expect(
-      handleAuthCallbackUrl("https://brack.app/auth/callback"),
+      handleAuthCallbackUrl("https://brack-app.com/auth/callback"),
     ).rejects.toBeInstanceOf(AuthCallbackError);
   });
 
@@ -355,7 +495,7 @@ describe("optional authentication and callback handling", () => {
       error: null,
     });
     await expect(
-      handleAuthCallbackUrl("https://brack.app/auth/callback"),
+      handleAuthCallbackUrl("https://brack-app.com/auth/callback"),
     ).rejects.toMatchObject({ reason: "missing_credentials" });
     expect(getSessionMock).not.toHaveBeenCalled();
   });
@@ -369,14 +509,14 @@ describe("optional authentication and callback handling", () => {
     await expect(
       resendSignUpEmail({
         email: "reader@example.com",
-        redirectTo: "https://brack.app/auth/callback",
+        redirectTo: "https://brack-app.com/auth/callback",
       }),
     ).resolves.toBeUndefined();
 
     expect(resendMock).toHaveBeenCalledWith({
       type: "signup",
       email: "reader@example.com",
-      options: { emailRedirectTo: "https://brack.app/auth/callback" },
+      options: { emailRedirectTo: "https://brack-app.com/auth/callback" },
     });
   });
 

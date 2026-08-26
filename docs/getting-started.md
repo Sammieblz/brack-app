@@ -66,7 +66,7 @@ GOOGLE_BOOKS_API_KEY=your-google-books-api-key
 VITE_SENTRY_DSN=your-sentry-dsn
 
 # For Edge Functions
-ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com,brack-app://brack
+ALLOWED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080,https://brack-app.com,https://localhost,capacitor://localhost,brack-app://brack
 ENVIRONMENT=development
 FCM_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
 GAMIFICATION_WORKER_SECRET=replace-with-a-random-worker-secret

@@ -1,5 +1,114 @@
 project_id = "waftnaqgkcgufzapcihe"
 
+# Local Auth intentionally mirrors the hosted Brack contract without copying
+# any hosted SMTP, OAuth, CAPTCHA, or signing secret into source control.
+[auth]
+enabled = true
+site_url = "http://localhost:8080"
+additional_redirect_urls = [
+  "http://localhost:8080/auth/callback",
+  "http://localhost:8080/auth/reset-password",
+  "http://127.0.0.1:8080/auth/callback",
+  "http://127.0.0.1:8080/auth/reset-password",
+  "http://127.0.0.1:8081/auth/callback",
+  "http://127.0.0.1:8081/auth/reset-password",
+  "brack://auth/callback",
+  "brack://auth/reset-password",
+]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
+minimum_password_length = 8
+password_requirements = "lower_upper_letters_digits"
+
+[auth.rate_limit]
+email_sent = 30
+sms_sent = 30
+anonymous_users = 0
+token_refresh = 150
+sign_in_sign_ups = 30
+token_verifications = 30
+web3 = 0
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+secure_password_change = false
+max_frequency = "1m"
+otp_length = 6
+otp_expiry = 3600
+
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
+
+# Source-controlled Auth email templates. These paths are used by the local
+# stack. Hosted projects are synchronized through
+# `npm run auth:emails:check` / `npm run auth:emails:apply`, which PATCH only
+# the explicitly allowlisted subject, content, and notification-enabled fields.
+[auth.email.template.confirmation]
+subject = "Confirm Your Signup"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.invite]
+subject = "You have been invited"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.magic_link]
+subject = "Your Magic Link"
+content_path = "./supabase/templates/magic-link.html"
+
+[auth.email.template.email_change]
+subject = "Confirm Email Change"
+content_path = "./supabase/templates/email-change.html"
+
+[auth.email.template.recovery]
+subject = "Reset Your Password"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.reauthentication]
+subject = "Confirm Reauthentication"
+content_path = "./supabase/templates/reauthentication.html"
+
+[auth.email.notification.password_changed]
+enabled = true
+subject = "Your password has been changed"
+content_path = "./templates/notification-password-changed.html"
+
+[auth.email.notification.email_changed]
+enabled = true
+subject = "Your email address has been changed"
+content_path = "./templates/notification-email-changed.html"
+
+[auth.email.notification.phone_changed]
+enabled = true
+subject = "Your phone number has been changed"
+content_path = "./templates/notification-phone-changed.html"
+
+[auth.email.notification.identity_linked]
+enabled = true
+subject = "A new identity has been linked"
+content_path = "./templates/notification-identity-linked.html"
+
+[auth.email.notification.identity_unlinked]
+enabled = true
+subject = "An identity has been unlinked"
+content_path = "./templates/notification-identity-unlinked.html"
+
+[auth.email.notification.mfa_factor_enrolled]
+enabled = true
+subject = "A new MFA factor has been enrolled"
+content_path = "./templates/notification-mfa-factor-enrolled.html"
+
+[auth.email.notification.mfa_factor_unenrolled]
+enabled = true
+subject = "An MFA factor has been unenrolled"
+content_path = "./templates/notification-mfa-factor-unenrolled.html"
+
 # Match the linked production database so clean CI replays exercise the same
 # PostgreSQL major-version behavior as deployment.
 [db]

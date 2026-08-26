@@ -8,6 +8,14 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => {
   const repoRoot = path.resolve(__dirname, "../..");
   const env = loadEnv(mode, repoRoot, "");
+  const configuredSupabaseUrl = env.VITE_SUPABASE_URL?.replace(/\/$/, "");
+  const escapedSupabaseUrl = configuredSupabaseUrl?.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&",
+  );
+  const publicSupabaseStoragePattern = escapedSupabaseUrl
+    ? new RegExp(`^${escapedSupabaseUrl}/storage/v1/object/public/`)
+    : /^https:\/\/[^/]+\.supabase\.co\/storage\/v1\/object\/public\//;
 
   return {
     envDir: repoRoot,
@@ -25,11 +33,21 @@ export default defineConfig(({ mode }) => {
         "brack-favicon/apple-touch-icon.png",
       ],
       manifest: {
+        id: "/",
         name: "Brack",
         short_name: "Brack",
         start_url: "/",
         scope: "/",
         display: "standalone",
+        // Auth links should remain in the reader's browser by default. This is
+        // advisory in browsers that support link-handling preferences; OTP is
+        // the guaranteed same-context path.
+        handle_links: "not-preferred",
+        // If the reader explicitly opens Brack as an app, reuse its current
+        // window instead of creating duplicate PWA windows.
+        launch_handler: {
+          client_mode: "navigate-existing",
+        },
         theme_color: "#F97316",
         background_color: "#0b1021",
         description: "Track your reading progress, discover new books, connect with readers, and achieve your reading goals.",
@@ -54,6 +72,9 @@ export default defineConfig(({ mode }) => {
       },
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        // Auth callbacks must always reach the network and must never receive
+        // an offline shell containing stale one-time credentials.
+        navigateFallbackDenylist: [/^\/auth(?:\/|$)/],
         globPatterns: ["**/*.{js,css,html,ico,svg,woff2}"],
         globIgnores: [
           "**/assets/*scanner*",
@@ -84,16 +105,10 @@ export default defineConfig(({ mode }) => {
             },
           },
           {
-            // Use environment variable or fallback pattern
-            // Note: Replace hardcoded URL with VITE_SUPABASE_URL in production
-            urlPattern: ({ url }) => {
-              const supabaseUrl = env.VITE_SUPABASE_URL;
-              if (supabaseUrl) {
-                return url.href.startsWith(`${supabaseUrl}/storage/v1/object/public/`);
-              }
-              // Fallback to pattern matching any supabase storage URL
-              return /^https:\/\/.*\.supabase\.co\/storage\/v1\/object\/public\//.test(url.href);
-            },
+            // Workbox serializes route matchers into the service worker. A
+            // RegExp embeds the configured origin without leaking a closure
+            // such as the previous undefined `env` runtime reference.
+            urlPattern: publicSupabaseStoragePattern,
             handler: "CacheFirst",
             options: {
               cacheName: "supabase-public-assets",
