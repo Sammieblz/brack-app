@@ -956,6 +956,7 @@ const Auth = () => {
                       <Input
                         id="firstName"
                         type="text"
+                        autoComplete="given-name"
                         placeholder="First name"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
@@ -968,6 +969,7 @@ const Auth = () => {
                       <Input
                         id="lastName"
                         type="text"
+                        autoComplete="family-name"
                         placeholder="Last name"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
@@ -984,6 +986,7 @@ const Auth = () => {
                 <Input
                   id="email"
                   type="email"
+                  autoComplete="email"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -1012,6 +1015,7 @@ const Auth = () => {
                   <Input
                     id="password"
                     type="password"
+                    autoComplete={isSignUp ? "new-password" : "current-password"}
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}

@@ -8,13 +8,19 @@ const {
   beginOnboardingSignupAttemptMock,
   canAccessOnboardingSignupMock,
   cancelOnboardingSignupAttemptMock,
+  clearOnboardingDraftMock,
   getAuthSessionMock,
+  isCustomSchemeAuthRuntimeMock,
+  loadOnboardingDraftMock,
+  previewThemeMock,
   resendSignUpEmailMock,
+  resetToDefaultThemeMock,
   resolvePostAuthPathMock,
   sendPasswordResetEmailMock,
   signInWithEmailPasswordMock,
   signInWithOAuthMock,
   signUpWithEmailMock,
+  subscribeToAuthFlowCompletionMock,
   toastMock,
   verifyEmailOtpMock,
 } = vi.hoisted(() => ({
@@ -22,13 +28,19 @@ const {
   beginOnboardingSignupAttemptMock: vi.fn(),
   canAccessOnboardingSignupMock: vi.fn(),
   cancelOnboardingSignupAttemptMock: vi.fn(),
+  clearOnboardingDraftMock: vi.fn(),
   getAuthSessionMock: vi.fn(),
+  isCustomSchemeAuthRuntimeMock: vi.fn(),
+  loadOnboardingDraftMock: vi.fn(),
+  previewThemeMock: vi.fn(),
   resendSignUpEmailMock: vi.fn(),
+  resetToDefaultThemeMock: vi.fn(),
   resolvePostAuthPathMock: vi.fn(),
   sendPasswordResetEmailMock: vi.fn(),
   signInWithEmailPasswordMock: vi.fn(),
   signInWithOAuthMock: vi.fn(),
   signUpWithEmailMock: vi.fn(),
+  subscribeToAuthFlowCompletionMock: vi.fn(),
   toastMock: vi.fn(),
   verifyEmailOtpMock: vi.fn(),
 }));
@@ -57,12 +69,19 @@ vi.mock("@/services/onboardingDraft", () => ({
   beginOnboardingSignupAttempt: beginOnboardingSignupAttemptMock,
   canAccessOnboardingSignup: canAccessOnboardingSignupMock,
   cancelOnboardingSignupAttempt: cancelOnboardingSignupAttemptMock,
+  clearOnboardingDraft: clearOnboardingDraftMock,
+  loadOnboardingDraft: loadOnboardingDraftMock,
 }));
 
 vi.mock("@/services/platform", () => ({
   getAuthRedirectUrl: () => "https://brack-app.com/auth/callback",
   getPasswordResetRedirectUrl: () =>
     "https://brack-app.com/auth/reset-password",
+  isCustomSchemeAuthRuntime: isCustomSchemeAuthRuntimeMock,
+}));
+
+vi.mock("@/services/authFlowBridge", () => ({
+  subscribeToAuthFlowCompletion: subscribeToAuthFlowCompletionMock,
 }));
 
 vi.mock("@/hooks/use-toast", () => ({
@@ -70,7 +89,10 @@ vi.mock("@/hooks/use-toast", () => ({
 }));
 
 vi.mock("@/contexts/ThemeContext", () => ({
-  useTheme: () => ({ resetToDefaultTheme: vi.fn() }),
+  useTheme: () => ({
+    previewTheme: previewThemeMock,
+    resetToDefaultTheme: resetToDefaultThemeMock,
+  }),
 }));
 
 vi.mock("@/hooks/useAuth", () => ({
@@ -131,7 +153,7 @@ const LocationProbe = () => {
   return <output data-testid="current-location">{location.pathname}{location.search}</output>;
 };
 
-const renderAuth = (entry = "/auth?mode=signup") =>
+const renderAuth = (entry = "/auth?mode=signup&from=onboarding") =>
   render(
     <MemoryRouter initialEntries={[entry]}>
       <Auth />
@@ -166,6 +188,17 @@ const enterConfirmationPending = async () => {
   await screen.findByRole("heading", { name: "Confirm in this window" });
 };
 
+const createOAuthPopup = () => {
+  const popupDocument = document.implementation.createHTMLDocument();
+  return {
+    closed: false,
+    close: vi.fn(),
+    document: popupDocument,
+    focus: vi.fn(),
+    location: { replace: vi.fn() },
+  } as unknown as Window;
+};
+
 describe("Auth email flows", () => {
   beforeEach(() => {
     authorizePasswordRecoverySessionMock.mockReset();
@@ -174,26 +207,94 @@ describe("Auth email flows", () => {
     canAccessOnboardingSignupMock.mockReset();
     canAccessOnboardingSignupMock.mockReturnValue(true);
     cancelOnboardingSignupAttemptMock.mockReset();
+    clearOnboardingDraftMock.mockReset();
     getAuthSessionMock.mockReset();
     getAuthSessionMock.mockResolvedValue(null);
+    isCustomSchemeAuthRuntimeMock.mockReset();
+    isCustomSchemeAuthRuntimeMock.mockReturnValue(false);
+    loadOnboardingDraftMock.mockReset();
+    loadOnboardingDraftMock.mockReturnValue({
+      flowId: "draft-one",
+      stage: "ready",
+      outcome: "completed",
+      formData: { colorTheme: "midnight" },
+    });
+    previewThemeMock.mockReset();
     resendSignUpEmailMock.mockReset();
     resendSignUpEmailMock.mockResolvedValue({});
+    resetToDefaultThemeMock.mockReset();
     sendPasswordResetEmailMock.mockReset();
     sendPasswordResetEmailMock.mockResolvedValue({});
     signInWithEmailPasswordMock.mockReset();
     signInWithEmailPasswordMock.mockResolvedValue(undefined);
     signInWithOAuthMock.mockReset();
-    signInWithOAuthMock.mockResolvedValue({});
+    signInWithOAuthMock.mockResolvedValue({
+      url: "https://accounts.google.com/o/oauth2/auth",
+    });
     signUpWithEmailMock.mockReset();
+    subscribeToAuthFlowCompletionMock.mockReset();
+    subscribeToAuthFlowCompletionMock.mockReturnValue(vi.fn());
     resolvePostAuthPathMock.mockReset();
     resolvePostAuthPathMock.mockResolvedValue("/dashboard");
     toastMock.mockReset();
     verifyEmailOtpMock.mockReset();
     captchaControl.autoSolve = true;
+    vi.spyOn(window, "open").mockReturnValue(createOAuthPopup());
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it("carries the in-memory onboarding palette into the linked signup screen", async () => {
+    renderAuth();
+
+    await screen.findByRole("heading", { name: "Join BRACK" });
+    await waitFor(() => {
+      expect(previewThemeMock).toHaveBeenCalledWith("midnight");
+    });
+    expect(resetToDefaultThemeMock).not.toHaveBeenCalled();
+  });
+
+  it("restarts onboarding when a refreshed signup document has no draft", async () => {
+    loadOnboardingDraftMock.mockReturnValue(null);
+    canAccessOnboardingSignupMock.mockReturnValue(false);
+
+    renderAuth();
+
+    await waitFor(() => {
+      expect(screen.getByTestId("current-location")).toHaveTextContent(
+        "/onboarding?from=auth",
+      );
+    });
+    expect(previewThemeMock).not.toHaveBeenCalled();
+    expect(resetToDefaultThemeMock).toHaveBeenCalled();
+  });
+
+  it("finishes the original signup after the callback bridge signals completion", async () => {
+    loadOnboardingDraftMock.mockReturnValue({
+      flowId: "draft-one",
+      stage: "auth_started",
+      outcome: "completed",
+      formData: { colorTheme: "midnight" },
+    });
+    renderAuth();
+    await screen.findByRole("heading", { name: "Join BRACK" });
+
+    await waitFor(() => {
+      expect(subscribeToAuthFlowCompletionMock).toHaveBeenCalled();
+    });
+    const completionListener = subscribeToAuthFlowCompletionMock.mock.calls[0]?.[0];
+    expect(completionListener).toBeTypeOf("function");
+
+    await act(async () => {
+      completionListener();
+      await Promise.resolve();
+    });
+
+    expect(resolvePostAuthPathMock).toHaveBeenCalled();
+    expect(await screen.findByText("Opening Brack")).toBeInTheDocument();
   });
 
   it("single-flights rapid duplicate signup submissions", async () => {
@@ -374,8 +475,11 @@ describe("Auth email flows", () => {
     expect(await screen.findByText("Opening Brack")).toBeInTheDocument();
   });
 
-  it("lets an existing Google reader return to the original identity safely", async () => {
-    await enterConfirmationPending();
+  it("keeps onboarding Google signup in the requesting document", async () => {
+    const popup = createOAuthPopup();
+    vi.mocked(window.open).mockReturnValue(popup);
+    renderAuth();
+    await screen.findByRole("heading", { name: "Join BRACK" });
 
     fireEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
 
@@ -383,8 +487,55 @@ describe("Auth email flows", () => {
       expect(signInWithOAuthMock).toHaveBeenCalledWith({
         provider: "google",
         redirectTo: "https://brack-app.com/auth/callback",
+        preserveCurrentDocument: true,
       });
     });
+    expect(window.open).toHaveBeenCalledWith(
+      "about:blank",
+      "brack-google-auth",
+      "popup=yes,width=520,height=720,resizable=yes,scrollbars=yes",
+    );
+    expect(popup.location.replace).toHaveBeenCalledWith(
+      "https://accounts.google.com/o/oauth2/auth",
+    );
+    expect(popup.focus).toHaveBeenCalled();
+  });
+
+  it("stops before Supabase OAuth when the signup popup is blocked", async () => {
+    vi.mocked(window.open).mockReturnValue(null);
+    renderAuth();
+    await screen.findByRole("heading", { name: "Join BRACK" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
+
+    expect(
+      await screen.findByText("Allow the Google sign-up window"),
+    ).toBeInTheDocument();
+    expect(cancelOnboardingSignupAttemptMock).toHaveBeenCalledOnce();
+    expect(signInWithOAuthMock).not.toHaveBeenCalled();
+    expect(toastMock).toHaveBeenCalledWith({
+      variant: "destructive",
+      title: "Allow the Google sign-up window",
+      description:
+        "Your browser blocked the secure Google window. Allow pop-ups for Brack, then try again.",
+    });
+  });
+
+  it("clears guest answers and restores the public theme when signup is abandoned", async () => {
+    renderAuth();
+    await screen.findByRole("heading", { name: "Join BRACK" });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Already have an account? Sign in" }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("current-location")).toHaveTextContent(
+        "/auth?mode=signin",
+      );
+    });
+    expect(clearOnboardingDraftMock).toHaveBeenCalledOnce();
+    expect(resetToDefaultThemeMock).toHaveBeenCalled();
   });
 
   it("moves from confirmation-pending state to neutral reset-password state", async () => {

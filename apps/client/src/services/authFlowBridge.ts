@@ -43,8 +43,13 @@ export const publishAuthFlowCompletion = () => {
 
   const channel = openCompletionChannel();
   if (channel) {
-    channel.postMessage(message);
-    channel.close();
+    try {
+      channel.postMessage(message);
+    } catch {
+      // The authenticated callback can still continue in its own document.
+    } finally {
+      channel.close();
+    }
   }
 
   return hasRequestingWindow;
@@ -64,11 +69,19 @@ export const subscribeToAuthFlowCompletion = (listener: () => void) => {
   const handleChannelMessage = (event: MessageEvent) => {
     if (isCompletionMessage(event.data)) listener();
   };
-  channel?.addEventListener("message", handleChannelMessage);
+  try {
+    channel?.addEventListener("message", handleChannelMessage);
+  } catch {
+    channel?.close();
+  }
 
   return () => {
     window.removeEventListener("message", handleWindowMessage);
-    channel?.removeEventListener("message", handleChannelMessage);
-    channel?.close();
+    try {
+      channel?.removeEventListener("message", handleChannelMessage);
+      channel?.close();
+    } catch {
+      // Cleanup is best-effort for browser implementations that close early.
+    }
   };
 };

@@ -293,7 +293,10 @@ export const normalizeOnboardingFormData = (formData: OnboardingFormData) => {
 };
 
 interface SaveOnboardingProfileOptions {
-  /** Stable draft UUID makes a retried pre-auth handoff reuse its goal row. */
+  /**
+   * Kept for existing callers. Onboarding always scopes its goal row to the
+   * authenticated account so a restarted flow cannot create a duplicate.
+   */
   goalId?: string;
 }
 
@@ -322,8 +325,14 @@ export const saveOnboardingProfile = async (
 
   await deactivateActiveBookCountGoals(userId);
 
+  // UUID primary keys are table-local, so the authenticated profile UUID is a
+  // safe, deterministic key for that reader's one onboarding-created goal.
+  // Older callers pass a draft flow UUID; accepting only the account key keeps
+  // retries stable across refreshes and app restarts as well as within a flow.
+  const onboardingGoalId = goalId === userId ? goalId : userId;
+
   await createOnboardingBookGoal({
-    id: goalId,
+    id: onboardingGoalId,
     user_id: userId,
     target_books: normalized.goalTargetBooks,
     start_date: normalized.goalStartDate,

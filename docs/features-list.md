@@ -7,7 +7,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 ### Authentication & Onboarding
 1. **Auth** (`/auth`) - Direct sign-in plus signup after the onboarding handoff
 2. **Onboarding** (`/onboarding`) - Anonymous-first palette, reading taste,
-   pace, and goal setup saved as a versioned local draft
+   pace, and goal setup held as a versioned active-process draft
 3. **Device Permissions** (`/app-permissions`) - Optional post-signup
    notification education on Capacitor iOS/Android only
 4. **Legacy onboarding entries** (`/welcome`, `/questionnaire`, `/goals`) -
@@ -389,7 +389,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 
 ### New User Journey
 1. **Get Started** → anonymous onboarding
-2. Choose palette, taste, pace, and goal → seven-day versioned local draft
+2. Choose palette, taste, pace, and goal → active-process memory draft
 3. Complete or skip → sign up with email/Google
 4. Verify account → idempotently apply the bound draft
 5. Native only: choose notification access or continue without it

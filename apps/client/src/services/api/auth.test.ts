@@ -5,9 +5,12 @@ const {
   exchangeCodeForSessionMock,
   getSessionMock,
   getUserMock,
+  isCustomSchemeAuthRuntimeMock,
+  openExternalUrlMock,
   resetPasswordForEmailMock,
   resendMock,
   setSessionMock,
+  signInWithOAuthMock,
   signInWithPasswordMock,
   signUpMock,
   verifyOtpMock,
@@ -15,9 +18,12 @@ const {
   exchangeCodeForSessionMock: vi.fn(),
   getSessionMock: vi.fn(),
   getUserMock: vi.fn(),
+  isCustomSchemeAuthRuntimeMock: vi.fn(),
+  openExternalUrlMock: vi.fn(),
   resetPasswordForEmailMock: vi.fn(),
   resendMock: vi.fn(),
   setSessionMock: vi.fn(),
+  signInWithOAuthMock: vi.fn(),
   signInWithPasswordMock: vi.fn(),
   signUpMock: vi.fn(),
   verifyOtpMock: vi.fn(),
@@ -32,6 +38,7 @@ vi.mock("@/integrations/supabase/client", () => ({
       resetPasswordForEmail: resetPasswordForEmailMock,
       resend: resendMock,
       setSession: setSessionMock,
+      signInWithOAuth: signInWithOAuthMock,
       signInWithPassword: signInWithPasswordMock,
       signUp: signUpMock,
       verifyOtp: verifyOtpMock,
@@ -40,8 +47,8 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 vi.mock("@/services/platform", () => ({
-  isCustomSchemeAuthRuntime: () => false,
-  openExternalUrl: vi.fn(),
+  isCustomSchemeAuthRuntime: isCustomSchemeAuthRuntimeMock,
+  openExternalUrl: openExternalUrlMock,
 }));
 
 import {
@@ -54,6 +61,7 @@ import {
   resendSignUpEmail,
   sendPasswordResetEmail,
   signInWithEmailPassword,
+  signInWithOAuth,
   signUpWithEmail,
   verifyEmailOtp,
 } from "./auth";
@@ -65,13 +73,61 @@ describe("optional authentication and callback handling", () => {
     exchangeCodeForSessionMock.mockReset();
     getSessionMock.mockReset();
     getUserMock.mockReset();
+    isCustomSchemeAuthRuntimeMock.mockReset();
+    isCustomSchemeAuthRuntimeMock.mockReturnValue(false);
+    openExternalUrlMock.mockReset();
     resetPasswordForEmailMock.mockReset();
     resendMock.mockReset();
     setSessionMock.mockReset();
+    signInWithOAuthMock.mockReset();
     signInWithPasswordMock.mockReset();
     signUpMock.mockReset();
     verifyOtpMock.mockReset();
     clearVerifiedAuthUserCache();
+  });
+
+  it("requests an OAuth URL without replacing the current web document", async () => {
+    const oauthData = {
+      provider: "google",
+      url: "https://accounts.google.com/o/oauth2/auth",
+    };
+    signInWithOAuthMock.mockResolvedValue({ data: oauthData, error: null });
+
+    await expect(
+      signInWithOAuth({
+        provider: "google",
+        redirectTo: "https://brack-app.com/auth/callback",
+        preserveCurrentDocument: true,
+      }),
+    ).resolves.toEqual(oauthData);
+
+    expect(signInWithOAuthMock).toHaveBeenCalledWith({
+      provider: "google",
+      options: {
+        redirectTo: "https://brack-app.com/auth/callback",
+        skipBrowserRedirect: true,
+      },
+    });
+    expect(openExternalUrlMock).not.toHaveBeenCalled();
+  });
+
+  it("leaves ordinary browser OAuth navigation under Supabase control", async () => {
+    const oauthData = {
+      provider: "google",
+      url: "https://accounts.google.com/o/oauth2/auth",
+    };
+    signInWithOAuthMock.mockResolvedValue({ data: oauthData, error: null });
+
+    await signInWithOAuth({ provider: "google" });
+
+    expect(signInWithOAuthMock).toHaveBeenCalledWith({
+      provider: "google",
+      options: {
+        redirectTo: undefined,
+        skipBrowserRedirect: false,
+      },
+    });
+    expect(openExternalUrlMock).not.toHaveBeenCalled();
   });
 
   it.each(["signup", "recovery"] as const)(

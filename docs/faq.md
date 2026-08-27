@@ -133,16 +133,19 @@ Notifications capability/provisioning, and physical-device testing. Having
 ### Why does Get Started show onboarding before signup?
 
 It lets a new reader understand and personalize Brack before creating an
-account. The answers are stored as a schema-validated, versioned local draft for
-up to seven days. After email confirmation or Google signup, Brack verifies that
-the newly created account belongs to that signup attempt, applies the draft
-idempotently, and then clears it.
+account. The answers are held as a schema-validated, versioned in-memory draft
+only for the active onboarding/signup document or app process. After email
+confirmation or Google signup, Brack verifies that the newly created account
+belongs to that signup attempt, applies the draft to the authenticated profile,
+and then clears it.
 
 The draft contains onboarding answers and limited email/provider binding
 metadata. It never stores the password, Auth session/tokens, Turnstile token, or
-server secret. It is device/runtime scoped rather than a cloud backup. If it is
-missing or expires, a qualifying new account can finish authenticated
-onboarding. **Sign In** remains direct for existing readers.
+server secret, and it is never written to browser/native storage or Supabase.
+Refreshing, closing the tab, or exiting the app discards it and restarts setup.
+If Auth has already produced a verified account when that happens, the reader
+finishes a fresh authenticated onboarding instead of submitting signup again.
+**Sign In** remains direct for existing readers.
 
 ## Mobile
 

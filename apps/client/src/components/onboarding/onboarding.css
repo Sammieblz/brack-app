@@ -202,6 +202,7 @@
 }
 
 .onboarding-content-scroll {
+  overflow-x: hidden;
   scrollbar-gutter: stable;
 }
 

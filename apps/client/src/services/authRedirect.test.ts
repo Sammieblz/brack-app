@@ -295,6 +295,58 @@ describe("completeAuthCallback", () => {
     expect(clearOnboardingDraftMock).toHaveBeenCalledOnce();
   });
 
+  it("coalesces a completed draft handoff and reuses the account-scoped goal key", async () => {
+    let finishSave: (() => void) | undefined;
+    saveOnboardingProfileMock.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishSave = resolve;
+        }),
+    );
+    getCurrentAuthUserMock.mockResolvedValue({
+      id: "new-reader",
+      email: "new-reader@example.com",
+      created_at: "2026-08-26T16:00:10.000Z",
+      app_metadata: { provider: "email", providers: ["email"] },
+      identities: [],
+    });
+    ensureUserProfileMock.mockResolvedValue({ onboarding_status: "not_started" });
+    shouldEnterFirstRunOnboardingMock.mockReturnValue(true);
+    const formData = { colorTheme: "violet" };
+    loadOnboardingDraftMock.mockReturnValue({
+      version: 1,
+      flowId: "76000000-0000-0000-0000-000000000003",
+      formData,
+      stage: "auth_started",
+      outcome: "completed",
+      lastStep: "review",
+      createdAt: "2026-08-26T15:55:00.000Z",
+      updatedAt: "2026-08-26T16:00:00.000Z",
+      authAttempt: {
+        kind: "email",
+        email: "new-reader@example.com",
+        startedAt: "2026-08-26T16:00:00.000Z",
+      },
+    });
+
+    const first = resolvePostAuthPath();
+    const second = resolvePostAuthPath();
+    await vi.waitFor(() => expect(finishSave).toBeTypeOf("function"));
+    finishSave?.();
+
+    await expect(Promise.all([first, second])).resolves.toEqual([
+      "/dashboard",
+      "/dashboard",
+    ]);
+    expect(saveOnboardingProfileMock).toHaveBeenCalledOnce();
+    expect(saveOnboardingProfileMock).toHaveBeenCalledWith(
+      "new-reader",
+      formData,
+      { goalId: "new-reader" },
+    );
+    expect(clearOnboardingDraftMock).toHaveBeenCalledOnce();
+  });
+
   it("does not apply an OAuth draft to a user verified with another provider", async () => {
     getCurrentAuthUserMock.mockResolvedValue({
       id: "email-reader",

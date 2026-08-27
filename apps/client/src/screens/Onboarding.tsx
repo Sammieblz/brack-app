@@ -182,7 +182,13 @@ const Onboarding = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { currentTheme, previewTheme, resolvedTheme, setTheme } = useTheme();
+  const {
+    currentTheme,
+    previewTheme,
+    resetToDefaultTheme,
+    resolvedTheme,
+    setTheme,
+  } = useTheme();
   const [stepIndex, setStepIndex] = useState(0);
   const [formData, setFormData] = useState<OnboardingFormData>(DEFAULT_ONBOARDING_FORM);
   const [saving, setSaving] = useState(false);
@@ -438,13 +444,21 @@ const Onboarding = () => {
     void handleComplete();
   };
 
+  const handleExitToHome = () => {
+    if (!user) {
+      clearOnboardingDraft();
+      resetToDefaultTheme();
+    }
+    navigate("/", { replace: false });
+  };
+
   const handleBack = () => {
     if (stepIndex > 0) {
       setStepIndex((index) => index - 1);
       return;
     }
 
-    navigate("/", { replace: false });
+    handleExitToHome();
   };
 
   const handleSkip = async () => {
@@ -599,7 +613,7 @@ const Onboarding = () => {
         <header className="onboarding-logo flex shrink-0 items-center justify-between gap-3 py-1">
           <button
             type="button"
-            onClick={() => navigate("/")}
+            onClick={handleExitToHome}
             className="flex min-h-11 items-center gap-2 rounded-md px-2 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:gap-3"
             aria-label="Return to Brack home"
           >
@@ -866,8 +880,11 @@ const TasteStep = ({
   onFieldChange,
 }: TasteStepProps) => {
   const [showAllGenres, setShowAllGenres] = useState(false);
-  const visibleGenres = showAllGenres ? GENRES : GENRES.slice(0, INITIAL_GENRE_COUNT);
-  const hiddenGenreCount = Math.max(0, GENRES.length - INITIAL_GENRE_COUNT);
+  const collapsedGenres = GENRES.filter(
+    (genre, index) => index < INITIAL_GENRE_COUNT || formData.favoriteGenres.includes(genre),
+  );
+  const visibleGenres = showAllGenres ? GENRES : collapsedGenres;
+  const hiddenGenreCount = Math.max(0, GENRES.length - collapsedGenres.length);
 
   return (
   <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
@@ -921,7 +938,7 @@ const TasteStep = ({
             aria-controls="onboarding-genre-options"
             onClick={() => setShowAllGenres((current) => !current)}
           >
-            {showAllGenres ? "Show fewer" : `Show all ${GENRES.length}`}
+            {showAllGenres ? "Show fewer genres" : `Show ${hiddenGenreCount} more`}
           </Button>
         )}
       </div>
@@ -1178,7 +1195,7 @@ const ReviewStep = ({
         <h2 className="font-display text-2xl font-bold">This is the starting profile Brack will use</h2>
         <p className="font-sans text-sm text-muted-foreground">
           {isPreAuth
-            ? "Your choices stay on this device until your account is verified, then Brack applies them once."
+            ? "Your choices stay only in this open setup. Refreshing or closing it starts over; after verification Brack applies them to your profile."
             : "You can edit this from Settings later. Completing now removes the dashboard setup prompt."}
         </p>
       </div>

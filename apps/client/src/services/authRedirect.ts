@@ -292,7 +292,9 @@ const finalizeOnboardingDraft = async (
         await skipOnboarding(user.id, draft.lastStep);
       } else {
         await saveOnboardingProfile(user.id, draft.formData, {
-          goalId: draft.flowId,
+          // Onboarding goals use an account-stable key. A retry after the
+          // anonymous draft has been discarded must still update the same row.
+          goalId: user.id,
         });
       }
 

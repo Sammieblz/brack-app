@@ -2,8 +2,11 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { AuthCallbackBootstrapErrorMock, completeAuthCallbackMock } = vi.hoisted(
-  () => {
+const {
+  AuthCallbackBootstrapErrorMock,
+  completeAuthCallbackMock,
+  publishAuthFlowCompletionMock,
+} = vi.hoisted(() => {
     class AuthCallbackBootstrapErrorMock extends Error {
       readonly fallbackPath = "/dashboard";
     }
@@ -11,17 +14,21 @@ const { AuthCallbackBootstrapErrorMock, completeAuthCallbackMock } = vi.hoisted(
     return {
       AuthCallbackBootstrapErrorMock,
       completeAuthCallbackMock: vi.fn(),
+      publishAuthFlowCompletionMock: vi.fn(),
     };
-  },
-);
+  });
 
 vi.mock("@/services/authRedirect", () => ({
   AuthCallbackBootstrapError: AuthCallbackBootstrapErrorMock,
   completeAuthCallback: completeAuthCallbackMock,
 }));
 
+vi.mock("@/services/authFlowBridge", () => ({
+  publishAuthFlowCompletion: publishAuthFlowCompletionMock,
+}));
+
 vi.mock("@/components/LoadingSpinner", () => ({
-  default: () => <div>Finishing sign in</div>,
+  default: ({ text }: { text?: string }) => <div>{text}</div>,
 }));
 
 vi.mock("@/components/ThemeAwareLogo", () => ({
@@ -46,12 +53,43 @@ const renderCallback = () =>
 describe("AuthCallback", () => {
   beforeEach(() => {
     completeAuthCallbackMock.mockReset();
+    publishAuthFlowCompletionMock.mockReset();
+    publishAuthFlowCompletionMock.mockReturnValue(false);
     window.history.replaceState({}, "", "/auth/callback?code=test-code");
     vi.spyOn(console, "error").mockImplementation(() => undefined);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("signals and closes an OAuth callback popup instead of navigating it", async () => {
+    completeAuthCallbackMock.mockResolvedValue("/dashboard");
+    publishAuthFlowCompletionMock.mockReturnValue(true);
+    const closeSpy = vi.spyOn(window, "close").mockImplementation(() => undefined);
+
+    renderCallback();
+
+    expect(
+      await screen.findByText("Returning to your sign-up..."),
+    ).toBeInTheDocument();
+    expect(publishAuthFlowCompletionMock).toHaveBeenCalledOnce();
+    expect(closeSpy).toHaveBeenCalledOnce();
+    expect(screen.getByLabelText("location")).toHaveTextContent(
+      "/auth/callback",
+    );
+    expect(window.location.search).toBe("");
+  });
+
+  it("navigates a standalone callback when no requesting window exists", async () => {
+    completeAuthCallbackMock.mockResolvedValue("/dashboard");
+
+    renderCallback();
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("location")).toHaveTextContent("/dashboard");
+    });
+    expect(publishAuthFlowCompletionMock).toHaveBeenCalled();
   });
 
   it("uses the safe authenticated fallback after profile bootstrap fails", async () => {

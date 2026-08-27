@@ -1,6 +1,6 @@
 # Onboarding and Auth Write-Path Audit
 
-Source date: 2026-08-26
+Source date: 2026-08-27
 
 Scope: onboarding-first acquisition, Auth signup/profile creation, idempotent
 draft finalization, and post-signup permission routing.
@@ -10,14 +10,14 @@ draft finalization, and post-signup permission routing.
 | Step | Owner | Path | Writes | Notes |
 | --- | --- | --- | --- | --- |
 | Start acquisition | Landing/client router | `Get Started` -> `/onboarding` | None | Anonymous onboarding is allowed; Sign In remains a direct Auth path. |
-| Collect onboarding | `apps/client/src/services/onboardingDraft.ts` | Anonymous `/onboarding` | Versioned local draft only | Schema-validated localStorage record with a UUID flow id and rolling seven-day expiry; no database call. |
-| Begin signup | Auth screen | `/auth?mode=signup&from=onboarding` | Local draft attempt metadata | Direct signup requires a ready completed-or-skipped draft. Email attempts bind the normalized email; OAuth attempts bind the provider and time window. |
+| Collect onboarding | `apps/client/src/services/onboardingDraft.ts` | Anonymous `/onboarding` | Active-process memory only | Schema-validated object with a UUID flow id; no browser/native persistence and no database call. |
+| Begin signup | Auth screen | `/auth?mode=signup&from=onboarding` | In-memory attempt metadata | Direct signup requires a ready completed-or-skipped draft. Email attempts bind the normalized email; OAuth attempts bind the provider and time window. |
 | Email sign-up | Supabase Auth via `apps/client/src/services/api/auth.ts` | `signUpWithEmail` | `auth.users` | One normalized `signUp` request; duplicate UI derives from explicit/obfuscated Auth responses. |
 | Auth trigger | Database | `handle_new_user()` | `profiles` | Creates or updates profile defaults with display/avatar/name and onboarding fields. |
 | Profile fallback | App service | `ensureUserProfile` in `apps/client/src/services/onboarding.ts` | `profiles` | If the trigger did not create a row, client upserts a profile with `ignoreDuplicates`. |
 | Post-auth decision | `resolvePostAuthPath` | Auth callback, sign-in, and restored session | None | Checks a pending native permission intro, ensures the profile, validates any bound draft, and returns one canonical destination. |
-| Draft finalization | `resolvePostAuthPath` / onboarding service | Verified new account with a bound draft | Onboarding tables below | Single-flight; applies skip or completion only to a qualifying newly created account. Uses the draft UUID as the goal UUID for retry idempotency. |
-| First-run fallback | App service | `shouldEnterFirstRunOnboarding` | None | A new account without an applicable local draft enters authenticated onboarding. Existing accounts are not overwritten by a guest draft. |
+| Draft finalization | `resolvePostAuthPath` / onboarding service | Verified new account with a bound draft | Onboarding tables below | Single-flight; applies skip or completion only to a qualifying newly created account. Uses the authenticated user UUID as the stable onboarding-goal row ID. |
+| First-run fallback | App service | `shouldEnterFirstRunOnboarding` | None | A new account without an applicable in-memory draft enters authenticated onboarding. Existing accounts are not overwritten by a guest draft. |
 | Mark in progress | API service | `updateOnboardingInProgress` | `profiles` | Only updates `not_started` or `in_progress` profiles. |
 | Skip onboarding | App service/API service | `skipOnboarding` | `profiles`, `user_learning_profiles` | Dashboard access remains allowed after status `skipped`. |
 | Complete onboarding | App service/API service | `saveOnboardingProfile` | `reading_habits`, `goals`, `notification_preferences`, `user_learning_profiles`, `profiles` | Deactivates active yearly book-count goals, creates one new active goal, then marks profile complete. |
@@ -26,9 +26,9 @@ draft finalization, and post-signup permission routing.
 ## Determinism
 
 Profile creation is deterministic because:
-- Anonymous answers are isolated in a schema-validated version-1 local draft.
-  The draft expires after seven days, and invalid/future-version records are
-  removed rather than partially interpreted.
+- Anonymous answers are isolated in a schema-validated version-1 memory draft.
+  A new document/app process starts empty, and invalid/future-version records
+  are removed rather than partially interpreted.
 - The draft contains onboarding answers and narrowly scoped attempt metadata,
   never a password, session, access/refresh token, Turnstile token, or backend
   credential.
@@ -42,8 +42,9 @@ Profile creation is deterministic because:
 - `ensureUserProfile()` reads first and then upserts with `onConflict: "id"` and `ignoreDuplicates: true`.
 - Onboarding status has a check constraint limited to `not_started`, `in_progress`, `completed`, and `skipped`.
 - Existing profiles were migrated to `completed` so older users are not trapped in first-run onboarding.
-- The draft `flowId` becomes the initial goal id. Repeating finalization upserts
-  that same goal instead of inserting another one.
+- The authenticated user UUID becomes the onboarding-created goal id. Repeating
+  or restarting finalization upserts that same goal instead of inserting
+  another one.
 
 ## Default Records
 
@@ -55,14 +56,22 @@ Profile creation is deterministic because:
 | `goals` | No | Created on completion only. |
 | `notification_preferences` | No | Upserted on completion based on reminder choice. |
 
-### Local-only state
+### Process-only state
 
-The pre-auth draft lives under `brack:pre-auth-onboarding:v1` in the current
-runtime's `localStorage`. It is cleared after successful finalization and on
-schema/version/expiry failure. Email signup cancellation returns it to the
-ready state instead of consuming it. A missing cross-device draft falls back to
-authenticated onboarding; the server never trusts a client draft as proof of
-identity.
+The pre-auth draft exists only in the current module runtime. It is never
+written to `localStorage`, `sessionStorage`, IndexedDB, SQLite, or Supabase, and
+is cleared after successful finalization or an explicit flow exit. A browser
+refresh, tab close, desktop renderer termination, or mobile process exit starts
+empty. The old `brack:pre-auth-onboarding:v1` localStorage key is proactively
+removed and never hydrated. Email signup cancellation may return the current
+in-memory attempt to `ready` for a retry, but choosing Sign In or returning to
+the landing page abandons it.
+
+Web/PWA Google signup preserves the requesting document with a controlled
+provider window. The callback transports only a same-origin completion signal;
+it does not serialize the onboarding payload. If the requesting document no
+longer exists, the verified account falls back to authenticated onboarding.
+The server never treats a client draft as proof of identity.
 
 Native permission education uses a separate per-user/device marker. That marker
 does not store OS permission grants and is not part of `profiles`. Cloudflare
@@ -88,9 +97,9 @@ No missing RLS policy was identified from the current remote matrix. `profiles` 
   habits/goals/preferences saved while profile status remains `in_progress`.
   The finalizer keeps the draft for an authenticated retry, and the stable goal
   UUID prevents duplicate goals, but the retry path must remain tested.
-- `localStorage` is origin/runtime scoped. Clearing site data, using another
-  device, or a seven-day expiry removes the anonymous draft; the supported
-  fallback is authenticated onboarding, not a partial server-side draft.
+- Reloading or leaving the owning document/app process removes the anonymous
+  draft by design. The supported fallback after a completed Auth callback is
+  authenticated onboarding, never a partial server-side anonymous draft.
 - `skipOnboarding` tolerates learning-profile write failure and still saves skipped status. This is intentional for dashboard access, but setup confidence can be missing.
 - Controlled remote Auth tests verified profile creation and cleanup:
   - Direct auth-table trigger validation inserted and removed a temporary `auth.users` row.

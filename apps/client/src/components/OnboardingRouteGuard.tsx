@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { resolvePostAuthPath } from "@/services/authRedirect";
 import { isOnboardingBackendUnavailable } from "@/services/onboarding";
+import { loadOnboardingDraft } from "@/services/onboardingDraft";
 
 const AUTH_HANDOFF_ROUTES = new Set([
   "/auth",
@@ -48,6 +49,17 @@ export const OnboardingRouteGuard = () => {
     // Legacy URLs have a dedicated transition component which also uses the
     // shared resolver. Leaving them alone avoids a second profile request.
     if (LEGACY_ONBOARDING_ROUTES.has(pathname)) return;
+
+    // A failed post-auth draft handoff deliberately lands here so the reader
+    // can review and retry it. Do not call the shared resolver again on mount:
+    // doing so turns a recoverable failure into an automatic retry loop. The
+    // in-memory draft check prevents a query-string-only bypass for accounts
+    // that have already completed onboarding.
+    const isManualDraftRecovery =
+      pathname === "/onboarding" &&
+      new URLSearchParams(search).get("resume") === "draft" &&
+      loadOnboardingDraft()?.stage === "auth_started";
+    if (isManualDraftRecovery) return;
 
     let cancelled = false;
     const decisionKey = `${user.id}:${pathname}:${search}`;

@@ -361,10 +361,15 @@ setCount(prev => prev + 1); // Use previous value
 
 Use localStorage for:
 - User preferences
-- Draft data
+- Explicitly recoverable, non-sensitive draft data
 - Offline queue
 - Cache
 - Non-sensitive data
+
+Do not use it for the anonymous onboarding acquisition draft. That draft is a
+deliberate active-process state machine in
+`apps/client/src/services/onboardingDraft.ts`: SPA navigation can carry it from
+Onboarding to Auth, but refresh/tab close/app termination must discard it.
 
 ### Patterns
 
@@ -457,7 +462,8 @@ const useLocalStorage = <T>(key: string, defaultValue: T) => {
 | Server data | TanStack Query | Books, posts, profiles |
 | Global UI | Context | Theme, modals, timer |
 | Component UI | useState | Form inputs, toggles |
-| Persistence | localStorage | Preferences, drafts |
+| Persistence | localStorage | Preferences, offline/cache records |
+| Ephemeral acquisition | Module memory + component state | Pre-auth onboarding through signup |
 
 ### 2. Minimize Re-renders
 

@@ -275,6 +275,26 @@ export interface ThemePreferences {
   library_view_mode: LibraryViewMode | null;
 }
 
+export const THEME_PREFERENCES_CHANGED_EVENT =
+  "brack:theme-preferences-changed";
+
+export interface ThemePreferencesChangedDetail {
+  userId: string;
+  preferences: ThemePreferences;
+}
+
+const emitThemePreferencesChanged = (
+  detail: ThemePreferencesChangedDetail,
+) => {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent<ThemePreferencesChangedDetail>(
+      THEME_PREFERENCES_CHANGED_EVENT,
+      { detail },
+    ),
+  );
+};
+
 export const fetchThemePreferences = async (
   userId: string
 ): Promise<ThemePreferences | null> => {
@@ -325,7 +345,7 @@ export const upsertThemePreferences = async (
   const updatedAt = new Date().toISOString();
   const existing = await profilePreferencesRepo.get(userId);
 
-  await profilePreferencesRepo.upsertLocal(userId, {
+  const nextPreferences = {
     id: userId,
     color_theme:
       preferences.color_theme !== undefined
@@ -344,7 +364,10 @@ export const upsertThemePreferences = async (
     leaderboard_eligible_from: existing?.leaderboard_eligible_from ?? null,
     gamification_profile_visible: existing?.gamification_profile_visible ?? true,
     updated_at: updatedAt,
-  });
+  };
+
+  await profilePreferencesRepo.upsertLocal(userId, nextPreferences);
+  emitThemePreferencesChanged({ userId, preferences: nextPreferences });
 
   if (isConnectivityAvailable()) {
     void readingCoreSync.syncUser(userId).catch(console.error);

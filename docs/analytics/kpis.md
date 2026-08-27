@@ -21,7 +21,7 @@ Scope: ticket 9.1, Brack success metrics.
 | Books completed per month | Completed `books` count grouped by `date_finished`. |
 | Reading minutes per active reader | Session duration plus progress-log time per active reader. |
 | Onboarding finalization rate | New eligible profiles reaching `completed` or `skipped`, divided by new eligible profiles after the observation window. Report completion and skip separately. |
-| Verified signup-to-completed-onboarding | New profiles with `onboarding_status = 'completed'` divided by verified new profiles in the same cohort; never count an anonymous local draft as an account. |
+| Verified signup-to-completed-onboarding | New profiles with `onboarding_status = 'completed'` divided by verified new profiles in the same cohort; never count an anonymous in-memory draft as an account. |
 | Draft-finalization recovery rate | Readers routed to authenticated draft recovery who subsequently reach `completed` or `skipped`, once non-sensitive recovery telemetry exists. |
 | Native permission-intro continuation | New native readers who leave the optional education screen for the dashboard, regardless of whether notifications were granted, once platform-scoped telemetry exists. |
 | Offline sync success rate | Accepted sync outbox items divided by attempted items. |
@@ -48,12 +48,13 @@ landing Get Started
   -> dashboard
 ```
 
-The anonymous draft is intentionally local, versioned, and temporary. It is not
-a database record and must not contain an analytics identifier, password,
-session token, Turnstile token, or other secret merely to make funnel joins
-easier. Current durable measurement begins at the verified `profiles` row and
-its onboarding status/timestamps. Landing-to-signup conversion remains an
-instrumentation gap until privacy-reviewed, allowlisted events are added.
+The anonymous draft is intentionally process-only, versioned, and temporary.
+It is not persisted in browser/native storage or the database and must not
+contain an analytics identifier, password, session token, Turnstile token, or
+other secret merely to make funnel joins easier. Current durable measurement
+begins at the verified `profiles` row and its onboarding status/timestamps.
+Landing-to-signup conversion remains an instrumentation gap until
+privacy-reviewed, allowlisted events are added.
 
 When that telemetry is added, keep it coarse and non-sensitive: runtime
 (`web`, `pwa`, `desktop`, `ios`, `android`), draft version, outcome

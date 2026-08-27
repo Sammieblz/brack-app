@@ -22,10 +22,10 @@ established reader still reaches sign-in directly.
 ```text
 Landing "Get Started"
   -> anonymous /onboarding
-  -> versioned local draft
+  -> schema-validated in-memory draft
   -> /auth?mode=signup&from=onboarding
   -> Supabase Auth / email confirmation or OAuth
-  -> authenticated, idempotent draft finalization
+  -> authenticated, retry-safe draft finalization
   -> native permission education (iOS/Android only)
   -> /dashboard
 
@@ -42,18 +42,31 @@ may continue without granting any optional permission.
 ### Pre-auth onboarding draft
 
 `apps/client/src/services/onboardingDraft.ts` owns the anonymous draft. The
-record is schema-validated, versioned, assigned a UUID flow id, and stored in
-origin-scoped `localStorage` with a rolling seven-day expiry. It records the
-complete onboarding form, last step, completion-or-skip outcome, and narrowly
-scoped signup-attempt metadata. An email attempt stores only the normalized
-address needed to bind the draft to the resulting new account; an OAuth attempt
-stores the provider and start time.
+record is schema-validated, versioned, assigned a UUID flow id, and held only in
+the active JavaScript document/app process. It records the complete onboarding
+form, last step, completion-or-skip outcome, and narrowly scoped signup-attempt
+metadata. An email attempt holds only the normalized address needed to bind the
+draft to the resulting new account; an OAuth attempt holds the provider and
+start time.
 
 The draft never contains a password, Supabase session, access/refresh token,
 Turnstile token, SMTP credential, or other secret. Invalid, incompatible, or
-expired records are discarded. It is local to the current browser, PWA,
-desktop renderer, or native WebView, so it is a convenience handoff rather than
-a server-authoritative profile or a cross-device backup.
+state-invalid records are discarded. It is not written to `localStorage`,
+`sessionStorage`, IndexedDB, SQLite, or Supabase. Refreshing the document,
+closing its tab, or terminating the desktop/mobile app therefore discards the
+answers and requires a fresh anonymous onboarding run. Entering the landing or
+sign-in flow explicitly abandons it as well.
+
+Normal client-side navigation from onboarding to email signup keeps the same
+module instance, so the chosen palette is previewed on the signup screen and
+the email OTP can complete in that same document. Web/PWA Google signup uses a
+script-created provider window because a same-document OAuth redirect would
+destroy the in-memory draft. The callback sends only a completion signal back
+to the requesting page; onboarding answers never cross documents. Native and
+desktop OAuth already keep the app process alive while using their external
+browser handoff. If the owning page/process is gone when any provider callback
+returns, Brack keeps the verified Auth account and starts fresh authenticated
+onboarding instead of recreating or guessing the discarded answers.
 
 The post-auth resolver applies a draft only when all of these are true:
 
@@ -63,16 +76,20 @@ The post-auth resolver applies a draft only when all of these are true:
   window and matches the submitted email or OAuth provider;
 - the profile still qualifies for first-run onboarding.
 
-An established account signing in on the same device cannot consume or
-overwrite the anonymous draft. Successful finalization clears it. A transient
-write failure keeps the validated draft and routes the authenticated reader to
-`/onboarding?resume=draft` so the same data can be retried deliberately.
+An established account signing in cannot consume or overwrite the anonymous
+draft. Successful finalization clears it. A transient write failure keeps the
+validated draft only while the current process remains alive and routes the
+authenticated reader to `/onboarding?resume=draft` for an explicit retry. A
+reload at that point intentionally falls back to fresh authenticated
+onboarding.
 
-Finalization is single-flight in the client. The draft flow UUID is also reused
-as the initial goal UUID, so retrying cannot create another onboarding goal.
-The remaining onboarding writes are still separate owner-scoped operations,
-not one database transaction; completion status is written last and the retry
-path remains required for partial network failures.
+Finalization is single-flight in the client. The authenticated user UUID is
+also the stable ID of that reader's onboarding-created goal row, so retries and
+fresh authenticated onboarding after a discarded draft update the same row
+instead of accumulating goals. The remaining onboarding writes are still
+separate owner-scoped operations, not one database transaction; completion
+status is written last and the explicit retry path remains required for partial
+network failures.
 
 ## Setup
 
@@ -271,8 +288,8 @@ do so:
 
 | Surface | Primary flow | Redirect fallback |
 | --- | --- | --- |
-| Browser | Google OAuth redirects the current tab; signup and recovery accept the emailed six-digit code in the same Auth screen | The email link opens a browser context on the same HTTPS origin |
-| Installed PWA | Signup and recovery use the code in the existing PWA window | Link handling is controlled by the browser/OS; `handle_links: "not-preferred"` is advisory |
+| Browser | Email signup/recovery accepts the six-digit code in the same Auth screen. Onboarding-owned Google signup uses a controlled provider window so the in-memory draft's requesting tab remains alive. | The email link opens a browser context on the same HTTPS origin; direct established-reader OAuth may still redirect its current Auth context. |
+| Installed PWA | Signup and recovery use the code in the existing PWA window; onboarding-owned Google signup preserves that requesting context when the platform permits a provider window. | Link/window handling remains browser/OS controlled; `handle_links: "not-preferred"` is advisory. |
 | Capacitor iOS/Android | The WebView keeps its session while the system browser is used only for provider/link flows | `brack://auth/*` returns the verified result to the app |
 | Electron | The renderer keeps its session while provider Auth runs in the system browser | `brack://auth/*` returns through the protocol handler |
 
@@ -871,7 +888,7 @@ console, but the rejected operation is signup email delivery.
 
 **Features**:
 - Email/password sign in
-- Email/password sign up after a completed or skipped local onboarding draft
+- Email/password sign up after a completed or skipped in-memory onboarding draft
 - Direct sign-in for established readers without repeating onboarding
 - Shared post-auth draft finalization and native permission routing
 - Explicit duplicate-email rejection with sign-in and Google recovery paths
