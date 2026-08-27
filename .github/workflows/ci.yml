@@ -13,6 +13,11 @@ env:
   # Cloudflare's documented always-pass test widget. Production deployments
   # must replace this with the existing Brack widget through the build env.
   VITE_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+  # Browser smoke tests need a complete client configuration, but do not need
+  # a live database. Repository variables can point authenticated E2E at a
+  # staging project; otherwise these non-secret loopback values keep CI local.
+  VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'http://127.0.0.1:54321' }}
+  VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY || 'ci-public-anon-key' }}
 
 jobs:
   quality-checks:
@@ -331,3 +336,6 @@ jobs:
 
       - name: Run web smoke tests
         run: npx playwright test --project=chromium
+        env:
+          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}

@@ -15,6 +15,12 @@ export default defineConfig(({ mode }) => {
     );
   }
   const configuredSupabaseUrl = env.VITE_SUPABASE_URL?.replace(/\/$/, "");
+  const configuredSupabasePublishableKey = env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
+  if (!configuredSupabaseUrl || !configuredSupabasePublishableKey) {
+    throw new Error(
+      "Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY. Brack cannot produce a runnable client bundle without both public Supabase values.",
+    );
+  }
   const escapedSupabaseUrl = configuredSupabaseUrl?.replace(
     /[.*+?^${}()|[\]\\]/g,
     "\\$&",

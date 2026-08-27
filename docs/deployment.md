@@ -438,7 +438,7 @@ The CI pipeline consists of 6 jobs that run quality checks and validate builds t
 3. **Validate Android** - Turbo-backed Capacitor Android sync validation
 4. **Validate iOS** - Turbo-backed Capacitor iOS sync validation
 5. **Build Desktop** - Turbo-backed Electron desktop artifact builds for Windows, Linux, and macOS
-6. **Tests** - Test execution (disabled until tests are added)
+6. **Tests** - Vitest plus Chromium smoke, onboarding responsive, and optional authenticated offline checks
 
 ### Workflow File
 
@@ -447,6 +447,16 @@ The CI pipeline is defined in `.github/workflows/ci.yml`:
 **Triggers**:
 - Push to `main` branch
 - Pull requests targeting `main` branch
+
+CI browser builds always receive complete public runtime configuration. The
+Turnstile value is Cloudflare's documented test sitekey. Supabase uses the
+`VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` repository variables
+when configured; otherwise CI falls back to a non-secret loopback URL and dummy
+publishable key for signed-out smoke tests. The fallback does not contact a
+database and must not be used for a deployment. Production and staging builds
+must provide their own public Supabase values. Vite now fails the build early if
+either required Supabase value is absent, instead of producing a bundle that
+crashes before React mounts.
 
 ### Job Details
 
@@ -540,9 +550,22 @@ The CI matrix maps each platform to an explicit script:
 
 **Runner**: `ubuntu-latest`
 
-**Status**: Currently disabled (`if: false`) until test framework is added
+**Steps**:
+1. Install dependencies from a clean checkout
+2. Run the Vitest suite
+3. Produce a fresh production client build
+4. Install Playwright Chromium
+5. Run the public-shell and responsive onboarding smoke tests
+6. Run the authenticated offline-reload test when `E2E_EMAIL` and
+   `E2E_PASSWORD` are configured
 
-**Future**: When tests are added (Vitest, Jest, etc.), enable this job to run test suite.
+Store those optional credentials as GitHub Actions secrets and point the two
+public Supabase repository variables at the matching non-production project.
+Without both secrets, Playwright intentionally skips the authenticated case.
+
+The public-shell assertion requires a known Brack heading and a non-empty React
+root, and fails on uncaught page errors. A visible but empty HTML body is not
+considered a successful application boot.
 
 ### Caching Strategy
 

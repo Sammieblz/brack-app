@@ -1,12 +1,23 @@
 import { expect, test } from "@playwright/test";
 
 test("public app shell loads without a page error", async ({ page }) => {
-  await page.goto("/");
-  await expect(page.locator("body")).toBeVisible();
+  const runtimeErrors: string[] = [];
+  page.on("pageerror", (error) => runtimeErrors.push(error.message));
+
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { name: /turn every page into progress/i })).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.locator("#root")).not.toBeEmpty();
   await expect(page.getByText(/page error|something went wrong/i)).toHaveCount(0);
+  expect(runtimeErrors, "The client should mount without an uncaught runtime error").toEqual([]);
 });
 
 test("onboarding stays usable without horizontal clipping on phone and tablet", async ({ page }) => {
+  // This test validates layout, not motion. Disabling decorative transitions also
+  // prevents a cold CI worker from spending the assertion window on entrance animation.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+
   const viewports = [
     { width: 320, height: 568 },
     { width: 390, height: 844 },
@@ -23,7 +34,11 @@ test("onboarding stays usable without horizontal clipping on phone and tablet", 
 
   for (const viewport of viewports) {
     await page.setViewportSize(viewport);
-    await page.goto("/onboarding?from=landing");
+    await page.goto("/onboarding?from=landing", { waitUntil: "domcontentloaded" });
+    await expect(
+      page.locator(".onboarding-page"),
+      "The public onboarding route should finish auth and draft bootstrap before layout assertions",
+    ).toBeVisible({ timeout: 15_000 });
 
     for (const [index, heading] of chapterHeadings.entries()) {
       await expect(page.getByRole("heading", { name: heading })).toBeVisible();
@@ -34,8 +49,11 @@ test("onboarding stays usable without horizontal clipping on phone and tablet", 
       }));
       expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth + 1);
 
-      const primaryAction = page.getByRole("button", {
-        name: index === chapterHeadings.length - 1 ? /sign up|continue to sign up/i : /continue/i,
+      const primaryAction = page.locator(".onboarding-action-dock").getByRole("button", {
+        name:
+          index === chapterHeadings.length - 1
+            ? /^(?:sign up|continue to sign up)$/i
+            : /^continue$/i,
       });
       await expect(primaryAction).toBeVisible();
       const actionBox = await primaryAction.boundingBox();
