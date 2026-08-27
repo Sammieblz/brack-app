@@ -11,6 +11,7 @@ import { gsap } from "gsap";
 import { APP_ICONS } from "@/config/iconography";
 import { getAuthSession } from "@/services/api";
 import { resolvePostAuthPath } from "@/services/authRedirect";
+import { clearOnboardingDraft } from "@/services/onboardingDraft";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ const Index = () => {
       const session = await getAuthSession();
       // Only reset theme if user is not authenticated
       if (!session) {
+        clearOnboardingDraft();
         resetToDefaultTheme();
       }
     };

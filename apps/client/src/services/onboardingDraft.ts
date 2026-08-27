@@ -9,8 +9,11 @@ import type {
 import type { OnboardingStepId } from "@/services/onboarding";
 
 export const ONBOARDING_DRAFT_VERSION = 1 as const;
-export const ONBOARDING_DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-export const ONBOARDING_DRAFT_STORAGE_KEY =
+
+// Previous releases kept anonymous onboarding answers for seven days. Remove
+// that record whenever this module is used so an old build cannot silently
+// resurrect data that now belongs only to the active document/app process.
+const LEGACY_ONBOARDING_DRAFT_STORAGE_KEY =
   "brack:pre-auth-onboarding:v1";
 
 const ONBOARDING_STEP_VALUES = [
@@ -62,7 +65,7 @@ const timestampSchema = z
   .refine((value) => Number.isFinite(Date.parse(value)), "Invalid timestamp");
 
 /**
- * The persisted draft must always contain the complete form shape. Keeping the
+ * The in-memory draft must always contain the complete form shape. Keeping the
  * schema structural (rather than enforcing completion rules) lets readers save
  * valid intermediate states such as an empty genre list while they are still
  * moving through onboarding.
@@ -116,7 +119,6 @@ export interface OnboardingDraft {
   lastStep: OnboardingStepId;
   createdAt: string;
   updatedAt: string;
-  expiresAt: string;
   authAttempt?: OnboardingDraftAuthAttempt;
 }
 
@@ -147,7 +149,6 @@ export const onboardingDraftSchema = z
     lastStep: z.enum(ONBOARDING_STEP_VALUES),
     createdAt: timestampSchema,
     updatedAt: timestampSchema,
-    expiresAt: timestampSchema,
     authAttempt: authAttemptSchema.optional(),
   })
   .strict()
@@ -178,8 +179,7 @@ export const onboardingDraftSchema = z
 
     const createdAt = Date.parse(draft.createdAt);
     const updatedAt = Date.parse(draft.updatedAt);
-    const expiresAt = Date.parse(draft.expiresAt);
-    if (createdAt > updatedAt || updatedAt > expiresAt) {
+    if (createdAt > updatedAt) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Draft timestamps are out of order.",
@@ -201,13 +201,26 @@ export type BeginOnboardingSignupAttemptInput =
   | { kind: "email"; email: string }
   | { kind: "oauth"; provider: string };
 
-const getStorage = () => {
+const getLegacyStorage = () => {
   try {
     return typeof window === "undefined" ? null : window.localStorage;
   } catch {
     return null;
   }
 };
+
+let activeOnboardingDraft: OnboardingDraft | null = null;
+
+const purgeLegacyPersistentDraft = () => {
+  try {
+    getLegacyStorage()?.removeItem(LEGACY_ONBOARDING_DRAFT_STORAGE_KEY);
+  } catch {
+    // An inaccessible storage backend cannot contain usable onboarding state.
+  }
+};
+
+const cloneDraft = (draft: OnboardingDraft): OnboardingDraft =>
+  JSON.parse(JSON.stringify(draft)) as OnboardingDraft;
 
 const createFlowId = () => {
   if (typeof globalThis.crypto?.randomUUID === "function") {
@@ -237,51 +250,27 @@ const createFlowId = () => {
 
 const persistDraft = (draft: OnboardingDraft) => {
   const validated = onboardingDraftSchema.parse(draft) as OnboardingDraft;
-  const storage = getStorage();
-  if (!storage) return null;
-
-  try {
-    const serialized = JSON.stringify(validated);
-    storage.setItem(ONBOARDING_DRAFT_STORAGE_KEY, serialized);
-    // Returning the JSON representation keeps optional fields consistent with
-    // what a subsequent load observes (undefined properties are not persisted).
-    return JSON.parse(serialized) as OnboardingDraft;
-  } catch {
-    return null;
-  }
-};
-
-const removeStoredDraft = () => {
-  try {
-    getStorage()?.removeItem(ONBOARDING_DRAFT_STORAGE_KEY);
-  } catch {
-    // A blocked storage backend is already equivalent to having no draft.
-  }
+  purgeLegacyPersistentDraft();
+  activeOnboardingDraft = cloneDraft(validated);
+  return cloneDraft(activeOnboardingDraft);
 };
 
 export const clearOnboardingDraft = () => {
-  removeStoredDraft();
+  activeOnboardingDraft = null;
+  purgeLegacyPersistentDraft();
 };
 
 export const loadOnboardingDraft = (): OnboardingDraft | null => {
-  const storage = getStorage();
-  if (!storage) return null;
+  purgeLegacyPersistentDraft();
+  if (!activeOnboardingDraft) return null;
 
-  try {
-    const stored = storage.getItem(ONBOARDING_DRAFT_STORAGE_KEY);
-    if (!stored) return null;
-
-    const parsed = onboardingDraftSchema.safeParse(JSON.parse(stored));
-    if (!parsed.success || Date.parse(parsed.data.expiresAt) <= Date.now()) {
-      removeStoredDraft();
-      return null;
-    }
-
-    return parsed.data as OnboardingDraft;
-  } catch {
-    removeStoredDraft();
+  const parsed = onboardingDraftSchema.safeParse(activeOnboardingDraft);
+  if (!parsed.success) {
+    activeOnboardingDraft = null;
     return null;
   }
+
+  return cloneDraft(parsed.data as OnboardingDraft);
 };
 
 export const saveOnboardingDraftCollection = ({
@@ -292,8 +281,7 @@ export const saveOnboardingDraftCollection = ({
     formData,
   ) as OnboardingFormData;
   const existing = loadOnboardingDraft();
-  const now = new Date();
-  const timestamp = now.toISOString();
+  const timestamp = new Date().toISOString();
 
   return persistDraft({
     version: ONBOARDING_DRAFT_VERSION,
@@ -304,7 +292,6 @@ export const saveOnboardingDraftCollection = ({
     lastStep,
     createdAt: existing?.createdAt ?? timestamp,
     updatedAt: timestamp,
-    expiresAt: new Date(now.getTime() + ONBOARDING_DRAFT_TTL_MS).toISOString(),
   });
 };
 
@@ -315,14 +302,13 @@ export const markOnboardingDraftReady = ({
   const existing = loadOnboardingDraft();
   if (!existing) return null;
 
-  const now = new Date();
+  const timestamp = new Date().toISOString();
   return persistDraft({
     ...existing,
     stage: "ready",
     outcome,
     lastStep: lastStep ?? existing.lastStep,
-    updatedAt: now.toISOString(),
-    expiresAt: new Date(now.getTime() + ONBOARDING_DRAFT_TTL_MS).toISOString(),
+    updatedAt: timestamp,
     authAttempt: undefined,
   });
 };
@@ -333,25 +319,24 @@ export const beginOnboardingSignupAttempt = (
   const existing = loadOnboardingDraft();
   if (!existing || !canAccessOnboardingSignup(existing)) return null;
 
-  const now = new Date();
+  const timestamp = new Date().toISOString();
   const authAttempt: OnboardingDraftAuthAttempt =
     attempt.kind === "email"
       ? {
           kind: "email",
           email: attempt.email.trim().toLowerCase(),
-          startedAt: now.toISOString(),
+          startedAt: timestamp,
         }
       : {
           kind: "oauth",
           provider: attempt.provider.trim().toLowerCase(),
-          startedAt: now.toISOString(),
+          startedAt: timestamp,
         };
 
   return persistDraft({
     ...existing,
     stage: "auth_started",
-    updatedAt: now.toISOString(),
-    expiresAt: new Date(now.getTime() + ONBOARDING_DRAFT_TTL_MS).toISOString(),
+    updatedAt: timestamp,
     authAttempt,
   });
 };
@@ -361,12 +346,11 @@ export const cancelOnboardingSignupAttempt = (): OnboardingDraft | null => {
   if (!existing || !canAccessOnboardingSignup(existing)) return null;
   if (existing.stage === "ready") return existing;
 
-  const now = new Date();
+  const timestamp = new Date().toISOString();
   return persistDraft({
     ...existing,
     stage: "ready",
-    updatedAt: now.toISOString(),
-    expiresAt: new Date(now.getTime() + ONBOARDING_DRAFT_TTL_MS).toISOString(),
+    updatedAt: timestamp,
     authAttempt: undefined,
   });
 };

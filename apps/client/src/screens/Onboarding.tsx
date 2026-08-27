@@ -157,6 +157,8 @@ const FORMAT_OPTIONS: Array<{ value: PreferredBookFormat; label: string }> = [
   { value: "mixed", label: "Mixed" },
 ];
 
+const INITIAL_GENRE_COUNT = 12;
+
 const numberToInput = (value: number | null) => (value === null ? "" : String(value));
 
 const parseNullableNumber = (value: string) => {
@@ -570,7 +572,7 @@ const Onboarding = () => {
   return (
     <div
       ref={rootRef}
-      className="onboarding-root relative overflow-hidden bg-gradient-background px-3 sm:px-5 md:px-8"
+      className="onboarding-root relative bg-gradient-background"
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-[8%] top-[8%] h-40 w-40 rounded-full border border-primary/15" />
@@ -619,10 +621,10 @@ const Onboarding = () => {
           </Button>
         </header>
 
-        <main className="onboarding-shell flex min-h-0 flex-1 py-3 sm:py-4 lg:py-5">
-          <Card className="mx-auto flex h-full w-full max-w-6xl overflow-hidden rounded-xl border-border/70 bg-card/95 shadow-medium backdrop-blur">
+        <main className="onboarding-shell flex min-h-0 flex-1 py-0 sm:py-4 lg:py-5">
+          <Card className="onboarding-card mx-auto flex h-full w-full max-w-6xl overflow-hidden rounded-none border-x-0 border-border/70 bg-card/95 shadow-none backdrop-blur sm:rounded-xl sm:border-x sm:shadow-medium">
             <CardContent className="flex h-full min-h-0 w-full flex-col p-0">
-              <div className="shrink-0 border-b border-border/70 px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+              <div className="onboarding-chapter-dock shrink-0 border-b border-border/70 px-4 py-2.5 sm:px-6 sm:py-4 lg:px-8">
                 <OnboardingChapterIndicator
                   chapters={ONBOARDING_CHAPTERS}
                   currentStep={currentStep}
@@ -691,15 +693,16 @@ const Onboarding = () => {
                 </div>
               </div>
 
-              <div className="onboarding-action-dock flex shrink-0 items-center gap-3 border-t border-border/70 bg-card/95 px-4 pt-3 backdrop-blur sm:justify-between sm:px-6 sm:pt-4 lg:px-8">
+              <div className="onboarding-action-dock flex shrink-0 items-center gap-2 border-t border-border/70 bg-card/95 px-4 pt-3 backdrop-blur sm:justify-between sm:gap-3 sm:px-6 sm:pt-4 lg:px-8">
                 <Button
                   variant="outline"
                   onClick={handleBack}
                   disabled={saving}
-                  className="min-h-11 shrink-0"
+                  className="min-h-11 shrink-0 px-3 sm:px-4"
+                  aria-label={stepIndex === 0 ? "Return to Brack home" : "Go back one onboarding chapter"}
                 >
-                  <NavArrowLeft className="mr-2 h-4 w-4" />
-                  {stepIndex === 0 ? "Home" : "Back"}
+                  <NavArrowLeft className="h-4 w-4 min-[360px]:mr-2" />
+                  <span className="hidden min-[360px]:inline">{stepIndex === 0 ? "Home" : "Back"}</span>
                 </Button>
 
                 <Button
@@ -714,7 +717,12 @@ const Onboarding = () => {
                     </>
                   ) : stepIndex === ONBOARDING_STEPS.length - 1 ? (
                     <>
-                      {isGuestOnboarding ? "Continue to sign up" : "Finish setup"}
+                      {isGuestOnboarding ? (
+                        <>
+                          <span className="hidden min-[360px]:inline">Continue to sign up</span>
+                          <span className="min-[360px]:hidden">Sign up</span>
+                        </>
+                      ) : "Finish setup"}
                       <Check className="ml-2 h-4 w-4" />
                     </>
                   ) : (
@@ -734,14 +742,14 @@ const Onboarding = () => {
 };
 
 const WelcomeStep = ({ userName }: { userName?: string }) => (
-  <div className="grid min-h-full gap-6 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-center lg:gap-10">
-    <div className="space-y-5 lg:py-4">
+  <div className="grid min-h-full min-w-0 grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-center lg:gap-10">
+    <div className="min-w-0 space-y-4 sm:space-y-5 lg:py-4">
       <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-sm text-primary">
         <APP_ICONS.dashboard.insights className="h-4 w-4" />
         Your first reading profile
       </div>
       <div className="space-y-3">
-        <h1 className="max-w-3xl font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+        <h1 className="max-w-3xl font-display text-[clamp(1.9rem,8.2vw,3rem)] font-bold leading-[1.08]">
           {userName ? `${userName}, ` : ""}make Brack feel like it already knows your library.
         </h1>
         <p className="max-w-2xl font-sans text-base text-muted-foreground sm:text-lg">
@@ -749,7 +757,7 @@ const WelcomeStep = ({ userName }: { userName?: string }) => (
           everything later in Settings.
         </p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {[
           ["Make it yours", "Choose a palette and the books you love."],
           ["Find your rhythm", "Set a pace that fits your real life."],
@@ -757,19 +765,19 @@ const WelcomeStep = ({ userName }: { userName?: string }) => (
         ].map(([title, body], index) => (
           <div
             key={title}
-            className="rounded-lg border border-border/65 bg-muted/25 p-3.5"
+            className="min-w-0 rounded-lg border border-border/65 bg-muted/25 p-2 text-center sm:p-3.5 sm:text-left"
           >
             <span className="mb-2 grid h-7 w-7 place-items-center rounded-md bg-primary/10 font-sans text-xs font-bold text-primary">
               {index + 1}
             </span>
             <p className="font-sans text-sm font-semibold text-foreground">{title}</p>
-            <p className="mt-1 font-sans text-xs text-muted-foreground">{body}</p>
+            <p className="mt-1 hidden font-sans text-xs text-muted-foreground sm:block">{body}</p>
           </div>
         ))}
       </div>
     </div>
 
-    <div className="streak-art-stage mx-auto w-[clamp(8.5rem,28vw,13rem)] self-center" aria-hidden="true">
+    <div className="streak-art-stage mx-auto w-[clamp(7.5rem,27vw,13rem)] self-center" aria-hidden="true">
       <span className="streak-art-aura" />
       <span className="streak-art-shadow" />
       <img
@@ -791,8 +799,8 @@ const PaletteStep = ({
   previewMode: "light" | "dark";
   onSelectTheme: (themeId: string) => Promise<void>;
 }) => (
-  <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_17rem]">
-    <div className="space-y-5">
+  <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_15rem]">
+    <div className="min-w-0 space-y-5">
       <div>
         <h2 className="font-display text-2xl font-bold">Pick the palette Brack should remember</h2>
         <p className="font-sans text-sm text-muted-foreground">
@@ -808,7 +816,7 @@ const PaletteStep = ({
       />
     </div>
 
-    <div className="rounded-lg bg-muted/30 p-4">
+    <div className="hidden rounded-lg bg-muted/30 p-4 lg:block">
       <div className="mb-4 flex items-center gap-2">
         <Palette className="h-5 w-5 text-primary" />
         <h3 className="font-display text-lg font-semibold">Live preview</h3>
@@ -856,9 +864,14 @@ const TasteStep = ({
   selectedGenresRef,
   onToggleGenre,
   onFieldChange,
-}: TasteStepProps) => (
-  <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
-    <div className="space-y-6">
+}: TasteStepProps) => {
+  const [showAllGenres, setShowAllGenres] = useState(false);
+  const visibleGenres = showAllGenres ? GENRES : GENRES.slice(0, INITIAL_GENRE_COUNT);
+  const hiddenGenreCount = Math.max(0, GENRES.length - INITIAL_GENRE_COUNT);
+
+  return (
+  <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
+    <div className="min-w-0 space-y-5 sm:space-y-6">
       <div>
         <h2 className="font-display text-2xl font-bold">Choose the genres Brack should learn first</h2>
         <p className="font-sans text-sm text-muted-foreground">
@@ -866,8 +879,13 @@ const TasteStep = ({
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Favorite genres">
-        {GENRES.map((genre) => {
+      <div
+        id="onboarding-genre-options"
+        className="flex flex-wrap gap-2"
+        role="group"
+        aria-label="Favorite genres"
+      >
+        {visibleGenres.map((genre) => {
           const selected = formData.favoriteGenres.includes(genre);
           return (
             <button
@@ -886,6 +904,26 @@ const TasteStep = ({
             </button>
           );
         })}
+      </div>
+
+      <div className="flex min-h-11 flex-wrap items-center justify-between gap-2 rounded-lg bg-muted/25 px-3 py-2">
+        <p className="font-sans text-sm text-muted-foreground" aria-live="polite">
+          <span className="font-semibold text-foreground">{formData.favoriteGenres.length}</span>{" "}
+          {formData.favoriteGenres.length === 1 ? "genre" : "genres"} selected
+        </p>
+        {hiddenGenreCount > 0 && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="min-h-11 px-2 text-primary"
+            aria-expanded={showAllGenres}
+            aria-controls="onboarding-genre-options"
+            onClick={() => setShowAllGenres((current) => !current)}
+          >
+            {showAllGenres ? "Show fewer" : `Show all ${GENRES.length}`}
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -912,7 +950,7 @@ const TasteStep = ({
           <legend className="font-sans text-sm font-medium leading-none text-foreground">
             Preferred book length
           </legend>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
             {BOOK_LENGTH_OPTIONS.map((option) => (
               <button
                 key={option.value}
@@ -935,7 +973,7 @@ const TasteStep = ({
       </div>
     </div>
 
-    <div className="rounded-lg bg-muted/30 p-4">
+    <div className="hidden rounded-lg bg-muted/30 p-4 xl:block">
       <div className="mb-3 flex items-center gap-2">
         <APP_ICONS.readers.similarTaste className="h-5 w-5 text-primary" />
         <h3 className="font-display text-lg font-semibold">Selected genres</h3>
@@ -953,7 +991,8 @@ const TasteStep = ({
       </div>
     </div>
   </div>
-);
+  );
+};
 
 interface PaceStepProps {
   formData: OnboardingFormData;
@@ -970,7 +1009,7 @@ const PaceStep = ({ formData, onFieldChange, onNumberFieldChange }: PaceStepProp
       </p>
     </div>
 
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
       <NumberField
         id="books6mo"
         label="Books in 6 months"
@@ -1048,8 +1087,8 @@ const GoalStep = ({
   onFieldChange,
   onNumberFieldChange,
 }: GoalStepProps) => (
-  <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
-    <div className="space-y-6">
+  <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+    <div className="min-w-0 space-y-5 sm:space-y-6">
       <div>
         <h2 className="font-display text-2xl font-bold">Set a first target</h2>
         <p className="font-sans text-sm text-muted-foreground">
@@ -1081,8 +1120,8 @@ const GoalStep = ({
       </div>
 
       <div className="rounded-lg bg-muted/30 p-4">
-        <div className="flex items-center justify-between gap-4">
-          <Label htmlFor="onboarding-reminder" className="min-h-11 cursor-pointer py-1">
+        <div className="flex items-start justify-between gap-4">
+          <Label htmlFor="onboarding-reminder" className="min-h-11 min-w-0 flex-1 cursor-pointer py-1">
             <span className="block font-sans text-base font-medium text-foreground">Daily reminder</span>
             <p className="font-sans text-sm text-muted-foreground">
               This seeds notification preferences; you can edit it later.
@@ -1093,6 +1132,7 @@ const GoalStep = ({
             checked={formData.reminderEnabled}
             onCheckedChange={(checked) => onFieldChange("reminderEnabled", checked)}
             aria-label="Enable daily reading reminder"
+            className="mt-1 shrink-0"
           />
         </div>
         {formData.reminderEnabled && (
@@ -1108,7 +1148,7 @@ const GoalStep = ({
       </div>
     </div>
 
-    <div className="rounded-lg bg-muted/30 p-4 text-center">
+    <div className="hidden rounded-lg bg-muted/30 p-4 text-center lg:block">
       <img
         src={BRACK_GOALS_IMAGE}
         alt=""
@@ -1132,8 +1172,8 @@ const ReviewStep = ({
   formData: OnboardingFormData;
   isPreAuth?: boolean;
 }) => (
-  <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_17rem]">
-    <div className="space-y-5">
+  <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_17rem]">
+    <div className="min-w-0 space-y-5">
       <div>
         <h2 className="font-display text-2xl font-bold">This is the starting profile Brack will use</h2>
         <p className="font-sans text-sm text-muted-foreground">
@@ -1143,7 +1183,7 @@ const ReviewStep = ({
         </p>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="onboarding-summary-grid grid gap-3 min-[360px]:grid-cols-2">
         <SummaryCard title="Taste" icon={APP_ICONS.readers.similarTaste}>
           <div className="flex flex-wrap gap-2">
             {formData.favoriteGenres.length > 0 ? (
@@ -1186,7 +1226,7 @@ const ReviewStep = ({
       </div>
     </div>
 
-    <div className="rounded-lg bg-muted/30 p-4 text-center">
+    <div className="hidden rounded-lg bg-muted/30 p-4 text-center lg:block">
       <img
         src={BRACK_TROPHY_IMAGE}
         alt=""
@@ -1248,7 +1288,7 @@ const OptionGrid = ({
 }) => (
   <fieldset className="space-y-2">
     <legend className="font-sans text-sm font-medium leading-none text-foreground">{label}</legend>
-    <div className="grid gap-2">
+    <div className="onboarding-option-grid grid grid-cols-2 gap-2 md:grid-cols-1">
       {options.map((option) => (
         <button
           key={option.value}
@@ -1278,10 +1318,10 @@ const SummaryCard = ({
   icon: ElementType;
   children: ReactNode;
 }) => (
-  <div className="rounded-lg bg-muted/30 p-4">
-    <div className="mb-3 flex items-center gap-2">
+  <div className="onboarding-summary-card rounded-lg bg-muted/30 p-3 sm:p-4">
+    <div className="mb-2 flex items-center gap-2 sm:mb-3">
       <Icon className="h-5 w-5 text-primary" />
-      <h3 className="font-display text-lg font-semibold">{title}</h3>
+      <h3 className="font-display text-base font-semibold sm:text-lg">{title}</h3>
     </div>
     <div className="font-sans text-sm">{children}</div>
   </div>

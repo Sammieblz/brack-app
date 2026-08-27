@@ -31,7 +31,12 @@ import {
   authorizePasswordRecoverySession,
   resolvePostAuthPath,
 } from "@/services/authRedirect";
-import { getAuthRedirectUrl, getPasswordResetRedirectUrl } from "@/services/platform";
+import {
+  getAuthRedirectUrl,
+  getPasswordResetRedirectUrl,
+  isCustomSchemeAuthRuntime,
+} from "@/services/platform";
+import { subscribeToAuthFlowCompletion } from "@/services/authFlowBridge";
 import { validatePassword } from "@/utils/authValidation";
 import {
   presentAuthFailure,
@@ -47,6 +52,8 @@ import {
   beginOnboardingSignupAttempt,
   canAccessOnboardingSignup,
   cancelOnboardingSignupAttempt,
+  clearOnboardingDraft,
+  loadOnboardingDraft,
 } from "@/services/onboardingDraft";
 
 type AuthTransition = {
@@ -96,8 +103,9 @@ const Auth = () => {
   const authRequestInFlightRef = useRef(false);
   const recoveryOtpInFlightRef = useRef(false);
   const postAuthResolutionRef = useRef<Promise<AuthTransition> | null>(null);
+  const oauthPopupRef = useRef<Window | null>(null);
   const { toast } = useToast();
-  const { resetToDefaultTheme } = useTheme();
+  const { previewTheme, resetToDefaultTheme } = useTheme();
   const { user: authUser, loading: authLoading } = useAuth();
   const captchaAction: TurnstileAction = emailChallenge
     ? emailChallenge.type === "signup"
@@ -130,11 +138,54 @@ const Auth = () => {
     return postAuthResolutionRef.current;
   }, []);
 
-  // Force the public theme only after the single shared Auth store has
-  // conclusively restored (or not restored) the local session.
+  const abandonOnboardingSignup = useCallback(() => {
+    oauthPopupRef.current?.close();
+    oauthPopupRef.current = null;
+    clearOnboardingDraft();
+    resetToDefaultTheme();
+  }, [resetToDefaultTheme]);
+
+  // A guest palette is a live preview owned by the current acquisition flow.
+  // It deliberately never enters persistent theme storage before Auth succeeds.
   useEffect(() => {
-    if (!authLoading && !authUser) resetToDefaultTheme();
-  }, [authLoading, authUser, resetToDefaultTheme]);
+    if (authLoading || authUser) return;
+
+    const draft = loadOnboardingDraft();
+    const isOnboardingSignup =
+      searchParams.get("mode") === "signup" &&
+      searchParams.get("from") === "onboarding" &&
+      canAccessOnboardingSignup(draft);
+
+    if (isOnboardingSignup && draft) {
+      previewTheme(draft.formData.colorTheme);
+      return;
+    }
+
+    resetToDefaultTheme();
+  }, [authLoading, authUser, previewTheme, resetToDefaultTheme, searchParams]);
+
+  useEffect(() => {
+    const finishInRequestingWindow = () => {
+      const draft = loadOnboardingDraft();
+      if (draft?.stage !== "auth_started") return;
+
+      oauthPopupRef.current?.close();
+      oauthPopupRef.current = null;
+      void resolveSignedInTransition()
+        .then((nextTransition) => setTransition((current) => current ?? nextTransition))
+        .catch((error) => {
+          console.error("Failed to resume the onboarding auth flow:", error);
+          setAuthFailure({
+            title: "Account created, setup still needed",
+            description:
+              "Your account is secure. Continue to finish applying your reading profile.",
+            rateLimited: false,
+          });
+        });
+    };
+
+    return subscribeToAuthFlowCompletion(finishInRequestingWindow);
+  }, [resolveSignedInTransition]);
 
   // Read URL params to set sign-up/sign-in mode
   useEffect(() => {
@@ -176,7 +227,11 @@ const Auth = () => {
     let active = true;
     resolveSignedInTransition()
       .then((nextTransition) => {
-        if (active) setTransition((current) => current ?? nextTransition);
+        if (active) {
+          oauthPopupRef.current?.close();
+          oauthPopupRef.current = null;
+          setTransition((current) => current ?? nextTransition);
+        }
       })
       .catch((error) => {
         console.error("Failed to resolve post-auth route:", error);
@@ -332,7 +387,7 @@ const Auth = () => {
       } else {
         // An established-reader sign-in must never consume a guest acquisition
         // draft left by an abandoned signup attempt.
-        cancelOnboardingSignupAttempt();
+        abandonOnboardingSignup();
         await signInWithEmailPassword({
           email,
           password,
@@ -438,6 +493,18 @@ const Auth = () => {
     if (authRequestInFlightRef.current) return;
 
     const isOnboardingSignup = isSignUp || emailChallenge?.type === "signup";
+    const preserveCurrentDocument =
+      isOnboardingSignup && !isCustomSchemeAuthRuntime();
+
+    if (
+      preserveCurrentDocument &&
+      oauthPopupRef.current &&
+      !oauthPopupRef.current.closed
+    ) {
+      oauthPopupRef.current.focus();
+      return;
+    }
+
     if (isOnboardingSignup) {
       const signupDraft = beginOnboardingSignupAttempt({
         kind: "oauth",
@@ -448,7 +515,42 @@ const Auth = () => {
         return;
       }
     } else {
+      clearOnboardingDraft();
+    }
+
+    const oauthPopup = preserveCurrentDocument
+      ? window.open(
+          "about:blank",
+          "brack-google-auth",
+          "popup=yes,width=520,height=720,resizable=yes,scrollbars=yes",
+        )
+      : null;
+
+    if (preserveCurrentDocument && !oauthPopup) {
       cancelOnboardingSignupAttempt();
+      const failure: AuthFailurePresentation = {
+        title: "Allow the Google sign-up window",
+        description:
+          "Your browser blocked the secure Google window. Allow pop-ups for Brack, then try again.",
+        rateLimited: false,
+      };
+      setAuthFailure(failure);
+      toast({
+        variant: "destructive",
+        title: failure.title,
+        description: failure.description,
+      });
+      return;
+    }
+
+    oauthPopupRef.current = oauthPopup;
+    if (oauthPopup) {
+      oauthPopup.document.title = "Opening Google sign-up";
+      const status = oauthPopup.document.createElement("p");
+      status.textContent = "Opening secure Google sign-up…";
+      status.style.cssText =
+        "font: 16px system-ui; margin: 3rem auto; max-width: 24rem; padding: 1rem; text-align: center;";
+      oauthPopup.document.body.replaceChildren(status);
     }
 
     authRequestInFlightRef.current = true;
@@ -456,11 +558,22 @@ const Auth = () => {
     setAuthFailure(null);
     
     try {
-      await signInWithOAuth({
+      const oauth = await signInWithOAuth({
         provider: 'google',
         redirectTo: getAuthRedirectUrl(),
+        preserveCurrentDocument,
       });
+
+      if (preserveCurrentDocument) {
+        if (!oauth.url || !oauthPopup || oauthPopup.closed) {
+          throw new Error("The Google sign-up window could not be opened.");
+        }
+        oauthPopup.location.replace(oauth.url);
+        oauthPopup.focus();
+      }
     } catch (error: unknown) {
+      oauthPopup?.close();
+      oauthPopupRef.current = null;
       if (isOnboardingSignup) cancelOnboardingSignupAttempt();
       const failure = presentAuthFailure(error, "oauth");
       setAuthFailure(failure);
@@ -715,7 +828,7 @@ const Auth = () => {
                     disabled={loading}
                     onClick={() => {
                       if (emailChallenge.type === "signup") {
-                        cancelOnboardingSignupAttempt();
+                        abandonOnboardingSignup();
                       }
                       setEmailChallenge(null);
                       setEmailOtp("");
@@ -736,7 +849,7 @@ const Auth = () => {
                       className="h-11 w-full"
                       disabled={loading}
                       onClick={() => {
-                        cancelOnboardingSignupAttempt();
+                        abandonOnboardingSignup();
                         setEmailChallenge(null);
                         setEmailOtp("");
                         setIsSignUp(false);
@@ -960,7 +1073,7 @@ const Auth = () => {
                 return;
               }
               if (isSignUp) {
-                cancelOnboardingSignupAttempt();
+                abandonOnboardingSignup();
                 navigate("/auth?mode=signin", { replace: true });
               } else {
                 navigate("/onboarding?from=auth");

@@ -123,7 +123,7 @@ export const ThemePaletteCarousel = ({
   }, [api, selectedTheme]);
 
   return (
-    <div className={cn("min-w-0 max-w-full space-y-3 overflow-hidden", className)}>
+    <div className={cn("w-full min-w-0 max-w-full space-y-3 overflow-hidden", className)}>
       <Carousel
         setApi={setApi}
         opts={{ align: "start", containScroll: "trimSnaps" }}
@@ -139,7 +139,7 @@ export const ThemePaletteCarousel = ({
             return (
               <CarouselItem
                 key={theme.id}
-                className="basis-[86%] pl-2 sm:basis-[17rem] lg:basis-[17.5rem]"
+                className="basis-[88%] pl-2 min-[360px]:basis-[82%] sm:basis-[17rem] lg:basis-[17.5rem]"
               >
                 <button
                   type="button"
@@ -253,12 +253,12 @@ export const ThemePaletteCarousel = ({
           })}
         </CarouselContent>
 
-        <div className="mt-3 flex items-center justify-between gap-3 px-1">
-          <CarouselPrevious className="static h-8 w-8 translate-y-0 border-border bg-background/90 text-foreground shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/75 disabled:opacity-35" />
+        <div className="mt-3 flex min-w-0 items-center justify-between gap-2 px-1 sm:gap-3">
+          <CarouselPrevious className="static h-11 w-11 shrink-0 translate-y-0 border-border bg-background/90 text-foreground shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/75 disabled:opacity-35" />
 
           <div className="flex min-w-0 flex-1 items-center justify-center gap-3">
             {snapCount > 1 && (
-              <div className="flex items-center gap-1">
+              <div className="hidden items-center gap-1 sm:flex">
                 {Array.from({ length: snapCount }).map((_, index) => (
                   <button
                     key={index}
@@ -283,13 +283,13 @@ export const ThemePaletteCarousel = ({
             )}
 
             {snapCount > 0 && (
-              <p className="hidden shrink-0 font-sans text-xs text-muted-foreground sm:block">
+              <p className="shrink-0 font-sans text-xs font-medium tabular-nums text-muted-foreground">
                 {selectedSnap + 1} of {snapCount}
               </p>
             )}
           </div>
 
-          <CarouselNext className="static h-8 w-8 translate-y-0 border-border bg-background/90 text-foreground shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/75 disabled:opacity-35" />
+          <CarouselNext className="static h-11 w-11 shrink-0 translate-y-0 border-border bg-background/90 text-foreground shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/75 disabled:opacity-35" />
         </div>
       </Carousel>
     </div>

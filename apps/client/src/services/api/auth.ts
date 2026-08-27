@@ -35,6 +35,11 @@ export interface EmailPasswordSignInRequest extends CaptchaProtectedAuthRequest 
 export interface OAuthSignInRequest {
   provider: Provider;
   redirectTo?: string;
+  /**
+   * Return the provider URL without replacing the current browser document.
+   * Native/desktop runtimes already own their external-browser handoff.
+   */
+  preserveCurrentDocument?: boolean;
 }
 
 export type EmailSignUpOutcome =
@@ -374,18 +379,20 @@ export const signInWithEmailPassword = async ({
 export const signInWithOAuth = async ({
   provider,
   redirectTo,
+  preserveCurrentDocument = false,
 }: OAuthSignInRequest): Promise<OAuthResponse["data"]> => {
+  const customSchemeRuntime = isCustomSchemeAuthRuntime();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
       redirectTo,
-      skipBrowserRedirect: isCustomSchemeAuthRuntime(),
+      skipBrowserRedirect: customSchemeRuntime || preserveCurrentDocument,
     },
   });
 
   throwIfAuthError(error);
 
-  if (isCustomSchemeAuthRuntime() && data.url) {
+  if (customSchemeRuntime && data.url) {
     await openExternalUrl(data.url);
   }
 

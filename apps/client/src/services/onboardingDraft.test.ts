@@ -1,8 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { OnboardingFormData } from "@/types";
 import {
-  ONBOARDING_DRAFT_STORAGE_KEY,
-  ONBOARDING_DRAFT_TTL_MS,
   ONBOARDING_DRAFT_VERSION,
   beginOnboardingSignupAttempt,
   canAccessOnboardingSignup,
@@ -10,12 +8,16 @@ import {
   clearOnboardingDraft,
   loadOnboardingDraft,
   markOnboardingDraftReady,
+  onboardingDraftSchema,
   saveOnboardingDraftCollection,
 } from "./onboardingDraft";
 
+const LEGACY_ONBOARDING_DRAFT_STORAGE_KEY =
+  "brack:pre-auth-onboarding:v1";
+
 const formData: OnboardingFormData = {
   favoriteGenres: ["Fantasy", "History"],
-  colorTheme: "default",
+  colorTheme: "midnight",
   slowestGenre: "History",
   preferredBookLength: "medium",
   booksReadSixMonths: 6,
@@ -39,16 +41,23 @@ const createCollection = () =>
 describe("pre-auth onboarding draft", () => {
   beforeEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
+    clearOnboardingDraft();
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-26T12:00:00.000Z"));
   });
 
   afterEach(() => {
+    clearOnboardingDraft();
     vi.useRealTimers();
+    vi.restoreAllMocks();
     localStorage.clear();
+    sessionStorage.clear();
   });
 
-  it("persists a complete, versioned collection with a seven-day TTL and UUID", () => {
+  it("keeps a complete, versioned draft only in the active module runtime", () => {
+    const storageWrite = vi.spyOn(Storage.prototype, "setItem");
+
     const draft = createCollection();
 
     expect(draft).toMatchObject({
@@ -59,18 +68,58 @@ describe("pre-auth onboarding draft", () => {
       lastStep: "taste",
       createdAt: "2026-08-26T12:00:00.000Z",
       updatedAt: "2026-08-26T12:00:00.000Z",
-      expiresAt: "2026-09-02T12:00:00.000Z",
     });
+    expect(draft).not.toHaveProperty("expiresAt");
     expect(draft?.flowId).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
     );
-    expect(Date.parse(draft!.expiresAt) - Date.parse(draft!.updatedAt)).toBe(
-      ONBOARDING_DRAFT_TTL_MS,
-    );
     expect(loadOnboardingDraft()).toEqual(draft);
+    expect(storageWrite).not.toHaveBeenCalled();
+    expect(
+      localStorage.getItem(LEGACY_ONBOARDING_DRAFT_STORAGE_KEY),
+    ).toBeNull();
+    expect(sessionStorage.length).toBe(0);
   });
 
-  it("preserves the flow identity while collection updates refresh the TTL", () => {
+  it("returns defensive copies and never retains caller-owned form objects", () => {
+    const callerForm: OnboardingFormData = {
+      ...formData,
+      favoriteGenres: [...formData.favoriteGenres],
+    };
+    const returned = saveOnboardingDraftCollection({
+      formData: callerForm,
+      lastStep: "taste",
+    })!;
+
+    callerForm.favoriteGenres.push("Mystery");
+    callerForm.colorTheme = "default";
+    returned.formData.favoriteGenres.push("Romance");
+    returned.formData.colorTheme = "default";
+    returned.lastStep = "review";
+
+    const firstLoad = loadOnboardingDraft()!;
+    expect(firstLoad.formData.favoriteGenres).toEqual(["Fantasy", "History"]);
+    expect(firstLoad.formData.colorTheme).toBe("midnight");
+    expect(firstLoad.lastStep).toBe("taste");
+
+    firstLoad.formData.favoriteGenres.length = 0;
+    firstLoad.authAttempt = {
+      kind: "oauth",
+      provider: "google",
+      startedAt: firstLoad.updatedAt,
+    };
+
+    expect(loadOnboardingDraft()).toMatchObject({
+      formData: {
+        favoriteGenres: ["Fantasy", "History"],
+        colorTheme: "midnight",
+      },
+      stage: "collecting",
+    });
+    expect(loadOnboardingDraft()).not.toHaveProperty("authAttempt");
+  });
+
+  it("preserves flow identity while collection updates advance in-memory state", () => {
     const original = createCollection()!;
     vi.advanceTimersByTime(60_000);
 
@@ -83,7 +132,6 @@ describe("pre-auth onboarding draft", () => {
       flowId: original.flowId,
       createdAt: original.createdAt,
       updatedAt: "2026-08-26T12:01:00.000Z",
-      expiresAt: "2026-09-02T12:01:00.000Z",
       lastStep: "pace",
       stage: "collecting",
       outcome: null,
@@ -129,9 +177,10 @@ describe("pre-auth onboarding draft", () => {
       updatedAt: "2026-08-26T12:00:02.000Z",
     });
     expect(cancelled).not.toHaveProperty("authAttempt");
+    expect(cancelOnboardingSignupAttempt()).toEqual(cancelled);
   });
 
-  it("supports skipped onboarding and OAuth attempts", () => {
+  it("supports skipped onboarding and normalized OAuth attempt binding", () => {
     createCollection();
     markOnboardingDraftReady({ outcome: "skipped", lastStep: "welcome" });
 
@@ -147,6 +196,7 @@ describe("pre-auth onboarding draft", () => {
       authAttempt: {
         kind: "oauth",
         provider: "google",
+        startedAt: "2026-08-26T12:00:00.000Z",
       },
     });
   });
@@ -155,17 +205,15 @@ describe("pre-auth onboarding draft", () => {
     const collecting = createCollection();
 
     expect(canAccessOnboardingSignup(collecting)).toBe(false);
-    expect(beginOnboardingSignupAttempt({ kind: "oauth", provider: "google" })).toBeNull();
+    expect(
+      beginOnboardingSignupAttempt({ kind: "oauth", provider: "google" }),
+    ).toBeNull();
     expect(cancelOnboardingSignupAttempt()).toBeNull();
     expect(loadOnboardingDraft()).toEqual(collecting);
   });
 
-  it("returns null when readiness is requested without a valid collection", () => {
-    expect(markOnboardingDraftReady({ outcome: "completed" })).toBeNull();
-    expect(canAccessOnboardingSignup()).toBe(false);
-  });
-
-  it("rejects incomplete or non-finite form data without persisting it", () => {
+  it("validates complete finite form data without corrupting an active draft", () => {
+    const valid = createCollection();
     const incomplete = { ...formData } as Partial<OnboardingFormData>;
     delete incomplete.goalTargetBooks;
 
@@ -175,57 +223,87 @@ describe("pre-auth onboarding draft", () => {
         lastStep: "goal",
       }),
     ).toThrow();
-    expect(localStorage.getItem(ONBOARDING_DRAFT_STORAGE_KEY)).toBeNull();
-
     expect(() =>
       saveOnboardingDraftCollection({
         formData: { ...formData, averageDaysPerBook: Number.NaN },
         lastStep: "pace",
       }),
     ).toThrow();
-    expect(localStorage.getItem(ONBOARDING_DRAFT_STORAGE_KEY)).toBeNull();
+    expect(loadOnboardingDraft()).toEqual(valid);
   });
 
-  it("removes malformed, incompatible, and state-invalid records", () => {
-    localStorage.setItem(ONBOARDING_DRAFT_STORAGE_KEY, "{not-json");
-    expect(loadOnboardingDraft()).toBeNull();
-    expect(localStorage.getItem(ONBOARDING_DRAFT_STORAGE_KEY)).toBeNull();
+  it("rejects impossible lifecycle records at the schema boundary", () => {
+    const collecting = createCollection()!;
 
-    const valid = createCollection()!;
-    localStorage.setItem(
-      ONBOARDING_DRAFT_STORAGE_KEY,
-      JSON.stringify({ ...valid, version: 99 }),
-    );
-    expect(loadOnboardingDraft()).toBeNull();
-    expect(localStorage.getItem(ONBOARDING_DRAFT_STORAGE_KEY)).toBeNull();
-
-    createCollection();
-    const collecting = loadOnboardingDraft()!;
-    localStorage.setItem(
-      ONBOARDING_DRAFT_STORAGE_KEY,
-      JSON.stringify({ ...collecting, outcome: "completed" }),
-    );
-    expect(loadOnboardingDraft()).toBeNull();
-    expect(localStorage.getItem(ONBOARDING_DRAFT_STORAGE_KEY)).toBeNull();
+    expect(
+      onboardingDraftSchema.safeParse({
+        ...collecting,
+        outcome: "completed",
+      }).success,
+    ).toBe(false);
+    expect(
+      onboardingDraftSchema.safeParse({
+        ...collecting,
+        stage: "ready",
+      }).success,
+    ).toBe(false);
+    expect(
+      onboardingDraftSchema.safeParse({
+        ...collecting,
+        stage: "auth_started",
+        outcome: "completed",
+      }).success,
+    ).toBe(false);
+    expect(
+      onboardingDraftSchema.safeParse({
+        ...collecting,
+        createdAt: "2026-08-26T12:01:00.000Z",
+        updatedAt: "2026-08-26T12:00:00.000Z",
+      }).success,
+    ).toBe(false);
   });
 
-  it("expires and removes a draft exactly at the seven-day boundary", () => {
+  it("clears the active flow explicitly without touching unrelated storage", () => {
+    localStorage.setItem("unrelated-local", "keep");
+    sessionStorage.setItem("unrelated-session", "keep");
     createCollection();
-    vi.advanceTimersByTime(ONBOARDING_DRAFT_TTL_MS - 1);
-    expect(loadOnboardingDraft()).not.toBeNull();
-
-    vi.advanceTimersByTime(1);
-    expect(loadOnboardingDraft()).toBeNull();
-    expect(localStorage.getItem(ONBOARDING_DRAFT_STORAGE_KEY)).toBeNull();
-    expect(canAccessOnboardingSignup()).toBe(false);
-  });
-
-  it("clears a persisted draft explicitly", () => {
-    createCollection();
-    expect(loadOnboardingDraft()).not.toBeNull();
 
     clearOnboardingDraft();
 
     expect(loadOnboardingDraft()).toBeNull();
+    expect(canAccessOnboardingSignup()).toBe(false);
+    expect(localStorage.getItem("unrelated-local")).toBe("keep");
+    expect(sessionStorage.getItem("unrelated-session")).toBe("keep");
+  });
+
+  it("purges a legacy seven-day localStorage record without hydrating it", () => {
+    localStorage.setItem(
+      LEGACY_ONBOARDING_DRAFT_STORAGE_KEY,
+      JSON.stringify({ formData, stage: "ready", outcome: "completed" }),
+    );
+
+    expect(loadOnboardingDraft()).toBeNull();
+    expect(
+      localStorage.getItem(LEGACY_ONBOARDING_DRAFT_STORAGE_KEY),
+    ).toBeNull();
+
+    const active = createCollection();
+    localStorage.setItem(LEGACY_ONBOARDING_DRAFT_STORAGE_KEY, "stale-again");
+
+    expect(loadOnboardingDraft()).toEqual(active);
+    expect(
+      localStorage.getItem(LEGACY_ONBOARDING_DRAFT_STORAGE_KEY),
+    ).toBeNull();
+  });
+
+  it("starts empty when a fresh document or app process recreates the module", async () => {
+    createCollection();
+    expect(loadOnboardingDraft()).not.toBeNull();
+
+    vi.resetModules();
+    const freshRuntime = await import("./onboardingDraft");
+
+    expect(freshRuntime.loadOnboardingDraft()).toBeNull();
+    freshRuntime.clearOnboardingDraft();
   });
 });
