@@ -1,6 +1,7 @@
 import {
   TURNSTILE_BRIDGE_EVENT,
   TURNSTILE_BRIDGE_INIT,
+  TURNSTILE_BRIDGE_PARENT_ORIGINS,
   getTurnstileSiteKey,
   isTurnstileAction,
   isValidTurnstileToken,
@@ -9,11 +10,9 @@ import {
   type TurnstileTheme,
 } from "@/utils/turnstile";
 
-const ALLOWED_PARENT_ORIGINS = new Set([
-  "https://localhost",
-  "capacitor://localhost",
-  "brack-app://brack",
-]);
+const ALLOWED_PARENT_ORIGINS = new Set<string>(
+  TURNSTILE_BRIDGE_PARENT_ORIGINS,
+);
 const SCRIPT_SOURCE =
   "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 const root = document.getElementById("turnstile-root");

@@ -91,7 +91,7 @@ export const pushNotificationsService = {
 
     if (registrationPromise) return registrationPromise;
 
-    registrationPromise = (async () => {
+    registrationPromise = (async (): Promise<PushRegistrationResult> => {
       try {
         const support = await FirebaseMessaging.isSupported();
         if (!support.isSupported) return { status: "unavailable", token: null };

@@ -377,21 +377,31 @@ oversized values before making an Auth request, and reset the widget after every
 attempt so a retry cannot reuse a spent token.
 
 The SPA uses explicit, theme-aware rendering with flexible sizing and a compact
-fallback below 300px. Web/PWA and local development render directly. Packaged
-Android, iOS, and Electron use `https://brack-app.com/turnstile.html` because
-Turnstile supports HTTP(S) pages, not `capacitor://` or `brack-app://` pages.
-That bridge accepts initialization only from the exact packaged-app origins,
-uses a per-instance cryptographic channel, validates every message, is framed
-by a restrictive CSP, and is served with `Cache-Control: no-store`. The service
-worker must never precache it.
+fallback below 300px. Production Web/PWA renders directly. Packaged Android,
+iOS, Electron, and the fixed Vite loopback origins use
+`https://brack-app.com/turnstile.html`. This keeps the real widget on Brack's
+authorized HTTPS hostname while hosted Supabase Auth receives a real token that
+matches its production secret. The bridge accepts initialization only from the
+explicit origins in `TURNSTILE_BRIDGE_PARENT_ORIGINS`, uses a per-instance
+cryptographic channel, validates every message, is framed by a restrictive CSP,
+and is served with `Cache-Control: no-store`. The service worker never precaches
+it. A bridge that cannot complete its handshake becomes a visible retry state
+instead of leaving the Auth form waiting indefinitely. LAN-IP development
+origins are intentionally not trusted by this bridge.
 
 Deployment order is mandatory:
 
-1. Configure the existing production widget for `brack-app.com`; use Cloudflare test keys or a separate widget for ordinary localhost development.
+1. Configure the existing production widget for `brack-app.com`. Error `110200` means the page rendering the widget is not in Cloudflare Hostname Management.
 2. Store the existing widget secret in Supabase Bot and Abuse Protection and keep Turnstile selected as the provider.
 3. Set `VITE_TURNSTILE_SITE_KEY` in the production Pages build and packaged-app build environment.
-4. Deploy and verify `/turnstile.html` over HTTPS before releasing packaged mobile or desktop clients.
-5. Smoke-test each protected flow and confirm the widget is reset after an accepted, rejected, rate-limited, or network-failed request.
+4. Deploy and verify `/turnstile.html` plus its `_headers` policy over HTTPS before testing fixed loopback, mobile, or desktop clients.
+5. Run local Vite on the documented port (`localhost:8080` or `127.0.0.1:8080`). A LAN IP must be explicitly authorized in Cloudflare or routed through a separately reviewed HTTPS bridge origin.
+6. Smoke-test each protected flow and confirm the widget is reset after an accepted, rejected, rate-limited, or network-failed request.
+
+Cloudflare dummy sitekeys work on localhost only when the backend uses the
+matching dummy secret. Do not put a dummy sitekey in a client connected to the
+hosted production Supabase Auth project: production secrets reject dummy
+tokens. A fully local Supabase stack may use the documented dummy pair.
 
 Production Vite builds fail closed when the sitekey is absent. CI uses
 Cloudflare's published always-pass test widget, never the production widget.

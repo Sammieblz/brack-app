@@ -51,8 +51,8 @@ assert.match(
 );
 assert.match(
   pagesHeaders,
-  /frame-ancestors https:\/\/localhost capacitor:\/\/localhost brack-app:\/\/brack/,
-  "The Turnstile bridge must restrict framing to packaged Brack origins.",
+  /frame-ancestors http:\/\/localhost:8080 http:\/\/127\.0\.0\.1:8080 http:\/\/\[::1\]:8080 https:\/\/localhost capacitor:\/\/localhost brack-app:\/\/brack/,
+  "The Turnstile bridge must restrict framing to explicit loopback and packaged Brack origins.",
 );
 
 console.log("Verified web Auth/PWA build artifacts.");

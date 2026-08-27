@@ -16,6 +16,23 @@ export const TURNSTILE_BRIDGE_PATH = "/turnstile.html";
 export const TURNSTILE_BRIDGE_INIT = "brack:turnstile:init";
 export const TURNSTILE_BRIDGE_EVENT = "brack:turnstile:event";
 
+export const TURNSTILE_LOOPBACK_BRIDGE_ORIGINS = [
+  "http://localhost:8080",
+  "http://127.0.0.1:8080",
+  "http://[::1]:8080",
+  "https://localhost",
+] as const;
+
+export const TURNSTILE_PACKAGED_BRIDGE_ORIGINS = [
+  "capacitor://localhost",
+  "brack-app://brack",
+] as const;
+
+export const TURNSTILE_BRIDGE_PARENT_ORIGINS = [
+  ...TURNSTILE_LOOPBACK_BRIDGE_ORIGINS,
+  ...TURNSTILE_PACKAGED_BRIDGE_ORIGINS,
+] as const;
+
 export type TurnstileBridgeInitMessage = {
   type: typeof TURNSTILE_BRIDGE_INIT;
   channel: string;
@@ -53,18 +70,20 @@ export const getTurnstileSiteKey = (): string | null => {
 
 export const shouldUseHostedTurnstileBridge = ({
   customSchemeRuntime,
-  protocol,
+  origin,
   development,
 }: {
   customSchemeRuntime: boolean;
-  protocol: string;
+  origin: string;
   development: boolean;
-}) =>
-  customSchemeRuntime &&
-  !(
-    development &&
-    (protocol === "http:" || protocol === "https:")
+}) => {
+  if (customSchemeRuntime) return true;
+  if (!development) return false;
+
+  return (TURNSTILE_LOOPBACK_BRIDGE_ORIGINS as readonly string[]).includes(
+    origin,
   );
+};
 
 export const isTurnstileBridgeEvent = (
   value: unknown,

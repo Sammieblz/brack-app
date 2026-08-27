@@ -488,6 +488,12 @@
       "description": "auth_email_availability",
       "file": "20260823054807_auth_email_availability.sql",
       "sha256": "c3aaa431383fa68dfbe565b6471ccf196f98e80c443a413ca0ccea4dff80edd1"
+    },
+    {
+      "version": "20260826041825",
+      "description": "harden_push_token_ownership",
+      "file": "20260826041825_harden_push_token_ownership.sql",
+      "sha256": "1ff65f64ac35680d6b9f7334a68adb80ad82933b28429e7be6923c59d87a1881"
     }
   ]
 }

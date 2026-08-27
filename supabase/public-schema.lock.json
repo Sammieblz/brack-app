@@ -4760,13 +4760,13 @@
     },
     {
       "type": "constraint",
-      "name": "public.push_tokens.push_tokens_user_id_fkey",
-      "sha256": "979b8395e64baa28676e36137b0f3b9d33ac1830f1e12203aec982edfebe4d4a"
+      "name": "public.push_tokens.push_tokens_token_key",
+      "sha256": "0e7c3375614b5d99bcacd2f437afe9452b85b05e16b63bd1c1a7351994a84954"
     },
     {
       "type": "constraint",
-      "name": "public.push_tokens.push_tokens_user_id_token_key",
-      "sha256": "17811dcf92a5963c1a8a0f2837bda82612e374405bdb2116191f3f6e670e17f0"
+      "name": "public.push_tokens.push_tokens_user_id_fkey",
+      "sha256": "979b8395e64baa28676e36137b0f3b9d33ac1830f1e12203aec982edfebe4d4a"
     },
     {
       "type": "constraint",
@@ -5322,6 +5322,11 @@
       "type": "function",
       "name": "public.check_api_rate_limit(p_bucket_key text, p_limit integer, p_window_seconds integer)",
       "sha256": "031da83c1d6d639d945a5f16b18c05bec06ad9323186a834a943dbe4526018ce"
+    },
+    {
+      "type": "function",
+      "name": "public.claim_push_token(p_token text, p_platform text)",
+      "sha256": "6628661fd3786b3e2c1676106e71409ffb1cb2e53d51a6f360f4dc3961dda158"
     },
     {
       "type": "function",
@@ -6780,11 +6785,6 @@
     },
     {
       "type": "index",
-      "name": "public.idx_push_tokens_token",
-      "sha256": "857715027729e3882f3cc22458f1fa82b3744c35a53cfabd63b1138dfe438a7e"
-    },
-    {
-      "type": "index",
       "name": "public.idx_push_tokens_user_id",
       "sha256": "efd136e461fd494bbcd836c3cfd29040931f2267fc9f379ee18bb1a8f2bb27c4"
     },
@@ -7095,8 +7095,8 @@
     },
     {
       "type": "index",
-      "name": "public.push_tokens_user_id_token_key",
-      "sha256": "7c47ef9d1e03faf1e297cd8c61fa7979eac757ddb63c21f723691b162dd9f373"
+      "name": "public.push_tokens_token_key",
+      "sha256": "f77e5f53151e06111e53c4d75602c1ae48e8cd9a3a6c6493833fbd950e8cd50f"
     },
     {
       "type": "index",
@@ -7881,7 +7881,7 @@
     {
       "type": "policy",
       "name": "public.push_tokens.\"Users can update their own push tokens\"",
-      "sha256": "cb42f372078c775a194ffc4827b6fe17f0af59b29287e033801688e184acaa7d"
+      "sha256": "5fa8354a96e04974d54d2f7084021f1ae256503bbd357dc32faa8f73c0ac9754"
     },
     {
       "type": "policy",

@@ -264,21 +264,6 @@ const Auth = () => {
     setLoading(true);
     setAuthFailure(null);
 
-    const isOnboardingSignup =
-      isSignUp || emailChallenge?.type === "signup";
-    if (isOnboardingSignup) {
-      const signupDraft = beginOnboardingSignupAttempt({
-        kind: "oauth",
-        provider: "google",
-      });
-      if (!signupDraft) {
-        authRequestInFlightRef.current = false;
-        setLoading(false);
-        navigate("/onboarding?from=auth", { replace: true });
-        return;
-      }
-    }
-
     try {
       if (isPasswordResetRequest) {
         await sendPasswordResetEmail({
@@ -345,6 +330,9 @@ const Auth = () => {
         setEmailOtp("");
         setResendCountdown(60);
       } else {
+        // An established-reader sign-in must never consume a guest acquisition
+        // draft left by an abandoned signup attempt.
+        cancelOnboardingSignupAttempt();
         await signInWithEmailPassword({
           email,
           password,
@@ -360,11 +348,7 @@ const Auth = () => {
           ? "sign_up"
           : "sign_in";
       const failure = presentAuthFailure(error, operation);
-      if (
-        operation === "sign_up" &&
-        (failure.rateLimited ||
-          (!failure.confirmationRequired && failure.title !== "Sign-up failed"))
-      ) {
+      if (operation === "sign_up" && !failure.confirmationRequired) {
         cancelOnboardingSignupAttempt();
       }
       setAuthFailure(failure);
@@ -452,6 +436,20 @@ const Auth = () => {
 
   const handleGoogleAuth = async () => {
     if (authRequestInFlightRef.current) return;
+
+    const isOnboardingSignup = isSignUp || emailChallenge?.type === "signup";
+    if (isOnboardingSignup) {
+      const signupDraft = beginOnboardingSignupAttempt({
+        kind: "oauth",
+        provider: "google",
+      });
+      if (!signupDraft) {
+        navigate("/onboarding?from=auth", { replace: true });
+        return;
+      }
+    } else {
+      cancelOnboardingSignupAttempt();
+    }
 
     authRequestInFlightRef.current = true;
     setLoading(true);

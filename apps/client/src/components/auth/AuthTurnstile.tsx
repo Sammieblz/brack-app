@@ -1,6 +1,7 @@
 import {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useLayoutEffect,
   useRef,
@@ -53,15 +54,17 @@ const createBridgeChannel = () => {
   return Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
 };
 
+const BRIDGE_HANDSHAKE_TIMEOUT_MS = 15_000;
+
 const needsHostedBridge = () => {
   if (typeof window === "undefined") return false;
 
-  // Packaged apps use the canonical HTTPS bridge so the production widget
-  // does not need to trust a localhost hostname. Desktop live development is
-  // the sole exception and uses the local HTTP(S) Vite surface directly.
+  // Packaged apps and the fixed Vite loopback origins use the canonical HTTPS
+  // bridge. The real widget therefore stays restricted to brack-app.com while
+  // local development still produces a token accepted by hosted Supabase Auth.
   return shouldUseHostedTurnstileBridge({
     customSchemeRuntime: isCustomSchemeAuthRuntime(),
-    protocol: window.location.protocol,
+    origin: window.location.origin,
     development: import.meta.env.DEV,
   });
 };
@@ -94,6 +97,7 @@ export const AuthTurnstile = forwardRef<
   const [widgetSize, setWidgetSize] = useState<WidgetSize | null>(null);
   const [bridgeChannel, setBridgeChannel] = useState(createBridgeChannel);
   const [bridgeHeight, setBridgeHeight] = useState(150);
+  const [bridgeConnected, setBridgeConnected] = useState(false);
 
   onTokenChangeRef.current = onTokenChange;
 
@@ -112,6 +116,7 @@ export const AuthTurnstile = forwardRef<
     setStatus("checking");
     if (useBridge) {
       setBridgeHeight(150);
+      setBridgeConnected(false);
       setBridgeChannel(createBridgeChannel());
       return;
     }
@@ -155,6 +160,7 @@ export const AuthTurnstile = forwardRef<
     setStatus(siteKey ? "checking" : "configuration_error");
     if (siteKey && useBridge) {
       setBridgeHeight(150);
+      setBridgeConnected(false);
       setBridgeChannel(createBridgeChannel());
     }
   }, [clearToken, siteKey, turnstileTheme, useBridge]);
@@ -202,6 +208,17 @@ export const AuthTurnstile = forwardRef<
     );
   }, [action, bridgeChannel, turnstileTheme]);
 
+  useEffect(() => {
+    if (!useBridge || !siteKey || bridgeConnected) return;
+
+    const timeout = window.setTimeout(() => {
+      clearToken();
+      setStatus("error");
+    }, BRIDGE_HANDSHAKE_TIMEOUT_MS);
+
+    return () => window.clearTimeout(timeout);
+  }, [bridgeChannel, bridgeConnected, clearToken, siteKey, useBridge]);
+
   useLayoutEffect(() => {
     if (!useBridge || !siteKey) return;
 
@@ -214,6 +231,8 @@ export const AuthTurnstile = forwardRef<
       ) {
         return;
       }
+
+      setBridgeConnected(true);
 
       switch (event.data.event) {
         case "ready":

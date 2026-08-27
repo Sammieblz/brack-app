@@ -3,6 +3,8 @@
 -- which could route a notification to the wrong signed-in reader after an
 -- account switch.
 
+SET LOCAL lock_timeout = '5s';
+
 WITH ranked_tokens AS (
   SELECT
     id,

@@ -227,10 +227,10 @@ const PostSignupPermissions = () => {
               >
                 {requesting
                   ? "Connecting this device…"
-                  : permissionState === "granted"
-                    ? "Finish notification setup"
-                    : registrationState === "failed"
-                      ? "Retry notification setup"
+                  : registrationState === "failed"
+                    ? "Retry notification setup"
+                    : permissionState === "granted"
+                      ? "Finish notification setup"
                       : "Enable useful notifications"}
               </Button>
             )}

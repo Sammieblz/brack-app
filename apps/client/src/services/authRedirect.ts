@@ -251,7 +251,20 @@ const isDraftForNewlyCreatedUser = (
     return user.email?.trim().toLowerCase() === draft.authAttempt.email;
   }
 
-  return draft.authAttempt.provider === "google";
+  const provider = draft.authAttempt.provider;
+  const metadataProviders = Array.isArray(user.app_metadata?.providers)
+    ? user.app_metadata.providers
+    : [];
+  const identityProviders = Array.isArray(user.identities)
+    ? user.identities.map((identity) => identity.provider)
+    : [];
+  const verifiedProviders = new Set(
+    [user.app_metadata?.provider, ...metadataProviders, ...identityProviders]
+      .filter((value): value is string => typeof value === "string")
+      .map((value) => value.trim().toLowerCase()),
+  );
+
+  return provider === "google" && verifiedProviders.has(provider);
 };
 
 const finalizeOnboardingDraft = async (

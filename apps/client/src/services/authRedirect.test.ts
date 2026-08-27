@@ -4,12 +4,26 @@ const {
   ensureUserProfileMock,
   getCurrentAuthUserMock,
   handleAuthCallbackUrlMock,
+  clearOnboardingDraftMock,
+  loadOnboardingDraftMock,
+  saveOnboardingProfileMock,
   shouldEnterFirstRunOnboardingMock,
+  skipOnboardingMock,
+  arePostSignupPermissionsPendingMock,
+  markPostSignupPermissionsPendingMock,
+  isMobileNativeRuntimeMock,
 } = vi.hoisted(() => ({
   ensureUserProfileMock: vi.fn(),
   getCurrentAuthUserMock: vi.fn(),
   handleAuthCallbackUrlMock: vi.fn(),
+  clearOnboardingDraftMock: vi.fn(),
+  loadOnboardingDraftMock: vi.fn(),
+  saveOnboardingProfileMock: vi.fn(),
   shouldEnterFirstRunOnboardingMock: vi.fn(),
+  skipOnboardingMock: vi.fn(),
+  arePostSignupPermissionsPendingMock: vi.fn(),
+  markPostSignupPermissionsPendingMock: vi.fn(),
+  isMobileNativeRuntimeMock: vi.fn(),
 }));
 
 vi.mock("@/services/api/auth", () => ({
@@ -19,10 +33,23 @@ vi.mock("@/services/api/auth", () => ({
 
 vi.mock("@/services/onboarding", () => ({
   ensureUserProfile: ensureUserProfileMock,
+  saveOnboardingProfile: saveOnboardingProfileMock,
   shouldEnterFirstRunOnboarding: shouldEnterFirstRunOnboardingMock,
+  skipOnboarding: skipOnboardingMock,
+}));
+
+vi.mock("@/services/onboardingDraft", () => ({
+  clearOnboardingDraft: clearOnboardingDraftMock,
+  loadOnboardingDraft: loadOnboardingDraftMock,
+}));
+
+vi.mock("@/services/postSignupPermissions", () => ({
+  arePostSignupPermissionsPending: arePostSignupPermissionsPendingMock,
+  markPostSignupPermissionsPending: markPostSignupPermissionsPendingMock,
 }));
 
 vi.mock("@/services/platform", () => ({
+  isMobileNativeRuntime: isMobileNativeRuntimeMock,
   isPasswordResetUrl: (url: string) => url.includes("reset-password"),
 }));
 
@@ -33,6 +60,7 @@ import {
   completeAuthCallback,
   consumePasswordRecoveryAuthorization,
   hasPasswordRecoveryAuthorization,
+  resolvePostAuthPath,
 } from "./authRedirect";
 
 const callbackData = (userId = "user-1") => ({
@@ -50,7 +78,19 @@ describe("completeAuthCallback", () => {
     handleAuthCallbackUrlMock.mockReset();
     getCurrentAuthUserMock.mockReset();
     ensureUserProfileMock.mockReset();
+    clearOnboardingDraftMock.mockReset();
+    loadOnboardingDraftMock.mockReset();
+    loadOnboardingDraftMock.mockReturnValue(null);
+    saveOnboardingProfileMock.mockReset();
+    saveOnboardingProfileMock.mockResolvedValue(undefined);
     shouldEnterFirstRunOnboardingMock.mockReset();
+    skipOnboardingMock.mockReset();
+    skipOnboardingMock.mockResolvedValue(undefined);
+    arePostSignupPermissionsPendingMock.mockReset();
+    arePostSignupPermissionsPendingMock.mockReturnValue(false);
+    markPostSignupPermissionsPendingMock.mockReset();
+    isMobileNativeRuntimeMock.mockReset();
+    isMobileNativeRuntimeMock.mockReturnValue(false);
 
     handleAuthCallbackUrlMock.mockResolvedValue(callbackData());
     getCurrentAuthUserMock.mockResolvedValue({ id: "user-1" });
@@ -216,5 +256,76 @@ describe("completeAuthCallback", () => {
     ).rejects.toBeInstanceOf(AuthCallbackCredentialError);
 
     expect(hasPasswordRecoveryAuthorization("user-1")).toBe(false);
+  });
+
+  it("applies a bound new-reader draft once before native permissions", async () => {
+    getCurrentAuthUserMock.mockResolvedValue({
+      id: "new-reader",
+      email: "new-reader@example.com",
+      created_at: "2026-08-26T16:00:10.000Z",
+      app_metadata: { provider: "email", providers: ["email"] },
+      identities: [],
+    });
+    ensureUserProfileMock.mockResolvedValue({ onboarding_status: "not_started" });
+    shouldEnterFirstRunOnboardingMock.mockReturnValue(true);
+    loadOnboardingDraftMock.mockReturnValue({
+      version: 1,
+      flowId: "76000000-0000-0000-0000-000000000001",
+      formData: {},
+      stage: "auth_started",
+      outcome: "skipped",
+      lastStep: 3,
+      createdAt: "2026-08-26T15:55:00.000Z",
+      updatedAt: "2026-08-26T16:00:00.000Z",
+      expiresAt: "2026-09-02T16:00:00.000Z",
+      authAttempt: {
+        kind: "email",
+        email: "new-reader@example.com",
+        startedAt: "2026-08-26T16:00:00.000Z",
+      },
+    });
+    isMobileNativeRuntimeMock.mockReturnValue(true);
+
+    await expect(resolvePostAuthPath()).resolves.toBe("/app-permissions");
+
+    expect(skipOnboardingMock).toHaveBeenCalledWith("new-reader", 3);
+    expect(markPostSignupPermissionsPendingMock).toHaveBeenCalledWith(
+      "new-reader",
+    );
+    expect(clearOnboardingDraftMock).toHaveBeenCalledOnce();
+  });
+
+  it("does not apply an OAuth draft to a user verified with another provider", async () => {
+    getCurrentAuthUserMock.mockResolvedValue({
+      id: "email-reader",
+      email: "email-reader@example.com",
+      created_at: "2026-08-26T16:00:10.000Z",
+      app_metadata: { provider: "email", providers: ["email"] },
+      identities: [{ provider: "email" }],
+    });
+    ensureUserProfileMock.mockResolvedValue({ onboarding_status: "not_started" });
+    shouldEnterFirstRunOnboardingMock.mockReturnValue(true);
+    loadOnboardingDraftMock.mockReturnValue({
+      version: 1,
+      flowId: "76000000-0000-0000-0000-000000000002",
+      formData: {},
+      stage: "auth_started",
+      outcome: "completed",
+      lastStep: 6,
+      createdAt: "2026-08-26T15:55:00.000Z",
+      updatedAt: "2026-08-26T16:00:00.000Z",
+      expiresAt: "2026-09-02T16:00:00.000Z",
+      authAttempt: {
+        kind: "oauth",
+        provider: "google",
+        startedAt: "2026-08-26T16:00:00.000Z",
+      },
+    });
+
+    await expect(resolvePostAuthPath()).resolves.toBe("/onboarding");
+
+    expect(saveOnboardingProfileMock).not.toHaveBeenCalled();
+    expect(skipOnboardingMock).not.toHaveBeenCalled();
+    expect(clearOnboardingDraftMock).toHaveBeenCalledOnce();
   });
 });

@@ -1,9 +1,11 @@
 import { createRef } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { act } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { resetWidgetMock } = vi.hoisted(() => ({
+const { resetWidgetMock, runtime } = vi.hoisted(() => ({
   resetWidgetMock: vi.fn(),
+  runtime: { customScheme: false },
 }));
 
 vi.mock("@marsidev/react-turnstile", async () => {
@@ -47,7 +49,7 @@ vi.mock("@/contexts/ThemeContext", () => ({
 
 vi.mock("@/services/platform", () => ({
   BRACK_WEB_ORIGIN: "https://brack-app.com",
-  isCustomSchemeAuthRuntime: () => false,
+  isCustomSchemeAuthRuntime: () => runtime.customScheme,
 }));
 
 import {
@@ -58,7 +60,12 @@ import {
 describe("AuthTurnstile", () => {
   beforeEach(() => {
     resetWidgetMock.mockReset();
+    runtime.customScheme = false;
     vi.stubEnv("VITE_TURNSTILE_SITE_KEY", "test-site-key");
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("uses a compact, theme-aware widget and clears expired tokens", () => {
@@ -106,5 +113,27 @@ describe("AuthTurnstile", () => {
 
     expect(onTokenChange).toHaveBeenLastCalledWith(null);
     expect(resetWidgetMock).toHaveBeenCalledOnce();
+  });
+
+  it("turns a silent hosted-bridge failure into a visible retry state", () => {
+    vi.useFakeTimers();
+    runtime.customScheme = true;
+    const onTokenChange = vi.fn();
+
+    render(
+      <AuthTurnstile action="sign_up" onTokenChange={onTokenChange} />,
+    );
+
+    expect(screen.getByTitle("Brack security check")).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(15_000);
+    });
+
+    expect(
+      screen.getByText(/Security check could not load/i),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retry" })).toBeEnabled();
+    expect(onTokenChange).toHaveBeenLastCalledWith(null);
   });
 });

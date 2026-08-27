@@ -59,28 +59,35 @@ describe("Turnstile request boundaries", () => {
     expect(
       shouldUseHostedTurnstileBridge({
         customSchemeRuntime: false,
-        protocol: "https:",
+        origin: "https://brack-app.com",
         development: false,
       }),
     ).toBe(false);
     expect(
       shouldUseHostedTurnstileBridge({
         customSchemeRuntime: true,
-        protocol: "https:",
+        origin: "https://localhost",
         development: false,
       }),
     ).toBe(true);
     expect(
       shouldUseHostedTurnstileBridge({
         customSchemeRuntime: true,
-        protocol: "capacitor:",
+        origin: "capacitor://localhost",
         development: false,
       }),
     ).toBe(true);
     expect(
       shouldUseHostedTurnstileBridge({
-        customSchemeRuntime: true,
-        protocol: "http:",
+        customSchemeRuntime: false,
+        origin: "http://localhost:8080",
+        development: true,
+      }),
+    ).toBe(true);
+    expect(
+      shouldUseHostedTurnstileBridge({
+        customSchemeRuntime: false,
+        origin: "http://192.168.1.25:8080",
         development: true,
       }),
     ).toBe(false);
