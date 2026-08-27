@@ -6,7 +6,7 @@ This guide will help you set up Brack for local development.
 
 ### Required Software
 
-- **Node.js** 20+ and npm 11.3.0
+- **Node.js** 22+ and npm 11.3.0
 - **Git**
 - **Supabase Account** (free tier works)
 
@@ -59,15 +59,16 @@ Edit `.env` with your values:
 ```env
 # Required
 VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_PROJECT_ID=your-project-id
 VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
+VITE_TURNSTILE_SITE_KEY=your-browser-visible-widget-sitekey
 
 # Optional
-GOOGLE_BOOKS_API_KEY=your-google-books-api-key
+VITE_SUPABASE_PROJECT_ID=your-project-id
 VITE_SENTRY_DSN=your-sentry-dsn
 
 # For Edge Functions
-ALLOWED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080,https://brack-app.com,https://localhost,capacitor://localhost,brack-app://brack
+GOOGLE_BOOKS_API_KEY=your-backend-only-google-books-key
+ALLOWED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080,https://staging.brack-app.com,https://brack-app.com,https://localhost,capacitor://localhost,brack-app://brack
 ENVIRONMENT=development
 FCM_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
 GAMIFICATION_WORKER_SECRET=replace-with-a-random-worker-secret
@@ -76,6 +77,10 @@ GAMIFICATION_WORKER_SECRET=replace-with-a-random-worker-secret
 SUPABASE_ACCESS_TOKEN=your-supabase-cli-token
 SUPABASE_DB_PASSWORD=your-linked-project-db-password
 ```
+
+GitHub and Cloudflare deployment values are environment-managed and are never
+committed. See [Staging Web Deployment](./staging-deployment.md) for the exact
+`Stage` environment contract and first-deploy order.
 
 ### 4. Set Up Supabase
 

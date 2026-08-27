@@ -1,0 +1,159 @@
+name: Deploy Stage Web
+
+on:
+  push:
+    branches: [test]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stage-web
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate stage web
+    if: github.ref == 'refs/heads/test'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint checks
+        run: |
+          npm run lint
+          npm run lint:core
+
+      - name: Run TypeScript checks
+        run: npm run check-types
+
+      - name: Verify optimized media
+        run: npm run media:assets:check
+
+      - name: Validate Auth email templates
+        run: npm run auth:emails:validate
+
+      - name: Run unit tests
+        run: npm test
+
+  deploy:
+    name: Deploy stage web
+    if: github.ref == 'refs/heads/test'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: Stage
+      url: https://staging.brack-app.com
+    env:
+      CI: 'true'
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_TURNSTILE_SITE_KEY: ${{ secrets.VITE_TURNSTILE_SITE_KEY }}
+      VITE_SOCIAL_FEATURES_ENABLED: ${{ vars.VITE_SOCIAL_FEATURES_ENABLED }}
+      VITE_GAMIFICATION_ENABLED: ${{ vars.VITE_GAMIFICATION_ENABLED }}
+      VITE_LEADERBOARDS_ENABLED: ${{ vars.VITE_LEADERBOARDS_ENABLED }}
+      VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+      VITE_APP_VERSION: ${{ github.sha }}
+
+    steps:
+      - name: Checkout approved revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Validate protected Stage configuration
+        shell: bash
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_REF}" != "refs/heads/test" ]]; then
+            echo "::error::Stage web deployments can only run from the test branch."
+            exit 1
+          fi
+          if [[ -z "${CLOUDFLARE_ACCOUNT_ID}" ]]; then
+            echo "::error::The Stage environment is missing CLOUDFLARE_ACCOUNT_ID."
+            exit 1
+          fi
+          if [[ -z "${CLOUDFLARE_API_TOKEN}" ]]; then
+            echo "::error::The Stage environment is missing CLOUDFLARE_API_TOKEN."
+            exit 1
+          fi
+          if [[ -z "${VITE_SUPABASE_URL}" ]]; then
+            echo "::error::The Stage environment is missing VITE_SUPABASE_URL."
+            exit 1
+          fi
+          if [[ -z "${VITE_SUPABASE_PUBLISHABLE_KEY}" ]]; then
+            echo "::error::The Stage environment is missing VITE_SUPABASE_PUBLISHABLE_KEY."
+            exit 1
+          fi
+          if [[ -z "${VITE_TURNSTILE_SITE_KEY}" ]]; then
+            echo "::error::The Stage environment is missing VITE_TURNSTILE_SITE_KEY."
+            exit 1
+          fi
+          if [[ ! "${CLOUDFLARE_ACCOUNT_ID}" =~ ^[0-9A-Fa-f]{32}$ ]]; then
+            echo "::error::CLOUDFLARE_ACCOUNT_ID must be a 32-character Cloudflare account ID."
+            exit 1
+          fi
+          if [[ "${VITE_SUPABASE_URL}" != https://* ]]; then
+            echo "::error::The Stage Supabase URL must use HTTPS."
+            exit 1
+          fi
+          if [[ "${VITE_SUPABASE_URL}" == *"waftnaqgkcgufzapcihe"* ]]; then
+            echo "::error::Stage cannot be built against Brack's production Supabase project."
+            exit 1
+          fi
+          if [[ "${VITE_SUPABASE_PUBLISHABLE_KEY}" == "ci-public-anon-key" ]]; then
+            echo "::error::Stage cannot use the signed-out CI Supabase placeholder."
+            exit 1
+          fi
+          if [[ "${VITE_TURNSTILE_SITE_KEY}" == "1x00000000000000000000AA" ]]; then
+            echo "::error::Stage cannot use Cloudflare's always-pass Turnstile test sitekey."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Stage bundle
+        run: npm run build
+
+      - name: Verify Auth and PWA artifacts
+        run: npm run web:auth-artifacts:check
+
+      - name: Apply staging crawl policy
+        run: npm run web:staging-artifacts
+
+      - name: Publish to Cloudflare Pages
+        id: publish
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          packageManager: npm
+          wranglerVersion: '4.127.0'
+          command: pages deploy apps/client/dist --project-name=brack-app-staging --branch=test --commit-hash=${{ github.sha }} --commit-dirty=false

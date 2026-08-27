@@ -53,6 +53,7 @@
     "auth:emails:apply": "node scripts/sync-supabase-auth-emails.mjs --apply --project-ref waftnaqgkcgufzapcihe",
     "auth:emails:test": "node --test scripts/sync-supabase-auth-emails.test.mjs",
     "web:auth-artifacts:check": "node scripts/verify-web-auth-artifacts.mjs",
+    "web:staging-artifacts": "node scripts/prepare-staging-web-artifacts.mjs",
     "desktop:typecheck": "turbo run check-types --filter=@brack/desktop",
     "desktop:build": "turbo run build --filter=@brack/desktop",
     "desktop:rebuild": "electron-rebuild -f -w better-sqlite3",

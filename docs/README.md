@@ -66,6 +66,7 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 ### Guides
 - [Offline Support](./offline-support.md) - Offline queue and caching
 - [Deployment](./deployment.md) - Build and deployment process
+- [Staging Web Deployment](./staging-deployment.md) - Protected `test` branch release to Cloudflare Pages
 - [Testing Guide](./testing.md) - Testing strategies
 - [Features List](./features-list.md) - Complete features reference
 - [Visual Guides](./visual-guides.md) - Diagrams and flowcharts

@@ -277,6 +277,7 @@ Brack uses explicit callback URLs for all redirect-based auth methods.
 | Runtime | Callback URL | Handler |
 | --- | --- | --- |
 | Web/PWA | `https://brack-app.com/auth/callback` | React route `/auth/callback` |
+| Staging Web/PWA | `https://staging.brack-app.com/auth/callback` | React route `/auth/callback` |
 | Local web | `http://localhost:8080/auth/callback` | React route `/auth/callback` |
 | Electron desktop | `brack://auth/callback` | Electron protocol callback through preload |
 | Capacitor iOS/Android | `brack://auth/callback` | Capacitor `App.appUrlOpen` deep link |
@@ -310,6 +311,7 @@ Supabase Auth redirect URLs should include:
 
 ```text
 https://brack-app.com/auth/callback
+https://staging.brack-app.com/auth/callback
 http://localhost:8080/auth/callback
 http://127.0.0.1:8080/auth/callback
 http://127.0.0.1:8081/auth/callback
@@ -320,13 +322,20 @@ Password recovery uses a dedicated reset route so fallback links land on the pas
 
 ```text
 https://brack-app.com/auth/reset-password
+https://staging.brack-app.com/auth/reset-password
 http://localhost:8080/auth/reset-password
 http://127.0.0.1:8080/auth/reset-password
 http://127.0.0.1:8081/auth/reset-password
 brack://auth/reset-password
 ```
 
-For preview deployments, add the hosting provider's exact preview pattern if needed. Keep production URLs exact rather than broad wildcard patterns.
+The stable staging deployment uses those two exact staging routes instead of a
+broad Pages preview wildcard. On web/PWA, the redirect helpers derive their
+origin from `window.location.origin`; staging Auth therefore fails if these
+exact URLs are absent. A dedicated staging Supabase project should use
+`https://staging.brack-app.com` as its Site URL. Adding staging routes to a
+shared project's Additional Redirect URLs must not change that project's
+production Site URL.
 
 ### Production domain cutover state
 
@@ -408,9 +417,9 @@ origins are intentionally not trusted by this bridge.
 
 Deployment order is mandatory:
 
-1. Configure the existing production widget for `brack-app.com`. Error `110200` means the page rendering the widget is not in Cloudflare Hostname Management.
+1. Configure the existing widget for each deployed Pages hostname: `brack-app.com` for production and `staging.brack-app.com` for staging. Error `110200` means the page rendering the widget is not in Cloudflare Hostname Management.
 2. Store the existing widget secret in Supabase Bot and Abuse Protection and keep Turnstile selected as the provider.
-3. Set `VITE_TURNSTILE_SITE_KEY` in the production Pages build and packaged-app build environment.
+3. Set `VITE_TURNSTILE_SITE_KEY` in each Pages build and packaged-app build environment.
 4. Deploy and verify `/turnstile.html` plus its `_headers` policy over HTTPS before testing fixed loopback, mobile, or desktop clients.
 5. Run local Vite on the documented port (`localhost:8080` or `127.0.0.1:8080`). A LAN IP must be explicitly authorized in Cloudflare or routed through a separately reviewed HTTPS bridge origin.
 6. Smoke-test each protected flow and confirm the widget is reset after an accepted, rejected, rate-limited, or network-failed request.

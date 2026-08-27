@@ -70,6 +70,21 @@ netlify deploy --prod
 
 ### Deploy to Cloudflare Pages
 
+#### Staging
+
+The repository now deploys the `test` branch to the dedicated Direct Upload
+project `brack-app-staging` through the protected GitHub `Stage` environment.
+GitHub performs the build, so Cloudflare dashboard build variables and Git
+integration are intentionally not used for this project. See
+[Staging Web Deployment](./staging-deployment.md) for the one-time Cloudflare,
+GitHub, Supabase Auth, Turnstile, custom-domain, and verification steps.
+
+The staging workflow is web-only and rejects Brack's production Supabase
+project. It does not change production DNS, Auth Site URL, Edge Function
+secrets, native deep links, database migrations, or Auth email templates.
+
+#### Production
+
 **Cutover status (2026-08-25):** Cloudflare is authoritative for
 `brack-app.com` and the mail records exist, but the apex has no web A/AAAA/CNAME
 answer and `www` is not configured. Hosted Supabase Auth therefore remains on
@@ -413,9 +428,16 @@ ENVIRONMENT=development
 ### Staging
 
 ```env
-VITE_SUPABASE_URL=https://staging-project.supabase.co
+VITE_SUPABASE_URL=https://your-dedicated-staging-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your-staging-publishable-key
+VITE_TURNSTILE_SITE_KEY=your-browser-visible-widget-sitekey
 ENVIRONMENT=production
 ```
+
+The protected `Stage` GitHub environment supplies these values to
+`.github/workflows/deploy-staging.yml`. The workflow refuses the production
+Supabase project and applies a staging-only noindex policy to the generated
+bundle. See [Staging Web Deployment](./staging-deployment.md).
 
 ### Production
 
@@ -427,7 +449,10 @@ VITE_SENTRY_DSN=your-production-sentry-dsn
 
 ## CI/CD Pipeline
 
-Brack uses GitHub Actions for continuous integration. The CI pipeline automatically validates code quality and builds on every push to `main` and on pull requests.
+Brack uses GitHub Actions for continuous integration. The full CI pipeline
+validates pushes to `main` and pull requests targeting `main` or `test`.
+Approved pushes to `test` also run the staging workflow's release checks before
+deployment.
 
 ### Pipeline Overview
 
@@ -446,7 +471,7 @@ The CI pipeline is defined in `.github/workflows/ci.yml`:
 
 **Triggers**:
 - Push to `main` branch
-- Pull requests targeting `main` branch
+- Pull requests targeting `main` or `test`
 
 CI browser builds always receive complete public runtime configuration. The
 Turnstile value is Cloudflare's documented test sitekey. Supabase uses the
@@ -644,7 +669,7 @@ To add new quality checks to the pipeline:
        - uses: actions/checkout@v4
        - uses: actions/setup-node@v4
          with:
-           node-version: '18'
+           node-version: '22'
        - run: npm ci
        - run: npm run new-check
    ```
@@ -672,45 +697,21 @@ Potential additions to the CI pipeline:
 2. **Code coverage**: Report test coverage when tests are added
 3. **Security scanning**: Dependabot or Snyk integration
 4. **Signed desktop releases**: Add Apple notarization and Windows signing secrets after unsigned QA passes
-5. **Deployment jobs**: Auto-deploy to staging/production
+5. **Production web deployment**: add a protected `main` release only after the Cloudflare cutover checklist passes
 6. **Matrix testing**: Test against multiple Node.js versions
 
-### Deployment Workflow (Future)
+### Staging Deployment Workflow
 
-For actual deployments, create a separate workflow (e.g., `.github/workflows/deploy.yml`):
+`.github/workflows/deploy-staging.yml` deploys only `refs/heads/test` to the
+hard-coded `brack-app-staging` Pages project. Validation runs without Stage
+secrets; the publish job then enters the protected `Stage` environment, builds
+with its public runtime configuration, verifies Auth/PWA artifacts, prevents
+indexing, and publishes with immutable action and Wrangler versions.
 
-```yaml
-name: Deploy
-
-on:
-  push:
-    branches: [main]
-    tags:
-      - 'v*'
-
-jobs:
-  deploy-web:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: npm ci
-      - run: npm run build
-      - run: npm run deploy  # Configure based on hosting
-
-  deploy-functions:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
-      - run: npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-```
+The workflow performs a Direct Upload. Do not enable Cloudflare Git integration
+for the same Pages project. Production web deployment remains a separate future
+cutover, and production database releases continue exclusively through the
+protected migration workflow.
 
 ## Monitoring
 
