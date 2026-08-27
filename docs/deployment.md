@@ -70,6 +70,13 @@ netlify deploy --prod
 
 ### Deploy to Cloudflare Pages
 
+**Cutover status (2026-08-25):** Cloudflare is authoritative for
+`brack-app.com` and the mail records exist, but the apex has no web A/AAAA/CNAME
+answer and `www` is not configured. Hosted Supabase Auth therefore remains on
+the previous Site URL. Complete and verify the following steps before changing
+Auth, `PUBLIC_APP_URL`, or production CORS secrets; replace this status note when
+the cutover is complete.
+
 1. **Login to Cloudflare Dashboard**
 2. **Create new Pages project**
 3. **Connect GitHub repository**
@@ -77,7 +84,31 @@ netlify deploy --prod
    - Build command: `npm run build`
    - Build output: `apps/client/dist`
 5. **Set environment variables**
-6. **Deploy**
+   - Set `VITE_TURNSTILE_SITE_KEY` to the existing production widget's sitekey. It is a browser-visible identifier; the widget secret stays only in Supabase Auth.
+6. **Deploy and connect `brack-app.com` as the production custom domain**
+7. **Verify production routes before changing Auth**:
+   - `https://brack-app.com/` resolves over HTTPS.
+   - `/auth/callback` and `/auth/reset-password` return the SPA rather than a hosting 404.
+   - `/turnstile.html` returns the dedicated challenge bridge with `Cache-Control: no-store` and the scoped `frame-ancestors` policy from `apps/client/public/_headers`.
+   - The bridge policy includes only Brack's packaged origins and the fixed Vite loopback origins. Test `localhost:8080` after every bridge/CSP change; LAN-IP origins require an explicit security review and Cloudflare hostname configuration.
+   - `www.brack-app.com` either redirects once to the canonical apex or is not advertised.
+8. **Enable the free security baseline**:
+   - SSL/TLS mode **Full (strict)**, Always Use HTTPS, TLS 1.3, and a minimum of TLS 1.2.
+   - Cloudflare Free Managed Ruleset and DNSSEC.
+   - Add HSTS only after every in-use hostname works permanently over HTTPS.
+
+Cloudflare should serve the web client, not proxy Supabase Auth. Authentication
+requests continue directly to the configured Supabase project. Do not add a
+cache-everything rule for auth routes, and make `/auth/callback` and
+`/auth/reset-password` non-cacheable if custom Pages cache rules are introduced.
+Turnstile is integrated at each password-based Auth form and verified by
+Supabase CAPTCHA protection. Challenging the static `/auth` route or adding a
+generic Cloudflare interstitial does not protect direct Auth API calls. Keep
+`/turnstile.html` out of service-worker and edge caches; packaged mobile and
+desktop releases and fixed local Vite origins depend on that canonical HTTPS
+bridge. Deploy the bridge and `_headers` before expecting the local client
+change to work. Cloudflare error `110200` is a hostname-authorization failure,
+not evidence that the configured sitekey text is malformed.
 
 ### Progressive Web App (PWA)
 
@@ -109,18 +140,24 @@ npm run cap:open:ios
 
 1. **Signing**:
    - Select your team
-   - Set bundle identifier (e.g., `com.yourcompany.brack`)
+   - Keep the registered bundle identifier `com.brack.app`
    - Enable automatic signing
 
 2. **Capabilities**:
    - Push Notifications
    - Background Modes → Remote notifications
-   - Associated Domains (for deep links)
+   - Associated Domains with `applinks:brack-app.com`
 
 3. **Info.plist**:
    - Verify all permission descriptions
    - Add deep link URL types
    - Configure Firebase (GoogleService-Info.plist)
+
+The production site must serve an extensionless
+`/.well-known/apple-app-site-association` file over HTTPS with status 200, JSON
+content type, no authentication, and no redirect. Populate it with the real
+Apple Team ID and `com.brack.app`; never commit a guessed Team ID. Keep the
+`brack://` custom URL scheme as a desktop/mobile fallback.
 
 4. **Version**:
    - Set version number (e.g., 1.0.0)
@@ -186,7 +223,13 @@ npm run cap:open:android
 2. **Firebase**:
    - Add `google-services.json` to `android/app/`
 
-3. **Version**:
+3. **App Links**:
+   - Keep the registered application ID `com.brack.app`.
+   - Keep `android:autoVerify="true"` on the `https://brack-app.com` intent filter.
+   - Serve `/.well-known/assetlinks.json` over HTTPS with status 200 and no redirect.
+   - Use the real Play App Signing/release certificate SHA-256 fingerprint; never commit a placeholder or a debug fingerprint for production verification.
+
+4. **Version**:
    - Update `versionCode` and `versionName` in `build.gradle`
 
 #### 3. Build Release APK/AAB
@@ -241,7 +284,11 @@ Targets:
 
 Linux `.deb` builds require package maintainer metadata. Brack declares this in `package.json` and `electron-builder.yml`, so CI can create AppImage and deb artifacts without interactive packaging prompts.
 
-Desktop auth requires `brack://auth/callback` and `brack://auth/reset-password` in Supabase Auth redirect URLs. Web auth uses `/auth/callback` and `/auth/reset-password`, so production and local callback/reset URLs should also be listed. If Edge Function CORS is restricted, include `brack-app://brack` in `ALLOWED_ORIGINS`.
+Desktop auth requires `brack://auth/callback` and `brack://auth/reset-password`
+in Supabase Auth redirect URLs. Web auth uses the exact
+`https://brack-app.com/auth/callback` and
+`https://brack-app.com/auth/reset-password` URLs. If Edge Function CORS is
+restricted, include the packaged renderer origin `brack-app://brack`.
 
 Signing, notarization, auto-update, and store/repository publishing are intentionally deferred until the internal artifacts pass QA.
 
@@ -259,31 +306,27 @@ Deploy specific function:
 
 ```bash
 npx supabase functions deploy search-books --project-ref waftnaqgkcgufzapcihe --use-api
-npx supabase functions deploy auth-email-availability --project-ref waftnaqgkcgufzapcihe --use-api
 ```
 
 Function JWT settings are controlled in `supabase/config.toml`. The current intended state is:
 
-- `auth-email-availability`: `verify_jwt = false` because signup occurs before a
-  user session. It exposes only the intentionally public `{ exists: boolean }`
-  result and calls a service-role-only RPC.
+- `auth-email-availability`: retained legacy endpoint with `verify_jwt = false`.
+  It is not on the active signup path. Keep its existing rate limits and
+  service-role-only RPC grants intact while older clients or rollback support
+  remain in scope.
 - `search-books`, `feature-flags`, and `core-telemetry`: `verify_jwt = false` for
   their bounded public contracts.
 - `gamification-worker`: `verify_jwt = false`, protected by its private worker
   secret rather than a user JWT.
 - All remaining functions: `verify_jwt = true`.
 
-Deploy email availability in dependency order:
-
-1. Apply and verify the migration defining
-   `public.auth_email_exists(text)` with execute granted only to `service_role`.
-2. Deploy `auth-email-availability` and verify both the 5/IP/minute and
-   30/IP/hour buckets.
-3. Smoke-test known confirmed, unconfirmed, and Google-created addresses as
-   `exists: true`, and a fresh address as `exists: false`. The lookup must not
-   change Auth or profile row counts.
-4. Deploy the client. Availability errors and invalid responses must stop signup
-   and state that no account was created.
+The active email/password signup path has no Edge Function prerequisite. Deploy
+the client and verify that one form submission produces one Supabase `signUp`
+request, maps explicit/obfuscated duplicate responses to the reader-facing
+error, and creates at most one Auth user/profile. Do not redeploy
+`auth-email-availability` as a signup dependency. Retire that endpoint and
+`public.auth_email_exists(text)` only in a later release/migration after
+supported-client telemetry confirms no calls remain.
 
 After deployment, verify remote drift with the Supabase dashboard, MCP, or CLI before relying on protected user data. As of June 13, 2026, the direct-message Edge Functions are deployed to project `waftnaqgkcgufzapcihe` and the `modern_direct_messaging` migration has been applied remotely.
 
@@ -307,7 +350,12 @@ The legacy 2025 functions (`get-book-details`, `update-reading-progress`, `daily
 
 ### Environment Secrets
 
-Set production secrets:
+The commands below describe the post-cutover production target. Do not apply the
+`PUBLIC_APP_URL` or canonical-domain `ALLOWED_ORIGINS` values until
+`https://brack-app.com` and both Auth routes pass the verification steps above;
+until then, preserve the currently working production origin values.
+
+Set production secrets at the appropriate release stage:
 
 ```bash
 npx supabase secrets set SUPABASE_URL=https://your-project.supabase.co
@@ -316,8 +364,15 @@ npx supabase secrets set ENVIRONMENT=production
 npx supabase secrets set GOOGLE_BOOKS_API_KEY=your-key
 npx supabase secrets set FCM_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}'
 npx supabase secrets set GAMIFICATION_WORKER_SECRET=your-random-worker-secret
-npx supabase secrets set ALLOWED_ORIGINS=https://yourdomain.com
+npx supabase secrets set PUBLIC_APP_URL=https://brack-app.com
+npx supabase secrets set ALLOWED_ORIGINS=https://brack-app.com,https://localhost,capacitor://localhost,brack-app://brack
 ```
+
+`https://localhost` is the configured Android Capacitor WebView origin;
+`capacitor://localhost` is the iOS WebView origin. Add local HTTP development
+origins to production only when developers intentionally use the production
+backend. CORS is a browser boundary, not authorization; authenticated functions
+must continue validating JWTs and user ownership server-side.
 
 List secrets:
 
@@ -383,7 +438,7 @@ The CI pipeline consists of 6 jobs that run quality checks and validate builds t
 3. **Validate Android** - Turbo-backed Capacitor Android sync validation
 4. **Validate iOS** - Turbo-backed Capacitor iOS sync validation
 5. **Build Desktop** - Turbo-backed Electron desktop artifact builds for Windows, Linux, and macOS
-6. **Tests** - Test execution (disabled until tests are added)
+6. **Tests** - Vitest plus Chromium smoke, onboarding responsive, and optional authenticated offline checks
 
 ### Workflow File
 
@@ -392,6 +447,16 @@ The CI pipeline is defined in `.github/workflows/ci.yml`:
 **Triggers**:
 - Push to `main` branch
 - Pull requests targeting `main` branch
+
+CI browser builds always receive complete public runtime configuration. The
+Turnstile value is Cloudflare's documented test sitekey. Supabase uses the
+`VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` repository variables
+when configured; otherwise CI falls back to a non-secret loopback URL and dummy
+publishable key for signed-out smoke tests. The fallback does not contact a
+database and must not be used for a deployment. Production and staging builds
+must provide their own public Supabase values. Vite now fails the build early if
+either required Supabase value is absent, instead of producing a bundle that
+crashes before React mounts.
 
 ### Job Details
 
@@ -485,9 +550,22 @@ The CI matrix maps each platform to an explicit script:
 
 **Runner**: `ubuntu-latest`
 
-**Status**: Currently disabled (`if: false`) until test framework is added
+**Steps**:
+1. Install dependencies from a clean checkout
+2. Run the Vitest suite
+3. Produce a fresh production client build
+4. Install Playwright Chromium
+5. Run the public-shell and responsive onboarding smoke tests
+6. Run the authenticated offline-reload test when `E2E_EMAIL` and
+   `E2E_PASSWORD` are configured
 
-**Future**: When tests are added (Vitest, Jest, etc.), enable this job to run test suite.
+Store those optional credentials as GitHub Actions secrets and point the two
+public Supabase repository variables at the matching non-production project.
+Without both secrets, Playwright intentionally skips the authenticated case.
+
+The public-shell assertion requires a known Brack heading and a non-empty React
+root, and fails on uncaught page errors. A visible but empty HTML body is not
+considered a successful application boot.
 
 ### Caching Strategy
 

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -25,11 +27,38 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="brack" />
             </intent-filter>
-            <intent-filter>
+            <!-- Browser Auth routes are deliberately excluded. Native Auth
+                 returns through brack://, while verified HTTPS handling is
+                 limited to content links that benefit from opening the app. -->
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="brack.app" android:pathPrefix="/" />
+                <data android:scheme="https" android:host="brack-app.com" android:pathPrefix="/book/" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="brack-app.com" android:pathPrefix="/user/" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="brack-app.com" android:pathPrefix="/message/" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="brack-app.com" android:pathPrefix="/club/" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="brack-app.com" android:pathPrefix="/list/" />
             </intent-filter>
         </activity>
 
@@ -47,6 +76,13 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Foreground-only reader discovery. Android 12+ may grant approximate access. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- SQLite ships optional biometric support, but Brack does not enable or use it. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" tools:node="remove" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" tools:node="remove" />
 
     <!-- Camera features (optional - app works without camera) -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />

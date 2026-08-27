@@ -7,7 +7,8 @@ expected_functions(signature, authenticated_execute, service_execute, search_pat
     ('public.reorder_library_shelf(uuid,uuid[])', TRUE, FALSE, 'search_path=public, pg_temp'),
     ('public.add_library_book(uuid,jsonb)', FALSE, TRUE, 'search_path=public, pg_temp'),
     ('public.add_library_book_without_series(uuid,jsonb)', FALSE, TRUE, 'search_path=public, pg_temp'),
-    ('public.auth_email_exists(text)', FALSE, TRUE, 'search_path=pg_catalog, pg_temp')
+    ('public.auth_email_exists(text)', FALSE, TRUE, 'search_path=pg_catalog, pg_temp'),
+    ('public.claim_push_token(text,text)', TRUE, FALSE, 'search_path=""')
 ),
 function_contracts AS (
   SELECT
@@ -108,6 +109,12 @@ duplicate_identity_email_users AS (
   GROUP BY LOWER(BTRIM(identities.identity_data->>'email'))
   HAVING COUNT(DISTINCT identities.user_id) > 1
 ),
+duplicate_push_tokens AS (
+  SELECT push_tokens.token
+  FROM public.push_tokens
+  GROUP BY push_tokens.token
+  HAVING COUNT(*) > 1
+),
 auth_profile_link_violations AS (
   SELECT users.id
   FROM auth.users AS users
@@ -169,7 +176,7 @@ SELECT
 UNION ALL
 SELECT
   'protected application functions',
-  COALESCE(BOOL_AND(ok), FALSE) AND COUNT(*) = 4,
+  COALESCE(BOOL_AND(ok), FALSE) AND COUNT(*) = 5,
   COALESCE(STRING_AGG(signature, ', ' ORDER BY signature) FILTER (WHERE NOT ok), 'all valid')
 FROM function_contracts
 UNION ALL
@@ -214,6 +221,14 @@ SELECT
   FORMAT(
     'cross_user_duplicate_groups=%s',
     (SELECT COUNT(*) FROM duplicate_identity_email_users)
+  )
+UNION ALL
+SELECT
+  'push tokens map to one reader',
+  NOT EXISTS (SELECT 1 FROM duplicate_push_tokens),
+  FORMAT(
+    'duplicate_token_groups=%s',
+    (SELECT COUNT(*) FROM duplicate_push_tokens)
   )
 UNION ALL
 SELECT

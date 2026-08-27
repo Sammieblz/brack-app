@@ -22,6 +22,7 @@ export interface OnboardingProfilePayload {
 }
 
 export interface OnboardingGoalPayload {
+  id?: string;
   user_id: string;
   target_books: number;
   start_date: string;
@@ -187,7 +188,10 @@ export const deactivateActiveBookCountGoals = async (
 export const createOnboardingBookGoal = async (
   payload: OnboardingGoalPayload,
 ): Promise<void> => {
-  const { error } = await supabase.from("goals").insert(payload);
+  const query = payload.id
+    ? supabase.from("goals").upsert(payload, { onConflict: "id" })
+    : supabase.from("goals").insert(payload);
+  const { error } = await query;
 
   if (error) throw error;
 };

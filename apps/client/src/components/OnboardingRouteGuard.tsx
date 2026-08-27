@@ -1,80 +1,140 @@
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  ensureUserProfile,
-  isOnboardingBackendUnavailable,
-  shouldEnterFirstRunOnboarding,
-} from "@/services/onboarding";
+import { resolvePostAuthPath } from "@/services/authRedirect";
+import { isOnboardingBackendUnavailable } from "@/services/onboarding";
+import { loadOnboardingDraft } from "@/services/onboardingDraft";
 
-const PUBLIC_ROUTES = new Set(["/", "/auth", "/auth/callback", "/auth/reset-password"]);
+const AUTH_HANDOFF_ROUTES = new Set([
+  "/auth",
+  "/auth/callback",
+  "/auth/reset-password",
+]);
+const LEGACY_ONBOARDING_ROUTES = new Set([
+  "/welcome",
+  "/questionnaire",
+  "/goals",
+]);
+
+type PendingDecision = {
+  key: string;
+  promise: Promise<string>;
+};
 
 export const OnboardingRouteGuard = () => {
   const { user, loading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const lastDecisionRef = useRef<string>("");
+  const pendingDecisionRef = useRef<PendingDecision | null>(null);
 
   useEffect(() => {
     if (loading) return;
 
+    const { pathname, search } = location;
+
+    // These screens own their own redirect lifecycle. In particular, Auth and
+    // AuthCallback must finish the draft before any global guard moves the
+    // reader elsewhere.
+    if (pathname === "/" || AUTH_HANDOFF_ROUTES.has(pathname)) return;
+
+    if (!user) {
+      // Pre-auth onboarding is intentionally public. Native permissions are
+      // account-scoped and cannot be entered anonymously.
+      if (pathname === "/app-permissions") {
+        navigate("/auth?mode=signin", { replace: true });
+      }
+      return;
+    }
+
+    // Legacy URLs have a dedicated transition component which also uses the
+    // shared resolver. Leaving them alone avoids a second profile request.
+    if (LEGACY_ONBOARDING_ROUTES.has(pathname)) return;
+
+    // A failed post-auth draft handoff deliberately lands here so the reader
+    // can review and retry it. Do not call the shared resolver again on mount:
+    // doing so turns a recoverable failure into an automatic retry loop. The
+    // in-memory draft check prevents a query-string-only bypass for accounts
+    // that have already completed onboarding.
+    const isManualDraftRecovery =
+      pathname === "/onboarding" &&
+      new URLSearchParams(search).get("resume") === "draft" &&
+      loadOnboardingDraft()?.stage === "auth_started";
+    if (isManualDraftRecovery) return;
+
     let cancelled = false;
+    const decisionKey = `${user.id}:${pathname}:${search}`;
+    let decision = pendingDecisionRef.current;
+
+    if (!decision || decision.key !== decisionKey) {
+      decision = {
+        key: decisionKey,
+        promise: resolvePostAuthPath(),
+      };
+      pendingDecisionRef.current = decision;
+      const clearDecision = () => {
+        if (pendingDecisionRef.current === decision) {
+          pendingDecisionRef.current = null;
+        }
+      };
+      void decision.promise.then(clearDecision, clearDecision);
+    }
 
     const runGuard = async () => {
-      const decisionKey = `${user?.id ?? "anonymous"}:${location.pathname}:${location.search}`;
-      if (lastDecisionRef.current === decisionKey) return;
-      lastDecisionRef.current = decisionKey;
-
-      if (!user) {
-        if (location.pathname === "/onboarding") {
-          navigate("/auth?mode=signup", { replace: true });
-        }
-        return;
-      }
-
-      const statusRecord = await ensureUserProfile(user);
+      const nextPath = await decision.promise;
       if (cancelled) return;
 
-      const status = statusRecord.onboarding_status;
-      const shouldForceOnboarding = shouldEnterFirstRunOnboarding(user, statusRecord);
-      const isOnboardingRoute = location.pathname === "/onboarding";
+      const isOnboardingRoute = pathname === "/onboarding";
+      const isPermissionRoute = pathname === "/app-permissions";
       const allowCompletedEdit =
-        location.search.includes("edit=1") ||
-        location.search.includes("from=settings") ||
-        location.search.includes("from=dashboard");
-
-      if (location.pathname === "/auth") {
-        navigate(shouldForceOnboarding ? "/onboarding" : "/dashboard", {
-          replace: true,
-        });
-        return;
-      }
+        search.includes("edit=1") ||
+        search.includes("from=settings") ||
+        search.includes("from=dashboard");
 
       if (isOnboardingRoute) {
-        if ((status === "completed" || !shouldForceOnboarding) && !allowCompletedEdit) {
-          navigate("/dashboard", { replace: true });
+        if (allowCompletedEdit) return;
+        if (!nextPath.startsWith("/onboarding")) {
+          navigate(nextPath, { replace: true });
         }
         return;
       }
 
-      if (!PUBLIC_ROUTES.has(location.pathname) && shouldForceOnboarding) {
-        navigate("/onboarding", { replace: true });
+      if (isPermissionRoute) {
+        if (nextPath !== "/app-permissions") {
+          navigate(nextPath, { replace: true });
+        }
+        return;
+      }
+
+      // Once setup is complete, the requested authenticated route remains in
+      // place. Only mandatory first-run destinations interrupt navigation.
+      if (
+        nextPath.startsWith("/onboarding") ||
+        nextPath === "/app-permissions" ||
+        nextPath === "/auth"
+      ) {
+        navigate(
+          nextPath === "/auth" ? "/auth?mode=signin" : nextPath,
+          { replace: true },
+        );
       }
     };
 
-    runGuard().catch((err) => {
-      if (isOnboardingBackendUnavailable(err)) {
-        console.warn("Onboarding route guard skipped until the onboarding schema is available:", err);
+    runGuard().catch((error) => {
+      if (isOnboardingBackendUnavailable(error)) {
+        console.warn(
+          "Onboarding route guard skipped until the onboarding schema is available:",
+          error,
+        );
         return;
       }
 
-      console.error("Onboarding route guard failed:", err);
+      console.error("Onboarding route guard failed:", error);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [loading, location.pathname, location.search, navigate, user]);
+  }, [loading, location, navigate, user]);
 
   return null;
 };

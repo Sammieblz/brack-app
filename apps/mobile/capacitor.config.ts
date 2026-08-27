@@ -1,3 +1,5 @@
+/// <reference types="@capacitor-firebase/messaging" />
+
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
@@ -21,6 +23,11 @@ const config: CapacitorConfig = {
   app: {
     // Deep linking configuration
     customUrlScheme: 'brack',
+  },
+  plugins: {
+    FirebaseMessaging: {
+      presentationOptions: ['alert', 'badge', 'sound'],
+    },
   },
   // Optional: SplashScreen plugin configuration
   // Uncomment after installing @capacitor/splash-screen: npm install @capacitor/splash-screen

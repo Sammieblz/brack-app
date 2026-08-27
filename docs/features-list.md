@@ -5,10 +5,13 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 ## 🖥️ Screens (27)
 
 ### Authentication & Onboarding
-1. **Auth** (`/auth`) - Login and signup
-2. **Welcome** (`/welcome`) - Onboarding welcome
-3. **Questionnaire** (`/questionnaire`) - Reading habits survey
-4. **Goals** (`/goals`) - Initial goal setting
+1. **Auth** (`/auth`) - Direct sign-in plus signup after the onboarding handoff
+2. **Onboarding** (`/onboarding`) - Anonymous-first palette, reading taste,
+   pace, and goal setup held as a versioned active-process draft
+3. **Device Permissions** (`/app-permissions`) - Optional post-signup
+   notification education on Capacitor iOS/Android only
+4. **Legacy onboarding entries** (`/welcome`, `/questionnaire`, `/goals`) -
+   Redirect to the canonical onboarding flow
 
 ### Main Screens
 5. **Dashboard** (`/` or `/dashboard`) - Home screen with overview
@@ -212,11 +215,14 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Photo library access
 - ✅ Image compression
 - ✅ Photo attachments (journal, progress)
+- ✅ Just-in-time camera/photo prompts after a reader starts the relevant action
+- ✅ Foreground location only after **Use current location**; no background tracking
 
 ### Notifications ✅
-- ✅ Push notifications (FCM)
+- ✅ Explicit post-signup notification choice on native apps; no startup prompt
+- ✅ Push notifications (Firebase Messaging/FCM, with APNs delivery configured through Firebase on iOS)
 - ✅ Local notifications
-- ✅ Timer notifications
+- ✅ Timer notifications with a contextual permission request on first use when needed
 - ✅ Notification preferences
 - ✅ Quiet hours settings
 
@@ -368,7 +374,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 ### External APIs
 - ✅ **Google Books API** - Primary book search and metadata
 - ✅ **Open Library API** - Fallback book search when Google fails, times out, or returns no usable books
-- ✅ **Firebase Cloud Messaging** - Push notifications
+- ✅ **Firebase Cloud Messaging** - Android registration and iOS APNs-to-FCM registration/delivery
 - ✅ **Sentry** - Error tracking (optional)
 
 ### Internal APIs
@@ -382,12 +388,17 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 ## 🎯 User Journeys
 
 ### New User Journey
-1. Sign up → Welcome screen
-2. Questionnaire → Reading habits
-3. Set initial goal
-4. Add first book
-5. Start reading timer
-6. Log first progress
+1. **Get Started** → anonymous onboarding
+2. Choose palette, taste, pace, and goal → active-process memory draft
+3. Complete or skip → sign up with email/Google
+4. Verify account → idempotently apply the bound draft
+5. Native only: choose notification access or continue without it
+6. Add first book
+7. Start reading timer; request local notifications contextually if still undecided
+8. Log first progress
+
+**Sign In** remains a direct established-reader flow and does not replay the
+anonymous acquisition questionnaire.
 7. Maintain streak
 
 ### Returning User Journey
@@ -472,7 +483,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - **DashboardHomeSnapshot** - Snapshot-backed dashboard read model
 
 ### System Entities
-- **PushToken** - Push notification tokens
+- **PushToken** - One authenticated owner per installation token, reassigned atomically on account switch
 - **NotificationPreferences** - Notification settings
 
 ---
@@ -644,7 +655,12 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 
 This list highlights core app-facing endpoints. See [Edge Function Catalog](./backend/edge-functions.md) for the full maintained function inventory.
 
-All maintained Edge Functions use distributed rate limiting through `api_rate_limits`; every maintained function except public `search-books` requires JWT verification.
+Maintained app-facing Edge Functions use the shared distributed rate limiter
+where their contracts require it. The retained legacy
+`auth-email-availability`, `search-books`, `feature-flags`, and
+`core-telemetry` functions intentionally have `verify_jwt = false`;
+`gamification-worker` instead requires its private worker secret. All remaining
+user-data functions require JWT verification.
 
 ---
 

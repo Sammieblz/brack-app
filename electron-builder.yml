@@ -2,6 +2,11 @@ appId: com.brack.desktop
 productName: Brack
 copyright: Copyright (c) 2026 Brack
 
+protocols:
+  - name: Brack links
+    schemes:
+      - brack
+
 directories:
   output: release/desktop
 
@@ -50,7 +55,7 @@ mac:
   identity: null
 
 linux:
-  maintainer: Brack <support@brack.app>
+  maintainer: Brack <support@brack-app.com>
   target:
     - target: AppImage
       arch:

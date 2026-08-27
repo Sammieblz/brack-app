@@ -27,6 +27,7 @@ This guide will help you set up Brack for local development.
 - Windows, macOS, or Linux host for local Electron runs
 - Platform-specific OS runners for distributable artifacts
 - Supabase Auth redirect URLs for `/auth/callback`, `/auth/reset-password`, `brack://auth/callback`, and `brack://auth/reset-password`
+- A Cloudflare Turnstile sitekey in `VITE_TURNSTILE_SITE_KEY`; keep the matching secret only in Supabase Auth Bot and Abuse Protection
 
 ## Installation
 
@@ -66,7 +67,7 @@ GOOGLE_BOOKS_API_KEY=your-google-books-api-key
 VITE_SENTRY_DSN=your-sentry-dsn
 
 # For Edge Functions
-ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com,brack-app://brack
+ALLOWED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080,https://brack-app.com,https://localhost,capacitor://localhost,brack-app://brack
 ENVIRONMENT=development
 FCM_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
 GAMIFICATION_WORKER_SECRET=replace-with-a-random-worker-secret

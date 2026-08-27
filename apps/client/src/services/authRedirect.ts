@@ -4,9 +4,20 @@ import {
 } from "@/services/api/auth";
 import {
   ensureUserProfile,
+  saveOnboardingProfile,
   shouldEnterFirstRunOnboarding,
+  skipOnboarding,
 } from "@/services/onboarding";
-import { isPasswordResetUrl } from "@/services/platform";
+import {
+  clearOnboardingDraft,
+  loadOnboardingDraft,
+  type OnboardingDraft,
+} from "@/services/onboardingDraft";
+import {
+  arePostSignupPermissionsPending,
+  markPostSignupPermissionsPending,
+} from "@/services/postSignupPermissions";
+import { isMobileNativeRuntime, isPasswordResetUrl } from "@/services/platform";
 
 const CALLBACK_REPLAY_TTL_MS = 5 * 60 * 1000;
 const MAX_CALLBACK_REPLAYS = 32;
@@ -31,6 +42,7 @@ type AuthCallbackResult = {
 };
 
 const callbackCompletions = new Map<string, CallbackCompletion>();
+const onboardingFinalizations = new Map<string, Promise<string>>();
 let inMemoryRecoveryAuthorization: RecoveryAuthorization | null = null;
 
 export class AuthCallbackCredentialError extends Error {
@@ -165,6 +177,20 @@ const writeRecoveryAuthorization = (userId: string) => {
   }
 };
 
+/**
+ * Record a short-lived password-reset authorization after Supabase has
+ * verified a recovery OTP or recovery callback for this exact user.
+ */
+export const authorizePasswordRecoverySession = (userId: string) => {
+  if (!userId) {
+    throw new AuthCallbackCredentialError(
+      "A verified recovery user is required to authorize a password reset.",
+    );
+  }
+
+  writeRecoveryAuthorization(userId);
+};
+
 const readRecoveryAuthorization = (): RecoveryAuthorization | null => {
   let authorization = inMemoryRecoveryAuthorization;
 
@@ -205,6 +231,92 @@ export const consumePasswordRecoveryAuthorization = (userId: string) => {
   return true;
 };
 
+const isDraftForNewlyCreatedUser = (
+  draft: OnboardingDraft,
+  user: Awaited<ReturnType<typeof getCurrentAuthUser>>,
+) => {
+  if (!user || draft.stage !== "auth_started" || !draft.authAttempt) return false;
+
+  const userCreatedAt = Date.parse(user.created_at);
+  const attemptStartedAt = Date.parse(draft.authAttempt.startedAt);
+  if (!Number.isFinite(userCreatedAt) || !Number.isFinite(attemptStartedAt)) return false;
+
+  // Server/client clocks may differ. A genuine account creation still occurs
+  // close to the signup request, while an established Google/email account does not.
+  const earliestAllowed = attemptStartedAt - 10 * 60_000;
+  const latestAllowed = attemptStartedAt + 30 * 60_000;
+  if (userCreatedAt < earliestAllowed || userCreatedAt > latestAllowed) return false;
+
+  if (draft.authAttempt.kind === "email") {
+    return user.email?.trim().toLowerCase() === draft.authAttempt.email;
+  }
+
+  const provider = draft.authAttempt.provider;
+  const metadataProviders = Array.isArray(user.app_metadata?.providers)
+    ? user.app_metadata.providers
+    : [];
+  const identityProviders = Array.isArray(user.identities)
+    ? user.identities.map((identity) => identity.provider)
+    : [];
+  const verifiedProviders = new Set(
+    [user.app_metadata?.provider, ...metadataProviders, ...identityProviders]
+      .filter((value): value is string => typeof value === "string")
+      .map((value) => value.trim().toLowerCase()),
+  );
+
+  return provider === "google" && verifiedProviders.has(provider);
+};
+
+const finalizeOnboardingDraft = async (
+  draft: OnboardingDraft,
+  user: NonNullable<Awaited<ReturnType<typeof getCurrentAuthUser>>>,
+  status: Awaited<ReturnType<typeof ensureUserProfile>>,
+) => {
+  const finalizationKey = `${user.id}:${draft.flowId}`;
+  const active = onboardingFinalizations.get(finalizationKey);
+  if (active) return active;
+
+  const completion = (async () => {
+    if (!shouldEnterFirstRunOnboarding(user, status)) {
+      clearOnboardingDraft();
+      return "/dashboard";
+    }
+
+    if (!isDraftForNewlyCreatedUser(draft, user)) {
+      clearOnboardingDraft();
+      return "/onboarding";
+    }
+
+    try {
+      if (draft.outcome === "skipped") {
+        await skipOnboarding(user.id, draft.lastStep);
+      } else {
+        await saveOnboardingProfile(user.id, draft.formData, {
+          // Onboarding goals use an account-stable key. A retry after the
+          // anonymous draft has been discarded must still update the same row.
+          goalId: user.id,
+        });
+      }
+
+      if (isMobileNativeRuntime()) {
+        markPostSignupPermissionsPending(user.id);
+      }
+      clearOnboardingDraft();
+      return isMobileNativeRuntime() ? "/app-permissions" : "/dashboard";
+    } catch (error) {
+      console.error("Unable to apply the pre-auth onboarding profile:", error);
+      // Keep the validated draft so authenticated onboarding can retry without
+      // asking the reader to reconstruct their answers.
+      return "/onboarding?resume=draft";
+    }
+  })().finally(() => {
+    onboardingFinalizations.delete(finalizationKey);
+  });
+
+  onboardingFinalizations.set(finalizationKey, completion);
+  return completion;
+};
+
 export const resolvePostAuthPath = async () => {
   const user = await getCurrentAuthUser();
 
@@ -212,7 +324,18 @@ export const resolvePostAuthPath = async () => {
     return "/auth";
   }
 
+  if (arePostSignupPermissionsPending(user.id)) return "/app-permissions";
+
   const status = await ensureUserProfile(user);
+  const draft = loadOnboardingDraft();
+  if (draft?.stage === "auth_started") {
+    return finalizeOnboardingDraft(draft, user, status);
+  }
+
+  if (draft && (status.onboarding_status === "completed" || status.onboarding_status === "skipped")) {
+    clearOnboardingDraft();
+  }
+
   return shouldEnterFirstRunOnboarding(user, status) ? "/onboarding" : "/dashboard";
 };
 
@@ -239,7 +362,7 @@ const processAuthCallback = async (callbackUrl: string) => {
       );
     }
 
-    writeRecoveryAuthorization(userId);
+    authorizePasswordRecoverySession(userId);
     return "/auth/reset-password";
   }
 

@@ -46,6 +46,7 @@ initSentry();
 
 const Analytics = lazy(() => import("./screens/Analytics"));
 const Onboarding = lazy(() => import("./screens/Onboarding"));
+const PostSignupPermissions = lazy(() => import("./screens/PostSignupPermissions"));
 const Dashboard = lazy(() => import("./screens/Dashboard"));
 const MyBooks = lazy(() => import("./screens/MyBooks"));
 const AddBook = lazy(() => import("./screens/AddBook"));
@@ -86,17 +87,18 @@ const queryClient = new QueryClient({
   },
 });
 
+// Bump whenever persisted query ownership/key semantics change. Version 2
+// removes the legacy unscoped notification cache from existing devices.
+const QUERY_CACHE_BUSTER = "brack-query-cache-v2";
+
 const App = () => {
   useAppViewportHeight();
   usePresenceHeartbeat();
-  const { register: registerPushNotifications } = usePushNotifications();
+  // Keep foreground/action listeners active without prompting at app startup.
+  // Registration is an explicit post-signup or Settings action on native.
+  usePushNotifications();
   const { user, loading: authLoading } = useAuth();
   const authenticatedUserId = user?.id;
-  
-  // Register for push notifications on app start (native only)
-  useEffect(() => {
-    registerPushNotifications().catch(console.error);
-  }, [registerPushNotifications]);
 
   // Preserve account-scoped offline changes while signed out, then resume them
   // exactly when a verified session becomes available.
@@ -117,6 +119,7 @@ const App = () => {
         persistOptions={{
           persister,
           maxAge: 1000 * 60 * 60 * 24,
+          buster: QUERY_CACHE_BUSTER,
         }}
       >
         <ConfirmDialogProvider>
@@ -142,6 +145,7 @@ const App = () => {
                             <Route path="/auth/callback" element={<AuthCallback />} />
                             <Route path="/auth/reset-password" element={<ResetPassword />} />
                             <Route path="/onboarding" element={<Onboarding />} />
+                            <Route path="/app-permissions" element={<PostSignupPermissions />} />
                             <Route path="/welcome" element={<OnboardingEntryRedirect />} />
                             <Route path="/questionnaire" element={<OnboardingEntryRedirect />} />
                             <Route path="/goals" element={<OnboardingEntryRedirect />} />

@@ -1,8 +1,13 @@
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from 'react';
 import { useTheme as useNextTheme } from 'next-themes';
 import { useAuth } from '@/hooks/useAuth';
 import { getTheme, type ThemeColors, type ThemeSurfaceStyle } from '@/lib/themes';
-import { fetchThemePreferences, upsertThemePreferences } from '@/services/api';
+import {
+  fetchThemePreferences,
+  THEME_PREFERENCES_CHANGED_EVENT,
+  type ThemePreferencesChangedDetail,
+  upsertThemePreferences,
+} from '@/services/api';
 
 const THEME_MODE_STORAGE_KEY = 'theme-mode';
 const PUBLIC_THEME_MODE_TOUCHED_KEY = 'brack_public_theme_mode_touched';
@@ -10,6 +15,8 @@ const PUBLIC_THEME_MODE_TOUCHED_KEY = 'brack_public_theme_mode_touched';
 interface ThemeContextType {
   currentTheme: string;
   setTheme: (themeId: string) => Promise<void>;
+  /** Applies a temporary palette without writing an unauthenticated preference. */
+  previewTheme: (themeId: string) => void;
   themeMode: string | undefined;
   setThemeMode: (mode: 'light' | 'dark' | 'system') => Promise<void>;
   resolvedTheme: string | undefined;
@@ -79,6 +86,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const { theme: themeMode, setTheme: setNextTheme, resolvedTheme } = useNextTheme();
   const [currentTheme, setCurrentTheme] = useState('default');
   const [isLoading, setIsLoading] = useState(true);
+  const themePreferenceRevisionRef = useRef(0);
 
   // ── Reset to default theme (synchronous, no DB call) ────────────────
   const resetToDefaultTheme = useCallback(() => {
@@ -114,14 +122,20 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const loadTheme = async () => {
       if (authLoading) return;
 
-      if (!user) {
+      const userId = user?.id;
+      if (!userId) {
         // No user → ensure defaults are applied (handled by the auto-reset above)
         setIsLoading(false);
         return;
       }
 
+      const revisionAtStart = themePreferenceRevisionRef.current;
       try {
-        const data = await fetchThemePreferences(user.id);
+        const data = await fetchThemePreferences(userId);
+
+        // A newer local preference (for example the just-finalized onboarding
+        // palette) owns the UI even if this earlier server read resolves last.
+        if (themePreferenceRevisionRef.current !== revisionAtStart) return;
 
         // Determine theme to use: DB value, or 'default' for new users
         const themeId = data?.color_theme || 'default';
@@ -129,7 +143,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         
         // If new user (no color_theme or theme_mode in DB), save defaults to DB
         if (!data?.color_theme || !data?.theme_mode) {
-          await upsertThemePreferences(user.id, {
+          await upsertThemePreferences(userId, {
             color_theme: themeId,
             theme_mode: themeModeToUse,
           });
@@ -143,6 +157,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('color_theme', themeId);
       } catch (error) {
         console.error('Error loading theme:', error);
+        if (themePreferenceRevisionRef.current !== revisionAtStart) return;
         // Fallback to default theme on error
         const isDark = document.documentElement.classList.contains('dark');
         applyTheme('default', isDark);
@@ -153,25 +168,63 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     };
 
     loadTheme();
-  }, [authLoading, user, setNextTheme]);
+  }, [authLoading, user?.id, setNextTheme]);
 
   useEffect(() => {
     // Wait for resolvedTheme to be available before applying colors
     if (!resolvedTheme) return;
 
-    const theme = getTheme(user ? currentTheme : 'default');
+    const theme = getTheme(currentTheme);
     const isDark = resolvedTheme === 'dark';
     applyTheme(theme.id, isDark);
   }, [currentTheme, user, resolvedTheme]);
+
+  const previewTheme = useCallback((themeId: string) => {
+    const isDark = document.documentElement.classList.contains('dark');
+    applyTheme(themeId, isDark);
+    setCurrentTheme(themeId);
+  }, []);
+
+  // Profile preferences are written through the local-first sync layer. Apply
+  // that confirmed local value immediately so Auth's onboarding handoff cannot
+  // flash or remain on a stale server-default palette while sync catches up.
+  useEffect(() => {
+    const userId = user?.id;
+    if (!userId) return;
+
+    const handleThemePreferencesChanged = (event: Event) => {
+      const { detail } = event as CustomEvent<ThemePreferencesChangedDetail>;
+      if (!detail || detail.userId !== userId) return;
+
+      themePreferenceRevisionRef.current += 1;
+      const themeId = detail.preferences.color_theme || 'default';
+      localStorage.setItem('color_theme', themeId);
+      previewTheme(themeId);
+
+      const mode = detail.preferences.theme_mode;
+      if (mode === 'light' || mode === 'dark' || mode === 'system') {
+        setNextTheme(mode);
+      }
+    };
+
+    window.addEventListener(
+      THEME_PREFERENCES_CHANGED_EVENT,
+      handleThemePreferencesChanged,
+    );
+    return () => {
+      window.removeEventListener(
+        THEME_PREFERENCES_CHANGED_EVENT,
+        handleThemePreferencesChanged,
+      );
+    };
+  }, [previewTheme, setNextTheme, user?.id]);
 
   const setTheme = async (themeId: string) => {
     if (!user) return;
 
     try {
       // Apply theme immediately, respecting current theme mode (light/dark)
-      const isDark = document.documentElement.classList.contains('dark');
-      applyTheme(themeId, isDark);
-      setCurrentTheme(themeId);
+      previewTheme(themeId);
       
       // Cache in localStorage for instant load on next visit
       localStorage.setItem('color_theme', themeId);
@@ -215,7 +268,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <ThemeContext.Provider value={{ 
-      currentTheme, setTheme, themeMode, setThemeMode, 
+      currentTheme, setTheme, previewTheme, themeMode, setThemeMode, 
       resolvedTheme, isLoading, resetToDefaultTheme 
     }}>
       {children}

@@ -52,9 +52,20 @@ export const timerNativeService = {
     };
   },
 
-  async requestNotificationPermissions(): Promise<void> {
-    if (!Capacitor.isNativePlatform()) return;
-    await LocalNotifications.requestPermissions();
+  async requestNotificationPermissions(): Promise<boolean> {
+    if (!Capacitor.isNativePlatform()) return false;
+
+    let permission = await LocalNotifications.checkPermissions();
+    if (
+      permission.display === "prompt" ||
+      permission.display === "prompt-with-rationale"
+    ) {
+      permission = await LocalNotifications.requestPermissions();
+    }
+    if (permission.display !== "granted") return false;
+
+    const enabled = await LocalNotifications.areEnabled();
+    return enabled.value;
   },
 
   async syncTimerNotification(snapshot: TimerNotificationSnapshot): Promise<void> {
@@ -64,6 +75,9 @@ export const timerNativeService = {
       await this.clearTimerNotification();
       return;
     }
+
+    const enabled = await LocalNotifications.areEnabled();
+    if (!enabled.value) return;
 
     await LocalNotifications.schedule({
       notifications: [

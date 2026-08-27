@@ -44,7 +44,7 @@ export function createErrorResponse(
 
 ### rateLimit.ts
 
-Distributed Edge Function rate limiting backed by the `api_rate_limits` table and `check_api_rate_limit` RPC. An in-memory limiter remains as a fallback if the distributed RPC is temporarily unavailable. `auth-email-availability` also treats lookup/RPC failures as unavailable and prevents signup.
+Distributed Edge Function rate limiting backed by the `api_rate_limits` table and `check_api_rate_limit` RPC. An in-memory limiter remains as a fallback if the distributed RPC is temporarily unavailable. The retained legacy `auth-email-availability` endpoint still fails closed on lookup/RPC errors, but current clients do not call it before signup.
 
 ```typescript
 export function enforceRateLimit(
@@ -76,7 +76,7 @@ App-facing function summary. The complete maintained inventory is in [Edge Funct
 
 | Function | Purpose | JWT |
 | --- | --- | --- |
-| `auth-email-availability` | Signup-only duplicate email predicate with bounded account-existence disclosure | No |
+| `auth-email-availability` | Legacy, inactive duplicate-email predicate retained temporarily for rollback/older clients | No |
 | `search-books` | Book search and ISBN lookup gateway with Google Books primary, Open Library fallback, and metadata caching | No |
 | `feature-flags` | Remotely controlled release flags, including social availability | No |
 | `core-telemetry` | Whitelisted, rate-limited reading-core reliability events | No |
@@ -137,7 +137,7 @@ App-facing function summary. The complete maintained inventory is in [Edge Funct
 | `sync-push` | Push reading-core outbox mutations | Yes |
 
 Local JWT settings live in `supabase/config.toml`. Public functions are limited to
-`auth-email-availability`, `search-books`, `feature-flags`, and `core-telemetry`;
+the retained legacy `auth-email-availability`, `search-books`, `feature-flags`, and `core-telemetry`;
 telemetry accepts only a fixed event allowlist and is rate-limited.
 `gamification-worker` is separately protected by its worker secret. All user-data
 functions require JWT validation.
@@ -146,12 +146,13 @@ inventory and operational checks.
 
 The legacy 2025 functions `get-book-details`, `update-reading-progress`, and `daily-summary` were deleted remotely after confirming there are no local consumers.
 
-### auth-email-availability
+### auth-email-availability (legacy, inactive)
 
-Check a normalized email immediately before email/password signup. This public
-endpoint deliberately reveals whether an address belongs to a Brack reader so
-the UI can reject duplicates consistently, including confirmed, unconfirmed,
-and Google-created accounts.
+This public endpoint can check whether a normalized address belongs to a Brack
+reader, including confirmed, unconfirmed, and Google-created accounts. It
+remains deployed temporarily for rollback and older-client compatibility, but
+the current client does not invoke it. Active signup makes one Supabase
+`signUp` request and derives duplicate-email UI from that response.
 
 **Endpoint**: `POST /auth-email-availability`
 
@@ -167,10 +168,10 @@ and Google-created accounts.
 { exists: boolean }
 ```
 
-When `exists` is `true`, the client does not call Supabase Auth and shows
-**Email already exists** with **This email is already used by another reader.**
-When it is `false`, normal Supabase signup may proceed. Supabase existence error
-codes and empty-identity responses remain race-condition fallbacks.
+Older clients can interpret `exists: true` as a duplicate and skip signup.
+Current clients do not consume this response. They map Supabase existence error
+codes and an empty-identity response to **Email already exists** without a
+separate database lookup or second Auth transaction.
 
 **Rate limits**: 5 requests per client IP per minute and 30 per client IP per
 hour. Clients must not automatically retry `429` responses.
@@ -181,9 +182,10 @@ uses the service-role-only `public.auth_email_exists(text)` RPC. `PUBLIC`,
 returns no user, provider, confirmation, or profile data and sets
 `Cache-Control: private, no-store`.
 
-This is an intentional account-enumeration tradeoff. Any invalid response,
-lookup failure, or unavailable function fails closed: Auth signup is not called
-and the reader is told that no account was created.
+This endpoint is an intentional account-enumeration tradeoff. Preserve its
+rate limits and service-role-only RPC grants while it remains deployed. Remove
+the endpoint and RPC through the normal migration/release process only after
+supported-client telemetry confirms no callers remain.
 
 ### search-books
 
@@ -1335,7 +1337,7 @@ FCM HTTP v1 notifications. It is not a client endpoint.
 ## Authentication
 
 All protected functions require a valid Supabase JWT token in the
-`Authorization` header. `auth-email-availability`, `search-books`,
+`Authorization` header. The retained legacy `auth-email-availability`, `search-books`,
 `feature-flags`, and `core-telemetry` intentionally have `verify_jwt = false`;
 `gamification-worker` uses its private worker secret instead of a user JWT.
 
@@ -1401,12 +1403,16 @@ npx supabase functions deploy search-books --project-ref waftnaqgkcgufzapcihe --
 
 ### Environment Variables
 
-Set in Supabase Dashboard or via CLI:
+Set in Supabase Dashboard or via CLI. The `PUBLIC_APP_URL` and
+canonical-domain `ALLOWED_ORIGINS` values below are the post-cutover target;
+preserve the currently working origin values until `https://brack-app.com` and
+its Auth routes are live:
 
 ```bash
 npx supabase secrets set SUPABASE_URL=https://your-project.supabase.co
 npx supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-npx supabase secrets set ALLOWED_ORIGINS=https://yourdomain.com
+npx supabase secrets set PUBLIC_APP_URL=https://brack-app.com
+npx supabase secrets set ALLOWED_ORIGINS=https://brack-app.com,https://localhost,capacitor://localhost,brack-app://brack
 npx supabase secrets set ENVIRONMENT=production
 npx supabase secrets set GOOGLE_BOOKS_API_KEY=your-key
 npx supabase secrets set FCM_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}'

@@ -96,7 +96,7 @@ export const TimePicker = ({
             <span className="min-w-0 truncate">{displayValue ?? placeholder}</span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent align="start" className="w-[20rem] p-3">
+        <PopoverContent align="start" className="w-[min(20rem,calc(100vw-2rem))] p-3">
           <div className="space-y-4">
             <div className="space-y-2">
               <p className="font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">

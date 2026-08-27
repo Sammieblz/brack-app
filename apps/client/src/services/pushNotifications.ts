@@ -1,128 +1,216 @@
-import { PushNotifications } from '@capacitor/push-notifications';
-import { Capacitor } from '@capacitor/core';
+import { FirebaseMessaging } from "@capacitor-firebase/messaging";
+import { Capacitor, type PluginListenerHandle } from "@capacitor/core";
+import { LocalNotifications } from "@capacitor/local-notifications";
+
 import {
-  deleteCurrentUserPushTokens,
+  deletePushToken,
   savePushToken,
   type PushNotificationToken,
-} from '@/services/api';
+} from "@/services/api";
+
+export type NativePushPermissionState =
+  | "granted"
+  | "denied"
+  | "prompt"
+  | "prompt-with-rationale"
+  | "unavailable";
+
+export type PushRegistrationResult =
+  | { status: "registered"; token: string }
+  | { status: "denied"; token: null }
+  | { status: "unavailable"; token: null }
+  | { status: "failed"; token: null };
+
+const PUSH_TOKEN_STORAGE_KEY = "brack:native-push-token:v1";
+let registrationPromise: Promise<PushRegistrationResult> | null = null;
+
+const readStoredToken = () => {
+  try {
+    return window.localStorage.getItem(PUSH_TOKEN_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+};
+
+const storeToken = (token: string) => {
+  try {
+    window.localStorage.setItem(PUSH_TOKEN_STORAGE_KEY, token);
+  } catch {
+    // The server registration remains valid when local persistence is unavailable.
+  }
+};
+
+const clearStoredToken = () => {
+  try {
+    window.localStorage.removeItem(PUSH_TOKEN_STORAGE_KEY);
+  } catch {
+    // Best effort only.
+  }
+};
+
+const normalizeNotificationData = (data: unknown): Record<string, unknown> =>
+  typeof data === "object" && data !== null
+    ? (data as Record<string, unknown>)
+    : {};
 
 /**
- * Push notifications service
- * Handles registration, token management, and notification events
+ * Native notification registration. Firebase Messaging is used on both
+ * platforms so the backend always receives an FCM registration token; the
+ * stock Capacitor plugin returns an APNs token on iOS, which is not accepted by
+ * Brack's FCM HTTP v1 sender.
  */
 export const pushNotificationsService = {
   isNative(): boolean {
     return Capacitor.isNativePlatform();
   },
 
-  /**
-   * Register for push notifications
-   */
-  async register(): Promise<string | null> {
+  hasStoredRegistration(): boolean {
+    return Boolean(readStoredToken());
+  },
+
+  async getPermissionState(): Promise<NativePushPermissionState> {
+    if (!Capacitor.isNativePlatform()) return "unavailable";
+
+    const support = await FirebaseMessaging.isSupported();
+    if (!support.isSupported) return "unavailable";
+
+    const status = await FirebaseMessaging.checkPermissions();
+    if (status.receive !== "granted") return status.receive;
+
+    // Permission APIs report `granted` on older Android versions even when the
+    // user has disabled notification display in app settings. `areEnabled`
+    // reflects that device-level switch without presenting another prompt.
+    const displayStatus = await LocalNotifications.areEnabled();
+    return displayStatus.value ? "granted" : "denied";
+  },
+
+  async registerWithResult(): Promise<PushRegistrationResult> {
     if (!Capacitor.isNativePlatform()) {
-      console.log('Push notifications only available on native platforms');
-      return null;
+      return { status: "unavailable", token: null };
     }
 
-    try {
-      // Request permissions
-      const permResult = await PushNotifications.requestPermissions();
-      if (!permResult.receive) {
-        console.log('Push notification permission denied');
-        return null;
+    if (registrationPromise) return registrationPromise;
+
+    registrationPromise = (async (): Promise<PushRegistrationResult> => {
+      try {
+        const support = await FirebaseMessaging.isSupported();
+        if (!support.isSupported) return { status: "unavailable", token: null };
+
+        let permission = await FirebaseMessaging.checkPermissions();
+        if (
+          permission.receive === "prompt" ||
+          permission.receive === "prompt-with-rationale"
+        ) {
+          permission = await FirebaseMessaging.requestPermissions();
+        }
+        if (permission.receive !== "granted") {
+          return { status: "denied", token: null };
+        }
+
+        const displayStatus = await LocalNotifications.areEnabled();
+        if (!displayStatus.value) return { status: "denied", token: null };
+
+        const { token } = await FirebaseMessaging.getToken();
+        if (!token) return { status: "failed", token: null };
+
+        await this.saveTokenToDatabase({
+          token,
+          platform: Capacitor.getPlatform() as "ios" | "android",
+        });
+        storeToken(token);
+        return { status: "registered", token };
+      } catch (error) {
+        console.error("Unable to register this device for push notifications:", error);
+        return { status: "failed", token: null };
       }
+    })().finally(() => {
+      registrationPromise = null;
+    });
 
-      // Register with APNs/FCM
-      await PushNotifications.register();
-
-      // Wait for registration token
-      return new Promise((resolve) => {
-        const tokenListener = PushNotifications.addListener('registration', async (token) => {
-          console.log('Push registration success, token: ' + token.value);
-          
-          // Save token to database
-          await this.saveTokenToDatabase({
-            token: token.value,
-            platform: Capacitor.getPlatform() as 'ios' | 'android',
-          });
-
-          void tokenListener.then((listener) => listener.remove());
-          resolve(token.value);
-        });
-
-        const errorListener = PushNotifications.addListener('registrationError', (error) => {
-          console.error('Error on registration: ' + JSON.stringify(error));
-          void errorListener.then((listener) => listener.remove());
-          resolve(null);
-        });
-
-        // Timeout after 10 seconds
-        setTimeout(() => {
-          void tokenListener.then((listener) => listener.remove());
-          void errorListener.then((listener) => listener.remove());
-          resolve(null);
-        }, 10000);
-      });
-    } catch (error) {
-      console.error('Error registering for push notifications:', error);
-      return null;
-    }
+    return registrationPromise;
   },
 
-  /**
-   * Save push token to database
-   */
+  /** Backward-compatible token-only result for settings and older callers. */
+  async register(): Promise<string | null> {
+    const result = await this.registerWithResult();
+    return result.token;
+  },
+
   async saveTokenToDatabase(tokenData: PushNotificationToken): Promise<void> {
-    try {
-      await savePushToken(tokenData);
-    } catch (error) {
-      console.error('Error saving push token:', error);
-    }
+    await savePushToken(tokenData);
   },
 
   /**
-   * Unregister from push notifications
+   * Release only this installation's token. This runs before Supabase sign-out
+   * so the authenticated delete can succeed and account switching cannot leave
+   * the device attached to the previous reader.
    */
   async unregister(): Promise<void> {
     if (!Capacitor.isNativePlatform()) return;
 
-    try {
-      await deleteCurrentUserPushTokens();
+    const token = readStoredToken();
+    if (token) {
+      try {
+        await deletePushToken(token);
+      } catch (error) {
+        // Do not block sign-out. Global token uniqueness plus claim_push_token
+        // safely transfers ownership if this installation later changes users.
+        console.error("Unable to remove the current device push token:", error);
+      }
+    }
 
-      // Unregister from push service
-      await PushNotifications.unregister();
+    try {
+      await FirebaseMessaging.deleteToken();
     } catch (error) {
-      console.error('Error unregistering push notifications:', error);
+      console.error("Unable to delete the native FCM registration:", error);
+    } finally {
+      clearStoredToken();
     }
   },
 
-  /**
-   * Set up notification listeners
-   */
-  setupListeners(onNotificationReceived?: (notification: { title?: string; body?: string; data?: Record<string, unknown> }) => void): () => void {
-    if (!Capacitor.isNativePlatform()) {
-      return () => {}; // Return no-op cleanup
-    }
+  setupListeners(
+    onNotificationReceived?: (notification: {
+      title?: string;
+      body?: string;
+      data?: Record<string, unknown>;
+    }) => void,
+  ): () => void {
+    if (!Capacitor.isNativePlatform()) return () => {};
 
-    // Handle notification received while app is in foreground
-    const receivedListener = PushNotifications.addListener('pushNotificationReceived', (notification) => {
-      console.log('Push notification received: ', notification);
-      onNotificationReceived?.(notification);
+    let active = true;
+    const listeners: PluginListenerHandle[] = [];
+
+    void FirebaseMessaging.addListener("notificationReceived", ({ notification }) => {
+      onNotificationReceived?.({
+        title: notification.title,
+        body: notification.body,
+        data: normalizeNotificationData(notification.data),
+      });
+    }).then((listener) => {
+      if (!active) void listener.remove();
+      else listeners.push(listener);
     });
 
-    // Handle notification action (tap)
-    const actionListener = PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-      console.log('Push notification action performed: ', action);
-      // Handle navigation based on notification data
-      if (action.notification.data?.url) {
-        window.location.href = action.notification.data.url;
-      }
+    void FirebaseMessaging.addListener(
+      "notificationActionPerformed",
+      ({ notification }) => {
+        const data = normalizeNotificationData(notification.data);
+        const destination =
+          typeof data.url === "string"
+            ? data.url
+            : typeof notification.link === "string"
+              ? notification.link
+              : null;
+        if (destination) window.location.assign(destination);
+      },
+    ).then((listener) => {
+      if (!active) void listener.remove();
+      else listeners.push(listener);
     });
 
-    // Return cleanup function
     return () => {
-      void receivedListener.then((listener) => listener.remove());
-      void actionListener.then((listener) => listener.remove());
+      active = false;
+      for (const listener of listeners) void listener.remove();
     };
   },
 };

@@ -73,16 +73,23 @@ const handleSelectImage = async () => {
 iOS (`Info.plist`):
 ```xml
 <key>NSCameraUsageDescription</key>
-<string>To scan book covers and barcodes</string>
+<string>Allow Brack to scan book barcodes and attach photos to your library.</string>
 <key>NSPhotoLibraryUsageDescription</key>
-<string>To select book cover images</string>
+<string>Allow Brack to let you pick cover images from your library.</string>
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>Allow Brack to save a photo only when you choose to keep it.</string>
 ```
 
 Android (`AndroidManifest.xml`):
 ```xml
 <uses-permission android:name="android.permission.CAMERA" />
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 ```
+
+These declarations make a permission available; they do not request it. Brack
+shows the OS camera or photo picker only after the reader selects a scanner,
+photo attachment, or image-picker action. Declining must leave a recoverable
+manual/file path. Do not add broad storage/media permission for the system
+photo picker.
 
 ### 2. Barcode Scanning
 
@@ -153,13 +160,15 @@ const handleScanCover = async () => {
 
 ### 4. Push Notifications
 
-**Plugin**: `@capacitor/push-notifications@7.0.4`
+**Plugins**: `@capacitor/push-notifications@7.0.4` on Android and
+`@capacitor-firebase/messaging@7.5.0` for an FCM registration token on iOS.
 
 **Features**:
-- FCM integration (Android & iOS)
+- FCM HTTP v1 delivery through the `send-push-notification` Edge Function
 - Background notifications
 - Notification actions
-- Token management
+- Authenticated, per-installation token ownership
+- Explicit post-signup consent; no automatic permission prompt at app startup
 
 **Setup**:
 
@@ -173,10 +182,12 @@ const handleScanCover = async () => {
 
 3. **iOS**:
    - Add iOS app to Firebase
-   - Upload APNs certificate
+   - Upload the APNs authentication key/certificate to the same Firebase project
    - Download `GoogleService-Info.plist`
    - Add to Xcode project
-   - Enable Push Notifications capability
+   - Enable the Apple App ID and Xcode **Push Notifications** capability
+   - Sign with a provisioning profile carrying the `aps-environment` entitlement
+   - Test receipt on a physical signed device; the simulator is not release proof
 
 **Usage**:
 
@@ -185,13 +196,26 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 const { register, isRegistered, token } = usePushNotifications();
 
-// Register on app start (automatically done in App.tsx)
-useEffect(() => {
-  register();
-}, []);
+// Call only after the reader presses the notification enable action.
+await register();
 ```
 
 **Service**: `apps/client/src/services/pushNotifications.ts`
+
+Capacitor's generic Push Notifications plugin reports a native APNs token on
+iOS, but Brack's server sends FCM HTTP v1 messages. The iOS registration path
+therefore uses Firebase Messaging to obtain the FCM token expected by the
+server; storing an APNs token in `push_tokens` would not make that transport
+work. Repository configuration alone is insufficient: Firebase must have valid
+APNs credentials and the signed Apple target must carry the capability before
+iOS remote push is production-ready.
+
+`public.claim_push_token(text, text)` assigns a token atomically to the verified
+current user. The token is globally unique, so signing into another account on
+the same installation transfers ownership instead of leaving a copy on both
+accounts. Sign-out deletes and unregisters only the current installation token;
+tokens for the reader's other devices remain intact. Never log full device
+tokens.
 
 ### 5. Local Notifications
 
@@ -225,7 +249,55 @@ await LocalNotifications.schedule({
 
 **Used in**: Reading timer background notifications
 
-### 6. Haptic Feedback
+Local-notification permission is requested from a deliberate action: the
+post-signup notification choice, or the first timer start when the reader
+skipped that choice. Mounting `App` or `TimerContext` only installs listeners;
+it does not open an OS prompt.
+
+### Permission education and timing
+
+`/app-permissions` is a native-only education screen shown after a verified new
+reader's onboarding draft has been applied. It checks notification status
+without prompting, explains the value of reminders, offers an explicit enable
+button, and always offers a continue-without-notifications path. Its completion
+marker is local and namespaced by Auth user; the OS remains authoritative.
+Web/PWA and Electron bypass this page.
+
+| Capability | When the OS prompt may appear | If declined |
+| --- | --- | --- |
+| Remote/local notifications | Explicit native post-signup enable action; local notifications may retry at the first timer start | Continue normally; do not repeatedly prompt. Reader can use system settings later. |
+| Camera | After Scan barcode, Scan cover, or Take photo | Keep manual ISBN/search/file-entry routes available. |
+| Photo library/add-only | After Choose image or an explicit save-to-library action | Keep the form usable without the image. |
+| Foreground location | After **Use current location** in profile/discovery setup | Manual city/region entry remains available. |
+
+Brack does not request camera, photos, or location as part of onboarding. It
+does not request background location, broad media/storage access, exact alarms,
+or an unrelated permission bundle merely to increase grant rates.
+
+### 6. Foreground Location
+
+**Plugin**: `@capacitor/geolocation` on native platforms; browser geolocation
+remains the web fallback.
+
+iOS (`Info.plist`):
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Allow Brack to use your location when you choose nearby reader discovery.</string>
+```
+
+Android (`AndroidManifest.xml`):
+
+```xml
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+```
+
+Only foreground, user-initiated lookup is in scope. Do not add background
+location. Profile visibility and `show_location` still control whether saved
+coordinates participate in nearby discovery.
+
+### 7. Haptic Feedback
 
 **Plugin**: `@capacitor/haptics@7.0.2`
 
@@ -247,7 +319,7 @@ triggerHaptic('success'); // or 'warning', 'error', 'light', 'medium', 'heavy'
 
 **Hook**: `apps/client/src/hooks/useHapticFeedback.ts`
 
-### 7. Share
+### 8. Share
 
 **Plugin**: `@capacitor/share@7.0.3`
 
@@ -279,7 +351,7 @@ await shareService.shareReadingStats({
 
 **Service**: `apps/client/src/services/shareService.ts`
 
-### 8. Network Status
+### 9. Network Status
 
 **Plugin**: `@capacitor/network@7.0.2`
 
@@ -303,7 +375,7 @@ if (!isOnline) {
 
 **Hook**: `apps/client/src/hooks/useNetworkStatus.ts`
 
-### 9. Filesystem
+### 10. Filesystem
 
 **Plugin**: `@capacitor/filesystem@7.1.6`
 
@@ -330,7 +402,7 @@ await imageCache.cleanup();
 
 **Service**: `apps/client/src/services/imageCache.ts`
 
-### 10. Device Information
+### 11. Device Information
 
 **Plugin**: `@capacitor/device@7.0.2`
 
@@ -357,7 +429,7 @@ if (isNative) {
 
 **Hook**: `apps/client/src/hooks/usePlatform.ts`
 
-### 11. App Lifecycle
+### 12. App Lifecycle
 
 **Plugin**: `@capacitor/app@7.1.0`
 
@@ -402,6 +474,9 @@ Run `npm run brand:icons` and then `npm run media:assets` after changing Brack a
 
 **URL Scheme**: `brack://`
 
+**Verified-link target**: `https://brack-app.com` (not active until the web
+domain and platform association documents are deployed and verified)
+
 **Supported Links**:
 - `brack://book/123` - Open book detail
 - `brack://user/456` - Open user profile
@@ -436,10 +511,29 @@ Android (`AndroidManifest.xml`):
 </intent-filter>
 ```
 
+Production content links can also use verified HTTPS links:
+
+- Android declares `android:autoVerify="true"` App Links only for the supported
+  `/book/`, `/user/`, `/message/`, `/club/`, and `/list/` content paths. It does
+  not claim `/auth/*`, so an HTTPS email fallback stays in the browser. The site must serve
+  `/.well-known/assetlinks.json` containing `com.brack.app` and the real release
+  signing certificate SHA-256 fingerprint.
+- iOS requires the Associated Domains entitlement
+  `applinks:brack-app.com`. The site must serve the extensionless
+  `/.well-known/apple-app-site-association` document containing the real Apple
+  Team ID and bundle ID `com.brack.app`. When Universal Links are enabled, the
+  association rules must likewise exclude `/auth/*`; current Auth return uses
+  the registered `brack://` scheme.
+- Both association documents must be public HTTPS responses with status 200,
+  the correct JSON content type, and no redirect. Do not commit placeholder
+  identifiers. Keep `brack://` as the installed-app fallback.
+
 **Services**:
 - `apps/client/src/services/deepLinkService.ts` routes content deep links and forwards auth callbacks.
-- `apps/client/src/components/DeepLinkHandler.tsx` completes `brack://auth/callback` and `brack://auth/reset-password` by exchanging the Supabase code/session and routing to onboarding, dashboard, or password reset.
+- `apps/client/src/components/DeepLinkHandler.tsx` completes `brack://auth/callback` and `brack://auth/reset-password` by exchanging the Supabase code/session and delegating to the shared resolver, which can route to draft recovery, native permission education, dashboard, or password reset.
 - `@capacitor/browser` opens OAuth providers outside the WebView and closes on return where supported.
+- The PWA service worker is not registered inside Capacitor. Native Auth state
+  remains in the WebView while only flows that require a provider/browser leave it.
 
 ## Offline Support
 
@@ -506,9 +600,10 @@ All native features have web fallbacks:
 | Feature | Native | Web Fallback |
 |---------|--------|--------------|
 | Camera | Native camera | `<input type="file" accept="image/*">` |
+| Location | Capacitor foreground geolocation | Browser geolocation after the same explicit action |
 | Share | Native share sheet | Web Share API or copy link |
 | Haptics | Device vibration | No vibration |
-| Push Notifications | FCM | Web Push API (optional) |
+| Push Notifications | FCM transport | No web-push registration in the current client; in-app notifications/preferences remain |
 | File Storage | Filesystem plugin | localStorage/IndexedDB |
 
 ## Performance Optimization

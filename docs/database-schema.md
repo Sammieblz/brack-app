@@ -677,10 +677,11 @@ CREATE TABLE notification_preferences (
 
 ### auth_email_exists
 
-Backend-only, read-only duplicate-email predicate used by the public,
-rate-limited `auth-email-availability` Edge Function. It returns a boolean from
-`auth.users`; direct execute is restricted to `service_role`. The Edge response
-contains no Auth row, provider, or profile fields.
+Legacy backend-only, read-only duplicate-email predicate retained with the
+public, rate-limited `auth-email-availability` Edge Function for rollback and
+older clients. Current signup does not call either component. It returns a
+boolean from `auth.users`; direct execute is restricted to `service_role`. The
+Edge response contains no Auth row, provider, or profile fields.
 
 ### log_progress_transaction
 

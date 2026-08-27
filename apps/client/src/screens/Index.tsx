@@ -10,6 +10,8 @@ import { useGSAPTimeline } from "@/hooks/useGSAP";
 import { gsap } from "gsap";
 import { APP_ICONS } from "@/config/iconography";
 import { getAuthSession } from "@/services/api";
+import { resolvePostAuthPath } from "@/services/authRedirect";
+import { clearOnboardingDraft } from "@/services/onboardingDraft";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -29,6 +31,7 @@ const Index = () => {
       const session = await getAuthSession();
       // Only reset theme if user is not authenticated
       if (!session) {
+        clearOnboardingDraft();
         resetToDefaultTheme();
       }
     };
@@ -40,7 +43,7 @@ const Index = () => {
       try {
         const session = await getAuthSession();
         if (session) {
-          navigate("/dashboard");
+          navigate(await resolvePostAuthPath(), { replace: true });
           return;
         }
       } catch (error) {
@@ -231,7 +234,7 @@ const Index = () => {
           {/* CTA Buttons — Sign In + Sign Up */}
           <div ref={buttonsRef} className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
             <Button 
-              onClick={() => navigate("/auth?mode=signup")}
+              onClick={() => navigate("/onboarding?from=landing")}
               className="w-full sm:w-auto text-lg px-10 py-6 h-auto bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium rounded-2xl"
             >
               Get Started

@@ -7,10 +7,12 @@ import {
 } from "@/services/authRedirect";
 import { Button } from "@/components/ui/button";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
+import { publishAuthFlowCompletion } from "@/services/authFlowBridge";
 
 const AuthCallback = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const [returningToRequest, setReturningToRequest] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -24,6 +26,11 @@ const AuthCallback = () => {
       try {
         const nextPath = await completeAuthCallback(callbackUrl);
         if (!cancelled) {
+          if (publishAuthFlowCompletion()) {
+            setReturningToRequest(true);
+            window.close();
+            return;
+          }
           navigate(nextPath, { replace: true });
         }
       } catch (authError) {
@@ -53,7 +60,10 @@ const AuthCallback = () => {
   if (!error) {
     return (
       <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background px-4">
-        <LoadingSpinner size="lg" text="Finishing sign in..." />
+        <LoadingSpinner
+          size="lg"
+          text={returningToRequest ? "Returning to your sign-up..." : "Finishing sign in..."}
+        />
       </div>
     );
   }

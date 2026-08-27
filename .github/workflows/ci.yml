@@ -9,6 +9,16 @@ on:
 permissions:
   contents: read
 
+env:
+  # Cloudflare's documented always-pass test widget. Production deployments
+  # must replace this with the existing Brack widget through the build env.
+  VITE_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+  # Browser smoke tests need a complete client configuration, but do not need
+  # a live database. Repository variables can point authenticated E2E at a
+  # staging project; otherwise these non-secret loopback values keep CI local.
+  VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'http://127.0.0.1:54321' }}
+  VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY || 'ci-public-anon-key' }}
+
 jobs:
   quality-checks:
     name: Quality Checks
@@ -51,6 +61,12 @@ jobs:
       - name: Verify optimized static media
         run: npm run media:assets:check
 
+      - name: Validate Auth email templates
+        run: npm run auth:emails:validate
+
+      - name: Test Auth email synchronization guardrails
+        run: npm run auth:emails:test
+
       - name: Run unit tests
         run: npm test
 
@@ -85,6 +101,9 @@ jobs:
       - name: Build web app
         run: npm run build
 
+      - name: Verify Auth and PWA build artifacts
+        run: npm run web:auth-artifacts:check
+
       - name: Validate build output
         run: |
           if [ ! -d "apps/client/dist" ]; then
@@ -93,6 +112,10 @@ jobs:
           fi
           if [ ! -f "apps/client/dist/index.html" ]; then
             echo "Error: apps/client/dist/index.html not found"
+            exit 1
+          fi
+          if [ ! -f "apps/client/dist/_headers" ]; then
+            echo "Error: Cloudflare Pages security headers were not copied"
             exit 1
           fi
           echo "Build validation successful"
@@ -313,3 +336,6 @@ jobs:
 
       - name: Run web smoke tests
         run: npx playwright test --project=chromium
+        env:
+          E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}

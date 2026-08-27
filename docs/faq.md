@@ -115,10 +115,37 @@ Yes! Features:
 
 ### How do push notifications work?
 
-- Uses Firebase Cloud Messaging (FCM)
-- Tokens stored in `push_tokens` table
-- Sent via `send-push-notification` Edge Function
+- The native app explains notification value after a new signup and requests OS
+  access only after the reader presses **Enable useful notifications**.
+- Uses Firebase Cloud Messaging (FCM); iOS obtains an FCM token through Firebase
+  Messaging and Firebase forwards through APNs.
+- Each installation token has one authenticated owner in `push_tokens` and is
+  claimed atomically when an account registers on that device.
+- Sign-out removes/unregisters the current installation token, not tokens on the
+  reader's other devices.
+- Messages are sent by the `send-push-notification` Edge Function.
 - User preferences in `notification_preferences` table
+
+iOS delivery also requires valid APNs credentials in Firebase, the Apple Push
+Notifications capability/provisioning, and physical-device testing. Having
+`GoogleService-Info.plist` alone does not complete that external setup.
+
+### Why does Get Started show onboarding before signup?
+
+It lets a new reader understand and personalize Brack before creating an
+account. The answers are held as a schema-validated, versioned in-memory draft
+only for the active onboarding/signup document or app process. After email
+confirmation or Google signup, Brack verifies that the newly created account
+belongs to that signup attempt, applies the draft to the authenticated profile,
+and then clears it.
+
+The draft contains onboarding answers and limited email/provider binding
+metadata. It never stores the password, Auth session/tokens, Turnstile token, or
+server secret, and it is never written to browser/native storage or Supabase.
+Refreshing, closing the tab, or exiting the app discards it and restarts setup.
+If Auth has already produced a verified account when that happens, the reader
+finishes a fresh authenticated onboarding instead of submitting signup again.
+**Sign In** remains direct for existing readers.
 
 ## Mobile
 
@@ -131,7 +158,7 @@ Most features have web fallbacks:
 | Camera | Yes (getUserMedia API) |
 | Photo Library | Yes (file input) |
 | Barcode Scanning | Yes (with camera access) |
-| Push Notifications | Limited (Web Push API) |
+| Push Notifications | No current web-push registration; in-app notifications still work |
 | Haptics | No vibration on most browsers |
 | Share | Yes (Web Share API or clipboard) |
 
@@ -292,19 +319,24 @@ Instead:
 ### What permissions does the mobile app need?
 
 **iOS**:
-- Camera (for barcode/cover scanning)
-- Photo Library (for cover images)
-- Notifications (for push notifications)
-- Network (for online functionality)
+- Notifications for reading reminders and remote push, requested from an
+  explicit enable action or contextual timer action
+- Camera for barcode/cover scanning and chosen photo attachments
+- Photo Library read/add-only descriptions for choosing or explicitly saving an image
+- Foreground location when the reader selects **Use current location**
 
 **Android**:
-- Camera
-- Read External Storage
-- Internet
-- Notifications
-- Wake Lock (for background timer)
+- `INTERNET` and `VIBRATE`
+- `POST_NOTIFICATIONS` on supported Android versions
+- `CAMERA` for explicit scanner/photo actions
+- `ACCESS_COARSE_LOCATION` and `ACCESS_FINE_LOCATION` for an explicit
+  foreground location lookup
 
-All permissions are requested only when needed.
+Brack does not request broad external-storage/media access, background
+location, or exact alarms. The native post-signup page asks only about useful
+notifications; camera, photos, and location remain just-in-time prompts in the
+feature that needs them. Every optional denial keeps a continue/manual path,
+and Brack does not repeatedly prompt after the OS records a denial.
 
 ## Troubleshooting
 

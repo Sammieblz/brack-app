@@ -76,6 +76,16 @@ const CODE_PRESENTATIONS: Record<
     title: "Verification failed",
     description: "Complete the security check again, then retry your request.",
   },
+  otp_expired: {
+    title: "Code not accepted",
+    description:
+      "This code is incorrect, expired, or from an older email. Enter the six-digit code from the newest Brack message.",
+  },
+  otp_disabled: {
+    title: "Email code unavailable",
+    description:
+      "Brack cannot verify email codes right now. Use the secure email link or try again later.",
+  },
   email_provider_disabled: {
     title: "Email sign-in unavailable",
     description:

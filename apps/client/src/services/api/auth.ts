@@ -14,16 +14,20 @@ import {
 } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { isCustomSchemeAuthRuntime, openExternalUrl } from "@/services/platform";
-import { getApiErrorStatus, invokeFunction } from "./client";
+import { isValidTurnstileToken } from "@/utils/turnstile";
 
-export interface EmailSignUpRequest {
+interface CaptchaProtectedAuthRequest {
+  captchaToken: string;
+}
+
+export interface EmailSignUpRequest extends CaptchaProtectedAuthRequest {
   email: string;
   password: string;
   redirectTo?: string;
   metadata?: Record<string, unknown>;
 }
 
-export interface EmailPasswordSignInRequest {
+export interface EmailPasswordSignInRequest extends CaptchaProtectedAuthRequest {
   email: string;
   password: string;
 }
@@ -31,6 +35,11 @@ export interface EmailPasswordSignInRequest {
 export interface OAuthSignInRequest {
   provider: Provider;
   redirectTo?: string;
+  /**
+   * Return the provider URL without replacing the current browser document.
+   * Native/desktop runtimes already own their external-browser handoff.
+   */
+  preserveCurrentDocument?: boolean;
 }
 
 export type EmailSignUpOutcome =
@@ -38,9 +47,25 @@ export type EmailSignUpOutcome =
   | { kind: "email_exists"; email: string }
   | { kind: "confirmation_pending"; email: string };
 
-export interface SignUpEmailResendRequest {
+export interface SignUpEmailResendRequest extends CaptchaProtectedAuthRequest {
   email: string;
   redirectTo?: string;
+}
+
+export interface PasswordResetEmailRequest extends CaptchaProtectedAuthRequest {
+  email: string;
+  redirectTo?: string;
+}
+
+export interface VerifyEmailOtpRequest {
+  email: string;
+  token: string;
+  type: "signup" | "recovery";
+}
+
+export interface VerifiedEmailOtpData {
+  session: Session;
+  user: User;
 }
 
 export type AuthStateChangeHandler = (
@@ -57,15 +82,37 @@ const EXISTENCE_SENSITIVE_SIGNUP_CODES = new Set([
   "email_exists",
 ]);
 
-interface EmailAvailabilityResponse {
-  exists: boolean;
-}
+const VERIFIED_USER_CACHE_TTL_MS = 5 * 60_000;
 
-const EMAIL_AVAILABILITY_FUNCTION = "auth-email-availability";
+type VerifiedUserCacheEntry = {
+  accessToken: string;
+  expiresAt: number;
+  user: User;
+};
+
+type VerifiedUserRequest = {
+  accessToken: string;
+  generation: number;
+  promise: Promise<User | null>;
+};
+
+let verifiedUserCache: VerifiedUserCacheEntry | null = null;
+let verifiedUserRequest: VerifiedUserRequest | null = null;
+let verifiedUserCacheGeneration = 0;
 
 // Remove accidental form whitespace while leaving provider-level email
 // canonicalization to Supabase Auth.
 const normalizeAuthEmail = (email: string) => email.trim();
+
+const requireCaptchaToken = (captchaToken: string) => {
+  if (!isValidTurnstileToken(captchaToken)) {
+    throw new AuthProtocolError(
+      "Complete a fresh security check before submitting this request.",
+    );
+  }
+
+  return captchaToken;
+};
 
 export const getAuthSession = async (): Promise<Session | null> => {
   const {
@@ -77,14 +124,91 @@ export const getAuthSession = async (): Promise<Session | null> => {
   return session;
 };
 
-export const getCurrentAuthUser = async (): Promise<User | null> => {
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+export const clearVerifiedAuthUserCache = () => {
+  verifiedUserCacheGeneration += 1;
+  verifiedUserCache = null;
+  verifiedUserRequest = null;
+};
 
-  throwIfAuthError(error);
-  return user;
+/**
+ * Seed the short-lived verified-user cache from a successful Auth response.
+ * The session itself came from Supabase Auth; RLS and Edge Functions continue
+ * to verify the JWT independently for every protected operation.
+ */
+export const primeVerifiedAuthUserCache = (session: Session | null) => {
+  if (!session?.access_token || !session.user) {
+    clearVerifiedAuthUserCache();
+    return;
+  }
+
+  verifiedUserCacheGeneration += 1;
+  verifiedUserCache = {
+    accessToken: session.access_token,
+    expiresAt: Date.now() + VERIFIED_USER_CACHE_TTL_MS,
+    user: session.user,
+  };
+  verifiedUserRequest = null;
+};
+
+const getVerifiedUserForSession = async (session: Session): Promise<User | null> => {
+  const accessToken = session.access_token;
+  const now = Date.now();
+
+  if (
+    verifiedUserCache?.accessToken === accessToken &&
+    verifiedUserCache.expiresAt > now
+  ) {
+    return verifiedUserCache.user;
+  }
+
+  if (verifiedUserRequest?.accessToken === accessToken) {
+    return verifiedUserRequest.promise;
+  }
+
+  const requestGeneration = verifiedUserCacheGeneration;
+  const request = supabase.auth
+    .getUser(accessToken)
+    .then(({ data: { user }, error }) => {
+      throwIfAuthError(error);
+      if (requestGeneration !== verifiedUserCacheGeneration) {
+        return user;
+      }
+      if (user) {
+        verifiedUserCache = {
+          accessToken,
+          expiresAt: Date.now() + VERIFIED_USER_CACHE_TTL_MS,
+          user,
+        };
+      } else {
+        verifiedUserCache = null;
+      }
+      return user;
+    })
+    .finally(() => {
+      if (
+        verifiedUserRequest?.accessToken === accessToken &&
+        verifiedUserRequest.generation === requestGeneration
+      ) {
+        verifiedUserRequest = null;
+      }
+    });
+
+  verifiedUserRequest = {
+    accessToken,
+    generation: requestGeneration,
+    promise: request,
+  };
+  return request;
+};
+
+export const getCurrentAuthUser = async (): Promise<User | null> => {
+  const session = await getAuthSession();
+  if (!session) {
+    clearVerifiedAuthUserCache();
+    return null;
+  }
+
+  return getVerifiedUserForSession(session);
 };
 
 /**
@@ -99,15 +223,24 @@ export const getOptionalCurrentAuthUser = async (): Promise<User | null> => {
   try {
     session = await getAuthSession();
   } catch (error) {
-    if (isAuthSessionMissingError(error)) return null;
+    if (isAuthSessionMissingError(error)) {
+      clearVerifiedAuthUserCache();
+      return null;
+    }
     throw error;
   }
-  if (!session) return null;
+  if (!session) {
+    clearVerifiedAuthUserCache();
+    return null;
+  }
 
   try {
-    return await getCurrentAuthUser();
+    return await getVerifiedUserForSession(session);
   } catch (error) {
-    if (isAuthSessionMissingError(error)) return null;
+    if (isAuthSessionMissingError(error)) {
+      clearVerifiedAuthUserCache();
+      return null;
+    }
     throw error;
   }
 };
@@ -127,41 +260,10 @@ export const signUpWithEmail = async ({
   password,
   redirectTo,
   metadata,
+  captchaToken,
 }: EmailSignUpRequest): Promise<EmailSignUpOutcome> => {
   const normalizedEmail = normalizeAuthEmail(email);
-
-  let availability: EmailAvailabilityResponse;
-  try {
-    availability = await invokeFunction<EmailAvailabilityResponse>(
-      EMAIL_AVAILABILITY_FUNCTION,
-      { body: { email: normalizedEmail } },
-    );
-  } catch (error) {
-    const status = getApiErrorStatus(error);
-    if (status === 429) throw error;
-
-    throw new AuthApiError(
-      status === 400
-        ? "The email address could not be validated."
-        : "Email availability could not be verified.",
-      status === 400 ? 400 : 503,
-      status === 400
-        ? "email_address_invalid"
-        : "email_availability_unavailable",
-    );
-  }
-
-  if (!availability || typeof availability.exists !== "boolean") {
-    throw new AuthApiError(
-      "Email availability returned an invalid response.",
-      503,
-      "email_availability_unavailable",
-    );
-  }
-
-  if (availability.exists) {
-    return { kind: "email_exists", email: normalizedEmail };
-  }
+  const verifiedCaptchaToken = requireCaptchaToken(captchaToken);
 
   const { data, error } = await supabase.auth.signUp({
     email: normalizedEmail,
@@ -169,6 +271,7 @@ export const signUpWithEmail = async ({
     options: {
       emailRedirectTo: redirectTo,
       data: metadata,
+      captchaToken: verifiedCaptchaToken,
     },
   });
 
@@ -184,6 +287,7 @@ export const signUpWithEmail = async ({
   throwIfAuthError(error);
 
   if (data.session) {
+    primeVerifiedAuthUserCache(data.session);
     return { kind: "signed_in", session: data.session };
   }
 
@@ -206,46 +310,89 @@ export const signUpWithEmail = async ({
 export const resendSignUpEmail = async ({
   email,
   redirectTo,
+  captchaToken,
 }: SignUpEmailResendRequest): Promise<void> => {
+  const verifiedCaptchaToken = requireCaptchaToken(captchaToken);
   const { error } = await supabase.auth.resend({
     type: "signup",
     email: normalizeAuthEmail(email),
     options: {
       emailRedirectTo: redirectTo,
+      captchaToken: verifiedCaptchaToken,
     },
   });
 
   throwIfAuthError(error);
+};
+
+/**
+ * Verify a short email code without leaving the current Auth context.
+ *
+ * A successful Supabase verification establishes and persists the session.
+ * Brack additionally primes its short-lived verified-user cache so the UI does
+ * not immediately issue a redundant `/auth/v1/user` request.
+ */
+export const verifyEmailOtp = async ({
+  email,
+  token,
+  type,
+}: VerifyEmailOtpRequest): Promise<VerifiedEmailOtpData> => {
+  const normalizedToken = token.replace(/\s/g, "");
+  if (!/^\d{6}$/.test(normalizedToken)) {
+    throw new AuthProtocolError("Enter the complete six-digit email code.");
+  }
+
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: normalizeAuthEmail(email),
+    token: normalizedToken,
+    type,
+  });
+
+  throwIfAuthError(error);
+
+  if (!data.session || !data.user) {
+    throw new AuthProtocolError(
+      "Email verification completed without an authenticated session.",
+    );
+  }
+
+  primeVerifiedAuthUserCache(data.session);
+  return { session: data.session, user: data.user };
 };
 
 export const signInWithEmailPassword = async ({
   email,
   password,
+  captchaToken,
 }: EmailPasswordSignInRequest) => {
+  const verifiedCaptchaToken = requireCaptchaToken(captchaToken);
   const { data, error } = await supabase.auth.signInWithPassword({
     email: normalizeAuthEmail(email),
     password,
+    options: { captchaToken: verifiedCaptchaToken },
   });
 
   throwIfAuthError(error);
-  void data;
+  primeVerifiedAuthUserCache(data.session);
 };
 
 export const signInWithOAuth = async ({
   provider,
   redirectTo,
+  preserveCurrentDocument = false,
 }: OAuthSignInRequest): Promise<OAuthResponse["data"]> => {
+  const customSchemeRuntime = isCustomSchemeAuthRuntime();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
       redirectTo,
-      skipBrowserRedirect: isCustomSchemeAuthRuntime(),
+      skipBrowserRedirect: customSchemeRuntime || preserveCurrentDocument,
     },
   });
 
   throwIfAuthError(error);
 
-  if (isCustomSchemeAuthRuntime() && data.url) {
+  if (customSchemeRuntime && data.url) {
     await openExternalUrl(data.url);
   }
 
@@ -288,6 +435,7 @@ export const handleAuthCallbackUrl = async (callbackUrl: string) => {
         error,
       );
     }
+    primeVerifiedAuthUserCache(data.session);
     return data;
   }
 
@@ -306,6 +454,7 @@ export const handleAuthCallbackUrl = async (callbackUrl: string) => {
         error,
       );
     }
+    primeVerifiedAuthUserCache(data.session);
     return data;
   }
 
@@ -340,15 +489,22 @@ export class AuthProtocolError extends Error {
 export const signOut = async () => {
   const { error } = await supabase.auth.signOut();
   throwIfAuthError(error);
+  clearVerifiedAuthUserCache();
 };
 
-export const sendPasswordResetEmail = async (
-  email: string,
-  redirectTo?: string
-) => {
-  const { data, error } = await supabase.auth.resetPasswordForEmail(normalizeAuthEmail(email), {
-    redirectTo,
-  });
+export const sendPasswordResetEmail = async ({
+  email,
+  redirectTo,
+  captchaToken,
+}: PasswordResetEmailRequest) => {
+  const verifiedCaptchaToken = requireCaptchaToken(captchaToken);
+  const { data, error } = await supabase.auth.resetPasswordForEmail(
+    normalizeAuthEmail(email),
+    {
+      redirectTo,
+      captchaToken: verifiedCaptchaToken,
+    },
+  );
 
   throwIfAuthError(error);
   return data;

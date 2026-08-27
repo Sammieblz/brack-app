@@ -4,12 +4,26 @@ const {
   ensureUserProfileMock,
   getCurrentAuthUserMock,
   handleAuthCallbackUrlMock,
+  clearOnboardingDraftMock,
+  loadOnboardingDraftMock,
+  saveOnboardingProfileMock,
   shouldEnterFirstRunOnboardingMock,
+  skipOnboardingMock,
+  arePostSignupPermissionsPendingMock,
+  markPostSignupPermissionsPendingMock,
+  isMobileNativeRuntimeMock,
 } = vi.hoisted(() => ({
   ensureUserProfileMock: vi.fn(),
   getCurrentAuthUserMock: vi.fn(),
   handleAuthCallbackUrlMock: vi.fn(),
+  clearOnboardingDraftMock: vi.fn(),
+  loadOnboardingDraftMock: vi.fn(),
+  saveOnboardingProfileMock: vi.fn(),
   shouldEnterFirstRunOnboardingMock: vi.fn(),
+  skipOnboardingMock: vi.fn(),
+  arePostSignupPermissionsPendingMock: vi.fn(),
+  markPostSignupPermissionsPendingMock: vi.fn(),
+  isMobileNativeRuntimeMock: vi.fn(),
 }));
 
 vi.mock("@/services/api/auth", () => ({
@@ -19,19 +33,34 @@ vi.mock("@/services/api/auth", () => ({
 
 vi.mock("@/services/onboarding", () => ({
   ensureUserProfile: ensureUserProfileMock,
+  saveOnboardingProfile: saveOnboardingProfileMock,
   shouldEnterFirstRunOnboarding: shouldEnterFirstRunOnboardingMock,
+  skipOnboarding: skipOnboardingMock,
+}));
+
+vi.mock("@/services/onboardingDraft", () => ({
+  clearOnboardingDraft: clearOnboardingDraftMock,
+  loadOnboardingDraft: loadOnboardingDraftMock,
+}));
+
+vi.mock("@/services/postSignupPermissions", () => ({
+  arePostSignupPermissionsPending: arePostSignupPermissionsPendingMock,
+  markPostSignupPermissionsPending: markPostSignupPermissionsPendingMock,
 }));
 
 vi.mock("@/services/platform", () => ({
+  isMobileNativeRuntime: isMobileNativeRuntimeMock,
   isPasswordResetUrl: (url: string) => url.includes("reset-password"),
 }));
 
 import {
+  authorizePasswordRecoverySession,
   AuthCallbackBootstrapError,
   AuthCallbackCredentialError,
   completeAuthCallback,
   consumePasswordRecoveryAuthorization,
   hasPasswordRecoveryAuthorization,
+  resolvePostAuthPath,
 } from "./authRedirect";
 
 const callbackData = (userId = "user-1") => ({
@@ -49,7 +78,19 @@ describe("completeAuthCallback", () => {
     handleAuthCallbackUrlMock.mockReset();
     getCurrentAuthUserMock.mockReset();
     ensureUserProfileMock.mockReset();
+    clearOnboardingDraftMock.mockReset();
+    loadOnboardingDraftMock.mockReset();
+    loadOnboardingDraftMock.mockReturnValue(null);
+    saveOnboardingProfileMock.mockReset();
+    saveOnboardingProfileMock.mockResolvedValue(undefined);
     shouldEnterFirstRunOnboardingMock.mockReset();
+    skipOnboardingMock.mockReset();
+    skipOnboardingMock.mockResolvedValue(undefined);
+    arePostSignupPermissionsPendingMock.mockReset();
+    arePostSignupPermissionsPendingMock.mockReturnValue(false);
+    markPostSignupPermissionsPendingMock.mockReset();
+    isMobileNativeRuntimeMock.mockReset();
+    isMobileNativeRuntimeMock.mockReturnValue(false);
 
     handleAuthCallbackUrlMock.mockResolvedValue(callbackData());
     getCurrentAuthUserMock.mockResolvedValue({ id: "user-1" });
@@ -61,6 +102,24 @@ describe("completeAuthCallback", () => {
     vi.useRealTimers();
   });
 
+  it("records recovery authorization for a Supabase-verified user", () => {
+    authorizePasswordRecoverySession("verified-recovery-user");
+
+    expect(hasPasswordRecoveryAuthorization("verified-recovery-user")).toBe(
+      true,
+    );
+    expect(hasPasswordRecoveryAuthorization("different-user")).toBe(false);
+    expect(consumePasswordRecoveryAuthorization("verified-recovery-user")).toBe(
+      true,
+    );
+  });
+
+  it("refuses to authorize recovery without a verified user id", () => {
+    expect(() => authorizePasswordRecoverySession("")).toThrow(
+      AuthCallbackCredentialError,
+    );
+  });
+
   it("coalesces simultaneous processing of the same one-time callback", async () => {
     let finishExchange: ((value: ReturnType<typeof callbackData>) => void) | undefined;
     handleAuthCallbackUrlMock.mockImplementation(
@@ -70,7 +129,7 @@ describe("completeAuthCallback", () => {
         }),
     );
     const callbackUrl =
-      "https://brack.app/auth/reset-password?code=simultaneous-code";
+      "https://brack-app.com/auth/reset-password?code=simultaneous-code";
 
     const first = completeAuthCallback(callbackUrl);
     const second = completeAuthCallback(callbackUrl);
@@ -86,7 +145,7 @@ describe("completeAuthCallback", () => {
 
   it("replays a settled callback result without exchanging its code again", async () => {
     const callbackUrl =
-      "https://brack.app/auth/reset-password?code=sequential-code";
+      "https://brack-app.com/auth/reset-password?code=sequential-code";
 
     await expect(completeAuthCallback(callbackUrl)).resolves.toBe(
       "/auth/reset-password",
@@ -102,7 +161,7 @@ describe("completeAuthCallback", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-23T00:00:00Z"));
     const callbackUrl =
-      "https://brack.app/auth/reset-password?code=expired-replay-code";
+      "https://brack-app.com/auth/reset-password?code=expired-replay-code";
 
     await completeAuthCallback(callbackUrl);
     vi.advanceTimersByTime(5 * 60 * 1000 + 1);
@@ -113,7 +172,7 @@ describe("completeAuthCallback", () => {
 
   it("rejects a bare callback instead of accepting an unrelated session", async () => {
     await expect(
-      completeAuthCallback("https://brack.app/auth/callback?source=unrelated"),
+      completeAuthCallback("https://brack-app.com/auth/callback?source=unrelated"),
     ).rejects.toBeInstanceOf(AuthCallbackCredentialError);
 
     expect(handleAuthCallbackUrlMock).not.toHaveBeenCalled();
@@ -123,7 +182,7 @@ describe("completeAuthCallback", () => {
   it("rejects an incomplete implicit token pair", async () => {
     await expect(
       completeAuthCallback(
-        "https://brack.app/auth/callback#access_token=access-only",
+        "https://brack-app.com/auth/callback#access_token=access-only",
       ),
     ).rejects.toMatchObject({
       name: "AuthCallbackCredentialError",
@@ -136,7 +195,7 @@ describe("completeAuthCallback", () => {
   it("distinguishes post-auth profile bootstrap failures from bad credentials", async () => {
     getCurrentAuthUserMock.mockRejectedValue(new Error("profile service unavailable"));
     const callbackUrl =
-      "https://brack.app/auth/callback?code=bootstrap-failure-code";
+      "https://brack-app.com/auth/callback?code=bootstrap-failure-code";
 
     await expect(completeAuthCallback(callbackUrl)).rejects.toMatchObject({
       name: "AuthCallbackBootstrapError",
@@ -154,7 +213,7 @@ describe("completeAuthCallback", () => {
 
     await expect(
       completeAuthCallback(
-        "https://brack.app/auth/reset-password?code=recovery-marker-code",
+        "https://brack-app.com/auth/reset-password?code=recovery-marker-code",
       ),
     ).resolves.toBe("/auth/reset-password");
 
@@ -175,7 +234,7 @@ describe("completeAuthCallback", () => {
     );
 
     await completeAuthCallback(
-      "https://brack.app/auth/reset-password?code=expiring-marker-code",
+      "https://brack-app.com/auth/reset-password?code=expiring-marker-code",
     );
     expect(hasPasswordRecoveryAuthorization("expiring-recovery-user")).toBe(
       true,
@@ -192,10 +251,133 @@ describe("completeAuthCallback", () => {
 
     await expect(
       completeAuthCallback(
-        "https://brack.app/auth/reset-password?code=missing-user-code",
+        "https://brack-app.com/auth/reset-password?code=missing-user-code",
       ),
     ).rejects.toBeInstanceOf(AuthCallbackCredentialError);
 
     expect(hasPasswordRecoveryAuthorization("user-1")).toBe(false);
+  });
+
+  it("applies a bound new-reader draft once before native permissions", async () => {
+    getCurrentAuthUserMock.mockResolvedValue({
+      id: "new-reader",
+      email: "new-reader@example.com",
+      created_at: "2026-08-26T16:00:10.000Z",
+      app_metadata: { provider: "email", providers: ["email"] },
+      identities: [],
+    });
+    ensureUserProfileMock.mockResolvedValue({ onboarding_status: "not_started" });
+    shouldEnterFirstRunOnboardingMock.mockReturnValue(true);
+    loadOnboardingDraftMock.mockReturnValue({
+      version: 1,
+      flowId: "76000000-0000-0000-0000-000000000001",
+      formData: {},
+      stage: "auth_started",
+      outcome: "skipped",
+      lastStep: 3,
+      createdAt: "2026-08-26T15:55:00.000Z",
+      updatedAt: "2026-08-26T16:00:00.000Z",
+      expiresAt: "2026-09-02T16:00:00.000Z",
+      authAttempt: {
+        kind: "email",
+        email: "new-reader@example.com",
+        startedAt: "2026-08-26T16:00:00.000Z",
+      },
+    });
+    isMobileNativeRuntimeMock.mockReturnValue(true);
+
+    await expect(resolvePostAuthPath()).resolves.toBe("/app-permissions");
+
+    expect(skipOnboardingMock).toHaveBeenCalledWith("new-reader", 3);
+    expect(markPostSignupPermissionsPendingMock).toHaveBeenCalledWith(
+      "new-reader",
+    );
+    expect(clearOnboardingDraftMock).toHaveBeenCalledOnce();
+  });
+
+  it("coalesces a completed draft handoff and reuses the account-scoped goal key", async () => {
+    let finishSave: (() => void) | undefined;
+    saveOnboardingProfileMock.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishSave = resolve;
+        }),
+    );
+    getCurrentAuthUserMock.mockResolvedValue({
+      id: "new-reader",
+      email: "new-reader@example.com",
+      created_at: "2026-08-26T16:00:10.000Z",
+      app_metadata: { provider: "email", providers: ["email"] },
+      identities: [],
+    });
+    ensureUserProfileMock.mockResolvedValue({ onboarding_status: "not_started" });
+    shouldEnterFirstRunOnboardingMock.mockReturnValue(true);
+    const formData = { colorTheme: "violet" };
+    loadOnboardingDraftMock.mockReturnValue({
+      version: 1,
+      flowId: "76000000-0000-0000-0000-000000000003",
+      formData,
+      stage: "auth_started",
+      outcome: "completed",
+      lastStep: "review",
+      createdAt: "2026-08-26T15:55:00.000Z",
+      updatedAt: "2026-08-26T16:00:00.000Z",
+      authAttempt: {
+        kind: "email",
+        email: "new-reader@example.com",
+        startedAt: "2026-08-26T16:00:00.000Z",
+      },
+    });
+
+    const first = resolvePostAuthPath();
+    const second = resolvePostAuthPath();
+    await vi.waitFor(() => expect(finishSave).toBeTypeOf("function"));
+    finishSave?.();
+
+    await expect(Promise.all([first, second])).resolves.toEqual([
+      "/dashboard",
+      "/dashboard",
+    ]);
+    expect(saveOnboardingProfileMock).toHaveBeenCalledOnce();
+    expect(saveOnboardingProfileMock).toHaveBeenCalledWith(
+      "new-reader",
+      formData,
+      { goalId: "new-reader" },
+    );
+    expect(clearOnboardingDraftMock).toHaveBeenCalledOnce();
+  });
+
+  it("does not apply an OAuth draft to a user verified with another provider", async () => {
+    getCurrentAuthUserMock.mockResolvedValue({
+      id: "email-reader",
+      email: "email-reader@example.com",
+      created_at: "2026-08-26T16:00:10.000Z",
+      app_metadata: { provider: "email", providers: ["email"] },
+      identities: [{ provider: "email" }],
+    });
+    ensureUserProfileMock.mockResolvedValue({ onboarding_status: "not_started" });
+    shouldEnterFirstRunOnboardingMock.mockReturnValue(true);
+    loadOnboardingDraftMock.mockReturnValue({
+      version: 1,
+      flowId: "76000000-0000-0000-0000-000000000002",
+      formData: {},
+      stage: "auth_started",
+      outcome: "completed",
+      lastStep: 6,
+      createdAt: "2026-08-26T15:55:00.000Z",
+      updatedAt: "2026-08-26T16:00:00.000Z",
+      expiresAt: "2026-09-02T16:00:00.000Z",
+      authAttempt: {
+        kind: "oauth",
+        provider: "google",
+        startedAt: "2026-08-26T16:00:00.000Z",
+      },
+    });
+
+    await expect(resolvePostAuthPath()).resolves.toBe("/onboarding");
+
+    expect(saveOnboardingProfileMock).not.toHaveBeenCalled();
+    expect(skipOnboardingMock).not.toHaveBeenCalled();
+    expect(clearOnboardingDraftMock).toHaveBeenCalledOnce();
   });
 });

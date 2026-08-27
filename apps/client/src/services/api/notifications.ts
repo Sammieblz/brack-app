@@ -110,23 +110,23 @@ export const saveNotificationPreferences = async (
 export const savePushToken = async (
   tokenData: PushNotificationToken
 ): Promise<void> => {
+  const { error } = await supabase.rpc("claim_push_token", {
+    p_token: tokenData.token,
+    p_platform: tokenData.platform,
+  });
+
+  if (error) throw error;
+};
+
+export const deletePushToken = async (token: string): Promise<void> => {
   const user = await getCurrentAuthUser();
   if (!user) return;
 
-  const { data: existing } = await supabase
+  const { error } = await supabase
     .from("push_tokens")
-    .select("id")
+    .delete()
     .eq("user_id", user.id)
-    .eq("token", tokenData.token)
-    .maybeSingle();
-
-  if (existing) return;
-
-  const { error } = await supabase.from("push_tokens").insert({
-    user_id: user.id,
-    token: tokenData.token,
-    platform: tokenData.platform,
-  });
+    .eq("token", token);
 
   if (error) throw error;
 };

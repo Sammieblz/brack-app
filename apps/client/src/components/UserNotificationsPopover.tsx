@@ -7,6 +7,7 @@ import { AppIcon } from "@/components/ui/app-icon";
 import { CurrencyIcon, type BrackCurrency } from "@/components/CurrencyIcon";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { APP_ICONS } from "@/config/iconography";
+import { useAuth } from "@/hooks/useAuth";
 import {
   getUserNotifications,
   markAllUserNotificationsRead,
@@ -57,9 +58,12 @@ const notificationCurrency = (
 export const UserNotificationsPopover = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const notificationQueryKey = ["user-notifications", user?.id] as const;
   const query = useQuery({
-    queryKey: ["user-notifications"],
+    queryKey: notificationQueryKey,
     queryFn: getUserNotifications,
+    enabled: Boolean(user?.id),
     staleTime: 30_000,
     refetchInterval: 60_000,
   });
@@ -68,14 +72,14 @@ export const UserNotificationsPopover = () => {
   const openNotification = async (notification: GamificationNotification) => {
     if (!notification.read_at) {
       await markUserNotificationRead(notification.id);
-      await queryClient.invalidateQueries({ queryKey: ["user-notifications"] });
+      await queryClient.invalidateQueries({ queryKey: notificationQueryKey });
     }
     navigate(notificationPath(notification));
   };
 
   const markAllRead = async () => {
     await markAllUserNotificationsRead();
-    await queryClient.invalidateQueries({ queryKey: ["user-notifications"] });
+    await queryClient.invalidateQueries({ queryKey: notificationQueryKey });
   };
 
   return (

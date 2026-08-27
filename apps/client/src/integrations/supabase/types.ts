@@ -3660,6 +3660,10 @@ export type Database = {
         }
         Returns: Json
       }
+      claim_push_token: {
+        Args: { p_platform: string; p_token: string }
+        Returns: undefined
+      }
       club_chat_pair_blocked: {
         Args: { p_user_a: string; p_user_b: string }
         Returns: boolean

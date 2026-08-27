@@ -60,7 +60,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
 ```env
 GOOGLE_BOOKS_API_KEY=your-google-books-api-key
 VITE_SENTRY_DSN=your-sentry-dsn
-ALLOWED_ORIGINS=http://localhost:8080,https://yourdomain.com
+ALLOWED_ORIGINS=http://localhost:8080,https://brack-app.com,https://localhost,capacitor://localhost,brack-app://brack
 ENVIRONMENT=development
 FCM_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
 GAMIFICATION_WORKER_SECRET=replace-with-a-random-worker-secret
@@ -228,7 +228,14 @@ npm run desktop:dist:mac
 npm run desktop:dist:linux
 ```
 
-Supabase Auth must allow `brack://auth/callback` for desktop/mobile sign-in and `/auth/callback` for web sign-in. Desktop Edge Function CORS deployments should include `brack-app://brack` in `ALLOWED_ORIGINS` when origin checks are restricted.
+The target production Site URL is `https://brack-app.com`. During the current
+DNS cutover, hosted Supabase Auth remains on the previous Site URL; do not switch
+it until the canonical domain resolves and both auth routes serve the SPA. Add
+the exact new callback and password-reset URLs before cutover, retain the old
+redirects for already-issued links during the transition, and keep the
+`brack://` equivalents used by desktop and mobile. Restricted Edge Function CORS
+deployments must also include the canonical web origin and the documented
+Capacitor and Electron WebView origins after the web domain is live.
 
 See [Deployment Guide](./docs/deployment.md) for detailed deployment instructions.
 

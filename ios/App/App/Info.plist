@@ -48,11 +48,15 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Allow Brack to scan book barcodes and attach photos to your library.</string>
+	<string>Allow Brack to scan book barcodes and covers, or take profile, journal, and reading-progress photos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Allow Brack to let you pick cover images from your library.</string>
-	<key>NSUserNotificationsUsageDescription</key>
-	<string>Allow Brack to send you notifications about reading reminders, messages, and achievements.</string>
+	<string>Allow Brack to choose book covers, profile pictures, journal photos, and reading-progress images from your library.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Allow Brack to save book and reading images to your photo library when you choose to do so.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Allow Brack to use your location while the app is open to set your nearby-reader area.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Allow Brack to use your location while the app is open to set your nearby-reader area.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

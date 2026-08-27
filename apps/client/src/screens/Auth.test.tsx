@@ -1,24 +1,52 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthApiError } from "@supabase/supabase-js";
 
 const {
+  authorizePasswordRecoverySessionMock,
+  beginOnboardingSignupAttemptMock,
+  canAccessOnboardingSignupMock,
+  cancelOnboardingSignupAttemptMock,
+  clearOnboardingDraftMock,
   getAuthSessionMock,
+  isCustomSchemeAuthRuntimeMock,
+  loadOnboardingDraftMock,
+  previewThemeMock,
   resendSignUpEmailMock,
+  resetToDefaultThemeMock,
+  resolvePostAuthPathMock,
   sendPasswordResetEmailMock,
   signInWithEmailPasswordMock,
   signInWithOAuthMock,
   signUpWithEmailMock,
+  subscribeToAuthFlowCompletionMock,
   toastMock,
+  verifyEmailOtpMock,
 } = vi.hoisted(() => ({
+  authorizePasswordRecoverySessionMock: vi.fn(),
+  beginOnboardingSignupAttemptMock: vi.fn(),
+  canAccessOnboardingSignupMock: vi.fn(),
+  cancelOnboardingSignupAttemptMock: vi.fn(),
+  clearOnboardingDraftMock: vi.fn(),
   getAuthSessionMock: vi.fn(),
+  isCustomSchemeAuthRuntimeMock: vi.fn(),
+  loadOnboardingDraftMock: vi.fn(),
+  previewThemeMock: vi.fn(),
   resendSignUpEmailMock: vi.fn(),
+  resetToDefaultThemeMock: vi.fn(),
+  resolvePostAuthPathMock: vi.fn(),
   sendPasswordResetEmailMock: vi.fn(),
   signInWithEmailPasswordMock: vi.fn(),
   signInWithOAuthMock: vi.fn(),
   signUpWithEmailMock: vi.fn(),
+  subscribeToAuthFlowCompletionMock: vi.fn(),
   toastMock: vi.fn(),
+  verifyEmailOtpMock: vi.fn(),
+}));
+
+const { captchaControl } = vi.hoisted(() => ({
+  captchaControl: { autoSolve: true },
 }));
 
 vi.mock("@/services/api", () => ({
@@ -29,16 +57,31 @@ vi.mock("@/services/api", () => ({
   signInWithEmailPassword: signInWithEmailPasswordMock,
   signInWithOAuth: signInWithOAuthMock,
   signUpWithEmail: signUpWithEmailMock,
+  verifyEmailOtp: verifyEmailOtpMock,
 }));
 
 vi.mock("@/services/authRedirect", () => ({
-  resolvePostAuthPath: vi.fn().mockResolvedValue("/dashboard"),
+  authorizePasswordRecoverySession: authorizePasswordRecoverySessionMock,
+  resolvePostAuthPath: resolvePostAuthPathMock,
+}));
+
+vi.mock("@/services/onboardingDraft", () => ({
+  beginOnboardingSignupAttempt: beginOnboardingSignupAttemptMock,
+  canAccessOnboardingSignup: canAccessOnboardingSignupMock,
+  cancelOnboardingSignupAttempt: cancelOnboardingSignupAttemptMock,
+  clearOnboardingDraft: clearOnboardingDraftMock,
+  loadOnboardingDraft: loadOnboardingDraftMock,
 }));
 
 vi.mock("@/services/platform", () => ({
-  getAuthRedirectUrl: () => "https://brack.app/auth/callback",
+  getAuthRedirectUrl: () => "https://brack-app.com/auth/callback",
   getPasswordResetRedirectUrl: () =>
-    "https://brack.app/auth/reset-password",
+    "https://brack-app.com/auth/reset-password",
+  isCustomSchemeAuthRuntime: isCustomSchemeAuthRuntimeMock,
+}));
+
+vi.mock("@/services/authFlowBridge", () => ({
+  subscribeToAuthFlowCompletion: subscribeToAuthFlowCompletionMock,
 }));
 
 vi.mock("@/hooks/use-toast", () => ({
@@ -46,7 +89,14 @@ vi.mock("@/hooks/use-toast", () => ({
 }));
 
 vi.mock("@/contexts/ThemeContext", () => ({
-  useTheme: () => ({ resetToDefaultTheme: vi.fn() }),
+  useTheme: () => ({
+    previewTheme: previewThemeMock,
+    resetToDefaultTheme: resetToDefaultThemeMock,
+  }),
+}));
+
+vi.mock("@/hooks/useAuth", () => ({
+  useAuth: () => ({ user: null, loading: false, signOut: vi.fn() }),
 }));
 
 vi.mock("@/components/ThemeAwareLogo", () => ({
@@ -61,12 +111,53 @@ vi.mock("@/components/animations/BrandedRouteTransition", () => ({
   BrandedRouteTransition: () => <div>Opening Brack</div>,
 }));
 
+vi.mock("@/components/auth/AuthTurnstile", async () => {
+  const React = await import("react");
+  const AuthTurnstile = React.forwardRef<
+    { reset: () => void },
+    {
+      action: string;
+      onTokenChange: (token: string | null) => void;
+    }
+  >(({ action, onTokenChange }, ref) => {
+    React.useImperativeHandle(ref, () => ({
+      reset: () => {
+        onTokenChange(null);
+        onTokenChange("test-turnstile-token");
+      },
+    }), [onTokenChange]);
+    React.useEffect(() => {
+      if (captchaControl.autoSolve) {
+        onTokenChange("test-turnstile-token");
+      }
+    }, [action, onTokenChange]);
+    return (
+      <div data-testid="turnstile" data-action={action}>
+        <button
+          type="button"
+          onClick={() => onTokenChange("test-turnstile-token")}
+        >
+          Complete security check
+        </button>
+      </div>
+    );
+  });
+  AuthTurnstile.displayName = "MockAuthTurnstile";
+  return { AuthTurnstile };
+});
+
 import Auth from "./Auth";
 
-const renderAuth = (entry = "/auth?mode=signup") =>
+const LocationProbe = () => {
+  const location = useLocation();
+  return <output data-testid="current-location">{location.pathname}{location.search}</output>;
+};
+
+const renderAuth = (entry = "/auth?mode=signup&from=onboarding") =>
   render(
     <MemoryRouter initialEntries={[entry]}>
       <Auth />
+      <LocationProbe />
     </MemoryRouter>,
   );
 
@@ -94,27 +185,116 @@ const enterConfirmationPending = async () => {
   renderAuth();
   await fillSignUpForm();
   fireEvent.click(screen.getByRole("button", { name: "Create Account" }));
-  await screen.findByRole("heading", { name: "Check your sign-in options" });
+  await screen.findByRole("heading", { name: "Confirm in this window" });
+};
+
+const createOAuthPopup = () => {
+  const popupDocument = document.implementation.createHTMLDocument();
+  return {
+    closed: false,
+    close: vi.fn(),
+    document: popupDocument,
+    focus: vi.fn(),
+    location: { replace: vi.fn() },
+  } as unknown as Window;
 };
 
 describe("Auth email flows", () => {
   beforeEach(() => {
+    authorizePasswordRecoverySessionMock.mockReset();
+    beginOnboardingSignupAttemptMock.mockReset();
+    beginOnboardingSignupAttemptMock.mockReturnValue({ flowId: "draft-one" });
+    canAccessOnboardingSignupMock.mockReset();
+    canAccessOnboardingSignupMock.mockReturnValue(true);
+    cancelOnboardingSignupAttemptMock.mockReset();
+    clearOnboardingDraftMock.mockReset();
     getAuthSessionMock.mockReset();
     getAuthSessionMock.mockResolvedValue(null);
+    isCustomSchemeAuthRuntimeMock.mockReset();
+    isCustomSchemeAuthRuntimeMock.mockReturnValue(false);
+    loadOnboardingDraftMock.mockReset();
+    loadOnboardingDraftMock.mockReturnValue({
+      flowId: "draft-one",
+      stage: "ready",
+      outcome: "completed",
+      formData: { colorTheme: "midnight" },
+    });
+    previewThemeMock.mockReset();
     resendSignUpEmailMock.mockReset();
     resendSignUpEmailMock.mockResolvedValue({});
+    resetToDefaultThemeMock.mockReset();
     sendPasswordResetEmailMock.mockReset();
     sendPasswordResetEmailMock.mockResolvedValue({});
     signInWithEmailPasswordMock.mockReset();
     signInWithEmailPasswordMock.mockResolvedValue(undefined);
     signInWithOAuthMock.mockReset();
-    signInWithOAuthMock.mockResolvedValue({});
+    signInWithOAuthMock.mockResolvedValue({
+      url: "https://accounts.google.com/o/oauth2/auth",
+    });
     signUpWithEmailMock.mockReset();
+    subscribeToAuthFlowCompletionMock.mockReset();
+    subscribeToAuthFlowCompletionMock.mockReturnValue(vi.fn());
+    resolvePostAuthPathMock.mockReset();
+    resolvePostAuthPathMock.mockResolvedValue("/dashboard");
     toastMock.mockReset();
+    verifyEmailOtpMock.mockReset();
+    captchaControl.autoSolve = true;
+    vi.spyOn(window, "open").mockReturnValue(createOAuthPopup());
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it("carries the in-memory onboarding palette into the linked signup screen", async () => {
+    renderAuth();
+
+    await screen.findByRole("heading", { name: "Join BRACK" });
+    await waitFor(() => {
+      expect(previewThemeMock).toHaveBeenCalledWith("midnight");
+    });
+    expect(resetToDefaultThemeMock).not.toHaveBeenCalled();
+  });
+
+  it("restarts onboarding when a refreshed signup document has no draft", async () => {
+    loadOnboardingDraftMock.mockReturnValue(null);
+    canAccessOnboardingSignupMock.mockReturnValue(false);
+
+    renderAuth();
+
+    await waitFor(() => {
+      expect(screen.getByTestId("current-location")).toHaveTextContent(
+        "/onboarding?from=auth",
+      );
+    });
+    expect(previewThemeMock).not.toHaveBeenCalled();
+    expect(resetToDefaultThemeMock).toHaveBeenCalled();
+  });
+
+  it("finishes the original signup after the callback bridge signals completion", async () => {
+    loadOnboardingDraftMock.mockReturnValue({
+      flowId: "draft-one",
+      stage: "auth_started",
+      outcome: "completed",
+      formData: { colorTheme: "midnight" },
+    });
+    renderAuth();
+    await screen.findByRole("heading", { name: "Join BRACK" });
+
+    await waitFor(() => {
+      expect(subscribeToAuthFlowCompletionMock).toHaveBeenCalled();
+    });
+    const completionListener = subscribeToAuthFlowCompletionMock.mock.calls[0]?.[0];
+    expect(completionListener).toBeTypeOf("function");
+
+    await act(async () => {
+      completionListener();
+      await Promise.resolve();
+    });
+
+    expect(resolvePostAuthPathMock).toHaveBeenCalled();
+    expect(await screen.findByText("Opening Brack")).toBeInTheDocument();
   });
 
   it("single-flights rapid duplicate signup submissions", async () => {
@@ -156,7 +336,8 @@ describe("Auth email flows", () => {
       expect(signUpWithEmailMock).toHaveBeenCalledWith({
         email: "ada@example.com",
         password: "StrongPass1!",
-        redirectTo: "https://brack.app/auth/callback",
+        captchaToken: "test-turnstile-token",
+        redirectTo: "https://brack-app.com/auth/callback",
         metadata: {
           first_name: "Ada",
           last_name: "Reader",
@@ -201,7 +382,7 @@ describe("Auth email flows", () => {
 
     expect(await screen.findByText("Opening Brack")).toBeInTheDocument();
     expect(
-      screen.queryByRole("heading", { name: "Check your sign-in options" }),
+      screen.queryByRole("heading", { name: "Confirm in this window" }),
     ).not.toBeInTheDocument();
   });
 
@@ -222,7 +403,7 @@ describe("Auth email flows", () => {
     expect(screen.getByLabelText("Email")).toHaveValue("ada@example.com");
     expect(screen.getByLabelText("Password")).toHaveValue("");
     expect(
-      screen.queryByRole("heading", { name: "Check your sign-in options" }),
+      screen.queryByRole("heading", { name: "Confirm in this window" }),
     ).not.toBeInTheDocument();
     expect(toastMock).toHaveBeenCalledWith({
       variant: "destructive",
@@ -237,15 +418,9 @@ describe("Auth email flows", () => {
 
     expect(screen.getByText("ada@example.com")).toBeInTheDocument();
     expect(
-      screen.getByText(/If a confirmation message can be delivered for/i),
+      screen.getByText(/If a Brack message can be delivered for/i),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(/does not confirm that a new account was created/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/names and password entered in this request were ignored/i),
-    ).toBeInTheDocument();
-    expect(screen.queryByText(/we sent/i)).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Six-digit email code")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /Resend available in 60s/i }),
     ).toBeDisabled();
@@ -256,21 +431,111 @@ describe("Auth email flows", () => {
     expect(toastMock).toHaveBeenCalledWith({
       title: "Account request received",
       description:
-        "This does not mean a second account was created. Check your inbox, sign in, or use your original provider.",
+        "Check your inbox and enter the six-digit confirmation code here. You can also use the email link as a fallback.",
     });
   });
 
-  it("lets an existing Google reader return to the original identity safely", async () => {
+  it("does not submit password Auth before the security check completes", async () => {
+    captchaControl.autoSolve = false;
+    renderAuth();
+    await fillSignUpForm();
+    const submit = screen.getByRole("button", { name: "Create Account" });
+    const form = submit.closest("form");
+
+    expect(submit).toBeDisabled();
+    fireEvent.submit(form!);
+    expect(signUpWithEmailMock).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Complete security check" }),
+    );
+    expect(submit).toBeEnabled();
+  });
+
+  it("confirms signup in the requesting window with the emailed OTP", async () => {
+    verifyEmailOtpMock.mockResolvedValue({
+      user: { id: "signup-reader" },
+      session: { user: { id: "signup-reader" } },
+    });
     await enterConfirmationPending();
+
+    fireEvent.change(screen.getByLabelText("Six-digit email code"), {
+      target: { value: "123456" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Confirm and continue" }));
+
+    await waitFor(() => {
+      expect(verifyEmailOtpMock).toHaveBeenCalledWith({
+        email: "ada@example.com",
+        token: "123456",
+        type: "signup",
+      });
+    });
+    expect(authorizePasswordRecoverySessionMock).not.toHaveBeenCalled();
+    expect(await screen.findByText("Opening Brack")).toBeInTheDocument();
+  });
+
+  it("keeps onboarding Google signup in the requesting document", async () => {
+    const popup = createOAuthPopup();
+    vi.mocked(window.open).mockReturnValue(popup);
+    renderAuth();
+    await screen.findByRole("heading", { name: "Join BRACK" });
 
     fireEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
 
     await waitFor(() => {
       expect(signInWithOAuthMock).toHaveBeenCalledWith({
         provider: "google",
-        redirectTo: "https://brack.app/auth/callback",
+        redirectTo: "https://brack-app.com/auth/callback",
+        preserveCurrentDocument: true,
       });
     });
+    expect(window.open).toHaveBeenCalledWith(
+      "about:blank",
+      "brack-google-auth",
+      "popup=yes,width=520,height=720,resizable=yes,scrollbars=yes",
+    );
+    expect(popup.location.replace).toHaveBeenCalledWith(
+      "https://accounts.google.com/o/oauth2/auth",
+    );
+    expect(popup.focus).toHaveBeenCalled();
+  });
+
+  it("stops before Supabase OAuth when the signup popup is blocked", async () => {
+    vi.mocked(window.open).mockReturnValue(null);
+    renderAuth();
+    await screen.findByRole("heading", { name: "Join BRACK" });
+
+    fireEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
+
+    expect(
+      await screen.findByText("Allow the Google sign-up window"),
+    ).toBeInTheDocument();
+    expect(cancelOnboardingSignupAttemptMock).toHaveBeenCalledOnce();
+    expect(signInWithOAuthMock).not.toHaveBeenCalled();
+    expect(toastMock).toHaveBeenCalledWith({
+      variant: "destructive",
+      title: "Allow the Google sign-up window",
+      description:
+        "Your browser blocked the secure Google window. Allow pop-ups for Brack, then try again.",
+    });
+  });
+
+  it("clears guest answers and restores the public theme when signup is abandoned", async () => {
+    renderAuth();
+    await screen.findByRole("heading", { name: "Join BRACK" });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Already have an account? Sign in" }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("current-location")).toHaveTextContent(
+        "/auth?mode=signin",
+      );
+    });
+    expect(clearOnboardingDraftMock).toHaveBeenCalledOnce();
+    expect(resetToDefaultThemeMock).toHaveBeenCalled();
   });
 
   it("moves from confirmation-pending state to neutral reset-password state", async () => {
@@ -281,7 +546,7 @@ describe("Auth email flows", () => {
     expect(screen.getByRole("heading", { name: "Reset Password" })).toBeInTheDocument();
     expect(screen.getByLabelText("Email")).toHaveValue("ada@example.com");
     expect(
-      screen.getByText(/If this address is connected to Brack, a reset link may arrive shortly/i),
+      screen.getByText(/the email includes a six-digit code so you can remain in this window/i),
     ).toBeInTheDocument();
   });
 
@@ -292,19 +557,72 @@ describe("Auth email flows", () => {
       target: { value: "ada@example.com" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Send Reset Link" }));
+    fireEvent.click(screen.getByRole("button", { name: "Send Reset Code" }));
 
     await waitFor(() => {
-      expect(sendPasswordResetEmailMock).toHaveBeenCalledOnce();
+      expect(sendPasswordResetEmailMock).toHaveBeenCalledWith({
+        email: "ada@example.com",
+        redirectTo: "https://brack-app.com/auth/reset-password",
+        captchaToken: "test-turnstile-token",
+      });
     });
     expect(toastMock).toHaveBeenCalledWith({
       title: "Reset request received",
       description:
-        "If this address is connected to a Brack account, a reset link may arrive shortly.",
+        "If this address is connected to Brack, enter the six-digit code from the newest email here.",
     });
+    expect(
+      screen.getByRole("heading", { name: "Enter your reset code" }),
+    ).toBeInTheDocument();
     expect(toastMock).not.toHaveBeenCalledWith(
       expect.objectContaining({ description: expect.stringMatching(/^We sent/i) }),
     );
+  });
+
+  it("authorizes a password reset from an OTP in the requesting window", async () => {
+    verifyEmailOtpMock.mockResolvedValue({
+      user: { id: "recovery-reader" },
+      session: { user: { id: "recovery-reader" } },
+    });
+    renderAuth("/auth?mode=reset");
+    await screen.findByRole("heading", { name: "Reset Password" });
+    fireEvent.change(screen.getByLabelText("Email"), {
+      target: { value: "ada@example.com" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Send Reset Code" }));
+    await screen.findByRole("heading", { name: "Enter your reset code" });
+
+    fireEvent.change(screen.getByLabelText("Six-digit email code"), {
+      target: { value: "654321" },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Continue password reset" }),
+    );
+
+    await waitFor(() => {
+      expect(verifyEmailOtpMock).toHaveBeenCalledWith({
+        email: "ada@example.com",
+        token: "654321",
+        type: "recovery",
+      });
+      expect(authorizePasswordRecoverySessionMock).toHaveBeenCalledWith(
+        "recovery-reader",
+      );
+    });
+    expect(await screen.findByText("Opening Brack")).toBeInTheDocument();
+  });
+
+  it("keeps an incomplete email code local and out of Supabase", async () => {
+    await enterConfirmationPending();
+
+    fireEvent.change(screen.getByLabelText("Six-digit email code"), {
+      target: { value: "12345" },
+    });
+
+    expect(
+      screen.getByRole("button", { name: "Confirm and continue" }),
+    ).toBeDisabled();
+    expect(verifyEmailOtpMock).not.toHaveBeenCalled();
   });
 
   it("uses conditional resend messaging after an accepted request", async () => {
@@ -341,15 +659,19 @@ describe("Auth email flows", () => {
     }
 
     await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Resend confirmation" }));
+      fireEvent.click(screen.getByRole("button", { name: "Resend confirmation code" }));
       await Promise.resolve();
     });
 
-    expect(resendSignUpEmailMock).toHaveBeenCalledOnce();
+    expect(resendSignUpEmailMock).toHaveBeenCalledWith({
+      email: "ada@example.com",
+      redirectTo: "https://brack-app.com/auth/callback",
+      captchaToken: "test-turnstile-token",
+    });
     expect(toastMock).toHaveBeenLastCalledWith({
       title: "Confirmation request received",
       description:
-        "If a confirmation message can be delivered for this address, use the newest Brack link that arrives.",
+        "If a message can be delivered for this address, use the newest six-digit code that arrives.",
     });
   });
 
@@ -398,10 +720,10 @@ describe("Auth email flows", () => {
     fireEvent.click(screen.getByRole("button", { name: "Sign In" }));
 
     expect(
-      await screen.findByRole("heading", { name: "Check your sign-in options" }),
+      await screen.findByRole("heading", { name: "Confirm in this window" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Email confirmation needed")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Resend confirmation" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Resend confirmation code" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Sign in instead" })).toBeEnabled();
   });
 });

@@ -42,7 +42,7 @@ const hasAuthParams = (url: string) => {
 };
 
 const INVALID_RECOVERY_MESSAGE =
-  "This reset link is invalid or has expired. Request a new password reset link.";
+  "This password-reset authorization is invalid or has expired. Request a new code.";
 
 const sanitizeResetUrl = () => {
   if (window.location.pathname === "/auth/reset-password") {
@@ -177,7 +177,7 @@ const ResetPassword = () => {
         variant: "destructive",
         title: "Password update failed",
         description:
-          "Brack could not update your password. Request a fresh reset link and try again.",
+          "Brack could not update your password. Request a fresh reset code and try again.",
       });
     } finally {
       setLoading(false);
@@ -191,7 +191,7 @@ const ResetPassword = () => {
   if (pageLoading) {
     return (
       <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background">
-        <LoadingSpinner size="lg" text="Opening reset link..." />
+        <LoadingSpinner size="lg" text="Opening secure password change..." />
       </div>
     );
   }
@@ -236,7 +236,7 @@ const ResetPassword = () => {
                   className="w-full h-12 bg-gradient-primary hover:shadow-glow transition-all duration-300 text-white font-medium"
                   onClick={() => navigate("/auth?mode=reset", { replace: true })}
                 >
-                  Request New Link
+                  Request New Code
                 </Button>
               </div>
             ) : (

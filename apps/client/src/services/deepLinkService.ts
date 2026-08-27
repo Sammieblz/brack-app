@@ -1,8 +1,10 @@
 import { App, type URLOpenListenerEvent } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import {
+  BRACK_WEB_ORIGIN,
   isAuthRouteUrl,
   isDesktopRuntime,
+  isTrustedBrackWebUrl,
   onDesktopDeepLink,
 } from "@/services/platform";
 
@@ -55,7 +57,8 @@ class DeepLinkService {
 
       // Listen for app URL open events (native)
       const listener = await App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
-        console.log('Deep link received:', event.url);
+        // Never log an incoming URL: Auth callbacks can carry one-time codes or
+        // session credentials in their query string or fragment.
         routeIncomingUrl(event.url);
       });
 
@@ -67,7 +70,7 @@ class DeepLinkService {
       const handleUrlChange = () => {
         const url = window.location.href;
         if (isAuthRouteUrl(url)) return;
-        if (url.includes('brack://') || url.includes('brack.app')) {
+        if (this.parseDeepLink(url)) {
           this.handleDeepLink(url);
         }
       };
@@ -93,12 +96,19 @@ class DeepLinkService {
       // brack://book/123
       // brack://user/456
       // brack://message/789?conversationId=abc
-      // https://brack.app/book/123
-      // https://brack.app/user/456
+      // https://brack-app.com/book/123
+      // https://brack-app.com/user/456
 
       const urlObj = new URL(url.includes('://') ? url : `https://${url}`);
+      const isCustomScheme =
+        urlObj.protocol === "brack:" && !urlObj.username && !urlObj.password;
+
+      if (!isCustomScheme && !isTrustedBrackWebUrl(urlObj)) {
+        return null;
+      }
+
       const pathParts =
-        urlObj.protocol === "brack:" && urlObj.hostname
+        isCustomScheme && urlObj.hostname
           ? [urlObj.hostname, ...urlObj.pathname.split('/').filter(Boolean)]
           : urlObj.pathname.split('/').filter(Boolean);
 
@@ -214,7 +224,7 @@ class DeepLinkService {
    * Generate a web deep link URL for sharing
    */
   generateWebDeepLink(params: DeepLinkParams): string {
-    const baseUrl = 'https://brack.app';
+    const baseUrl = BRACK_WEB_ORIGIN;
     let url = `${baseUrl}/${params.type}/${params.id}`;
     
     if (params.conversationId) {

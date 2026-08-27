@@ -15,24 +15,81 @@ Brack uses Supabase Auth for user authentication and Row Level Security (RLS) fo
 
 ## Authentication Flow
 
+Brack separates acquisition from authentication. A new reader can experience
+and personalize onboarding before deciding to create an account, while an
+established reader still reaches sign-in directly.
+
+```text
+Landing "Get Started"
+  -> anonymous /onboarding
+  -> schema-validated in-memory draft
+  -> /auth?mode=signup&from=onboarding
+  -> Supabase Auth / email confirmation or OAuth
+  -> authenticated, retry-safe draft finalization
+  -> native permission education (iOS/Android only)
+  -> /dashboard
+
+Landing "Sign In" or a protected-route redirect
+  -> /auth?mode=signin
+  -> post-auth route resolver
+  -> /dashboard, unfinished authenticated onboarding, or pending native setup
 ```
-User visits app
-       ↓
-Check session
-       ↓
-┌──────────────┐
-│  Has valid   │
-│   session?   │
-└──┬───────┬───┘
-   │ Yes   │ No
-   │       │
-   │       └────► Redirect to /auth
-   │
-   ▼
-Load user data
-   ↓
-Render dashboard
-```
+
+Web/PWA and Electron skip the native permission page. Capacitor iOS and Android
+show it once per new reader/device after onboarding has been applied. A reader
+may continue without granting any optional permission.
+
+### Pre-auth onboarding draft
+
+`apps/client/src/services/onboardingDraft.ts` owns the anonymous draft. The
+record is schema-validated, versioned, assigned a UUID flow id, and held only in
+the active JavaScript document/app process. It records the complete onboarding
+form, last step, completion-or-skip outcome, and narrowly scoped signup-attempt
+metadata. An email attempt holds only the normalized address needed to bind the
+draft to the resulting new account; an OAuth attempt holds the provider and
+start time.
+
+The draft never contains a password, Supabase session, access/refresh token,
+Turnstile token, SMTP credential, or other secret. Invalid, incompatible, or
+state-invalid records are discarded. It is not written to `localStorage`,
+`sessionStorage`, IndexedDB, SQLite, or Supabase. Refreshing the document,
+closing its tab, or terminating the desktop/mobile app therefore discards the
+answers and requires a fresh anonymous onboarding run. Entering the landing or
+sign-in flow explicitly abandons it as well.
+
+Normal client-side navigation from onboarding to email signup keeps the same
+module instance, so the chosen palette is previewed on the signup screen and
+the email OTP can complete in that same document. Web/PWA Google signup uses a
+script-created provider window because a same-document OAuth redirect would
+destroy the in-memory draft. The callback sends only a completion signal back
+to the requesting page; onboarding answers never cross documents. Native and
+desktop OAuth already keep the app process alive while using their external
+browser handoff. If the owning page/process is gone when any provider callback
+returns, Brack keeps the verified Auth account and starts fresh authenticated
+onboarding instead of recreating or guessing the discarded answers.
+
+The post-auth resolver applies a draft only when all of these are true:
+
+- the reader explicitly completed or skipped onboarding and then started
+  signup from that draft;
+- the verified Auth account was created within the bounded signup-attempt
+  window and matches the submitted email or OAuth provider;
+- the profile still qualifies for first-run onboarding.
+
+An established account signing in cannot consume or overwrite the anonymous
+draft. Successful finalization clears it. A transient write failure keeps the
+validated draft only while the current process remains alive and routes the
+authenticated reader to `/onboarding?resume=draft` for an explicit retry. A
+reload at that point intentionally falls back to fresh authenticated
+onboarding.
+
+Finalization is single-flight in the client. The authenticated user UUID is
+also the stable ID of that reader's onboarding-created goal row, so retries and
+fresh authenticated onboarding after a discarded draft update the same row
+instead of accumulating goals. The remaining onboarding writes are still
+separate owner-scoped operations, not one database transaction; completion
+status is written last and the explicit retry path remains required for partial
+network failures.
 
 ## Setup
 
@@ -60,8 +117,8 @@ export const supabase = createClient<Database>(
 
 ### Underlying Supabase Sign Up
 
-The client calls this only after `auth-email-availability` confirms that the
-normalized address is not already registered:
+The client normalizes the address and makes one Supabase Auth signup request.
+It does not run a separate database-backed email-availability preflight:
 
 ```typescript
 const { data, error } = await supabase.auth.signUp({
@@ -82,7 +139,7 @@ const { data, error } = await supabase.auth.signUp({
   email: 'user@example.com',
   password: 'secure-password',
   options: {
-    emailRedirectTo: 'https://brack.app/auth/callback',
+    emailRedirectTo: 'https://brack-app.com/auth/callback',
   },
 });
 ```
@@ -99,41 +156,36 @@ type EmailSignUpOutcome =
   | { kind: 'confirmation_pending'; email: string };
 ```
 
-`signed_in` continues into onboarding or the dashboard.
+`signed_in` delegates to the shared post-auth resolver. A newly created account
+with a bound onboarding draft is finalized before it reaches the dashboard;
+native clients then receive the optional device-permission education step.
 `confirmation_pending` opens the email-actions screen for a new, unconfirmed
 signup. `email_exists` keeps the reader on the signup form and shows **Email
 already exists** with the instruction to sign in or continue with Google.
 
-Before calling Supabase Auth, `signUpWithEmail` invokes the public
-`auth-email-availability` Edge Function with only the normalized email address.
-The function calls the backend-only `public.auth_email_exists(text)` RPC with a
-service-role client and returns only `{ exists: boolean }`. An existing
-confirmed account, unconfirmed account, or Google-created account therefore
-produces `email_exists` before Auth can create a user or resend confirmation.
-
-Supabase can also return an obfuscated user with an empty identities array for
-an existing address. Brack retains that response, plus the
-`user_already_exists` and `email_exists` Auth codes, as race-condition and
-provider-behavior fallbacks. An ambiguous response without one of those signals
-remains `confirmation_pending` rather than guessing.
+`signUpWithEmail` derives the outcome from that single Auth response. Explicit
+`user_already_exists` and `email_exists` errors, plus Supabase's obfuscated
+existing-user response with an empty identities array, map to `email_exists`.
+An ambiguous response without one of those signals remains
+`confirmation_pending` rather than guessing. Supabase owns the unique identity;
+the failed or repeated request does not create a second Auth user or profile.
 
 The neutral screen conditionally explains that a confirmation message may
 arrive and offers the same options for every pending outcome: request another
 confirmation, continue with Google, sign in, reset the password, or use another
 email address.
 
-This product decision intentionally reveals whether an email belongs to a Brack
-reader. That account-enumeration tradeoff is limited to the signup flow: the
-endpoint returns no user, provider, profile, or confirmation details; responses
-use `Cache-Control: private, no-store`; and requests are limited to 5 per client
-IP per minute and 30 per client IP per hour. The privileged RPC is executable
-only by `service_role`; `PUBLIC`, `anon`, and `authenticated` have no direct
-execute permission, and no service-role credential reaches the client.
+This product decision intentionally turns Supabase's repeated-signup signal into
+a visible duplicate-email message. The client does not query `auth.users`, call
+a service-role endpoint, or initiate a second signup transaction. Auth errors
+are caught and mapped to actionable UI states; delivery `429` responses are not
+automatically retried.
 
-Availability checks fail closed. A rate-limit response, lookup error, malformed
-response, or unavailable function prevents the subsequent Auth signup call.
-The UI reports that Brack could not verify the address and explicitly states
-that no account was created.
+The legacy `auth-email-availability` Edge Function and
+`public.auth_email_exists(text)` RPC remain temporarily for rollback and older
+clients, but the current signup path does not call either one. Keep their
+service-role-only grants and rate limits intact until telemetry confirms they
+can be removed in a later migration/release.
 
 Changing first name, last name, password, or letter casing does not bypass Auth
 identity ownership. On a repeated signup, Supabase does not create or update the
@@ -145,9 +197,9 @@ email whitespace before Auth calls and leaves canonicalization to Supabase.
 Brack's invariant is one Auth user and one profile per reader identity:
 
 - Supabase Auth owns email uniqueness and automatic same-email OAuth identity
-  linking. Brack intentionally exposes only the rate-limited
-  `auth-email-availability` boolean for signup; it does not duplicate email into
-  `public.profiles` or expose Auth rows through the Data API.
+  linking. Brack derives duplicate-email UI from the single signup response; it
+  does not duplicate email into `public.profiles` or expose Auth rows through
+  the Data API.
 - `public.profiles.id` is both its primary key and a validated, cascading foreign
   key to `auth.users.id`.
 - `on_auth_user_created` runs only after a real `auth.users` insert. The trigger
@@ -173,12 +225,19 @@ for that attempt. The supported flow is:
 3. Add a Brack password. The authenticated `updateUser({ password })` call adds
    password login to the same Auth user and the same profile.
 
-The availability response intentionally does not identify Google as the owning
-provider. The duplicate error offers both sign-in and Google recovery paths;
+The repeated-signup response intentionally does not identify Google as the
+owning provider. The duplicate error offers both sign-in and Google recovery paths;
 after Google authentication, adding a password still occurs through the
 authenticated account settings flow.
 
 ## Sign In
+
+Sign-in remains intentionally direct. It does not require a reader to repeat
+the anonymous acquisition questionnaire. After Supabase verifies the session,
+the shared resolver sends the reader to the dashboard, an already-pending
+authenticated onboarding recovery, or an unfinished native permission intro.
+The signup affordance on the sign-in screen starts `/onboarding`; direct signup
+routes require a valid ready onboarding draft.
 
 ### Email/Password
 
@@ -195,7 +254,7 @@ const { data, error } = await supabase.auth.signInWithPassword({
 const { data, error } = await supabase.auth.signInWithOtp({
   email: 'user@example.com',
   options: {
-    emailRedirectTo: 'https://brack.app/auth/callback',
+    emailRedirectTo: 'https://brack-app.com/auth/callback',
   },
 });
 ```
@@ -217,25 +276,50 @@ Brack uses explicit callback URLs for all redirect-based auth methods.
 
 | Runtime | Callback URL | Handler |
 | --- | --- | --- |
-| Web/PWA | `https://brack.app/auth/callback` | React route `/auth/callback` |
+| Web/PWA | `https://brack-app.com/auth/callback` | React route `/auth/callback` |
 | Local web | `http://localhost:8080/auth/callback` | React route `/auth/callback` |
 | Electron desktop | `brack://auth/callback` | Electron protocol callback through preload |
 | Capacitor iOS/Android | `brack://auth/callback` | Capacitor `App.appUrlOpen` deep link |
 
+### Auth context and session ownership
+
+Brack keeps each flow in the surface that started it whenever the platform can
+do so:
+
+| Surface | Primary flow | Redirect fallback |
+| --- | --- | --- |
+| Browser | Email signup/recovery accepts the six-digit code in the same Auth screen. Onboarding-owned Google signup uses a controlled provider window so the in-memory draft's requesting tab remains alive. | The email link opens a browser context on the same HTTPS origin; direct established-reader OAuth may still redirect its current Auth context. |
+| Installed PWA | Signup and recovery use the code in the existing PWA window; onboarding-owned Google signup preserves that requesting context when the platform permits a provider window. | Link/window handling remains browser/OS controlled; `handle_links: "not-preferred"` is advisory. |
+| Capacitor iOS/Android | The WebView keeps its session while the system browser is used only for provider/link flows | `brack://auth/*` returns the verified result to the app |
+| Electron | The renderer keeps its session while provider Auth runs in the system browser | `brack://auth/*` returns through the protocol handler |
+
+An email client cannot target the exact browser tab that originated a request.
+The six-digit code is therefore the deterministic same-window path; the secure
+link is a fallback. Web Auth routes are excluded from the service worker's
+offline app-shell fallback, and the production build verifies that exclusion
+with `npm run web:auth-artifacts:check`.
+
+The client is a static Supabase SPA. Supabase persists and refreshes its session
+in origin-scoped `localStorage`, as shown in the configuration above. These are
+not cookies. JavaScript-readable cookies would not improve the security model;
+real `HttpOnly`, `Secure`, server-managed cookies require an SSR/BFF deployment
+(for example, a deliberately designed Cloudflare Worker session boundary) and
+must not be claimed until that architecture exists.
+
 Supabase Auth redirect URLs should include:
 
 ```text
-https://brack.app/auth/callback
+https://brack-app.com/auth/callback
 http://localhost:8080/auth/callback
 http://127.0.0.1:8080/auth/callback
 http://127.0.0.1:8081/auth/callback
 brack://auth/callback
 ```
 
-Password recovery uses a dedicated reset route so users land on the password update screen instead of the normal post-login route:
+Password recovery uses a dedicated reset route so fallback links land on the password update screen instead of the normal post-login route:
 
 ```text
-https://brack.app/auth/reset-password
+https://brack-app.com/auth/reset-password
 http://localhost:8080/auth/reset-password
 http://127.0.0.1:8080/auth/reset-password
 http://127.0.0.1:8081/auth/reset-password
@@ -243,6 +327,21 @@ brack://auth/reset-password
 ```
 
 For preview deployments, add the hosting provider's exact preview pattern if needed. Keep production URLs exact rather than broad wildcard patterns.
+
+### Production domain cutover state
+
+As of 2026-08-25, `https://brack-app.com` is the repository's canonical target,
+but the hosted Supabase Auth Site URL intentionally remains on the previous web
+origin until Cloudflare serves the new domain. The safe cutover order is:
+
+1. Connect the canonical domain to the web deployment and verify HTTPS.
+2. Verify `/auth/callback` and `/auth/reset-password` both return the SPA.
+3. Add the two exact `https://brack-app.com` routes to Supabase's redirect allowlist without removing the previous routes.
+4. Change the hosted Site URL to `https://brack-app.com` and smoke-test signup, Google sign-in, resend, recovery, and callback error handling.
+5. Retain the previous redirects until already-issued links have expired and the old deployment is no longer serving readers; remove them deliberately afterward.
+
+Do not point Auth at an unresolvable hostname. Repository metadata can identify
+the target domain before cutover, but it does not change hosted Auth settings.
 
 The SDK URL detector is intentionally disabled. `AuthCallback`, the Capacitor
 deep-link handler, and the Electron protocol handler all delegate to the same
@@ -252,17 +351,77 @@ or token payload twice.
 
 ## Production Email Delivery
 
-Supabase's built-in Auth mailer is intended for development and has a very low,
-project-wide delivery limit. Public email signup must not launch on that sender.
+Brack's hosted Auth project uses custom SMTP through Brevo with a sender on
+`brack-app.com`; Supabase's development mailer is not the production sender.
+SMTP credentials belong only in Supabase/Brevo and must never enter the
+repository, client environment, logs, or documentation.
+
+The audited hosted baseline on 2026-08-25 has email confirmation and secure
+email changes enabled, a one-hour email OTP lifetime, an eight-character
+minimum password, and all seven account-security notifications enabled. The six
+authentication templates and seven security-notification templates are stored
+under `supabase/templates/`; validate them with `npm run auth:emails:validate`,
+check hosted drift with `npm run auth:emails:check`, and use the protected
+**Auth Email Templates** workflow for reviewed production synchronization.
 
 Before enabling production signup:
 
-1. Configure a verified custom SMTP provider in **Supabase Dashboard → Project Settings → Auth → SMTP Settings**.
-2. Set **Site URL** to `https://brack.app`.
-3. Keep the exact web, local-development, Capacitor, and Electron callback URLs listed above in the redirect allowlist.
-4. Set an intentional email-send rate limit that matches the provider's capacity and Brack's abuse controls.
-5. Enable CAPTCHA with production keys before opening unrestricted public signup.
-6. Exercise signup, confirmation resend, password reset, expired-link, and already-used-link flows in staging before promotion.
+1. Confirm Brevo reports the sender domain and DKIM records as authenticated, and send a real delivery test to more than one mailbox provider.
+2. Disable Brevo click/link rewriting for Supabase transactional mail; rewritten single-use Auth links can be consumed or broken by tracking and security scanners.
+3. Confirm `no-reply@brack-app.com` can send and that the documented support address is actually routed and monitored.
+4. Keep one valid SPF record only. If Brevo requires an SPF include, merge it with the existing record rather than publishing a second SPF TXT record. Monitor DMARC reports before moving from `p=none` to enforcement.
+5. Keep the hosted Site URL on the previous origin until the domain-cutover checklist above passes, then switch it to `https://brack-app.com`.
+6. Keep the exact web, local-development, Capacitor, and Electron callback URLs listed above in the redirect allowlist during their supported lifetimes.
+7. Set Supabase's email-send rate limit within the verified Brevo plan quota; SMTP capacity and Supabase Auth rate limiting are separate controls.
+8. Keep Cloudflare Turnstile enabled in Supabase and the client together before unrestricted public signup. Passing a widget token without server-side verification, or enabling verification before the deployed client has its sitekey, breaks Auth.
+9. Exercise signup, confirmation resend, invite, magic link, email change, password reset, reauthentication, expired-link, already-used-link, bounce, and provider-outage flows before promotion.
+
+### Cloudflare Turnstile
+
+Turnstile is integrated into email/password signup, sign-in, password recovery,
+confirmation/recovery resend, and the current-password reauthentication step in
+Account Settings. `VITE_TURNSTILE_SITE_KEY` supplies the browser-visible widget
+identifier at build time. It must be configured in each Cloudflare Pages and
+native/desktop build environment; never put the Turnstile secret in a `VITE_`
+variable. The secret remains only in **Supabase Auth > Bot and Abuse Protection**.
+
+Supabase Auth is the backend verifier for these forms. The client passes the
+fresh token as `captchaToken`, and Supabase performs the canonical Cloudflare
+Siteverify request with the configured secret. Do not add a Worker that redeems
+the same token before Supabase: Turnstile tokens are single-use and the second
+verification would fail. Client service types require a token, reject empty or
+oversized values before making an Auth request, and reset the widget after every
+attempt so a retry cannot reuse a spent token.
+
+The SPA uses explicit, theme-aware rendering with flexible sizing and a compact
+fallback below 300px. Production Web/PWA renders directly. Packaged Android,
+iOS, Electron, and the fixed Vite loopback origins use
+`https://brack-app.com/turnstile.html`. This keeps the real widget on Brack's
+authorized HTTPS hostname while hosted Supabase Auth receives a real token that
+matches its production secret. The bridge accepts initialization only from the
+explicit origins in `TURNSTILE_BRIDGE_PARENT_ORIGINS`, uses a per-instance
+cryptographic channel, validates every message, is framed by a restrictive CSP,
+and is served with `Cache-Control: no-store`. The service worker never precaches
+it. A bridge that cannot complete its handshake becomes a visible retry state
+instead of leaving the Auth form waiting indefinitely. LAN-IP development
+origins are intentionally not trusted by this bridge.
+
+Deployment order is mandatory:
+
+1. Configure the existing production widget for `brack-app.com`. Error `110200` means the page rendering the widget is not in Cloudflare Hostname Management.
+2. Store the existing widget secret in Supabase Bot and Abuse Protection and keep Turnstile selected as the provider.
+3. Set `VITE_TURNSTILE_SITE_KEY` in the production Pages build and packaged-app build environment.
+4. Deploy and verify `/turnstile.html` plus its `_headers` policy over HTTPS before testing fixed loopback, mobile, or desktop clients.
+5. Run local Vite on the documented port (`localhost:8080` or `127.0.0.1:8080`). A LAN IP must be explicitly authorized in Cloudflare or routed through a separately reviewed HTTPS bridge origin.
+6. Smoke-test each protected flow and confirm the widget is reset after an accepted, rejected, rate-limited, or network-failed request.
+
+Cloudflare dummy sitekeys work on localhost only when the backend uses the
+matching dummy secret. Do not put a dummy sitekey in a client connected to the
+hosted production Supabase Auth project: production secrets reject dummy
+tokens. A fully local Supabase stack may use the documented dummy pair.
+
+Production Vite builds fail closed when the sitekey is absent. CI uses
+Cloudflare's published always-pass test widget, never the production widget.
 
 The client never automatically retries Auth `429` responses. It maps
 `over_email_send_rate_limit` and `over_request_rate_limit` to an actionable
@@ -274,6 +433,31 @@ rate limit, the mounted Auth screen disables further signup, reset, and resend
 delivery attempts without displaying a recovery countdown. Sign in remains
 available because it does not send email. Repeated client retries cannot repair
 an exhausted server-side email quota.
+
+## Post-signup device permissions
+
+Permissions are not part of identity proofing and do not gate account creation.
+Cloudflare Turnstile protects selected Supabase Auth requests; the native
+permission screen explains optional device capabilities only after a verified
+new account and its onboarding data have been finalized.
+
+On Capacitor iOS and Android, `/app-permissions` is tracked locally per Auth user
+and installation. It offers one explicit notification action and a clear
+continue-without-notifications path. The app checks existing OS state without
+prompting, does not request notification access at startup, and does not nag
+after a denial. If the reader skips the intro, the first deliberate reading
+timer start may request local-notification access in that feature context.
+
+Camera, photo-library, and foreground-location access are never requested by
+the post-signup page. They are requested just in time after the reader chooses
+Scan barcode/Cover, Choose image, or Use current location. Brack does not request
+background location, broad media-library access, exact alarms, or unrelated
+permissions. Web/PWA and Electron use their browser/desktop fallbacks and never
+enter `/app-permissions`.
+
+Permission state remains OS-authoritative and device-specific. Brack's local
+marker records only whether the education screen is pending or complete; it is
+not copied into profile data and cannot grant a permission.
 
 ## Sign Out
 
@@ -369,6 +553,19 @@ const MyComponent = () => {
   );
 };
 ```
+
+`useAuth` is backed by one application-wide external store. Mounting another
+consumer does not create another `getSession()` bootstrap or
+`onAuthStateChange()` subscription. Calls that require a server-verified Auth
+user share a token-keyed, five-minute cache and one in-flight `getUser()`
+request; sign-out, token refresh, and user updates invalidate it. This cache is
+only a client request-deduplication layer—Supabase still verifies JWTs and RLS
+for every protected database or Edge Function operation.
+
+Onboarding status, reading profile, and notification queries use user-scoped
+React Query keys and bounded stale times. Their mutations refresh those keys so
+one reader's cached state cannot be presented as another reader's state and
+route changes do not repeat identical profile reads.
 
 ### Protected Routes
 
@@ -479,7 +676,10 @@ if (user) {
 
 ## Password Reset
 
-Brack supports password reset from the signed-out auth screen and from Account Settings. The reset request uses the platform-aware `getPasswordResetRedirectUrl()` helper:
+Brack supports password recovery from the signed-out Auth screen. Account
+Settings changes a known password inline and links to that same recovery screen
+when the current password is forgotten. Recovery email fallback URLs use the
+platform-aware `getPasswordResetRedirectUrl()` helper:
 
 - Web/PWA: `/auth/reset-password`
 - Electron desktop: `brack://auth/reset-password`
@@ -496,18 +696,25 @@ const { error } = await supabase.auth.resetPasswordForEmail(
 );
 ```
 
-Password-reset requests use enumeration-safe messaging. A successful API
-response is presented conditionally: if the address is connected to Brack, a
-reset link may arrive. The UI never confirms whether an account exists and never
-states that a reset message was sent. Confirmation resend acknowledgements use
-the same conditional delivery language.
+Password-reset requests use enumeration-safe messaging. The email contains a
+six-digit recovery code as the primary path and a secure link as fallback. The
+Auth screen verifies the code in the requesting window and then opens the
+password form without changing browser/PWA context. The UI never confirms
+whether an account exists. Confirmation and reset resends use the same
+conditional-delivery language.
 
 Opening the password-reset form also requires a short-lived, user-scoped
-recovery authorization created by a successfully completed recovery callback.
+recovery authorization created by a successfully verified recovery code or callback.
 An unrelated signed-in session cannot authorize this form. Callback credentials
 are removed from the browser URL immediately, replayed callbacks are coalesced,
 and the recovery authorization is consumed only after the password update
 succeeds.
+
+For an already authenticated password account, **Settings > Account** changes
+the password inline: Brack verifies the current password first and updates the
+same Auth user only after that succeeds. The forgotten-password link navigates
+to `/auth?mode=reset` in the same tab. Google-only readers keep the existing
+authenticated add-password flow; Settings does not send reset mail itself.
 
 ### Update Password
 
@@ -645,7 +852,8 @@ try {
 
 ### Session Lost After Refresh
 
-**Cause**: localStorage cleared or cookies disabled
+**Cause**: the origin-scoped Supabase session in `localStorage` was cleared,
+storage is unavailable, or the flow returned to a different browser/app origin
 
 **Solution**:
 ```typescript
@@ -680,7 +888,9 @@ console, but the rejected operation is signup email delivery.
 
 **Features**:
 - Email/password sign in
-- Email/password sign up
+- Email/password sign up after a completed or skipped in-memory onboarding draft
+- Direct sign-in for established readers without repeating onboarding
+- Shared post-auth draft finalization and native permission routing
 - Explicit duplicate-email rejection with sign-in and Google recovery paths
 - Neutral confirmation-pending handling for genuinely ambiguous responses
 - Conditional confirmation resend and password-reset messaging
