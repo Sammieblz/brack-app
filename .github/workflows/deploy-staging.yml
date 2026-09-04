@@ -148,7 +148,7 @@ jobs:
             exit 1
           fi
           if [[ "${STAGE_SUPABASE_PROJECT_REF}" == "waftnaqgkcgufzapcihe" ]]; then
-            echo "::error::Staging cannot target Brack's production Supabase project."
+            echo "::error::Staging cannot target Brack's production Supabase project. Create a dedicated staging project, then replace STAGE_SUPABASE_PROJECT_REF, STAGE_SUPABASE_URL, and STAGE_SUPABASE_PUBLISHABLE_KEY together in the GitHub stage environment."
             exit 1
           fi
           expected_supabase_url="https://${STAGE_SUPABASE_PROJECT_REF}.supabase.co"
@@ -185,6 +185,24 @@ jobs:
           done
 
           node --input-type=module <<'NODE'
+          const sentryDsn = (process.env.STAGE_SENTRY_DSN ?? "").trim();
+          if (sentryDsn) {
+            try {
+              const parsedDsn = new URL(sentryDsn);
+              if (
+                parsedDsn.protocol !== "https:" ||
+                !parsedDsn.username ||
+                !parsedDsn.hostname ||
+                parsedDsn.pathname === "/"
+              ) {
+                throw new Error("incomplete Sentry DSN");
+              }
+            } catch {
+              console.error("::error::STAGE_SENTRY_DSN must be empty or a complete HTTPS Sentry DSN; the literal value 'true' is not valid.");
+              process.exit(1);
+            }
+          }
+
           const key = process.env.STAGE_SUPABASE_PUBLISHABLE_KEY ?? "";
           if (key.startsWith("sb_publishable_")) process.exit(0);
           const segments = key.split(".");

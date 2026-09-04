@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadEnv } from "vite";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const distRoot = path.join(repoRoot, "apps", "client", "dist");
@@ -15,7 +16,26 @@ const turnstileBridge = await readFile(
   "utf8",
 );
 const pagesHeaders = await readFile(path.join(distRoot, "_headers"), "utf8");
+const indexHtml = await readFile(path.join(distRoot, "index.html"), "utf8");
 const compactServiceWorker = serviceWorker.replace(/\s+/g, "");
+const fileEnv = loadEnv("production", repoRoot, "");
+const configuredSupabaseUrl = (
+  process.env.VITE_SUPABASE_URL ?? fileEnv.VITE_SUPABASE_URL
+)?.replace(/\/$/, "");
+
+assert.ok(
+  configuredSupabaseUrl,
+  "VITE_SUPABASE_URL is required to verify the generated web artifacts.",
+);
+assert.ok(
+  indexHtml.includes(`rel="preconnect" href="${configuredSupabaseUrl}"`) ||
+    indexHtml.includes(`rel="preconnect" href="${configuredSupabaseUrl}/"`),
+  "The generated HTML must preconnect to the Supabase origin selected for this build.",
+);
+assert.ok(
+  !indexHtml.includes("%VITE_SUPABASE_URL%"),
+  "The generated HTML contains an unresolved Supabase URL placeholder.",
+);
 
 assert.equal(
   manifest.handle_links,

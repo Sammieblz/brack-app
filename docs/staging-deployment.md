@@ -183,6 +183,11 @@ as GitHub secrets; the corresponding Turnstile secret, Supabase
 service-role/secret key, database password, SMTP credentials, and Cloudflare
 token must never be placed in a browser variable.
 
+`STAGE_SENTRY_DSN` is not a feature toggle. Do not set it to `true`; remove the
+variable (or leave its value empty) when staging does not have a dedicated
+Sentry project. When set, it must be the complete HTTPS browser DSN supplied by
+Sentry.
+
 `STAGE_SUPABASE_PROJECT_REF` is a non-authorizing target pin; the web workflow
 cannot use it to change a database. Backend deployment values such as
 `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN`, and `SUPABASE_DB_PASSWORD` are
@@ -233,6 +238,19 @@ Open a pull request into `test`, wait for CI, then merge the approved revision.
 The manual dispatch is also restricted to `refs/heads/test`. GitHub only shows
 a workflow-dispatch control after the workflow exists on the repository's
 default branch; the `push` trigger works from the `test` branch immediately.
+
+### Configuration failures
+
+If the job reports `Staging cannot target Brack's production Supabase project`,
+the protected `stage` environment still contains the production project ref,
+URL, and key. Provision the dedicated staging project first, then replace all
+three `STAGE_SUPABASE_*` values together. Do not remove or weaken this check:
+the staging app exercises Auth and write paths and must not create test users or
+data in production.
+
+If the log shows `STAGE_SENTRY_DSN: true`, delete that value or replace it with
+a complete staging Sentry browser DSN. `STAGE_SENTRY_DSN` is optional and is
+not a Boolean feature flag.
 
 CI ownership is intentionally split by event:
 
