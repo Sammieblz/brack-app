@@ -72,10 +72,12 @@ netlify deploy --prod
 
 #### Staging
 
-The repository now deploys the `test` branch to the dedicated Direct Upload
-project `brack-app-staging` through the protected GitHub `Stage` environment.
-GitHub performs the build, so Cloudflare dashboard build variables and Git
-integration are intentionally not used for this project. See
+The repository deploys the `test` branch to the dedicated
+`brack-app-staging` project through the protected lowercase GitHub `stage`
+environment. The existing Cloudflare Git connection remains attached, but its
+automatic production and preview deployments are disabled. GitHub performs
+the only staging build and uploads the verified artifact with Wrangler, so
+Cloudflare dashboard build variables are not authoritative. See
 [Staging Web Deployment](./staging-deployment.md) for the one-time Cloudflare,
 GitHub, Supabase Auth, Turnstile, custom-domain, and verification steps.
 
@@ -428,16 +430,20 @@ ENVIRONMENT=development
 ### Staging
 
 ```env
-VITE_SUPABASE_URL=https://your-dedicated-staging-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-staging-publishable-key
-VITE_TURNSTILE_SITE_KEY=your-browser-visible-widget-sitekey
-ENVIRONMENT=production
+STAGE_SUPABASE_PROJECT_REF=your-staging-project-ref
+STAGE_SUPABASE_URL=https://your-staging-project-ref.supabase.co
+STAGE_SUPABASE_PUBLISHABLE_KEY=your-staging-publishable-key
+STAGE_TURNSTILE_SITE_KEY=your-browser-visible-widget-sitekey
 ```
 
-The protected `Stage` GitHub environment supplies these values to
-`.github/workflows/deploy-staging.yml`. The workflow refuses the production
+The protected lowercase `stage` GitHub environment supplies these values to
+`.github/workflows/deploy-staging.yml`; feature flags and Cloudflare credentials
+use the same `STAGE_*` convention. After approval, the workflow validates and
+maps browser-safe values to Vite's expected names. It refuses the production
 Supabase project and applies a staging-only noindex policy to the generated
-bundle. See [Staging Web Deployment](./staging-deployment.md).
+bundle. `ENVIRONMENT` is a Supabase Edge Function setting, not a Vite variable,
+and must be configured in the staging backend separately. See
+[Staging Web Deployment](./staging-deployment.md).
 
 ### Production
 
@@ -452,7 +458,10 @@ VITE_SENTRY_DSN=your-production-sentry-dsn
 Brack uses GitHub Actions for continuous integration. The full CI pipeline
 validates pushes to `main` and pull requests targeting `main` or `test`.
 Approved pushes to `test` also run the staging workflow's release checks before
-deployment.
+deployment. Pull-request code does not receive authenticated Playwright
+credentials; only trusted `main` pushes can use that optional account.
+Migration integrity also runs for pull requests targeting either branch; it
+replays locally and never promotes a remote database.
 
 ### Pipeline Overview
 
@@ -703,15 +712,19 @@ Potential additions to the CI pipeline:
 ### Staging Deployment Workflow
 
 `.github/workflows/deploy-staging.yml` deploys only `refs/heads/test` to the
-hard-coded `brack-app-staging` Pages project. Validation runs without Stage
-secrets; the publish job then enters the protected `Stage` environment, builds
-with its public runtime configuration, verifies Auth/PWA artifacts, prevents
-indexing, and publishes with immutable action and Wrangler versions.
+hard-coded `brack-app-staging` Pages project. Validation runs without `stage`
+secrets; the publish job then enters the protected lowercase `stage`
+environment, verifies the Cloudflare project boundary, builds with its public
+runtime configuration, verifies Auth/PWA artifacts, prevents indexing, and
+publishes with immutable action and Wrangler versions.
 
-The workflow performs a Direct Upload. Do not enable Cloudflare Git integration
-for the same Pages project. Production web deployment remains a separate future
-cutover, and production database releases continue exclusively through the
-protected migration workflow.
+The workflow performs a Direct Upload to the existing Git-integrated project.
+Cloudflare automatic production deployments must be off and Preview branch
+control must be `None`; the workflow checks both settings through the
+Cloudflare API and then confirms the uploaded `test` revision was classified as
+that project's production deployment. Production web deployment remains a
+separate future cutover, and production database releases continue exclusively
+through the protected migration workflow.
 
 ## Monitoring
 

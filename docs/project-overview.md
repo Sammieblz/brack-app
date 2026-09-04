@@ -311,7 +311,8 @@ Brack is a comprehensive book tracking application that combines personal librar
 - Add automated testing
 - Implement CI/CD
 - Upgrade Supabase tier
-- Add staging environment
+- Complete and verify the dedicated staging backend behind the existing
+  `test` → GitHub `stage` → Cloudflare Pages release path
 
 ### For Large Team (10+ devs)
 - Full test coverage

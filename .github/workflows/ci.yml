@@ -67,6 +67,9 @@ jobs:
       - name: Test Auth email synchronization guardrails
         run: npm run auth:emails:test
 
+      - name: Test staging deployment guardrails
+        run: npm run web:staging-project:test
+
       - name: Run unit tests
         run: npm test
 
@@ -334,7 +337,12 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run web smoke tests
+      - name: Run web smoke tests for pull request
+        if: github.event_name == 'pull_request'
+        run: npx playwright test --project=chromium
+
+      - name: Run web smoke tests with trusted credentials
+        if: github.event_name == 'push'
         run: npx playwright test --project=chromium
         env:
           E2E_EMAIL: ${{ secrets.E2E_EMAIL }}

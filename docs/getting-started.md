@@ -80,7 +80,8 @@ SUPABASE_DB_PASSWORD=your-linked-project-db-password
 
 GitHub and Cloudflare deployment values are environment-managed and are never
 committed. See [Staging Web Deployment](./staging-deployment.md) for the exact
-`Stage` environment contract and first-deploy order.
+lowercase GitHub `stage` environment contract, disabled Cloudflare automatic
+builds, and first-deploy order.
 
 ### 4. Set Up Supabase
 
