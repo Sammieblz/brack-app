@@ -111,6 +111,9 @@ jobs:
           STAGE_LEADERBOARDS_ENABLED: ${{ vars.STAGE_LEADERBOARDS_ENABLED }}
           STAGE_SENTRY_DSN: ${{ vars.STAGE_SENTRY_DSN }}
           STAGE_CLOUDFLARE_API_TOKEN: ${{ secrets.STAGE_CLOUDFLARE_API_TOKEN }}
+          # Pass only a boolean into the runner. The token value must never be
+          # read from the non-secret GitHub variables context.
+          STAGE_CLOUDFLARE_TOKEN_VARIABLE_DEFINED: ${{ vars.STAGE_CLOUDFLARE_API_TOKEN != '' }}
           STAGE_TURNSTILE_SITE_KEY: ${{ secrets.STAGE_TURNSTILE_SITE_KEY }}
         run: |
           set -euo pipefail
@@ -121,6 +124,14 @@ jobs:
           fi
           if [[ -z "${STAGE_CLOUDFLARE_API_TOKEN}" ]]; then
             echo "::error::The stage environment is missing STAGE_CLOUDFLARE_API_TOKEN."
+            exit 1
+          fi
+          if [[ "${STAGE_CLOUDFLARE_TOKEN_VARIABLE_DEFINED}" == "true" ]]; then
+            echo "::error::Delete the plaintext STAGE_CLOUDFLARE_API_TOKEN environment variable. Store the rotated token only as a secret in the GitHub stage environment."
+            exit 1
+          fi
+          if [[ "${STAGE_CLOUDFLARE_API_TOKEN}" =~ [[:space:]] ]]; then
+            echo "::error::STAGE_CLOUDFLARE_API_TOKEN contains whitespace. Replace the GitHub stage environment secret with the exact Cloudflare token value."
             exit 1
           fi
           if [[ -z "${STAGE_SUPABASE_PROJECT_REF}" ]]; then
@@ -249,15 +260,40 @@ jobs:
         run: |
           set -euo pipefail
 
+          token_response="${RUNNER_TEMP}/cloudflare-token-verification.json"
           project_response="${RUNNER_TEMP}/cloudflare-pages-project.json"
-          curl --fail --silent --show-error \
+
+          if [[ "${CLOUDFLARE_API_TOKEN}" == cfat_* ]]; then
+            token_verify_url="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/tokens/verify"
+          else
+            token_verify_url="https://api.cloudflare.com/client/v4/user/tokens/verify"
+          fi
+
+          if ! token_status="$(curl --silent --show-error \
             --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            --header "Content-Type: application/json" \
+            --header "Accept: application/json" \
+            --output "${token_response}" \
+            --write-out '%{http_code}' \
+            "${token_verify_url}")"; then
+            echo "::error::Could not reach Cloudflare's API to verify the staging deployment token."
+            exit 1
+          fi
+
+          if ! project_status="$(curl --silent --show-error \
+            --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            --header "Accept: application/json" \
             --output "${project_response}" \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/brack-app-staging"
+            --write-out '%{http_code}' \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/brack-app-staging")"; then
+            echo "::error::Could not reach Cloudflare's API to inspect the staging Pages project."
+            exit 1
+          fi
 
           node scripts/verify-cloudflare-pages-project.mjs \
+            --token-input "${token_response}" \
+            --token-http-status "${token_status}" \
             --input "${project_response}" \
+            --http-status "${project_status}" \
             --project brack-app-staging \
             --branch test \
             --repository "${GITHUB_REPOSITORY}"

@@ -41,19 +41,91 @@ const normalized = (value) =>
     .trim()
     .toLowerCase();
 
+const normalizedStatus = (value) => {
+  const status = Number.parseInt(String(value ?? ""), 10);
+  return Number.isInteger(status) && status >= 100 && status <= 599
+    ? status
+    : null;
+};
+
+const safeApiText = (value) =>
+  String(value ?? "")
+    .replace(/[\r\n\t]+/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\bBearer\s+\S+/gi, "Bearer [redacted]")
+    .replace(/\bcfat_[0-9A-Za-z_-]+\b/g, "[redacted]")
+    .trim()
+    .slice(0, 240);
+
+export const describeCloudflareApiFailure = (
+  payload,
+  { operation, httpStatus } = {}
+) => {
+  const status = normalizedStatus(httpStatus);
+  const statusSuffix = status ? ` (HTTP ${status})` : "";
+  const apiErrors = Array.isArray(payload?.errors)
+    ? payload.errors
+        .map((error) => {
+          if (!error || typeof error !== "object") return "";
+          const code = safeApiText(error.code);
+          const message = safeApiText(error.message);
+          if (!code && !message) return "";
+          if (code && message) return `Cloudflare code ${code}: ${message}`;
+          return message || `Cloudflare code ${code}`;
+        })
+        .filter(Boolean)
+        .slice(0, 3)
+    : [];
+  const details = apiErrors.length > 0 ? ` ${apiErrors.join("; ")}.` : "";
+
+  return `Cloudflare ${operation || "API request"} failed${statusSuffix}.${details}`;
+};
+
+export const verifyCloudflareToken = (payload, { httpStatus } = {}) => {
+  const errors = [];
+
+  if (!payload || typeof payload !== "object" || payload.success !== true) {
+    errors.push(
+      describeCloudflareApiFailure(payload, {
+        operation: "token verification",
+        httpStatus,
+      })
+    );
+    errors.push(
+      "Replace the GitHub stage environment secret with an active Cloudflare token for the account that owns brack-app-staging; do not restrict it to GitHub runner IPs."
+    );
+    return { errors };
+  }
+
+  const tokenStatus = normalized(payload.result?.status);
+  if (tokenStatus !== "active") {
+    errors.push(
+      `The Cloudflare API token is ${tokenStatus || "missing a status"}; an active token is required.`
+    );
+  }
+
+  return { errors };
+};
+
 export const verifyCloudflarePagesProject = (
   payload,
-  { project, branch, repository }
+  { project, branch, repository, httpStatus }
 ) => {
   const errors = [];
 
   if (!payload || typeof payload !== "object" || payload.success !== true) {
-    return {
-      errors: [
-        "Cloudflare did not return a successful Pages project response.",
-      ],
-      mode: "unknown",
-    };
+    errors.push(
+      describeCloudflareApiFailure(payload, {
+        operation: "Pages project request",
+        httpStatus,
+      })
+    );
+    if ([401, 403].includes(normalizedStatus(httpStatus))) {
+      errors.push(
+        "Grant the token Account > Cloudflare Pages > Edit for the exact account that owns brack-app-staging. A GitHub environment does not grant Cloudflare access."
+      );
+    }
+    return { errors, mode: "unknown" };
   }
 
   const result = payload.result;
@@ -144,9 +216,29 @@ export const verifyCloudflarePagesProject = (
 
 const main = async () => {
   const options = parseArguments(process.argv.slice(2));
+  if (options["token-input"]) {
+    const rawTokenPayload = await readFile(options["token-input"], "utf8");
+    const tokenPayload = JSON.parse(rawTokenPayload);
+    const tokenResult = verifyCloudflareToken(tokenPayload, {
+      httpStatus: options["token-http-status"],
+    });
+
+    if (tokenResult.errors.length > 0) {
+      console.error("Cloudflare staging-token verification failed:");
+      for (const error of tokenResult.errors) {
+        console.error(`- ${error}`);
+      }
+      process.exitCode = 1;
+      return;
+    }
+  }
+
   const rawPayload = await readFile(options.input, "utf8");
   const payload = JSON.parse(rawPayload);
-  const result = verifyCloudflarePagesProject(payload, options);
+  const result = verifyCloudflarePagesProject(payload, {
+    ...options,
+    httpStatus: options["http-status"],
+  });
 
   if (result.errors.length > 0) {
     console.error("Cloudflare Pages staging-boundary verification failed:");

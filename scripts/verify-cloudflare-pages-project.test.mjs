@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { verifyCloudflarePagesProject } from "./verify-cloudflare-pages-project.mjs";
+import {
+  describeCloudflareApiFailure,
+  verifyCloudflarePagesProject,
+  verifyCloudflareToken,
+} from "./verify-cloudflare-pages-project.mjs";
 
 const expected = {
   project: "brack-app-staging",
@@ -97,10 +101,67 @@ test("rejects a different project branch or connected repository", () => {
 test("rejects an unsuccessful or malformed Cloudflare response", () => {
   assert.match(
     verifyCloudflarePagesProject({ success: false }, expected).errors[0],
-    /successful Pages project response/i
+    /Pages project request failed/i
   );
   assert.match(
     verifyCloudflarePagesProject({ success: true }, expected).errors[0],
     /does not contain a Pages project/i
   );
+});
+
+test("reports a sanitized, actionable Pages authorization failure", () => {
+  const payload = {
+    success: false,
+    errors: [{ code: 10000, message: "Authentication error\n" }],
+    result: { credential: "must-never-be-printed" },
+  };
+  const result = verifyCloudflarePagesProject(payload, {
+    ...expected,
+    httpStatus: "403",
+  });
+  const output = result.errors.join("\n");
+
+  assert.match(output, /HTTP 403/i);
+  assert.match(output, /Cloudflare code 10000: Authentication error/i);
+  assert.match(output, /Cloudflare Pages > Edit/i);
+  assert.doesNotMatch(output, /must-never-be-printed/i);
+});
+
+test("accepts an active Cloudflare token and rejects inactive tokens", () => {
+  assert.deepEqual(
+    verifyCloudflareToken({ success: true, result: { status: "active" } }),
+    { errors: [] }
+  );
+
+  assert.match(
+    verifyCloudflareToken({
+      success: true,
+      result: { status: "expired" },
+    }).errors[0],
+    /expired/i
+  );
+});
+
+test("summarizes only allowlisted Cloudflare API error fields", () => {
+  const output = describeCloudflareApiFailure(
+    {
+      success: false,
+      errors: [
+        {
+          code: 9109,
+          message: "Unauthorized\trequest for Bearer cfat_do-not-print-this",
+        },
+      ],
+      token: "must-never-be-printed",
+    },
+    { operation: "token verification", httpStatus: 403 }
+  );
+
+  assert.match(output, /HTTP 403/i);
+  assert.match(
+    output,
+    /Cloudflare code 9109: Unauthorized request for Bearer \[redacted\]/i
+  );
+  assert.doesNotMatch(output, /cfat_do-not-print-this/i);
+  assert.doesNotMatch(output, /must-never-be-printed/i);
 });

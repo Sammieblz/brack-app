@@ -146,14 +146,19 @@ A true Direct Upload project without a Git source remains compatible with the
 guard, but it must still use `test` as its production branch. After upload, the
 workflow also checks that Cloudflare classified the deployment as production.
 
-Create a custom Cloudflare API token for GitHub with only:
+Create an account-owned Cloudflare API token for GitHub with only:
 
 - Permission: **Account > Cloudflare Pages > Edit**
-- Account resources: only the account that contains Brack
+- Account resources: only the exact account that owns `brack-app-staging`
+- Client IP filtering: none, because GitHub-hosted runner addresses are not
+  stable
 
 Do not use the Global API Key. The token is account-scoped, so the workflow
 hard-codes `brack-app-staging` to reduce accidental deployment to another Pages
-project.
+project. A token created by a Workers setup wizard is not interchangeable with
+a Pages token unless it explicitly has the Pages permission. The API calls this
+permission `Pages Write`; the Cloudflare dashboard labels it **Cloudflare Pages
+Edit**.
 
 ## 3. Configure the GitHub `stage` environment
 
@@ -195,6 +200,11 @@ Add these environment variables:
 
 Create all of these names only inside the lowercase `stage` environment. Do
 not duplicate the same `STAGE_*` names as repository or organization variables.
+In particular, `STAGE_CLOUDFLARE_API_TOKEN` must exist only under **Environment
+secrets**, never under **Environment variables**. The workflow deliberately
+rejects a plaintext variable with that name. If a token was ever stored as a
+variable, revoke it in Cloudflare, create a replacement, delete the variable,
+and update the environment secret.
 
 `VITE_APP_VERSION` is set automatically to the Git commit SHA. The Pages
 project name and staging URL are fixed in the workflow, so they are not
@@ -206,6 +216,33 @@ the values and exports only the browser-safe subset under the `VITE_*` names
 consumed by Vite. It positively matches the Supabase URL to the pinned staging
 project ref, verifies the URL/key pair against Auth settings, rejects
 `sb_secret_` and non-`anon` legacy JWTs, and validates all feature flags.
+
+### Cloudflare `401` or `403` during the project preflight
+
+The GitHub `stage` environment is a GitHub protection and configuration
+boundary; creating it does not grant any Cloudflare permission. The workflow
+first verifies that the Cloudflare token is active, then reads
+`brack-app-staging` before it builds or uploads anything.
+
+If either request returns `401` or `403`:
+
+1. Open **Cloudflare > Manage Account > API Tokens** in the account that owns
+   `brack-app-staging`.
+2. Revoke the failing token and create an account-owned replacement with
+   **Account > Cloudflare Pages > Edit**.
+3. Scope **Account resources** to that exact account. Do not add a client-IP
+   condition for GitHub-hosted runners, and confirm the token is active now and
+   has not expired.
+4. In **GitHub > Settings > Environments > stage**, delete any
+   `STAGE_CLOUDFLARE_API_TOKEN` environment variable. Replace only the
+   environment secret with the complete new token.
+5. Confirm `STAGE_CLOUDFLARE_ACCOUNT_ID` is the ID of the same account and rerun
+   **Deploy Staging Web**.
+
+The workflow prints only sanitized Cloudflare error codes and messages; it does
+not log the authorization header or full API response. A successful token
+verification followed by a `403` on the Pages request specifically identifies
+a missing Pages permission or wrong account resource scope.
 
 Every value exported as `VITE_*` is delivered to the browser. A Turnstile
 sitekey and a Supabase publishable key are public identifiers even when stored
@@ -329,6 +366,9 @@ reviewed operation.
 
 ## Platform references
 
+- [Cloudflare: direct uploads from CI](https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/)
+- [Cloudflare: Pages project API permissions](https://developers.cloudflare.com/api/resources/pages/subresources/projects/methods/get/)
+- [Cloudflare: account-owned API tokens](https://developers.cloudflare.com/fundamentals/api/get-started/account-owned-tokens/)
 - [Cloudflare: disable automatic deployments on a Git-integrated Pages project](https://developers.cloudflare.com/pages/configuration/git-integration/#disable-automatic-deployments)
 - [Cloudflare: production and preview branch controls](https://developers.cloudflare.com/pages/configuration/branch-build-controls/)
 - [GitHub: configuration-variable precedence and environment timing](https://docs.github.com/en/actions/reference/workflows-and-actions/variables#configuration-variable-precedence)
