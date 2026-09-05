@@ -37,9 +37,12 @@ The August 2026 incident was closed with forward migrations
 `20260815015012_repair_bookshelf_schema_drift.sql` and
 `20260816001827_reconcile_public_schema_integrity.sql`. The latter reconciles
 the remaining index, foreign-key, activity-integrity, private helper, and
-trigger-permission differences. Production now has the same 1,753 typed public
-catalog objects as a clean replay, with 80 migration versions in exact order.
-The closure did not edit or repair-mark any historical version.
+trigger-permission differences. The September 2026 staging replay then exposed
+a hosted default `service_role` grant on `claim_push_token`; the forward-only
+`20260905015937_restrict_claim_push_token_service_role.sql` migration now makes
+that authenticated client boundary explicit. The reviewed ledger contains 83
+migrations and a clean replay contains 1,754 typed public catalog objects. No
+closure edited or repair-marked a historical version.
 
 ## Create and validate a migration
 

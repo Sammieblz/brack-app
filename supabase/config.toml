@@ -1,5 +1,31 @@
 project_id = "waftnaqgkcgufzapcihe"
 
+# The persistent Supabase `stage` branch is mapped to the repository's `test`
+# branch. Supabase selects remote overrides by Git branch name, while
+# `project_id` pins the isolated branch instance that may receive them.
+[remotes.test]
+project_id = "satrvrfapnnpsvqgpjer"
+
+[remotes.test.auth]
+site_url = "https://staging.brack-app.com"
+additional_redirect_urls = [
+  "https://staging.brack-app.com/auth/callback",
+  "https://staging.brack-app.com/auth/reset-password",
+  "brack://auth/callback",
+  "brack://auth/reset-password",
+]
+
+# Hosted Auth requires non-zero limits for disabled anonymous/Web3 routes.
+# Keep production's TOTP capability available on the persistent test branch;
+# the local stack's defaults are intentionally narrower.
+[remotes.test.auth.rate_limit]
+anonymous_users = 30
+web3 = 30
+
+[remotes.test.auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
 # Local Auth intentionally mirrors the hosted Brack contract without copying
 # any hosted SMTP, OAuth, CAPTCHA, or signing secret into source control.
 [auth]

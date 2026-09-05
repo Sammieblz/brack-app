@@ -332,10 +332,10 @@ brack://auth/reset-password
 The stable staging deployment uses those two exact staging routes instead of a
 broad Pages preview wildcard. On web/PWA, the redirect helpers derive their
 origin from `window.location.origin`; staging Auth therefore fails if these
-exact URLs are absent. A dedicated staging Supabase project should use
+exact URLs are absent. Brack's persistent Supabase staging branch should use
 `https://staging.brack-app.com` as its Site URL. Adding staging routes to a
-shared project's Additional Redirect URLs must not change that project's
-production Site URL.
+branch's Additional Redirect URLs does not change the parent production Site
+URL; always verify the selected branch before saving Auth settings.
 
 ### Production domain cutover state
 

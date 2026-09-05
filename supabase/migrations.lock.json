@@ -494,6 +494,12 @@
       "description": "harden_push_token_ownership",
       "file": "20260826041825_harden_push_token_ownership.sql",
       "sha256": "1ff65f64ac35680d6b9f7334a68adb80ad82933b28429e7be6923c59d87a1881"
+    },
+    {
+      "version": "20260905015937",
+      "description": "restrict_claim_push_token_service_role",
+      "file": "20260905015937_restrict_claim_push_token_service_role.sql",
+      "sha256": "edefe1bf4c1e246dd04296055de9383f96e02b3c4b573050b87bc7b5826884c3"
     }
   ]
 }

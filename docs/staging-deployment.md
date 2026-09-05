@@ -3,8 +3,10 @@
 Brack's staging web release uses the separate `brack-app-staging` Cloudflare
 Pages project and is deployed from the `test` branch by
 `.github/workflows/deploy-staging.yml`. The project is served at
-`https://staging.brack-app.com` and must use a dedicated staging Supabase
-project. The workflow rejects Brack's production Supabase project.
+`https://staging.brack-app.com` and uses the isolated, persistent Supabase
+branch named `stage` (`satrvrfapnnpsvqgpjer`). The workflow rejects the parent
+production ref (`waftnaqgkcgufzapcihe`) even though both environments belong to
+the same Supabase project.
 
 The release boundary is:
 
@@ -12,7 +14,7 @@ The release boundary is:
 test branch -> GitHub stage environment -> verified Vite build
             -> Cloudflare Pages project brack-app-staging
             -> https://staging.brack-app.com
-            -> dedicated staging Supabase project
+            -> persistent Supabase stage branch
 ```
 
 `brack-app-staging` was created with Cloudflare's Git integration. Keep that
@@ -28,34 +30,54 @@ does not make the deployment Brack production. GitHub's lowercase `stage`
 environment is a separate GitHub concept and is the source of build variables,
 secrets, approvals, and the deployment record.
 
-## 1. Provision the staging Supabase project
+## 1. Provision and maintain the Supabase stage branch
 
-Create a Supabase project specifically for staging before configuring the
-GitHub variables. Do not reuse project `waftnaqgkcgufzapcihe`, copy production
-user data, or copy service-role credentials into a browser variable.
+The Supabase GitHub integration maps repository branch `test` to the persistent
+Supabase branch `stage`. `supabase/config.toml` pins that mapping under
+`[remotes.test]`; do not replace it with the parent production ref. Supabase
+branches have independent database, Auth, Storage, API keys, and runtime
+secrets even when they share a parent project.
 
-The remote staging schema must be established through a reviewed migration
-release. The existing `Deploy Production Database Migrations` workflow and the
-Auth-template apply commands are production-locked and must not be repointed or
-weakened. The staging web workflow never mutates a database, deploys Edge
-Functions, or changes hosted Auth settings.
+The production migration ledger remains the only schema source. Apply missing
+migrations forward, then require exact migration history, the protected
+database contracts, schema fingerprint, pgTAP, and database lint. Never use
+`migration repair` to make a failed branch look current. The production
+database workflow remains locked to `main`; Supabase's branch integration owns
+backend deployment for `test`, while the staging web workflow owns only the
+Cloudflare build.
 
-Do not accept the first staging web release until its backend readiness record
-confirms all of the following:
+The branch was provisioned on 2026-09-04 with all 83 locked migrations, all 76
+Edge Functions, 70 RLS-enabled public tables, Storage bucket definitions,
+Realtime publications, queues, cron jobs, and source-controlled Auth email
+templates. A clean local replay and the linked postflight checks passed. The
+`claim_push_token` hosted ACL discrepancy was closed by the forward-only
+`20260905015937_restrict_claim_push_token_service_role.sql` migration.
 
-- reviewed migrations were applied to the dedicated staging project and the
-  remote history, schema fingerprint, contracts, and database lint passed;
-- the matching Edge Functions were deployed to staging;
-- staging-only function secrets and CORS origins were configured; and
-- hosted Auth, CAPTCHA, OAuth, SMTP, redirects, and email templates were tested.
+At the owner's explicit request, stage also received a production data snapshot:
 
-Pull requests into `test` run the local migration replay and integrity workflow,
-but that check does not apply anything remotely. Until a separately guarded
-staging database release workflow exists, backend promotion remains an explicit
-reviewed prerequisite and must never reuse or weaken the production workflow.
-For a newly created Supabase project, also mirror Brack's intended Data API
-schema exposure explicitly and verify grants and RLS; do not expose every table
-in `public` by assumption.
+- Auth users and identities were copied so existing test operators keep their
+  account UUIDs and can exercise password/provider linking flows.
+- All durable application tables and seven referenced Storage objects were
+  copied and content-fingerprinted against production.
+- Sessions, refresh tokens, one-time tokens, MFA state, Auth audit logs, push
+  tokens, telemetry, rate-limit counters, dashboard snapshots, and import jobs
+  were excluded. Pending Auth tokens in copied user rows were cleared.
+
+Stage therefore contains production personal data and must be protected and
+retained like production. Keep Cloudflare Access enabled, limit Supabase project
+membership, never expose a service-role/secret key to Vite, and repeat a data
+refresh only with explicit owner approval. The CLI's `db dump --dry-run` output
+can contain temporary database credentials; never run or archive that output in
+CI logs.
+
+Before accepting a staging release, confirm all of the following:
+
+- migration history, schema fingerprint, contracts, and database lint pass;
+- production and stage Edge Function names, hashes, and JWT settings match;
+- stage-only function origins, app URL, and worker secret are configured;
+- hosted Auth redirects and templates match source control; and
+- CAPTCHA, Google OAuth, and SMTP are exercised end to end with branch-specific
+  provider secrets.
 
 In the staging Supabase dashboard, configure:
 
@@ -63,17 +85,25 @@ In the staging Supabase dashboard, configure:
 - **Additional Redirect URLs:**
   - `https://staging.brack-app.com/auth/callback`
   - `https://staging.brack-app.com/auth/reset-password`
-- **Turnstile:** the secret matching the sitekey used by the staging build.
-- **Google OAuth, if enabled:** authorize the staging Supabase project's
+- **Turnstile:** set the branch-specific secret matching the sitekey used by the
+  staging build, then enable CAPTCHA. A browser sitekey alone is insufficient.
+- **Google OAuth, if enabled:** authorize the staging branch project's
   `/auth/v1/callback` URL in Google Cloud.
 - **SMTP, if email flows are tested:** use server-side staging credentials and
   a verified sender. Never put Brevo credentials in GitHub variables prefixed
   with `VITE_`.
 - **Edge Function CORS:** include `https://staging.brack-app.com` in the
-  staging project's `ALLOWED_ORIGINS` secret.
-- **Edge-generated links:** set the staging project's `PUBLIC_APP_URL` secret
+  stage branch's `ALLOWED_ORIGINS` secret.
+- **Edge-generated links:** set the stage branch's `PUBLIC_APP_URL` secret
   to `https://staging.brack-app.com`; do not change the production project's
   canonical value.
+- **Journey worker:** use a stage-only `GAMIFICATION_WORKER_SECRET` and store
+  the identical value in Vault as `gamification_worker_secret`; Vault
+  `project_url` must be the stage branch URL.
+- **Optional integration secrets:** set `TENOR_API_KEY` for GIF search and
+  `FCM_SERVICE_ACCOUNT_JSON` for push delivery when those integrations are in
+  the staging test scope. Provider credentials are write-only and cannot be
+  recovered from the parent branch through the CLI.
 
 The browser callback helpers use the current `window.location.origin`, so the
 same client code produces the correct staging URLs once the exact routes above
@@ -155,9 +185,9 @@ Add these environment variables:
 | Name | Required value |
 | --- | --- |
 | `STAGE_CLOUDFLARE_ACCOUNT_ID` | The 32-character ID of the Cloudflare account containing Brack. |
-| `STAGE_SUPABASE_PROJECT_REF` | The exact 20-character ref of the dedicated staging project; it must not be the production ref. |
+| `STAGE_SUPABASE_PROJECT_REF` | The persistent Supabase `stage` branch ref (`satrvrfapnnpsvqgpjer`); it must not be the parent production ref. |
 | `STAGE_SUPABASE_URL` | Exactly `https://<STAGE_SUPABASE_PROJECT_REF>.supabase.co`. |
-| `STAGE_SUPABASE_PUBLISHABLE_KEY` | Staging project's `sb_publishable_…` key or legacy JWT whose role is `anon`. |
+| `STAGE_SUPABASE_PUBLISHABLE_KEY` | Stage branch's `sb_publishable_…` key or legacy JWT whose role is `anon`. |
 | `STAGE_SOCIAL_FEATURES_ENABLED` | Set explicitly to `true` or `false`. |
 | `STAGE_GAMIFICATION_ENABLED` | Set explicitly to `true` or `false`. |
 | `STAGE_LEADERBOARDS_ENABLED` | Set explicitly to `true` or `false`. |
@@ -242,15 +272,23 @@ default branch; the `push` trigger works from the `test` branch immediately.
 ### Configuration failures
 
 If the job reports `Staging cannot target Brack's production Supabase project`,
-the protected `stage` environment still contains the production project ref,
-URL, and key. Provision the dedicated staging project first, then replace all
-three `STAGE_SUPABASE_*` values together. Do not remove or weaken this check:
-the staging app exercises Auth and write paths and must not create test users or
-data in production.
+the protected GitHub `stage` environment still contains the parent production
+ref, URL, and key. Select the Supabase `stage` branch in its dashboard and
+replace all three `STAGE_SUPABASE_*` values together with that branch's ref,
+URL, and browser-safe publishable key. Do not remove or weaken this check: the
+staging app exercises Auth and write paths and must never target production.
 
 If the log shows `STAGE_SENTRY_DSN: true`, delete that value or replace it with
 a complete staging Sentry browser DSN. `STAGE_SENTRY_DSN` is optional and is
 not a Boolean feature flag.
+
+The Supabase branch badge can continue to show the result of an older failed
+Git deployment even after an operator completes a verified CLI recovery. Do
+not change migration history to clear the badge. Commit the forward migration,
+lock, and `[remotes.test]` configuration to `test`; the next Supabase GitHub
+integration run replaces the stale deployment result. Until then, require the
+linked 83-migration postflight, contracts, schema fingerprint, and lint evidence
+before treating the database as ready.
 
 CI ownership is intentionally split by event:
 
