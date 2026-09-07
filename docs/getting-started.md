@@ -27,7 +27,7 @@ This guide will help you set up Brack for local development.
 - Windows, macOS, or Linux host for local Electron runs
 - Platform-specific OS runners for distributable artifacts
 - Supabase Auth redirect URLs for `/auth/callback`, `/auth/reset-password`, `brack://auth/callback`, and `brack://auth/reset-password`
-- A Cloudflare Turnstile sitekey in `VITE_TURNSTILE_SITE_KEY`; keep the matching secret only in Supabase Auth Bot and Abuse Protection
+- A Cloudflare Turnstile sitekey in `VITE_TURNSTILE_SITE_KEY`; keep the matching secret only in Supabase Auth Bot and Abuse Protection. For browser development, authorize the bare `localhost` and `127.0.0.1` hostnames in that widget. Packaged apps also require a live HTTPS `VITE_TURNSTILE_BRIDGE_ORIGIN`.
 
 ## Installation
 
@@ -114,6 +114,11 @@ npm run dev
 ```
 
 The app will be available at `http://localhost:8080`
+
+Turnstile renders directly on this browser origin. Cloudflare Hostname
+Management entries must be `localhost` and `127.0.0.1`, without `http://`, a
+port, or a path. A production Turnstile secret rejects Cloudflare dummy tokens;
+use a matching real widget/secret pair, preferably from the stage environment.
 
 `npm run dev` runs `turbo run dev --filter=@brack/client`, so the Vite server starts from `apps/client`.
 
