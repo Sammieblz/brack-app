@@ -35,7 +35,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
 
       - name: Setup Deno
@@ -81,7 +81,7 @@ jobs:
       name: stage
       url: https://staging.brack-app.com
     env:
-      CI: 'true'
+      CI: "true"
       VITE_APP_VERSION: ${{ github.sha }}
 
     steps:
@@ -93,7 +93,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
 
       - name: Validate protected stage configuration
@@ -245,6 +245,7 @@ jobs:
             printf 'VITE_SUPABASE_URL=%s\n' "${expected_supabase_url}"
             printf 'VITE_SUPABASE_PUBLISHABLE_KEY=%s\n' "${STAGE_SUPABASE_PUBLISHABLE_KEY}"
             printf 'VITE_TURNSTILE_SITE_KEY=%s\n' "${STAGE_TURNSTILE_SITE_KEY}"
+            printf 'VITE_TURNSTILE_BRIDGE_ORIGIN=https://staging.brack-app.com\n'
             printf 'VITE_SOCIAL_FEATURES_ENABLED=%s\n' "${STAGE_SOCIAL_FEATURES_ENABLED}"
             printf 'VITE_GAMIFICATION_ENABLED=%s\n' "${STAGE_GAMIFICATION_ENABLED}"
             printf 'VITE_LEADERBOARDS_ENABLED=%s\n' "${STAGE_LEADERBOARDS_ENABLED}"
@@ -317,7 +318,7 @@ jobs:
           apiToken: ${{ secrets.STAGE_CLOUDFLARE_API_TOKEN }}
           accountId: ${{ steps.stage_config.outputs.cloudflare_account_id }}
           packageManager: npm
-          wranglerVersion: '4.127.0'
+          wranglerVersion: "4.127.0"
           command: pages deploy apps/client/dist --project-name=brack-app-staging --branch=test --commit-hash=${{ github.sha }} --commit-dirty=false
 
       - name: Verify production deployment classification
@@ -329,3 +330,33 @@ jobs:
             echo "::error::Cloudflare classified the test deployment as '${PAGES_ENVIRONMENT:-missing}', not production."
             exit 1
           fi
+
+      - name: Verify staging Turnstile bridge response
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          response_headers="${RUNNER_TEMP}/turnstile-response-headers.txt"
+          response_body="${RUNNER_TEMP}/turnstile-response-body.html"
+
+          for attempt in 1 2 3 4 5 6; do
+            status="$(curl --silent --show-error \
+              --dump-header "${response_headers}" \
+              --output "${response_body}" \
+              --write-out '%{http_code}' \
+              https://staging.brack-app.com/turnstile || true)"
+
+            if [[ "${status}" == "200" ]] \
+              && grep --ignore-case --quiet '^cache-control:.*no-store' "${response_headers}" \
+              && grep --ignore-case --quiet '^content-security-policy:.*frame-ancestors' "${response_headers}" \
+              && grep --quiet 'Brack security check' "${response_body}"; then
+              exit 0
+            fi
+
+            if [[ "${attempt}" != "6" ]]; then
+              sleep 5
+            fi
+          done
+
+          echo "::error::The final staging /turnstile response is not the no-store, CSP-protected challenge bridge. Last HTTP status: ${status:-unavailable}."
+          exit 1

@@ -106,8 +106,8 @@ the cutover is complete.
 7. **Verify production routes before changing Auth**:
    - `https://brack-app.com/` resolves over HTTPS.
    - `/auth/callback` and `/auth/reset-password` return the SPA rather than a hosting 404.
-   - `/turnstile.html` returns the dedicated challenge bridge with `Cache-Control: no-store` and the scoped `frame-ancestors` policy from `apps/client/public/_headers`.
-   - The bridge policy includes only Brack's packaged origins and the fixed Vite loopback origins. Test `localhost:8080` after every bridge/CSP change; LAN-IP origins require an explicit security review and Cloudflare hostname configuration.
+   - `/turnstile.html` redirects to `/turnstile`, whose final response returns the dedicated challenge bridge with `Cache-Control: no-store` and the scoped `frame-ancestors` policy from `apps/client/public/_headers`.
+   - The bridge policy includes only Brack's packaged origins and fixed loopback origins used by packaged-app development. Browser development renders Turnstile directly on `localhost` or `127.0.0.1`; authorize those hostnames in Cloudflare without a scheme or port. LAN-IP origins require an explicit security review and Cloudflare hostname configuration.
    - `www.brack-app.com` either redirects once to the canonical apex or is not advertised.
 8. **Enable the free security baseline**:
    - SSL/TLS mode **Full (strict)**, Always Use HTTPS, TLS 1.3, and a minimum of TLS 1.2.
@@ -121,11 +121,12 @@ cache-everything rule for auth routes, and make `/auth/callback` and
 Turnstile is integrated at each password-based Auth form and verified by
 Supabase CAPTCHA protection. Challenging the static `/auth` route or adding a
 generic Cloudflare interstitial does not protect direct Auth API calls. Keep
-`/turnstile.html` out of service-worker and edge caches; packaged mobile and
-desktop releases and fixed local Vite origins depend on that canonical HTTPS
-bridge. Deploy the bridge and `_headers` before expecting the local client
-change to work. Cloudflare error `110200` is a hostname-authorization failure,
-not evidence that the configured sitekey text is malformed.
+the Turnstile bridge out of service-worker and edge caches; packaged mobile and
+desktop releases depend on its explicitly configured HTTPS origin. Local browser
+development renders directly and therefore requires `localhost` and
+`127.0.0.1` in the widget's Hostname Management. Cloudflare error `110200` is a
+hostname-authorization failure, not evidence that the configured sitekey text
+is malformed.
 
 ### Progressive Web App (PWA)
 

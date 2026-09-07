@@ -6,6 +6,7 @@ import {
   isTurnstileAction,
   isTurnstileBridgeEvent,
   isValidTurnstileToken,
+  normalizeTurnstileBridgeOrigin,
   shouldUseHostedTurnstileBridge,
 } from "./turnstile";
 
@@ -22,7 +23,7 @@ describe("Turnstile request boundaries", () => {
     expect(isValidTurnstileToken("")).toBe(false);
     expect(isValidTurnstileToken(" padded-token ")).toBe(false);
     expect(
-      isValidTurnstileToken("x".repeat(TURNSTILE_MAX_TOKEN_LENGTH + 1)),
+      isValidTurnstileToken("x".repeat(TURNSTILE_MAX_TOKEN_LENGTH + 1))
     ).toBe(false);
   });
 
@@ -35,7 +36,7 @@ describe("Turnstile request boundaries", () => {
         channel,
         event: "token",
         token: "challenge-token",
-      }),
+      })
     ).toBe(true);
     expect(
       isTurnstileBridgeEvent({
@@ -43,7 +44,7 @@ describe("Turnstile request boundaries", () => {
         channel,
         event: "token",
         token: "",
-      }),
+      })
     ).toBe(false);
     expect(
       isTurnstileBridgeEvent({
@@ -51,7 +52,7 @@ describe("Turnstile request boundaries", () => {
         channel,
         event: "layout",
         height: 10_000,
-      }),
+      })
     ).toBe(false);
   });
 
@@ -59,37 +60,36 @@ describe("Turnstile request boundaries", () => {
     expect(
       shouldUseHostedTurnstileBridge({
         customSchemeRuntime: false,
-        origin: "https://brack-app.com",
-        development: false,
-      }),
+      })
     ).toBe(false);
     expect(
       shouldUseHostedTurnstileBridge({
         customSchemeRuntime: true,
-        origin: "https://localhost",
-        development: false,
-      }),
+      })
     ).toBe(true);
-    expect(
-      shouldUseHostedTurnstileBridge({
-        customSchemeRuntime: true,
-        origin: "capacitor://localhost",
-        development: false,
-      }),
-    ).toBe(true);
+  });
+
+  it("renders directly for browser development origins", () => {
     expect(
       shouldUseHostedTurnstileBridge({
         customSchemeRuntime: false,
-        origin: "http://localhost:8080",
-        development: true,
-      }),
-    ).toBe(true);
-    expect(
-      shouldUseHostedTurnstileBridge({
-        customSchemeRuntime: false,
-        origin: "http://192.168.1.25:8080",
-        development: true,
-      }),
+      })
     ).toBe(false);
+  });
+
+  it("accepts only an exact HTTPS origin for the packaged-app bridge", () => {
+    expect(
+      normalizeTurnstileBridgeOrigin("https://staging.brack-app.com")
+    ).toBe("https://staging.brack-app.com");
+    expect(
+      normalizeTurnstileBridgeOrigin("https://staging.brack-app.com/")
+    ).toBe("https://staging.brack-app.com");
+    expect(normalizeTurnstileBridgeOrigin("http://localhost:8080")).toBeNull();
+    expect(
+      normalizeTurnstileBridgeOrigin("https://staging.brack-app.com/turnstile")
+    ).toBeNull();
+    expect(
+      normalizeTurnstileBridgeOrigin("https://user@example.com")
+    ).toBeNull();
   });
 });

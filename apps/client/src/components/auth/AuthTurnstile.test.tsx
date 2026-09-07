@@ -15,7 +15,7 @@ vi.mock("@marsidev/react-turnstile", async () => {
     {
       onSuccess?: (token: string) => void;
       onExpire?: () => void;
-      onError?: () => void;
+      onError?: (errorCode?: string) => void;
       options?: { action?: string; size?: string; theme?: string };
     }
   >(({ onSuccess, onExpire, onError, options }, ref) => {
@@ -36,6 +36,9 @@ vi.mock("@marsidev/react-turnstile", async () => {
         <button type="button" onClick={() => onError?.()}>
           Fail
         </button>
+        <button type="button" onClick={() => onError?.("110200")}>
+          Fail hostname
+        </button>
       </div>
     );
   });
@@ -48,43 +51,39 @@ vi.mock("@/contexts/ThemeContext", () => ({
 }));
 
 vi.mock("@/services/platform", () => ({
-  BRACK_WEB_ORIGIN: "https://brack-app.com",
   isCustomSchemeAuthRuntime: () => runtime.customScheme,
 }));
 
-import {
-  AuthTurnstile,
-  type AuthTurnstileHandle,
-} from "./AuthTurnstile";
+import { AuthTurnstile, type AuthTurnstileHandle } from "./AuthTurnstile";
 
 describe("AuthTurnstile", () => {
   beforeEach(() => {
     resetWidgetMock.mockReset();
     runtime.customScheme = false;
     vi.stubEnv("VITE_TURNSTILE_SITE_KEY", "test-site-key");
+    vi.stubEnv("VITE_TURNSTILE_BRIDGE_ORIGIN", "https://staging.brack-app.com");
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllEnvs();
   });
 
   it("uses a compact, theme-aware widget and clears expired tokens", () => {
     const onTokenChange = vi.fn();
-    render(
-      <AuthTurnstile action="sign_in" onTokenChange={onTokenChange} />,
-    );
+    render(<AuthTurnstile action="sign_in" onTokenChange={onTokenChange} />);
 
     expect(screen.getByTestId("cloudflare-widget")).toHaveAttribute(
       "data-action",
-      "sign_in",
+      "sign_in"
     );
     expect(screen.getByTestId("cloudflare-widget")).toHaveAttribute(
       "data-size",
-      "compact",
+      "compact"
     );
     expect(screen.getByTestId("cloudflare-widget")).toHaveAttribute(
       "data-theme",
-      "dark",
+      "dark"
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Solve" }));
@@ -94,7 +93,7 @@ describe("AuthTurnstile", () => {
     fireEvent.click(screen.getByRole("button", { name: "Expire" }));
     expect(onTokenChange).toHaveBeenLastCalledWith(null);
     expect(
-      screen.getByText("Refreshing the security check…"),
+      screen.getByText("Refreshing the security check…")
     ).toBeInTheDocument();
   });
 
@@ -106,10 +105,12 @@ describe("AuthTurnstile", () => {
         ref={ref}
         action="password_reset"
         onTokenChange={onTokenChange}
-      />,
+      />
     );
 
-    ref.current?.reset();
+    act(() => {
+      ref.current?.reset();
+    });
 
     expect(onTokenChange).toHaveBeenLastCalledWith(null);
     expect(resetWidgetMock).toHaveBeenCalledOnce();
@@ -120,9 +121,7 @@ describe("AuthTurnstile", () => {
     runtime.customScheme = true;
     const onTokenChange = vi.fn();
 
-    render(
-      <AuthTurnstile action="sign_up" onTokenChange={onTokenChange} />,
-    );
+    render(<AuthTurnstile action="sign_up" onTokenChange={onTokenChange} />);
 
     expect(screen.getByTitle("Brack security check")).toBeInTheDocument();
 
@@ -131,9 +130,45 @@ describe("AuthTurnstile", () => {
     });
 
     expect(
-      screen.getByText(/Security check could not load/i),
+      screen.getByText(/Security check could not load/i)
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Retry" })).toBeEnabled();
     expect(onTokenChange).toHaveBeenLastCalledWith(null);
+  });
+
+  it("uses the configured live bridge origin for packaged runtimes", () => {
+    runtime.customScheme = true;
+
+    render(<AuthTurnstile action="sign_up" onTokenChange={vi.fn()} />);
+
+    expect(screen.getByTitle("Brack security check")).toHaveAttribute(
+      "src",
+      "https://staging.brack-app.com/turnstile"
+    );
+  });
+
+  it("fails closed when a packaged build has no bridge origin", () => {
+    runtime.customScheme = true;
+    vi.stubEnv("VITE_TURNSTILE_BRIDGE_ORIGIN", "");
+
+    render(<AuthTurnstile action="sign_up" onTokenChange={vi.fn()} />);
+
+    expect(
+      screen.getByText("Security check is unavailable in this build.")
+    ).toBeInTheDocument();
+    expect(screen.queryByTitle("Brack security check")).not.toBeInTheDocument();
+  });
+
+  it("explains a non-retryable hostname configuration failure", () => {
+    render(<AuthTurnstile action="sign_up" onTokenChange={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Fail hostname" }));
+
+    expect(
+      screen.getByText("Security check is not enabled for this address.")
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Retry" })
+    ).not.toBeInTheDocument();
   });
 });

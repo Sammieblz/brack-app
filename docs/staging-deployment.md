@@ -87,6 +87,8 @@ In the staging Supabase dashboard, configure:
   - `https://staging.brack-app.com/auth/reset-password`
 - **Turnstile:** set the branch-specific secret matching the sitekey used by the
   staging build, then enable CAPTCHA. A browser sitekey alone is insufficient.
+  The workflow derives `VITE_TURNSTILE_BRIDGE_ORIGIN` as
+  `https://staging.brack-app.com`; no additional GitHub value is required.
 - **Google OAuth, if enabled:** authorize the staging branch project's
   `/auth/v1/callback` URL in Google Cloud.
 - **SMTP, if email flows are tested:** use server-side staging credentials and
@@ -345,8 +347,9 @@ Before accepting the staging release, verify:
 - Refreshing a nested SPA route does not return a hosting 404.
 - `/auth/callback` and `/auth/reset-password` load the SPA and return
   `Cache-Control: private, no-store`.
-- `/turnstile.html` loads without Cloudflare error `110200` and remains
-  `no-store`.
+- `/turnstile.html` redirects only to `/turnstile`; the final response loads
+  without Cloudflare error `110200`, remains `no-store`, and retains its scoped
+  `frame-ancestors` Content Security Policy.
 - Responses include `X-Robots-Tag: noindex, nofollow, noarchive`.
 - Browser network requests target only the staging Supabase hostname, never
   `waftnaqgkcgufzapcihe.supabase.co`.
