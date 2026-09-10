@@ -39,6 +39,71 @@ Web/PWA and Electron skip the native permission page. Capacitor iOS and Android
 show it once per new reader/device after onboarding has been applied. A reader
 may continue without granting any optional permission.
 
+### Public acquisition and Auth presentation
+
+The public landing page is organized as a restrained reader's folio: a product
+index, a real Library capture, and numbered sections for the reading day,
+Journey, and reader circle. It avoids fictional activity, testimonials, and
+reward totals. Every primary acquisition action keeps the onboarding-first
+conversion path. The Library reveal selects exactly one of the supplied
+light/dark captures from the active Brack mode, preserves the full capture with
+`object-fit: contain`, and binds its reduced-motion-aware 3D reveal to the app
+shell's `#root` scroll container. The remaining editorial sections use quiet,
+once-only entrances against that same scroll root; reduced-motion mode renders
+them immediately. Acquisition links use a local pressed-bookplate treatment
+with no decorative arrows, while the secondary account action remains a real,
+clearly styled sign-in link rather than underlined body copy.
+
+The opening overlays its copy on a locally hosted sunset reading photograph.
+`LandingTypewriter` types the headline once per document: the first landing
+entry and a full reload may animate; theme changes, scrolling, and client-route
+returns do not replay it. The full text stays accessible and its final layout
+is reserved throughout. Later headings reveal words once as they enter the
+app scroll root, with a transparent book sculpture for the reading day and a
+small group of books for the reader circle. Decorative movement is finite and
+reduced-motion mode renders the final state immediately.
+
+Apple App Store and Google Play badges sit below the iPad reveal. Their current
+state explicitly says "Coming soon" and announces availability inline without
+navigating. Supplying `appStoreUrl` and `googlePlayUrl` to `LandingStoreBadges`
+turns each badge into a normal store link. Until those URLs exist, the working
+acquisition path remains the browser onboarding flow.
+
+The Journey section is a small, non-persistent product demonstration. Its
+native buttons let pointer, touch, and keyboard users switch the streak flame
+between happy and missed-day moods, settle the Lifetime Ink bottle and quill,
+or flutter the Gold Leaves. Each object has its own short motion vocabulary;
+nothing loops. Keyboard activation and reduced-motion mode keep the meaningful
+flame state change immediate without transform choreography.
+
+The cinematic reading video is reserved for `/auth`, where semantic theme
+overlays keep every form state legible while the onboarding palette remains in
+effect for signup. The video is muted, inline, decorative, and omitted when the
+reader requests reduced motion, enables data saving, uses a 2G-class
+connection, or when playback fails. Those cases receive the same complete Auth
+flow over a static themed background; authentication never depends on media.
+
+### Onboarding presentation and motion
+
+`/onboarding` carries the landing page's restrained reader-folio language into
+the acquisition flow. Wide screens use a split folio with a persistent chapter
+index and a separate reading page. Tablets keep the chapter rail horizontal.
+Phones collapse it to a compact named chapter and determinate progress bar,
+while the action dock remains reachable above the platform safe area. Content
+reflows into ledger rows instead of shrinking multi-column cards, and every
+chapter exposes one semantic `h1` so focus transfer and screen-reader context
+stay predictable.
+
+The primary and secondary actions use the same pressed-bookplate feedback as
+the landing page and do not add decorative arrows. Pointer-driven chapter
+changes use a short, direction-aware translate-and-fade transition; keyboard
+navigation, programmatic restoration, and reduced-motion mode switch chapters
+immediately. Choice controls use restrained press and selected states without
+bounce or perpetual motion. Successful completion gets one brief editorial
+seal before routing, while saving and bootstrap states retain meaningful status
+animation. None of this presentation changes the anonymous draft, Auth handoff,
+or retry contracts below.
+
 ### Pre-auth onboarding draft
 
 `apps/client/src/services/onboardingDraft.ts` owns the anonymous draft. The
@@ -412,8 +477,10 @@ explicit origins in `TURNSTILE_BRIDGE_PARENT_ORIGINS`, uses a per-instance
 cryptographic channel, validates every message, is framed by a restrictive CSP,
 and is served with `Cache-Control: no-store`. The service worker never precaches
 it. A bridge that cannot complete its handshake becomes a visible retry state
-instead of leaving the Auth form waiting indefinitely. LAN-IP development
-origins are intentionally not trusted by this bridge.
+instead of leaving the Auth form waiting indefinitely. Its iframe remains
+visually collapsed until the authenticated bridge handshake succeeds, so a
+slow or unreachable bridge cannot reserve a large blank block in the form.
+LAN-IP development origins are intentionally not trusted by this bridge.
 
 Deployment order is mandatory:
 
@@ -547,13 +614,13 @@ import { useAuth } from '@/hooks/useAuth';
 
 const MyComponent = () => {
   const { user, loading, signOut } = useAuth();
-  
+
   if (loading) return <LoadingSpinner />;
-  
+
   if (!user) {
     return <Redirect to="/auth" />;
   }
-  
+
   return (
     <div>
       <p>Welcome, {user.email}</p>
@@ -581,13 +648,13 @@ route changes do not repeat identical profile reads.
 ```typescript
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) return <LoadingSpinner />;
-  
+
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
-  
+
   return <>{children}</>;
 };
 
@@ -787,7 +854,6 @@ if (!user) {
 // ❌ DON'T: Trust client data
 // Always verify user ID from JWT, never from request body
 ```
-
 ### 4. Handle Token Expiry
 
 ```typescript
@@ -805,7 +871,6 @@ const { data: { session } } = await supabase.auth.refreshSession();
 ```typescript
 // Check if user owns a book
 const canEdit = book.user_id === user?.id;
-
 // Check if user is club admin
 const isAdmin = await supabase.rpc('is_club_admin', {
   club_id: clubId,
@@ -814,7 +879,6 @@ const isAdmin = await supabase.rpc('is_club_admin', {
 ```
 
 ### In Database Functions
-
 ```sql
 -- Custom function to check club membership
 CREATE OR REPLACE FUNCTION is_club_member(club_id UUID, user_id UUID)
@@ -838,6 +902,7 @@ CREATE POLICY "Members can view club discussions"
 **Cause**: Token expired or malformed
 
 **Solution**:
+
 ```typescript
 try {
   const { data, error } = await supabase.auth.getSession();
@@ -849,12 +914,12 @@ try {
   // Handle error
 }
 ```
-
 ### "Permission denied"
 
 **Cause**: RLS policy blocking access
 
 **Solution**:
+
 1. Check RLS policies in Supabase dashboard
 2. Verify user is authenticated
 3. Ensure user owns the resource
@@ -865,6 +930,7 @@ try {
 storage is unavailable, or the flow returned to a different browser/app origin
 
 **Solution**:
+
 ```typescript
 // Check localStorage is available
 try {
@@ -896,6 +962,7 @@ console, but the rejected operation is signup email delivery.
 **Location**: `apps/client/src/screens/Auth.tsx`
 
 **Features**:
+
 - Email/password sign in
 - Email/password sign up after a completed or skipped in-memory onboarding draft
 - Direct sign-in for established readers without repeating onboarding

@@ -124,7 +124,9 @@ describe("AuthTurnstile", () => {
       <AuthTurnstile action="sign_up" onTokenChange={onTokenChange} />,
     );
 
-    expect(screen.getByTitle("Brack security check")).toBeInTheDocument();
+    const bridge = screen.getByTitle("Brack security check");
+    expect(bridge).toBeInTheDocument();
+    expect(bridge.parentElement).toHaveClass("max-h-0", "opacity-0");
 
     act(() => {
       vi.advanceTimersByTime(15_000);

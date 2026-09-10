@@ -19,13 +19,15 @@ describe("OnboardingLoadingState", () => {
   });
 
   it("uses one polite status and no fake percentage", () => {
-    render(<OnboardingLoadingState message="Preparing your saved setup…" />);
+    const { container } = render(<OnboardingLoadingState message="Preparing your saved setup…" />);
 
     const status = screen.getByRole("status");
     expect(status).toHaveAttribute("aria-live", "polite");
     expect(status).toHaveTextContent("Preparing your saved setup…");
     expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
     expect(screen.getByText("Opening your reading room")).toBeInTheDocument();
+    expect(container.querySelector(".onboarding-loading__trace")).toBeInTheDocument();
+    expect(container.querySelector(".onboarding-loading__book")).not.toBeInTheDocument();
   });
 
   it("exposes the reactive reduced-motion state to its visual treatment", () => {
@@ -44,13 +46,9 @@ describe("OnboardingLoadingState", () => {
         <Routes>
           <Route
             path="/onboarding"
-            element={(
-              <OnboardingRouteTransition
-                to="/dashboard"
-                message="Personalizing your dashboard…"
-                minDisplayTime={950}
-              />
-            )}
+            element={
+              <OnboardingRouteTransition to="/dashboard" message="Personalizing your dashboard…" minDisplayTime={950} />
+            }
           />
           <Route path="/dashboard" element={<p>Dashboard ready</p>} />
         </Routes>

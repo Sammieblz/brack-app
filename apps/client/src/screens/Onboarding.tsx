@@ -1,52 +1,31 @@
 import { useEffect, useRef, useState } from "react";
-import type { ElementType, ReactNode, RefObject } from "react";
+import type { ElementType, ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { gsap } from "gsap";
-import {
-  Check,
-  Clock,
-  NavArrowLeft,
-  NavArrowRight,
-  Palette,
-  Refresh,
-  SkipNext,
-} from "iconoir-react";
+import { motion } from "framer-motion";
+import { Check, Clock, Palette, Refresh } from "iconoir-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { TimePicker } from "@/components/ui/time-picker";
-import {
-  OnboardingChapterIndicator,
-  type OnboardingChapter,
-} from "@/components/onboarding/OnboardingChapterIndicator";
-import {
-  OnboardingLoadingState,
-  OnboardingRouteTransition,
-} from "@/components/onboarding/OnboardingLoadingState";
+import { OnboardingChapterIndicator, type OnboardingChapter } from "@/components/onboarding/OnboardingChapterIndicator";
+import { OnboardingLoadingState, OnboardingRouteTransition } from "@/components/onboarding/OnboardingLoadingState";
 import "@/components/onboarding/onboarding.css";
 import { ThemePaletteCarousel } from "@/components/ThemePaletteCarousel";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useGSAP } from "@/hooks/useGSAP";
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
 import { useReadingProfile } from "@/hooks/useReadingProfile";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
 import { themes } from "@/lib/themes";
 import { GENRES } from "@/constants";
 import { APP_ICONS } from "@/config/iconography";
-import {
-  BRACK_GOALS_IMAGE,
-  BRACK_STREAK_HAPPY_IMAGE,
-  BRACK_TROPHY_IMAGE,
-} from "@/config/brackAssets";
+import { BRACK_GOALS_IMAGE, BRACK_STREAK_HAPPY_IMAGE, BRACK_TROPHY_IMAGE } from "@/config/brackAssets";
 import {
   DEFAULT_ONBOARDING_FORM,
   ONBOARDING_STEPS,
@@ -77,6 +56,8 @@ type OnboardingTransition = {
   to: string;
   message: string;
 };
+
+type StepDirection = -1 | 1;
 
 const STEP_META: Record<OnboardingStepId, { title: string; eyebrow: string; icon: ElementType }> = {
   welcome: {
@@ -127,14 +108,21 @@ const ONBOARDING_CHAPTERS: readonly OnboardingChapter[] = ONBOARDING_STEPS.map((
   icon: STEP_META[step].icon,
 }));
 
-const BOOK_LENGTH_OPTIONS: Array<{ value: PreferredBookLength; label: string; description: string }> = [
+const BOOK_LENGTH_OPTIONS: Array<{
+  value: PreferredBookLength;
+  label: string;
+  description: string;
+}> = [
   { value: "short", label: "Short", description: "Under 250 pages" },
   { value: "medium", label: "Medium", description: "250-400 pages" },
   { value: "long", label: "Long", description: "400+ pages" },
   { value: "varied", label: "Varied", description: "Depends on the book" },
 ];
 
-const READING_TIME_OPTIONS: Array<{ value: PreferredReadingTime; label: string }> = [
+const READING_TIME_OPTIONS: Array<{
+  value: PreferredReadingTime;
+  label: string;
+}> = [
   { value: "morning", label: "Morning" },
   { value: "afternoon", label: "Afternoon" },
   { value: "evening", label: "Evening" },
@@ -169,40 +157,25 @@ const parseNullableNumber = (value: string) => {
 
 const Onboarding = () => {
   const { user, loading: authLoading } = useAuth();
-  const {
-    status,
-    loading: statusLoading,
-    refetch: refetchStatus,
-  } = useOnboardingStatus(user?.id);
-  const {
-    habits,
-    loading: profileLoading,
-    refetch: refetchProfile,
-  } = useReadingProfile(user?.id);
+  const { status, loading: statusLoading, refetch: refetchStatus } = useOnboardingStatus(user?.id);
+  const { habits, loading: profileLoading, refetch: refetchProfile } = useReadingProfile(user?.id);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const {
-    currentTheme,
-    previewTheme,
-    resetToDefaultTheme,
-    resolvedTheme,
-    setTheme,
-  } = useTheme();
+  const { currentTheme, previewTheme, resetToDefaultTheme, resolvedTheme, setTheme } = useTheme();
   const [stepIndex, setStepIndex] = useState(0);
+  const [stepDirection, setStepDirection] = useState<StepDirection>(1);
   const [formData, setFormData] = useState<OnboardingFormData>(DEFAULT_ONBOARDING_FORM);
   const [saving, setSaving] = useState(false);
   const [transition, setTransition] = useState<OnboardingTransition | null>(null);
-  const [completionBurst, setCompletionBurst] = useState(false);
+  const [completionSeal, setCompletionSeal] = useState(false);
   const [guestDraftHydrated, setGuestDraftHydrated] = useState(false);
   const onboardingExitCommittedRef = useRef(false);
   const hydratedRef = useRef(false);
-  const rootRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLDivElement>(null);
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const previousStepIndexRef = useRef(stepIndex);
-  const selectedGenresRef = useRef<HTMLDivElement>(null);
-  const goalNumberRef = useRef<HTMLSpanElement>(null);
+  const stepMotionAllowedRef = useRef(false);
   const reducedMotion = useReducedMotion();
 
   const currentStep = ONBOARDING_STEPS[stepIndex];
@@ -213,70 +186,6 @@ const Onboarding = () => {
   const isCompletedEdit =
     status?.onboarding_status === "completed" &&
     (searchParams.get("edit") === "1" || entrySource === "settings" || entrySource === "dashboard");
-
-  useGSAP(() => {
-    if (!rootRef.current) return;
-
-    const shellElements = rootRef.current.querySelectorAll(".onboarding-logo, .onboarding-shell");
-
-    if (reducedMotion) {
-      gsap.set(shellElements, { autoAlpha: 1, y: 0, scale: 1 });
-      return;
-    }
-
-    gsap.fromTo(
-      shellElements,
-      { autoAlpha: 0, y: 28, scale: 0.96 },
-      { autoAlpha: 1, y: 0, scale: 1, duration: 0.8, stagger: 0.12, ease: "power3.out" },
-    );
-  }, [reducedMotion]);
-
-  useGSAP(() => {
-    if (!pageRef.current) return;
-
-    if (reducedMotion) {
-      gsap.set(pageRef.current, { autoAlpha: 1, x: 0, y: 0, rotateY: 0 });
-      return;
-    }
-
-    gsap.fromTo(
-      pageRef.current,
-      {
-        autoAlpha: 0,
-        x: stepIndex === 0 ? 0 : 34,
-        y: 18,
-        rotateY: stepIndex === 0 ? 0 : -7,
-        transformOrigin: "left center",
-      },
-      { autoAlpha: 1, x: 0, y: 0, rotateY: 0, duration: 0.55, ease: "power3.out" },
-    );
-  }, [stepIndex, reducedMotion]);
-
-  useEffect(() => {
-    if (!goalNumberRef.current || reducedMotion) {
-      if (goalNumberRef.current) {
-        goalNumberRef.current.textContent = String(formData.goalTargetBooks ?? 0);
-      }
-      return;
-    }
-
-    const target = formData.goalTargetBooks ?? 0;
-    const model = { value: Number(goalNumberRef.current.textContent || 0) };
-    const tween = gsap.to(model, {
-      value: target,
-      duration: 0.55,
-      ease: "power2.out",
-      onUpdate: () => {
-        if (goalNumberRef.current) {
-          goalNumberRef.current.textContent = String(Math.round(model.value));
-        }
-      },
-    });
-
-    return () => {
-      tween.kill();
-    };
-  }, [formData.goalTargetBooks, reducedMotion]);
 
   useEffect(() => {
     if (previousStepIndexRef.current === stepIndex) return;
@@ -364,7 +273,8 @@ const Onboarding = () => {
       booksReadYear: habits.books_1yr ?? current.booksReadYear,
       averageDaysPerBook: habits.avg_time_per_book ?? current.averageDaysPerBook,
       preferredSessionMinutes: habits.preferred_session_minutes ?? current.preferredSessionMinutes,
-      preferredReadingTime: (habits.preferred_reading_time as PreferredReadingTime | null) ?? current.preferredReadingTime,
+      preferredReadingTime:
+        (habits.preferred_reading_time as PreferredReadingTime | null) ?? current.preferredReadingTime,
       readingFrequency: (habits.reading_frequency as ReadingFrequency | null) ?? current.readingFrequency,
       motivation: habits.motivation ?? current.motivation,
       preferredBookFormat: (habits.book_format as PreferredBookFormat | null) ?? current.preferredBookFormat,
@@ -388,34 +298,19 @@ const Onboarding = () => {
   };
 
   const setNumberField = (key: keyof OnboardingFormData, value: string) => {
-    setFormData((current) => ({ ...current, [key]: parseNullableNumber(value) }));
-  };
-
-  const animateSelectedGenre = () => {
-    if (!selectedGenresRef.current || reducedMotion) return;
-    const chips = selectedGenresRef.current.querySelectorAll(".selected-genre-chip");
-    const latest = chips[chips.length - 1];
-    if (!latest) return;
-
-    gsap.fromTo(
-      latest,
-      { autoAlpha: 0, x: -56, y: -18, scale: 0.7, rotate: -8 },
-      { autoAlpha: 1, x: 0, y: 0, scale: 1, rotate: 0, duration: 0.45, ease: "back.out(1.8)" },
-    );
+    setFormData((current) => ({
+      ...current,
+      [key]: parseNullableNumber(value),
+    }));
   };
 
   const toggleGenre = (genre: string) => {
-    const adding = !formData.favoriteGenres.includes(genre);
     setFormData((current) => ({
       ...current,
       favoriteGenres: current.favoriteGenres.includes(genre)
         ? current.favoriteGenres.filter((item) => item !== genre)
         : [...current.favoriteGenres, genre],
     }));
-
-    if (adding) {
-      window.requestAnimationFrame(animateSelectedGenre);
-    }
   };
 
   const handlePaletteSelect = async (themeId: string) => {
@@ -437,6 +332,7 @@ const Onboarding = () => {
 
   const handleNext = () => {
     if (stepIndex < ONBOARDING_STEPS.length - 1) {
+      setStepDirection(1);
       setStepIndex((index) => index + 1);
       return;
     }
@@ -454,6 +350,7 @@ const Onboarding = () => {
 
   const handleBack = () => {
     if (stepIndex > 0) {
+      setStepDirection(-1);
       setStepIndex((index) => index - 1);
       return;
     }
@@ -485,9 +382,7 @@ const Onboarding = () => {
         await Promise.all([refetchStatus(), refetchProfile()]);
       }
 
-      const destination = !isCompletedEdit && isMobileNativeRuntime()
-        ? "/app-permissions"
-        : returnPath;
+      const destination = !isCompletedEdit && isMobileNativeRuntime() ? "/app-permissions" : returnPath;
       if (!isCompletedEdit && isMobileNativeRuntime()) {
         markPostSignupPermissionsPending(user.id);
       }
@@ -510,7 +405,10 @@ const Onboarding = () => {
       const { normalized } = normalizeOnboardingFormData(formData);
 
       if (!user) {
-        saveOnboardingDraftCollection({ formData: normalized, lastStep: "review" });
+        saveOnboardingDraftCollection({
+          formData: normalized,
+          lastStep: "review",
+        });
         const draft = markOnboardingDraftReady({
           outcome: "completed",
           lastStep: "review",
@@ -518,7 +416,7 @@ const Onboarding = () => {
         if (!draft) throw new Error("Brack could not preserve this setup before sign-up.");
 
         if (!reducedMotion) {
-          setCompletionBurst(true);
+          setCompletionSeal(true);
           window.setTimeout(() => {
             setTransition({
               to: "/auth?mode=signup&from=onboarding",
@@ -542,29 +440,29 @@ const Onboarding = () => {
       await Promise.all([refetchStatus(), refetchProfile()]);
 
       if (resumedDraft) clearOnboardingDraft();
-      const destination = !isCompletedEdit && isMobileNativeRuntime()
-        ? "/app-permissions"
-        : returnPath;
+      const destination = !isCompletedEdit && isMobileNativeRuntime() ? "/app-permissions" : returnPath;
       if (!isCompletedEdit && isMobileNativeRuntime()) {
         markPostSignupPermissionsPending(user.id);
       }
 
       if (!reducedMotion) {
-        setCompletionBurst(true);
+        setCompletionSeal(true);
         window.setTimeout(() => {
           setTransition({
             to: destination,
-            message: destination === "/app-permissions"
-              ? "Your profile is ready. One last device choice…"
-              : "Personalizing your dashboard…",
+            message:
+              destination === "/app-permissions"
+                ? "Your profile is ready. One last device choice…"
+                : "Personalizing your dashboard…",
           });
         }, 520);
       } else {
         setTransition({
           to: destination,
-          message: destination === "/app-permissions"
-            ? "Your profile is ready. One last device choice…"
-            : "Personalizing your dashboard…",
+          message:
+            destination === "/app-permissions"
+              ? "Your profile is ready. One last device choice…"
+              : "Personalizing your dashboard…",
         });
       }
     } catch (err) {
@@ -580,83 +478,87 @@ const Onboarding = () => {
 
   const selectStep = (step: OnboardingStepId) => {
     const nextIndex = ONBOARDING_STEPS.indexOf(step);
-    if (nextIndex >= 0) setStepIndex(nextIndex);
+    if (nextIndex >= 0) {
+      setStepDirection(nextIndex < stepIndex ? -1 : 1);
+      setStepIndex(nextIndex);
+    }
   };
+
+  const shouldAnimateStep = !reducedMotion && stepMotionAllowedRef.current;
 
   return (
     <div
-      ref={rootRef}
-      className="onboarding-root relative bg-gradient-background"
+      className="onboarding-root bg-background text-foreground"
+      onPointerDownCapture={() => {
+        stepMotionAllowedRef.current = true;
+      }}
+      onKeyDownCapture={() => {
+        stepMotionAllowedRef.current = false;
+      }}
     >
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-[8%] top-[8%] h-40 w-40 rounded-full border border-primary/15" />
-        <div className="absolute right-[10%] top-[20%] h-64 w-64 rounded-full border border-primary/10" />
-        <div className="absolute bottom-[8%] left-[20%] h-52 w-52 rounded-full border border-accent/15" />
-      </div>
-
-      {completionBurst && (
-        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
-          {Array.from({ length: 20 }).map((_, index) => (
-            <span
-              key={index}
-              className="absolute h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_18px_hsl(var(--primary)/0.6)] animate-ping"
-              style={{
-                transform: `rotate(${index * 18}deg) translateY(-${60 + (index % 5) * 16}px)`,
-                animationDelay: `${index * 22}ms`,
-              }}
-            />
-          ))}
+      {completionSeal && (
+        <div className="onboarding-completion" aria-hidden="true">
+          <span className="onboarding-completion__rule" />
+          <span className="onboarding-completion__seal">
+            <Check className="h-6 w-6" />
+          </span>
         </div>
       )}
 
-      <div className="relative z-10 mx-auto flex h-full w-full max-w-7xl flex-col">
-        <header className="onboarding-logo flex shrink-0 items-center justify-between gap-3 py-1">
+      <div className="onboarding-frame mx-auto flex h-full w-full max-w-7xl flex-col">
+        <header className="onboarding-logo flex shrink-0 items-center justify-between gap-3">
           <button
             type="button"
             onClick={handleExitToHome}
-            className="flex min-h-11 items-center gap-2 rounded-md px-2 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:gap-3"
+            className="onboarding-home-control flex min-h-11 items-center px-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             aria-label="Return to Brack home"
           >
-            <ThemeAwareLogo variant="icon" size="h-9 w-9 sm:h-10 sm:w-10" className="drop-shadow-sm" />
-            <span aria-hidden="true">
-              <span className="block font-display text-xl font-bold leading-none">Brack</span>
-              <span className="hidden font-sans text-xs text-muted-foreground sm:block">Reading tracker</span>
-            </span>
+            <ThemeAwareLogo variant="full" size="h-8 sm:h-9" />
           </button>
 
           <Button
             variant="ghost"
             onClick={handleSkip}
             disabled={saving}
-            className="min-h-11 shrink-0 px-3"
+            className="onboarding-button onboarding-button--quiet min-h-11 shrink-0 px-3 sm:px-4"
           >
-            <SkipNext className="mr-2 h-4 w-4" />
-            {isCompletedEdit ? "Close" : isGuestOnboarding ? "Skip to sign up" : "Skip for now"}
+            <span className="sm:hidden">{isCompletedEdit ? "Close" : "Skip"}</span>
+            <span className="hidden sm:inline">
+              {isCompletedEdit ? "Close" : isGuestOnboarding ? "Skip to sign up" : "Skip for now"}
+            </span>
           </Button>
         </header>
 
-        <main className="onboarding-shell flex min-h-0 flex-1 py-0 sm:py-4 lg:py-5">
-          <Card className="onboarding-card mx-auto flex h-full w-full max-w-6xl overflow-hidden rounded-none border-x-0 border-border/70 bg-card/95 shadow-none backdrop-blur sm:rounded-xl sm:border-x sm:shadow-medium">
-            <CardContent className="flex h-full min-h-0 w-full flex-col p-0">
-              <div className="onboarding-chapter-dock shrink-0 border-b border-border/70 px-4 py-2.5 sm:px-6 sm:py-4 lg:px-8">
-                <OnboardingChapterIndicator
-                  chapters={ONBOARDING_CHAPTERS}
-                  currentStep={currentStep}
-                  disabled={saving}
-                  onStepSelect={selectStep}
-                />
-              </div>
+        <main className="onboarding-shell min-h-0 flex-1">
+          <section className="onboarding-folio mx-auto grid h-full w-full max-w-6xl overflow-hidden border-y border-border bg-card">
+            <aside className="onboarding-chapter-dock min-w-0 border-b border-border">
+              <OnboardingChapterIndicator
+                chapters={ONBOARDING_CHAPTERS}
+                currentStep={currentStep}
+                disabled={saving}
+                onStepSelect={selectStep}
+              />
+            </aside>
 
+            <div className="onboarding-reader flex min-h-0 min-w-0 flex-col">
               <div
                 ref={contentScrollRef}
-                className="onboarding-content-scroll relative min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 lg:p-8"
+                className="onboarding-content-scroll relative min-h-0 flex-1 overflow-y-auto overscroll-contain"
               >
-                <div
+                <motion.div
+                  key={currentStep}
                   ref={pageRef}
                   className="onboarding-page min-h-full focus:outline-none"
                   role="region"
                   aria-label={`${STEP_LABELS[currentStep]} onboarding chapter`}
                   tabIndex={-1}
+                  data-motion={shouldAnimateStep ? "directional" : "instant"}
+                  initial={shouldAnimateStep ? { opacity: 0, x: stepDirection * 18 } : false}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{
+                    duration: shouldAnimateStep ? 0.24 : 0,
+                    ease: [0.25, 1, 0.5, 1],
+                  }}
                 >
                   {currentStep === "welcome" && (
                     <WelcomeStep
@@ -668,12 +570,7 @@ const Onboarding = () => {
                   )}
 
                   {currentStep === "taste" && (
-                    <TasteStep
-                      formData={formData}
-                      selectedGenresRef={selectedGenresRef}
-                      onToggleGenre={toggleGenre}
-                      onFieldChange={updateField}
-                    />
+                    <TasteStep formData={formData} onToggleGenre={toggleGenre} onFieldChange={updateField} />
                   )}
 
                   {currentStep === "palette" && (
@@ -685,44 +582,32 @@ const Onboarding = () => {
                   )}
 
                   {currentStep === "pace" && (
-                    <PaceStep
-                      formData={formData}
-                      onFieldChange={updateField}
-                      onNumberFieldChange={setNumberField}
-                    />
+                    <PaceStep formData={formData} onFieldChange={updateField} onNumberFieldChange={setNumberField} />
                   )}
 
                   {currentStep === "goal" && (
-                    <GoalStep
-                      formData={formData}
-                      goalNumberRef={goalNumberRef}
-                      onFieldChange={updateField}
-                      onNumberFieldChange={setNumberField}
-                    />
+                    <GoalStep formData={formData} onFieldChange={updateField} onNumberFieldChange={setNumberField} />
                   )}
 
-                  {currentStep === "review" && (
-                    <ReviewStep formData={formData} isPreAuth={isGuestOnboarding} />
-                  )}
-                </div>
+                  {currentStep === "review" && <ReviewStep formData={formData} isPreAuth={isGuestOnboarding} />}
+                </motion.div>
               </div>
 
-              <div className="onboarding-action-dock flex shrink-0 items-center gap-2 border-t border-border/70 bg-card/95 px-4 pt-3 backdrop-blur sm:justify-between sm:gap-3 sm:px-6 sm:pt-4 lg:px-8">
+              <div className="onboarding-action-dock flex shrink-0 items-center justify-between gap-3 border-t border-border bg-card">
                 <Button
                   variant="outline"
                   onClick={handleBack}
                   disabled={saving}
-                  className="min-h-11 shrink-0 px-3 sm:px-4"
+                  className="onboarding-button onboarding-button--secondary min-h-11 shrink-0 px-4"
                   aria-label={stepIndex === 0 ? "Return to Brack home" : "Go back one onboarding chapter"}
                 >
-                  <NavArrowLeft className="h-4 w-4 min-[360px]:mr-2" />
-                  <span className="hidden min-[360px]:inline">{stepIndex === 0 ? "Home" : "Back"}</span>
+                  {stepIndex === 0 ? "Home" : "Back"}
                 </Button>
 
                 <Button
                   onClick={handleNext}
                   disabled={saving}
-                  className="min-h-11 min-w-0 flex-1 sm:min-w-[10rem] sm:flex-none"
+                  className="onboarding-button onboarding-button--primary min-h-11 min-w-0 flex-1 px-5 sm:min-w-[10rem] sm:flex-none"
                 >
                   {saving ? (
                     <>
@@ -730,77 +615,95 @@ const Onboarding = () => {
                       Saving
                     </>
                   ) : stepIndex === ONBOARDING_STEPS.length - 1 ? (
-                    <>
-                      {isGuestOnboarding ? (
-                        <>
-                          <span className="hidden min-[360px]:inline">Continue to sign up</span>
-                          <span className="min-[360px]:hidden">Sign up</span>
-                        </>
-                      ) : "Finish setup"}
-                      <Check className="ml-2 h-4 w-4" />
-                    </>
+                    isGuestOnboarding ? (
+                      <>
+                        <span className="hidden min-[360px]:inline">Continue to sign up</span>
+                        <span className="min-[360px]:hidden">Sign up</span>
+                      </>
+                    ) : (
+                      "Finish setup"
+                    )
                   ) : (
-                    <>
-                      Continue
-                      <NavArrowRight className="ml-2 h-4 w-4" />
-                    </>
+                    "Continue"
                   )}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         </main>
       </div>
     </div>
   );
 };
 
+const OnboardingStepIntro = ({
+  step,
+  title,
+  description,
+}: {
+  step: OnboardingStepId;
+  title?: ReactNode;
+  description: ReactNode;
+}) => {
+  const stepNumber = ONBOARDING_STEPS.indexOf(step) + 1;
+
+  return (
+    <header className="onboarding-step-intro">
+      <p className="onboarding-step-intro__eyebrow">
+        <span>{String(stepNumber).padStart(2, "0")}</span>
+        {STEP_META[step].eyebrow}
+      </p>
+      <h1 className="onboarding-step-intro__title">{title ?? STEP_META[step].title}</h1>
+      <p className="onboarding-step-intro__description">{description}</p>
+    </header>
+  );
+};
+
 const WelcomeStep = ({ userName }: { userName?: string }) => (
-  <div className="grid min-h-full min-w-0 grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-center lg:gap-10">
-    <div className="min-w-0 space-y-4 sm:space-y-5 lg:py-4">
-      <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-sm text-primary">
-        <APP_ICONS.dashboard.insights className="h-4 w-4" />
-        Your first reading profile
-      </div>
-      <div className="space-y-3">
-        <h1 className="max-w-3xl font-display text-[clamp(1.9rem,8.2vw,3rem)] font-bold leading-[1.08]">
-          {userName ? `${userName}, ` : ""}make Brack feel like it already knows your library.
-        </h1>
-        <p className="max-w-2xl font-sans text-base text-muted-foreground sm:text-lg">
-          A few thoughtful choices shape your goals, recommendations, and daily reading rhythm. You can change
-          everything later in Settings.
-        </p>
-      </div>
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+  <div className="onboarding-step-layout onboarding-step-layout--welcome">
+    <div className="min-w-0">
+      <OnboardingStepIntro
+        step="welcome"
+        title={
+          userName
+            ? `${userName}, make Brack feel like it already knows your library.`
+            : "Make Brack feel like it already knows your library."
+        }
+        description="A few thoughtful choices shape your goals, recommendations, and daily reading rhythm. You can change everything later in Settings."
+      />
+
+      <ol className="onboarding-primer-list">
         {[
           ["Make it yours", "Choose a palette and the books you love."],
           ["Find your rhythm", "Set a pace that fits your real life."],
           ["Read with direction", "Give your dashboard a useful first goal."],
         ].map(([title, body], index) => (
-          <div
-            key={title}
-            className="min-w-0 rounded-lg border border-border/65 bg-muted/25 p-2 text-center sm:p-3.5 sm:text-left"
-          >
-            <span className="mb-2 grid h-7 w-7 place-items-center rounded-md bg-primary/10 font-sans text-xs font-bold text-primary">
-              {index + 1}
+          <li key={title} className="onboarding-primer-list__item">
+            <span className="onboarding-primer-list__number" aria-hidden="true">
+              {String(index + 1).padStart(2, "0")}
             </span>
-            <p className="font-sans text-sm font-semibold text-foreground">{title}</p>
-            <p className="mt-1 hidden font-sans text-xs text-muted-foreground sm:block">{body}</p>
-          </div>
+            <span>
+              <span className="onboarding-primer-list__title">{title}</span>
+              <span className="onboarding-primer-list__body">{body}</span>
+            </span>
+          </li>
         ))}
-      </div>
+      </ol>
     </div>
 
-    <div className="streak-art-stage mx-auto w-[clamp(7.5rem,27vw,13rem)] self-center" aria-hidden="true">
-      <span className="streak-art-aura" />
-      <span className="streak-art-shadow" />
-      <img
-        src={BRACK_STREAK_HAPPY_IMAGE}
-        alt=""
-        className="streak-art-float onboarding-floating-art aspect-square w-full object-contain"
-        decoding="async"
-      />
-    </div>
+    <aside className="onboarding-aside onboarding-welcome-aside">
+      <div className="streak-art-stage mx-auto w-[clamp(7rem,28vw,11rem)]" aria-hidden="true">
+        <span className="streak-art-aura" />
+        <span className="streak-art-shadow" />
+        <img
+          src={BRACK_STREAK_HAPPY_IMAGE}
+          alt=""
+          className="onboarding-floating-art aspect-square w-full object-contain"
+          decoding="async"
+        />
+      </div>
+      <p className="onboarding-aside__caption">A profile built from your reading signals, not a generic checklist.</p>
+    </aside>
   </div>
 );
 
@@ -813,14 +716,13 @@ const PaletteStep = ({
   previewMode: "light" | "dark";
   onSelectTheme: (themeId: string) => Promise<void>;
 }) => (
-  <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_15rem]">
+  <div className="onboarding-step-layout">
     <div className="min-w-0 space-y-5">
-      <div>
-        <h2 className="font-display text-2xl font-bold">Pick the palette Brack should remember</h2>
-        <p className="font-sans text-sm text-muted-foreground">
-          This applies immediately across the app and is saved to your profile. You can change it later in Settings.
-        </p>
-      </div>
+      <OnboardingStepIntro
+        step="palette"
+        title="Pick the palette Brack should remember"
+        description="Preview the app in a color that feels like yours. You can change it later in Settings."
+      />
 
       <ThemePaletteCarousel
         selectedTheme={selectedTheme}
@@ -830,12 +732,12 @@ const PaletteStep = ({
       />
     </div>
 
-    <div className="hidden rounded-lg bg-muted/30 p-4 lg:block">
-      <div className="mb-4 flex items-center gap-2">
+    <aside className="onboarding-aside hidden lg:block">
+      <div className="onboarding-aside__heading">
         <Palette className="h-5 w-5 text-primary" />
         <h3 className="font-display text-lg font-semibold">Live preview</h3>
       </div>
-      <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+      <div className="onboarding-palette-preview">
         <div className="flex items-center gap-3">
           <ThemeAwareLogo variant="icon" size="h-10 w-10" />
           <div>
@@ -848,12 +750,12 @@ const PaletteStep = ({
           <span data-complete="true" />
           <span />
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-md border border-border bg-background p-3">
+        <div className="grid grid-cols-2 border-y border-border">
+          <div className="border-r border-border py-3 pr-3">
             <p className="font-sans text-xs text-muted-foreground">Goal</p>
             <p className="font-sans text-lg font-bold text-primary">12</p>
           </div>
-          <div className="rounded-md border border-border bg-background p-3">
+          <div className="py-3 pl-3">
             <p className="font-sans text-xs text-muted-foreground">Streak</p>
             <p className="font-sans text-lg font-bold text-primary">3</p>
           </div>
@@ -862,23 +764,17 @@ const PaletteStep = ({
       <p className="mt-3 font-sans text-xs text-muted-foreground">
         Public pages stay on Brack's default palette. This palette starts after you choose it.
       </p>
-    </div>
+    </aside>
   </div>
 );
 
 interface TasteStepProps {
   formData: OnboardingFormData;
-  selectedGenresRef: RefObject<HTMLDivElement>;
   onToggleGenre: (genre: string) => void;
   onFieldChange: <K extends keyof OnboardingFormData>(key: K, value: OnboardingFormData[K]) => void;
 }
 
-const TasteStep = ({
-  formData,
-  selectedGenresRef,
-  onToggleGenre,
-  onFieldChange,
-}: TasteStepProps) => {
+const TasteStep = ({ formData, onToggleGenre, onFieldChange }: TasteStepProps) => {
   const [showAllGenres, setShowAllGenres] = useState(false);
   const collapsedGenres = GENRES.filter(
     (genre, index) => index < INITIAL_GENRE_COUNT || formData.favoriteGenres.includes(genre),
@@ -887,127 +783,109 @@ const TasteStep = ({
   const hiddenGenreCount = Math.max(0, GENRES.length - collapsedGenres.length);
 
   return (
-  <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
-    <div className="min-w-0 space-y-5 sm:space-y-6">
-      <div>
-        <h2 className="font-display text-2xl font-bold">Choose the genres Brack should learn first</h2>
-        <p className="font-sans text-sm text-muted-foreground">
-          Pick at least one. These become search chips, reader matching signals, and recommendation context.
-        </p>
-      </div>
+    <div className="onboarding-step-layout onboarding-step-layout--wide-aside">
+      <div className="min-w-0 space-y-5 sm:space-y-6">
+        <OnboardingStepIntro
+          step="taste"
+          title="Choose the genres Brack should learn first"
+          description="Pick at least one. These become search chips, reader matching signals, and recommendation context."
+        />
 
-      <div
-        id="onboarding-genre-options"
-        className="flex flex-wrap gap-2"
-        role="group"
-        aria-label="Favorite genres"
-      >
-        {visibleGenres.map((genre) => {
-          const selected = formData.favoriteGenres.includes(genre);
-          return (
-            <button
-              key={genre}
-              type="button"
-              onClick={() => onToggleGenre(genre)}
-              aria-pressed={selected}
-              className={cn(
-                "min-h-11 rounded-full border px-3 py-2 font-sans text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                selected
-                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                  : "border-border bg-background hover:border-primary/60 hover:bg-primary/10",
-              )}
-            >
-              {genre}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="flex min-h-11 flex-wrap items-center justify-between gap-2 rounded-lg bg-muted/25 px-3 py-2">
-        <p className="font-sans text-sm text-muted-foreground" aria-live="polite">
-          <span className="font-semibold text-foreground">{formData.favoriteGenres.length}</span>{" "}
-          {formData.favoriteGenres.length === 1 ? "genre" : "genres"} selected
-        </p>
-        {hiddenGenreCount > 0 && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="min-h-11 px-2 text-primary"
-            aria-expanded={showAllGenres}
-            aria-controls="onboarding-genre-options"
-            onClick={() => setShowAllGenres((current) => !current)}
-          >
-            {showAllGenres ? "Show fewer genres" : `Show ${hiddenGenreCount} more`}
-          </Button>
-        )}
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="slowestGenre">Slowest genre</Label>
-          <Select
-            value={formData.slowestGenre}
-            onValueChange={(value) => onFieldChange("slowestGenre", value)}
-          >
-            <SelectTrigger id="slowestGenre" className="min-h-11">
-              <SelectValue placeholder="Select a genre" />
-            </SelectTrigger>
-            <SelectContent>
-              {GENRES.map((genre) => (
-                <SelectItem key={genre} value={genre}>
-                  {genre}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div id="onboarding-genre-options" className="flex flex-wrap gap-2" role="group" aria-label="Favorite genres">
+          {visibleGenres.map((genre) => {
+            const selected = formData.favoriteGenres.includes(genre);
+            return (
+              <button
+                key={genre}
+                type="button"
+                onClick={() => onToggleGenre(genre)}
+                aria-pressed={selected}
+                data-selected={selected}
+                className="onboarding-choice onboarding-genre-choice min-h-11 rounded-full border px-3 py-2 font-sans text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                {genre}
+              </button>
+            );
+          })}
         </div>
 
-        <fieldset className="space-y-2">
-          <legend className="font-sans text-sm font-medium leading-none text-foreground">
-            Preferred book length
-          </legend>
-          <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
-            {BOOK_LENGTH_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => onFieldChange("preferredBookLength", option.value)}
-                aria-pressed={formData.preferredBookLength === option.value}
-                className={cn(
-                  "min-h-11 rounded-md border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                  formData.preferredBookLength === option.value
-                    ? "border-primary bg-primary/[0.12] text-primary"
-                    : "border-border bg-background hover:bg-muted/60",
-                )}
-              >
-                <span className="block font-sans text-sm font-semibold">{option.label}</span>
-                <span className="block font-sans text-xs text-muted-foreground">{option.description}</span>
-              </button>
-            ))}
-          </div>
-        </fieldset>
-      </div>
-    </div>
+        <div className="onboarding-selection-status flex min-h-11 flex-wrap items-center justify-between gap-2 border-y border-border py-2">
+          <p className="font-sans text-sm text-muted-foreground" aria-live="polite">
+            <span className="font-semibold text-foreground">{formData.favoriteGenres.length}</span>{" "}
+            {formData.favoriteGenres.length === 1 ? "genre" : "genres"} selected
+          </p>
+          {hiddenGenreCount > 0 && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="onboarding-button onboarding-button--quiet min-h-11 px-2 text-primary"
+              aria-expanded={showAllGenres}
+              aria-controls="onboarding-genre-options"
+              onClick={() => setShowAllGenres((current) => !current)}
+            >
+              {showAllGenres ? "Show fewer genres" : `Show ${hiddenGenreCount} more`}
+            </Button>
+          )}
+        </div>
 
-    <div className="hidden rounded-lg bg-muted/30 p-4 xl:block">
-      <div className="mb-3 flex items-center gap-2">
-        <APP_ICONS.readers.similarTaste className="h-5 w-5 text-primary" />
-        <h3 className="font-display text-lg font-semibold">Selected genres</h3>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="slowestGenre">Slowest genre</Label>
+            <Select value={formData.slowestGenre} onValueChange={(value) => onFieldChange("slowestGenre", value)}>
+              <SelectTrigger id="slowestGenre" className="min-h-11">
+                <SelectValue placeholder="Select a genre" />
+              </SelectTrigger>
+              <SelectContent>
+                {GENRES.map((genre) => (
+                  <SelectItem key={genre} value={genre}>
+                    {genre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <fieldset className="space-y-2">
+            <legend className="font-sans text-sm font-medium leading-none text-foreground">
+              Preferred book length
+            </legend>
+            <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
+              {BOOK_LENGTH_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => onFieldChange("preferredBookLength", option.value)}
+                  aria-pressed={formData.preferredBookLength === option.value}
+                  data-selected={formData.preferredBookLength === option.value}
+                  className="onboarding-choice min-h-11 rounded-md border p-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <span className="block font-sans text-sm font-semibold">{option.label}</span>
+                  <span className="block font-sans text-xs text-muted-foreground">{option.description}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        </div>
       </div>
-      <div ref={selectedGenresRef} className="flex min-h-20 flex-wrap content-start gap-2">
-        {formData.favoriteGenres.length === 0 ? (
-          <p className="font-sans text-sm text-muted-foreground">Your choices will collect here.</p>
-        ) : (
-          formData.favoriteGenres.map((genre) => (
-            <Badge key={genre} className="selected-genre-chip">
-              {genre}
-            </Badge>
-          ))
-        )}
-      </div>
+
+      <aside className="onboarding-aside hidden xl:block">
+        <div className="onboarding-aside__heading">
+          <h3 className="font-display text-lg font-semibold">Selected genres</h3>
+        </div>
+        <div className="flex min-h-20 flex-wrap content-start gap-2">
+          {formData.favoriteGenres.length === 0 ? (
+            <p className="font-sans text-sm text-muted-foreground">Your choices will collect here.</p>
+          ) : (
+            formData.favoriteGenres.map((genre) => (
+              <Badge key={genre} className="selected-genre-chip">
+                {genre}
+              </Badge>
+            ))
+          )}
+        </div>
+      </aside>
     </div>
-  </div>
   );
 };
 
@@ -1019,45 +897,49 @@ interface PaceStepProps {
 
 const PaceStep = ({ formData, onFieldChange, onNumberFieldChange }: PaceStepProps) => (
   <div className="space-y-6">
-    <div>
-      <h2 className="font-display text-2xl font-bold">Tell Brack how reading fits your real life</h2>
-      <p className="font-sans text-sm text-muted-foreground">
-        These fields are optional, but they make goal suggestions and streak nudges less generic.
-      </p>
-    </div>
+    <OnboardingStepIntro
+      step="pace"
+      title="Tell Brack how reading fits your real life"
+      description="These fields are optional, but they make goal suggestions and streak nudges less generic."
+    />
 
-    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <NumberField
-        id="books6mo"
-        label="Books in 6 months"
-        value={numberToInput(formData.booksReadSixMonths)}
-        onChange={(value) => onNumberFieldChange("booksReadSixMonths", value)}
-        placeholder="6"
-      />
-      <NumberField
-        id="books1yr"
-        label="Books in 1 year"
-        value={numberToInput(formData.booksReadYear)}
-        onChange={(value) => onNumberFieldChange("booksReadYear", value)}
-        placeholder="12"
-      />
-      <NumberField
-        id="avgDays"
-        label="Average days/book"
-        value={numberToInput(formData.averageDaysPerBook)}
-        onChange={(value) => onNumberFieldChange("averageDaysPerBook", value)}
-        placeholder="21"
-      />
-      <NumberField
-        id="sessionLength"
-        label="Session minutes"
-        value={numberToInput(formData.preferredSessionMinutes)}
-        onChange={(value) => onNumberFieldChange("preferredSessionMinutes", value)}
-        placeholder="20"
-      />
-    </div>
+    <section className="onboarding-form-section" aria-labelledby="onboarding-recent-pace">
+      <h2 id="onboarding-recent-pace" className="onboarding-form-section__title">
+        Recent pace
+      </h2>
+      <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 xl:grid-cols-4">
+        <NumberField
+          id="books6mo"
+          label="Books in 6 months"
+          value={numberToInput(formData.booksReadSixMonths)}
+          onChange={(value) => onNumberFieldChange("booksReadSixMonths", value)}
+          placeholder="6"
+        />
+        <NumberField
+          id="books1yr"
+          label="Books in 1 year"
+          value={numberToInput(formData.booksReadYear)}
+          onChange={(value) => onNumberFieldChange("booksReadYear", value)}
+          placeholder="12"
+        />
+        <NumberField
+          id="avgDays"
+          label="Average days/book"
+          value={numberToInput(formData.averageDaysPerBook)}
+          onChange={(value) => onNumberFieldChange("averageDaysPerBook", value)}
+          placeholder="21"
+        />
+        <NumberField
+          id="sessionLength"
+          label="Session minutes"
+          value={numberToInput(formData.preferredSessionMinutes)}
+          onChange={(value) => onNumberFieldChange("preferredSessionMinutes", value)}
+          placeholder="20"
+        />
+      </div>
+    </section>
 
-    <div className="grid gap-4 md:grid-cols-3">
+    <section className="onboarding-form-section grid gap-5 md:grid-cols-3" aria-label="Reading preferences">
       <OptionGrid
         label="Preferred time"
         value={formData.preferredReadingTime}
@@ -1076,9 +958,9 @@ const PaceStep = ({ formData, onFieldChange, onNumberFieldChange }: PaceStepProp
         options={FORMAT_OPTIONS}
         onChange={(value) => onFieldChange("preferredBookFormat", value as PreferredBookFormat)}
       />
-    </div>
+    </section>
 
-    <div className="space-y-2">
+    <div className="onboarding-form-section space-y-2">
       <Label htmlFor="motivation">What are you reading toward?</Label>
       <Input
         id="motivation"
@@ -1093,25 +975,18 @@ const PaceStep = ({ formData, onFieldChange, onNumberFieldChange }: PaceStepProp
 
 interface GoalStepProps {
   formData: OnboardingFormData;
-  goalNumberRef: RefObject<HTMLSpanElement>;
   onFieldChange: <K extends keyof OnboardingFormData>(key: K, value: OnboardingFormData[K]) => void;
   onNumberFieldChange: (key: keyof OnboardingFormData, value: string) => void;
 }
 
-const GoalStep = ({
-  formData,
-  goalNumberRef,
-  onFieldChange,
-  onNumberFieldChange,
-}: GoalStepProps) => (
-  <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+const GoalStep = ({ formData, onFieldChange, onNumberFieldChange }: GoalStepProps) => (
+  <div className="onboarding-step-layout onboarding-step-layout--wide-aside">
     <div className="min-w-0 space-y-5 sm:space-y-6">
-      <div>
-        <h2 className="font-display text-2xl font-bold">Set a first target</h2>
-        <p className="font-sans text-sm text-muted-foreground">
-          Brack uses this for dashboard progress, analytics targets, and smarter empty states.
-        </p>
-      </div>
+      <OnboardingStepIntro
+        step="goal"
+        title="Set a first target"
+        description="Brack uses this for dashboard progress, analytics targets, and smarter empty states."
+      />
 
       <div className="grid gap-4 md:grid-cols-3">
         <NumberField
@@ -1136,7 +1011,7 @@ const GoalStep = ({
         />
       </div>
 
-      <div className="rounded-lg bg-muted/30 p-4">
+      <div className="onboarding-reminder-row border-y border-border py-4">
         <div className="flex items-start justify-between gap-4">
           <Label htmlFor="onboarding-reminder" className="min-h-11 min-w-0 flex-1 cursor-pointer py-1">
             <span className="block font-sans text-base font-medium text-foreground">Daily reminder</span>
@@ -1165,7 +1040,7 @@ const GoalStep = ({
       </div>
     </div>
 
-    <div className="hidden rounded-lg bg-muted/30 p-4 text-center lg:block">
+    <aside className="onboarding-aside hidden text-center lg:block">
       <img
         src={BRACK_GOALS_IMAGE}
         alt=""
@@ -1175,33 +1050,28 @@ const GoalStep = ({
       />
       <div className="font-sans text-sm text-muted-foreground">Current target</div>
       <div className="font-display text-5xl font-bold text-primary">
-        <span ref={goalNumberRef}>{formData.goalTargetBooks ?? 0}</span>
+        <span>{formData.goalTargetBooks ?? 0}</span>
       </div>
       <div className="font-sans text-sm text-muted-foreground">books</div>
-    </div>
+    </aside>
   </div>
 );
 
-const ReviewStep = ({
-  formData,
-  isPreAuth = false,
-}: {
-  formData: OnboardingFormData;
-  isPreAuth?: boolean;
-}) => (
-  <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_17rem]">
+const ReviewStep = ({ formData, isPreAuth = false }: { formData: OnboardingFormData; isPreAuth?: boolean }) => (
+  <div className="onboarding-step-layout">
     <div className="min-w-0 space-y-5">
-      <div>
-        <h2 className="font-display text-2xl font-bold">This is the starting profile Brack will use</h2>
-        <p className="font-sans text-sm text-muted-foreground">
-          {isPreAuth
+      <OnboardingStepIntro
+        step="review"
+        title="This is the starting profile Brack will use"
+        description={
+          isPreAuth
             ? "Your choices stay only in this open setup. Refreshing or closing it starts over; after verification Brack applies them to your profile."
-            : "You can edit this from Settings later. Completing now removes the dashboard setup prompt."}
-        </p>
-      </div>
+            : "You can edit this from Settings later. Completing now removes the dashboard setup prompt."
+        }
+      />
 
-      <div className="onboarding-summary-grid grid gap-3 min-[360px]:grid-cols-2">
-        <SummaryCard title="Taste" icon={APP_ICONS.readers.similarTaste}>
+      <div className="onboarding-summary-ledger">
+        <SummaryRow index="01" title="Taste">
           <div className="flex flex-wrap gap-2">
             {formData.favoriteGenres.length > 0 ? (
               formData.favoriteGenres.map((genre) => (
@@ -1213,37 +1083,37 @@ const ReviewStep = ({
               <span className="text-muted-foreground">No genres selected</span>
             )}
           </div>
-        </SummaryCard>
+        </SummaryRow>
 
-        <SummaryCard title="Palette" icon={Palette}>
+        <SummaryRow index="02" title="Palette">
           <p>{themes.find((theme) => theme.id === formData.colorTheme)?.name ?? "Warm Sunset"}</p>
           <p className="text-muted-foreground">
             {isPreAuth ? "Applied after secure sign-up" : "Saved to your app appearance"}
           </p>
-        </SummaryCard>
+        </SummaryRow>
 
-        <SummaryCard title="Pace" icon={Clock}>
+        <SummaryRow index="03" title="Pace">
           <p>{formData.preferredSessionMinutes ?? "No"} min sessions</p>
           <p className="text-muted-foreground">
             {formData.readingFrequency || "No cadence"} · {formData.preferredReadingTime || "No time set"}
           </p>
-        </SummaryCard>
+        </SummaryRow>
 
-        <SummaryCard title="Goal" icon={APP_ICONS.dashboard.goal}>
+        <SummaryRow index="04" title="Goal">
           <p>{formData.goalTargetBooks ?? 0} books</p>
           <p className="text-muted-foreground">
             {formData.reminderEnabled ? `Reminder at ${formData.reminderTime}` : "No reminder"}
           </p>
-        </SummaryCard>
+        </SummaryRow>
 
-        <SummaryCard title="Learning signals" icon={APP_ICONS.dashboard.insights}>
+        <SummaryRow index="05" title="Learning signals">
           <p>{formData.preferredBookLength || "Any"} length</p>
           <p className="text-muted-foreground">{formData.preferredBookFormat || "Any"} format</p>
-        </SummaryCard>
+        </SummaryRow>
       </div>
     </div>
 
-    <div className="hidden rounded-lg bg-muted/30 p-4 text-center lg:block">
+    <aside className="onboarding-aside hidden text-center lg:block">
       <img
         src={BRACK_TROPHY_IMAGE}
         alt=""
@@ -1257,7 +1127,7 @@ const ReviewStep = ({
           ? "Next, create your account. Brack applies these choices only after verification."
           : "Habits, goal, notification preference, and learning signals will be saved together."}
       </p>
-    </div>
+    </aside>
   </div>
 );
 
@@ -1305,19 +1175,15 @@ const OptionGrid = ({
 }) => (
   <fieldset className="space-y-2">
     <legend className="font-sans text-sm font-medium leading-none text-foreground">{label}</legend>
-    <div className="onboarding-option-grid grid grid-cols-2 gap-2 md:grid-cols-1">
+    <div className="onboarding-option-grid grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 md:grid-cols-1">
       {options.map((option) => (
         <button
           key={option.value}
           type="button"
           onClick={() => onChange(option.value)}
           aria-pressed={value === option.value}
-          className={cn(
-            "min-h-11 rounded-md border px-3 py-2 text-left font-sans text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-            value === option.value
-              ? "border-primary bg-primary/[0.12] text-primary"
-              : "border-border bg-background hover:bg-muted/60",
-          )}
+          data-selected={value === option.value}
+          className="onboarding-choice min-h-11 rounded-md border px-3 py-2 text-left font-sans text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           {option.label}
         </button>
@@ -1326,21 +1192,13 @@ const OptionGrid = ({
   </fieldset>
 );
 
-const SummaryCard = ({
-  title,
-  icon: Icon,
-  children,
-}: {
-  title: string;
-  icon: ElementType;
-  children: ReactNode;
-}) => (
-  <div className="onboarding-summary-card rounded-lg bg-muted/30 p-3 sm:p-4">
-    <div className="mb-2 flex items-center gap-2 sm:mb-3">
-      <Icon className="h-5 w-5 text-primary" />
-      <h3 className="font-display text-base font-semibold sm:text-lg">{title}</h3>
-    </div>
-    <div className="font-sans text-sm">{children}</div>
+const SummaryRow = ({ index, title, children }: { index: string; title: string; children: ReactNode }) => (
+  <div className="onboarding-summary-row">
+    <span className="onboarding-summary-row__index" aria-hidden="true">
+      {index}
+    </span>
+    <h3 className="onboarding-summary-row__title">{title}</h3>
+    <div className="onboarding-summary-row__value">{children}</div>
   </div>
 );
 

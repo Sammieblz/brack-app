@@ -24,6 +24,11 @@ const dashboardArtwork = [
   "brack-trophy/brack-trophy.webp",
 ];
 const manifestPath = path.join(repoRoot, "assets", "media-assets-manifest.json");
+const landingCampaignWordmarkPath = path.join(
+  publicRoot,
+  "landing-page",
+  "brack-logo-transparent-bg-orange-text.png",
+);
 const scriptPath = fileURLToPath(import.meta.url);
 const checkOnly = process.argv.includes("--check");
 const transparentBackground = { r: 0, g: 0, b: 0, alpha: 0 };
@@ -112,6 +117,12 @@ const requiredPublicPngs = new Set([
   "apps/client/public/brack-favicon/favicon-96x96.png",
   "apps/client/public/brack-favicon/web-app-manifest-192x192.png",
   "apps/client/public/brack-favicon/web-app-manifest-512x512.png",
+  // These supplied marketing visuals intentionally remain PNGs: the product
+  // previews need exact UI text rendering and the campaign wordmark retains
+  // its transparent background. They are losslessly optimized in place below.
+  "apps/client/public/landing-page/brack-logo-transparent-bg-orange-text.png",
+  "apps/client/public/landing-page/landing-page-pic-dark.png",
+  "apps/client/public/landing-page/landing-page-pic-light.png",
 ]);
 
 const mediaExtensions = new Set([
@@ -332,6 +343,35 @@ const optimizePngIfSmaller = async (target) => {
     );
   }
   return writeBufferIfChanged(target, candidate);
+};
+
+const normalizeLandingCampaignWordmark = async () => {
+  if (!(await exists(landingCampaignWordmarkPath))) {
+    throw new Error(
+      `Missing landing wordmark: ${toRepoPath(landingCampaignWordmarkPath)}.`,
+    );
+  }
+
+  const original = await readFile(landingCampaignWordmarkPath);
+  const metadata = await sharp(original, { failOn: "error" }).metadata();
+  if (!metadata.hasAlpha) {
+    throw new Error("The landing campaign wordmark must retain transparency.");
+  }
+
+  // The supplied master has a large square transparent canvas. Trimming only
+  // transparent/near-transparent edge noise preserves every visible logo pixel
+  // at its original resolution while avoiding a 1+ MiB download on every visit.
+  const candidate = await sharp(original, { failOn: "error" })
+    .trim({ background: transparentBackground, threshold: 1 })
+    .png({ compressionLevel: 9, adaptiveFiltering: true })
+    .toBuffer();
+  if (candidate.length >= original.length) return false;
+  if (checkOnly) {
+    throw new Error(
+      `Landing wordmark has excess transparent canvas: ${toRepoPath(landingCampaignWordmarkPath)}. Run npm run media:assets.`,
+    );
+  }
+  return writeBufferIfChanged(landingCampaignWordmarkPath, candidate);
 };
 
 const convertLosslessWebp = async ({ input, output, maxDimension }) => {
@@ -700,6 +740,7 @@ await removeObsoleteBadgePngs();
 await importBadge(parseCliValue("--import-badge"));
 const badges = await validateBadgeArtwork();
 const dashboardCanonicals = await validateDashboardArtwork();
+await normalizeLandingCampaignWordmark();
 await optimizeRequiredPngs();
 
 if (await exists(path.join(repoRoot, "assets", "gamification-source"))) {

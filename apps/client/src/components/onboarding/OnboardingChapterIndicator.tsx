@@ -19,7 +19,8 @@ interface OnboardingChapterIndicatorProps {
 }
 
 type ChapterRailStyle = CSSProperties & {
-  "--onboarding-chapter-progress": string;
+  "--onboarding-chapter-progress": number;
+  "--onboarding-page-progress": number;
 };
 
 export const OnboardingChapterIndicator = ({
@@ -28,10 +29,14 @@ export const OnboardingChapterIndicator = ({
   disabled = false,
   onStepSelect,
 }: OnboardingChapterIndicatorProps) => {
-  const currentIndex = Math.max(0, chapters.findIndex((chapter) => chapter.id === currentStep));
+  const currentIndex = Math.max(
+    0,
+    chapters.findIndex((chapter) => chapter.id === currentStep),
+  );
   const currentChapter = chapters[currentIndex] ?? chapters[0];
   const chapterCount = chapters.length;
-  const railProgress = chapterCount > 1 ? (currentIndex / (chapterCount - 1)) * 100 : 100;
+  const railProgress = chapterCount > 1 ? currentIndex / (chapterCount - 1) : 1;
+  const pageProgress = chapterCount > 0 ? (currentIndex + 1) / chapterCount : 0;
 
   if (!currentChapter || chapterCount === 0) return null;
 
@@ -68,7 +73,12 @@ export const OnboardingChapterIndicator = ({
 
       <div
         className="onboarding-chapters__rail"
-        style={{ "--onboarding-chapter-progress": `${railProgress}%` } as ChapterRailStyle}
+        style={
+          {
+            "--onboarding-chapter-progress": railProgress,
+            "--onboarding-page-progress": pageProgress,
+          } as ChapterRailStyle
+        }
       >
         <span className="onboarding-chapters__track" aria-hidden="true">
           <span className="onboarding-chapters__track-fill" />
@@ -90,7 +100,9 @@ export const OnboardingChapterIndicator = ({
                     isComplete && "onboarding-chapters__button--complete",
                   )}
                   aria-current={isCurrent ? "step" : undefined}
-                  aria-label={`${chapter.label}, chapter ${index + 1} of ${chapterCount}${isComplete ? ", completed" : ""}`}
+                  aria-label={`${chapter.label}, chapter ${index + 1} of ${chapterCount}${
+                    isComplete ? ", completed" : ""
+                  }`}
                   disabled={disabled}
                   onClick={() => onStepSelect(chapter.id)}
                 >
@@ -103,7 +115,10 @@ export const OnboardingChapterIndicator = ({
                       <span>{index + 1}</span>
                     )}
                   </span>
-                  <span className="onboarding-chapters__label">{chapter.label}</span>
+                  <span className="onboarding-chapters__copy">
+                    <span className="onboarding-chapters__label">{chapter.label}</span>
+                    <span className="onboarding-chapters__item-detail">{chapter.eyebrow}</span>
+                  </span>
                 </button>
               </li>
             );

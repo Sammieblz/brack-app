@@ -71,6 +71,24 @@ required formats are likewise inventoried and budgeted. The
 Capacitor web directories under Android and iOS are ignored build mirrors; run
 the normal Capacitor sync after changing public assets.
 
+The `public/landing-page` PNGs are deliberate marketing exceptions. The two
+Library captures preserve small interface text exactly, while the supplied
+orange campaign wordmark keeps its transparent background and is used at its
+original URL. The pipeline optimizes these files in place and trims the
+wordmark's empty square canvas without resampling its visible pixels; it does
+not create WebP copies or light/dark wordmark duplicates. Product UI must select
+only the active light or dark capture at runtime and must use `contain` so
+screenshots are never cropped.
+
+The additional landing artwork uses optimized WebP: a 1600px sunset photograph
+with an 800px mobile source, plus two 640px illustrations with genuine alpha.
+The photograph is loaded eagerly with high fetch priority; the book sculptures
+load lazily with explicit dimensions. They add approximately 187 KiB in total
+to the static inventory, and a visitor downloads only the applicable hero
+source. Sources remain in the external generated-images archive. Exact prompts,
+tool provenance, paths, and encoding details are recorded in
+[`assets/landing-artwork-prompts.md`](../assets/landing-artwork-prompts.md).
+
 Repository-owned raw PNGs, obsolete media, and unmanaged public PNGs are
 rejected so they cannot silently return. User-uploaded JPEG, PNG, and WebP
 stills are normalized separately in the client before supported Storage uploads:

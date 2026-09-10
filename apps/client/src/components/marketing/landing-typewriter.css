@@ -1,0 +1,71 @@
+/* Every character occupies its final place from the first paint. The animation
+   changes opacity only, so typing never moves the copy or controls beneath it. */
+.landing-typewriter,
+.landing-typewriter span {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+.landing-typewriter__word {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.landing-typewriter__character {
+  position: relative;
+}
+
+.landing-typewriter[data-typing="true"] .landing-typewriter__character {
+  animation: landing-typewriter-letter 1ms steps(1, end) var(--type-delay) both;
+}
+
+.landing-typewriter[data-typing="true"] .landing-typewriter__character::after {
+  position: absolute;
+  inset-block: 0.15em 0.03em;
+  inset-inline-end: -0.07em;
+  width: 0.022em;
+  background: currentColor;
+  content: "";
+  opacity: 0;
+  animation: landing-typewriter-caret var(--caret-duration) steps(1, end) var(--type-delay) both;
+}
+
+@keyframes landing-typewriter-letter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes landing-typewriter-caret {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-typewriter[data-typing="true"] .landing-typewriter__character {
+    animation: none;
+  }
+
+  .landing-typewriter[data-typing="true"] .landing-typewriter__character::after {
+    display: none;
+    animation: none;
+  }
+}
+
+@media print {
+  .landing-typewriter[data-typing="true"] .landing-typewriter__character {
+    animation: none;
+  }
+
+  .landing-typewriter[data-typing="true"] .landing-typewriter__character::after {
+    display: none;
+  }
+}

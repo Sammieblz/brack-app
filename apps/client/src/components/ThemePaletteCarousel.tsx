@@ -19,8 +19,7 @@ const surfaceStyleLabels: Record<NonNullable<Theme["surfaceStyle"]>, string> = {
   "coloring-book": "Outlined pages",
 };
 
-const hsl = (value: string, alpha?: number) =>
-  alpha === undefined ? `hsl(${value})` : `hsl(${value} / ${alpha})`;
+const hsl = (value: string, alpha?: number) => (alpha === undefined ? `hsl(${value})` : `hsl(${value} / ${alpha})`);
 
 const getPreviewFrameStyle = (theme: Theme, colors: ThemeColors): CSSProperties => {
   const surfaceStyle = theme.surfaceStyle ?? "standard";
@@ -33,7 +32,16 @@ const getPreviewFrameStyle = (theme: Theme, colors: ThemeColors): CSSProperties 
   if (surfaceStyle === "paper") {
     return {
       ...base,
-      backgroundImage: `linear-gradient(90deg, transparent 0, transparent 26%, ${hsl(colors.destructive, 0.08)} 27%, transparent 28%), repeating-linear-gradient(0deg, transparent 0 17px, ${hsl(colors.primary, 0.08)} 18px, transparent 19px), radial-gradient(circle at 1px 1px, ${hsl(colors.foreground, 0.05)} 1px, transparent 0), ${colors.gradientCard}`,
+      backgroundImage: `linear-gradient(90deg, transparent 0, transparent 26%, ${hsl(
+        colors.destructive,
+        0.08,
+      )} 27%, transparent 28%), repeating-linear-gradient(0deg, transparent 0 17px, ${hsl(
+        colors.primary,
+        0.08,
+      )} 18px, transparent 19px), radial-gradient(circle at 1px 1px, ${hsl(
+        colors.foreground,
+        0.05,
+      )} 1px, transparent 0), ${colors.gradientCard}`,
       backgroundSize: "100% 100%, 100% 19px, 12px 12px, 100% 100%",
       boxShadow: colors.shadowSoft,
     };
@@ -61,7 +69,12 @@ const getPreviewFrameStyle = (theme: Theme, colors: ThemeColors): CSSProperties 
   if (surfaceStyle === "coloring-book") {
     return {
       ...base,
-      backgroundImage: `linear-gradient(0deg, ${hsl(colors.border, 0.04)} 1px, transparent 1px), linear-gradient(90deg, ${hsl(colors.border, 0.04)} 1px, transparent 1px), ${colors.gradientCard}`,
+      backgroundImage: `linear-gradient(0deg, ${hsl(
+        colors.border,
+        0.04,
+      )} 1px, transparent 1px), linear-gradient(90deg, ${hsl(colors.border, 0.04)} 1px, transparent 1px), ${
+        colors.gradientCard
+      }`,
       backgroundSize: "14px 14px, 14px 14px, 100% 100%",
       borderColor: hsl(colors.border, 0.82),
       borderWidth: 2,
@@ -127,7 +140,7 @@ export const ThemePaletteCarousel = ({
       <Carousel
         setApi={setApi}
         opts={{ align: "start", containScroll: "trimSnaps" }}
-        className="group/theme-carousel min-w-0 max-w-full"
+        className="min-w-0 max-w-full"
         aria-label={ariaLabel}
       >
         <CarouselContent className="-ml-2 py-1">
@@ -145,15 +158,15 @@ export const ThemePaletteCarousel = ({
                   type="button"
                   onClick={() => void onSelectTheme(theme.id)}
                   className={cn(
-                    "group/card relative flex h-full min-h-[13.75rem] w-full flex-col overflow-hidden rounded-lg border bg-background/80 p-3 text-left transition-all hover:-translate-y-0.5 hover:border-primary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                    selected ? "border-primary bg-primary/10 shadow-sm" : "border-border"
+                    "relative flex h-full min-h-[13.75rem] w-full flex-col overflow-hidden rounded-lg border bg-background/80 p-3 text-left transition-[transform,border-color,background-color,box-shadow] duration-150 ease-out active:translate-y-px active:scale-[0.995] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary motion-reduce:transform-none motion-reduce:transition-none",
+                    selected ? "border-primary bg-primary/10 shadow-sm" : "border-border",
                   )}
                   aria-pressed={selected}
                 >
                   <span
                     className={cn(
-                      "absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full border transition-transform group-hover/card:scale-110",
-                      selected ? "border-primary bg-primary text-primary-foreground" : "border-border bg-muted"
+                      "absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full border",
+                      selected ? "border-primary bg-primary text-primary-foreground" : "border-border bg-muted",
                     )}
                     aria-hidden="true"
                   >
@@ -172,7 +185,7 @@ export const ThemePaletteCarousel = ({
                       {theme.preview.map((color) => (
                         <span
                           key={color}
-                          className="h-4 rounded-sm border border-black/5 shadow-sm transition-transform duration-300 group-hover/card:-translate-y-0.5"
+                          className="h-4 rounded-sm border border-black/5 shadow-sm"
                           style={{ backgroundColor: color }}
                         />
                       ))}
@@ -207,7 +220,9 @@ export const ThemePaletteCarousel = ({
                         >
                           <span
                             className="block h-3.5 rounded-sm"
-                            style={{ backgroundColor: hsl(previewColors.primary) }}
+                            style={{
+                              backgroundColor: hsl(previewColors.primary),
+                            }}
                           />
                           <span
                             className="block h-3.5 rounded-sm opacity-65"
@@ -221,15 +236,21 @@ export const ThemePaletteCarousel = ({
                         <div className="space-y-1.5 p-1.5">
                           <span
                             className="block h-1.5 w-3/5 rounded-full"
-                            style={{ backgroundColor: hsl(previewColors.primary) }}
+                            style={{
+                              backgroundColor: hsl(previewColors.primary),
+                            }}
                           />
                           <span
                             className="block h-1.5 w-full rounded-full"
-                            style={{ backgroundColor: hsl(previewColors.muted) }}
+                            style={{
+                              backgroundColor: hsl(previewColors.muted),
+                            }}
                           />
                           <span
                             className="block h-1.5 w-4/5 rounded-full"
-                            style={{ backgroundColor: hsl(previewColors.secondary) }}
+                            style={{
+                              backgroundColor: hsl(previewColors.secondary),
+                            }}
                           />
                           <div className="grid grid-cols-3 gap-1 pt-0.5">
                             <span className="h-5 rounded-sm" style={{ backgroundColor: theme.preview[0] }} />
@@ -240,13 +261,6 @@ export const ThemePaletteCarousel = ({
                       </div>
                     </div>
                   </div>
-
-                  <div
-                    className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover/card:opacity-5"
-                    style={{
-                      background: `linear-gradient(135deg, ${hsl(previewColors.primary)}, ${hsl(previewColors.secondary)})`,
-                    }}
-                  />
                 </button>
               </CarouselItem>
             );
@@ -265,16 +279,16 @@ export const ThemePaletteCarousel = ({
                     type="button"
                     onClick={() => api?.scrollTo(index)}
                     className={cn(
-                      "flex h-6 w-6 items-center justify-center rounded-full transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                      selectedSnap === index && "bg-primary/10"
+                      "flex h-6 w-6 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      selectedSnap === index && "bg-primary/10",
                     )}
                     aria-label={`Go to theme ${index + 1}`}
                     aria-current={selectedSnap === index ? "true" : undefined}
                   >
                     <span
                       className={cn(
-                        "h-1.5 rounded-full transition-all",
-                        selectedSnap === index ? "w-5 bg-primary" : "w-1.5 bg-muted-foreground/35"
+                        "h-1.5 w-5 origin-center rounded-full transition-[transform,background-color] duration-200 ease-out motion-reduce:transition-none",
+                        selectedSnap === index ? "scale-x-100 bg-primary" : "scale-x-[0.3] bg-muted-foreground/35",
                       )}
                     />
                   </button>

@@ -11,9 +11,10 @@ import {
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
+import { LandingBrandLogo } from "@/components/marketing/LandingBrandLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
 import {
   AuthTurnstile,
@@ -107,6 +108,9 @@ const Auth = () => {
   const { toast } = useToast();
   const { previewTheme, resetToDefaultTheme } = useTheme();
   const { user: authUser, loading: authLoading } = useAuth();
+  const reducedMotion = useReducedMotion();
+  const [backgroundVideoReady, setBackgroundVideoReady] = useState(false);
+  const [backgroundVideoEnabled, setBackgroundVideoEnabled] = useState(true);
   const captchaAction: TurnstileAction = emailChallenge
     ? emailChallenge.type === "signup"
       ? "resend_sign_up"
@@ -117,6 +121,21 @@ const Auth = () => {
         ? "sign_up"
         : "sign_in";
   const captchaReady = isValidTurnstileToken(captchaToken);
+
+  useEffect(() => {
+    const connection = (
+      navigator as Navigator & {
+        connection?: { effectiveType?: string; saveData?: boolean };
+      }
+    ).connection;
+    if (
+      connection?.saveData ||
+      connection?.effectiveType === "slow-2g" ||
+      connection?.effectiveType === "2g"
+    ) {
+      setBackgroundVideoEnabled(false);
+    }
+  }, []);
 
   const resolveSignedInTransition = useCallback(async () => {
     if (!postAuthResolutionRef.current) {
@@ -648,28 +667,90 @@ const Auth = () => {
     }
   };
 
-  return (
-    <div className="relative flex min-h-app-viewport items-center justify-center overflow-x-hidden overflow-y-auto bg-gradient-background px-4 py-8">
-      {/* Light/Dark toggle */}
-      <ThemeToggle />
+  const storyTitle = emailChallenge
+    ? "Use the code. Stay in this window."
+    : isPasswordResetRequest
+      ? "Reset access without losing your place."
+      : isSignUp
+        ? "Your reading profile is ready to save."
+        : "Your shelf is where you left it.";
+  const storyDescription = emailChallenge
+    ? "Enter the newest six-digit code from your inbox to finish this request without opening another tab."
+    : isPasswordResetRequest
+      ? "Confirm the address, choose a new password, and return to the same Brack account."
+      : isSignUp
+        ? "Your palette, taste, pace, and first goal are still held in this signup flow. An account makes them permanent."
+        : "Sign in to return to your books, reading history, goals, and conversations.";
 
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-float" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary-glow/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
-      </div>
-      
-      <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg relative z-10 animate-fade-in safe-top">
-        {/* Logo Section — Brack icon + heading */}
-        <div className="text-center mb-6 md:mb-8 animate-slide-up">
-          <div className="flex flex-col items-center gap-3 mb-4">
-            <ThemeAwareLogo variant="icon" size="h-16 w-16" className="drop-shadow-lg" />
-            <span className="font-display text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              BRACK
-            </span>
-          </div>
-          <div className="space-y-2">
-            <h1 className="font-display text-2xl font-bold text-foreground">
+  return (
+    <div className="relative min-h-app-viewport overflow-x-hidden bg-background text-foreground">
+      {backgroundVideoEnabled && !reducedMotion && (
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+          tabIndex={-1}
+          onCanPlay={() => setBackgroundVideoReady(true)}
+          onError={() => setBackgroundVideoEnabled(false)}
+          className={`fixed inset-0 h-full w-full object-cover transition-opacity duration-700 ${
+            backgroundVideoReady ? "opacity-70" : "opacity-0"
+          }`}
+        >
+          <source src="/brack-landing-bg-video.mp4" type="video/mp4" />
+        </video>
+      )}
+
+      <div className="pointer-events-none fixed inset-0 bg-background/70 dark:bg-background/75 lg:bg-background/35 lg:dark:bg-background/50" aria-hidden="true" />
+      <div
+        className="pointer-events-none fixed inset-0 hidden lg:block"
+        aria-hidden="true"
+        style={{
+          backgroundImage:
+            "linear-gradient(90deg, hsl(var(--background) / 0.16) 0%, hsl(var(--background) / 0.48) 46%, hsl(var(--background) / 0.95) 78%, hsl(var(--background)) 100%)",
+        }}
+      />
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background via-background/35 to-transparent lg:hidden" aria-hidden="true" />
+
+      <header className="absolute inset-x-0 top-0 z-30">
+        <div className="safe-top mx-auto flex min-h-20 w-full max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+          <button
+            type="button"
+            aria-label="Back to Brack home"
+            onClick={() => {
+              abandonOnboardingSignup();
+              navigate("/");
+            }}
+            className="px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4"
+          >
+            <LandingBrandLogo eager className="h-9 sm:h-10" />
+          </button>
+          <ThemeToggle variant="inline" className="bg-background/70" />
+        </div>
+      </header>
+
+      <main className="relative z-10 mx-auto grid min-h-app-viewport w-full max-w-7xl items-center gap-10 px-4 pb-8 pt-24 sm:px-6 sm:pb-12 lg:grid-cols-[minmax(0,1fr)_minmax(25rem,31rem)] lg:gap-20 lg:px-8 lg:py-28">
+        <section className="hidden max-w-2xl lg:block" aria-labelledby="auth-story-title">
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+            Brack / reader access
+          </p>
+          <h2 id="auth-story-title" className="mt-7 max-w-[11ch] font-display text-[clamp(3.5rem,6vw,6.5rem)] font-bold leading-[0.92] tracking-[-0.055em] text-foreground drop-shadow-[0_2px_18px_hsl(var(--background))]">
+            {storyTitle}
+          </h2>
+          <p className="mt-7 max-w-xl text-lg leading-relaxed text-foreground/80 drop-shadow-[0_1px_12px_hsl(var(--background))]">
+            {storyDescription}
+          </p>
+          <p className="mt-10 max-w-md border-l-2 border-primary pl-5 font-serif text-sm leading-7 text-foreground/80">
+            One account carries the shelf, progress, and choices that belong to one reader.
+          </p>
+        </section>
+
+        <section className="relative w-full max-w-lg justify-self-center safe-bottom lg:justify-self-end" aria-label="Brack account access">
+          <div className="mb-5 text-center lg:text-left">
+            <p className="mb-2 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-primary">Brack / account</p>
+            <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               {emailChallenge
                 ? emailChallenge.type === "recovery"
                   ? "Enter your reset code"
@@ -677,10 +758,10 @@ const Auth = () => {
                 : isPasswordResetRequest
                   ? "Reset Password"
                   : isSignUp
-                    ? "Join BRACK"
-                    : "Welcome Back"}
+                    ? "Create your Brack account"
+                    : "Welcome back"}
             </h1>
-            <p className="font-sans text-muted-foreground text-sm">
+            <p className="mt-2 font-sans text-sm text-muted-foreground">
               {emailChallenge
                 ? "Stay here and use the six-digit code from your email"
                 : isPasswordResetRequest
@@ -689,12 +770,11 @@ const Auth = () => {
                     ? "Start your reading journey today"
                     : "Continue your reading adventure"}
             </p>
-          </div>
         </div>
 
         {/* Auth Card */}
-        <Card className="bg-gradient-card shadow-medium border-0 animate-scale-in" style={{ animationDelay: '0.2s' }}>
-          <CardContent className="p-4 md:p-6 space-y-4 md:space-y-6">
+        <Card className="border border-white/35 bg-card/90 shadow-[0_30px_90px_-38px_hsl(var(--foreground)/0.55)] backdrop-blur-2xl dark:border-white/10">
+          <CardContent className="space-y-4 p-4 md:space-y-6 md:p-6">
             {emailChallenge ? (
               <div className="space-y-5">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-3xl shadow-soft">
@@ -1095,7 +1175,8 @@ const Auth = () => {
           </button>
         </div>
         )}
-      </div>
+        </section>
+      </main>
     </div>
   );
 };
