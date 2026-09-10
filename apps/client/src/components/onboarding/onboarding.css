@@ -38,6 +38,14 @@
   font-weight: 700;
 }
 
+.onboarding-button {
+  max-width: 100%;
+  height: auto;
+  min-height: 2.75rem;
+  white-space: normal;
+  line-height: 1.4;
+}
+
 .onboarding-button--primary:active:not(:disabled) {
   box-shadow: 0 1px 0 hsl(var(--primary) / 0.3), inset 0 1px 0 hsl(var(--primary-foreground) / 0.18);
   transform: translateY(2px) scale(0.99);
@@ -79,6 +87,8 @@
 
 .onboarding-page {
   width: 100%;
+  container: onboarding-page / inline-size;
+  overflow-wrap: anywhere;
 }
 
 .onboarding-action-dock {
@@ -187,13 +197,6 @@
   border-top: 1px solid hsl(var(--border));
 }
 
-.onboarding-welcome-aside {
-  display: grid;
-  grid-template-columns: minmax(6.5rem, 8rem) minmax(0, 1fr);
-  align-items: center;
-  gap: 1rem;
-}
-
 .onboarding-aside__heading {
   display: flex;
   align-items: center;
@@ -220,6 +223,67 @@
   background: hsl(var(--background));
   color: hsl(var(--foreground));
   box-shadow: 0 1px 0 hsl(var(--foreground) / 0.05);
+}
+
+.onboarding-choice:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+.onboarding-feedback {
+  padding: 1rem 1.25rem;
+  border-left: 2px solid hsl(var(--primary));
+  background: hsl(var(--primary) / 0.06);
+}
+
+.onboarding-feedback-copy {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+
+.onboarding-details {
+  padding-block: 0.5rem 1rem;
+  border-block: 1px solid hsl(var(--border));
+}
+
+.onboarding-details > summary {
+  min-height: 2.75rem;
+  padding-block: 0.65rem;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.onboarding-details > summary:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 3px;
+}
+
+.onboarding-root .onboarding-action-dock .onboarding-button {
+  height: auto;
+  white-space: normal;
+  padding-block: 0.75rem;
+}
+
+.onboarding-root input {
+  height: auto;
+  min-height: 2.75rem;
+  transition-property: border-color, background-color;
+}
+
+.onboarding-goal-fields button {
+  height: auto;
+  min-height: 2.75rem;
+  white-space: normal;
+}
+
+.onboarding-goal-fields button > .truncate {
+  overflow: visible;
+  white-space: normal;
+  text-overflow: clip;
 }
 
 .onboarding-choice[data-selected="true"] {
@@ -691,6 +755,13 @@
     border-right: 0;
   }
 
+}
+
+@container onboarding-page (min-width: 36rem) {
+  .onboarding-goal-fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .onboarding-summary-row {
     grid-template-columns: 2.3rem minmax(7rem, 0.45fr) minmax(0, 1fr);
     align-items: start;
@@ -699,6 +770,24 @@
 
   .onboarding-summary-row__index {
     grid-row: auto;
+  }
+}
+
+@container onboarding-page (min-width: 44rem) {
+  .onboarding-step-layout {
+    grid-template-columns: minmax(0, 1fr) 15rem;
+    align-items: start;
+  }
+
+  .onboarding-step-layout--welcome {
+    grid-template-columns: minmax(0, 1fr) 17rem;
+  }
+
+  .onboarding-aside {
+    padding-top: 0;
+    padding-left: 1.5rem;
+    border-top: 0;
+    border-left: 1px solid hsl(var(--border));
   }
 }
 
@@ -831,35 +920,6 @@
     padding: 1rem clamp(2rem, 4vw, 3rem) max(1.15rem, env(safe-area-inset-bottom));
   }
 
-  .onboarding-step-layout {
-    grid-template-columns: minmax(0, 1fr) 15rem;
-    align-items: start;
-  }
-
-  .onboarding-step-layout--wide-aside {
-    grid-template-columns: minmax(0, 1fr) 17rem;
-  }
-
-  .onboarding-step-layout--welcome {
-    align-items: center;
-  }
-
-  .onboarding-aside {
-    padding-top: 0;
-    padding-left: 1.5rem;
-    border-top: 0;
-    border-left: 1px solid hsl(var(--border));
-  }
-
-  .onboarding-welcome-aside {
-    display: block;
-  }
-
-  .onboarding-welcome-aside .onboarding-aside__caption {
-    max-width: 12rem;
-    margin: 1rem auto 0;
-    text-align: center;
-  }
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1034,6 +1094,19 @@
 .onboarding-loading[data-motion="reduced"] .onboarding-loading__trace > span {
   animation: none;
   transform: translateX(82%);
+}
+
+.onboarding-root[data-input="keyboard"] .onboarding-button,
+.onboarding-root[data-input="keyboard"] .onboarding-choice,
+.onboarding-root[data-input="keyboard"] .onboarding-chapters__track-fill,
+.onboarding-root[data-input="keyboard"] .onboarding-chapters__node {
+  transition: none;
+}
+
+.onboarding-root[data-input="keyboard"] .onboarding-button,
+.onboarding-root[data-input="keyboard"] .onboarding-choice,
+.onboarding-root[data-input="keyboard"] .onboarding-chapters__node {
+  transform: none;
 }
 
 @media (forced-colors: active) {

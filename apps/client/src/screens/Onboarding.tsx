@@ -13,6 +13,17 @@ import { Switch } from "@/components/ui/switch";
 import { TimePicker } from "@/components/ui/time-picker";
 import { OnboardingChapterIndicator, type OnboardingChapter } from "@/components/onboarding/OnboardingChapterIndicator";
 import { OnboardingLoadingState, OnboardingRouteTransition } from "@/components/onboarding/OnboardingLoadingState";
+import { OnboardingReadingPractice } from "@/components/onboarding/OnboardingReadingPractice";
+import {
+  getBookFormatLabel,
+  getBookLengthLabel,
+  getDefaultGoalDates,
+  getGoalPaceSummary,
+  getGoalValidationMessage,
+  getReadingRhythmSummary,
+  getSessionValidationMessage,
+  getTasteSummary,
+} from "@/components/onboarding/onboardingPresentation";
 import "@/components/onboarding/onboarding.css";
 import { ThemePaletteCarousel } from "@/components/ThemePaletteCarousel";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
@@ -25,7 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { themes } from "@/lib/themes";
 import { GENRES } from "@/constants";
 import { APP_ICONS } from "@/config/iconography";
-import { BRACK_GOALS_IMAGE, BRACK_STREAK_HAPPY_IMAGE, BRACK_TROPHY_IMAGE } from "@/config/brackAssets";
+import { BRACK_GOALS_IMAGE, BRACK_TROPHY_IMAGE } from "@/config/brackAssets";
 import {
   DEFAULT_ONBOARDING_FORM,
   ONBOARDING_STEPS,
@@ -61,8 +72,8 @@ type StepDirection = -1 | 1;
 
 const STEP_META: Record<OnboardingStepId, { title: string; eyebrow: string; icon: ElementType }> = {
   welcome: {
-    title: "Build a profile Brack can learn from",
-    eyebrow: "Personalization",
+    title: "A little reading adds up",
+    eyebrow: "Your reading life",
     icon: APP_ICONS.profile.social,
   },
   palette: {
@@ -81,13 +92,13 @@ const STEP_META: Record<OnboardingStepId, { title: string; eyebrow: string; icon
     icon: Clock,
   },
   goal: {
-    title: "Give your dashboard a target",
-    eyebrow: "Goal setup",
+    title: "A goal that fits your life",
+    eyebrow: "Your first goal",
     icon: APP_ICONS.dashboard.goal,
   },
   review: {
-    title: "Review your reading profile",
-    eyebrow: "Ready to save",
+    title: "Your next chapter starts here",
+    eyebrow: "Your starting plan",
     icon: APP_ICONS.dashboard.insights,
   },
 };
@@ -146,6 +157,15 @@ const FORMAT_OPTIONS: Array<{ value: PreferredBookFormat; label: string }> = [
 ];
 
 const INITIAL_GENRE_COUNT = 12;
+const MAX_SELECTED_GENRES = 12;
+const NEXT_STEP_LABELS: Record<OnboardingStepId, string> = {
+  welcome: "Make Brack yours",
+  palette: "Choose reading taste",
+  taste: "Find your rhythm",
+  pace: "Set your first goal",
+  goal: "Review your plan",
+  review: "Continue to sign up",
+};
 
 const numberToInput = (value: number | null) => (value === null ? "" : String(value));
 
@@ -165,7 +185,12 @@ const Onboarding = () => {
   const { currentTheme, previewTheme, resetToDefaultTheme, resolvedTheme, setTheme } = useTheme();
   const [stepIndex, setStepIndex] = useState(0);
   const [stepDirection, setStepDirection] = useState<StepDirection>(1);
-  const [formData, setFormData] = useState<OnboardingFormData>(DEFAULT_ONBOARDING_FORM);
+  const [formData, setFormData] = useState<OnboardingFormData>(() => ({
+    ...DEFAULT_ONBOARDING_FORM,
+    ...getDefaultGoalDates(),
+  }));
+  const [editingFromReview, setEditingFromReview] = useState(false);
+  const [validationStep, setValidationStep] = useState<OnboardingStepId | null>(null);
   const [saving, setSaving] = useState(false);
   const [transition, setTransition] = useState<OnboardingTransition | null>(null);
   const [completionSeal, setCompletionSeal] = useState(false);
@@ -213,7 +238,11 @@ const Onboarding = () => {
 
     const draft = loadOnboardingDraft();
     if (draft) {
-      setFormData(draft.formData);
+      setFormData({
+        ...draft.formData,
+        goalStartDate: draft.formData.goalStartDate ?? getDefaultGoalDates().goalStartDate,
+        goalEndDate: draft.formData.goalEndDate ?? getDefaultGoalDates().goalEndDate,
+      });
       const restoredStep = ONBOARDING_STEPS.indexOf(draft.lastStep);
       if (restoredStep >= 0) setStepIndex(restoredStep);
       previewTheme(draft.formData.colorTheme);
@@ -309,7 +338,9 @@ const Onboarding = () => {
       ...current,
       favoriteGenres: current.favoriteGenres.includes(genre)
         ? current.favoriteGenres.filter((item) => item !== genre)
-        : [...current.favoriteGenres, genre],
+        : current.favoriteGenres.length < MAX_SELECTED_GENRES
+          ? [...current.favoriteGenres, genre]
+          : current.favoriteGenres,
     }));
   };
 
@@ -331,6 +362,35 @@ const Onboarding = () => {
   };
 
   const handleNext = () => {
+    if (
+      (currentStep === "taste" && formData.favoriteGenres.length === 0) ||
+      (currentStep === "pace" && getSessionValidationMessage(formData.preferredSessionMinutes)) ||
+      (currentStep === "goal" && getGoalValidationMessage(formData))
+    ) {
+      setValidationStep(currentStep);
+      // The action dock stays visible while long chapters scroll. Bring the
+      // actual problem back into view instead of appearing to ignore Next.
+      window.requestAnimationFrame(() => {
+        const selector = currentStep === "taste"
+          ? "#onboarding-genre-options button"
+          : currentStep === "pace"
+            ? "#sessionLength"
+            : !formData.goalTargetBooks || !Number.isInteger(formData.goalTargetBooks) || formData.goalTargetBooks < 1 || formData.goalTargetBooks > 365
+              ? "#targetBooks"
+              : !formData.goalStartDate ? "#goalStart" : "#goalEnd";
+        const invalidControl = pageRef.current?.querySelector<HTMLElement>(selector);
+        invalidControl?.focus({ preventScroll: true });
+        invalidControl?.scrollIntoView({ block: "center", behavior: "instant" });
+      });
+      return;
+    }
+    setValidationStep(null);
+    if (editingFromReview) {
+      setEditingFromReview(false);
+      setStepDirection(1);
+      setStepIndex(ONBOARDING_STEPS.indexOf("review"));
+      return;
+    }
     if (stepIndex < ONBOARDING_STEPS.length - 1) {
       setStepDirection(1);
       setStepIndex((index) => index + 1);
@@ -349,6 +409,8 @@ const Onboarding = () => {
   };
 
   const handleBack = () => {
+    setEditingFromReview(false);
+    setValidationStep(null);
     if (stepIndex > 0) {
       setStepDirection(-1);
       setStepIndex((index) => index - 1);
@@ -400,6 +462,16 @@ const Onboarding = () => {
   };
 
   const handleComplete = async () => {
+    const invalidStep = formData.favoriteGenres.length === 0
+      ? "taste"
+      : getSessionValidationMessage(formData.preferredSessionMinutes)
+        ? "pace"
+        : getGoalValidationMessage(formData) ? "goal" : null;
+    if (invalidStep) {
+      selectStep(invalidStep, true);
+      setValidationStep(invalidStep);
+      return;
+    }
     try {
       setSaving(true);
       const { normalized } = normalizeOnboardingFormData(formData);
@@ -476,9 +548,11 @@ const Onboarding = () => {
     }
   };
 
-  const selectStep = (step: OnboardingStepId) => {
+  const selectStep = (step: OnboardingStepId, fromReview = false) => {
     const nextIndex = ONBOARDING_STEPS.indexOf(step);
     if (nextIndex >= 0) {
+      setEditingFromReview(fromReview);
+      setValidationStep(null);
       setStepDirection(nextIndex < stepIndex ? -1 : 1);
       setStepIndex(nextIndex);
     }
@@ -489,11 +563,13 @@ const Onboarding = () => {
   return (
     <div
       className="onboarding-root bg-background text-foreground"
-      onPointerDownCapture={() => {
+      onPointerDownCapture={(event) => {
         stepMotionAllowedRef.current = true;
+        event.currentTarget.dataset.input = "pointer";
       }}
-      onKeyDownCapture={() => {
+      onKeyDownCapture={(event) => {
         stepMotionAllowedRef.current = false;
+        event.currentTarget.dataset.input = "keyboard";
       }}
     >
       {completionSeal && (
@@ -570,7 +646,7 @@ const Onboarding = () => {
                   )}
 
                   {currentStep === "taste" && (
-                    <TasteStep formData={formData} onToggleGenre={toggleGenre} onFieldChange={updateField} />
+                    <TasteStep formData={formData} onToggleGenre={toggleGenre} onFieldChange={updateField} showValidation={validationStep === "taste"} />
                   )}
 
                   {currentStep === "palette" && (
@@ -582,14 +658,14 @@ const Onboarding = () => {
                   )}
 
                   {currentStep === "pace" && (
-                    <PaceStep formData={formData} onFieldChange={updateField} onNumberFieldChange={setNumberField} />
+                    <PaceStep formData={formData} onFieldChange={updateField} onNumberFieldChange={setNumberField} showValidation={validationStep === "pace"} />
                   )}
 
                   {currentStep === "goal" && (
-                    <GoalStep formData={formData} onFieldChange={updateField} onNumberFieldChange={setNumberField} />
+                    <GoalStep formData={formData} onFieldChange={updateField} onNumberFieldChange={setNumberField} showValidation={validationStep === "goal"} />
                   )}
 
-                  {currentStep === "review" && <ReviewStep formData={formData} isPreAuth={isGuestOnboarding} />}
+                  {currentStep === "review" && <ReviewStep formData={formData} isPreAuth={isGuestOnboarding} onEdit={(step) => selectStep(step, true)} />}
                 </motion.div>
               </div>
 
@@ -607,7 +683,7 @@ const Onboarding = () => {
                 <Button
                   onClick={handleNext}
                   disabled={saving}
-                  className="onboarding-button onboarding-button--primary min-h-11 min-w-0 flex-1 px-5 sm:min-w-[10rem] sm:flex-none"
+                  className="onboarding-button onboarding-button--primary min-h-11 min-w-0 flex-1 px-5 sm:flex-initial"
                 >
                   {saving ? (
                     <>
@@ -624,7 +700,7 @@ const Onboarding = () => {
                       "Finish setup"
                     )
                   ) : (
-                    "Continue"
+                    editingFromReview ? "Back to review" : NEXT_STEP_LABELS[currentStep]
                   )}
                 </Button>
               </div>
@@ -666,17 +742,17 @@ const WelcomeStep = ({ userName }: { userName?: string }) => (
         step="welcome"
         title={
           userName
-            ? `${userName}, make Brack feel like it already knows your library.`
-            : "Make Brack feel like it already knows your library."
+            ? `${userName}, a little reading adds up.`
+            : "A little reading adds up."
         }
-        description="A few thoughtful choices shape your goals, recommendations, and daily reading rhythm. You can change everything later in Settings."
+        description="Keep your place, find a rhythm, and see your reading become a record. Start with a few choices that feel like you; everything can change later."
       />
 
       <ol className="onboarding-primer-list">
         {[
-          ["Make it yours", "Choose a palette and the books you love."],
-          ["Find your rhythm", "Set a pace that fits your real life."],
-          ["Read with direction", "Give your dashboard a useful first goal."],
+          ["Pick up where you left off", "Keep your current page close at hand."],
+          ["Make room for reading", "Choose a rhythm that fits your day."],
+          ["Watch it add up", "Pages, minutes, and finished books tell your story."],
         ].map(([title, body], index) => (
           <li key={title} className="onboarding-primer-list__item">
             <span className="onboarding-primer-list__number" aria-hidden="true">
@@ -691,18 +767,8 @@ const WelcomeStep = ({ userName }: { userName?: string }) => (
       </ol>
     </div>
 
-    <aside className="onboarding-aside onboarding-welcome-aside">
-      <div className="streak-art-stage mx-auto w-[clamp(7rem,28vw,11rem)]" aria-hidden="true">
-        <span className="streak-art-aura" />
-        <span className="streak-art-shadow" />
-        <img
-          src={BRACK_STREAK_HAPPY_IMAGE}
-          alt=""
-          className="onboarding-floating-art aspect-square w-full object-contain"
-          decoding="async"
-        />
-      </div>
-      <p className="onboarding-aside__caption">A profile built from your reading signals, not a generic checklist.</p>
+    <aside className="onboarding-aside">
+      <OnboardingReadingPractice />
     </aside>
   </div>
 );
@@ -720,8 +786,8 @@ const PaletteStep = ({
     <div className="min-w-0 space-y-5">
       <OnboardingStepIntro
         step="palette"
-        title="Pick the palette Brack should remember"
-        description="Preview the app in a color that feels like yours. You can change it later in Settings."
+        title="Make yourself at home"
+        description="Choose a palette for your reading life. Try a few; your choice carries into sign-up and can change later in Settings."
       />
 
       <ThemePaletteCarousel
@@ -732,17 +798,17 @@ const PaletteStep = ({
       />
     </div>
 
-    <aside className="onboarding-aside hidden lg:block">
+    <aside className="onboarding-aside" aria-label="Palette preview">
       <div className="onboarding-aside__heading">
         <Palette className="h-5 w-5 text-primary" />
-        <h3 className="font-display text-lg font-semibold">Live preview</h3>
+        <h2 className="font-display text-lg font-semibold">Your reading corner</h2>
       </div>
       <div className="onboarding-palette-preview">
         <div className="flex items-center gap-3">
           <ThemeAwareLogo variant="icon" size="h-10 w-10" />
           <div>
-            <p className="font-display text-xl font-bold">Brack</p>
-            <p className="font-sans text-xs text-muted-foreground">Your palette follows you.</p>
+            <p className="font-display text-xl font-bold">{themes.find((theme) => theme.id === selectedTheme)?.name ?? "Warm Sunset"}</p>
+            <p className="font-sans text-xs text-muted-foreground">A sample of your shelf</p>
           </div>
         </div>
         <div className="onboarding-preview-meter" aria-hidden="true">
@@ -750,19 +816,13 @@ const PaletteStep = ({
           <span data-complete="true" />
           <span />
         </div>
-        <div className="grid grid-cols-2 border-y border-border">
-          <div className="border-r border-border py-3 pr-3">
-            <p className="font-sans text-xs text-muted-foreground">Goal</p>
-            <p className="font-sans text-lg font-bold text-primary">12</p>
-          </div>
-          <div className="py-3 pl-3">
-            <p className="font-sans text-xs text-muted-foreground">Streak</p>
-            <p className="font-sans text-lg font-bold text-primary">3</p>
-          </div>
+        <div className="border-y border-border py-3">
+          <p className="font-display text-lg font-semibold">The book you return to</p>
+          <p className="mt-1 font-sans text-sm text-muted-foreground">Your place, notes, and next chapter.</p>
         </div>
       </div>
       <p className="mt-3 font-sans text-xs text-muted-foreground">
-        Public pages stay on Brack's default palette. This palette starts after you choose it.
+        Preview only. Your real shelf begins with the first book you add.
       </p>
     </aside>
   </div>
@@ -772,9 +832,10 @@ interface TasteStepProps {
   formData: OnboardingFormData;
   onToggleGenre: (genre: string) => void;
   onFieldChange: <K extends keyof OnboardingFormData>(key: K, value: OnboardingFormData[K]) => void;
+  showValidation: boolean;
 }
 
-const TasteStep = ({ formData, onToggleGenre, onFieldChange }: TasteStepProps) => {
+const TasteStep = ({ formData, onToggleGenre, onFieldChange, showValidation }: TasteStepProps) => {
   const [showAllGenres, setShowAllGenres] = useState(false);
   const collapsedGenres = GENRES.filter(
     (genre, index) => index < INITIAL_GENRE_COUNT || formData.favoriteGenres.includes(genre),
@@ -783,12 +844,12 @@ const TasteStep = ({ formData, onToggleGenre, onFieldChange }: TasteStepProps) =
   const hiddenGenreCount = Math.max(0, GENRES.length - collapsedGenres.length);
 
   return (
-    <div className="onboarding-step-layout onboarding-step-layout--wide-aside">
+    <div className="onboarding-step-layout">
       <div className="min-w-0 space-y-5 sm:space-y-6">
         <OnboardingStepIntro
           step="taste"
-          title="Choose the genres Brack should learn first"
-          description="Pick at least one. These become search chips, reader matching signals, and recommendation context."
+          title="What keeps you turning pages?"
+          description="Choose 1–12 genres you enjoy. These give Brack a starting point for book discovery and finding readers with shared tastes."
         />
 
         <div id="onboarding-genre-options" className="flex flex-wrap gap-2" role="group" aria-label="Favorite genres">
@@ -798,6 +859,7 @@ const TasteStep = ({ formData, onToggleGenre, onFieldChange }: TasteStepProps) =
               <button
                 key={genre}
                 type="button"
+                disabled={!selected && formData.favoriteGenres.length >= MAX_SELECTED_GENRES}
                 onClick={() => onToggleGenre(genre)}
                 aria-pressed={selected}
                 data-selected={selected}
@@ -812,7 +874,8 @@ const TasteStep = ({ formData, onToggleGenre, onFieldChange }: TasteStepProps) =
         <div className="onboarding-selection-status flex min-h-11 flex-wrap items-center justify-between gap-2 border-y border-border py-2">
           <p className="font-sans text-sm text-muted-foreground" aria-live="polite">
             <span className="font-semibold text-foreground">{formData.favoriteGenres.length}</span>{" "}
-            {formData.favoriteGenres.length === 1 ? "genre" : "genres"} selected
+            of {MAX_SELECTED_GENRES} genres selected
+            {formData.favoriteGenres.length >= MAX_SELECTED_GENRES && ". Deselect one to choose another."}
           </p>
           {hiddenGenreCount > 0 && (
             <Button
@@ -828,15 +891,19 @@ const TasteStep = ({ formData, onToggleGenre, onFieldChange }: TasteStepProps) =
             </Button>
           )}
         </div>
+        {showValidation && formData.favoriteGenres.length === 0 && (
+          <p role="alert" className="font-sans text-sm text-destructive">Choose at least one genre, or use Skip to set up later.</p>
+        )}
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="slowestGenre">Slowest genre</Label>
-            <Select value={formData.slowestGenre} onValueChange={(value) => onFieldChange("slowestGenre", value)}>
+            <Label htmlFor="slowestGenre">A genre you take your time with (optional)</Label>
+            <Select value={formData.slowestGenre || "none"} onValueChange={(value) => onFieldChange("slowestGenre", value === "none" ? "" : value)}>
               <SelectTrigger id="slowestGenre" className="min-h-11">
-                <SelectValue placeholder="Select a genre" />
+                <SelectValue placeholder="No preference" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">No preference</SelectItem>
                 {GENRES.map((genre) => (
                   <SelectItem key={genre} value={genre}>
                     {genre}
@@ -844,6 +911,7 @@ const TasteStep = ({ formData, onToggleGenre, onFieldChange }: TasteStepProps) =
                 ))}
               </SelectContent>
             </Select>
+            <p className="font-sans text-xs leading-relaxed text-muted-foreground">A dense history and a quick mystery need not have the same pace.</p>
           </div>
 
           <fieldset className="space-y-2">
@@ -869,21 +937,12 @@ const TasteStep = ({ formData, onToggleGenre, onFieldChange }: TasteStepProps) =
         </div>
       </div>
 
-      <aside className="onboarding-aside hidden xl:block">
+      <aside className="onboarding-aside" aria-label="Your reading taste">
         <div className="onboarding-aside__heading">
-          <h3 className="font-display text-lg font-semibold">Selected genres</h3>
+          <h2 className="font-display text-lg font-semibold">Room on your shelf for…</h2>
         </div>
-        <div className="flex min-h-20 flex-wrap content-start gap-2">
-          {formData.favoriteGenres.length === 0 ? (
-            <p className="font-sans text-sm text-muted-foreground">Your choices will collect here.</p>
-          ) : (
-            formData.favoriteGenres.map((genre) => (
-              <Badge key={genre} className="selected-genre-chip">
-                {genre}
-              </Badge>
-            ))
-          )}
-        </div>
+        <p className="onboarding-feedback-copy" aria-live="polite" aria-atomic="true">{getTasteSummary(formData)}</p>
+        <p className="mt-3 font-sans text-xs leading-relaxed text-muted-foreground">A starting point, not a box to stay in. You can explore beyond these choices.</p>
       </aside>
     </div>
   );
@@ -893,49 +952,47 @@ interface PaceStepProps {
   formData: OnboardingFormData;
   onFieldChange: <K extends keyof OnboardingFormData>(key: K, value: OnboardingFormData[K]) => void;
   onNumberFieldChange: (key: keyof OnboardingFormData, value: string) => void;
+  showValidation: boolean;
 }
 
-const PaceStep = ({ formData, onFieldChange, onNumberFieldChange }: PaceStepProps) => (
+const PaceStep = ({ formData, onFieldChange, onNumberFieldChange, showValidation }: PaceStepProps) => (
   <div className="space-y-6">
     <OnboardingStepIntro
       step="pace"
-      title="Tell Brack how reading fits your real life"
-      description="These fields are optional, but they make goal suggestions and streak nudges less generic."
+      title="When does a book fit into your day?"
+      description="Ten minutes counts. So does a long Sunday. Choose what feels doable, not what sounds impressive. Every answer here is optional."
     />
 
-    <section className="onboarding-form-section" aria-labelledby="onboarding-recent-pace">
-      <h2 id="onboarding-recent-pace" className="onboarding-form-section__title">
-        Recent pace
+    <section className="onboarding-form-section" aria-labelledby="onboarding-session-length">
+      <h2 id="onboarding-session-length" className="onboarding-form-section__title">
+        A little window for reading
       </h2>
-      <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 xl:grid-cols-4">
-        <NumberField
-          id="books6mo"
-          label="Books in 6 months"
-          value={numberToInput(formData.booksReadSixMonths)}
-          onChange={(value) => onNumberFieldChange("booksReadSixMonths", value)}
-          placeholder="6"
-        />
-        <NumberField
-          id="books1yr"
-          label="Books in 1 year"
-          value={numberToInput(formData.booksReadYear)}
-          onChange={(value) => onNumberFieldChange("booksReadYear", value)}
-          placeholder="12"
-        />
-        <NumberField
-          id="avgDays"
-          label="Average days/book"
-          value={numberToInput(formData.averageDaysPerBook)}
-          onChange={(value) => onNumberFieldChange("averageDaysPerBook", value)}
-          placeholder="21"
-        />
+      <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Suggested session lengths">
+        {[10, 20, 30].map((minutes) => (
+          <button
+            key={minutes}
+            type="button"
+            aria-pressed={formData.preferredSessionMinutes === minutes}
+            data-selected={formData.preferredSessionMinutes === minutes}
+            className="onboarding-choice min-h-11 rounded-md border px-4 py-2 font-sans text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            onClick={() => onFieldChange("preferredSessionMinutes", minutes)}
+          >
+            {minutes} minutes
+          </button>
+        ))}
+      </div>
+      <div className="max-w-sm">
         <NumberField
           id="sessionLength"
-          label="Session minutes"
+          label="Minutes per reading session"
           value={numberToInput(formData.preferredSessionMinutes)}
           onChange={(value) => onNumberFieldChange("preferredSessionMinutes", value)}
           placeholder="20"
+          min={5}
+          max={300}
+          error={showValidation ? getSessionValidationMessage(formData.preferredSessionMinutes) : null}
         />
+        <p className="mt-2 font-sans text-xs leading-relaxed text-muted-foreground">Use a suggestion, enter your own, or leave it blank.</p>
       </div>
     </section>
 
@@ -960,16 +1017,34 @@ const PaceStep = ({ formData, onFieldChange, onNumberFieldChange }: PaceStepProp
       />
     </section>
 
+    <aside className="onboarding-feedback" aria-label="Your reading rhythm">
+      <h2 className="font-display text-lg font-semibold">A rhythm, not a rule</h2>
+      <p className="onboarding-feedback-copy mt-2" aria-live="polite" aria-atomic="true">{getReadingRhythmSummary(formData)}</p>
+      <p className="mt-2 font-sans text-xs leading-relaxed text-muted-foreground">This describes your preference. It does not schedule a reminder or set a timer.</p>
+    </aside>
+
     <div className="onboarding-form-section space-y-2">
-      <Label htmlFor="motivation">What are you reading toward?</Label>
+      <Label htmlFor="motivation">What would you like reading to bring you? (optional)</Label>
       <Input
         id="motivation"
+        aria-label="What would you like reading to bring you? (optional)"
         className="min-h-11"
         value={formData.motivation}
         onChange={(event) => onFieldChange("motivation", event.target.value)}
-        placeholder="Learning, focus, joy, school, career, community..."
+        placeholder="A quieter evening, a new idea, a little escape…"
+        maxLength={240}
       />
     </div>
+
+    <details className="onboarding-details">
+      <summary>Add more detail (optional)</summary>
+      <p className="my-3 font-sans text-sm leading-relaxed text-muted-foreground">Already know your recent pace? Add a rough estimate. Leaving these blank is fine.</p>
+      <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 xl:grid-cols-3">
+        <NumberField id="books6mo" label="Books in 6 months" value={numberToInput(formData.booksReadSixMonths)} onChange={(value) => onNumberFieldChange("booksReadSixMonths", value)} placeholder="6" max={500} />
+        <NumberField id="books1yr" label="Books in 1 year" value={numberToInput(formData.booksReadYear)} onChange={(value) => onNumberFieldChange("booksReadYear", value)} placeholder="12" max={1000} />
+        <NumberField id="avgDays" label="Average days per book" value={numberToInput(formData.averageDaysPerBook)} onChange={(value) => onNumberFieldChange("averageDaysPerBook", value)} placeholder="21" min={1} max={365} />
+      </div>
+    </details>
   </div>
 );
 
@@ -977,46 +1052,54 @@ interface GoalStepProps {
   formData: OnboardingFormData;
   onFieldChange: <K extends keyof OnboardingFormData>(key: K, value: OnboardingFormData[K]) => void;
   onNumberFieldChange: (key: keyof OnboardingFormData, value: string) => void;
+  showValidation: boolean;
 }
 
-const GoalStep = ({ formData, onFieldChange, onNumberFieldChange }: GoalStepProps) => (
-  <div className="onboarding-step-layout onboarding-step-layout--wide-aside">
+const GoalStep = ({ formData, onFieldChange, onNumberFieldChange, showValidation }: GoalStepProps) => (
+  <div className="onboarding-step-layout">
     <div className="min-w-0 space-y-5 sm:space-y-6">
       <OnboardingStepIntro
         step="goal"
-        title="Set a first target"
-        description="Brack uses this for dashboard progress, analytics targets, and smarter empty states."
+        title="Give yourself something to read toward"
+        description="Start with a book count and a time frame that feels comfortable. You can adjust your goal as life changes."
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="onboarding-goal-fields grid grid-cols-1 gap-4">
         <NumberField
           id="targetBooks"
           label="Target books"
           value={numberToInput(formData.goalTargetBooks)}
           onChange={(value) => onNumberFieldChange("goalTargetBooks", value)}
           placeholder="12"
+          min={1}
+          max={365}
           required
         />
         <DatePicker
           id="goalStart"
+          className="min-w-0"
           label="Start date"
           value={formData.goalStartDate}
           onChange={(value) => onFieldChange("goalStartDate", value)}
         />
         <DatePicker
           id="goalEnd"
+          className="min-w-0"
           label="End date"
           value={formData.goalEndDate}
           onChange={(value) => onFieldChange("goalEndDate", value)}
         />
       </div>
+      {showValidation && getGoalValidationMessage(formData) && (
+        <p role="alert" className="font-sans text-sm text-destructive">{getGoalValidationMessage(formData)}</p>
+      )}
 
       <div className="onboarding-reminder-row border-y border-border py-4">
         <div className="flex items-start justify-between gap-4">
           <Label htmlFor="onboarding-reminder" className="min-h-11 min-w-0 flex-1 cursor-pointer py-1">
             <span className="block font-sans text-base font-medium text-foreground">Daily reminder</span>
             <p className="font-sans text-sm text-muted-foreground">
-              This seeds notification preferences; you can edit it later.
+              Choose a daily nudge. On supported devices, you will still need to allow notifications before Brack can send it.
             </p>
           </Label>
           <Switch
@@ -1040,38 +1123,40 @@ const GoalStep = ({ formData, onFieldChange, onNumberFieldChange }: GoalStepProp
       </div>
     </div>
 
-    <aside className="onboarding-aside hidden text-center lg:block">
+    <aside className="onboarding-aside" aria-label="Your goal at a glance">
       <img
         src={BRACK_GOALS_IMAGE}
         alt=""
         aria-hidden="true"
-        className="onboarding-floating-art mx-auto mb-4 h-36 w-36 object-contain"
+        className="onboarding-floating-art mb-4 h-20 w-20 object-contain"
         decoding="async"
       />
-      <div className="font-sans text-sm text-muted-foreground">Current target</div>
-      <div className="font-display text-5xl font-bold text-primary">
-        <span>{formData.goalTargetBooks ?? 0}</span>
-      </div>
-      <div className="font-sans text-sm text-muted-foreground">books</div>
+      <h2 className="font-display text-lg font-semibold">Your goal at a glance</h2>
+      <p className="onboarding-feedback-copy mt-2" aria-live="polite" aria-atomic="true">{getGoalPaceSummary(formData)}</p>
+      <p className="mt-3 font-sans text-xs leading-relaxed text-muted-foreground">An even pace for this target, not a prediction. Every book takes its own time.</p>
     </aside>
   </div>
 );
 
-const ReviewStep = ({ formData, isPreAuth = false }: { formData: OnboardingFormData; isPreAuth?: boolean }) => (
+const ReviewStep = ({ formData, isPreAuth = false, onEdit }: {
+  formData: OnboardingFormData;
+  isPreAuth?: boolean;
+  onEdit: (step: OnboardingStepId) => void;
+}) => (
   <div className="onboarding-step-layout">
     <div className="min-w-0 space-y-5">
       <OnboardingStepIntro
         step="review"
-        title="This is the starting profile Brack will use"
+        title="Your next chapter starts here"
         description={
           isPreAuth
-            ? "Your choices stay only in this open setup. Refreshing or closing it starts over; after verification Brack applies them to your profile."
-            : "You can edit this from Settings later. Completing now removes the dashboard setup prompt."
+            ? "Here is your starting plan. Create and verify your account next to keep these choices. Until then, refreshing or closing this setup starts over."
+            : "Here is your starting plan. Save it now, and change anything later in Settings."
         }
       />
 
       <div className="onboarding-summary-ledger">
-        <SummaryRow index="01" title="Taste">
+        <SummaryRow index="01" title="Taste" onEdit={() => onEdit("taste")}>
           <div className="flex flex-wrap gap-2">
             {formData.favoriteGenres.length > 0 ? (
               formData.favoriteGenres.map((genre) => (
@@ -1085,48 +1170,44 @@ const ReviewStep = ({ formData, isPreAuth = false }: { formData: OnboardingFormD
           </div>
         </SummaryRow>
 
-        <SummaryRow index="02" title="Palette">
+        <SummaryRow index="02" title="Palette" onEdit={() => onEdit("palette")}>
           <p>{themes.find((theme) => theme.id === formData.colorTheme)?.name ?? "Warm Sunset"}</p>
           <p className="text-muted-foreground">
-            {isPreAuth ? "Applied after secure sign-up" : "Saved to your app appearance"}
+            {isPreAuth ? "Your chosen palette carries into sign-up" : "Your app appearance"}
           </p>
         </SummaryRow>
 
-        <SummaryRow index="03" title="Pace">
-          <p>{formData.preferredSessionMinutes ?? "No"} min sessions</p>
+        <SummaryRow index="03" title="Pace" onEdit={() => onEdit("pace")}>
+          <p>{getReadingRhythmSummary(formData)}</p>
+          {formData.motivation.trim() && <p className="mt-2 text-muted-foreground">Your reason to read: {formData.motivation.trim()}</p>}
+        </SummaryRow>
+
+        <SummaryRow index="04" title="Goal" onEdit={() => onEdit("goal")}>
+          <p>{getGoalPaceSummary(formData)}</p>
           <p className="text-muted-foreground">
-            {formData.readingFrequency || "No cadence"} · {formData.preferredReadingTime || "No time set"}
+            {formData.reminderEnabled ? `Daily reminder preference: ${formData.reminderTime ?? "19:00"}. Device permission is still needed.` : "Reminders are off"}
           </p>
         </SummaryRow>
 
-        <SummaryRow index="04" title="Goal">
-          <p>{formData.goalTargetBooks ?? 0} books</p>
-          <p className="text-muted-foreground">
-            {formData.reminderEnabled ? `Reminder at ${formData.reminderTime}` : "No reminder"}
-          </p>
-        </SummaryRow>
-
-        <SummaryRow index="05" title="Learning signals">
-          <p>{formData.preferredBookLength || "Any"} length</p>
-          <p className="text-muted-foreground">{formData.preferredBookFormat || "Any"} format</p>
+        <SummaryRow index="05" title="Format" onEdit={() => onEdit("pace")}>
+          <p>{getBookFormatLabel(formData.preferredBookFormat)}</p>
+          <p className="text-muted-foreground">Book length: {getBookLengthLabel(formData.preferredBookLength)}</p>
+          <Button type="button" variant="ghost" className="onboarding-button onboarding-button--quiet mt-1 min-h-11 px-2" onClick={() => onEdit("taste")}>Edit book length</Button>
         </SummaryRow>
       </div>
     </div>
 
-    <aside className="onboarding-aside hidden text-center lg:block">
+    <aside className="onboarding-aside" aria-label="Your first real reading action">
       <img
         src={BRACK_TROPHY_IMAGE}
         alt=""
         aria-hidden="true"
-        className="onboarding-floating-art mx-auto mb-4 h-36 w-36 object-contain"
+        className="onboarding-floating-art mb-4 h-20 w-20 object-contain"
         decoding="async"
       />
-      <p className="font-display text-xl font-bold">Ready to personalize</p>
-      <p className="font-sans text-sm text-muted-foreground">
-        {isPreAuth
-          ? "Next, create your account. Brack applies these choices only after verification."
-          : "Habits, goal, notification preference, and learning signals will be saved together."}
-      </p>
+      <h2 className="font-display text-xl font-bold">Then, bring your book</h2>
+      <p className="mt-2 font-sans text-sm leading-relaxed text-muted-foreground">Add the book you are reading, set your current page, and make your next reading session the first entry in your record.</p>
+      <p className="mt-3 font-sans text-xs leading-relaxed text-muted-foreground">The welcome practice stays a sample. It will not appear in your library or count toward this goal.</p>
     </aside>
   </div>
 );
@@ -1138,6 +1219,9 @@ const NumberField = ({
   onChange,
   placeholder,
   required,
+  min,
+  max,
+  error,
 }: {
   id: string;
   label: string;
@@ -1145,20 +1229,29 @@ const NumberField = ({
   onChange: (value: string) => void;
   placeholder: string;
   required?: boolean;
+  min?: number;
+  max?: number;
+  error?: string | null;
 }) => (
-  <div className="space-y-2">
+  <div className="min-w-0 space-y-2">
     <Label htmlFor={id}>{label}</Label>
     <Input
       id={id}
+      aria-label={label}
       className="min-h-11"
       type="number"
-      min={required ? 1 : 0}
+      min={min ?? (required ? 1 : 0)}
+      max={max}
+      step={1}
+      aria-invalid={Boolean(error)}
+      aria-describedby={error ? `${id}-error` : undefined}
       inputMode="numeric"
       value={value}
       onChange={(event) => onChange(event.target.value)}
       placeholder={placeholder}
       required={required}
     />
+    {error && <p id={`${id}-error`} role="alert" className="font-sans text-sm text-destructive">{error}</p>}
   </div>
 );
 
@@ -1192,12 +1285,15 @@ const OptionGrid = ({
   </fieldset>
 );
 
-const SummaryRow = ({ index, title, children }: { index: string; title: string; children: ReactNode }) => (
+const SummaryRow = ({ index, title, children, onEdit }: { index: string; title: string; children: ReactNode; onEdit: () => void }) => (
   <div className="onboarding-summary-row">
     <span className="onboarding-summary-row__index" aria-hidden="true">
       {index}
     </span>
-    <h3 className="onboarding-summary-row__title">{title}</h3>
+    <div>
+      <h2 className="onboarding-summary-row__title">{title}</h2>
+      <Button type="button" variant="ghost" className="onboarding-button onboarding-button--quiet min-h-11 px-2" aria-label={`Edit ${title.toLowerCase()}`} onClick={onEdit}>Edit</Button>
+    </div>
     <div className="onboarding-summary-row__value">{children}</div>
   </div>
 );

@@ -196,12 +196,12 @@ test("onboarding stays usable across phone, tablet, and desktop", async ({ page 
     { width: 768, height: 1024 },
   ];
   const chapterHeadings = [
-    /make Brack feel like it already knows your library/i,
-    /Pick the palette Brack should remember/i,
-    /Choose the genres Brack should learn first/i,
-    /Tell Brack how reading fits your real life/i,
-    /Set a first target/i,
-    /This is the starting profile Brack will use/i,
+    /A little reading adds up/i,
+    /Make yourself at home/i,
+    /What keeps you turning pages/i,
+    /When does a book fit into your day/i,
+    /Give yourself something to read toward/i,
+    /Your next chapter starts here/i,
   ];
 
   for (const viewport of viewports) {
@@ -228,9 +228,7 @@ test("onboarding stays usable across phone, tablet, and desktop", async ({ page 
       }));
       expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth + 1);
 
-      const primaryAction = page.locator(".onboarding-action-dock").getByRole("button", {
-        name: index === chapterHeadings.length - 1 ? /^(?:sign up|continue to sign up)$/i : /^continue$/i,
-      });
+      const primaryAction = page.locator(".onboarding-action-dock").getByRole("button").last();
       await expect(primaryAction).toBeVisible();
       const actionBox = await primaryAction.boundingBox();
       expect(actionBox).not.toBeNull();
@@ -238,6 +236,7 @@ test("onboarding stays usable across phone, tablet, and desktop", async ({ page 
       expect(actionBox!.x + actionBox!.width).toBeLessThanOrEqual(viewport.width + 1);
 
       if (index < chapterHeadings.length - 1) {
+        if (index === 2) await page.getByRole("button", { name: "Fantasy", exact: true }).click();
         await primaryAction.click();
       }
     }
@@ -257,12 +256,12 @@ test("onboarding stays usable across phone, tablet, and desktop", async ({ page 
   await expect(page.getByRole("navigation", { name: "Onboarding chapters" }).getByRole("button")).toHaveCount(6);
 
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  const continueButton = page.locator(".onboarding-action-dock").getByRole("button", { name: "Continue" });
+  const continueButton = page.locator(".onboarding-action-dock").getByRole("button", { name: "Make Brack yours" });
   await continueButton.focus();
   await page.keyboard.press("Enter");
   await expect(page.locator('.onboarding-page[data-motion="instant"]')).toBeVisible();
 
-  await page.locator(".onboarding-action-dock").getByRole("button", { name: "Back" }).click();
+  await page.locator(".onboarding-action-dock").getByRole("button", { name: "Go back one onboarding chapter" }).click();
   await expect(page.locator('.onboarding-page[data-motion="directional"]')).toBeVisible();
 });
 

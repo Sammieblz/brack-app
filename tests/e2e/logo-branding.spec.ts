@@ -38,9 +38,9 @@ for (const mode of ["light", "dark"] as const) {
     await page.getByRole("link", { name: "Begin with your shelf" }).click();
     const onboardingLogo = page.locator(".onboarding-logo .brack-logo");
     await expect(onboardingLogo).toBeVisible({ timeout: 15_000 });
-    const next = page.locator(".onboarding-action-dock").getByRole("button", { name: "Continue", exact: true });
+    const next = page.locator(".onboarding-action-dock").getByRole("button").last();
     await next.click();
-    await expect(page.getByRole("heading", { name: "Pick the palette Brack should remember", level: 1 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Make yourself at home", level: 1 })).toBeVisible();
 
     // Keyboard focus can reach the next carousel card at phone and desktop widths.
     const purplePalette = page.getByRole("button", { name: /Purple Sage/ });
@@ -54,10 +54,10 @@ for (const mode of ["light", "dark"] as const) {
     expect(selectedLogo.mask).toBe(originalLogo.mask);
 
     for (const [index, heading] of [
-      /Choose the genres Brack should learn first/i,
-      /Tell Brack how reading fits your real life/i,
-      /Set a first target/i,
-      /This is the starting profile Brack will use/i,
+      /What keeps you turning pages/i,
+      /When does a book fit into your day/i,
+      /Give yourself something to read toward/i,
+      /Your next chapter starts here/i,
     ].entries()) {
       await next.click();
       await expect(page.getByRole("heading", { name: heading, level: 1 })).toBeVisible();

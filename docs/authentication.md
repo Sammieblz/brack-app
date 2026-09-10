@@ -104,6 +104,39 @@ seal before routing, while saving and bootstrap states retain meaningful status
 animation. None of this presentation changes the anonymous draft, Auth handoff,
 or retry contracts below.
 
+### Onboarding substance and first value
+
+The six chapters remain Welcome, Palette, Taste, Pace, Goal, and Review. Their
+purpose is to help a reader keep their place, choose a manageable rhythm, and
+see their reading add up, not to lengthen the questionnaire.
+
+- Welcome offers an optional, clearly labeled sample reading update. The
+  `OnboardingReadingPractice` component owns only React state: logging or resetting
+  the sample never creates a book, reading event, streak, reward, or draft field.
+  Leaving the chapter resets practice. It is never required to continue.
+- Palette and Taste show compact previews at every width. Palette artwork and
+  meters are explicitly illustrative, not invented achievements. Taste visibly
+  caps selections at 12, matching the existing profile normalization limit.
+- Pace puts session length and reading preferences first. Historical counts
+  remain available under **Add more detail (optional)**. A live sentence describes
+  the chosen routine without claiming to schedule a timer or notification.
+- Goal shows an explicit default period (the reader's local date through one
+  calendar year later, clamping leap day). Its even-pace summary uses inclusive
+  calendar days, not an assumed 12-month divisor, and is not a prediction.
+  Invalid session values, book targets, and date ranges are explained inline.
+- Review uses human-readable preferences, the actual goal period, and Edit
+  actions that return directly to Review. It explains the next real action:
+  add the reader's current book and record a reading session after setup.
+
+`onboardingPresentation.ts` contains pure summary/date/validation helpers.
+The folio, six-step indicator, palette handoff, skip route, and ephemeral guest
+draft contract are unchanged. Device permissions remain contextual and no
+paywall, testimonial, artificial processing screen, or response analytics was
+added. This adapts the supplied `app-onboarding-questionnaire` skill's
+first-value approach to Brack's existing design rather than introducing its
+long subscription funnel. The reader outcome and scoped implementation were
+approved before implementation.
+
 ### Pre-auth onboarding draft
 
 `apps/client/src/services/onboardingDraft.ts` owns the anonymous draft. The
