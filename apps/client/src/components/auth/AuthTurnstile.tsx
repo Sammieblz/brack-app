@@ -342,19 +342,6 @@ export const AuthTurnstile = forwardRef<
       </div>
 
       {siteKey && useBridge && bridgeOrigin && (
-        <iframe
-          key={bridgeChannel}
-          ref={iframeRef}
-          src={`${bridgeOrigin}${TURNSTILE_BRIDGE_PATH}`}
-          title="Brack security check"
-          sandbox="allow-scripts allow-same-origin"
-          referrerPolicy="no-referrer"
-          className="block w-full border-0 bg-transparent transition-[height] duration-200 motion-reduce:transition-none"
-          style={{ height: `${bridgeHeight}px` }}
-          onLoad={initializeBridge}
-          onError={() => handleError()}
-        />
-      {siteKey && useBridge && (
         <div
           aria-hidden={!bridgeConnected || undefined}
           className={cn(
@@ -366,14 +353,14 @@ export const AuthTurnstile = forwardRef<
           <iframe
             key={bridgeChannel}
             ref={iframeRef}
-            src={`${BRACK_WEB_ORIGIN}${TURNSTILE_BRIDGE_PATH}`}
+            src={`${bridgeOrigin}${TURNSTILE_BRIDGE_PATH}`}
             title="Brack security check"
             sandbox="allow-scripts allow-same-origin"
             referrerPolicy="no-referrer"
             className="block w-full border-0 bg-transparent"
             style={{ height: `${bridgeHeight}px` }}
             onLoad={initializeBridge}
-            onError={handleError}
+            onError={() => handleError()}
           />
         </div>
       )}
