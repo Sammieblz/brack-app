@@ -246,15 +246,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem(PUBLIC_THEME_MODE_TOUCHED_KEY, 'true');
     }
 
+    // The resolvedTheme/currentTheme effect applies the matching palette.
+    // A deferred guest-default override would discard the live onboarding
+    // preview when the reader switches light/dark mode on the signup screen.
     setNextTheme(mode);
-    
-    // Wait for theme mode to apply, then re-apply color theme with correct variant
-    setTimeout(() => {
-      const isDark =
-        mode === 'dark' ||
-        (mode === 'system' && document.documentElement.classList.contains('dark'));
-      applyTheme(user ? currentTheme : 'default', isDark);
-    }, 0);
     
     if (user) {
       try {

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { BRACK_LOGO_IMAGES } from "@/config/brackAssets";
+import "./theme-aware-logo.css";
 
 interface ThemeAwareLogoProps {
   /** "icon" = standalone icon mark, "full" = icon + "BRACK" text */
@@ -16,20 +17,19 @@ export const ThemeAwareLogo = ({
 }: ThemeAwareLogoProps) => {
   const defaultSize = variant === "icon" ? "h-16 w-16" : "h-12 md:h-14";
   const maskSrc = BRACK_LOGO_IMAGES[variant];
-  const maskSize = variant === "icon" ? "130%" : "100% auto";
+  const maskSize = variant === "icon" ? "130%" : "contain";
 
   return (
     <span
       role="img"
       aria-label="Brack"
       className={cn(
-        "inline-block shrink-0 select-none",
-        variant === "icon" ? "aspect-square" : "aspect-[418/123]",
+        "brack-logo inline-block shrink-0 select-none",
+        variant === "icon" ? "aspect-square" : "aspect-[4/1]",
         size || defaultSize,
         className
       )}
       style={{
-        background: "var(--gradient-primary)",
         WebkitMaskImage: `url(${maskSrc})`,
         maskImage: `url(${maskSrc})`,
         WebkitMaskRepeat: "no-repeat",

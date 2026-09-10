@@ -41,6 +41,7 @@ export default defineConfig(({ mode }) => {
       registerType: "autoUpdate",
       includeAssets: [
         "brack-mark.webp",
+        "brack-wordmark.webp",
         "brack-favicon/favicon.ico",
         "brack-favicon/apple-touch-icon.png",
       ],

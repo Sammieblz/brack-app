@@ -11,7 +11,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { LandingBrandLogo } from "@/components/marketing/LandingBrandLogo";
+import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
@@ -725,7 +725,7 @@ const Auth = () => {
             }}
             className="px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4"
           >
-            <LandingBrandLogo eager className="h-9 sm:h-10" />
+            <ThemeAwareLogo variant="full" size="h-9 sm:h-10" />
           </button>
           <ThemeToggle variant="inline" className="bg-background/70" />
         </div>

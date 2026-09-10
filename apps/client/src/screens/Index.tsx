@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { LandingBrandLogo } from "@/components/marketing/LandingBrandLogo";
+import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { LandingIllustration, LandingSentenceReveal } from "@/components/marketing/LandingEditorialArt";
 import { LandingGamificationShowcase } from "@/components/marketing/LandingGamificationShowcase";
 import { LandingReveal } from "@/components/marketing/LandingReveal";
+import { LandingReadingStepArt } from "@/components/marketing/LandingReadingStepArt";
 import { LandingStoreBadges } from "@/components/marketing/LandingStoreBadges";
 import { LandingTypewriter } from "@/components/marketing/LandingTypewriter";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -31,6 +32,7 @@ const productIndex = [
 
 const readingDay = [
   {
+    step: "resume",
     marker: "08:12",
     chapter: "Resume",
     title: "Open the book that is already in motion.",
@@ -38,6 +40,7 @@ const readingDay = [
       "Brack keeps the title, page, and reading history together, so returning takes one tap instead of a search.",
   },
   {
+    step: "record",
     marker: "12:40",
     chapter: "Record",
     title: "Log pages or minutes without leaving the moment.",
@@ -45,6 +48,7 @@ const readingDay = [
       "Use a timer or update the page directly. If the connection disappears, the core reading flow keeps working.",
   },
   {
+    step: "understand",
     marker: "Sunday",
     chapter: "Understand",
     title: "See what a week of reading actually became.",
@@ -134,7 +138,7 @@ const Index = () => {
             aria-label="Brack home"
             className="flex min-h-11 min-w-11 items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
-            <LandingBrandLogo eager className="h-9 sm:h-10" />
+            <ThemeAwareLogo variant="full" size="h-9 sm:h-10" />
           </Link>
 
           <nav
@@ -203,27 +207,33 @@ const Index = () => {
           <div className="landing-hero__shade" aria-hidden="true" />
           <div className="mx-auto grid w-full max-w-7xl grid-cols-[minmax(0,1fr)] lg:min-h-[calc(100svh-4rem)] lg:grid-cols-[minmax(0,1fr)_22rem]">
             <div className="flex min-w-0 flex-col justify-center px-5 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-24 lg:pr-16">
-              <p className="landing-hero__eyebrow font-mono text-xs font-semibold uppercase tracking-[0.18em]">
-                Brack / a record for readers
-              </p>
+              <LandingReveal distance={12}>
+                <p className="landing-hero__eyebrow font-mono text-xs font-semibold uppercase tracking-[0.18em]">
+                  Brack / a record for readers
+                </p>
+              </LandingReveal>
               <h1 className="mt-7 max-w-[10ch] font-display text-[clamp(3.5rem,8.4vw,7.8rem)] font-bold leading-[0.88] tracking-[-0.06em]">
                 <LandingTypewriter text="A reading life deserves a record." />
               </h1>
-              <p className="landing-hero__description mt-8 max-w-2xl font-serif text-lg leading-relaxed sm:text-xl lg:text-2xl">
-                Brack keeps your books, pages, minutes, notes, goals, and reading circles in one place without turning
-                reading into admin.
-              </p>
-              <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              <LandingReveal className="mt-8" delay={0.05}>
+                <p className="landing-hero__description max-w-2xl font-serif text-lg leading-relaxed sm:text-xl lg:text-2xl">
+                  Brack keeps your books, pages, minutes, notes, goals, and reading circles in one place without turning
+                  reading into admin.
+                </p>
+              </LandingReveal>
+              <LandingReveal className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center" delay={0.1}>
                 <Button asChild className={`h-14 px-7 text-base ${landingPrimaryCtaClass}`}>
                   <Link to="/onboarding?from=landing">Begin with your shelf</Link>
                 </Button>
                 <Button variant="ghost" asChild className="landing-hero__secondary h-14 px-6 text-sm font-semibold">
                   <Link to="/auth?mode=signin">Sign in to my account</Link>
                 </Button>
-              </div>
-              <p className="landing-hero__note mt-5 max-w-lg text-sm leading-relaxed">
-                Start with a short reading profile. Create your account only after Brack feels like yours.
-              </p>
+              </LandingReveal>
+              <LandingReveal className="mt-5" delay={0.15} distance={12}>
+                <p className="landing-hero__note max-w-lg text-sm leading-relaxed">
+                  Start with a short reading profile. Create your account only after Brack feels like yours.
+                </p>
+              </LandingReveal>
             </div>
 
             <aside
@@ -231,28 +241,36 @@ const Index = () => {
               aria-label="Brack product index"
             >
               <div>
-                <div className="landing-hero__index-title flex items-center justify-between gap-4 border-b pb-4 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.16em]">
+                <LandingReveal
+                  distance={12}
+                  className="landing-hero__index-title flex items-center justify-between gap-4 border-b pb-4 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.16em]"
+                >
                   <span>Reader&apos;s index</span>
                   <span className="landing-hero__index-number">Issue 01</span>
-                </div>
+                </LandingReveal>
                 <ol>
-                  {productIndex.map(({ number, label, detail }) => (
-                    <li
-                      key={number}
-                      className="landing-hero__index-row grid grid-cols-[2.5rem_1fr] gap-3 border-b py-5"
-                    >
-                      <span className="landing-hero__index-number font-mono text-xs">{number}</span>
-                      <div>
-                        <p className="font-display text-xl font-semibold">{label}</p>
-                        <p className="landing-hero__note mt-1 text-sm">{detail}</p>
-                      </div>
+                  {productIndex.map(({ number, label, detail }, index) => (
+                    <li key={number}>
+                      <LandingReveal
+                        delay={index * 0.05}
+                        distance={12}
+                        className="landing-hero__index-row grid grid-cols-[2.5rem_1fr] gap-3 border-b py-5"
+                      >
+                        <span className="landing-hero__index-number font-mono text-xs">{number}</span>
+                        <div>
+                          <p className="font-display text-xl font-semibold">{label}</p>
+                          <p className="landing-hero__note mt-1 text-sm">{detail}</p>
+                        </div>
+                      </LandingReveal>
                     </li>
                   ))}
                 </ol>
               </div>
-              <p className="landing-hero__description mt-12 max-w-[24rem] border-l-2 border-primary pl-4 font-serif text-sm leading-6 lg:mt-8">
-                Online when you want connection. Useful offline when you only want the book.
-              </p>
+              <LandingReveal className="landing-hero__index-note mt-12 lg:mt-8" distance={12}>
+                <p className="landing-hero__description max-w-[24rem] border-l-2 border-primary pl-4 font-serif text-sm leading-6">
+                  Online when you want connection. Useful offline when you only want the book.
+                </p>
+              </LandingReveal>
             </aside>
           </div>
         </section>
@@ -288,35 +306,42 @@ const Index = () => {
           />
         </ContainerScroll>
 
-        <section id="how-it-works" className="scroll-mt-24 border-y border-border">
+        <section id="how-it-works" className="landing-tint landing-tint--sand scroll-mt-24 border-y border-border">
           <div className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
             <div className="landing-method__intro">
               <div className="landing-method__art">
-                <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                  A reading day / 02
-                </p>
+                <LandingReveal className="landing-method__label" distance={12}>
+                  <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                    A reading day / 02
+                  </p>
+                </LandingReveal>
                 <LandingIllustration kind="book" />
               </div>
               <div>
                 <h2 className="max-w-[15ch] font-display text-4xl font-bold leading-[0.98] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
                   <LandingSentenceReveal text="The record should stay out of the way of the reading." />
                 </h2>
-                <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-                  Brack follows the moments that already exist: picking up a book, marking progress, and looking back.
-                </p>
+                <LandingReveal className="mt-6" delay={0.08}>
+                  <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+                    Brack follows the moments that already exist: picking up a book, marking progress, and looking back.
+                  </p>
+                </LandingReveal>
               </div>
             </div>
 
             <ol className="landing-reading-day mt-10 border-t border-foreground sm:mt-14">
-              {readingDay.map(({ marker, chapter, title, description }) => (
+              {readingDay.map(({ step, marker, chapter, title, description }) => (
                 <li key={marker} className="border-b border-border">
                   <LandingReveal
                     distance={10}
-                    className="grid items-start gap-5 py-8 sm:grid-cols-[7rem_minmax(0,0.85fr)_minmax(0,1fr)] sm:gap-8 sm:py-10"
+                    className="landing-reading-day__row"
                   >
-                    <span className="landing-reading-day__marker font-mono text-xs font-semibold uppercase tracking-[0.12em] text-primary">
-                      {marker}
-                    </span>
+                    <div className="landing-reading-day__cue">
+                      <span className="landing-reading-day__marker font-mono text-xs font-semibold uppercase tracking-[0.12em] text-primary">
+                        {marker}
+                      </span>
+                      <LandingReadingStepArt step={step} />
+                    </div>
                     <div>
                       <p className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                         {chapter}
@@ -325,7 +350,7 @@ const Index = () => {
                         {title}
                       </h3>
                     </div>
-                    <p className="max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">{description}</p>
+                    <p className="landing-reading-day__description max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">{description}</p>
                   </LandingReveal>
                 </li>
               ))}
@@ -336,17 +361,21 @@ const Index = () => {
         <section id="journey" className="scroll-mt-24">
           <div className="mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
             <div className="grid gap-8 lg:grid-cols-[0.42fr_0.58fr] lg:gap-16">
-              <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                The journey / 03
-              </p>
+              <LandingReveal distance={12}>
+                <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                  The journey / 03
+                </p>
+              </LandingReveal>
               <div>
                 <h2 className="max-w-[13ch] font-display text-4xl font-bold leading-[0.98] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
                   <LandingSentenceReveal text="Progress can have a little life in it." />
                 </h2>
-                <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-                  Streaks show the state of the habit. Lifetime Ink records experience. Gold Leaves can be spent. Each
-                  has one clear job.
-                </p>
+                <LandingReveal className="mt-6" delay={0.08}>
+                  <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+                    Streaks show the state of the habit. Lifetime Ink records experience. Gold Leaves can be spent. Each
+                    has one clear job.
+                  </p>
+                </LandingReveal>
               </div>
             </div>
 
@@ -356,23 +385,29 @@ const Index = () => {
           </div>
         </section>
 
-        <section id="community" className="scroll-mt-24 border-y border-border">
+        <section id="community" className="landing-tint landing-tint--linen scroll-mt-24 border-y border-border">
           <div className="mx-auto grid w-full max-w-7xl lg:grid-cols-[minmax(0,1fr)_24rem]">
             <div className="px-4 py-20 sm:px-6 sm:py-28 lg:border-r lg:border-border lg:px-8 lg:pr-16">
               <div>
-                <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                  The circle / 04
-                </p>
+                <LandingReveal distance={12}>
+                  <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                    The circle / 04
+                  </p>
+                </LandingReveal>
                 <h2 className="mt-7 max-w-[15ch] font-display text-4xl font-bold leading-[0.98] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
                   <LandingSentenceReveal text="Keep the solitary part. Share only when it adds something." />
                 </h2>
-                <p className="mt-7 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-                  Your library can remain a private record. When you want company, Brack keeps the conversation attached
-                  to books, readers, and clubs instead of a generic social feed.
-                </p>
-                <p className="mt-10 max-w-xl border-l-2 border-primary pl-5 font-serif text-base leading-7 text-foreground">
-                  The core reading flow remains useful offline. Connection is an addition, not a condition.
-                </p>
+                <LandingReveal className="mt-7" delay={0.08}>
+                  <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+                    Your library can remain a private record. When you want company, Brack keeps the conversation attached
+                    to books, readers, and clubs instead of a generic social feed.
+                  </p>
+                </LandingReveal>
+                <LandingReveal className="mt-10" delay={0.12} distance={12}>
+                  <p className="max-w-xl border-l-2 border-primary pl-5 font-serif text-base leading-7 text-foreground">
+                    The core reading flow remains useful offline. Connection is an addition, not a condition.
+                  </p>
+                </LandingReveal>
               </div>
             </div>
 
@@ -381,54 +416,63 @@ const Index = () => {
               aria-label="Community features"
             >
               <LandingIllustration kind="circle" className="landing-community-art" />
-              <LandingReveal delay={0.07} distance={12}>
-                <div className="border-t border-foreground">
-                  {circleIndex.map(({ number, title, copy }) => (
-                    <div key={number} className="grid grid-cols-[2.5rem_1fr] gap-3 border-b border-border py-6">
-                      <span className="font-mono text-xs text-primary">{number}</span>
-                      <div>
-                        <h3 className="font-display text-xl font-semibold">{title}</h3>
-                        <p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p>
-                      </div>
+              <div className="border-t border-foreground">
+                {circleIndex.map(({ number, title, copy }, index) => (
+                  <LandingReveal
+                    key={number}
+                    delay={index * 0.05}
+                    distance={12}
+                    className="grid grid-cols-[2.5rem_1fr] gap-3 border-b border-border py-6"
+                  >
+                    <span className="font-mono text-xs text-primary">{number}</span>
+                    <div>
+                      <h3 className="font-display text-xl font-semibold">{title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p>
                     </div>
-                  ))}
-                </div>
-              </LandingReveal>
+                  </LandingReveal>
+                ))}
+              </div>
             </aside>
           </div>
         </section>
 
-        <section className="px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+        <section className="landing-tint landing-tint--sunset px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
           <div className="mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end lg:gap-16">
             <div>
-              <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                Begin before the account
-              </p>
+              <LandingReveal distance={12}>
+                <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                  Begin before the account
+                </p>
+              </LandingReveal>
               <h2 className="mt-7 max-w-[14ch] font-display text-4xl font-bold leading-[0.98] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
                 <LandingSentenceReveal text="Tell Brack how you read. Sign up when it feels like yours." />
               </h2>
             </div>
-            <div>
+            <LandingReveal delay={0.1}>
               <p className="text-sm leading-7 text-muted-foreground">
                 Choose your palette, taste, pace, and first goal. Those choices become your profile after signup.
               </p>
               <Button asChild className={`mt-7 h-14 w-full px-7 text-base ${landingPrimaryCtaClass}`}>
                 <Link to="/onboarding?from=landing">Start the reading profile</Link>
               </Button>
-            </div>
+            </LandingReveal>
           </div>
         </section>
       </main>
 
       <footer className="border-t border-border px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-7 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <LandingBrandLogo className="h-8" />
+          <LandingReveal distance={12}>
+            <ThemeAwareLogo variant="full" size="h-8" />
             <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
               A considered record for the books, habits, and people that shape a reading life.
             </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          </LandingReveal>
+          <LandingReveal
+            delay={0.05}
+            distance={12}
+            className="flex flex-wrap items-center gap-x-6 gap-y-3 font-mono text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground"
+          >
             <a href="#experience" className="transition-colors duration-200 hover:text-foreground">
               The app
             </a>
@@ -441,7 +485,7 @@ const Index = () => {
             <a href="mailto:support@brack-app.com" className="transition-colors duration-200 hover:text-foreground">
               Support
             </a>
-          </div>
+          </LandingReveal>
         </div>
       </footer>
     </div>

@@ -1,0 +1,12 @@
+/* One transparent silhouette, colored by the active palette on every surface. */
+.brack-logo {
+  background-color: hsl(var(--primary));
+  background-image: var(--gradient-primary);
+}
+
+@media (forced-colors: active) {
+  .brack-logo {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+}

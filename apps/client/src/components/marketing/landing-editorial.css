@@ -1,3 +1,35 @@
+/* Selected full-width washes from Warm Sunset's existing semantic palette.
+   The Library and Journey keep the base paper color between these sections. */
+.landing-tint {
+  background-color: var(--landing-tint-surface, hsl(var(--background)));
+}
+
+.landing-tint--sand {
+  --landing-tint-surface: hsl(var(--accent));
+}
+
+.landing-tint--linen {
+  --landing-tint-surface: color-mix(in srgb, hsl(var(--secondary)) 75%, hsl(var(--background)));
+}
+
+.landing-tint--sunset {
+  --landing-tint-surface: color-mix(in srgb, hsl(var(--primary)) 14%, hsl(var(--background)));
+}
+
+/* Ink and rules need a little more definition on tinted paper in either mode. */
+.landing-tint .text-muted-foreground {
+  color: color-mix(in srgb, hsl(var(--muted-foreground)) 84%, hsl(var(--foreground)));
+}
+
+.landing-tint .text-primary {
+  color: color-mix(in srgb, hsl(var(--primary)) 60%, hsl(var(--foreground)));
+}
+
+.landing-tint,
+.landing-tint .border-border {
+  border-color: color-mix(in srgb, hsl(var(--foreground)) 13%, var(--landing-tint-surface));
+}
+
 .landing-hero {
   position: relative;
   isolation: isolate;
@@ -178,13 +210,53 @@
   gap: 1.5rem;
 }
 
-.landing-method__art > p {
+.landing-method__label {
   flex: 1 1 8rem;
 }
 
 .landing-method__art .landing-illustration {
   width: min(100%, clamp(8rem, 32vw, 14rem));
   margin-left: auto;
+}
+
+.landing-reading-day {
+  container: reading-day / inline-size;
+}
+
+.landing-reading-day__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 1.25rem 1rem;
+  padding-block: 2rem;
+}
+
+.landing-reading-day__cue {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.landing-reading-day__description {
+  grid-column: 1 / -1;
+}
+
+.landing-reading-step-art {
+  display: block;
+  flex-shrink: 0;
+  width: 4rem;
+  max-width: 72px;
+  aspect-ratio: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.landing-reading-step-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .landing-reading-day__marker {
@@ -204,6 +276,34 @@
 .landing-community-art {
   width: min(100%, 19rem);
   margin: -1.5rem auto 1.5rem;
+}
+
+/* Follow available content space and text size, not just viewport width. */
+@container reading-day (min-width: 22rem) {
+  .landing-reading-day__row {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+  }
+
+  .landing-reading-day__cue {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@container reading-day (min-width: 40rem) {
+  .landing-reading-day__row {
+    grid-template-columns: 7rem minmax(0, 0.85fr) minmax(0, 1fr);
+    gap: 2rem;
+    padding-block: 2.5rem;
+  }
+
+  .landing-reading-day__description {
+    grid-column: auto;
+  }
+
+  .landing-reading-step-art {
+    width: 4.5rem;
+  }
 }
 
 @media (min-width: 64rem) {
@@ -243,8 +343,11 @@
     grid-template-columns: 1.5rem minmax(0, 1fr);
   }
 
-  .landing-hero__index > p {
+  .landing-hero__index-note {
     margin-top: 1.5rem;
+  }
+
+  .landing-hero__index-note > p {
     max-width: none;
   }
 }
@@ -274,7 +377,22 @@
   transform: none;
 }
 
+/* Keyboard navigation must never wait for a scroll entrance. */
+.landing-reveal:focus-within {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .landing-reading-step-art img {
+    transform: none !important;
+  }
+
+  .landing-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
   .landing-sentence__word,
   .landing-illustration img {
     animation: none !important;
@@ -293,6 +411,15 @@
 }
 
 @media print {
+  .landing-reading-step-art img {
+    transform: none !important;
+  }
+
+  .landing-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
   .landing-sentence__word,
   .landing-illustration img {
     opacity: 1;
@@ -303,6 +430,20 @@
 }
 
 @media (forced-colors: active) {
+  .landing-tint {
+    background-color: Canvas;
+  }
+
+  .landing-tint,
+  .landing-tint .border-border {
+    border-color: CanvasText;
+  }
+
+  .landing-tint .text-muted-foreground,
+  .landing-tint .text-primary {
+    color: CanvasText;
+  }
+
   .landing-hero {
     color: CanvasText;
     background: Canvas;

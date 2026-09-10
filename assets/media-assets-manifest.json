@@ -2,7 +2,7 @@
   "schema_version": 3,
   "generator": {
     "path": "scripts/optimize-media-assets.mjs",
-    "sha256": "aad3d67c9a26c8f58c230a27a52255fd210781f7f734034508a0959c47c70352",
+    "sha256": "862a5990e0bfd5ea9dbeeafacca0788edd295300b1de39758420df95c004130e",
     "sharp": "0.32.6",
     "vips": "8.14.5"
   },
@@ -29,13 +29,13 @@
     "ios/App/App/public"
   ],
   "budgets": {
-    "public_static_bytes": 7401365,
+    "public_static_bytes": 7113969,
     "native_static_bytes": 2399852,
     "journey_largest_twelve_badges_bytes": 490322,
     "journey_shell_bytes": 18572,
     "journey_worst_case_viewport_bytes": 508894,
     "dashboard_initial_bytes": 50368,
-    "brand_runtime_bytes": 90644,
+    "brand_runtime_bytes": 71898,
     "empty_state_runtime_bytes": 401742,
     "video_runtime_bytes": 4531961
   },
@@ -1168,20 +1168,11 @@
     {
       "path": "apps/client/public/brack-wordmark.webp",
       "role": "runtime",
-      "sha256": "bb51d6967661ec26007a1715800f28f3e85f585150585c9c6319db3b657bf6d3",
-      "bytes": 38860,
+      "sha256": "0cfeab288968941f594575f080b6880c010e9173a499d85ad7b3bb0ab38d1fa4",
+      "bytes": 20114,
       "format": "webp",
-      "width": 418,
-      "height": 123
-    },
-    {
-      "path": "apps/client/public/landing-page/brack-logo-transparent-bg-orange-text.png",
-      "role": "runtime",
-      "sha256": "60fe3787ded27ed99b7de57c59cbaf29364e06bf1713f94755a3f2a071380b74",
-      "bytes": 268650,
-      "format": "png",
-      "width": 854,
-      "height": 229
+      "width": 1024,
+      "height": 256
     },
     {
       "path": "apps/client/public/landing-page/landing-page-pic-dark.png",

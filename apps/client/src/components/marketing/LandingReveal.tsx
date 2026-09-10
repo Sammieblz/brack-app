@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,8 @@ interface LandingRevealProps {
  */
 export const LandingReveal = ({ children, className, delay = 0, distance = 16 }: LandingRevealProps) => {
   const reducedMotion = useReducedMotion();
+  const [hasFocused, setHasFocused] = useState(false);
+  const showImmediately = reducedMotion || hasFocused;
   const scrollRootRef = useRef<HTMLElement | null>(
     typeof document === "undefined" ? null : document.getElementById("root"),
   );
@@ -26,20 +28,21 @@ export const LandingReveal = ({ children, className, delay = 0, distance = 16 }:
   return (
     <motion.div
       data-motion={reducedMotion ? "reduced" : "reveal"}
-      initial={reducedMotion ? false : { opacity: 0, y: distance }}
-      animate={reducedMotion ? { opacity: 1, y: 0 } : undefined}
-      whileInView={reducedMotion ? undefined : { opacity: 1, y: 0 }}
+      initial={showImmediately ? false : { opacity: 0, y: distance }}
+      animate={showImmediately ? { opacity: 1, y: 0 } : undefined}
+      whileInView={showImmediately ? undefined : { opacity: 1, y: 0 }}
+      onFocusCapture={() => setHasFocused(true)}
       viewport={{
         root: scrollRootRef,
         once: true,
         amount: 0.18,
       }}
       transition={{
-        duration: reducedMotion ? 0 : 0.5,
-        delay: reducedMotion ? 0 : delay,
+        duration: showImmediately ? 0 : 0.5,
+        delay: showImmediately ? 0 : delay,
         ease: [0.22, 1, 0.36, 1],
       }}
-      className={cn(className)}
+      className={cn("landing-reveal", className)}
     >
       {children}
     </motion.div>

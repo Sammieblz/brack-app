@@ -24,11 +24,6 @@ const dashboardArtwork = [
   "brack-trophy/brack-trophy.webp",
 ];
 const manifestPath = path.join(repoRoot, "assets", "media-assets-manifest.json");
-const landingCampaignWordmarkPath = path.join(
-  publicRoot,
-  "landing-page",
-  "brack-logo-transparent-bg-orange-text.png",
-);
 const scriptPath = fileURLToPath(import.meta.url);
 const checkOnly = process.argv.includes("--check");
 const transparentBackground = { r: 0, g: 0, b: 0, alpha: 0 };
@@ -41,9 +36,10 @@ const brandAssets = [
     height: 512,
     requireTransparentEdges: true,
   },
-  { name: "brack-wordmark.webp", width: 418, height: 123 },
+  { name: "brack-wordmark.webp", width: 1024, height: 256, requireTransparentEdges: true },
 ];
 const brandMark = brandAssets[0];
+const brandWordmark = brandAssets[1];
 
 const emptyStateIconNames = [
   "3dicons-boy-front-clay",
@@ -60,6 +56,7 @@ const emptyStateIconNames = [
 ];
 
 const obsoleteFiles = [
+  "apps/client/public/landing-page/brack-logo-transparent-bg-orange-text.png",
   "apps/client/public/brack-logo.png",
   "apps/client/public/brack-icon-transparent-bg-dark.png",
   "apps/client/public/brack-icon-transparent-bg-dark.webp",
@@ -117,10 +114,7 @@ const requiredPublicPngs = new Set([
   "apps/client/public/brack-favicon/favicon-96x96.png",
   "apps/client/public/brack-favicon/web-app-manifest-192x192.png",
   "apps/client/public/brack-favicon/web-app-manifest-512x512.png",
-  // These supplied marketing visuals intentionally remain PNGs: the product
-  // previews need exact UI text rendering and the campaign wordmark retains
-  // its transparent background. They are losslessly optimized in place below.
-  "apps/client/public/landing-page/brack-logo-transparent-bg-orange-text.png",
+  // Product previews need exact UI text rendering and stay lossless PNGs.
   "apps/client/public/landing-page/landing-page-pic-dark.png",
   "apps/client/public/landing-page/landing-page-pic-light.png",
 ]);
@@ -345,35 +339,6 @@ const optimizePngIfSmaller = async (target) => {
   return writeBufferIfChanged(target, candidate);
 };
 
-const normalizeLandingCampaignWordmark = async () => {
-  if (!(await exists(landingCampaignWordmarkPath))) {
-    throw new Error(
-      `Missing landing wordmark: ${toRepoPath(landingCampaignWordmarkPath)}.`,
-    );
-  }
-
-  const original = await readFile(landingCampaignWordmarkPath);
-  const metadata = await sharp(original, { failOn: "error" }).metadata();
-  if (!metadata.hasAlpha) {
-    throw new Error("The landing campaign wordmark must retain transparency.");
-  }
-
-  // The supplied master has a large square transparent canvas. Trimming only
-  // transparent/near-transparent edge noise preserves every visible logo pixel
-  // at its original resolution while avoiding a 1+ MiB download on every visit.
-  const candidate = await sharp(original, { failOn: "error" })
-    .trim({ background: transparentBackground, threshold: 1 })
-    .png({ compressionLevel: 9, adaptiveFiltering: true })
-    .toBuffer();
-  if (candidate.length >= original.length) return false;
-  if (checkOnly) {
-    throw new Error(
-      `Landing wordmark has excess transparent canvas: ${toRepoPath(landingCampaignWordmarkPath)}. Run npm run media:assets.`,
-    );
-  }
-  return writeBufferIfChanged(landingCampaignWordmarkPath, candidate);
-};
-
 const convertLosslessWebp = async ({ input, output, maxDimension }) => {
   if (await exists(input)) {
     if (checkOnly) {
@@ -478,6 +443,56 @@ const importBrandMark = async (sourceValue) => {
       .webp({ lossless: true, effort: 6 })
       .toBuffer(),
   );
+};
+
+const importBrandWordmark = async (sourceValue) => {
+  if (!sourceValue) return;
+  if (checkOnly) throw new Error("--import-brand-wordmark cannot be combined with --check.");
+  const sourcePath = path.resolve(repoRoot, sourceValue);
+  const output = path.join(publicRoot, brandWordmark.name);
+  if (sourcePath === output) throw new Error("Import the wordmark from an external master.");
+  let source = await readFile(sourcePath);
+  const metadata = await sharp(source, { failOn: "error" }).metadata();
+  if (metadata.width < brandWordmark.width || metadata.height < brandWordmark.height) {
+    throw new Error("The wordmark master must be at least 1024x256px.");
+  }
+
+  if (process.argv.includes("--wordmark-ink-mask")) {
+    // Explicit import option for flat black artwork on white. Convert ink
+    // coverage to real alpha, including the book pages and letter counters.
+    // The small endpoint clamp removes near-white export noise but preserves
+    // antialiasing. Never run this normalization on a canonical during checks.
+    const { data, info } = await sharp(source)
+      .flatten({ background: "#ffffff" })
+      .greyscale()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    const pixels = Buffer.alloc(info.width * info.height * 4);
+    for (let index = 0; index < info.width * info.height; index += 1) {
+      pixels[index * 4 + 3] = Math.round(Math.max(0, Math.min(255, (245 - data[index]) * 255 / 225)));
+    }
+    source = await sharp(pixels, {
+      raw: { width: info.width, height: info.height, channels: 4 },
+    }).png().toBuffer();
+  } else {
+    const { channels } = await sharp(source).ensureAlpha().stats();
+    if (!metadata.hasAlpha || channels[3].min !== 0) {
+      throw new Error("Wordmark source must be transparent. For black-on-white artwork, pass --wordmark-ink-mask.");
+    }
+  }
+
+  const candidate = await sharp(source)
+    .trim({ background: transparentBackground, threshold: 1 })
+    .resize(brandWordmark.width - 8, brandWordmark.height - 8, {
+      fit: "contain",
+      background: transparentBackground,
+      withoutEnlargement: true,
+    })
+    .extend({ top: 4, bottom: 4, left: 4, right: 4, background: transparentBackground })
+    .webp({ lossless: true, effort: 6 })
+    .toBuffer();
+  await assertTransparentEdges(candidate);
+  await writeBufferIfChanged(output, candidate);
 };
 
 const importBadge = async (sourceValue) => {
@@ -735,12 +750,12 @@ await ensureRepositoryRoot();
 for (const target of obsoleteFiles) await removeExactTarget(target);
 for (const target of obsoleteDirectories) await removeExactTarget(target, true);
 await importBrandMark(parseCliValue("--import-brand-mark"));
+await importBrandWordmark(parseCliValue("--import-brand-wordmark"));
 await convertConfiguredMedia();
 await removeObsoleteBadgePngs();
 await importBadge(parseCliValue("--import-badge"));
 const badges = await validateBadgeArtwork();
 const dashboardCanonicals = await validateDashboardArtwork();
-await normalizeLandingCampaignWordmark();
 await optimizeRequiredPngs();
 
 if (await exists(path.join(repoRoot, "assets", "gamification-source"))) {

@@ -94,6 +94,16 @@ test("public landing shell is responsive and theme-aware", async ({ page }) => {
   }
 
   await page.emulateMedia({ reducedMotion: "reduce" });
+  const readingStepArt = page.locator(".landing-reading-step-art");
+  await expect(readingStepArt).toHaveCount(3);
+  for (const artwork of await readingStepArt.all()) {
+    await artwork.scrollIntoViewIfNeeded();
+    await expect(artwork).toHaveAttribute("aria-hidden", "true");
+    const image = artwork.locator("img");
+    await expect(image).toHaveJSProperty("complete", true);
+    expect(await image.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+    await expect(image).toHaveCSS("transform", "none");
+  }
   for (const illustration of await page.locator(".landing-illustration").all()) {
     await illustration.scrollIntoViewIfNeeded();
     await expect(illustration).toHaveAttribute("data-reduced-motion", "true");
@@ -117,6 +127,20 @@ test("public landing shell is responsive and theme-aware", async ({ page }) => {
   for (const section of largeTextSections) {
     expect(section.scrollWidth, `${section.name} should fit at 200% text size`).toBeLessThanOrEqual(section.width + 1);
   }
+  for (const width of [320, 390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const rows = await page.locator(".landing-reading-day__row").evaluateAll((elements) =>
+      elements.map((element) => ({
+        width: element.clientWidth,
+        scrollWidth: element.scrollWidth,
+        artWidth: element.querySelector(".landing-reading-step-art")!.getBoundingClientRect().width,
+      })),
+    );
+    for (const row of rows) {
+      expect(row.scrollWidth, `Reading step should fit at ${width}px and 200% text`).toBeLessThanOrEqual(row.width + 1);
+      expect(row.artWidth, "Decorative art stays small when text is enlarged").toBeLessThanOrEqual(72);
+    }
+  }
   await page.evaluate(() => {
     document.documentElement.style.fontSize = "";
   });
@@ -124,6 +148,40 @@ test("public landing shell is responsive and theme-aware", async ({ page }) => {
   await expect(page.locator("#root")).not.toBeEmpty();
   await expect(page.getByText(/page error|something went wrong/i)).toHaveCount(0);
   expect(runtimeErrors, "The client should mount without an uncaught runtime error").toEqual([]);
+});
+
+test("landing sections reveal on scroll without changing the iPad or delaying keyboard focus", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator(".landing-hero")).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator("#experience .landing-reveal")).toHaveCount(0);
+
+  const methodEntrance = page.locator("#how-it-works .landing-reveal").first();
+  await expect(methodEntrance).toHaveCSS("opacity", "0");
+
+  for (const section of await page.locator("main > section:not(#experience)").all()) {
+    const entrance = section.locator(".landing-reveal").first();
+    await expect(entrance).toHaveCount(1);
+    await entrance.scrollIntoViewIfNeeded();
+    await expect(entrance).toHaveCSS("opacity", "1");
+    await expect(entrance).toHaveCSS("transform", "none");
+  }
+
+  // Once revealed, content must not hide again when scrolling back.
+  await page.locator(".landing-hero").scrollIntoViewIfNeeded();
+  await expect(methodEntrance).toHaveCSS("opacity", "1");
+
+  // Direct keyboard focus must bypass any pending entrance on the footer links.
+  const support = page.getByRole("link", { name: "Support", exact: true });
+  await support.focus();
+  await expect(support.locator("..")).toHaveCSS("opacity", "1");
+  await expect(support.locator("..")).toHaveCSS("transform", "none");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const entrance of await page.locator(".landing-reveal").all()) {
+    await expect(entrance).toHaveCSS("opacity", "1");
+    await expect(entrance).toHaveCSS("transform", "none");
+  }
 });
 
 test("onboarding stays usable across phone, tablet, and desktop", async ({ page }) => {
