@@ -15,12 +15,13 @@ import {
 import { CheckCircle, WarningTriangle } from "iconoir-react";
 
 import { useTheme } from "@/contexts/ThemeContext";
-import { BRACK_WEB_ORIGIN, isCustomSchemeAuthRuntime } from "@/services/platform";
+import { isCustomSchemeAuthRuntime } from "@/services/platform";
 import { cn } from "@/lib/utils";
 import {
   TURNSTILE_BRIDGE_EVENT,
   TURNSTILE_BRIDGE_INIT,
   TURNSTILE_BRIDGE_PATH,
+  getTurnstileBridgeOrigin,
   getTurnstileSiteKey,
   isTurnstileBridgeEvent,
   isValidTurnstileToken,
@@ -34,6 +35,7 @@ type TurnstileStatus =
   | "ready"
   | "expired"
   | "error"
+  | "hostname_error"
   | "unsupported"
   | "configuration_error";
 
@@ -51,7 +53,9 @@ interface AuthTurnstileProps {
 const createBridgeChannel = () => {
   const bytes = new Uint8Array(24);
   globalThis.crypto.getRandomValues(bytes);
-  return Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
+  return Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join(
+    ""
+  );
 };
 
 const BRIDGE_HANDSHAKE_TIMEOUT_MS = 15_000;
@@ -59,13 +63,11 @@ const BRIDGE_HANDSHAKE_TIMEOUT_MS = 15_000;
 const needsHostedBridge = () => {
   if (typeof window === "undefined") return false;
 
-  // Packaged apps and the fixed Vite loopback origins use the canonical HTTPS
-  // bridge. The real widget therefore stays restricted to brack-app.com while
-  // local development still produces a token accepted by hosted Supabase Auth.
+  // Browser and PWA builds must render on their real origin so Cloudflare sees
+  // the correct hostname (including localhost). Packaged apps use the HTTPS
+  // bridge because their custom schemes are not valid Turnstile hostnames.
   return shouldUseHostedTurnstileBridge({
     customSchemeRuntime: isCustomSchemeAuthRuntime(),
-    origin: window.location.origin,
-    development: import.meta.env.DEV,
   });
 };
 
@@ -74,6 +76,7 @@ const statusCopy: Record<TurnstileStatus, string> = {
   ready: "Security check ready",
   expired: "Refreshing the security check…",
   error: "Security check could not load. Check your connection and retry.",
+  hostname_error: "Security check is not enabled for this address.",
   unsupported: "This browser cannot complete the security check.",
   configuration_error: "Security check is unavailable in this build.",
 };
@@ -89,10 +92,12 @@ export const AuthTurnstile = forwardRef<
   const onTokenChangeRef = useRef(onTokenChange);
   const siteKey = getTurnstileSiteKey();
   const useBridge = needsHostedBridge();
+  const bridgeOrigin = getTurnstileBridgeOrigin();
+  const isConfigured = Boolean(siteKey && (!useBridge || bridgeOrigin));
   const turnstileTheme: TurnstileTheme =
     resolvedTheme === "dark" ? "dark" : "light";
   const [status, setStatus] = useState<TurnstileStatus>(() =>
-    siteKey ? "checking" : "configuration_error",
+    isConfigured ? "checking" : "configuration_error"
   );
   const [widgetSize, setWidgetSize] = useState<WidgetSize | null>(null);
   const [bridgeChannel, setBridgeChannel] = useState(createBridgeChannel);
@@ -108,7 +113,7 @@ export const AuthTurnstile = forwardRef<
   const reset = useCallback(() => {
     clearToken();
 
-    if (!siteKey) {
+    if (!isConfigured) {
       setStatus("configuration_error");
       return;
     }
@@ -122,7 +127,7 @@ export const AuthTurnstile = forwardRef<
     }
 
     turnstileRef.current?.reset();
-  }, [clearToken, siteKey, useBridge]);
+  }, [clearToken, isConfigured, useBridge]);
 
   useImperativeHandle(forwardedRef, () => ({ reset }), [reset]);
 
@@ -157,34 +162,40 @@ export const AuthTurnstile = forwardRef<
     if (previousThemeRef.current === turnstileTheme) return;
     previousThemeRef.current = turnstileTheme;
     clearToken();
-    setStatus(siteKey ? "checking" : "configuration_error");
-    if (siteKey && useBridge) {
+    setStatus(isConfigured ? "checking" : "configuration_error");
+    if (isConfigured && useBridge) {
       setBridgeHeight(150);
       setBridgeConnected(false);
       setBridgeChannel(createBridgeChannel());
     }
-  }, [clearToken, siteKey, turnstileTheme, useBridge]);
+  }, [clearToken, isConfigured, turnstileTheme, useBridge]);
 
-  const acceptToken = useCallback((token: string) => {
-    if (!isValidTurnstileToken(token)) {
-      clearToken();
-      setStatus("error");
-      return;
-    }
+  const acceptToken = useCallback(
+    (token: string) => {
+      if (!isValidTurnstileToken(token)) {
+        clearToken();
+        setStatus("error");
+        return;
+      }
 
-    onTokenChangeRef.current(token);
-    setStatus("ready");
-  }, [clearToken]);
+      onTokenChangeRef.current(token);
+      setStatus("ready");
+    },
+    [clearToken]
+  );
 
   const handleExpired = useCallback(() => {
     clearToken();
     setStatus("expired");
   }, [clearToken]);
 
-  const handleError = useCallback(() => {
-    clearToken();
-    setStatus("error");
-  }, [clearToken]);
+  const handleError = useCallback(
+    (errorCode?: string) => {
+      clearToken();
+      setStatus(errorCode?.startsWith("110200") ? "hostname_error" : "error");
+    },
+    [clearToken]
+  );
 
   const handleTimeout = useCallback(() => {
     clearToken();
@@ -197,6 +208,12 @@ export const AuthTurnstile = forwardRef<
   }, [clearToken]);
 
   const initializeBridge = useCallback(() => {
+    if (!bridgeOrigin) {
+      clearToken();
+      setStatus("configuration_error");
+      return;
+    }
+
     iframeRef.current?.contentWindow?.postMessage(
       {
         type: TURNSTILE_BRIDGE_INIT,
@@ -204,12 +221,12 @@ export const AuthTurnstile = forwardRef<
         action,
         theme: turnstileTheme,
       },
-      BRACK_WEB_ORIGIN,
+      bridgeOrigin
     );
-  }, [action, bridgeChannel, turnstileTheme]);
+  }, [action, bridgeChannel, bridgeOrigin, clearToken, turnstileTheme]);
 
   useEffect(() => {
-    if (!useBridge || !siteKey || bridgeConnected) return;
+    if (!useBridge || !isConfigured || bridgeConnected) return;
 
     const timeout = window.setTimeout(() => {
       clearToken();
@@ -217,14 +234,14 @@ export const AuthTurnstile = forwardRef<
     }, BRIDGE_HANDSHAKE_TIMEOUT_MS);
 
     return () => window.clearTimeout(timeout);
-  }, [bridgeChannel, bridgeConnected, clearToken, siteKey, useBridge]);
+  }, [bridgeChannel, bridgeConnected, clearToken, isConfigured, useBridge]);
 
   useLayoutEffect(() => {
-    if (!useBridge || !siteKey) return;
+    if (!useBridge || !isConfigured || !bridgeOrigin) return;
 
     const handleMessage = (event: MessageEvent<unknown>) => {
       if (
-        event.origin !== BRACK_WEB_ORIGIN ||
+        event.origin !== bridgeOrigin ||
         event.source !== iframeRef.current?.contentWindow ||
         !isTurnstileBridgeEvent(event.data) ||
         event.data.channel !== bridgeChannel
@@ -261,11 +278,12 @@ export const AuthTurnstile = forwardRef<
   }, [
     acceptToken,
     bridgeChannel,
+    bridgeOrigin,
     clearToken,
     handleError,
     handleExpired,
     handleTimeout,
-    siteKey,
+    isConfigured,
     useBridge,
   ]);
 
@@ -277,7 +295,7 @@ export const AuthTurnstile = forwardRef<
       className={cn(
         "w-full rounded-xl bg-muted/45 p-2.5 text-foreground transition-colors",
         disabled && "pointer-events-none opacity-75",
-        className,
+        className
       )}
       aria-disabled={disabled || undefined}
     >
@@ -285,15 +303,23 @@ export const AuthTurnstile = forwardRef<
         <span
           className={cn(
             "flex items-center gap-2 text-xs font-medium text-muted-foreground",
-            (status === "error" || status === "unsupported" || status === "configuration_error") &&
-              "text-destructive",
+            (status === "error" ||
+              status === "hostname_error" ||
+              status === "unsupported" ||
+              status === "configuration_error") &&
+              "text-destructive"
           )}
-          role={status === "ready" || status === "checking" ? "status" : "alert"}
+          role={
+            status === "ready" || status === "checking" ? "status" : "alert"
+          }
           aria-live="polite"
         >
           {status === "ready" ? (
             <CheckCircle className="h-4 w-4 text-primary" aria-hidden="true" />
-          ) : status === "error" || status === "unsupported" || status === "configuration_error" ? (
+          ) : status === "error" ||
+            status === "hostname_error" ||
+            status === "unsupported" ||
+            status === "configuration_error" ? (
             <WarningTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
           ) : (
             <span
@@ -315,6 +341,19 @@ export const AuthTurnstile = forwardRef<
         )}
       </div>
 
+      {siteKey && useBridge && bridgeOrigin && (
+        <iframe
+          key={bridgeChannel}
+          ref={iframeRef}
+          src={`${bridgeOrigin}${TURNSTILE_BRIDGE_PATH}`}
+          title="Brack security check"
+          sandbox="allow-scripts allow-same-origin"
+          referrerPolicy="no-referrer"
+          className="block w-full border-0 bg-transparent transition-[height] duration-200 motion-reduce:transition-none"
+          style={{ height: `${bridgeHeight}px` }}
+          onLoad={initializeBridge}
+          onError={() => handleError()}
+        />
       {siteKey && useBridge && (
         <div
           aria-hidden={!bridgeConnected || undefined}

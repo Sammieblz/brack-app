@@ -12,7 +12,7 @@ export const TURNSTILE_ACTIONS = [
 export type TurnstileAction = (typeof TURNSTILE_ACTIONS)[number];
 export type TurnstileTheme = "light" | "dark";
 
-export const TURNSTILE_BRIDGE_PATH = "/turnstile.html";
+export const TURNSTILE_BRIDGE_PATH = "/turnstile";
 export const TURNSTILE_BRIDGE_INIT = "brack:turnstile:init";
 export const TURNSTILE_BRIDGE_EVENT = "brack:turnstile:event";
 
@@ -63,30 +63,53 @@ export const getTurnstileSiteKey = (): string | null => {
   if (typeof value !== "string") return null;
 
   const normalized = value.trim();
-  return normalized.length > 0 && normalized.length <= 128
-    ? normalized
-    : null;
+  return normalized.length > 0 && normalized.length <= 128 ? normalized : null;
 };
 
+export const normalizeTurnstileBridgeOrigin = (
+  value: unknown
+): string | null => {
+  if (typeof value !== "string") return null;
+
+  const normalized = value.trim();
+  if (!normalized) return null;
+
+  try {
+    const url = new URL(normalized);
+    if (
+      url.protocol !== "https:" ||
+      url.username ||
+      url.password ||
+      url.pathname !== "/" ||
+      url.search ||
+      url.hash
+    ) {
+      return null;
+    }
+
+    return url.origin;
+  } catch {
+    return null;
+  }
+};
+
+export const getTurnstileBridgeOrigin = (): string | null =>
+  normalizeTurnstileBridgeOrigin(import.meta.env.VITE_TURNSTILE_BRIDGE_ORIGIN);
+
+/**
+ * Browser and PWA builds render Turnstile on their actual HTTP(S) origin,
+ * including localhost during development. Only packaged runtimes need the
+ * hosted HTTPS bridge because custom app schemes are not valid Turnstile
+ * hostnames.
+ */
 export const shouldUseHostedTurnstileBridge = ({
   customSchemeRuntime,
-  origin,
-  development,
 }: {
   customSchemeRuntime: boolean;
-  origin: string;
-  development: boolean;
-}) => {
-  if (customSchemeRuntime) return true;
-  if (!development) return false;
-
-  return (TURNSTILE_LOOPBACK_BRIDGE_ORIGINS as readonly string[]).includes(
-    origin,
-  );
-};
+}) => customSchemeRuntime;
 
 export const isTurnstileBridgeEvent = (
-  value: unknown,
+  value: unknown
 ): value is TurnstileBridgeEventMessage => {
   if (!value || typeof value !== "object") return false;
 
@@ -96,14 +119,9 @@ export const isTurnstileBridgeEvent = (
     typeof candidate.channel !== "string" ||
     candidate.channel.length < 16 ||
     candidate.channel.length > 128 ||
-    ![
-      "ready",
-      "token",
-      "expired",
-      "timeout",
-      "error",
-      "layout",
-    ].includes(candidate.event ?? "")
+    !["ready", "token", "expired", "timeout", "error", "layout"].includes(
+      candidate.event ?? ""
+    )
   ) {
     return false;
   }
