@@ -2,7 +2,7 @@
   "schema_version": 3,
   "generator": {
     "path": "scripts/optimize-media-assets.mjs",
-    "sha256": "bef96e32c677fda6152053a0b60dd787ec8a0fea75fdf595ae26153d033523dc",
+    "sha256": "862a5990e0bfd5ea9dbeeafacca0788edd295300b1de39758420df95c004130e",
     "sharp": "0.32.6",
     "vips": "8.14.5"
   },
@@ -29,13 +29,13 @@
     "ios/App/App/public"
   ],
   "budgets": {
-    "public_static_bytes": 6551871,
+    "public_static_bytes": 7113969,
     "native_static_bytes": 2399852,
     "journey_largest_twelve_badges_bytes": 490322,
     "journey_shell_bytes": 18572,
     "journey_worst_case_viewport_bytes": 508894,
     "dashboard_initial_bytes": 50368,
-    "brand_runtime_bytes": 90644,
+    "brand_runtime_bytes": 71898,
     "empty_state_runtime_bytes": 401742,
     "video_runtime_bytes": 4531961
   },
@@ -1168,11 +1168,65 @@
     {
       "path": "apps/client/public/brack-wordmark.webp",
       "role": "runtime",
-      "sha256": "bb51d6967661ec26007a1715800f28f3e85f585150585c9c6319db3b657bf6d3",
-      "bytes": 38860,
+      "sha256": "0cfeab288968941f594575f080b6880c010e9173a499d85ad7b3bb0ab38d1fa4",
+      "bytes": 20114,
       "format": "webp",
-      "width": 418,
-      "height": 123
+      "width": 1024,
+      "height": 256
+    },
+    {
+      "path": "apps/client/public/landing-page/landing-page-pic-dark.png",
+      "role": "runtime",
+      "sha256": "7e6f8ea4608ccb1a62605d78dfd301fcba0536e45265cd5d8b744b0ec99f82c5",
+      "bytes": 194593,
+      "format": "png",
+      "width": 612,
+      "height": 842
+    },
+    {
+      "path": "apps/client/public/landing-page/landing-page-pic-light.png",
+      "role": "runtime",
+      "sha256": "bd16710b1c2112ffa3bbb780984ddb2a1e23e83f896207937cedeb77da31f9f7",
+      "bytes": 195293,
+      "format": "png",
+      "width": 613,
+      "height": 842
+    },
+    {
+      "path": "apps/client/public/landing-page/reading-book-sculpture.webp",
+      "role": "runtime",
+      "sha256": "23dd5c1147827ed79eb07cd2841ea46fcc52623b58b1e84cb8be0f6388e84db3",
+      "bytes": 35014,
+      "format": "webp",
+      "width": 640,
+      "height": 640
+    },
+    {
+      "path": "apps/client/public/landing-page/reading-circle-sculpture.webp",
+      "role": "runtime",
+      "sha256": "a734aaf236ca09204b6450a7d1a804f097d162840b9a8a42ba48c554de573797",
+      "bytes": 76488,
+      "format": "webp",
+      "width": 640,
+      "height": 640
+    },
+    {
+      "path": "apps/client/public/landing-page/sunset-reading-hero-mobile.webp",
+      "role": "runtime",
+      "sha256": "b2962ace254997451409c4e86fbd40dafd0f6ea9a385336992583305579e0fd0",
+      "bytes": 21170,
+      "format": "webp",
+      "width": 800,
+      "height": 450
+    },
+    {
+      "path": "apps/client/public/landing-page/sunset-reading-hero.webp",
+      "role": "runtime",
+      "sha256": "489b837a70e3ce04e89452e96c59aa22015a682cebedb19809d7759f80bcfb0d",
+      "bytes": 58286,
+      "format": "webp",
+      "width": 1600,
+      "height": 900
     },
     {
       "path": "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",

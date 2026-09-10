@@ -1,0 +1,109 @@
+.landing-store-badges {
+  width: min(100%, 24rem);
+  margin-inline: auto;
+}
+
+.landing-store-badges__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
+  gap: 0.75rem;
+}
+
+.landing-store-badge {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 3.625rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #716c67;
+  border-radius: 0.625rem;
+  background: #191715;
+  color: #fff;
+  box-shadow: 0 2px 0 #050403;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1), background-color 160ms ease;
+}
+
+.landing-store-badge__mark {
+  flex: 0 0 auto;
+  width: 1.625rem;
+  height: 1.875rem;
+}
+
+.landing-store-badge__copy {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.landing-store-badge__eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.015em;
+}
+
+.landing-store-badge__name {
+  font-size: 1.1875rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.landing-store-badge:active:not(:focus-visible) {
+  transform: translateY(2px);
+}
+
+.landing-store-badge:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 4px;
+  transition: none;
+}
+
+.landing-store-badges__status {
+  min-height: 2.75rem;
+  margin: 0.875rem 0 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: center;
+  text-wrap: pretty;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .landing-store-badge:hover {
+    background-color: #2b2723;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-store-badge {
+    transition: none;
+  }
+
+  .landing-store-badge:active:not(:focus-visible) {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .landing-store-badge {
+    border-color: ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+    box-shadow: none;
+  }
+
+  .landing-store-badge__mark path {
+    fill: currentColor;
+  }
+
+  .landing-store-badge:focus-visible {
+    outline-color: Highlight;
+  }
+}

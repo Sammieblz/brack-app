@@ -1,0 +1,469 @@
+/* Selected full-width washes from Warm Sunset's existing semantic palette.
+   The Library and Journey keep the base paper color between these sections. */
+.landing-tint {
+  background-color: var(--landing-tint-surface, hsl(var(--background)));
+}
+
+.landing-tint--sand {
+  --landing-tint-surface: hsl(var(--accent));
+}
+
+.landing-tint--linen {
+  --landing-tint-surface: color-mix(in srgb, hsl(var(--secondary)) 75%, hsl(var(--background)));
+}
+
+.landing-tint--sunset {
+  --landing-tint-surface: color-mix(in srgb, hsl(var(--primary)) 14%, hsl(var(--background)));
+}
+
+/* Ink and rules need a little more definition on tinted paper in either mode. */
+.landing-tint .text-muted-foreground {
+  color: color-mix(in srgb, hsl(var(--muted-foreground)) 84%, hsl(var(--foreground)));
+}
+
+.landing-tint .text-primary {
+  color: color-mix(in srgb, hsl(var(--primary)) 60%, hsl(var(--foreground)));
+}
+
+.landing-tint,
+.landing-tint .border-border {
+  border-color: color-mix(in srgb, hsl(var(--foreground)) 13%, var(--landing-tint-surface));
+}
+
+.landing-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: #fff8ec;
+  background: #292017;
+}
+
+.landing-hero__photograph,
+.landing-hero__photograph img,
+.landing-hero__shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.landing-hero__photograph {
+  z-index: -2;
+}
+
+.landing-hero__photograph img {
+  object-fit: cover;
+  object-position: 68% 64%;
+}
+
+/* A photographic scrim keeps copy legible even at the brightest sunset. */
+.landing-hero__shade {
+  z-index: -1;
+  background: linear-gradient(90deg, rgb(22 17 13 / 86%) 0%, rgb(22 17 13 / 69%) 45%, rgb(22 17 13 / 12%) 100%),
+    linear-gradient(0deg, rgb(22 17 13 / 68%), transparent 65%);
+}
+
+.landing-hero__eyebrow,
+.landing-hero__index-number {
+  color: #ffb77b;
+}
+
+.landing-hero__description {
+  color: #f1e5d6;
+}
+
+.landing-hero__note {
+  color: #e4d7c5;
+}
+
+.landing-hero__index {
+  border-color: rgb(255 248 236 / 24%);
+  background: linear-gradient(
+    180deg,
+    rgb(22 17 13 / 78%),
+    rgb(22 17 13 / 64%) 58%,
+    rgb(22 17 13 / 12%) 78%,
+    rgb(22 17 13 / 56%)
+  );
+}
+
+.landing-hero__index-title {
+  border-color: rgb(255 248 236 / 65%);
+}
+
+.landing-hero__index-row {
+  border-color: rgb(255 248 236 / 23%);
+  overflow-wrap: anywhere;
+}
+
+.landing-hero__secondary {
+  max-width: 100%;
+  height: auto;
+  min-height: 3.5rem;
+  white-space: normal;
+  padding-block: 0.75rem;
+  border: 1px solid rgb(255 248 236 / 50%);
+  border-radius: var(--radius);
+  background: rgb(22 17 13 / 45%);
+  color: #fff8ec;
+  box-shadow: inset 0 1px 0 rgb(255 248 236 / 12%), 0 3px 0 rgb(0 0 0 / 25%);
+  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1), background-color 140ms ease;
+}
+
+.landing-hero__secondary:active:not(:focus-visible) {
+  transform: translateY(2px);
+}
+
+.landing-hero__secondary:focus-visible {
+  outline: 2px solid #fff8ec;
+  outline-offset: 4px;
+  transition: none;
+}
+
+.landing-sentence,
+.landing-sentence span {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+.landing-sentence__word-wrap {
+  white-space: normal;
+}
+
+.landing-sentence__word {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  opacity: 0;
+  transform: translateY(0.18em);
+  transition: opacity 480ms cubic-bezier(0.22, 1, 0.36, 1), transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--word-delay, 0ms);
+}
+
+.landing-sentence[data-ready="true"] .landing-sentence__word {
+  opacity: 1;
+  transform: none;
+}
+
+.landing-illustration {
+  display: block;
+  width: min(100%, 22rem);
+  aspect-ratio: 1;
+  user-select: none;
+}
+
+.landing-illustration img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+}
+
+.landing-illustration--book[data-ready="true"] img {
+  animation: landing-book-settle 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: 50% 70%;
+}
+
+.landing-illustration--circle[data-ready="true"] img {
+  animation: landing-circle-settle 740ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: 50% 85%;
+}
+
+@keyframes landing-book-settle {
+  from {
+    opacity: 0;
+    transform: translateY(16px) rotate(-7deg);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-2px) rotate(1deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes landing-circle-settle {
+  from {
+    opacity: 0;
+    transform: translateY(14px) rotate(4deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.landing-method__intro {
+  display: grid;
+  align-items: center;
+  gap: 2rem;
+}
+
+.landing-method__art {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.landing-method__label {
+  flex: 1 1 8rem;
+}
+
+.landing-method__art .landing-illustration {
+  width: min(100%, clamp(8rem, 32vw, 14rem));
+  margin-left: auto;
+}
+
+.landing-reading-day {
+  container: reading-day / inline-size;
+}
+
+.landing-reading-day__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 1.25rem 1rem;
+  padding-block: 2rem;
+}
+
+.landing-reading-day__cue {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.landing-reading-day__description {
+  grid-column: 1 / -1;
+}
+
+.landing-reading-step-art {
+  display: block;
+  flex-shrink: 0;
+  width: 4rem;
+  max-width: 72px;
+  aspect-ratio: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.landing-reading-step-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.landing-reading-day__marker {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.landing-reading-day__marker::before {
+  content: "";
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+}
+
+.landing-community-art {
+  width: min(100%, 19rem);
+  margin: -1.5rem auto 1.5rem;
+}
+
+/* Follow available content space and text size, not just viewport width. */
+@container reading-day (min-width: 22rem) {
+  .landing-reading-day__row {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+  }
+
+  .landing-reading-day__cue {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@container reading-day (min-width: 40rem) {
+  .landing-reading-day__row {
+    grid-template-columns: 7rem minmax(0, 0.85fr) minmax(0, 1fr);
+    gap: 2rem;
+    padding-block: 2.5rem;
+  }
+
+  .landing-reading-day__description {
+    grid-column: auto;
+  }
+
+  .landing-reading-step-art {
+    width: 4.5rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  .landing-hero__photograph img {
+    object-position: center 64%;
+  }
+
+  .landing-method__intro {
+    grid-template-columns: 0.34fr 0.66fr;
+    gap: 4rem;
+  }
+
+  .landing-method__art {
+    display: block;
+  }
+
+  .landing-method__art .landing-illustration {
+    width: min(100%, 22rem);
+    margin-top: 1.25rem;
+    margin-left: -1rem;
+  }
+}
+
+@media (max-width: 63.99rem) {
+  .landing-hero__photograph {
+    height: min(100%, 53rem);
+    mask-image: linear-gradient(#000 84%, transparent);
+  }
+
+  .landing-hero__index ol {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 1.5rem;
+  }
+
+  .landing-hero__index-row {
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+  }
+
+  .landing-hero__index-note {
+    margin-top: 1.5rem;
+  }
+
+  .landing-hero__index-note > p {
+    max-width: none;
+  }
+}
+
+@media (max-width: 25rem) {
+  .landing-hero__index-row p:last-child {
+    font-size: 0.75rem;
+  }
+
+  .landing-method__art {
+    gap: 0.5rem;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .landing-hero__secondary:hover {
+    background: rgb(22 17 13 / 65%);
+    color: #fff8ec;
+  }
+}
+
+.landing-sentence[data-reduced-motion="true"] .landing-sentence__word,
+.landing-illustration[data-reduced-motion="true"] img {
+  animation: none;
+  transition: none;
+  opacity: 1;
+  transform: none;
+}
+
+/* Keyboard navigation must never wait for a scroll entrance. */
+.landing-reveal:focus-within {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-reading-step-art img {
+    transform: none !important;
+  }
+
+  .landing-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .landing-sentence__word,
+  .landing-illustration img {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .landing-hero__secondary {
+    transition: none;
+  }
+
+  .landing-hero__secondary:active:not(:focus-visible) {
+    transform: none;
+  }
+}
+
+@media print {
+  .landing-reading-step-art img {
+    transform: none !important;
+  }
+
+  .landing-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .landing-sentence__word,
+  .landing-illustration img {
+    opacity: 1;
+    transform: none;
+    animation: none;
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .landing-tint {
+    background-color: Canvas;
+  }
+
+  .landing-tint,
+  .landing-tint .border-border {
+    border-color: CanvasText;
+  }
+
+  .landing-tint .text-muted-foreground,
+  .landing-tint .text-primary {
+    color: CanvasText;
+  }
+
+  .landing-hero {
+    color: CanvasText;
+    background: Canvas;
+  }
+
+  .landing-hero__photograph,
+  .landing-hero__shade {
+    display: none;
+  }
+
+  .landing-hero__description,
+  .landing-hero__note,
+  .landing-hero__eyebrow,
+  .landing-hero__index-number {
+    color: CanvasText;
+  }
+
+  .landing-hero__secondary {
+    color: ButtonText;
+    background: ButtonFace;
+    border-color: ButtonText;
+  }
+}

@@ -5,27 +5,30 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 ## 🖥️ Screens (27)
 
 ### Authentication & Onboarding
-1. **Auth** (`/auth`) - Direct sign-in plus signup after the onboarding handoff
+1. **Auth** (`/auth`) - Direct sign-in plus signup after the onboarding handoff,
+   presented over a theme-aware cinematic background with reduced-motion and
+   data-saver fallbacks
 2. **Onboarding** (`/onboarding`) - Anonymous-first palette, reading taste,
-   pace, and goal setup held as a versioned active-process draft
+   pace, and goal setup held as a versioned active-process draft; presented as
+   a responsive reader folio with a desktop chapter index, compact mobile
+   progress, accessible focus transfer, and reduced-motion-safe transitions
 3. **Device Permissions** (`/app-permissions`) - Optional post-signup
    notification education on Capacitor iOS/Android only
 4. **Legacy onboarding entries** (`/welcome`, `/questionnaire`, `/goals`) -
    Redirect to the canonical onboarding flow
-
 ### Main Screens
-5. **Dashboard** (`/` or `/dashboard`) - Home screen with overview
+5. **Dashboard** (`/dashboard`) - Authenticated home screen with overview
 6. **MyBooks** (`/my-books` or `/books`) - Book library
 7. **Profile** (`/profile`) - User profile and settings
 8. **Analytics** (`/analytics`) - Reading analytics dashboard
 
 ### Book Management
+
 9. **AddBook** (`/add-book`) - Add new book
 10. **EditBook** (`/edit-book/:id`) - Edit book details
 11. **BookDetail** (`/book/:id`) - Book detail page
 12. **ScanBarcode** (`/scan-barcode` or `/scan`) - Barcode scanner
 13. **ScanCover** (`/scan-cover`) - Book cover OCR scanner
-
 ### Reading Tracking
 14. **ProgressTracking** (`/book/:id/progress`) - Detailed progress analytics
 15. **ReadingHistory** (`/history`) - Reading sessions history
@@ -36,20 +39,25 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 18. **BookListDetail** (`/lists/:listId`) - Single list detail
 
 ### Social
+
 19. **Feed** (`/feed`) - Social feed with posts
 20. **Reviews** (`/reviews`) - Book reviews feed
 21. **Readers** (`/readers`) - Discover other readers
 22. **UserProfile** (`/users/:userId`) - Other user's profile
 23. **Messages** (`/messages`) - Direct messaging
-
 ### Book Clubs
 24. **BookClubs** (`/clubs`) - Book clubs list
 25. **BookClubDetail** (`/clubs/:clubId`) - Single club detail
 
 ### Other
-26. **Index** (`/`) - Landing/redirect page
-27. **NotFound** (`/*`) - 404 page
 
+26. **Index** (`/`) - Responsive public landing page with a sunset reading
+    photograph, once-per-document typing headline, transparent book artwork,
+    restrained scroll entrances, theme-aware 3D Library reveal, and clearly
+    marked upcoming App Store/Google Play downloads. Tactile onboarding actions
+    and accessible Journey previews complete the flow; authenticated readers
+    are redirected
+27. **NotFound** (`/*`) - 404 page
 ---
 
 ## 🎨 Key Components (50+)
@@ -105,16 +113,17 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - `SwipeBackHandler` - Swipe back gesture
 
 ### Specialized Components
+
 - `JournalPromptHandler` - Global journal prompt
 - `DeepLinkHandler` - Deep link router
 - `ImagePickerDialog` - Camera/library chooser
 - `AddToListDialog` - Add book to list
-
 ---
 
 ## 🔧 Core Features
 
 ### Book Management ✅
+
 - ✅ Add books manually
 - ✅ Search Google Books with Open Library fallback and metadata caching
 - ✅ Scan ISBN barcode, resolve exact match, preview, and add directly
@@ -127,8 +136,8 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Personal notes
 - ✅ Star ratings
 - ✅ Book metadata (JSON)
-
 ### Reading Tracking ✅
+
 - ✅ Reading timer with persistence
 - ✅ Background timer notifications
 - ✅ Manual progress logging
@@ -141,7 +150,6 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Reading velocity calculation
 - ✅ Completion forecasts
 - ✅ Daily progress charts
-
 ### Streaks & Goals ✅
 - ✅ Daily reading streaks
 - ✅ Current and longest streak
@@ -166,6 +174,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Share quotes
 
 ### Social Features ✅
+
 - ✅ User profiles (public/private)
 - ✅ Follow/unfollow users
 - ✅ Social feed
@@ -178,7 +187,6 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Direct messaging
 - ✅ Typing indicators
 - ✅ Message read status
-
 ### Book Clubs ✅
 - ✅ Create public/private clubs
 - ✅ Join/leave clubs
@@ -196,6 +204,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Share lists
 
 ### Analytics ✅
+
 - ✅ Weekly reading charts
 - ✅ Monthly statistics
 - ✅ Genre distribution
@@ -203,7 +212,6 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Goal progress charts
 - ✅ Streak trend charts
 - ✅ Year in review (foundation)
-
 ---
 
 ## 📱 Mobile Features
@@ -244,6 +252,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Device information
 
 ### Offline Capabilities ✅
+
 - ✅ Local-first reading core
 - ✅ Durable outbox sync
 - ✅ IndexedDB on web/PWA
@@ -252,7 +261,6 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Background sync
 - ✅ Retry and failed-sync review
 - ✅ Sync progress indicator
-
 ---
 
 ## 🎨 UI Features
@@ -280,6 +288,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Reduced motion support
 
 ### UX Polish ✅
+
 - ✅ Loading skeletons
 - ✅ Empty states
 - ✅ Error messages
@@ -289,7 +298,6 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Haptic feedback
 - ✅ Pull-to-refresh
 - ✅ Infinite scroll
-
 ---
 
 ## 🔒 Security Features
@@ -308,12 +316,12 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Role-based access (clubs)
 
 ### Data Protection ✅
+
 - ✅ Input sanitization (DOMPurify)
 - ✅ XSS prevention
 - ✅ HTTPS-only in production
 - ✅ Environment variable protection
 - ✅ Secure API keys
-
 ---
 
 ## 🚀 Performance Features
@@ -337,11 +345,11 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Cache strategies
 
 ### Battery Optimization ✅
+
 - ✅ Visibility-based subscriptions
 - ✅ Reduced animations on low battery
 - ✅ Efficient rendering
 - ✅ Background sync throttling
-
 ---
 
 ## 📊 Analytics & Insights
@@ -362,11 +370,11 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ Activity tracking
 
 ### Gamification ✅
+
 - ✅ Reading streaks
 - ✅ Achievement badges
 - ✅ Streak milestones
 - ✅ Goal completion
-
 ---
 
 ## 🔌 Integrations
@@ -378,16 +386,17 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - ✅ **Sentry** - Error tracking (optional)
 
 ### Internal APIs
+
 - ✅ **Supabase REST API** - Database operations
 - ✅ **Supabase Realtime** - Live updates
 - ✅ **Supabase Storage** - Image storage
 - ✅ **Edge Functions** - Serverless backend (48 maintained local functions)
-
 ---
 
 ## 🎯 User Journeys
 
 ### New User Journey
+
 1. **Get Started** → anonymous onboarding
 2. Choose palette, taste, pace, and goal → active-process memory draft
 3. Complete or skip → sign up with email/Google
@@ -396,10 +405,8 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 6. Add first book
 7. Start reading timer; request local notifications contextually if still undecided
 8. Log first progress
-
 **Sign In** remains a direct established-reader flow and does not replay the
 anonymous acquisition questionnaire.
-7. Maintain streak
 
 ### Returning User Journey
 1. Open app → Dashboard
@@ -411,6 +418,7 @@ anonymous acquisition questionnaire.
 7. Interact with social feed
 
 ### Power User Journey
+
 1. Manage multiple books
 2. Join book clubs
 3. Write detailed reviews
@@ -418,7 +426,6 @@ anonymous acquisition questionnaire.
 5. Follow other readers
 6. Share achievements
 7. Maintain long streaks
-
 ---
 
 ## 🛠️ Developer Features
@@ -441,13 +448,13 @@ anonymous acquisition questionnaire.
 - ✅ Component inspection
 
 ### Build Tools
+
 - ✅ Vite build optimization
 - ✅ Code splitting
 - ✅ Tree shaking
 - ✅ Minification
 - ✅ Asset optimization
 - ✅ Source maps
-
 ---
 
 ## 📦 Data Models
@@ -483,9 +490,9 @@ anonymous acquisition questionnaire.
 - **DashboardHomeSnapshot** - Snapshot-backed dashboard read model
 
 ### System Entities
+
 - **PushToken** - One authenticated owner per installation token, reassigned atomically on account switch
 - **NotificationPreferences** - Notification settings
-
 ---
 
 ## 🔄 Real-time Features
@@ -498,12 +505,12 @@ anonymous acquisition questionnaire.
 - ✅ Typing indicators
 
 ### Subscriptions
+
 - ✅ Books changes
 - ✅ Posts changes
 - ✅ Messages changes
 - ✅ Club discussions changes
 - ✅ Visibility-based (battery saving)
-
 ---
 
 ## 📲 Push Notification Types
@@ -518,11 +525,11 @@ anonymous acquisition questionnaire.
 - [ ] New comment/like
 
 ### Currently Implemented
+
 - ✅ Infrastructure (token management)
 - ✅ Preferences UI
 - ✅ Send notification function
 - ⚠️ Notification triggers (needs backend)
-
 ---
 
 ## 🎮 Gamification Features
@@ -543,11 +550,11 @@ anonymous acquisition questionnaire.
 - ✅ Motivational messages
 
 ### Goal System
+
 - ✅ Multiple goal types (books, pages, time)
 - ✅ Period types (monthly, quarterly, yearly, custom)
 - ✅ Progress tracking
 - ✅ Completion celebration
-
 ---
 
 ## 🎨 Design System
@@ -572,10 +579,10 @@ anonymous acquisition questionnaire.
 - **Responsive**: Increases on larger screens
 
 ### Components
+
 - **shadcn/ui**: 54 base components
 - **Custom**: 72 feature components
 - **Icons**: iconoir-react (1000+ icons)
-
 ---
 
 ## 📈 Performance Metrics
@@ -591,11 +598,11 @@ anonymous acquisition questionnaire.
 - **API Calls**: < 500ms (p95)
 
 ### Caching
+
 - **Query Cache**: In-memory (React Query)
 - **Data Cache**: 2-minute TTL
 - **Image Cache**: 7-day TTL
 - **Service Worker**: Static assets
-
 ---
 
 ## 🔮 Future Features
@@ -616,6 +623,7 @@ anonymous acquisition questionnaire.
 - [x] Gold Leaf shop with purchased, server-enforced Streak Freeze inventory
 
 ### Long Term (Ideas)
+
 - [ ] Browser extension
 - [ ] E-reader integrations (Kindle, Kobo)
 - [ ] Library integrations

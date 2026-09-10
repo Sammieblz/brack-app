@@ -558,6 +558,31 @@ high-contrast, forced-colors, dark, and Brack surface-theme treatments are
 included. Decorative preview bars must use `aria-hidden="true"`; real progress
 must provide a contextual accessible name and, where useful, value text.
 
+#### OnboardingChapterIndicator
+
+**Location**: `apps/client/src/components/onboarding/OnboardingChapterIndicator.tsx`
+
+**Purpose**: Responsive, directly navigable progress for the six onboarding
+chapters. It renders a compact named progress bar on phones, a horizontal rail
+on tablets, and a vertical editorial index in the desktop split folio.
+
+The indicator announces an exact `Chapter n of 6` value through a semantic
+progressbar, marks the current chapter with `aria-current="step"`, and keeps
+completed/current/upcoming states distinguishable without color alone. Its fill
+uses transform-based motion so the layout remains stable; reduced-motion mode
+updates it instantly. Chapter buttons remain 44px or larger and are disabled
+while onboarding is saving.
+
+#### OnboardingLoadingState
+
+**Location**: `apps/client/src/components/onboarding/OnboardingLoadingState.tsx`
+
+**Purpose**: Keeps onboarding bootstrap and post-save transitions inside the
+same restrained folio language as the questionnaire. It exposes one polite live
+status, never invents a completion percentage, and uses a single aria-hidden
+typesetting trace as its progress cue. Reduced-motion mode renders that trace
+as a static mark rather than looping it.
+
 #### LoadingSpinner
 
 **Location**: `apps/client/src/components/LoadingSpinner.tsx`
@@ -580,7 +605,6 @@ one polite status message and does not take focus or intercept input. The single
 PWA shell so high-DPI and offline loading keep the same sharp identity.
 `BrandedLoadingScreen` composes this loader with the dimensional `Progress`
 variant instead of maintaining a separate animation or flat progress rail.
-
 #### ErrorBoundary
 
 **Location**: `apps/client/src/components/ErrorBoundary.tsx`
@@ -592,8 +616,8 @@ variant instead of maintaining a separate animation or flat progress rail.
   <YourComponent />
 </ErrorBoundary>
 ```
-
 **Features**:
+
 - Error logging to Sentry
 - User-friendly error message
 - Reset button
@@ -607,6 +631,7 @@ variant instead of maintaining a separate animation or flat progress rail.
 **Purpose**: Bottom navigation bar (mobile)
 
 **Routes**:
+
 - Home (Dashboard)
 - Books (Library)
 - Feed (Social)
@@ -732,7 +757,7 @@ const [open, setOpen] = useState(false);
         </SelectContent>
       </Select>
     </div>
-    
+
     <Button type="submit">Submit</Button>
   </div>
 </form>
@@ -765,7 +790,6 @@ Located in `apps/client/src/components/charts/`
 Located in `apps/client/src/components/skeletons/`
 
 ### Usage
-
 ```tsx
 import { BookCardSkeleton } from '@/components/skeletons/BookCardSkeleton';
 
@@ -781,6 +805,7 @@ import { BookCardSkeleton } from '@/components/skeletons/BookCardSkeleton';
 ```
 
 **Available Skeletons**:
+
 - `BookCardSkeleton`
 - `DashboardCardSkeleton`
 - `PostCardSkeleton`
@@ -884,14 +909,14 @@ interface MyComponentProps {
   // Required props
   title: string;
   onClick: () => void;
-  
+
   // Optional props
   subtitle?: string;
   variant?: 'default' | 'outline';
-  
+
   // Children
   children?: ReactNode;
-  
+
   // Style
   className?: string;
 }

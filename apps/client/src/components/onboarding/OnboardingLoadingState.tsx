@@ -15,35 +15,27 @@ export const OnboardingLoadingState = ({
 
   return (
     <main
-      className="onboarding-loading min-h-app-viewport bg-gradient-background"
+      className="onboarding-loading min-h-app-viewport bg-background"
       data-motion={reducedMotion ? "reduced" : "full"}
     >
       <div className="onboarding-loading__shell">
         <header className="onboarding-loading__brand" aria-hidden="true">
-          <ThemeAwareLogo variant="icon" size="h-10 w-10" />
-          <span>
-            <span className="block font-display text-xl font-bold leading-none">Brack</span>
-            <span className="block font-sans text-xs text-muted-foreground">Reader setup</span>
-          </span>
+          <ThemeAwareLogo variant="full" size="h-9" />
         </header>
 
-        <section className="onboarding-loading__card">
-          <div className="onboarding-loading__book" aria-hidden="true">
-            <span className="onboarding-loading__shadow" />
-            <span className="onboarding-loading__cover" />
-            <span className="onboarding-loading__page onboarding-loading__page--left" />
-            <span className="onboarding-loading__page onboarding-loading__page--right" />
-            <span className="onboarding-loading__turning-page" />
-            <span className="onboarding-loading__bookmark" />
-            <span className="onboarding-loading__mark">
-              <ThemeAwareLogo variant="icon" size="h-9 w-9" />
-            </span>
+        <section className="onboarding-loading__folio">
+          <div className="onboarding-loading__register" aria-hidden="true">
+            <ThemeAwareLogo variant="icon" size="h-12 w-12" />
+            <span className="onboarding-loading__register-line onboarding-loading__register-line--long" />
+            <span className="onboarding-loading__register-line" />
+            <span className="onboarding-loading__register-line onboarding-loading__register-line--short" />
           </div>
 
-          <div className="max-w-md text-center">
-            <p className="onboarding-loading__title font-display font-bold text-foreground">
+          <div className="onboarding-loading__copy">
+            <p className="onboarding-loading__eyebrow">Reader setup</p>
+            <h1 className="onboarding-loading__title font-display font-bold text-foreground">
               Opening your reading room
-            </p>
+            </h1>
             <p
               className="mt-2 font-sans text-sm text-muted-foreground sm:text-base"
               role="status"
@@ -54,9 +46,7 @@ export const OnboardingLoadingState = ({
             </p>
           </div>
 
-          <div className="onboarding-loading__chapters" aria-hidden="true">
-            <span />
-            <span />
+          <div className="onboarding-loading__trace" aria-hidden="true">
             <span />
           </div>
         </section>

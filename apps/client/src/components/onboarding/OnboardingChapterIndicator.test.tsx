@@ -3,10 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Book, Clock, Palette } from "iconoir-react";
 
-import {
-  OnboardingChapterIndicator,
-  type OnboardingChapter,
-} from "./OnboardingChapterIndicator";
+import { OnboardingChapterIndicator, type OnboardingChapter } from "./OnboardingChapterIndicator";
 
 const chapters: readonly OnboardingChapter[] = [
   { id: "welcome", label: "Welcome", eyebrow: "Personalization", icon: Book },
@@ -21,15 +18,11 @@ afterEach(cleanup);
 
 describe("OnboardingChapterIndicator", () => {
   it("announces exact chapter progress and exposes all chapters by name", () => {
-    render(
-      <OnboardingChapterIndicator
-        chapters={chapters}
-        currentStep="pace"
-        onStepSelect={vi.fn()}
-      />,
-    );
+    render(<OnboardingChapterIndicator chapters={chapters} currentStep="pace" onStepSelect={vi.fn()} />);
 
-    const progress = screen.getByRole("progressbar", { name: "Onboarding setup progress" });
+    const progress = screen.getByRole("progressbar", {
+      name: "Onboarding setup progress",
+    });
     expect(progress).toHaveAttribute("aria-valuemin", "1");
     expect(progress).toHaveAttribute("aria-valuemax", "6");
     expect(progress).toHaveAttribute("aria-valuenow", "4");
@@ -40,44 +33,38 @@ describe("OnboardingChapterIndicator", () => {
 
   it("distinguishes completed, current, and upcoming chapters without color alone", () => {
     const { container } = render(
-      <OnboardingChapterIndicator
-        chapters={chapters}
-        currentStep="taste"
-        onStepSelect={vi.fn()}
-      />,
+      <OnboardingChapterIndicator chapters={chapters} currentStep="taste" onStepSelect={vi.fn()} />,
     );
 
-    expect(screen.getByRole("button", { name: "Welcome, chapter 1 of 6, completed" }))
-      .toHaveClass("onboarding-chapters__button--complete");
-    expect(screen.getByRole("button", { name: "Taste, chapter 3 of 6" }))
-      .toHaveAttribute("aria-current", "step");
-    expect(screen.getByRole("button", { name: "Review, chapter 6 of 6" }))
-      .not.toHaveAttribute("aria-current");
-    expect(container.querySelector<HTMLElement>(".onboarding-chapters__rail")?.style
-      .getPropertyValue("--onboarding-chapter-progress")).toBe("40%");
+    expect(screen.getByRole("button", { name: "Welcome, chapter 1 of 6, completed" })).toHaveClass(
+      "onboarding-chapters__button--complete",
+    );
+    expect(screen.getByRole("button", { name: "Taste, chapter 3 of 6" })).toHaveAttribute("aria-current", "step");
+    expect(screen.getByRole("button", { name: "Review, chapter 6 of 6" })).not.toHaveAttribute("aria-current");
+    expect(
+      container
+        .querySelector<HTMLElement>(".onboarding-chapters__rail")
+        ?.style.getPropertyValue("--onboarding-chapter-progress"),
+    ).toBe("0.4");
+    expect(
+      container
+        .querySelector<HTMLElement>(".onboarding-chapters__rail")
+        ?.style.getPropertyValue("--onboarding-page-progress"),
+    ).toBe("0.5");
   });
 
   it("supports direct chapter selection and disables every target while saving", async () => {
     const onStepSelect = vi.fn();
     const user = userEvent.setup();
     const { rerender } = render(
-      <OnboardingChapterIndicator
-        chapters={chapters}
-        currentStep="welcome"
-        onStepSelect={onStepSelect}
-      />,
+      <OnboardingChapterIndicator chapters={chapters} currentStep="welcome" onStepSelect={onStepSelect} />,
     );
 
     await user.click(screen.getByRole("button", { name: "Goal, chapter 5 of 6" }));
     expect(onStepSelect).toHaveBeenCalledWith("goal");
 
     rerender(
-      <OnboardingChapterIndicator
-        chapters={chapters}
-        currentStep="welcome"
-        disabled
-        onStepSelect={onStepSelect}
-      />,
+      <OnboardingChapterIndicator chapters={chapters} currentStep="welcome" disabled onStepSelect={onStepSelect} />,
     );
     expect(screen.getAllByRole("button")).toEqual(
       expect.arrayContaining(chapters.map(() => expect.objectContaining({ disabled: true }))),

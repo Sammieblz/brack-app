@@ -162,7 +162,7 @@ const renderAuth = (entry = "/auth?mode=signup&from=onboarding") =>
   );
 
 const fillSignUpForm = async () => {
-  await screen.findByRole("heading", { name: "Join BRACK" });
+  await screen.findByRole("heading", { name: "Create your Brack account" });
   fireEvent.change(screen.getByLabelText("First Name"), {
     target: { value: "Ada" },
   });
@@ -250,7 +250,7 @@ describe("Auth email flows", () => {
   it("carries the in-memory onboarding palette into the linked signup screen", async () => {
     renderAuth();
 
-    await screen.findByRole("heading", { name: "Join BRACK" });
+    await screen.findByRole("heading", { name: "Create your Brack account" });
     await waitFor(() => {
       expect(previewThemeMock).toHaveBeenCalledWith("midnight");
     });
@@ -280,7 +280,7 @@ describe("Auth email flows", () => {
       formData: { colorTheme: "midnight" },
     });
     renderAuth();
-    await screen.findByRole("heading", { name: "Join BRACK" });
+    await screen.findByRole("heading", { name: "Create your Brack account" });
 
     await waitFor(() => {
       expect(subscribeToAuthFlowCompletionMock).toHaveBeenCalled();
@@ -316,7 +316,7 @@ describe("Auth email flows", () => {
       email: "ada@example.com",
     });
     renderAuth();
-    await screen.findByRole("heading", { name: "Join BRACK" });
+    await screen.findByRole("heading", { name: "Create your Brack account" });
     fireEvent.change(screen.getByLabelText("First Name"), {
       target: { value: "  Ada " },
     });
@@ -349,7 +349,7 @@ describe("Auth email flows", () => {
 
   it("rejects whitespace-only profile names before calling Auth", async () => {
     renderAuth();
-    await screen.findByRole("heading", { name: "Join BRACK" });
+    await screen.findByRole("heading", { name: "Create your Brack account" });
     fireEvent.change(screen.getByLabelText("First Name"), {
       target: { value: "   " },
     });
@@ -479,7 +479,7 @@ describe("Auth email flows", () => {
     const popup = createOAuthPopup();
     vi.mocked(window.open).mockReturnValue(popup);
     renderAuth();
-    await screen.findByRole("heading", { name: "Join BRACK" });
+    await screen.findByRole("heading", { name: "Create your Brack account" });
 
     fireEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
 
@@ -504,7 +504,7 @@ describe("Auth email flows", () => {
   it("stops before Supabase OAuth when the signup popup is blocked", async () => {
     vi.mocked(window.open).mockReturnValue(null);
     renderAuth();
-    await screen.findByRole("heading", { name: "Join BRACK" });
+    await screen.findByRole("heading", { name: "Create your Brack account" });
 
     fireEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
 
@@ -523,7 +523,7 @@ describe("Auth email flows", () => {
 
   it("clears guest answers and restores the public theme when signup is abandoned", async () => {
     renderAuth();
-    await screen.findByRole("heading", { name: "Join BRACK" });
+    await screen.findByRole("heading", { name: "Create your Brack account" });
 
     fireEvent.click(
       screen.getByRole("button", { name: "Already have an account? Sign in" }),
@@ -709,7 +709,7 @@ describe("Auth email flows", () => {
       ),
     );
     renderAuth("/auth?mode=signin");
-    await screen.findByRole("heading", { name: "Welcome Back" });
+    await screen.findByRole("heading", { name: "Welcome back" });
     fireEvent.change(screen.getByLabelText("Email"), {
       target: { value: "ada@example.com" },
     });
