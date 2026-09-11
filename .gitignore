@@ -38,3 +38,6 @@ playwright-report
 # Supabase local CLI state
 supabase/.temp/
 supabase/.branches/
+
+# Local Graphify indexes, reports, and extraction caches
+graphify-out/
