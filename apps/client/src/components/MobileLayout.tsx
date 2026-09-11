@@ -1,9 +1,8 @@
-import { ReactNode } from "react";
+import { type CSSProperties, ReactNode } from "react";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { useNativeApp } from "@/hooks/useNativeApp";
 import { usePersistentScrollPosition } from "@/hooks/useScrollPosition";
 import { useLocation } from "react-router-dom";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -21,26 +20,24 @@ export const MobileLayout = ({
   showTopNav = true 
 }: MobileLayoutProps) => {
   const isMobile = useIsMobile();
-  const isNative = useNativeApp();
   const { isTablet } = useBreakpoint();
   const location = useLocation();
   const scrollRef = usePersistentScrollPosition(location.pathname);
 
   if (isMobile) {
     return (
-      <div className="app-viewport flex flex-col overflow-hidden bg-background">
+      <div className="app-mobile-layout app-viewport flex flex-col overflow-hidden bg-background">
         {/* Main Content - Scrollable */}
         <main
           ref={scrollRef as React.RefObject<HTMLElement>}
           data-app-scroll-container="true"
-          className={`app-scroll-container flex-1 ${
-            isNative ? "safe-top safe-bottom" : ""
-          } pb-28`}
+          className="app-scroll-container flex-1"
           style={{
-            paddingBottom: showBottomNav
-              ? "max(env(safe-area-inset-bottom), 104px)"
+            "--app-scroll-bottom-inset": showBottomNav
+              ? "calc(max(env(safe-area-inset-bottom, 0px), 24px) + var(--app-bottom-nav-content-height) + 2rem)"
               : "env(safe-area-inset-bottom)",
-          }}
+            paddingBottom: "var(--app-scroll-bottom-inset)",
+          } as CSSProperties}
         >
           {children}
         </main>

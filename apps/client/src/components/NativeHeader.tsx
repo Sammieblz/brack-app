@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
 import type { BackButtonConfig } from "@/hooks/useAppBack";
 import { cn } from "@/lib/utils";
-import { addScrollListener, getScrollParent, getScrollTop } from "@/utils/scroll";
+import { useAppHeader } from "@/hooks/useAppHeader";
 import { UserNotificationsPopover } from "@/components/UserNotificationsPopover";
 
 interface NativeHeaderProps {
@@ -21,7 +21,6 @@ interface NativeHeaderProps {
   back?: BackButtonConfig;
   action?: ReactNode;
   secondary?: ReactNode;
-  scrollContainerId?: string;
   showUtilityActions?: boolean;
   showTimerAction?: boolean;
 }
@@ -252,69 +251,40 @@ export const NativeHeader = ({
   back,
   action,
   secondary,
-  scrollContainerId,
   showUtilityActions = false,
   showTimerAction = true,
 }: NativeHeaderProps) => {
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    if (!scrollContainerId) return;
-
-    const container = document.getElementById(scrollContainerId);
-    if (!container) return;
-    const scrollTarget = getScrollParent(container, { includeSelf: true });
-
-    const handleScroll = () => {
-      setIsScrolled(getScrollTop(scrollTarget) > 50);
-    };
-
-    handleScroll();
-    return addScrollListener(scrollTarget, handleScroll, { passive: true });
-  }, [scrollContainerId]);
+  const headerRef = useAppHeader();
 
   return (
     <header
-      className={cn(
-        "sticky top-0 z-50 transition-all duration-300 bg-background/95 backdrop-blur-md border-b",
-        isScrolled ? "border-border shadow-sm" : "border-transparent"
-      )}
+      ref={headerRef}
+      className="sticky top-0 z-50 border-b border-border bg-background/95 pt-[var(--app-safe-top,0px)] backdrop-blur-md"
     >
-      <div
-        className={cn(
-          "app-page-header transition-all duration-300 flex items-end justify-between gap-4",
-          isScrolled ? "py-3" : "py-6 pb-4"
-        )}
-      >
-        <div className="flex flex-1 items-start gap-3 min-w-0">
+      {/* Keep the in-flow box stable while scrolling. Shrinking this sticky
+          header changes scroll geometry and feeds back into scroll anchoring. */}
+      <div className="app-page-header flex flex-wrap items-end justify-between gap-4 py-6 pb-4">
+        <div className="flex min-w-0 flex-[1_1_14rem] items-start gap-3">
           {back && (
             <AppBackButton
               {...back}
-              showLabel={!isScrolled}
-              className={cn(
-                "mt-0 border-border/70 bg-card/45 shadow-none hover:bg-accent",
-                isScrolled ? "h-10 w-10" : "h-11"
-              )}
+              showLabel
+              className="mt-0 h-11 border-border/70 bg-card/45 shadow-none hover:bg-accent"
               variant="outline"
               label={back.label ?? "Back"}
             />
           )}
           <div className="min-w-0 flex-1">
-            <h1
-              className={cn(
-                "font-display font-bold text-foreground transition-all duration-300 truncate",
-                isScrolled ? "text-xl" : "text-3xl sm:text-4xl"
-              )}
-            >
+            <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl break-words">
               {title}
             </h1>
-            {subtitle && !isScrolled && (
+            {subtitle && (
               <p className="font-sans text-sm text-muted-foreground mt-1">{subtitle}</p>
             )}
           </div>
         </div>
         {(showUtilityActions || action) && (
-          <div className="flex flex-shrink-0 items-center justify-end gap-2">
+          <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
             {showTimerAction && <HeaderTimerWidget />}
             {showUtilityActions && <HeaderUtilityActions />}
             {action}

@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { AppBackButton } from "@/components/AppBackButton";
 import type { BackButtonConfig } from "@/hooks/useAppBack";
 import { UserNotificationsPopover } from "@/components/UserNotificationsPopover";
+import { useAppHeader } from "@/hooks/useAppHeader";
 
 interface MobileHeaderProps {
   title: string;
@@ -30,6 +31,7 @@ export const MobileHeader = ({
   secondary,
   className
 }: MobileHeaderProps) => {
+  const headerRef = useAppHeader();
   const { triggerHaptic } = useHapticFeedback();
   const { profile, isLoading: profileLoading } = useProfileContext();
   const isMobile = useIsMobile();
@@ -53,8 +55,8 @@ export const MobileHeader = ({
 
   return (
     <>
-      <header className={cn(
-        "sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border shrink-0",
+      <header ref={headerRef} className={cn(
+        "sticky top-0 z-50 bg-background/95 pt-[var(--app-safe-top,0px)] backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border shrink-0",
         isSwiping && "transition-transform duration-300",
         className
       )}>

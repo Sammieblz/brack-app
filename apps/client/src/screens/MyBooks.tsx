@@ -1123,7 +1123,6 @@ const MyBooks = () => {
                 </Button>
               </div>
             }
-            scrollContainerId="library-scroll"
           />
         )}
 

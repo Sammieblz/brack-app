@@ -679,13 +679,33 @@ All colors MUST be HSL.
     }
   }
 
+  /* One size token for the nav and its page/focus clearance. The compact bar
+     scales with text; its outer vertical padding adds another 1rem. */
+  .app-mobile-layout {
+    --app-bottom-nav-content-height: 72px;
+  }
+
+  @media (max-width: 400px) {
+    .app-mobile-layout {
+      --app-bottom-nav-content-height: 4rem;
+    }
+  }
+
   .app-scroll-container {
+    --app-header-height: 0px;
+    --app-safe-top: env(safe-area-inset-top, 0px);
+    --app-scroll-bottom-inset: 1rem;
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    overscroll-behavior-y: auto;
+    overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
+    scrollbar-gutter: stable;
+    /* Focus/anchors clear the entire header, including a Reader HUD/tab rail.
+       Smooth scrolling is opt-in on explicit actions, never on restoration. */
+    scroll-padding-top: calc(var(--app-header-height) + 0.75rem);
+    scroll-padding-bottom: var(--app-scroll-bottom-inset);
+    scroll-behavior: auto;
     touch-action: pan-y;
   }
 
