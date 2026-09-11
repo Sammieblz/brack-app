@@ -93,7 +93,7 @@ npx playwright install chromium firefox webkit
 npm run test:e2e:shell
 ```
 
-`playwright.shell-scroll.config.ts` starts a separate, local-only Vite fixture on port 8082. It renders the production Library and Journey screens, shell, headers, tab rail, and Library views with controlled data and selected unrelated components replaced. It does not sign in to or mutate a real backend. Position assertions run in Chromium, Firefox, and WebKit; the main preview smoke suite excludes this fixture-specific spec. CI runs both suites.
+`tests/playwright/shell-scroll.config.ts` starts a separate, local-only Vite fixture on port 8082. It renders the production Library and Journey screens, shell, headers, tab rail, and Library views with controlled data and selected unrelated components replaced. It does not sign in to or mutate a real backend. Position assertions run in Chromium, Firefox, and WebKit; the main preview smoke suite excludes this fixture-specific spec. CI runs both suites.
 
 The supporting checks have distinct responsibilities:
 

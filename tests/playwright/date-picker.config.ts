@@ -1,20 +1,24 @@
 import { defineConfig } from '@playwright/test';
+import { fileURLToPath } from 'node:url';
+
+const repositoryRoot = fileURLToPath(new URL('../..', import.meta.url));
 
 export default defineConfig({
-  testDir: './tests/e2e',
-  testMatch: 'shell-scroll*.spec.ts',
-  timeout: 45_000,
+  testDir: '../e2e',
+  testMatch: 'date-picker.spec.ts',
+  timeout: 30_000,
   fullyParallel: true,
   workers: 2,
   use: {
-    baseURL: 'http://127.0.0.1:8082',
+    baseURL: 'http://127.0.0.1:8083',
     serviceWorkers: 'block',
     trace: { mode: 'retain-on-failure', screenshots: false },
     screenshot: 'off',
   },
   webServer: {
-    command: 'npx vite --config tests/fixtures/shell-scroll/vite.config.ts',
-    url: 'http://127.0.0.1:8082',
+    command: 'npx vite --config tests/fixtures/date-picker/vite.config.ts',
+    cwd: repositoryRoot,
+    url: 'http://127.0.0.1:8083',
     reuseExistingServer: false,
     timeout: 120_000,
   },

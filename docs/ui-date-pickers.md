@@ -70,7 +70,7 @@ npx playwright install chromium firefox webkit
 npm run test:date-picker
 ```
 
-`playwright.date-picker.config.ts` starts an isolated Vite fixture on `127.0.0.1:8083` and requires its own fresh server. The tests block requests outside that fixture origin and do not authenticate, read a live backend, or mutate user data. The fixture imports the production shared picker and native compatibility input, not substitutes for their interactions. It exercises controlled examples of DOB, book ranges, and goal deadlines; it is not a full application-shell or real-screen end-to-end test.
+`tests/playwright/date-picker.config.ts` starts an isolated Vite fixture on `127.0.0.1:8083` and requires its own fresh server. The tests block requests outside that fixture origin and do not authenticate, read a live backend, or mutate user data. The fixture imports the production shared picker and native compatibility input, not substitutes for their interactions. It exercises controlled examples of DOB, book ranges, and goal deadlines; it is not a full application-shell or real-screen end-to-end test.
 
 Coverage is layered:
 

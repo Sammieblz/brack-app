@@ -5,7 +5,7 @@ This local fixture renders BRACK's real `DatePicker`, calendar/overlay primitive
 exposes committed values, validity-gated submission, and paired book-date bounds.
 No authentication, network data, production credentials, or persistence is used.
 
-Run `npx playwright test --config=playwright.date-picker.config.ts`. The dedicated
+Run `npm run test:date-picker`. The dedicated
 server uses strict port 8083 and is always freshly started. Browser requests are
 restricted to the exact fixture origin; service workers are disabled. Screenshots
 are disabled, including in retained failure traces.

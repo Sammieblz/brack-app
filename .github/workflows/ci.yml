@@ -403,11 +403,11 @@ jobs:
 
       - name: Run web smoke tests for pull request
         if: github.event_name == 'pull_request'
-        run: npx playwright test --project=chromium
+        run: npx playwright test --config=tests/playwright/web.config.ts --project=chromium
 
       - name: Run web smoke tests with trusted credentials
         if: github.event_name == 'push'
-        run: npx playwright test --project=chromium
+        run: npx playwright test --config=tests/playwright/web.config.ts --project=chromium
         env:
           E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
           E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
