@@ -15,7 +15,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileAlertDialog } from "@/components/ui/mobile-dialog";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { LoadingRegion } from "@/components/loading/LoadingRegion";
+import { AccountSettingsSkeleton, PersonalInfoSkeleton, PreferenceSettingsSkeleton, ProfileFormSkeleton, ReadingHabitsSkeleton } from "@/components/skeletons/SettingsSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -162,25 +164,28 @@ const Settings = () => {
     setShowSignOutDialog(false);
   };
 
-  if (authLoading) {
-    return (
-      <MobileLayout>
-        <div className="flex items-center justify-center h-96">
-          <LoadingSpinner size="lg" text="Loading settings..." />
-        </div>
-      </MobileLayout>
-    );
-  }
-
-  if (!user) {
+  if (!user && !authLoading) {
     return null;
   }
+
+  const sectionContent = (section: (typeof sections)[number]) => {
+    if (user) return <React.Fragment key={user.id}>{section.component(user)}</React.Fragment>;
+    if (section.id === "profile") return <ProfileFormSkeleton />;
+    if (section.id === "personal") return <PersonalInfoSkeleton />;
+    if (section.id === "reading") return <Card><CardContent className="space-y-6 p-6"><h2 className="font-display text-2xl font-semibold">Reading Habits</h2><ReadingHabitsSkeleton /></CardContent></Card>;
+    if (section.id === "notifications") return <PreferenceSettingsSkeleton />;
+    if (section.id === "privacy") return <PreferenceSettingsSkeleton privacy />;
+    if (section.id === "app") return <AppPreferences />;
+    if (section.id === "support") return <SupportContact />;
+    if (section.id === "data") return <div aria-hidden="true" className="pointer-events-none space-y-6"><h2 className="font-display text-2xl font-bold">Data &amp; Backup</h2>{["Export reading data", "Import and merge"].map(title => <Card key={title}><CardContent className="space-y-4 p-6"><h3 className="font-display text-lg font-semibold">{title}</h3><Skeleton className="h-12 w-full" /><Skeleton className="h-11 min-h-[44px] w-full" /></CardContent></Card>)}</div>;
+    return <AccountSettingsSkeleton />;
+  };
 
   return (
     <MobileLayout>
       {isMobile && <MobileHeader title="Settings" />}
       
-      <div className="app-page-narrow min-w-0 overflow-x-hidden">
+      <LoadingRegion loading={authLoading} label="Loading settings" className="app-page-narrow min-w-0 overflow-x-hidden">
         {!isMobile && (
           <div className="mb-6">
             <h1 className="font-display text-3xl font-bold">Settings</h1>
@@ -217,7 +222,7 @@ const Settings = () => {
                   </AccordionTrigger>
                   <AccordionContent className="pb-4 pt-0">
                     <div className="pt-2">
-                      {section.component(user)}
+                      {sectionContent(section)}
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -257,7 +262,7 @@ const Settings = () => {
 
             <Card className="app-equal-panel min-w-0 overflow-hidden">
               <CardContent className="app-equal-panel-scroll min-w-0 p-6">
-                {sections.find((section) => section.id === activeSection)?.component(user)}
+                {sectionContent(sections.find((section) => section.id === activeSection)!)}
               </CardContent>
             </Card>
           </div>
@@ -268,6 +273,7 @@ const Settings = () => {
           <CardContent className="p-4">
             <Button
               variant="outline"
+              disabled={authLoading}
               className="w-full border-primary/35 bg-primary/10 text-primary hover:border-primary/50 hover:bg-primary/15 hover:text-primary focus-visible:ring-primary/40"
               onClick={() => {
                 triggerHaptic("medium");
@@ -279,7 +285,7 @@ const Settings = () => {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </LoadingRegion>
 
       {/* Sign Out Confirmation Dialog */}
       <MobileAlertDialog

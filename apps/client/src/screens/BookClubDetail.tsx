@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Crown,
@@ -11,7 +11,10 @@ import {
 } from "iconoir-react";
 import { formatDistanceToNow } from "date-fns";
 import { AppBackButton } from "@/components/AppBackButton";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { LoadingRegion, LoadingError } from "@/components/loading/LoadingRegion";
+import { ClubDetailSkeleton } from "@/components/skeletons/DiscoverySkeleton";
+import { useAuth } from "@/hooks/useAuth";
+import { useRetainedReaderResource } from "@/hooks/useRetainedReaderResource";
 import { MobileHeader } from "@/components/MobileHeader";
 import { MobileLayout } from "@/components/MobileLayout";
 import { ClubChatThread } from "@/components/clubs/ClubChatThread";
@@ -42,7 +45,6 @@ import { discoverReaders, type UserSearchResult } from "@/services/api/readers";
 import {
   createClubDiscussion,
   getClubDetail,
-  getCurrentAuthUser,
   inviteClubMember,
   joinBookClub,
   leaveBookClub,
@@ -75,32 +77,14 @@ const BookClubDetail = () => {
   const navigate = useNavigate();
   const confirm = useConfirmDialog();
   const isMobile = useIsMobile();
-  const [detail, setDetail] = useState<ClubDetailResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [currentUserId, setCurrentUserId] = useState<string>();
-
-  const loadClub = async () => {
-    if (!clubId) return;
-    try {
-      setLoading(true);
-      const [clubDetail, user] = await Promise.all([
-        getClubDetail(clubId),
-        getCurrentAuthUser(),
-      ]);
-      setDetail(clubDetail);
-      setCurrentUserId(user?.id);
-    } catch (error) {
-      console.error("Error fetching club:", error);
-      toast.error("Failed to load club");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadClub();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clubId]);
+  const { user, loading: authLoading } = useAuth();
+  const readClub = useCallback(() => getClubDetail(clubId!), [clubId]);
+  const { data: detail, loading: clubLoading, refreshing, error, refetch: loadClub } = useRetainedReaderResource(
+    user && clubId ? JSON.stringify([user.id, clubId]) : undefined,
+    readClub,
+  );
+  const loading = authLoading || clubLoading;
+  const currentUserId = user?.id;
 
   const club = detail?.club;
   const userRole = detail?.user_role ?? club?.user_role ?? null;
@@ -184,9 +168,10 @@ const BookClubDetail = () => {
             back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/clubs" }}
           />
         )}
-        <div className="flex items-center justify-center py-20">
-          <LoadingSpinner />
-        </div>
+        <main className="app-page">
+          {!isMobile && <AppBackButton label="Back" ariaLabel="Go back" fallbackPath="/clubs" showLabel variant="outline" className="mb-4" />}
+          <LoadingRegion loading label="Loading book club"><ClubDetailSkeleton /></LoadingRegion>
+        </main>
       </MobileLayout>
     );
   }
@@ -201,7 +186,7 @@ const BookClubDetail = () => {
           />
         )}
         <main className="app-page-narrow">
-          <p className="text-center font-sans text-muted-foreground">Club not found</p>
+          {error ? <LoadingError message="This club could not load. It may be unavailable, or your connection was interrupted." onRetry={() => void loadClub()} /> : <p className="text-center font-sans text-muted-foreground">Club not found</p>}
         </main>
       </MobileLayout>
     );
@@ -227,12 +212,15 @@ const BookClubDetail = () => {
           />
         )}
 
+        {error && <LoadingError className="mb-4" message="This club could not update. Showing the last loaded information." onRetry={() => void loadClub()} />}
+        <LoadingRegion loading={false} refreshing={refreshing} label="Loading book club">
         <ClubHero
           detail={detail}
           onJoin={handleJoin}
           onRequest={handleRequest}
           onLeave={isMember && userRole !== "admin" ? handleLeave : undefined}
         />
+        </LoadingRegion>
 
         {club.preview_only ? (
           <PreviewOnlyPanel clubName={club.name} onRequest={handleRequest} requested={club.join_status === "requested"} />

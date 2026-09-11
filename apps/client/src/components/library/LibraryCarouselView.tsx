@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { LIBRARY_CAROUSEL_ITEM } from "./libraryLayout";
 import {
   Carousel,
   CarouselContent,
@@ -80,7 +81,7 @@ export const LibraryCarouselView = ({
               return (
                 <CarouselItem
                   key={book.id}
-                  className="basis-[86%] pl-3 sm:basis-1/2 lg:basis-1/3 2xl:basis-1/4"
+                  className={LIBRARY_CAROUSEL_ITEM}
                 >
                   <article
                     className={cn(

@@ -1,34 +1,14 @@
-import { useState, useEffect } from "react";
-import { getBookProgress, type BookProgressResponse } from "@/services/api";
+import { useRetainedReaderResource } from "@/hooks/useRetainedReaderResource";
+import { useCallback } from "react";
+import { getBookProgress } from "@/services/api";
 
-export const useBookProgress = (bookId?: string) => {
-  const [progress, setProgress] = useState<BookProgressResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchProgress = async () => {
-    if (!bookId) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const data = await getBookProgress(bookId);
-      setProgress(data);
-    } catch (error) {
-      console.error('Error fetching book progress:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProgress();
-  }, [bookId]);
+export const useBookProgress = (bookId?: string, userId?: string) => {
+  const read = useCallback(() => getBookProgress(bookId!), [bookId]);
+  const resource = useRetainedReaderResource(bookId ? `${userId ?? ""}:${bookId}` : undefined, read);
 
   return {
-    progress,
-    loading,
-    refetchProgress: fetchProgress,
+    ...resource,
+    progress: resource.data ?? null,
+    refetchProgress: resource.refetch,
   };
 };

@@ -1,3 +1,6 @@
+import { getApiErrorStatus } from "@/services/api/client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 import { useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,7 +40,7 @@ const initials = (name?: string | null) =>
     .toUpperCase()
     .slice(0, 2);
 
-export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
+const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
   const queryClient = useQueryClient();
   const [publicProfile, setPublicProfile] = useState(true);
   const [showReadingActivity, setShowReadingActivity] = useState(true);
@@ -49,10 +52,13 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
   const [hasSavedLocation, setHasSavedLocation] = useState(false);
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadPrivacy = useCallback(async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const [{ data: profile, error }, blocks] = await Promise.all([
         supabase
           .from("profiles")
@@ -72,9 +78,12 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
       setGamificationProfileVisible(profile?.gamification_profile_visible ?? true);
       setHasSavedLocation(profile?.latitude != null && profile?.longitude != null);
       setBlockedUsers(blocks);
+      setHasLoaded(true);
     } catch (error) {
+      if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setHasLoaded(false); setBlockedUsers([]); }
       console.error("Failed to load privacy settings", error);
       toast.error("Failed to load privacy settings");
+      setLoadError("We couldn't load privacy settings. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -208,7 +217,7 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <LoadingRegion loading={loading && !hasLoaded} refreshing={loading && hasLoaded} label="Loading privacy settings" className="space-y-6">
       <div>
         <h2 className="font-display text-2xl font-bold">Privacy Settings</h2>
         <p className="font-sans text-muted-foreground mt-1">
@@ -216,6 +225,8 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
         </p>
       </div>
 
+      {loadError && <LoadingError message={loadError} onRetry={loadPrivacy} />}
+      {(!loadError || hasLoaded) && <>
       <Card>
         <CardHeader>
           <CardTitle>Profile Visibility</CardTitle>
@@ -231,11 +242,11 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
                 Allow readers to find and view your profile.
               </p>
             </div>
-            <Switch
+            {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
               checked={publicProfile}
               disabled={loading}
               onCheckedChange={togglePublicProfile}
-            />
+            />)}
           </div>
 
           <div className="flex items-center justify-between gap-4">
@@ -245,11 +256,11 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
                 Include your reading updates in mutual-friend Activity feeds.
               </p>
             </div>
-            <Switch
+            {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
               checked={showReadingActivity}
               disabled={loading}
               onCheckedChange={toggleReadingActivity}
-            />
+            />)}
           </div>
 
           <div className="flex items-center justify-between gap-4">
@@ -264,7 +275,7 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
                 </p>
               )}
             </div>
-            <Switch checked={showLocation} disabled={loading} onCheckedChange={toggleLocation} />
+            {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch checked={showLocation} disabled={loading} onCheckedChange={toggleLocation} />)}
           </div>
         </CardContent>
       </Card>
@@ -284,11 +295,11 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
                 Enter optional weekly leagues using qualifying reading activity. New opt-ins start next week.
               </p>
             </div>
-            <Switch
+            {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
               checked={leaderboardOptIn}
               disabled={loading}
               onCheckedChange={toggleLeaderboard}
-            />
+            />)}
           </div>
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
@@ -297,11 +308,11 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
                 Let eligible readers see your level and league rank.
               </p>
             </div>
-            <Switch
+            {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
               checked={gamificationProfileVisible}
               disabled={loading}
               onCheckedChange={toggleGamificationVisibility}
-            />
+            />)}
           </div>
         </CardContent>
       </Card>
@@ -321,16 +332,16 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
                 Let mutual friends see when you are active in Brack.
               </p>
             </div>
-            <Switch
+            {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
               checked={showOnlineStatus}
               disabled={loading}
               onCheckedChange={toggleOnlineStatus}
-            />
+            />)}
           </div>
 
           <div className="grid gap-2">
             <Label>Reader Status Badge</Label>
-            <Select
+            {!hasLoaded ? <Skeleton className="h-10 min-h-[44px] w-full max-w-md" /> : (<Select
               value={readerStatus}
               onValueChange={(value) => updateReaderStatus(value as ReaderStatusBadge)}
               disabled={loading}
@@ -345,7 +356,7 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
                   </SelectItem>
                 ))}
               </SelectContent>
-            </Select>
+            </Select>)}
             <p className="font-sans text-sm text-muted-foreground">
               This badge appears on your profile and discovery cards.
             </p>
@@ -361,7 +372,9 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {blockedUsers.length === 0 ? (
+          {!hasLoaded ? (
+            <div aria-hidden="true" className="flex items-center gap-3 rounded-md border border-border/70 p-3"><Skeleton className="h-9 w-9 shrink-0 rounded-full" /><div className="min-w-0 flex-1"><Skeleton className="h-5 w-28" /><Skeleton className="mt-1 h-4 w-20" /></div><Skeleton className="h-10 min-h-11 w-20" /></div>
+          ) : blockedUsers.length === 0 ? (
             <div className="rounded-md border border-dashed border-border/70 p-4 text-center">
               <p className="font-sans text-sm text-muted-foreground">
                 You have not blocked anyone.
@@ -395,9 +408,12 @@ export const PrivacySettings = ({ user }: PrivacySettingsProps) => {
           )}
         </CardContent>
       </Card>
-    </div>
+      </>}
+    </LoadingRegion>
   );
 };
+
+export const PrivacySettings = ({ user }: PrivacySettingsProps) => <PrivacySettingsContent key={user.id} user={user} />;
 
 const READER_STATUS_OPTIONS: Array<{ value: ReaderStatusBadge; label: string }> = [
   { value: "available", label: "Available" },

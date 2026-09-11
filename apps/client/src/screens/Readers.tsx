@@ -9,7 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CreateClubDialog } from "@/components/clubs/CreateClubDialog";
 import { FollowButton } from "@/components/social/FollowButton";
 import { Input } from "@/components/ui/input";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { LoadingRegion, LoadingError } from "@/components/loading/LoadingRegion";
+import { ReaderGridSkeleton, ClubGridSkeleton } from "@/components/skeletons/DiscoverySkeleton";
 import { MobileHeader } from "@/components/MobileHeader";
 import { MobileLayout } from "@/components/MobileLayout";
 import { NativeHeader } from "@/components/NativeHeader";
@@ -91,8 +92,8 @@ export default function Readers() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<MainTab>("readers");
   const [readerSection, setReaderSection] = useState<ReaderSection>("suggestions");
-  const { results, loading } = useUserSearch(searchQuery);
-  const { clubs, loading: clubsLoading, createClub, joinClub, leaveClub } = useBookClubs();
+  const { results, loading, refreshing, error, refetch, hasLoaded } = useUserSearch(searchQuery);
+  const { clubs, loading: clubsLoading, refreshing: clubsRefreshing, error: clubsError, hasLoaded: clubsLoaded, fetchClubs, createClub, joinClub, leaveClub } = useBookClubs();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { triggerHaptic } = useHapticFeedback();
@@ -126,9 +127,7 @@ export default function Readers() {
   const activeSectionConfig = readerSections.find((section) => section.value === readerSection)!;
 
   const handleRefresh = async () => {
-    const currentQuery = searchQuery;
-    setSearchQuery("");
-    window.setTimeout(() => setSearchQuery(currentQuery), 100);
+    await (activeTab === "clubs" ? fetchClubs() : refetch());
   };
 
   const createClubAction =
@@ -228,17 +227,13 @@ export default function Readers() {
                 <SectionHeader
                   icon={activeSectionConfig.icon}
                   title={activeSectionConfig.label}
-                  count={visibleReaders.length}
+                  count={loading ? undefined : visibleReaders.length}
                 />
               )}
 
-              {loading ? (
-                <Card>
-                  <CardContent className="flex min-h-[16rem] items-center justify-center">
-                    <LoadingSpinner />
-                  </CardContent>
-                </Card>
-              ) : visibleReaders.length === 0 ? (
+              {error && <LoadingError message="Readers could not load. Check your connection and try again." onRetry={() => void refetch()} />}
+              <LoadingRegion loading={loading} refreshing={refreshing} label="Loading readers">
+              {loading ? <ReaderGridSkeleton /> : error && !hasLoaded ? null : visibleReaders.length === 0 ? (
                 <EmptyDiscoverState
                   asset={hasSearch ? "noResults" : "emptyReaders"}
                   title={hasSearch ? "No matching readers" : activeSectionConfig.emptyTitle}
@@ -259,30 +254,26 @@ export default function Readers() {
                   ))}
                 </div>
               )}
+              </LoadingRegion>
             </TabsContent>
 
             <TabsContent value="clubs" className="mt-5 space-y-4" {...swipeHandlers}>
-              {clubsLoading ? (
-                <Card>
-                  <CardContent className="flex min-h-[16rem] items-center justify-center">
-                    <LoadingSpinner />
-                  </CardContent>
-                </Card>
-              ) : (
+              {clubsError && <LoadingError message="Clubs could not load. Check your connection and try again." onRetry={() => void fetchClubs()} />}
+              <LoadingRegion loading={clubsLoading} refreshing={clubsRefreshing} label="Loading clubs">
                 <Tabs defaultValue="my-clubs">
                   <TabsList className="w-full sm:w-auto">
                     <TabsTrigger value="my-clubs" className="gap-2">
                       <APP_ICONS.readers.myClubs className="h-4 w-4" />
-                      My Clubs ({myClubs.length})
+                      My Clubs {clubsLoading ? "" : `(${myClubs.length})`}
                     </TabsTrigger>
                     <TabsTrigger value="discover" className="gap-2">
                       <APP_ICONS.readers.discoverClubs className="h-4 w-4" />
-                      Discover ({publicClubs.length})
+                      Discover {clubsLoading ? "" : `(${publicClubs.length})`}
                     </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="my-clubs" className="mt-4">
-                    {myClubs.length === 0 ? (
+                    {clubsLoading ? <ClubGridSkeleton readers /> : clubsError && !clubsLoaded ? null : myClubs.length === 0 ? (
                       <EmptyDiscoverState
                         asset="emptyClubs"
                         title="No clubs yet"
@@ -298,7 +289,7 @@ export default function Readers() {
                   </TabsContent>
 
                   <TabsContent value="discover" className="mt-4">
-                    {publicClubs.length === 0 ? (
+                    {clubsLoading ? <ClubGridSkeleton readers /> : clubsError && !clubsLoaded ? null : publicClubs.length === 0 ? (
                       <EmptyDiscoverState
                         asset="emptyClubs"
                         title="No public clubs"
@@ -313,7 +304,7 @@ export default function Readers() {
                     )}
                   </TabsContent>
                 </Tabs>
-              )}
+              </LoadingRegion>
             </TabsContent>
           </Tabs>
         </main>
@@ -438,14 +429,14 @@ const SectionHeader = ({
 }: {
   icon: ComponentType<{ className?: string }>;
   title: string;
-  count: number;
+  count?: number;
 }) => (
   <div className="flex items-center justify-between gap-3">
     <div className="flex items-center gap-2">
       <Icon className="h-5 w-5 text-primary" />
       <h2 className="font-display text-xl font-semibold">{title}</h2>
     </div>
-    <Badge variant="secondary">{count}</Badge>
+    {count !== undefined && <Badge variant="secondary">{count}</Badge>}
   </div>
 );
 

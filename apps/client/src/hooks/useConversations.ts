@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { getApiErrorStatus } from "@/services/api/client";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import {
   fetchConversations as fetchConversationsApi,
@@ -10,28 +12,49 @@ import {
 export type { Conversation } from "@/services/api";
 
 export const useConversations = () => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const activeUser = useRef(userId);
+  activeUser.current = userId;
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadedUser, setLoadedUser] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const request = useRef(0);
 
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
+    if (!userId) return;
+    const requestId = ++request.current;
     try {
       setLoading(true);
-      setConversations(await fetchConversationsApi());
+      setError(null);
+      const result = await fetchConversationsApi();
+      if (activeUser.current !== userId || request.current !== requestId) return;
+      setConversations(result);
+      setLoadedUser(userId);
     } catch (error: unknown) {
+      if (activeUser.current !== userId || request.current !== requestId) return;
+      if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setConversations([]); setLoadedUser(null); }
       console.error("Error fetching conversations:", error);
       toast.error("Failed to load conversations");
+      setError("We couldn't load conversations. Please try again.");
     } finally {
-      setLoading(false);
+      if (activeUser.current === userId && request.current === requestId) setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
-    fetchConversations();
+    setLoadedUser(null);
+    setConversations([]);
+    setError(null);
+    setLoading(Boolean(userId));
+    if (!userId) return;
+    void fetchConversations();
 
     return subscribeToConversationChanges(fetchConversations);
-  }, []);
+  }, [userId, fetchConversations]);
 
-  const getOrCreateConversation = async (otherUserId: string): Promise<string | null> => {
+  const getOrCreateConversation = useCallback(async (otherUserId: string): Promise<string | null> => {
     try {
       const conversationId = await getOrCreateConversationApi(otherUserId);
       await fetchConversations();
@@ -41,7 +64,8 @@ export const useConversations = () => {
       toast.error("Failed to start conversation");
       return null;
     }
-  };
+  }, [fetchConversations]);
 
-  return { conversations, loading, refetchConversations: fetchConversations, getOrCreateConversation };
+  const hasLoaded = Boolean(userId && loadedUser === userId);
+  return { conversations: hasLoaded ? conversations : [], loading, hasLoaded, error, refetchConversations: fetchConversations, getOrCreateConversation };
 };

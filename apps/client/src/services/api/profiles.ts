@@ -135,17 +135,20 @@ export const fetchUserProfileWithStats = async (
       .maybeSingle();
 
     if (block) {
-      throw new Error("Profile unavailable");
+      throw Object.assign(new Error("Profile unavailable"), { status: 403 });
     }
   }
 
-  const { data: profileData, error: profileError } = await supabase
+  const { data: profileData, error: profileError, status: profileStatus } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", userId)
     .single();
 
-  if (profileError) throw profileError;
+  if (profileError) {
+    if ([401, 403, 404].includes(profileStatus)) throw Object.assign(profileError, { status: profileStatus });
+    throw profileError;
+  }
 
   const emptyStats = {
     totalBooks: 0,

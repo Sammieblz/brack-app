@@ -14,6 +14,9 @@ import { isValidTurnstileToken } from "@/utils/turnstile";
 import { presentAuthFailure } from "@/services/authFailure";
 import { isAuthError } from "@supabase/supabase-js";
 import type { User, Profile } from "@/types";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getApiErrorStatus } from "@/services/api/client";
 
 interface AccountSettingsProps {
   user: User;
@@ -52,23 +55,37 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
   const captchaRef = useRef<AuthTurnstileHandle>(null);
   const [needsPassword, setNeedsPassword] = useState(() => isGoogleOnlyAccount(user));
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState(false);
+  const [profileRequest, setProfileRequest] = useState(0);
 
   useEffect(() => {
-    let active = true;
-
     setEmail(user?.email || "");
     setNeedsPassword(isGoogleOnlyAccount(user));
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
+  }, [user]);
+
+  useEffect(() => {
+    let active = true;
+    setProfileLoading(true);
+    setProfileError(false);
     void fetchProfile(user.id).then((data) => {
-      if (active && data) setProfile(data);
+      if (active) setProfile(data);
+    }).catch((error) => {
+      if (active) {
+        if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) setProfile(null);
+        setProfileError(true);
+      }
+    }).finally(() => {
+      if (active) setProfileLoading(false);
     });
 
     return () => {
       active = false;
     };
-  }, [user]);
+  }, [user.id, profileRequest]);
 
   const validateNewPassword = (): boolean => {
     if (newPassword !== confirmPassword) {
@@ -331,14 +348,17 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
           <CardTitle>Account Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <LoadingRegion loading={profileLoading && !profile} refreshing={profileLoading && Boolean(profile)} label="Loading account information">
+          {profileError && <LoadingError message="Account information could not load." onRetry={() => setProfileRequest(value => value + 1)} />}
           <div className="space-y-2">
             <Label>Account Created</Label>
-            <Input
+            {profileLoading && !profile ? <Skeleton className="h-11 min-h-[44px] w-full" /> : profileError && !profile ? null : <Input
               value={profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : "Unknown"}
               disabled
               className="bg-muted"
-            />
+            />}
           </div>
+          </LoadingRegion>
         </CardContent>
       </Card>
 

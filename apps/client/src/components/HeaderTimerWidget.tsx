@@ -12,12 +12,14 @@ import { useTimer } from "@/contexts/TimerContext";
 import { formatTime } from "@/utils";
 import { cn } from "@/lib/utils";
 import { APP_ICONS } from "@/config/iconography";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const HeaderTimerWidget = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isPhone } = useBreakpoint();
-  const { books, loading } = useBooks(user?.id);
+  const { books, loading, refreshing, hasLoaded, error, refetchBooks } = useBooks(user?.id);
   const {
     time,
     isRunning,
@@ -71,6 +73,10 @@ export const HeaderTimerWidget = () => {
         >
           <TimerPickerContent
             loading={loading}
+            refreshing={refreshing}
+            hasLoaded={hasLoaded}
+            error={error}
+            onRetry={() => void refetchBooks()}
             readingBooks={readingBooks}
             onStartTimer={handleStartTimer}
             onGoToLibrary={() => {
@@ -165,6 +171,10 @@ export const HeaderTimerWidget = () => {
 
 type TimerPickerContentProps = {
   loading: boolean;
+  refreshing?: boolean;
+  hasLoaded?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
   readingBooks: Array<{
     id: string;
     title: string;
@@ -178,8 +188,12 @@ type TimerPickerContentProps = {
   onAddBook: () => void;
 };
 
-const TimerPickerContent = ({
+export const TimerPickerContent = ({
   loading,
+  refreshing,
+  hasLoaded,
+  error,
+  onRetry,
   readingBooks,
   onStartTimer,
   onGoToLibrary,
@@ -193,12 +207,13 @@ const TimerPickerContent = ({
       </p>
     </div>
 
+    <LoadingRegion loading={loading} refreshing={refreshing} label="Loading books for the reading timer">
+    {error && <LoadingError message="Reading books could not be refreshed." onRetry={onRetry} />}
     {loading ? (
-      <div className="space-y-2">
-        <div className="h-14 rounded-md bg-muted animate-pulse" />
-        <div className="h-14 rounded-md bg-muted animate-pulse" />
+      <div className="h-[min(22rem,calc(var(--app-viewport-height,100dvh)-13rem))] space-y-2 overflow-hidden pr-2" data-loading-contract="timer-picker" aria-hidden="true">
+        {[0, 1, 2, 3].map((index) => <div key={index} className="flex items-start gap-3 rounded-md border border-border/70 p-3"><Skeleton className="h-14 w-10 shrink-0" /><div className="min-w-0 flex-1 space-y-1"><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-1/2" /><Skeleton className="h-4 w-2/3" /></div></div>)}
       </div>
-    ) : readingBooks.length > 0 ? (
+    ) : error && !hasLoaded ? null : readingBooks.length > 0 ? (
       <ScrollArea className="h-[min(22rem,calc(var(--app-viewport-height,100dvh)-13rem))] pr-2">
         <div className="space-y-2">
           {readingBooks.map((book) => (
@@ -258,6 +273,7 @@ const TimerPickerContent = ({
         }
       />
     )}
+    </LoadingRegion>
   </div>
 );
 

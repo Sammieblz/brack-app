@@ -1,3 +1,4 @@
+import { getApiErrorStatus } from "@/services/api/client";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 import { CurrencyIcon } from "@/components/CurrencyIcon";
 import type { User } from "@/types";
 import {
@@ -19,10 +21,12 @@ interface NotificationSettingsProps {
   user: User;
 }
 
-export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
+const NotificationSettingsContent = ({ user }: NotificationSettingsProps) => {
   const { toast } = useToast();
   const { isRegistered, register, unregister, error: pushError } = usePushNotifications();
   const [loadingPrefs, setLoadingPrefs] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [notificationPrefs, setNotificationPrefs] = useState(DEFAULT_NOTIFICATION_PREFERENCES);
 
   useEffect(() => {
@@ -34,9 +38,13 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
     
     try {
       setLoadingPrefs(true);
+      setLoadError(null);
       setNotificationPrefs(await fetchNotificationPreferences(user.id));
+      setHasLoaded(true);
     } catch (error: unknown) {
+      if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setHasLoaded(false); }
       console.error("Error loading notification preferences:", error);
+      setLoadError("We couldn't load notification preferences. Please try again.");
     } finally {
       setLoadingPrefs(false);
     }
@@ -68,7 +76,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <LoadingRegion loading={loadingPrefs && !hasLoaded} refreshing={loadingPrefs && hasLoaded} label="Loading notification preferences" className="space-y-6">
       <div>
         <h2 className="font-display text-2xl font-bold">Notification Preferences</h2>
         <p className="font-sans text-muted-foreground mt-1">
@@ -81,11 +89,8 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
           <CardTitle>Push Notifications</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {loadingPrefs ? (
-            <div className="flex justify-center py-8">
-              <LoadingSpinner size="md" />
-            </div>
-          ) : (
+          {loadError && <LoadingError message={loadError} onRetry={loadNotificationPreferences} />}
+          {(!loadError || hasLoaded) && (
             <>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -95,7 +100,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                       Receive push notifications on your device
                     </p>
                   </div>
-                  <Switch
+                  {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
                     id="push_enabled"
                     checked={notificationPrefs.push_enabled}
                     onCheckedChange={(checked) => {
@@ -106,7 +111,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                         unregister().catch(console.error);
                       }
                     }}
-                  />
+                  />)}
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -116,14 +121,14 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                       New badges earned through your Reader Journey
                     </p>
                   </div>
-                  <Switch
+                  {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
                     id="badges_enabled"
                     checked={notificationPrefs.badges_enabled}
                     onCheckedChange={(checked) =>
                       setNotificationPrefs(prev => ({ ...prev, badges_enabled: checked }))
                     }
                     disabled={!notificationPrefs.push_enabled}
-                  />
+                  />)}
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -133,14 +138,14 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                       Quest reminders and completion summaries
                     </p>
                   </div>
-                  <Switch
+                  {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
                     id="quests_enabled"
                     checked={notificationPrefs.quests_enabled}
                     onCheckedChange={(checked) =>
                       setNotificationPrefs(prev => ({ ...prev, quests_enabled: checked }))
                     }
                     disabled={!notificationPrefs.push_enabled}
-                  />
+                  />)}
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -150,14 +155,14 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                       Important changes in your weekly league position
                     </p>
                   </div>
-                  <Switch
+                  {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
                     id="rank_movement_enabled"
                     checked={notificationPrefs.rank_movement_enabled}
                     onCheckedChange={(checked) =>
                       setNotificationPrefs(prev => ({ ...prev, rank_movement_enabled: checked }))
                     }
                     disabled={!notificationPrefs.push_enabled}
-                  />
+                  />)}
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -167,14 +172,14 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                       Final Reader League rank and promotion result
                     </p>
                   </div>
-                  <Switch
+                  {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
                     id="weekly_results_enabled"
                     checked={notificationPrefs.weekly_results_enabled}
                     onCheckedChange={(checked) =>
                       setNotificationPrefs(prev => ({ ...prev, weekly_results_enabled: checked }))
                     }
                     disabled={!notificationPrefs.push_enabled}
-                  />
+                  />)}
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -187,14 +192,14 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                       Notify me when a rare Gold Leaf is earned
                     </p>
                   </div>
-                  <Switch
+                  {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
                     id="gold_leaves_enabled"
                     checked={notificationPrefs.gold_leaves_enabled}
                     onCheckedChange={(checked) =>
                       setNotificationPrefs(prev => ({ ...prev, gold_leaves_enabled: checked }))
                     }
                     disabled={!notificationPrefs.push_enabled}
-                  />
+                  />)}
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -204,14 +209,14 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                       Notify me when I receive new messages
                     </p>
                   </div>
-                  <Switch
+                  {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
                     id="messages_enabled"
                     checked={notificationPrefs.messages_enabled}
                     onCheckedChange={(checked) =>
                       setNotificationPrefs(prev => ({ ...prev, messages_enabled: checked }))
                     }
                     disabled={!notificationPrefs.push_enabled}
-                  />
+                  />)}
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -221,14 +226,14 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                       Notify me when someone follows me
                     </p>
                   </div>
-                  <Switch
+                  {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
                     id="followers_enabled"
                     checked={notificationPrefs.followers_enabled}
                     onCheckedChange={(checked) =>
                       setNotificationPrefs(prev => ({ ...prev, followers_enabled: checked }))
                     }
                     disabled={!notificationPrefs.push_enabled}
-                  />
+                  />)}
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -238,14 +243,14 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                       Notify me about book club updates
                     </p>
                   </div>
-                  <Switch
+                  {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
                     id="book_clubs_enabled"
                     checked={notificationPrefs.book_clubs_enabled}
                     onCheckedChange={(checked) =>
                       setNotificationPrefs(prev => ({ ...prev, book_clubs_enabled: checked }))
                     }
                     disabled={!notificationPrefs.push_enabled}
-                  />
+                  />)}
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -255,14 +260,14 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                       Notify me when I reach reading goals
                     </p>
                   </div>
-                  <Switch
+                  {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
                     id="goals_enabled"
                     checked={notificationPrefs.goals_enabled}
                     onCheckedChange={(checked) =>
                       setNotificationPrefs(prev => ({ ...prev, goals_enabled: checked }))
                     }
                     disabled={!notificationPrefs.push_enabled}
-                  />
+                  />)}
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -272,14 +277,14 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                       Remind me to maintain my reading streak
                     </p>
                   </div>
-                  <Switch
+                  {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
                     id="streaks_enabled"
                     checked={notificationPrefs.streaks_enabled}
                     onCheckedChange={(checked) =>
                       setNotificationPrefs(prev => ({ ...prev, streaks_enabled: checked }))
                     }
                     disabled={!notificationPrefs.push_enabled}
-                  />
+                  />)}
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -289,14 +294,14 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                       Daily reminders to read
                     </p>
                   </div>
-                  <Switch
+                  {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
                     id="reading_reminders_enabled"
                     checked={notificationPrefs.reading_reminders_enabled}
                     onCheckedChange={(checked) =>
                       setNotificationPrefs(prev => ({ ...prev, reading_reminders_enabled: checked }))
                     }
                     disabled={!notificationPrefs.push_enabled}
-                  />
+                  />)}
                 </div>
               </div>
 
@@ -305,7 +310,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="quiet_hours_start">Start</Label>
-                    <Input
+                    {!hasLoaded ? <Skeleton className="h-11 min-h-[44px] w-full" /> : (<Input
                       id="quiet_hours_start"
                       type="time"
                       value={notificationPrefs.quiet_hours_start || ""}
@@ -313,11 +318,11 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                         setNotificationPrefs(prev => ({ ...prev, quiet_hours_start: e.target.value || null }))
                       }
                       disabled={!notificationPrefs.push_enabled}
-                    />
+                    />)}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="quiet_hours_end">End</Label>
-                    <Input
+                    {!hasLoaded ? <Skeleton className="h-11 min-h-[44px] w-full" /> : (<Input
                       id="quiet_hours_end"
                       type="time"
                       value={notificationPrefs.quiet_hours_end || ""}
@@ -325,7 +330,7 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                         setNotificationPrefs(prev => ({ ...prev, quiet_hours_end: e.target.value || null }))
                       }
                       disabled={!notificationPrefs.push_enabled}
-                    />
+                    />)}
                   </div>
                 </div>
                 <p className="font-sans text-xs text-muted-foreground mt-2">
@@ -339,17 +344,19 @@ export const NotificationSettings = ({ user }: NotificationSettingsProps) => {
                 </div>
               )}
 
-              <Button
+              {!hasLoaded ? <Skeleton className="h-11 min-h-[44px] w-full" /> : <Button
                 onClick={saveNotificationPreferences}
                 className="w-full"
                 variant="outline"
               >
                 Save Notification Preferences
-              </Button>
+              </Button>}
             </>
           )}
         </CardContent>
       </Card>
-    </div>
+    </LoadingRegion>
   );
 };
+
+export const NotificationSettings = ({ user }: NotificationSettingsProps) => <NotificationSettingsContent key={user.id} user={user} />;

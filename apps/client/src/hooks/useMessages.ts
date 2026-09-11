@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { getApiErrorStatus } from "@/services/api/client";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import {
   fetchConversationDetail,
@@ -16,37 +18,61 @@ import {
 export type { Message, MessageReactionType, SendMessageRequest } from "@/services/api";
 
 export const useMessages = (conversationId: string | null) => {
+  const { user } = useAuth();
+  const identity = user?.id && conversationId ? `${user.id}:${conversationId}` : null;
   const [messages, setMessages] = useState<Message[]>([]);
   const [detail, setDetail] = useState<ConversationDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [errorId, setErrorId] = useState<string | null>(null);
+  const [loadedIdentity, setLoadedIdentity] = useState<string | null>(null);
+  const activeIdentity = useRef(identity);
+  activeIdentity.current = identity;
+  const request = useRef(0);
 
-  const fetchMessages = async () => {
-    if (!conversationId) {
+  const fetchMessages = useCallback(async () => {
+    if (activeIdentity.current !== identity) return;
+    if (!identity || !conversationId) {
       setMessages([]);
       setDetail(null);
+      setLoadedIdentity(null);
       setLoading(false);
+      setError(null);
       return;
     }
 
+    const requestId = ++request.current;
     try {
       setLoading(true);
+      setError(null);
       const conversation = await fetchConversationDetail(conversationId);
+      if (activeIdentity.current !== identity || request.current !== requestId) return;
       setDetail(conversation);
+      setLoadedIdentity(identity);
       setMessages(conversation.messages || []);
       const lastMessage = conversation.messages?.[conversation.messages.length - 1];
       await markConversationRead(conversationId, lastMessage?.id || null);
     } catch (error: unknown) {
+      if (activeIdentity.current !== identity || request.current !== requestId) return;
+      if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setMessages([]); setDetail(null); setLoadedIdentity(null); }
       console.error("Error fetching messages:", error);
       toast.error("Failed to load messages");
+      setError("We couldn't load this conversation. Please try again.");
+      setErrorId(identity);
     } finally {
-      setLoading(false);
+      if (activeIdentity.current === identity && request.current === requestId) setLoading(false);
     }
-  };
+  }, [conversationId, identity]);
 
   useEffect(() => {
-    fetchMessages();
+    setMessages([]);
+    setDetail(null);
+    setLoadedIdentity(null);
+    setError(null);
+    setErrorId(null);
+    void fetchMessages();
 
-    if (!conversationId) return;
+    if (!identity || !conversationId) return () => { request.current += 1; };
 
     // Only subscribe to real-time updates if page is visible
     // This reduces battery drain when app is in background
@@ -75,13 +101,14 @@ export const useMessages = (conversationId: string | null) => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
+      request.current += 1;
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       cleanup?.();
     };
-  }, [conversationId]);
+  }, [conversationId, identity, fetchMessages]);
 
   const sendMessage = async (contentOrRequest: string | Omit<SendMessageRequest, "conversation_id">) => {
-    if (!conversationId) return false;
+    if (!identity || !conversationId || activeIdentity.current !== identity) return false;
 
     try {
       const request =
@@ -95,6 +122,7 @@ export const useMessages = (conversationId: string | null) => {
         typeof request === "string" ? conversationId : request,
         typeof request === "string" ? request : undefined
       );
+      if (activeIdentity.current !== identity) return true;
       setMessages((current) => [...current, message]);
       window.dispatchEvent(new Event("messages-changed"));
       return true;
@@ -108,6 +136,7 @@ export const useMessages = (conversationId: string | null) => {
   const toggleReaction = async (messageId: string, reactionType: MessageReactionType) => {
     try {
       const result = await toggleMessageReactionApi(messageId, reactionType);
+      if (activeIdentity.current !== identity) return true;
       setMessages((current) =>
         current.map((message) => (message.id === messageId ? result.message : message))
       );
@@ -122,6 +151,7 @@ export const useMessages = (conversationId: string | null) => {
   const deleteMessage = async (messageId: string) => {
     try {
       await deleteMessageApi(messageId);
+      if (activeIdentity.current !== identity) return true;
       setMessages((current) =>
         current.map((message) =>
           message.id === messageId
@@ -138,10 +168,13 @@ export const useMessages = (conversationId: string | null) => {
     }
   };
 
+  const hasLoaded = Boolean(identity && loadedIdentity === identity && detail?.conversation.id === conversationId);
   return {
-    messages,
-    detail,
-    loading,
+    messages: hasLoaded ? messages : [],
+    detail: hasLoaded ? detail : null,
+    loading: Boolean(identity && (loading || (!hasLoaded && errorId !== identity))),
+    hasLoaded,
+    error: errorId === identity ? error : null,
     sendMessage,
     toggleReaction,
     deleteMessage,

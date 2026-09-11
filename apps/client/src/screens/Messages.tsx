@@ -4,7 +4,8 @@ import { MessageThread } from "@/components/messaging/MessageThread";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
+import { ConversationsSkeleton, MessageThreadSkeleton } from "@/components/skeletons/MessagesSkeleton";
 import { useLocation } from "react-router-dom";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
@@ -17,8 +18,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 
 const Messages = () => {
+  const { user } = useAuth();
+  return <MessagesContent key={user?.id ?? "anonymous"} />;
+};
+
+const MessagesContent = () => {
   const location = useLocation();
-  const { conversations, loading, getOrCreateConversation, refetchConversations } = useConversations();
+  const { conversations, loading, hasLoaded, error, getOrCreateConversation, refetchConversations } = useConversations();
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
@@ -26,6 +32,9 @@ const Messages = () => {
     messages,
     detail,
     loading: messagesLoading,
+    hasLoaded: messagesLoaded,
+    error: messagesError,
+    refetchMessages,
     sendMessage,
     toggleReaction,
     deleteMessage,
@@ -45,6 +54,7 @@ const Messages = () => {
 
   // Handle starting a conversation from another page or deep link
   useEffect(() => {
+    let active = true;
     const startConversationWith = async () => {
       // Handle deep link conversation ID
       if (location.state?.conversationId) {
@@ -55,25 +65,37 @@ const Messages = () => {
       // Handle starting conversation with a user ID
       if (location.state?.startConversationWith) {
         const conversationId = await getOrCreateConversation(location.state.startConversationWith);
-        if (conversationId) {
+        if (active && conversationId) {
           setSelectedConversationId(conversationId);
         }
       }
     };
     startConversationWith();
+    return () => { active = false; };
   }, [location.state, getOrCreateConversation]);
 
   const selectedConversation = conversations.find((c) => c.id === selectedConversationId);
   const selectedOtherUser = detail?.other_user || selectedConversation?.other_user;
   const selectedIsBlocked = Boolean(detail?.is_blocked || selectedConversation?.is_blocked);
 
-  if (loading) {
-    return (
-      <MobileLayout showBottomNav={!isMobile || !selectedConversationId}>
-        <LoadingSpinner />
-      </MobileLayout>
-    );
-  }
+  const inbox = (
+    <LoadingRegion loading={loading && !hasLoaded} refreshing={loading && hasLoaded} label="Loading conversations" className="space-y-3">
+      {error && <LoadingError message={error} onRetry={refetchConversations} />}
+      {loading && !hasLoaded ? <ConversationsSkeleton /> : hasLoaded ? (
+        <ConversationsList conversations={conversations} selectedConversationId={selectedConversationId} onSelectConversation={setSelectedConversationId} currentUserId={user?.id} />
+      ) : null}
+    </LoadingRegion>
+  );
+  const thread = (
+    <LoadingRegion loading={messagesLoading && !messagesLoaded} refreshing={messagesLoading && messagesLoaded} label="Loading messages" containerClassName="h-full" className="flex h-full min-h-0 flex-col">
+      {messagesError && <LoadingError message={messagesError} onRetry={refetchMessages} />}
+      <div className="min-h-0 flex-1">
+        {messagesLoading && !messagesLoaded ? <MessageThreadSkeleton isMobile={isMobile} /> : messagesLoaded && selectedConversationId ? (
+          <MessageThread key={selectedConversationId} messages={messages} onSendMessage={sendMessage} onToggleReaction={toggleReaction} onDeleteMessage={deleteMessage} currentUserId={user?.id} conversationId={selectedConversationId} otherUser={selectedOtherUser} isBlocked={selectedIsBlocked} onBack={() => setSelectedConversationId(null)} />
+        ) : null}
+      </div>
+    </LoadingRegion>
+  );
 
   // Mobile: Show message thread in full screen when selected
   if (isMobile && selectedConversationId) {
@@ -88,21 +110,7 @@ const Messages = () => {
           }}
         />
         <div className="h-[calc(var(--app-viewport-height,100dvh)-3.5rem)] native-scroll" {...swipeHandlers}>
-          {messagesLoading ? (
-            <LoadingSpinner />
-          ) : (
-            <MessageThread
-              messages={messages}
-              onSendMessage={sendMessage}
-              onToggleReaction={toggleReaction}
-              onDeleteMessage={deleteMessage}
-              currentUserId={user?.id}
-              conversationId={selectedConversationId}
-              otherUser={selectedOtherUser}
-              isBlocked={selectedIsBlocked}
-              onBack={() => setSelectedConversationId(null)}
-            />
-          )}
+          {thread}
         </div>
       </MobileLayout>
     );
@@ -125,12 +133,7 @@ const Messages = () => {
         {isMobile ? (
           <PullToRefresh onRefresh={refetchConversations}>
             <div className="min-h-full bg-background pb-4">
-              <ConversationsList
-                conversations={conversations}
-                selectedConversationId={selectedConversationId}
-                onSelectConversation={setSelectedConversationId}
-                currentUserId={user?.id}
-              />
+              {inbox}
             </div>
           </PullToRefresh>
         ) : (
@@ -142,38 +145,20 @@ const Messages = () => {
                     <div>
                       <h2 className="font-display text-lg font-semibold">Inbox</h2>
                       <p className="font-sans text-sm text-muted-foreground">
-                        {conversations.length} conversation{conversations.length === 1 ? "" : "s"}
+                        {hasLoaded ? `${conversations.length} conversation${conversations.length === 1 ? "" : "s"}` : "Your private conversations"}
                       </p>
                     </div>
                   </div>
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto p-3">
-                  <ConversationsList
-                    conversations={conversations}
-                    selectedConversationId={selectedConversationId}
-                    onSelectConversation={setSelectedConversationId}
-                    currentUserId={user?.id}
-                  />
+                  {inbox}
                 </div>
               </CardContent>
             </Card>
 
             <div className="min-h-0 overflow-hidden rounded-lg border border-border bg-card">
               {selectedConversationId ? (
-                messagesLoading ? (
-                  <LoadingSpinner />
-                ) : (
-                  <MessageThread
-                    messages={messages}
-                    onSendMessage={sendMessage}
-                    onToggleReaction={toggleReaction}
-                    onDeleteMessage={deleteMessage}
-                    currentUserId={user?.id}
-                    conversationId={selectedConversationId}
-                    otherUser={selectedOtherUser}
-                    isBlocked={selectedIsBlocked}
-                  />
-                )
+                thread
               ) : (
                 <div className="flex h-full items-center justify-center p-6">
                   <PremiumEmptyState

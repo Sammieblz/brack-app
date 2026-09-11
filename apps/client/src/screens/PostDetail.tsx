@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { getApiErrorStatus } from "@/services/api/client";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { MobileHeader } from "@/components/MobileHeader";
 import { MobileLayout } from "@/components/MobileLayout";
@@ -11,6 +12,7 @@ import { APP_ICONS } from "@/config/iconography";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getPostById, togglePostLike, type Post } from "@/services/api";
 import { toast } from "sonner";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 
 const PostDetail = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -18,22 +20,39 @@ const PostDetail = () => {
   const isMobile = useIsMobile();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadedId, setLoadedId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const activePost = useRef(postId);
+  activePost.current = postId;
+  const request = useRef(0);
 
   const loadPost = useCallback(async () => {
-    if (!postId) return;
+    if (!postId) { setLoading(false); return; }
+    const requestId = ++request.current;
     try {
       setLoading(true);
-      setPost(await getPostById(postId));
+      setError(null);
+      const result = await getPostById(postId);
+      if (activePost.current !== postId || request.current !== requestId) return;
+      setPost(result);
+      setLoadedId(postId);
     } catch (error) {
+      if (activePost.current !== postId || request.current !== requestId) return;
+      if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setPost(null); setLoadedId(null); }
       console.error("Failed to load post", error);
       toast.error("Failed to load post");
+      setError("We couldn't load this post. Please try again.");
     } finally {
-      setLoading(false);
+      if (activePost.current === postId && request.current === requestId) setLoading(false);
     }
   }, [postId]);
 
   useEffect(() => {
+    setPost(null);
+    setLoadedId(null);
+    setError(null);
     loadPost();
+    return () => { request.current += 1; };
   }, [loadPost]);
 
   const handleLike = async () => {
@@ -67,9 +86,11 @@ const PostDetail = () => {
       )}
 
       <main className="app-page max-w-3xl">
-        {loading ? (
+        <LoadingRegion loading={loading && loadedId !== postId} refreshing={loading && loadedId === postId} label="Loading post">
+        {error && <LoadingError message={error} onRetry={loadPost} />}
+        {loading && loadedId !== postId ? (
           <PostCardSkeleton />
-        ) : post ? (
+        ) : loadedId !== postId ? null : post ? (
           <PostCard
             post={post}
             onLike={handleLike}
@@ -90,6 +111,7 @@ const PostDetail = () => {
             </CardContent>
           </Card>
         )}
+        </LoadingRegion>
       </main>
     </MobileLayout>
   );

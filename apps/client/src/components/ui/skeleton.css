@@ -1,0 +1,26 @@
+/* Quiet, structural placeholders. No per-cell animation, observers, or GSAP
+   timelines: loading status belongs to the region, not its decorative blocks. */
+.brack-skeleton {
+  background-color: hsl(var(--muted));
+  background-color: color-mix(in srgb, hsl(var(--foreground)) 9%, hsl(var(--card)));
+  pointer-events: none;
+  user-select: none;
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-contrast: more) {
+  .brack-skeleton {
+    outline: 1px solid hsl(var(--muted-foreground));
+    outline-offset: -1px;
+  }
+}
+
+@media (forced-colors: active) {
+  .brack-skeleton {
+    background: Canvas;
+    outline: 1px solid GrayText;
+    outline-offset: -1px;
+    forced-color-adjust: none;
+  }
+}

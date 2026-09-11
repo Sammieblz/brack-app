@@ -19,6 +19,8 @@ import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { ReviewCard } from "@/components/social/ReviewCard";
 import { ReviewForm } from "@/components/social/ReviewForm";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingRegion, LoadingError } from "@/components/loading/LoadingRegion";
+import { ReviewFeedSkeleton } from "@/components/skeletons/ReviewSkeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
@@ -52,10 +54,14 @@ const Reviews = () => {
     reviews,
     summary,
     loading,
+    refreshing,
+    error,
+    hasLoaded,
     loadingMore,
     hasMore,
     caughtUp,
     refetch,
+    retry,
     loadMore,
     toggleLike,
     deleteReview,
@@ -98,13 +104,15 @@ const Reviews = () => {
               </p>
             </div>
             <div className="grid grid-cols-3 gap-2 sm:min-w-80">
-              <SummaryPill label="Loaded" value={reviews.length.toString()} />
+              <SummaryPill label="Loaded" value={reviews.length.toString()} loading={loading} />
               <SummaryPill
                 label="Avg"
+                loading={loading}
                 value={averageRating(reviews.map((review) => review.rating))}
               />
               <SummaryPill
                 label="Books"
+                loading={loading}
                 value={new Set(reviews.map((review) => review.book_id)).size.toString()}
               />
             </div>
@@ -149,9 +157,11 @@ const Reviews = () => {
               </div>
             </div>
 
+            {error && <LoadingError message={error} onRetry={() => void retry()} />}
+            <LoadingRegion loading={loading} refreshing={refreshing} label="Loading reviews">
             {loading ? (
               <ReviewFeedSkeleton />
-            ) : reviews.length === 0 ? (
+            ) : error && !hasLoaded ? null : reviews.length === 0 ? (
               <PremiumEmptyState
                 asset={query || rating !== "all" ? "noResults" : "emptyReviews"}
                 title={query || rating !== "all" ? "No matching reviews" : "No reviews here yet"}
@@ -180,11 +190,12 @@ const Reviews = () => {
                 ))}
               </div>
             )}
+            </LoadingRegion>
 
             {!loading && reviews.length > 0 && (
               <div className="flex justify-center py-4">
                 {hasMore ? (
-                  <Button variant="outline" onClick={loadMore} disabled={loadingMore}>
+                  <Button variant="outline" onClick={loadMore} disabled={loadingMore} aria-busy={loadingMore}>
                     {loadingMore ? "Loading..." : "Load more reviews"}
                   </Button>
                 ) : caughtUp ? (
@@ -201,7 +212,7 @@ const Reviews = () => {
           </section>
 
           <aside className="hidden space-y-4 xl:block">
-            <RatingMixCard ratingMix={summary.rating_mix} />
+            {loading ? <Skeleton className="h-64 w-full" /> : <RatingMixCard ratingMix={summary.rating_mix} />}
             <TrendingBooksCard books={summary.trending_books} />
             <ReviewOpportunitiesCard
               books={summary.review_opportunities}
@@ -241,31 +252,10 @@ const averageRating = (ratings: number[]) => {
   return (ratings.reduce((sum, value) => sum + value, 0) / ratings.length).toFixed(1);
 };
 
-const SummaryPill = ({ label, value }: { label: string; value: string }) => (
+const SummaryPill = ({ label, value, loading }: { label: string; value: string; loading?: boolean }) => (
   <div className="rounded-md border border-border/70 px-3 py-2">
-    <p className="font-sans text-lg font-semibold leading-none">{value}</p>
+    <div className="font-sans text-lg font-semibold leading-none">{loading ? <Skeleton className="h-[18px] w-8" /> : value}</div>
     <p className="mt-1 font-sans text-xs text-muted-foreground">{label}</p>
-  </div>
-);
-
-const ReviewFeedSkeleton = () => (
-  <div className="space-y-4">
-    {Array.from({ length: 3 }).map((_, index) => (
-      <Card key={index}>
-        <CardContent className="space-y-4 p-4">
-          <div className="flex gap-3">
-            <Skeleton className="h-24 w-16 rounded-md" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-7 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-            </div>
-          </div>
-          <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="h-16 w-full" />
-        </CardContent>
-      </Card>
-    ))}
   </div>
 );
 
@@ -409,7 +399,7 @@ const ReviewBookPickerDialog = ({
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { books, loading } = useBooks(user?.id);
+  const { books, loading, refreshing, error, hasLoaded, refetchBooks } = useBooks(user?.id, open);
   const [query, setQuery] = useState("");
 
   const candidates = useMemo(() => {
@@ -448,10 +438,20 @@ const ReviewBookPickerDialog = ({
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search your library"
           />
-          <div className="max-h-[46vh] space-y-2 overflow-y-auto pr-1">
+          <LoadingRegion loading={loading} refreshing={refreshing} label="Loading books to review" className="max-h-[46vh] space-y-2 overflow-y-auto pr-1">
+            {error && <LoadingError message={error} onRetry={() => void refetchBooks()} />}
             {loading ? (
-              <Skeleton className="h-20 w-full" />
-            ) : candidates.length === 0 ? (
+              Array.from({ length: 3 }, (_, index) => (
+                <div key={index} aria-hidden="true" className="flex gap-3 rounded-md border border-border/70 p-3">
+                  <Skeleton className="h-16 w-11 shrink-0 rounded" />
+                  <div className="min-w-0 flex-1">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="mt-1 h-5 w-1/2" />
+                    <Skeleton className="mt-2 h-5 w-20" />
+                  </div>
+                </div>
+              ))
+            ) : error && !hasLoaded ? null : candidates.length === 0 ? (
               <PremiumEmptyState
                 asset="noResults"
                 title="No matching library books"
@@ -494,7 +494,7 @@ const ReviewBookPickerDialog = ({
                 </button>
               ))
             )}
-          </div>
+          </LoadingRegion>
         </div>
       </DialogContent>
     </Dialog>

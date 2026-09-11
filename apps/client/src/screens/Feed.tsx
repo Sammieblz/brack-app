@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePosts } from "@/hooks/usePosts";
 import { useSocialFeed } from "@/hooks/useSocialFeed";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 
 const Feed = () => {
   const isMobile = useIsMobile();
@@ -21,11 +22,14 @@ const Feed = () => {
   const {
     posts,
     loading: postsLoading,
+    hasLoaded: postsLoaded,
+    error: postsError,
     loadingMore: postsLoadingMore,
     hasMore: postsHasMore,
     caughtUp,
     feedMode,
     refetchPosts,
+    retryLastRequest,
     loadMore,
     toggleLike,
   } = usePosts();
@@ -85,13 +89,14 @@ const Feed = () => {
                 </TabsList>
 
                 <TabsContent value="posts" className="mt-4 space-y-3">
-                  {postsLoading ? (
+                  <LoadingRegion loading={postsLoading && !postsLoaded} refreshing={postsLoading && postsLoaded} label="Loading posts" className="space-y-3">
+                  {postsError && <LoadingError message={postsError} onRetry={retryLastRequest} />}
+                  {postsLoading && !postsLoaded ? (
                     <>
                       <PostCardSkeleton />
                       <PostCardSkeleton />
-                      <PostCardSkeleton />
                     </>
-                  ) : posts.length === 0 ? (
+                  ) : !postsLoaded ? null : posts.length === 0 ? (
                     <EmptyFeedState />
                   ) : (
                     posts.map((post) => (
@@ -105,7 +110,7 @@ const Feed = () => {
                     ))
                   )}
 
-                  {!postsLoading && posts.length > 0 && (
+                  {postsLoaded && posts.length > 0 && (
                     <FeedPaginationState
                       hasMore={postsHasMore}
                       loading={postsLoadingMore}
@@ -114,6 +119,7 @@ const Feed = () => {
                       onLoadMore={loadMore}
                     />
                   )}
+                  </LoadingRegion>
                 </TabsContent>
 
                 <TabsContent value="activity" className="mt-4">

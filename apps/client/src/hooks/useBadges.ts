@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
+import { useRetainedReaderResource } from "@/hooks/useRetainedReaderResource";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import type { Badge, UserBadge } from "@/types";
@@ -18,27 +19,12 @@ interface BadgesAwardedEventDetail {
 
 export const useBadges = (userId?: string, enabled = true) => {
   const queryClient = useQueryClient();
-  const [badges, setBadges] = useState<Badge[]>([]);
-  const [earnedBadges, setEarnedBadges] = useState<UserBadge[]>([]);
-  const [loading, setLoading] = useState(true);
+  const resource = useRetainedReaderResource(userId, fetchUserBadges, enabled);
+  const badges: Badge[] = resource.data?.badges ?? [];
+  const earnedBadges: UserBadge[] = resource.data?.earnedBadges ?? [];
+  const fetchBadges = resource.refetch;
   const { toast } = useToast();
   const { showCelebration } = useBadgeCelebration();
-
-  const fetchBadges = useCallback(async () => {
-    if (!userId || !enabled) return;
-
-    try {
-      setLoading(true);
-
-      const data = await fetchUserBadges(userId);
-      setBadges(data.badges);
-      setEarnedBadges(data.earnedBadges);
-    } catch (error: unknown) {
-      console.error("Error fetching badges:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [enabled, userId]);
 
   const notifyNewBadges = useCallback(
     async (newBadges: AwardedBadge[]) => {
@@ -58,12 +44,6 @@ export const useBadges = (userId?: string, enabled = true) => {
     },
     [fetchBadges, queryClient, showCelebration, toast, userId]
   );
-
-  useEffect(() => {
-    if (userId && enabled) {
-      void fetchBadges();
-    }
-  }, [enabled, fetchBadges, userId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -100,7 +80,10 @@ export const useBadges = (userId?: string, enabled = true) => {
   return {
     badges,
     earnedBadges,
-    loading,
+    loading: resource.loading,
+    refreshing: resource.refreshing,
+    error: resource.error,
+    hasLoaded: resource.data !== undefined,
     refetchBadges: fetchBadges,
     checkAndAwardBadges,
   };

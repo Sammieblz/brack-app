@@ -60,6 +60,154 @@ const previewMessage = (conv: Conversation, currentUserId?: string) => {
   return `${prefix}${sanitizeText(message.content || "")}`;
 };
 
+// Keep the row component identity stable through background refreshes.
+const ConversationItem = ({
+  conv, isSwiped, isSelected, currentUserId, onSelectConversation,
+  setSwipedId, handleHide, handleMarkRead, handleMuteToggle,
+}: {
+  conv: Conversation;
+  isSwiped: boolean;
+  isSelected: boolean;
+  currentUserId?: string;
+  onSelectConversation: (id: string) => void;
+  setSwipedId: (id: string | null) => void;
+  handleHide: (id: string, event: React.MouseEvent) => Promise<void>;
+  handleMarkRead: (id: string, event: React.MouseEvent) => Promise<void>;
+  handleMuteToggle: (conversation: Conversation, event: React.MouseEvent) => Promise<void>;
+}) => {
+  const { triggerHaptic } = useHapticFeedback();
+  const navigate = useNavigate();
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => {
+      triggerHaptic("light");
+      setSwipedId(conv.id);
+    },
+    onSwipedRight: () => {
+      triggerHaptic("light");
+      setSwipedId(null);
+    },
+    trackMouse: false,
+  });
+
+  const unreadCount = conv.unread_count || 0;
+
+  return (
+    <div {...swipeHandlers} className="relative overflow-hidden rounded-lg">
+      <Card
+        className={cn(
+          "cursor-pointer border-border/70 p-3 transition-all hover:border-primary/40",
+          isSelected && "border-primary bg-primary/10",
+          unreadCount > 0 && "border-primary/60",
+          isSwiped && "-translate-x-[8.25rem]",
+          "duration-300"
+        )}
+        onClick={() => {
+          triggerHaptic("selection");
+          onSelectConversation(conv.id);
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="shrink-0 rounded-full"
+            onClick={(event) => {
+              event.stopPropagation();
+              if (conv.other_user?.id) navigate(`/users/${conv.other_user.id}`);
+            }}
+            aria-label={`Open ${conv.other_user?.display_name || "reader"} profile`}
+          >
+            <Avatar className="h-12 w-12 border border-border/70">
+              <AvatarImage src={conv.other_user?.avatar_url || undefined} />
+              <AvatarFallback>{getInitials(conv.other_user?.display_name)}</AvatarFallback>
+            </Avatar>
+          </button>
+
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex items-center gap-2">
+              <button
+                type="button"
+                className="min-w-0 truncate text-left font-sans font-semibold hover:text-primary"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  if (conv.other_user?.id) navigate(`/users/${conv.other_user.id}`);
+                }}
+              >
+                {conv.other_user?.display_name || "Unknown Reader"}
+              </button>
+              {conv.is_blocked && (
+                <Badge variant="outline" className="shrink-0 text-[10px]">
+                  blocked
+                </Badge>
+              )}
+              {conv.settings?.is_muted && (
+                <Badge variant="secondary" className="shrink-0 text-[10px]">
+                  muted
+                </Badge>
+              )}
+            </div>
+            <p
+              className={cn(
+                "truncate font-sans text-sm",
+                unreadCount > 0 ? "font-medium text-foreground" : "text-muted-foreground"
+              )}
+            >
+              {previewMessage(conv, currentUserId)}
+            </p>
+          </div>
+
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            {conv.last_message && (
+              <span className="font-sans text-xs text-muted-foreground">
+                {formatDate(conv.last_message.created_at)}
+              </span>
+            )}
+            {unreadCount > 0 ? (
+              <Badge className="min-w-6 justify-center rounded-full px-2">
+                {unreadCount}
+              </Badge>
+            ) : (
+              <span className="h-6" />
+            )}
+          </div>
+        </div>
+      </Card>
+
+      {isSwiped && (
+        <div className="absolute right-0 top-0 flex h-full items-center gap-2 pr-2">
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            onClick={(event) => handleMarkRead(conv.id, event)}
+            aria-label="Mark as read"
+          >
+            {conv.unread_count ? <Eye className="h-4 w-4" /> : <EyeClosed className="h-4 w-4" />}
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            onClick={(event) => handleMuteToggle(conv, event)}
+            aria-label={conv.settings?.is_muted ? "Unmute" : "Mute"}
+          >
+            <span className="font-sans text-xs">{conv.settings?.is_muted ? "On" : "Off"}</span>
+          </Button>
+          <Button
+            type="button"
+            size="icon"
+            variant="destructive"
+            onClick={(event) => handleHide(conv.id, event)}
+            aria-label="Hide conversation"
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
 export const ConversationsList = ({
   conversations,
   selectedConversationId,
@@ -69,7 +217,6 @@ export const ConversationsList = ({
   const { triggerHaptic } = useHapticFeedback();
   const [swipedId, setSwipedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const navigate = useNavigate();
 
   const filteredConversations = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -124,139 +271,6 @@ export const ConversationsList = ({
     }
   };
 
-  const ConversationItem = ({ conv }: { conv: Conversation }) => {
-    const swipeHandlers = useSwipeable({
-      onSwipedLeft: () => {
-        triggerHaptic("light");
-        setSwipedId(conv.id);
-      },
-      onSwipedRight: () => {
-        triggerHaptic("light");
-        setSwipedId(null);
-      },
-      trackMouse: false,
-    });
-
-    const isSwiped = swipedId === conv.id;
-    const isSelected = selectedConversationId === conv.id;
-    const unreadCount = conv.unread_count || 0;
-
-    return (
-      <div {...swipeHandlers} className="relative overflow-hidden rounded-lg">
-        <Card
-          className={cn(
-            "cursor-pointer border-border/70 p-3 transition-all hover:border-primary/40",
-            isSelected && "border-primary bg-primary/10",
-            unreadCount > 0 && "border-primary/60",
-            isSwiped && "-translate-x-[8.25rem]",
-            "duration-300"
-          )}
-          onClick={() => {
-            triggerHaptic("selection");
-            onSelectConversation(conv.id);
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className="shrink-0 rounded-full"
-              onClick={(event) => {
-                event.stopPropagation();
-                if (conv.other_user?.id) navigate(`/users/${conv.other_user.id}`);
-              }}
-              aria-label={`Open ${conv.other_user?.display_name || "reader"} profile`}
-            >
-              <Avatar className="h-12 w-12 border border-border/70">
-                <AvatarImage src={conv.other_user?.avatar_url || undefined} />
-                <AvatarFallback>{getInitials(conv.other_user?.display_name)}</AvatarFallback>
-              </Avatar>
-            </button>
-
-            <div className="min-w-0 flex-1">
-              <div className="mb-1 flex items-center gap-2">
-                <button
-                  type="button"
-                  className="min-w-0 truncate text-left font-sans font-semibold hover:text-primary"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    if (conv.other_user?.id) navigate(`/users/${conv.other_user.id}`);
-                  }}
-                >
-                  {conv.other_user?.display_name || "Unknown Reader"}
-                </button>
-                {conv.is_blocked && (
-                  <Badge variant="outline" className="shrink-0 text-[10px]">
-                    blocked
-                  </Badge>
-                )}
-                {conv.settings?.is_muted && (
-                  <Badge variant="secondary" className="shrink-0 text-[10px]">
-                    muted
-                  </Badge>
-                )}
-              </div>
-              <p
-                className={cn(
-                  "truncate font-sans text-sm",
-                  unreadCount > 0 ? "font-medium text-foreground" : "text-muted-foreground"
-                )}
-              >
-                {previewMessage(conv, currentUserId)}
-              </p>
-            </div>
-
-            <div className="flex shrink-0 flex-col items-end gap-2">
-              {conv.last_message && (
-                <span className="font-sans text-xs text-muted-foreground">
-                  {formatDate(conv.last_message.created_at)}
-                </span>
-              )}
-              {unreadCount > 0 ? (
-                <Badge className="min-w-6 justify-center rounded-full px-2">
-                  {unreadCount}
-                </Badge>
-              ) : (
-                <span className="h-6" />
-              )}
-            </div>
-          </div>
-        </Card>
-
-        {isSwiped && (
-          <div className="absolute right-0 top-0 flex h-full items-center gap-2 pr-2">
-            <Button
-              type="button"
-              size="icon"
-              variant="outline"
-              onClick={(event) => handleMarkRead(conv.id, event)}
-              aria-label="Mark as read"
-            >
-              {conv.unread_count ? <Eye className="h-4 w-4" /> : <EyeClosed className="h-4 w-4" />}
-            </Button>
-            <Button
-              type="button"
-              size="icon"
-              variant="outline"
-              onClick={(event) => handleMuteToggle(conv, event)}
-              aria-label={conv.settings?.is_muted ? "Unmute" : "Mute"}
-            >
-              <span className="font-sans text-xs">{conv.settings?.is_muted ? "On" : "Off"}</span>
-            </Button>
-            <Button
-              type="button"
-              size="icon"
-              variant="destructive"
-              onClick={(event) => handleHide(conv.id, event)}
-              aria-label="Hide conversation"
-            >
-              <Trash className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div className="space-y-3">
       <div className="relative">
@@ -281,7 +295,18 @@ export const ConversationsList = ({
       ) : (
         <div className="space-y-2">
           {filteredConversations.map((conv) => (
-            <ConversationItem key={conv.id} conv={conv} />
+            <ConversationItem
+              key={conv.id}
+              conv={conv}
+              isSwiped={swipedId === conv.id}
+              isSelected={selectedConversationId === conv.id}
+              currentUserId={currentUserId}
+              onSelectConversation={onSelectConversation}
+              setSwipedId={setSwipedId}
+              handleHide={handleHide}
+              handleMarkRead={handleMarkRead}
+              handleMuteToggle={handleMuteToggle}
+            />
           ))}
         </div>
       )}

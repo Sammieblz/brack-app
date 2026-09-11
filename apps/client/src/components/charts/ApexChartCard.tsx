@@ -6,6 +6,8 @@ import type {
 } from "apexcharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingRegion } from "@/components/loading/LoadingRegion";
 
 const ApexChart = lazy(() => import("react-apexcharts"));
 
@@ -59,9 +61,9 @@ export const ApexChartCard = ({
               <span className="min-w-0 truncate">{title}</span>
             </CardTitle>
             {subtitle && (
-              <p className="font-sans mt-1 text-sm text-muted-foreground">
+              <div className="font-sans mt-1 text-sm text-muted-foreground">
                 {subtitle}
-              </p>
+              </div>
             )}
           </div>
           {action && <div className="shrink-0">{action}</div>}
@@ -89,12 +91,9 @@ export const ApexChartFrame = ({
       <div style={minWidth ? { minWidth } : undefined}>
         <Suspense
           fallback={
-            <div
-              className="flex items-center justify-center rounded-md bg-muted/35 font-sans text-sm text-muted-foreground"
-              style={{ height }}
-            >
-              {fallbackLabel}
-            </div>
+            <LoadingRegion loading label={fallbackLabel}>
+              <Skeleton className="w-full rounded-md" style={{ height }} />
+            </LoadingRegion>
           }
         >
           <ApexChart

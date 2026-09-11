@@ -17,10 +17,10 @@ const books: Book[] = Array.from({ length: 30 }, (_, index) => ({
   cover_url: '/brack-mark.webp', created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z',
 }));
 export const useAuth = () => ({ user });
-export const useBooks = () => ({ books, loading: false, loadingMore: false, hasMore: false,
+export const useBooks = () => ({ books, loading: false, refreshing: false, hasLoaded: true, error: null, loadingMore: false, hasMore: false,
   loadMore: resolved, refetchBooks: resolved, removeBookLocally: noop, updateBooksLocally: noop });
 export const useReadingProfile = () => ({ habits: { genres: [] } });
-export const useBadges = () => ({ badges: [], earnedBadges: [], loading: false });
+export const useBadges = () => ({ badges: [], earnedBadges: [], loading: false, refreshing: false, hasLoaded: true, error: null, refetchBadges: resolved });
 export const useFeatureFlags = () => ({ socialEnabled: true, gamificationEnabled: true, leaderboardsEnabled: true });
 export const useHapticFeedback = () => ({ triggerHaptic: noop });
 export const useProfileContext = () => ({ profile: { display_name: 'Fixture reader' }, isLoading: false });
@@ -31,6 +31,13 @@ export const reorderLibraryShelf = resolved;
 export const updateGamificationSettings = resolved;
 export const isGamificationFallbackEligible = () => false;
 export const isConnectivityAvailable = () => false;
+// Real League now reads access-error metadata. Keep that boundary local without
+// importing the live Supabase client merely to inspect a fixture error.
+export const getApiErrorStatus = (error: unknown): number | null => {
+  if (!error || typeof error !== 'object') return null;
+  const value = error as { status?: number; statusCode?: number; context?: { status?: number } };
+  return value.context?.status ?? value.status ?? value.statusCode ?? null;
+};
 export const bookOperations = { delete: resolved, update: resolved };
 export const trackCoreEvent = noop;
 export const gamificationQueryKey = () => ['fixture-gamification'];

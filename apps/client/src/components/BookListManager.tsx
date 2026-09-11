@@ -33,7 +33,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { AppIcon } from "@/components/ui/app-icon";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
-import { BookListCardSkeleton } from "@/components/skeletons/BookListCardSkeleton";
+import { BookListGridSkeleton } from "@/components/skeletons/BookListCardSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingRegion, LoadingError } from "@/components/loading/LoadingRegion";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { useBookLists, type BookList } from "@/hooks/useBookLists";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
@@ -77,6 +80,10 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
   const {
     lists,
     loading,
+    refreshing,
+    hasLoaded,
+    error,
+    refetch,
     loadingMore,
     hasMore,
     loadMore,
@@ -233,27 +240,12 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <div className="h-9 w-48 animate-pulse rounded-md bg-muted" />
-          <div className="h-5 w-72 max-w-full animate-pulse rounded-md bg-muted" />
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <BookListCardSkeleton />
-          <BookListCardSkeleton />
-          <BookListCardSkeleton />
-        </div>
-      </div>
-    );
-  }
-
-  const showEmpty = lists.length === 0;
+  const showEmpty = hasLoaded && lists.length === 0;
   const showNoMatches = lists.length > 0 && filteredLists.length === 0;
 
   return (
-    <div className="space-y-5">
+    <PullToRefresh onRefresh={refetch}>
+    <LoadingRegion loading={loading} refreshing={refreshing} label={loading ? "Loading book lists" : "Refreshing book lists"} className="space-y-5">
       <section className="flex flex-col gap-4 rounded-xl border border-border/70 bg-card/70 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <h1 className="font-display text-3xl font-bold tracking-tight">Book Lists</h1>
@@ -289,7 +281,14 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
         </Dialog>
       </section>
 
-      {!showEmpty && (
+      {loading ? (
+        <section aria-hidden="true" className="grid gap-3 md:grid-cols-[1.15fr_0.85fr] xl:grid-cols-[1.4fr_0.9fr]">
+          <div className="grid gap-3 sm:grid-cols-3">
+            {Array.from({ length: 3 }, (_, index) => <div key={index} className="rounded-xl border border-border/70 bg-card/70 p-4"><Skeleton className="h-8 w-12" /><Skeleton className="mt-1 h-5 w-4/5" /></div>)}
+          </div>
+          <div className="rounded-xl border border-border/70 bg-card/80 p-4"><Skeleton className="h-4 w-32" /><Skeleton className="mt-1 h-7 w-3/5" /><Skeleton className="mt-2 h-10 w-full" /></div>
+        </section>
+      ) : !showEmpty && hasLoaded && (
         <section className="grid gap-3 md:grid-cols-[1.15fr_0.85fr] xl:grid-cols-[1.4fr_0.9fr]">
           <div className="grid gap-3 sm:grid-cols-3">
             <Metric label="Lists" value={stats.total} />
@@ -322,7 +321,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
         </section>
       )}
 
-      {!showEmpty && (
+      {!showEmpty && (!error || hasLoaded) && (
         <section className="space-y-3 rounded-xl border border-border/70 bg-card/60 p-3">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             <div className="relative flex-1">
@@ -369,7 +368,8 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
         </section>
       )}
 
-      {showEmpty ? (
+      {error && <LoadingError message={error} onRetry={() => void refetch()} />}
+      {loading ? <BookListGridSkeleton /> : !hasLoaded && error ? null : showEmpty ? (
         <EmptyListsState onCreate={() => setIsCreateOpen(true)} />
       ) : showNoMatches ? (
         <PremiumEmptyState
@@ -406,13 +406,8 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
       )}
 
       {hasMore && lists.length > 0 && (
-        <div ref={loadMoreRef} className="flex justify-center py-8">
-          {loadingMore && (
-            <div className="font-sans flex items-center gap-2 text-muted-foreground">
-              <AppIcon icon={APP_ICONS.common.refresh} variant="inline" size="md" className="animate-spin" />
-              <span>Loading more lists...</span>
-            </div>
-          )}
+        <div ref={loadMoreRef} className="py-8">
+          {loadingMore && <LoadingRegion loading label="Loading more lists"><BookListGridSkeleton count={3} /></LoadingRegion>}
         </div>
       )}
 
@@ -454,7 +449,8 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </LoadingRegion>
+    </PullToRefresh>
   );
 };
 
@@ -467,7 +463,7 @@ const Metric = ({ label, value, muted = false }: { label: string; value: number;
   </div>
 );
 
-const BookListOverviewCard = ({
+export const BookListOverviewCard = ({
   list,
   onOpen,
   onEdit,

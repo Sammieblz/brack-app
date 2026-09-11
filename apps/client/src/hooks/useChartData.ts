@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useRetainedReaderResource } from "@/hooks/useRetainedReaderResource";
 import {
   getAnalyticsChartData,
   type AnalyticsChartData,
@@ -50,35 +50,9 @@ const emptyChartData = (): AnalyticsChartData => ({
 });
 
 export const useChartData = (userId?: string) => {
-  const [chartData, setChartData] = useState<AnalyticsChartData>(emptyChartData);
-  const [loading, setLoading] = useState(true);
-
-  const fetchChartData = useCallback(async () => {
-    if (!userId) {
-      setChartData(emptyChartData());
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const data = await getAnalyticsChartData(userId);
-      setChartData(data);
-    } catch (error) {
-      console.error("Error fetching chart data:", error);
-      setChartData(emptyChartData());
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    void fetchChartData();
-  }, [fetchChartData]);
-
+  const resource = useRetainedReaderResource(userId, getAnalyticsChartData);
   return {
-    ...chartData,
-    loading,
-    refetch: fetchChartData,
+    ...resource,
+    ...(resource.data ?? emptyChartData()),
   };
 };

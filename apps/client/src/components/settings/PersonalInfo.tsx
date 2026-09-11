@@ -1,3 +1,6 @@
+import { getApiErrorStatus } from "@/services/api/client";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
+import { PersonalInfoSkeleton } from "@/components/skeletons/SettingsSkeleton";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -16,9 +19,11 @@ interface PersonalInfoProps {
   user: User;
 }
 
-export const PersonalInfo = ({ user }: PersonalInfoProps) => {
+const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [locating, setLocating] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -169,7 +174,10 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
     if (!user) return;
     
     try {
+      setLoading(true);
+      setLoadError(null);
       const data = await fetchProfile(user.id);
+      setHasLoaded(true);
       if (data) {
         setProfile(data);
         setFormData({
@@ -184,7 +192,9 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
         });
       }
     } catch (error) {
+      if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setHasLoaded(false); setProfile(null); }
       console.error('Error loading profile:', error);
+      setLoadError("We couldn't load your personal information. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -249,12 +259,13 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if (!hasLoaded) {
+    return <LoadingRegion loading={loading} label="Loading personal information">{loadError && <LoadingError message={loadError} onRetry={loadProfile} />}{loading && <PersonalInfoSkeleton />}</LoadingRegion>;
   }
 
   return (
-    <div className="space-y-6">
+    <LoadingRegion loading={false} refreshing={loading} label="Loading personal information" className="space-y-6">
+      {loadError && <LoadingError message={loadError} onRetry={loadProfile} />}
       <div>
         <h2 className="font-display text-2xl font-bold">Personal Information</h2>
         <p className="font-sans text-muted-foreground mt-1">
@@ -411,6 +422,8 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
           {saving ? "Saving..." : "Save Changes"}
         </Button>
       </div>
-    </div>
+    </LoadingRegion>
   );
 };
+
+export const PersonalInfo = ({ user }: PersonalInfoProps) => <PersonalInfoContent key={user.id} user={user} />;

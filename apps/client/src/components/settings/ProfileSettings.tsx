@@ -1,3 +1,6 @@
+import { getApiErrorStatus } from "@/services/api/client";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
+import { ProfileSkeleton } from "@/components/skeletons/ProfileSkeleton";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -25,12 +28,14 @@ interface ProfileSettingsProps {
   user: UserType;
 }
 
-export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
+const ProfileSettingsContent = ({ user }: ProfileSettingsProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { followersCount, followingCount } = useFollowing(user?.id || null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showImagePicker, setShowImagePicker] = useState(false);
@@ -57,7 +62,10 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
     if (!user) return;
     
     try {
+      setLoading(true);
+      setLoadError(null);
       const data = await fetchProfile(user.id);
+      setHasLoaded(true);
       if (data) {
         setProfile(data);
         setFormData({
@@ -66,7 +74,9 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
         });
       }
     } catch (error) {
+      if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setHasLoaded(false); setProfile(null); }
       console.error('Error loading profile:', error);
+      setLoadError("We couldn't load your profile. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -154,12 +164,13 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
 
   const displayName = profile?.display_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if (!hasLoaded) {
+    return <LoadingRegion loading={loading} label="Loading profile settings">{loadError && <LoadingError message={loadError} onRetry={loadProfile} />}{loading && <ProfileSkeleton />}</LoadingRegion>;
   }
 
   return (
-    <div className="space-y-6">
+    <LoadingRegion loading={false} refreshing={loading} label="Loading profile settings" className="space-y-6">
+      {loadError && <LoadingError message={loadError} onRetry={loadProfile} />}
       {/* Social Profile View */}
       <Card>
         <CardHeader>
@@ -326,6 +337,8 @@ export const ProfileSettings = ({ user }: ProfileSettingsProps) => {
           {saving ? "Saving..." : "Save Changes"}
         </Button>
       </div>
-    </div>
+    </LoadingRegion>
   );
 };
+
+export const ProfileSettings = ({ user }: ProfileSettingsProps) => <ProfileSettingsContent key={user.id} user={user} />;

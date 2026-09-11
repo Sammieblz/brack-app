@@ -13,7 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Confetti } from "@/components/animations/Confetti";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { TrophyReveal } from "@/components/animations/TrophyReveal";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
+import { GoalsSkeleton } from "@/components/skeletons/ReadingRouteSkeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 import { APP_ICONS } from "@/config/iconography";
 import { AppIcon } from "@/components/ui/app-icon";
 import { BRACK_GOALS_IMAGE, BRACK_TROPHY_IMAGE } from "@/config/brackAssets";
@@ -35,7 +37,7 @@ const formatGoalDate = (value: string, pattern: string) => {
 };
 
 export const GoalManager = ({ userId }: GoalManagerProps) => {
-  const { goals, activeGoals, loading, error, createGoal, deleteGoal, completeGoal } = useGoals(userId);
+  const { goals, activeGoals, loading, refreshing, hasLoaded, error, refetch, createGoal, deleteGoal, completeGoal } = useGoals(userId);
   const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [goalType, setGoalType] = useState<GoalType>("books_count");
@@ -144,9 +146,9 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
 
             <div className="grid gap-3 sm:grid-cols-[1fr_auto] lg:w-[29rem] lg:grid-cols-1">
               <section className="grid grid-cols-3 gap-2">
-                <GoalMetric label="Active" value={activeGoals.length.toString()} />
-                <GoalMetric label="Done" value={completedGoals.length.toString()} />
-                <GoalMetric label="Target" value={totalActiveTarget.toString()} />
+                <GoalMetric label="Active" value={activeGoals.length.toString()} loading={loading} />
+                <GoalMetric label="Done" value={completedGoals.length.toString()} loading={loading} />
+                <GoalMetric label="Target" value={totalActiveTarget.toString()} loading={loading} />
               </section>
 
               <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -240,19 +242,11 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
           </div>
         </div>
 
-        {error && (
-          <Card>
-            <CardContent className="p-4 font-sans text-sm text-destructive">{error}</CardContent>
-          </Card>
-        )}
-
+        <LoadingRegion loading={loading} refreshing={refreshing} label="Loading reading goals">
+        {error && <LoadingError message="Reading goals could not be updated. Your saved goals are safe." onRetry={() => void refetch()} />}
         {loading ? (
-          <Card>
-            <CardContent className="flex min-h-[16rem] items-center justify-center">
-              <LoadingSpinner />
-            </CardContent>
-          </Card>
-        ) : (
+          <GoalsSkeleton />
+        ) : !error || hasLoaded ? (
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
             <section className="space-y-3">
               <SectionHeader
@@ -288,7 +282,8 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
               <CompletedGoalsPanel goals={completedGoals} />
             </aside>
           </div>
-        )}
+        ) : null}
+        </LoadingRegion>
       </div>
     </>
   );
@@ -569,13 +564,15 @@ const CompletedGoalRow = ({ goal }: { goal: Goal }) => (
 const GoalMetric = ({
   label,
   value,
+  loading,
 }: {
   label: string;
   value: string;
+  loading?: boolean;
 }) => (
   <div className="rounded-md border border-border/70 bg-background/45 p-3">
     <div className="min-w-0">
-      <p className="font-sans text-lg font-semibold leading-none">{value}</p>
+      <div className="font-sans text-lg font-semibold leading-none">{loading ? <Skeleton className="h-[18px] w-8" /> : value}</div>
       <p className="mt-1 truncate font-sans text-[11px] text-muted-foreground">{label}</p>
     </div>
   </div>

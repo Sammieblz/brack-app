@@ -13,7 +13,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AppIcon } from "@/components/ui/app-icon";
 import { CurrencyIcon } from "@/components/CurrencyIcon";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { LoadingRegion } from "@/components/loading/LoadingRegion";
+import { JourneyShopSkeleton } from "@/components/skeletons/JourneySkeleton";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import {
   JourneySectionEyebrow,
@@ -75,11 +76,11 @@ export const JourneyShop = ({ userId }: { userId: string }) => {
     }
   };
 
-  if (shop.isLoading) {
+  if (shop.isLoading && !shop.data) {
     return (
-      <div className="flex min-h-72 items-center justify-center">
-        <LoadingSpinner text="Opening the Gold Leaf shop..." />
-      </div>
+      <LoadingRegion loading label="Opening the Gold Leaf shop">
+        <JourneyShopSkeleton />
+      </LoadingRegion>
     );
   }
 

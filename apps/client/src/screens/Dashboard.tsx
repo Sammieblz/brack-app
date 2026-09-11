@@ -21,8 +21,9 @@ import { DailyFocusCard } from "@/components/DailyFocusCard";
 import { DashboardStreakCard } from "@/components/dashboard/DashboardStreakCard";
 import { StreakCelebrationOverlay } from "@/components/StreakCelebrationOverlay";
 import { CurrencyIcon } from "@/components/CurrencyIcon";
-import { DashboardCardSkeleton } from "@/components/skeletons/DashboardCardSkeleton";
+import { DashboardCardSkeleton, DashboardSummarySkeleton, DailyFocusSkeleton } from "@/components/skeletons/DashboardCardSkeleton";
 import { ActivityItemSkeleton } from "@/components/skeletons/ActivityItemSkeleton";
+import { LoadingRegion, LoadingError } from "@/components/loading/LoadingRegion";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -67,6 +68,7 @@ const Dashboard = () => {
     primaryBook,
     secondaryBooks,
     loading,
+    fetching,
     error,
     journeyError,
     source,
@@ -261,6 +263,9 @@ const Dashboard = () => {
 
           <ContinueReadingSection
             loading={loading}
+            refreshing={fetching && !loading}
+            hasLoaded={Boolean(dashboardHome)}
+            onRetry={() => void refetch({ forceRefresh: true })}
             error={error}
             primaryBook={primaryBook}
             secondaryBooks={secondaryBooks}
@@ -270,6 +275,8 @@ const Dashboard = () => {
             onLogProgress={(book) => setProgressBook(book)}
             onViewLibrary={() => navigate("/my-books")}
           />
+
+          {gamificationEnabled && loading && <LoadingRegion loading label="Loading Daily Focus"><DailyFocusSkeleton /></LoadingRegion>}
 
           {gamificationEnabled && journey && journeyPeriodIsCurrent && (
             <DailyFocusCard
@@ -295,7 +302,13 @@ const Dashboard = () => {
             />
           )}
 
-          {dashboardHome && (
+          {loading ? (
+            <LoadingRegion loading label="Loading reading summary">
+              <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 28rem), 1fr))" }}>
+                <DashboardSummarySkeleton showJourney={gamificationEnabled} />
+              </div>
+            </LoadingRegion>
+          ) : dashboardHome && (
             <div
               className="grid gap-4"
               style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 28rem), 1fr))" }}
@@ -337,6 +350,8 @@ const Dashboard = () => {
             <RecentActivityCard
               activities={dashboardHome?.recentActivity ?? []}
               loading={loading}
+              refreshing={fetching && !loading}
+              failed={Boolean(error) && !dashboardHome}
               onViewHistory={() => navigate("/history")}
             />
           </section>
@@ -394,6 +409,9 @@ const SetupPromptCard = ({ status, onResume }: SetupPromptCardProps) => {
 
 interface ContinueReadingSectionProps {
   loading: boolean;
+  refreshing: boolean;
+  hasLoaded: boolean;
+  onRetry: () => void;
   error: string | null;
   primaryBook: DashboardBookCandidate | null;
   secondaryBooks: DashboardBookCandidate[];
@@ -406,6 +424,9 @@ interface ContinueReadingSectionProps {
 
 const ContinueReadingSection = ({
   loading,
+  refreshing,
+  hasLoaded,
+  onRetry,
   error,
   primaryBook,
   secondaryBooks,
@@ -427,6 +448,8 @@ const ContinueReadingSection = ({
       ) : undefined}
     />
 
+    <LoadingRegion loading={loading} refreshing={refreshing} label={loading ? "Loading current books" : "Refreshing current books"}>
+    {error && <LoadingError message="We couldn't refresh your reading dashboard. Please try again." onRetry={onRetry} className="mb-3" />}
     {loading ? (
       <DashboardCardSkeleton />
     ) : primaryBook ? (
@@ -444,7 +467,7 @@ const ContinueReadingSection = ({
           </div>
         )}
       </div>
-    ) : (
+    ) : error && !hasLoaded ? null : (
       <PremiumEmptyState
         asset="emptyLibrary"
         title={hasAnyBooks ? "Choose your next read" : "Add your first book"}
@@ -453,7 +476,6 @@ const ContinueReadingSection = ({
             {hasAnyBooks
               ? "Nothing is currently in progress. Choose a book from your library."
               : "Start your library so Brack can build a useful daily reading loop."}
-            {error && <span className="mt-2 block text-xs text-destructive">{error}</span>}
           </>
         }
         size="compact"
@@ -471,10 +493,11 @@ const ContinueReadingSection = ({
         }
       />
     )}
+    </LoadingRegion>
   </section>
 );
 
-const PrimaryContinueCard = ({
+export const PrimaryContinueCard = ({
   candidate,
   onLogProgress,
 }: {
@@ -528,7 +551,7 @@ const PrimaryContinueCard = ({
   );
 };
 
-const SecondaryContinueCard = ({ candidate }: { candidate: DashboardBookCandidate }) => {
+export const SecondaryContinueCard = ({ candidate }: { candidate: DashboardBookCandidate }) => {
   const { book } = candidate;
   return (
     <Link
@@ -665,10 +688,14 @@ const Metric = ({ value, label, primary = false }: { value: number; label: strin
 const RecentActivityCard = ({
   activities,
   loading,
+  refreshing,
+  failed,
   onViewHistory,
 }: {
   activities: DashboardRecentActivity[];
   loading: boolean;
+  refreshing: boolean;
+  failed: boolean;
   onViewHistory: () => void;
 }) => {
   const visibleActivities = activities.slice(0, 5);
@@ -684,9 +711,10 @@ const RecentActivityCard = ({
         </div>
       </CardHeader>
       <CardContent className="p-4">
+        <LoadingRegion loading={loading} refreshing={refreshing} label={loading ? "Loading recent activity" : "Refreshing recent activity"}>
         {loading ? (
-          <div className="space-y-3"><ActivityItemSkeleton /><ActivityItemSkeleton /><ActivityItemSkeleton /></div>
-        ) : visibleActivities.length === 0 ? (
+          <div className="space-y-1">{Array.from({ length: 5 }, (_, index) => <ActivityItemSkeleton key={index} />)}</div>
+        ) : failed ? <p className="text-sm text-muted-foreground">Recent activity is unavailable until the dashboard can be refreshed.</p> : visibleActivities.length === 0 ? (
           <PremiumEmptyState
             asset="emptyProgress"
             title="No activity yet"
@@ -713,6 +741,7 @@ const RecentActivityCard = ({
             })}
           </ol>
         )}
+        </LoadingRegion>
       </CardContent>
     </Card>
   );

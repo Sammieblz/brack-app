@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { getApiErrorStatus } from "@/services/api/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   getPostsFeed,
@@ -12,8 +14,17 @@ export type { Post } from "@/services/api";
 const PAGE_SIZE = 20;
 
 export const usePosts = () => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const activeUser = useRef(userId);
+  activeUser.current = userId;
+  const request = useRef(0);
+  const failedRequest = useRef<{ cursor: string | null; append: boolean } | null>(null);
+  const [loadedUser, setLoadedUser] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
@@ -41,28 +52,50 @@ export const usePosts = () => {
 
   const fetchPosts = useCallback(
     async (cursor: string | null = null, append = false) => {
+      if (!userId) { setLoading(false); return; }
+      const requestId = ++request.current;
       try {
+        setError(null);
         if (append) {
           setLoadingMore(true);
         } else {
           setLoading(true);
         }
         const response = await getPostsFeed(cursor, PAGE_SIZE);
+        if (activeUser.current !== userId || request.current !== requestId) return;
         applyResponse(response, append);
+        setHasLoaded(true);
+        setLoadedUser(userId);
+        failedRequest.current = null;
       } catch (error: unknown) {
+        if (activeUser.current !== userId || request.current !== requestId) return;
+        failedRequest.current = { cursor, append };
+      if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setPosts([]); setHasLoaded(false); setLoadedUser(null); }
         console.error("Error fetching posts:", error);
         toast.error("Failed to load posts");
+        setError(append ? "We couldn't load more posts." : "We couldn't load posts. Please try again.");
       } finally {
-        setLoading(false);
-        setLoadingMore(false);
+        if (activeUser.current === userId && request.current === requestId) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
       }
     },
-    [applyResponse]
+    [applyResponse, userId]
   );
 
   useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    setHasLoaded(false);
+    failedRequest.current = null;
+    setLoadedUser(null);
+    setPosts([]);
+    setError(null);
+    setLoading(Boolean(userId));
+    setHasMore(false);
+    setCaughtUp(false);
+    void fetchPosts();
+    return () => { request.current += 1; };
+  }, [fetchPosts, userId]);
 
   const toggleLike = async (postId: string) => {
     const post = posts.find((candidate) => candidate.id === postId);
@@ -107,19 +140,25 @@ export const usePosts = () => {
 
   const refetchPosts = () => fetchPosts();
   const loadMore = () => {
-    if (!loadingMore && hasMore && nextCursor) {
+    if (!loading && !loadingMore && hasMore && nextCursor) {
       fetchPosts(nextCursor, true);
     }
   };
 
   return {
-    posts,
+    posts: loadedUser === userId ? posts : [],
     loading,
+    hasLoaded: hasLoaded && loadedUser === userId,
+    error,
     loadingMore,
     hasMore,
     caughtUp,
     feedMode,
     refetchPosts,
+    retryLastRequest: () => {
+      const failed = failedRequest.current;
+      return failed ? fetchPosts(failed.cursor, failed.append) : fetchPosts();
+    },
     loadMore,
     toggleLike,
   };

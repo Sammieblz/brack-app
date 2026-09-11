@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { getApiErrorStatus } from "@/services/api/client";
 import { toast } from "sonner";
 import {
   addPostComment as addPostCommentApi,
@@ -15,6 +17,14 @@ export const usePostComments = (
   parentId?: string | null,
   enabled = true
 ) => {
+  const { user } = useAuth();
+  const identity = JSON.stringify([user?.id, postId, parentId]);
+  const activeIdentity = useRef(identity);
+  activeIdentity.current = identity;
+  const request = useRef(0);
+  const [loadedIdentity, setLoadedIdentity] = useState<string | null>(null);
+  const [requestedIdentity, setRequestedIdentity] = useState(identity);
+  const [error, setError] = useState<string | null>(null);
   const [comments, setComments] = useState<PostComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -25,13 +35,18 @@ export const usePostComments = (
     async (cursor: string | null = null, append = false) => {
       if (!postId || !enabled) return;
 
+      const requestId = ++request.current;
+      const isCurrent = () => activeIdentity.current === identity && request.current === requestId;
       try {
+        setRequestedIdentity(identity);
+        setError(null);
         if (append) {
           setLoadingMore(true);
         } else {
           setLoading(true);
         }
         const response = await fetchPostComments(postId, parentId, cursor);
+        if (!isCurrent()) return;
         setComments((current) => {
           const combined = append ? [...current, ...response.comments] : response.comments;
           const seen = new Set<string>();
@@ -43,21 +58,25 @@ export const usePostComments = (
         });
         setNextCursor(response.next_cursor ?? null);
         setHasMore(response.has_more);
+        setLoadedIdentity(identity);
       } catch (error: unknown) {
+        if (!isCurrent()) return;
+        if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setComments([]); setLoadedIdentity(null); }
+        setError("Comments could not load. Please try again.");
         console.error("Error fetching comments:", error);
         toast.error("Failed to load comments");
       } finally {
-        setLoading(false);
-        setLoadingMore(false);
+        if (isCurrent()) { setLoading(false); setLoadingMore(false); }
       }
     },
-    [enabled, parentId, postId]
+    [enabled, parentId, postId, identity]
   );
 
   useEffect(() => {
     if (!enabled) return;
     fetchComments();
-    return subscribeToPostComments(postId, () => fetchComments());
+    const unsubscribe = subscribeToPostComments(postId, () => fetchComments());
+    return () => { request.current += 1; unsubscribe(); };
   }, [enabled, fetchComments, postId]);
 
   const addComment = async (content: string, replyParentId?: string) => {
@@ -85,16 +104,20 @@ export const usePostComments = (
   };
 
   const loadMore = () => {
-    if (!loadingMore && hasMore && nextCursor) {
+    if (!loading && !loadingMore && hasMore && nextCursor && loadedIdentity === identity) {
       fetchComments(nextCursor, true);
     }
   };
 
+  const hasLoaded = loadedIdentity === identity;
   return {
-    comments,
-    loading,
+    comments: hasLoaded ? comments : [],
+    hasLoaded,
+    error: requestedIdentity === identity ? error : null,
+    loading: !hasLoaded && (loading || requestedIdentity !== identity),
+    refreshing: hasLoaded && loading,
     loadingMore,
-    hasMore,
+    hasMore: hasLoaded && hasMore,
     addComment,
     deleteComment,
     loadMore,

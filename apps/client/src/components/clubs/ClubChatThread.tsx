@@ -25,6 +25,8 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
+import { LoadingRegion, LoadingError } from "@/components/loading/LoadingRegion";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TypingIndicator } from "@/components/messaging/TypingIndicator";
 import { ReactionBar } from "@/components/reactions/ReactionBar";
 import { useClubChatTypingIndicator } from "@/hooks/useClubChatTypingIndicator";
@@ -47,6 +49,7 @@ import {
   type ClubMember,
 } from "@/services/api";
 import { toast } from "sonner";
+import { getApiErrorStatus } from "@/services/api/client";
 
 interface ClubChatThreadProps {
   clubId: string;
@@ -88,7 +91,9 @@ const previewText = (message: ClubChatMessage) => {
   return "Media";
 };
 
-export const ClubChatThread = ({
+export const ClubChatThread = (props: ClubChatThreadProps) => <ClubChatThreadContent key={`${props.currentUserId}:${props.clubId}`} {...props} />;
+
+const ClubChatThreadContent = ({
   clubId,
   members,
   currentUserId,
@@ -96,6 +101,10 @@ export const ClubChatThread = ({
 }: ClubChatThreadProps) => {
   const [messages, setMessages] = useState<ClubChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const request = useRef(0);
   const [content, setContent] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
@@ -157,15 +166,26 @@ export const ClubChatThread = ({
   }, [selectedFilePreviews]);
 
   const loadMessages = async () => {
+    const currentRequest = ++request.current;
     try {
+      setRefreshing(true);
+      setError(false);
       const response = await getClubChatHistory(clubId);
+      if (currentRequest !== request.current) return;
       setMessages(response.messages || []);
+      setHasLoaded(true);
       const latest = response.messages?.[response.messages.length - 1];
       if (latest) void markClubChatRead(clubId, latest.id);
     } catch (error) {
+      if (currentRequest !== request.current) return;
+      if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setMessages([]); setHasLoaded(false); }
+      setError(true);
       toast.error(error instanceof Error ? error.message : "Failed to load club chat");
     } finally {
-      setLoading(false);
+      if (currentRequest === request.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   };
 
@@ -173,7 +193,7 @@ export const ClubChatThread = ({
     setLoading(true);
     void loadMessages();
     const unsubscribe = subscribeToClubChat(clubId, () => void loadMessages());
-    return unsubscribe;
+    return () => { request.current += 1; unsubscribe(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clubId]);
 
@@ -231,7 +251,9 @@ export const ClubChatThread = ({
   };
 
   const handleSend = async (gif?: ClubGifSearchResult) => {
-    if (sending || !isOnline) return;
+    // Enter and GIF selection use this handler without the send button.
+    // Wait for a confirmed thread read so a late snapshot cannot erase a send.
+    if (sending || !isOnline || !hasLoaded || loading || refreshing || error) return;
     if (!content.trim() && files.length === 0 && !gif) return;
     try {
       setSending(true);
@@ -301,7 +323,8 @@ export const ClubChatThread = ({
     setEmojiOpen(false);
   };
 
-  const canSend = isOnline && (content.trim().length > 0 || files.length > 0);
+  const initialLoading = !hasLoaded && (loading || refreshing);
+  const canSend = isOnline && hasLoaded && !loading && !refreshing && !error && (content.trim().length > 0 || files.length > 0);
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
@@ -313,11 +336,13 @@ export const ClubChatThread = ({
       </div>
 
       <div className="h-[min(44rem,calc(var(--app-viewport-height,100dvh)-17rem))] min-h-[28rem] overflow-y-auto p-4">
-        {loading ? (
-          <div className="flex h-full items-center justify-center font-sans text-sm text-muted-foreground">
-            Loading chat...
+        {error && <LoadingError className="mb-3" message="Club chat could not update." onRetry={() => void loadMessages()} />}
+        <LoadingRegion loading={initialLoading} refreshing={refreshing && hasLoaded} label="Loading club chat">
+        {initialLoading ? (
+          <div aria-hidden="true" className="space-y-2">
+            {[0,1,2,3].map((index) => <div key={index} className={cn("flex gap-2", index % 2 && "flex-row-reverse")}><Skeleton className="h-9 w-9 shrink-0 rounded-full" /><div className="w-3/5 space-y-1"><Skeleton className="h-4 w-20" /><Skeleton className="h-16 w-full rounded-2xl" /><Skeleton className="h-4 w-12" /></div></div>)}
           </div>
-        ) : messages.length === 0 ? (
+        ) : error && !hasLoaded ? null : messages.length === 0 ? (
           <PremiumEmptyState
             asset="emptyMessages"
             title="No club messages yet"
@@ -530,6 +555,7 @@ export const ClubChatThread = ({
             <div ref={messagesEndRef} />
           </div>
         )}
+        </LoadingRegion>
       </div>
 
       <div className="border-t border-border/70 bg-card p-3">

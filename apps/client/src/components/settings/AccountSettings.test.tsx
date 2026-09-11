@@ -4,6 +4,8 @@ import { AuthApiError } from "@supabase/supabase-js";
 
 import type { User } from "@/types";
 
+vi.mock("@/services/api/client", () => ({ getApiErrorStatus: (error: { status?: number }) => error?.status ?? null }));
+
 const {
   fetchProfileMock,
   signInWithEmailPasswordMock,
@@ -79,6 +81,17 @@ describe("AccountSettings password identities", () => {
     fetchProfileMock.mockResolvedValue(null);
     signInWithEmailPasswordMock.mockResolvedValue(undefined);
     updatePasswordMock.mockResolvedValue({ user: googleOnlyUser });
+  });
+
+  it("does not reset password input when retrying unrelated account metadata", async () => {
+    fetchProfileMock.mockRejectedValueOnce(new Error("Offline"));
+    render(<AccountSettings user={passwordUser} />);
+    const retry = await screen.findByRole("button", { name: "Try again" });
+    const password = screen.getByLabelText(/Current password/i);
+    fireEvent.change(password, { target: { value: "KeepThisDraft123" } });
+    fireEvent.click(retry);
+    await waitFor(() => expect(fetchProfileMock).toHaveBeenCalledTimes(2));
+    expect(password).toHaveValue("KeepThisDraft123");
   });
 
   it("adds password sign-in to the authenticated Google account", async () => {

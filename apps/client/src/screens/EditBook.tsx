@@ -1,12 +1,23 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import {
+  LoadingError,
+  LoadingRegion,
+} from "@/components/loading/LoadingRegion";
+import { EditBookSkeleton } from "@/components/skeletons/ReadingRouteSkeletons";
+import { useRetainedReaderResource } from "@/hooks/useRetainedReaderResource";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { TagManager } from "@/components/TagManager";
@@ -25,43 +36,39 @@ import { validateBookForm, type ValidationError } from "@/utils/formValidation";
 import type { Book } from "@/types";
 import { fetchBookById, uploadPublicStorageFile } from "@/services/api";
 import { DatePicker } from "@/components/ui/date-picker";
-import { normalizeDateOnly, todayDateOnly, validateDateOnly } from "@/lib/dateOnly";
+import {
+  normalizeDateOnly,
+  todayDateOnly,
+  validateDateOnly,
+} from "@/lib/dateOnly";
 
 export default function EditBook() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const resourceId = id ? `${user?.id ?? ""}:${id}` : undefined;
+  const readBook = useCallback(() => fetchBookById(id!), [id]);
+  const {
+    data: loadedBook,
+    loading,
+    error: loadError,
+    refetch: loadBook,
+  } = useRetainedReaderResource(resourceId, readBook);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [book, setBook] = useState<Book | null>(null);
+  const [draft, setDraft] = useState<{
+    id: string | undefined;
+    book: Book;
+  } | null>(null);
+  const book = draft?.id === resourceId ? draft.book : (loadedBook ?? null);
+  const setBook = (nextBook: Book) =>
+    setDraft({ id: resourceId, book: nextBook });
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [startDateValid, setStartDateValid] = useState(true);
   const [finishDateValid, setFinishDateValid] = useState(true);
   const { pickWithPrompt } = useImagePicker();
-
-  useEffect(() => {
-    loadBook();
-  }, [id]);
-
-  const loadBook = async () => {
-    if (!id) return;
-    
-    try {
-      setBook(await fetchBookById(id));
-    } catch (error: unknown) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to load book",
-        variant: "destructive",
-      });
-      navigate('/my-books');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -73,7 +80,11 @@ export default function EditBook() {
     const startDate = normalizeDateOnly(book.date_started);
     const finishDate = normalizeDateOnly(book.date_finished);
     const today = todayDateOnly();
-    if (validateDateOnly(book.date_started, { max: today }) || validateDateOnly(book.date_finished, { max: today }) || (startDate && finishDate && startDate > finishDate)) {
+    if (
+      validateDateOnly(book.date_started, { max: today }) ||
+      validateDateOnly(book.date_finished, { max: today }) ||
+      (startDate && finishDate && startDate > finishDate)
+    ) {
       return;
     }
     if (validationErrors.length > 0) {
@@ -121,7 +132,8 @@ export default function EditBook() {
     } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to load book",
+        description:
+          error instanceof Error ? error.message : "Failed to load book",
         variant: "destructive",
       });
     } finally {
@@ -129,7 +141,11 @@ export default function EditBook() {
     }
   };
 
-  const uploadImageToStorage = async (imageData: { dataUrl: string; format: string; base64?: string }) => {
+  const uploadImageToStorage = async (imageData: {
+    dataUrl: string;
+    format: string;
+    base64?: string;
+  }) => {
     if (!user || !imageData.base64) return;
 
     setUploading(true);
@@ -146,14 +162,14 @@ export default function EditBook() {
       // Upload to storage
       const fileName = `${user.id}/${Date.now()}.${imageData.format}`;
       const publicUrl = await uploadPublicStorageFile(
-        'book-covers',
+        "book-covers",
         fileName,
         blob,
-        { contentType: `image/${imageData.format}` }
+        { contentType: `image/${imageData.format}` },
       );
 
       setBook({ ...book!, cover_url: publicUrl });
-      
+
       toast({
         title: "Success",
         description: "Cover image uploaded successfully",
@@ -161,7 +177,8 @@ export default function EditBook() {
     } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to upload image",
+        description:
+          error instanceof Error ? error.message : "Failed to upload image",
         variant: "destructive",
       });
     } finally {
@@ -169,7 +186,11 @@ export default function EditBook() {
     }
   };
 
-  const handleImagePicked = async (image: { dataUrl: string; format: string; base64?: string }) => {
+  const handleImagePicked = async (image: {
+    dataUrl: string;
+    format: string;
+    base64?: string;
+  }) => {
     await uploadImageToStorage(image);
   };
 
@@ -182,23 +203,49 @@ export default function EditBook() {
 
   const isMobile = useIsMobile();
 
-  if (loading) {
+  if (loading || !book) {
     return (
       <MobileLayout>
         {isMobile && (
           <MobileHeader
             title="Edit Book"
-            back={{ label: "Book", ariaLabel: "Back to book", to: id ? `/book/${id}` : "/my-books" }}
+            back={{
+              label: "Book",
+              ariaLabel: "Back to book",
+              to: id ? `/book/${id}` : "/my-books",
+            }}
           />
         )}
-        <div className="flex items-center justify-center h-96">
-          <LoadingSpinner size="lg" text="Loading book..." />
+        <div className="app-page-form pb-24 md:pb-8">
+          {!isMobile && (
+            <AppBackButton
+              label="Book"
+              ariaLabel="Back to book"
+              to={id ? `/book/${id}` : "/my-books"}
+              showLabel
+              variant="outline"
+              className="mb-4 border-border/70 bg-card/45 shadow-none hover:bg-accent"
+            />
+          )}
+          <LoadingRegion loading={loading} label="Loading book editor">
+            {loading ? (
+              <EditBookSkeleton />
+            ) : (
+              <LoadingError
+                message={
+                  loadError
+                    ? "The book could not be loaded. Try again when connected."
+                    : "This book is unavailable."
+                }
+                onRetry={() => void loadBook()}
+              />
+            )}
+          </LoadingRegion>
         </div>
       </MobileLayout>
     );
   }
 
-  if (!book) return null;
   const today = todayDateOnly();
   const finishedDate = normalizeDateOnly(book.date_finished);
 
@@ -234,7 +281,8 @@ export default function EditBook() {
                 value={book.title}
                 onChange={(e) => {
                   setBook({ ...book, title: e.target.value });
-                  if (errors.title) setErrors(prev => ({ ...prev, title: '' }));
+                  if (errors.title)
+                    setErrors((prev) => ({ ...prev, title: "" }));
                 }}
                 error={errors.title}
                 required
@@ -243,7 +291,7 @@ export default function EditBook() {
               <MobileInput
                 id="author"
                 label="Author"
-                value={book.author || ''}
+                value={book.author || ""}
                 onChange={(e) => setBook({ ...book, author: e.target.value })}
               />
 
@@ -252,8 +300,10 @@ export default function EditBook() {
                   <Label htmlFor="genre">Genre</Label>
                   <Input
                     id="genre"
-                    value={book.genre || ''}
-                    onChange={(e) => setBook({ ...book, genre: e.target.value })}
+                    value={book.genre || ""}
+                    onChange={(e) =>
+                      setBook({ ...book, genre: e.target.value })
+                    }
                   />
                 </div>
 
@@ -261,7 +311,7 @@ export default function EditBook() {
                   <Label htmlFor="isbn">ISBN</Label>
                   <Input
                     id="isbn"
-                    value={book.isbn || ''}
+                    value={book.isbn || ""}
                     onChange={(e) => setBook({ ...book, isbn: e.target.value })}
                   />
                 </div>
@@ -273,10 +323,14 @@ export default function EditBook() {
                   label="Total Pages"
                   type="number"
                   inputMode="numeric"
-                  value={book.pages || ''}
+                  value={book.pages || ""}
                   onChange={(e) => {
-                    setBook({ ...book, pages: parseInt(e.target.value) || null });
-                    if (errors.pages) setErrors(prev => ({ ...prev, pages: '' }));
+                    setBook({
+                      ...book,
+                      pages: parseInt(e.target.value) || null,
+                    });
+                    if (errors.pages)
+                      setErrors((prev) => ({ ...prev, pages: "" }));
                   }}
                   error={errors.pages}
                 />
@@ -286,8 +340,13 @@ export default function EditBook() {
                   label="Total Chapters"
                   type="number"
                   inputMode="numeric"
-                  value={book.chapters || ''}
-                  onChange={(e) => setBook({ ...book, chapters: parseInt(e.target.value) || null })}
+                  value={book.chapters || ""}
+                  onChange={(e) =>
+                    setBook({
+                      ...book,
+                      chapters: parseInt(e.target.value) || null,
+                    })
+                  }
                 />
               </div>
 
@@ -296,7 +355,9 @@ export default function EditBook() {
                   id="series_name"
                   label="Series"
                   value={book.series_name || ""}
-                  onChange={(e) => setBook({ ...book, series_name: e.target.value || null })}
+                  onChange={(e) =>
+                    setBook({ ...book, series_name: e.target.value || null })
+                  }
                   placeholder="Optional series name"
                 />
                 <MobileInput
@@ -305,10 +366,14 @@ export default function EditBook() {
                   type="number"
                   inputMode="decimal"
                   value={book.series_position || ""}
-                  onChange={(e) => setBook({
-                    ...book,
-                    series_position: e.target.value ? Number(e.target.value) : null,
-                  })}
+                  onChange={(e) =>
+                    setBook({
+                      ...book,
+                      series_position: e.target.value
+                        ? Number(e.target.value)
+                        : null,
+                    })
+                  }
                   min="0"
                   step="0.5"
                 />
@@ -318,10 +383,14 @@ export default function EditBook() {
                   type="number"
                   inputMode="numeric"
                   value={book.series_total || ""}
-                  onChange={(e) => setBook({
-                    ...book,
-                    series_total: e.target.value ? parseInt(e.target.value) : null,
-                  })}
+                  onChange={(e) =>
+                    setBook({
+                      ...book,
+                      series_total: e.target.value
+                        ? parseInt(e.target.value)
+                        : null,
+                    })
+                  }
                   min="1"
                 />
               </div>
@@ -333,8 +402,12 @@ export default function EditBook() {
                 inputMode="numeric"
                 value={book.current_page || 0}
                 onChange={(e) => {
-                  setBook({ ...book, current_page: parseInt(e.target.value) || 0 });
-                  if (errors.current_page) setErrors(prev => ({ ...prev, current_page: '' }));
+                  setBook({
+                    ...book,
+                    current_page: parseInt(e.target.value) || 0,
+                  });
+                  if (errors.current_page)
+                    setErrors((prev) => ({ ...prev, current_page: "" }));
                 }}
                 error={errors.current_page}
               />
@@ -359,8 +432,10 @@ export default function EditBook() {
               <div>
                 <Label htmlFor="rating">Rating (1-5)</Label>
                 <Select
-                  value={book.rating?.toString() || ''}
-                  onValueChange={(value) => setBook({ ...book, rating: value ? parseInt(value) : null })}
+                  value={book.rating?.toString() || ""}
+                  onValueChange={(value) =>
+                    setBook({ ...book, rating: value ? parseInt(value) : null })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="No rating" />
@@ -381,8 +456,12 @@ export default function EditBook() {
                   id="date_started"
                   label="Date Started"
                   value={book.date_started}
-                  onChange={(value) => setBook({ ...book, date_started: value })}
-                  maxDate={finishedDate && finishedDate < today ? finishedDate : today}
+                  onChange={(value) =>
+                    setBook({ ...book, date_started: value })
+                  }
+                  maxDate={
+                    finishedDate && finishedDate < today ? finishedDate : today
+                  }
                   showToday
                   onValidityChange={setStartDateValid}
                 />
@@ -390,7 +469,9 @@ export default function EditBook() {
                   id="date_finished"
                   label="Date Finished"
                   value={book.date_finished}
-                  onChange={(value) => setBook({ ...book, date_finished: value })}
+                  onChange={(value) =>
+                    setBook({ ...book, date_finished: value })
+                  }
                   minDate={book.date_started}
                   maxDate={today}
                   showToday
@@ -402,17 +483,19 @@ export default function EditBook() {
                 <Label>Cover Image</Label>
                 <div className="space-y-3">
                   {book.cover_url && (
-                    <img 
-                      src={book.cover_url} 
-                      alt="Book cover" 
+                    <img
+                      src={book.cover_url}
+                      alt="Book cover"
                       className="w-32 h-40 object-cover rounded border"
                     />
                   )}
                   <div className="flex gap-2">
                     <Input
                       id="cover_url"
-                      value={book.cover_url || ''}
-                      onChange={(e) => setBook({ ...book, cover_url: e.target.value })}
+                      value={book.cover_url || ""}
+                      onChange={(e) =>
+                        setBook({ ...book, cover_url: e.target.value })
+                      }
                       placeholder="Or paste image URL..."
                       className="flex-1"
                     />
@@ -447,7 +530,7 @@ export default function EditBook() {
 
               <div>
                 <Label htmlFor="tags">Tags</Label>
-                <TagManager 
+                <TagManager
                   tags={book.tags || []}
                   onChange={(newTags) => setBook({ ...book, tags: newTags })}
                 />
@@ -457,7 +540,7 @@ export default function EditBook() {
                 <MobileTextarea
                   id="notes"
                   label="Notes"
-                  value={book.notes || ''}
+                  value={book.notes || ""}
                   onChange={(e) => setBook({ ...book, notes: e.target.value })}
                   rows={6}
                   placeholder="Add your thoughts, quotes, or annotations..."
@@ -467,8 +550,10 @@ export default function EditBook() {
                   <Label htmlFor="notes">Notes</Label>
                   <Textarea
                     id="notes"
-                    value={book.notes || ''}
-                    onChange={(e) => setBook({ ...book, notes: e.target.value })}
+                    value={book.notes || ""}
+                    onChange={(e) =>
+                      setBook({ ...book, notes: e.target.value })
+                    }
                     rows={6}
                     placeholder="Add your thoughts, quotes, or annotations..."
                     className="mt-2"
@@ -477,13 +562,20 @@ export default function EditBook() {
               )}
 
               {/* Sticky save button for mobile */}
-              <div className={cn(
-                "flex gap-2 pt-4",
-                isMobile && "fixed bottom-20 left-0 right-0 p-4 bg-background border-t z-40"
-              )}>
-                <Button type="submit" disabled={saving || !startDateValid || !finishDateValid} className="flex-1 min-h-[44px]">
+              <div
+                className={cn(
+                  "flex gap-2 pt-4",
+                  isMobile &&
+                    "fixed bottom-20 left-0 right-0 p-4 bg-background border-t z-40",
+                )}
+              >
+                <Button
+                  type="submit"
+                  disabled={saving || !startDateValid || !finishDateValid}
+                  className="flex-1 min-h-[44px]"
+                >
                   <FloppyDisk className="mr-2 h-4 w-4" />
-                  {saving ? 'Saving...' : 'Save Changes'}
+                  {saving ? "Saving..." : "Save Changes"}
                 </Button>
                 {!isMobile && (
                   <Button

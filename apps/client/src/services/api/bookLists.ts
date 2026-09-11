@@ -63,8 +63,16 @@ const normalizeRemoteItem = (
 
 const requireUser = async () => {
   const user = await getCurrentAuthUser();
-  if (!user) throw new Error("Not authenticated");
+  if (!user) throw Object.assign(new Error("Not authenticated"), { status: 401 });
   return user;
+};
+
+// Confirmed access failures must not be converted into a successful cached read.
+// PostgREST supplies HTTP status alongside, rather than inside, its error object.
+const throwIfAccessDenied = (error: unknown, status: number) => {
+  if (error && [401, 403, 404].includes(status)) {
+    throw Object.assign(new Error("This book list is no longer available."), { status, cause: error });
+  }
 };
 
 const listLocalItems = async (userId: string, listId?: string) => {
@@ -98,7 +106,7 @@ export const fetchBookListsPage = async (
     };
   }
 
-  const { data, error } = await supabase
+  const { data, error, status } = await supabase
     .from("book_lists")
     .select("*, book_list_items(count)")
     .eq("user_id", userId)
@@ -108,6 +116,7 @@ export const fetchBookListsPage = async (
     .range(offset, offset + pageSize - 1);
 
   if (error) {
+    throwIfAccessDenied(error, status);
     if (withLocalCounts.length > 0) {
       return {
         lists: withLocalCounts.slice(offset, offset + pageSize),
@@ -299,11 +308,13 @@ export const fetchListBooks = async (listId: string): Promise<Book[]> => {
   let items = await listLocalItems(user.id, listId);
 
   if (isConnectivityAvailable()) {
-    const { data, error } = await supabase
+    const { data, error, status } = await supabase
       .from("book_list_items")
       .select("*")
       .eq("list_id", listId)
       .order("position", { ascending: true });
+    throwIfAccessDenied(error, status);
+    if (error && items.length === 0) throw error;
     if (!error && data) {
       const remoteItems = data.map((item) =>
         normalizeRemoteItem(item as unknown as Record<string, unknown>, user.id)
@@ -318,12 +329,14 @@ export const fetchListBooks = async (listId: string): Promise<Book[]> => {
     .filter((_, index) => !books[index])
     .map((item) => item.book_id);
   if (missingBookIds.length > 0 && isConnectivityAvailable()) {
-    const { data, error } = await supabase
+    const { data, error, status } = await supabase
       .from("books")
       .select("*")
       .eq("user_id", user.id)
       .in("id", missingBookIds)
       .is("deleted_at", null);
+    throwIfAccessDenied(error, status);
+    if (error && !books.some(Boolean)) throw error;
     if (!error && data) {
       await booksRepo.upsertRemoteMany(user.id, data as Book[]);
       books = await Promise.all(items.map((item) => booksRepo.get(item.book_id)));

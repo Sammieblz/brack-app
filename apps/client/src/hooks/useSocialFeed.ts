@@ -1,11 +1,22 @@
-import { useCallback, useEffect, useState } from "react";
+import { getApiErrorStatus } from "@/services/api/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getSocialFeed, type FeedActivity } from "@/services/api";
 
 export type { FeedActivity };
 
 export const useSocialFeed = (limit: number = 20) => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const activeUser = useRef(userId);
+  activeUser.current = userId;
+  const request = useRef(0);
+  const failedRequest = useRef<{ cursor: string | null; append: boolean } | null>(null);
+  const [loadedUser, setLoadedUser] = useState<string | null>(null);
   const [activities, setActivities] = useState<FeedActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
@@ -13,7 +24,10 @@ export const useSocialFeed = (limit: number = 20) => {
 
   const fetchFeed = useCallback(
     async (cursor: string | null = null, append = false) => {
+      if (!userId) { setLoading(false); return; }
+      const requestId = ++request.current;
       try {
+        setError(null);
         if (append) {
           setLoadingMore(true);
         } else {
@@ -21,6 +35,7 @@ export const useSocialFeed = (limit: number = 20) => {
         }
 
         const data = await getSocialFeed(limit, cursor);
+        if (activeUser.current !== userId || request.current !== requestId) return;
         setActivities((current) => {
           const combined = append ? [...current, ...(data.activities || [])] : data.activities || [];
           const seen = new Set<string>();
@@ -33,22 +48,40 @@ export const useSocialFeed = (limit: number = 20) => {
         setNextCursor(data.next_cursor ?? null);
         setHasMore(data.has_more || false);
         setCaughtUp(Boolean(data.caught_up));
+        setHasLoaded(true);
+        setLoadedUser(userId);
+        failedRequest.current = null;
       } catch (error) {
+        if (activeUser.current !== userId || request.current !== requestId) return;
+        failedRequest.current = { cursor, append };
+      if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setActivities([]); setHasLoaded(false); setLoadedUser(null); }
         console.error("Error fetching social feed:", error);
+        setError(append ? "We couldn't load more activity." : "We couldn't load activity. Please try again.");
       } finally {
-        setLoading(false);
-        setLoadingMore(false);
+        if (activeUser.current === userId && request.current === requestId) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
       }
     },
-    [limit]
+    [limit, userId]
   );
 
   useEffect(() => {
-    fetchFeed();
-  }, [fetchFeed]);
+    setHasLoaded(false);
+    failedRequest.current = null;
+    setLoadedUser(null);
+    setActivities([]);
+    setError(null);
+    setLoading(Boolean(userId));
+    setHasMore(false);
+    setCaughtUp(false);
+    void fetchFeed();
+    return () => { request.current += 1; };
+  }, [fetchFeed, userId]);
 
   const loadMore = () => {
-    if (!loadingMore && hasMore && nextCursor) {
+    if (!loading && !loadingMore && hasMore && nextCursor) {
       fetchFeed(nextCursor, true);
     }
   };
@@ -83,13 +116,19 @@ export const useSocialFeed = (limit: number = 20) => {
   };
 
   return {
-    activities,
+    activities: loadedUser === userId ? activities : [],
     loading,
+    hasLoaded: hasLoaded && loadedUser === userId,
+    error,
     loadingMore,
     hasMore,
     caughtUp,
     loadMore,
     formatTimeAgo,
     refetchFeed: () => fetchFeed(),
+    retryLastRequest: () => {
+      const failed = failedRequest.current;
+      return failed ? fetchFeed(failed.cursor, failed.append) : fetchFeed();
+    },
   };
 };

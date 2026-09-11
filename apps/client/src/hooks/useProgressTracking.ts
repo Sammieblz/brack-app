@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useRetainedReaderResource } from "@/hooks/useRetainedReaderResource";
+import { useCallback } from "react";
 import {
   fetchProgressTrackingData,
   type CompletionForecast,
@@ -6,40 +7,13 @@ import {
   type VelocityData,
 } from "@/services/api";
 
-export const useProgressTracking = (bookId?: string) => {
-  const [dailyProgress, setDailyProgress] = useState<DailyProgress[]>([]);
-  const [velocityData, setVelocityData] = useState<VelocityData[]>([]);
-  const [forecastData, setForecastData] = useState<CompletionForecast[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchProgressData = async () => {
-    if (!bookId) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const data = await fetchProgressTrackingData(bookId);
-      setDailyProgress(data.dailyProgress);
-      setVelocityData(data.velocityData);
-      setForecastData(data.forecastData);
-    } catch (error) {
-      console.error('Error fetching progress data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProgressData();
-  }, [bookId]);
-
+export const useProgressTracking = (bookId?: string, userId?: string) => {
+  const read = useCallback(() => fetchProgressTrackingData(bookId!), [bookId]);
+  const resource = useRetainedReaderResource(bookId ? `${userId ?? ""}:${bookId}` : undefined, read);
   return {
-    dailyProgress,
-    velocityData,
-    forecastData,
-    loading,
-    refetch: fetchProgressData
+    ...resource,
+    dailyProgress: resource.data?.dailyProgress ?? [] as DailyProgress[],
+    velocityData: resource.data?.velocityData ?? [] as VelocityData[],
+    forecastData: resource.data?.forecastData ?? [] as CompletionForecast[],
   };
 };
