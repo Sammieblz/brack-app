@@ -281,14 +281,13 @@ const Achievements = () => {
           {isMobile ? (
             <MobileHeader
               title="Reader Journey"
-              secondary={data ? <JourneyTabsRail activeTab={normalizedTab} /> : undefined}
+              secondary={<JourneyTabsRail activeTab={normalizedTab} disabled={!data} />}
             />
           ) : (
             <NativeHeader
               title="Reader Journey"
               subtitle="Turn reading momentum into lasting progress"
-              scrollContainerId="journey-scroll"
-              secondary={data ? <JourneyTabsRail activeTab={normalizedTab} /> : undefined}
+              secondary={<JourneyTabsRail activeTab={normalizedTab} disabled={!data} />}
             />
           )}
           <NativeScrollView id="journey-scroll" className="app-page [container-type:inline-size]">

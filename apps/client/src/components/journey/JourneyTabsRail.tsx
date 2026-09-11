@@ -24,6 +24,7 @@ interface JourneyTabProps {
   icon?: AppIconType;
   currency?: "goldLeaves";
   label: string;
+  disabled?: boolean;
 }
 
 const JourneyTab = forwardRef<HTMLButtonElement, JourneyTabProps>(({
@@ -31,10 +32,12 @@ const JourneyTab = forwardRef<HTMLButtonElement, JourneyTabProps>(({
   icon,
   currency,
   label,
+  disabled,
 }, ref) => (
   <TabsTrigger
     ref={ref}
     value={value}
+    disabled={disabled}
     className={cn(
       "min-h-11 shrink-0 gap-2 rounded-lg px-3 text-sm",
       "data-[state=active]:bg-background data-[state=active]:shadow-sm",
@@ -53,19 +56,33 @@ const JourneyTab = forwardRef<HTMLButtonElement, JourneyTabProps>(({
 
 JourneyTab.displayName = "JourneyTab";
 
-export const JourneyTabsRail = ({ activeTab }: { activeTab: JourneyTabValue }) => {
+export const JourneyTabsRail = ({ activeTab, disabled = false }: {
+  activeTab: JourneyTabValue;
+  disabled?: boolean;
+}) => {
+  const railRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Partial<Record<JourneyTabValue, HTMLButtonElement | null>>>({});
 
   useEffect(() => {
-    tabRefs.current[activeTab]?.scrollIntoView({
-      block: "nearest",
-      inline: "center",
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    const rail = railRef.current;
+    const tab = tabRefs.current[activeTab];
+    if (!rail || !tab) return;
+
+    // scrollIntoView also scrolls vertical ancestors, including the page. Only
+    // reveal a clipped tab in this horizontal rail; keyboard changes are instant.
+    const railBounds = rail.getBoundingClientRect();
+    const tabBounds = tab.getBoundingClientRect();
+    if (tabBounds.left >= railBounds.left && tabBounds.right <= railBounds.right) return;
+    const left = rail.scrollLeft + (tabBounds.left - railBounds.left)
+      - (rail.clientWidth - tabBounds.width) / 2;
+    rail.scrollTo({
+      left: Math.max(0, Math.min(left, rail.scrollWidth - rail.clientWidth)),
+      behavior: "auto",
     });
   }, [activeTab]);
 
   return (
-    <div className="w-full overflow-x-auto rounded-xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div ref={railRef} className="w-full overflow-x-auto rounded-xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <TabsList
         className="flex h-auto min-w-full w-max justify-start gap-1 overflow-visible rounded-xl border border-border/70 bg-card/90 p-1.5"
         aria-label="Reader Journey sections"
@@ -75,6 +92,7 @@ export const JourneyTabsRail = ({ activeTab }: { activeTab: JourneyTabValue }) =
             key={tab.value}
             ref={(node) => { tabRefs.current[tab.value] = node; }}
             {...tab}
+            disabled={disabled}
           />
         ))}
       </TabsList>

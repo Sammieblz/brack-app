@@ -247,7 +247,6 @@ const Dashboard = () => {
             subtitle="Your next page, quest, and reward are ready"
             action={<GoalsSheet />}
             secondary={readerHud}
-            scrollContainerId="dashboard-scroll"
             showTimerAction={false}
           />
         )}

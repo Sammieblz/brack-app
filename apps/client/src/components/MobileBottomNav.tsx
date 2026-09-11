@@ -20,7 +20,7 @@ export const MobileBottomNav = () => {
         <div className="absolute inset-0 rounded-[32px] border border-white/[0.12] shadow-[0_14px_50px_rgba(0,0,0,0.45)] supports-[backdrop-filter]:backdrop-blur-2xl bg-background/75" />
         <div className="absolute inset-x-8 top-[16%] h-px bg-white/[0.14] rounded-full pointer-events-none" />
 
-        <div className="relative flex items-center justify-around h-[72px] max-w-4xl mx-auto gap-0.5 rounded-[28px] max-[400px]:h-16">
+        <div className="relative flex items-center justify-around h-[var(--app-bottom-nav-content-height,72px)] max-w-4xl mx-auto gap-0.5 rounded-[28px]">
         {mobileNavItems.map((tab) => {
           const Icon = tab.icon;
           const active = isNavItemActive(location.pathname, tab);

@@ -58,6 +58,9 @@ jobs:
       - name: Run TypeScript type check
         run: npm run check-types
 
+      - name: Typecheck and lint shell regression tests
+        run: npm run test:e2e:shell:check
+
       - name: Verify optimized static media
         run: npm run media:assets:check
 
@@ -334,8 +337,21 @@ jobs:
       - name: Build web app for Playwright
         run: npm run build
 
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Verify application shell scroll stability
+        id: shell_scroll
+        run: npm run test:e2e:shell
+
+      - name: Upload shell regression failure traces
+        if: ${{ failure() && steps.shell_scroll.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: shell-scroll-failure-traces
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Run web smoke tests for pull request
         if: github.event_name == 'pull_request'

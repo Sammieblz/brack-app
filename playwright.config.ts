@@ -2,6 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  // The deterministic shell suite has its own data-isolated Vite server.
+  testIgnore: "shell-scroll*.spec.ts",
   timeout: 60_000,
   use: {
     baseURL: "http://127.0.0.1:4173",

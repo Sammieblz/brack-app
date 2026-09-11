@@ -2,13 +2,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { CurrencyIcon } from "@/components/CurrencyIcon";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
@@ -194,16 +187,18 @@ const LeaderboardScopePicker = ({
 }) => mobile ? (
   <div className="space-y-1.5">
     <label htmlFor="leaderboard-scope" className="text-sm font-medium">Ranking group</label>
-    <Select value={scope} onValueChange={(value) => onChange(value as LeaderboardScope)}>
-      <SelectTrigger id="leaderboard-scope" className="min-h-11">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="league">My league</SelectItem>
-        <SelectItem value="friends">Friends</SelectItem>
-        <SelectItem value="global">Global top 100</SelectItem>
-      </SelectContent>
-    </Select>
+    {/* The native picker avoids a hidden form-select mount that resets WebKit's
+        page scroll when entering this tab, and uses the mobile OS picker. */}
+    <select
+      id="leaderboard-scope"
+      value={scope}
+      onChange={(event) => onChange(event.target.value as LeaderboardScope)}
+      className="min-h-11 w-full rounded-md border border-input bg-background px-3 py-2 font-sans text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      <option value="league">My league</option>
+      <option value="friends">Friends</option>
+      <option value="global">Global top 100</option>
+    </select>
   </div>
 ) : (
   <Tabs value={scope} onValueChange={(value) => onChange(value as LeaderboardScope)}>
@@ -285,7 +280,7 @@ export const LeaderboardTable = ({
       )}
       {refreshing && <p className="text-right text-xs text-muted-foreground" role="status">Refreshing standings…</p>}
       {!currentVisible && fallbackCurrent && (
-        <JourneySurface variant="hero" className="sticky top-[8rem] z-20 flex items-center justify-between gap-3 p-3" role="status">
+        <JourneySurface variant="hero" className="sticky top-[calc(var(--app-header-height,0px)+0.75rem)] z-20 flex items-center justify-between gap-3 p-3" role="status">
           <span>
             <strong>You · #{fallbackCurrent.rank}</strong>
             <span className="ml-2 text-xs text-muted-foreground">{fallbackCurrent.levelTitle}</span>
