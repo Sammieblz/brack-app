@@ -64,6 +64,9 @@ jobs:
       - name: Typecheck and lint date-picker regression tests
         run: npm run test:date-picker:check
 
+      - name: Typecheck and lint loading-layout regression tests
+        run: npm run test:loading:check
+
       - name: Verify optimized static media
         run: npm run media:assets:check
 
@@ -365,6 +368,19 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: date-picker-failure-traces
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Verify loading layouts and retained content
+        id: loading_layout
+        run: npm run test:loading
+
+      - name: Upload loading-layout metrics and failure traces
+        if: ${{ !cancelled() && (steps.loading_layout.outcome == 'success' || steps.loading_layout.outcome == 'failure') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: loading-layout-results
           path: test-results/
           if-no-files-found: ignore
           retention-days: 7

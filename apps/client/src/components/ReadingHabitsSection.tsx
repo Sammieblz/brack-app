@@ -1,3 +1,7 @@
+import { getApiErrorStatus } from "@/services/api/client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
+import { ReadingHabitsSkeleton } from "@/components/skeletons/SettingsSkeleton";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,10 +24,12 @@ interface ReadingHabitsSectionProps {
   userId: string;
 }
 
-export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
+const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
   const [habits, setHabits] = useState<ReadingHabits | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
   
@@ -48,7 +54,9 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
   const loadHabits = async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const { habits: data } = await fetchReadingProfile(userId);
+      setHasLoaded(true);
 
       if (data) {
         setHabits(data as ReadingHabits);
@@ -67,7 +75,9 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
         });
       }
     } catch (error: unknown) {
+      if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setHasLoaded(false); setHabits(null); }
       console.error('Error loading reading habits:', error);
+      setLoadError("We couldn't load your reading habits. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -121,23 +131,16 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
     }));
   };
 
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display flex items-center">
-            <Book className="h-5 w-5 mr-2" />
-            Reading Habits
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="font-sans text-muted-foreground">Loading...</p>
-        </CardContent>
-      </Card>
-    );
+  if (!hasLoaded) {
+    return <LoadingRegion loading={loading} label="Loading reading habits"><Card>
+      <CardHeader><div className="flex items-center justify-between"><CardTitle className="font-display flex items-center"><Book className="h-5 w-5 mr-2" />Reading Habits</CardTitle>{loading && <Skeleton className="h-10 min-h-11 w-20" />}</div></CardHeader>
+      <CardContent className="space-y-6">{loadError && <LoadingError message={loadError} onRetry={loadHabits} />}{loading && <ReadingHabitsSkeleton />}</CardContent>
+    </Card></LoadingRegion>;
   }
 
   return (
+    <LoadingRegion loading={false} refreshing={loading} label="Loading reading habits">
+    {loadError && <LoadingError message={loadError} onRetry={loadHabits} />}
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -433,5 +436,8 @@ export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => {
         )}
       </CardContent>
     </Card>
+    </LoadingRegion>
   );
 };
+
+export const ReadingHabitsSection = ({ userId }: ReadingHabitsSectionProps) => <ReadingHabitsContent key={userId} userId={userId} />;

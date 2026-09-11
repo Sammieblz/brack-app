@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CurrencyIcon } from "@/components/CurrencyIcon";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
+import { JourneyStandingsSkeleton } from "@/components/skeletons/JourneySkeleton";
+import { getApiErrorStatus } from "@/services/api/client";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import {
   JourneySectionEyebrow,
@@ -32,6 +34,7 @@ interface JourneyLeagueProps {
   refreshing: boolean;
   cached: boolean;
   error: Error | null;
+  hasSnapshot?: boolean;
   entries: LeaderboardEntry[];
   onScopeChange: (scope: LeaderboardScope) => void;
   onOptInChange: (checked: boolean) => void;
@@ -52,6 +55,7 @@ export const JourneyLeague = ({
   refreshing,
   cached,
   error,
+  hasSnapshot,
   entries,
   onScopeChange,
   onOptInChange,
@@ -99,6 +103,7 @@ export const JourneyLeague = ({
         refreshing={refreshing}
         cached={cached}
         error={error}
+        hasSnapshot={hasSnapshot}
         entries={entries}
         onRetry={onRetry}
         fallbackCurrent={scope === "league" && league ? {
@@ -215,6 +220,7 @@ export const LeaderboardTable = ({
   refreshing,
   cached,
   error,
+  hasSnapshot,
   entries,
   onRetry,
   fallbackCurrent,
@@ -223,6 +229,7 @@ export const LeaderboardTable = ({
   refreshing: boolean;
   cached: boolean;
   error: Error | null;
+  hasSnapshot?: boolean;
   entries: LeaderboardEntry[];
   onRetry: () => void;
   fallbackCurrent?: { rank: number; competitiveInk: number; levelTitle: string };
@@ -232,15 +239,16 @@ export const LeaderboardTable = ({
     .filter((entry) => entry.rank <= 3)
     .sort((left, right) => left.rank - right.rank);
 
-  if (loading) {
+  if (loading && entries.length === 0) {
     return (
-      <JourneySurface variant="flat" className="flex min-h-64 items-center justify-center">
-        <LoadingSpinner text="Loading standings..." />
-      </JourneySurface>
+      <LoadingRegion loading label="Loading standings">
+        <JourneyStandingsSkeleton />
+      </LoadingRegion>
     );
   }
 
-  if (error) {
+  const accessRejected = [401, 403, 404].includes(getApiErrorStatus(error) ?? 0);
+  if (error && (accessRejected || (!hasSnapshot && entries.length === 0))) {
     return (
       <JourneySurface variant="flat" className="p-7 text-center">
         <p className="font-display text-xl font-bold">Standings could not be loaded</p>
@@ -252,6 +260,8 @@ export const LeaderboardTable = ({
 
   if (entries.length === 0) {
     return (
+      <>
+      {error && <LoadingError message="Standings could not be refreshed. Saved standings remain below." onRetry={onRetry} />}
       <PremiumEmptyState
         asset="emptyReaders"
         title="No ranked readers yet"
@@ -261,11 +271,13 @@ export const LeaderboardTable = ({
         size="compact"
         action={<Button className="min-h-11" variant="outline" onClick={onRetry}>Refresh</Button>}
       />
+      </>
     );
   }
 
   return (
     <div className="space-y-3">
+      {error && <LoadingError message="Standings could not be refreshed. Saved standings remain below." onRetry={onRetry} />}
       {cached && (
         <JourneySurface
           variant="flat"
@@ -278,7 +290,7 @@ export const LeaderboardTable = ({
           <Button size="sm" className="min-h-11" variant="outline" onClick={onRetry}>Refresh</Button>
         </JourneySurface>
       )}
-      {refreshing && <p className="text-right text-xs text-muted-foreground" role="status">Refreshing standings…</p>}
+      {refreshing && <span className="sr-only" role="status">Refreshing standings…</span>}
       {!currentVisible && fallbackCurrent && (
         <JourneySurface variant="hero" className="sticky top-[calc(var(--app-header-height,0px)+0.75rem)] z-20 flex items-center justify-between gap-3 p-3" role="status">
           <span>

@@ -1,3 +1,6 @@
+import { getApiErrorStatus } from "@/services/api/client";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
+import { ProfileSkeleton } from "@/components/skeletons/ProfileSkeleton";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,7 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { FloppyDisk } from "iconoir-react";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
 import { useImagePicker } from "@/hooks/useImagePicker";
-import LoadingSpinner from "@/components/LoadingSpinner";
+
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useFollowing } from "@/hooks/useFollowing";
@@ -28,7 +31,7 @@ import {
   upsertProfileBasics,
 } from "@/services/api";
 
-const ProfilePage = () => {
+const ProfilePageContent = () => {
   const { user, loading: authLoading } = useAuth();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -37,6 +40,8 @@ const ProfilePage = () => {
   const { followersCount, followingCount } = useFollowing(user?.id || null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -70,7 +75,10 @@ const ProfilePage = () => {
     if (!user) return;
     
     try {
+      setLoading(true);
+      setLoadError(null);
       const data = await fetchProfile(user.id);
+      setHasLoaded(true);
       if (data) {
         setProfile(data);
         setFormData({
@@ -79,7 +87,9 @@ const ProfilePage = () => {
         });
       }
     } catch (error) {
+      if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setHasLoaded(false); setProfile(null); }
       console.error('Error loading profile:', error);
+      setLoadError("We couldn't load your profile. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -167,11 +177,17 @@ const ProfilePage = () => {
     }
   };
 
-  if (authLoading || loading) {
+  if (authLoading || !hasLoaded) {
     return (
-      <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background">
-        <LoadingSpinner size="lg" text="Loading profile..." />
-      </div>
+      <MobileLayout>
+        {isMobile && <MobileHeader title="Profile Settings" />}
+        <div className="app-page-narrow">
+          <LoadingRegion loading={authLoading || loading} label="Loading profile settings">
+            {loadError && <LoadingError message={loadError} onRetry={loadProfile} />}
+            {(authLoading || loading) && <ProfileSkeleton />}
+          </LoadingRegion>
+        </div>
+      </MobileLayout>
     );
   }
 
@@ -183,7 +199,8 @@ const ProfilePage = () => {
   return (
     <MobileLayout>
       {isMobile && <MobileHeader title="Profile Settings" />}
-      <div className="app-page-narrow space-y-6">
+      <LoadingRegion loading={false} refreshing={loading} label="Loading profile settings" className="app-page-narrow space-y-6">
+        {loadError && <LoadingError message={loadError} onRetry={loadProfile} />}
 
         {/* Social Profile View */}
         <Card>
@@ -361,9 +378,14 @@ const ProfilePage = () => {
             )}
           </Button>
         </div>
-      </div>
+      </LoadingRegion>
     </MobileLayout>
   );
+};
+
+const ProfilePage = () => {
+  const { user } = useAuth();
+  return <ProfilePageContent key={user?.id ?? "anonymous"} />;
 };
 
 export default ProfilePage;

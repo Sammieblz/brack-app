@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { contentSnapshotsRepo } from "@/services/local";
+import { getApiErrorStatus } from "@/services/api/client";
 import type { ContentSnapshot } from "@/types";
 
 type SnapshotScope = ContentSnapshot["scope"];
@@ -36,6 +37,14 @@ export const withContentSnapshot = async <T>(
     });
     return data;
   } catch (error) {
+    const status = getApiErrorStatus(error);
+    if (status === 401 || status === 403) {
+      // A confirmed denial is not an offline failure. Remove only this
+      // viewer/resource snapshot so a later offline read cannot revive it.
+      // Keep the original denial actionable even if local cleanup fails.
+      await contentSnapshotsRepo.remove(snapshotId).catch(() => undefined);
+      throw error;
+    }
     if (cached) return cached.data as T;
     throw error;
   }

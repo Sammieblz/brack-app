@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { BookClubCard } from "@/components/clubs/BookClubCard";
 import { CreateClubDialog } from "@/components/clubs/CreateClubDialog";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { LoadingRegion, LoadingError } from "@/components/loading/LoadingRegion";
+import { ClubGridSkeleton } from "@/components/skeletons/DiscoverySkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { MobileHeader } from "@/components/MobileHeader";
 import { MobileLayout } from "@/components/MobileLayout";
 import { NativeHeader } from "@/components/NativeHeader";
@@ -95,6 +97,9 @@ const BookClubs = () => {
     home,
     sections,
     loading,
+    refreshing,
+    error,
+    hasLoaded,
     createClub,
     joinClub,
     leaveClub,
@@ -158,7 +163,7 @@ const BookClubs = () => {
         <main className="app-page">
           <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {statCards.map((card) => (
-              <SummaryCard key={card.label} {...card} />
+              <SummaryCard key={card.label} {...card} loading={loading} />
             ))}
           </section>
 
@@ -192,7 +197,7 @@ const BookClubs = () => {
                       <Icon className="h-4 w-4" />
                       {sectionMeta[key].label}
                       <Badge variant="secondary" className="ml-1 h-5 rounded-full px-2">
-                        {count}
+                        {loading ? <Skeleton className="h-3 w-3" /> : count}
                       </Badge>
                     </Button>
                   );
@@ -214,13 +219,9 @@ const BookClubs = () => {
               )}
             </div>
 
-            {loading ? (
-              <Card>
-                <CardContent className="flex min-h-[18rem] items-center justify-center">
-                  <LoadingSpinner />
-                </CardContent>
-              </Card>
-            ) : (
+            {error && <LoadingError className="mb-4" message="Book clubs could not update. Check your connection and try again." onRetry={() => void fetchClubs()} />}
+            <LoadingRegion loading={loading} refreshing={refreshing} label="Loading book clubs">
+            {loading ? <ClubGridSkeleton /> : error && !hasLoaded ? null : (
               <ClubGrid
                 clubs={activeItems}
                 emptyAsset={activeMeta.emptyAsset}
@@ -237,6 +238,7 @@ const BookClubs = () => {
                 onDeclineInvite={(inviteId) => respondInvite(inviteId, "decline")}
               />
             )}
+            </LoadingRegion>
           </section>
         </main>
       </PullToRefresh>
@@ -248,16 +250,18 @@ const SummaryCard = ({
   icon: Icon,
   label,
   value,
+  loading,
 }: {
   icon: ComponentType<{ className?: string }>;
   label: string;
   value: number;
+  loading?: boolean;
 }) => (
   <Card>
     <CardContent className="flex items-center gap-3 p-4">
       <AppIcon icon={Icon} variant="inline" size="md" className="text-primary" />
       <div className="min-w-0">
-        <p className="font-sans text-2xl font-semibold leading-none">{value}</p>
+        <div className="font-sans text-2xl font-semibold leading-none">{loading ? <Skeleton className="h-6 w-8" /> : value}</div>
         <p className="mt-1 truncate font-sans text-sm text-muted-foreground">{label}</p>
       </div>
     </CardContent>

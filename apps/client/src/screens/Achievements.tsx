@@ -7,7 +7,8 @@ import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { NativeHeader } from "@/components/NativeHeader";
 import { NativeScrollView } from "@/components/NativeScrollView";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { LoadingRegion } from "@/components/loading/LoadingRegion";
+import { JourneySkeleton } from "@/components/skeletons/JourneySkeleton";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { BadgeDetailsDialog } from "@/components/BadgeDetailsDialog";
 import { JourneyBadges } from "@/components/journey/JourneyBadges";
@@ -76,7 +77,7 @@ const Achievements = () => {
     : "overview";
   const shouldLoadBadges = normalizedTab === "badges";
   const shouldLoadBooks = normalizedTab === "overview" || normalizedTab === "quests";
-  const { badges, earnedBadges, loading: badgesLoading } = useBadges(
+  const { badges, earnedBadges, loading: badgesLoading, refreshing: badgesRefreshing, error: badgesError, hasLoaded: badgesLoaded, refetchBadges } = useBadges(
     user?.id,
     shouldLoadBadges,
   );
@@ -291,10 +292,10 @@ const Achievements = () => {
             />
           )}
           <NativeScrollView id="journey-scroll" className="app-page [container-type:inline-size]">
-            {isLoading ? (
-              <div className="flex min-h-[28rem] items-center justify-center">
-                <LoadingSpinner size="lg" text="Preparing your Reader Journey..." />
-              </div>
+            {isLoading && !data ? (
+              <LoadingRegion loading label="Preparing your Reader Journey">
+                <JourneySkeleton tab={normalizedTab} />
+              </LoadingRegion>
             ) : !data || (error && !retainedRetryableSnapshot) ? (
               <PremiumEmptyState
                 asset="badConnection"
@@ -358,6 +359,10 @@ const Achievements = () => {
                     badges={badges}
                     earnedBadges={earnedBadges}
                     loading={badgesLoading}
+                    refreshing={badgesRefreshing}
+                    error={badgesError}
+                    hasLoaded={badgesLoaded}
+                    onRetry={() => void refetchBadges()}
                     onBadgeClick={handleBadgeClick}
                   />
                 </TabsContent>
@@ -386,6 +391,7 @@ const Achievements = () => {
                       refreshing={leaderboard.isFetching && Boolean(leaderboard.data)}
                       cached={leaderboard.data?.source === "cached"}
                       error={leaderboard.error}
+                      hasSnapshot={Boolean(leaderboard.data)}
                       entries={leaderboard.data?.entries ?? []}
                       onScopeChange={setScope}
                       onOptInChange={handleLeaderboardOptIn}

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useRetainedReaderResource } from "@/hooks/useRetainedReaderResource";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   completeGoal as completeGoalApi,
@@ -14,29 +15,15 @@ export type { Goal } from "@/services/api";
 
 export const useGoals = (userId?: string) => {
   const queryClient = useQueryClient();
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [activeGoals, setActiveGoals] = useState<Goal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const resource = useRetainedReaderResource(userId, fetchGoalsApi);
+  const goals = resource.data ?? [];
+  const activeGoals = goals.filter((goal) => goal.is_active);
+  const fetchGoals = resource.refetch;
   const [error, setError] = useState<string | null>(null);
 
-  const fetchGoals = useCallback(async () => {
-    if (!userId) return;
-    
-    try {
-      setLoading(true);
-      const data = await fetchGoalsApi(userId);
-      setGoals(data);
-      setActiveGoals(data.filter(g => g.is_active));
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
-
   useEffect(() => {
-    void fetchGoals();
-  }, [fetchGoals]);
+    setError(null);
+  }, [userId, resource.refreshing]);
 
   const createGoal = async (goal: Partial<Goal>) => {
     if (!userId) return null;
@@ -85,8 +72,10 @@ export const useGoals = (userId?: string) => {
   return {
     goals,
     activeGoals,
-    loading,
-    error,
+    loading: resource.loading,
+    refreshing: resource.refreshing,
+    hasLoaded: resource.data !== undefined,
+    error: error || (resource.error ? "Reading goals could not be refreshed." : null),
     createGoal,
     updateGoal,
     deleteGoal,

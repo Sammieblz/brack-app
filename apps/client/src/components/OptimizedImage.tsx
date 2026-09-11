@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { imageCache } from "@/services/imageCache";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   fallbackSrc?: string;
@@ -100,11 +101,11 @@ export const OptimizedImage = ({
   };
 
   return (
-    <div className={cn("relative overflow-hidden", className)}>
+    <div className={cn("relative overflow-hidden", className)} aria-busy={loading && !error}>
       {/* Blur placeholder */}
       {blurPlaceholder && loading && !error && (
-        <div 
-          className="absolute inset-0 bg-muted animate-pulse"
+        <Skeleton
+          className="absolute inset-0"
           style={{
             backgroundImage: imgSrc ? `url(${imgSrc})` : undefined,
             backgroundSize: 'cover',

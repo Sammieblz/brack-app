@@ -1,3 +1,4 @@
+import { getApiErrorStatus } from "@/services/api/client";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -11,13 +12,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
+import { SocialProfileSkeleton, ProfileBooksSkeleton, ProfileClubsSkeleton } from "@/components/skeletons/SocialProfileSkeleton";
 import { FollowButton } from "@/components/social/FollowButton";
 import { PostCard } from "@/components/social/PostCard";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
-import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
 import { PostCardSkeleton } from "@/components/skeletons/PostCardSkeleton";
-import { StatCardSkeleton } from "@/components/skeletons/StatCardSkeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
@@ -44,16 +44,26 @@ type PostWithRelations = Post & {
 };
 
 const UserProfile = () => {
+  const { userId } = useParams<{ userId: string }>();
+  const { user } = useAuth();
+  return <UserProfileContent key={`${user?.id ?? "anonymous"}:${userId ?? "none"}`} />;
+};
+
+const UserProfileContent = () => {
   const { userId: routeUserId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { user: currentUser, loading: authLoading } = useAuth();
   const resolvedUserId = routeUserId === "me" ? currentUser?.id ?? null : routeUserId ?? null;
-  const { profile, stats, gamification, loading, error } = useUserProfile(resolvedUserId);
+  const { profile, stats, gamification, loading, error, refetch } = useUserProfile(resolvedUserId);
   const { followersCount, followingCount } = useFollowing(resolvedUserId);
   const [userBooks, setUserBooks] = useState<Book[]>([]);
   const [userPosts, setUserPosts] = useState<PostWithRelations[]>([]);
   const [userClubs, setUserClubs] = useState<BookClub[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [dataError, setDataError] = useState<string | null>(null);
+  const [loadedDataId, setLoadedDataId] = useState<string | null>(null);
+  const [tabRequest, setTabRequest] = useState(0);
+  const dataLoaded = loadedDataId === resolvedUserId && resolvedUserId !== null;
   const [activeTab, setActiveTab] = useState("books");
   const isMobile = useIsMobile();
   const { triggerHaptic } = useHapticFeedback();
@@ -92,6 +102,7 @@ const UserProfile = () => {
   });
 
   useEffect(() => {
+    let active = true;
     const fetchUserData = async () => {
       if (!resolvedUserId) {
         if (!authLoading) {
@@ -102,22 +113,29 @@ const UserProfile = () => {
 
       try {
         setDataLoading(true);
+        setDataError(null);
 
         const data = await fetchUserProfileTabData(resolvedUserId);
+        if (!active) return;
         setUserBooks(data.books);
         setUserPosts(data.posts as PostWithRelations[]);
         setUserClubs(data.clubs);
+        setLoadedDataId(resolvedUserId);
       } catch (error) {
+        if (!active) return;
+      if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setLoadedDataId(null); setUserBooks([]); setUserPosts([]); setUserClubs([]); }
         console.error("Error fetching user data:", error);
+        setDataError("We couldn't load this reader's shared content.");
       } finally {
-        setDataLoading(false);
+        if (active) setDataLoading(false);
       }
     };
 
     fetchUserData();
-  }, [authLoading, resolvedUserId]);
+    return () => { active = false; };
+  }, [authLoading, resolvedUserId, tabRequest]);
 
-  if (authLoading || loading || (routeUserId === "me" && !resolvedUserId)) {
+  if (authLoading || (loading && !profile) || (routeUserId === "me" && !resolvedUserId)) {
     return (
       <MobileLayout>
         {isMobile && (
@@ -126,29 +144,15 @@ const UserProfile = () => {
             back={{ label: "Back", ariaLabel: "Go back", fallbackPath: profileBackPath }}
           />
         )}
-        <div className="app-page-narrow space-y-6 animate-fade-in">
-          {/* Profile Header Loading */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col md:flex-row gap-6 items-center justify-center min-h-[200px]">
-                <LoadingSpinner size="lg" text="Loading profile..." />
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Stats Skeleton */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-            <StatCardSkeleton />
-          </div>
+        <div className="app-page-narrow space-y-6">
+          {!isMobile && <AppBackButton label="Back" ariaLabel="Go back" fallbackPath={profileBackPath} showLabel variant="outline" className="border-border/70 bg-card/45 shadow-none hover:bg-accent" />}
+          <LoadingRegion loading label="Loading profile"><SocialProfileSkeleton /></LoadingRegion>
         </div>
       </MobileLayout>
     );
   }
 
-  if (error || !profile) {
+  if (!profile) {
     return (
       <MobileLayout>
         {isMobile && (
@@ -160,10 +164,11 @@ const UserProfile = () => {
         <div className="app-page-narrow">
           <Card>
             <CardContent className="py-12 text-center">
-              <h2 className="font-display text-2xl font-bold mb-2">Profile Not Found</h2>
+              <h2 className="font-display text-2xl font-bold mb-2">{error ? "Couldn't load profile" : "Profile Not Found"}</h2>
               <p className="text-muted-foreground mb-4">
                 {error || "This profile doesn't exist or is private"}
               </p>
+              {error && <Button variant="outline" onClick={refetch} className="mb-4">Try again</Button>}
               <AppBackButton
                 label="Back"
                 ariaLabel="Go back"
@@ -197,7 +202,8 @@ const UserProfile = () => {
           back={{ label: "Back", ariaLabel: "Go back", fallbackPath: profileBackPath }}
         />
       )}
-      <div className="app-page-narrow space-y-6 animate-fade-in">
+      <LoadingRegion loading={false} refreshing={loading} label="Loading profile" className="app-page-narrow space-y-6">
+        {error && <LoadingError message={error} onRetry={refetch} />}
         {!isMobile && (
           <AppBackButton
             label="Back"
@@ -376,13 +382,11 @@ const UserProfile = () => {
           </TabsList>
 
           <TabsContent value="books" className="space-y-4 mt-6 animate-fade-in" {...swipeHandlers}>
-            {dataLoading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <BookCardSkeleton key={i} />
-                ))}
-              </div>
-            ) : userBooks.length === 0 ? (
+            <LoadingRegion loading={dataLoading && !dataLoaded} refreshing={dataLoading && dataLoaded} label="Loading shared books">
+            {dataError && <LoadingError message={dataError} onRetry={() => setTabRequest(value => value + 1)} />}
+            {dataLoading && !dataLoaded ? (
+              <ProfileBooksSkeleton />
+            ) : !dataLoaded ? null : userBooks.length === 0 ? (
               <PremiumEmptyState
                 asset="emptyLibrary"
                 title="No books yet"
@@ -421,16 +425,19 @@ const UserProfile = () => {
                 ))}
               </div>
             )}
+            </LoadingRegion>
           </TabsContent>
 
           <TabsContent value="posts" className="space-y-4 mt-6 animate-fade-in" {...swipeHandlers}>
-            {dataLoading ? (
+            <LoadingRegion loading={dataLoading && !dataLoaded} refreshing={dataLoading && dataLoaded} label="Loading shared posts" className="space-y-4">
+            {dataError && <LoadingError message={dataError} onRetry={() => setTabRequest(value => value + 1)} />}
+            {dataLoading && !dataLoaded ? (
               <div className="space-y-4">
-                {[...Array(3)].map((_, i) => (
+                {[...Array(2)].map((_, i) => (
                   <PostCardSkeleton key={i} />
                 ))}
               </div>
-            ) : userPosts.length === 0 ? (
+            ) : !dataLoaded ? null : userPosts.length === 0 ? (
               <PremiumEmptyState
                 asset="emptyFeed"
                 title="No posts yet"
@@ -460,16 +467,15 @@ const UserProfile = () => {
                 />
               ))
             )}
+            </LoadingRegion>
           </TabsContent>
 
           <TabsContent value="clubs" className="space-y-4 mt-6 animate-fade-in" {...swipeHandlers}>
-            {dataLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-48 bg-muted animate-pulse rounded-lg" />
-                ))}
-              </div>
-            ) : userClubs.length === 0 ? (
+            <LoadingRegion loading={dataLoading && !dataLoaded} refreshing={dataLoading && dataLoaded} label="Loading shared clubs">
+            {dataError && <LoadingError message={dataError} onRetry={() => setTabRequest(value => value + 1)} />}
+            {dataLoading && !dataLoaded ? (
+              <ProfileClubsSkeleton />
+            ) : !dataLoaded ? null : userClubs.length === 0 ? (
               <PremiumEmptyState
                 asset="emptyClubs"
                 title="Not in any book clubs yet"
@@ -512,9 +518,10 @@ const UserProfile = () => {
                 ))}
               </div>
             )}
+            </LoadingRegion>
           </TabsContent>
         </Tabs>
-      </div>
+      </LoadingRegion>
     </MobileLayout>
   );
 };

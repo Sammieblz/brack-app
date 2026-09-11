@@ -7,7 +7,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { BookCardSkeleton } from "@/components/skeletons/BookCardSkeleton";
+import { LibraryViewSkeleton } from "@/components/skeletons/LibraryViewSkeleton";
+import { LIBRARY_FLAT_GRID } from "@/components/library/libraryLayout";
+import { LoadingRegion, LoadingError } from "@/components/loading/LoadingRegion";
 import { EmptyBooks } from "@/components/empty/EmptyBooks";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
@@ -113,6 +115,9 @@ const MyBooks = () => {
   const {
     books,
     loading,
+    refreshing,
+    hasLoaded,
+    error,
     loadingMore,
     hasMore,
     loadMore,
@@ -970,14 +975,10 @@ const MyBooks = () => {
 
   const renderBooksList = () => {
     if (loading) {
-      return (
-        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-          <BookCardSkeleton />
-          <BookCardSkeleton />
-          <BookCardSkeleton />
-        </div>
-      );
+      return <LibraryViewSkeleton viewMode={viewMode} selectMode={selectMode} />;
     }
+
+    if (error && !hasLoaded) return null;
 
     if (filteredBooks.length === 0) {
       return books.length === 0 ? (
@@ -1000,13 +1001,8 @@ const MyBooks = () => {
     }
 
     const loadMoreMarker = hasMore ? (
-      <div ref={loadMoreRef} className="py-8 flex justify-center md:col-span-2 2xl:col-span-3">
-        {loadingMore && (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <AppIcon icon={APP_ICONS.common.refresh} variant="inline" size="md" className="animate-spin" />
-            <span>Loading more...</span>
-          </div>
-        )}
+      <div ref={loadMoreRef} className="w-full py-8 md:col-span-2 2xl:col-span-3">
+        {loadingMore && <LoadingRegion loading label="Loading more books"><LibraryViewSkeleton viewMode={viewMode} count={viewMode === "bookshelf" ? 1 : 2} /></LoadingRegion>}
       </div>
     ) : null;
 
@@ -1052,7 +1048,7 @@ const MyBooks = () => {
 
     return (
       <>
-        <div className={cn("grid gap-4", isMobile ? "grid-cols-1" : "md:grid-cols-2 2xl:grid-cols-3")}>
+        <div className={LIBRARY_FLAT_GRID}>
           {filteredBooks.map((book) => {
             const card = (
               <LibraryBookCard
@@ -1130,7 +1126,10 @@ const MyBooks = () => {
           {renderSummaryChips()}
           {renderToolbar()}
           {renderBulkSelectionBar()}
-          {renderBooksList()}
+          <LoadingRegion loading={loading} refreshing={refreshing} label={loading ? "Loading your library" : "Refreshing your library"}>
+            {error && <LoadingError message={error} onRetry={() => void refetchBooks()} className="mb-4" />}
+            {renderBooksList()}
+          </LoadingRegion>
         </main>
       </PullToRefresh>
 

@@ -1,0 +1,5 @@
+{
+  "extends": "./apps/client/tsconfig.app.json",
+  "compilerOptions": { "noEmit": true, "types": ["node", "vite/client"] },
+  "include": ["playwright.loading.config.ts", "tests/e2e/loading-layout.spec.ts", "tests/fixtures/loading/**/*.ts", "tests/fixtures/loading/**/*.tsx", "apps/client/src/vite-env.d.ts"]
+}

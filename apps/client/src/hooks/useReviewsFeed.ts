@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { getApiErrorStatus } from "@/services/api/client";
 import { toast } from "sonner";
 import {
   deleteBookReview,
@@ -28,6 +30,15 @@ interface UseReviewsFeedOptions {
 }
 
 export const useReviewsFeed = ({ query, rating, scope, sort }: UseReviewsFeedOptions) => {
+  const { user } = useAuth();
+  const identity = JSON.stringify([user?.id, query, rating, scope, sort]);
+  const currentIdentity = useRef(identity);
+  currentIdentity.current = identity;
+  const requestId = useRef(0);
+  const failedRequest = useRef<{ identity: string; cursor: string | null; append: boolean }>();
+  const [loadedIdentity, setLoadedIdentity] = useState<string>();
+  const [error, setError] = useState<string | null>(null);
+  const [requestedIdentity, setRequestedIdentity] = useState(identity);
   const [reviews, setReviews] = useState<ReviewFeedItem[]>([]);
   const [summary, setSummary] = useState<ReviewFeedSummary>(EMPTY_SUMMARY);
   const [loading, setLoading] = useState(true);
@@ -60,7 +71,13 @@ export const useReviewsFeed = ({ query, rating, scope, sort }: UseReviewsFeedOpt
 
   const fetchReviews = useCallback(
     async (cursor: string | null = null, append = false) => {
+      if (currentIdentity.current !== identity) return;
+      const request = ++requestId.current;
+      const isCurrent = () => requestId.current === request && currentIdentity.current === identity;
       try {
+        failedRequest.current = undefined;
+        setRequestedIdentity(identity);
+        setError(null);
         if (append) {
           setLoadingMore(true);
         } else {
@@ -75,27 +92,39 @@ export const useReviewsFeed = ({ query, rating, scope, sort }: UseReviewsFeedOpt
           scope,
           sort,
         });
+        if (!isCurrent()) return;
         applyResponse(response, append);
+        setLoadedIdentity(identity);
       } catch (error: unknown) {
+        if (!isCurrent()) return;
+        failedRequest.current = { identity, cursor, append };
+        if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) {
+          setLoadedIdentity(undefined);
+          setReviews([]);
+        }
+        setError("Reviews could not load. Check your connection and try again.");
         console.error("Error loading review feed:", error);
         toast.error("Failed to load reviews");
       } finally {
-        setLoading(false);
-        setLoadingMore(false);
+        if (isCurrent()) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
       }
     },
-    [applyResponse, query, rating, scope, sort]
+    [applyResponse, query, rating, scope, sort, identity]
   );
 
   useEffect(() => {
     void fetchReviews();
+    return () => { requestId.current += 1; };
   }, [fetchReviews]);
 
   const loadMore = useCallback(() => {
-    if (!loadingMore && hasMore && nextCursor) {
+    if (!loading && !loadingMore && loadedIdentity === identity && hasMore && nextCursor) {
       void fetchReviews(nextCursor, true);
     }
-  }, [fetchReviews, hasMore, loadingMore, nextCursor]);
+  }, [fetchReviews, hasMore, loading, loadingMore, loadedIdentity, identity, nextCursor]);
 
   const toggleLike = useCallback(async (reviewId: string) => {
     const original = reviews.find((review) => review.id === reviewId);
@@ -118,6 +147,7 @@ export const useReviewsFeed = ({ query, rating, scope, sort }: UseReviewsFeedOpt
 
     try {
       const result = await toggleBookReviewLike(reviewId);
+      if (currentIdentity.current !== identity) return;
       setReviews((current) =>
         current.map((review) =>
           review.id === reviewId
@@ -126,13 +156,14 @@ export const useReviewsFeed = ({ query, rating, scope, sort }: UseReviewsFeedOpt
         )
       );
     } catch (error: unknown) {
+      if (currentIdentity.current !== identity) return;
       console.error("Error toggling review like:", error);
       toast.error("Failed to update like");
       setReviews((current) =>
         current.map((review) => (review.id === reviewId ? original : review))
       );
     }
-  }, [reviews]);
+  }, [reviews, identity]);
 
   const deleteReview = useCallback(async (reviewId: string) => {
     const original = reviews.find((review) => review.id === reviewId);
@@ -142,17 +173,20 @@ export const useReviewsFeed = ({ query, rating, scope, sort }: UseReviewsFeedOpt
 
     try {
       await deleteBookReview(reviewId);
+      if (currentIdentity.current !== identity) return;
       toast.success("Review deleted");
     } catch (error: unknown) {
+      if (currentIdentity.current !== identity) return;
       console.error("Error deleting review:", error);
       toast.error("Failed to delete review");
       setReviews((current) => [original, ...current]);
     }
-  }, [reviews]);
+  }, [reviews, identity]);
 
   const shareReviewById = useCallback(async (reviewId: string) => {
     try {
       const result = await shareReview(reviewId);
+      if (currentIdentity.current !== identity) return;
       const review = reviews.find((item) => item.id === reviewId);
       const shareData = {
         title: review?.book?.title ? `Review: ${review.book.title}` : "Brack review",
@@ -164,29 +198,41 @@ export const useReviewsFeed = ({ query, rating, scope, sort }: UseReviewsFeedOpt
         await navigator.share(shareData);
       } else {
         await navigator.clipboard.writeText(result.share_url);
+        if (currentIdentity.current !== identity) return;
         toast.success("Review link copied");
       }
 
+      if (currentIdentity.current !== identity) return;
       setReviews((current) =>
         current.map((item) =>
           item.id === reviewId ? { ...item, share_count: result.share_count } : item
         )
       );
     } catch (error: unknown) {
+      if (currentIdentity.current !== identity) return;
       if (error instanceof Error && error.message.toLowerCase().includes("cancel")) return;
       console.error("Error sharing review:", error);
       toast.error("Failed to share review");
     }
-  }, [reviews]);
+  }, [reviews, identity]);
 
   return {
-    reviews,
-    summary,
-    loading,
+    reviews: loadedIdentity === identity ? reviews : [],
+    summary: loadedIdentity === identity ? summary : EMPTY_SUMMARY,
+    loading: loadedIdentity !== identity && (loading || requestedIdentity !== identity),
+    refreshing: loadedIdentity === identity && loading,
+    hasLoaded: loadedIdentity === identity,
+    error: requestedIdentity === identity ? error : null,
     loadingMore,
-    hasMore,
-    caughtUp,
+    hasMore: loadedIdentity === identity && hasMore,
+    caughtUp: loadedIdentity === identity && caughtUp,
     refetch: () => fetchReviews(),
+    retry: () => {
+      const failed = failedRequest.current;
+      return failed?.identity === identity
+        ? fetchReviews(failed.cursor, failed.append)
+        : fetchReviews();
+    },
     loadMore,
     toggleLike,
     deleteReview,

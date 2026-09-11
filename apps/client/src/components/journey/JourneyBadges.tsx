@@ -1,5 +1,10 @@
 import { BadgeDisplay } from "@/components/BadgeDisplay";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import {
+  LoadingError,
+  LoadingRegion,
+} from "@/components/loading/LoadingRegion";
+import { JourneyBadgesSkeleton } from "@/components/skeletons/JourneySkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { JourneySectionEyebrow } from "@/components/journey/JourneySurface";
 import type { Badge, UserBadge } from "@/types";
@@ -8,6 +13,10 @@ interface JourneyBadgesProps {
   badges: Badge[];
   earnedBadges: UserBadge[];
   loading: boolean;
+  refreshing?: boolean;
+  error?: Error | null;
+  hasLoaded?: boolean;
+  onRetry?: () => void;
   onBadgeClick: (badge: Badge, earnedBadge?: UserBadge) => void;
 }
 
@@ -15,6 +24,10 @@ export const JourneyBadges = ({
   badges,
   earnedBadges,
   loading,
+  refreshing,
+  error,
+  hasLoaded = true,
+  onRetry,
   onBadgeClick,
 }: JourneyBadgesProps) => (
   <div className="space-y-5">
@@ -22,32 +35,45 @@ export const JourneyBadges = ({
       <div>
         <JourneySectionEyebrow>Milestone collection</JourneySectionEyebrow>
         <h2 className="font-display text-2xl font-bold">Badges</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {earnedBadges.length} of {badges.length} unlocked
-        </p>
+        <div className="mt-1 text-sm text-muted-foreground">
+          {loading ? (
+            <Skeleton className="h-5 w-32" />
+          ) : (
+            `${earnedBadges.length} of ${badges.length} unlocked`
+          )}
+        </div>
       </div>
     </div>
-    {loading ? (
-      <div className="flex min-h-72 items-center justify-center">
-        <LoadingSpinner text="Loading badges..." />
-      </div>
-    ) : badges.length === 0 ? (
-      <PremiumEmptyState
-        asset="emptyGoals"
-        title="No badges configured"
-        description="Badge milestones will appear here when available."
-        size="compact"
-      />
-    ) : (
-      <BadgeDisplay
-        badges={badges}
-        earnedBadges={earnedBadges}
-        onBadgeClick={onBadgeClick}
-        catalog
-        initialStatus="in_progress"
-        pageSize={12}
-      />
-    )}
+    <LoadingRegion
+      loading={loading}
+      refreshing={refreshing}
+      label="Loading badges"
+    >
+      {error && (
+        <LoadingError
+          message="Badges could not be refreshed. Your milestones are safe."
+          onRetry={onRetry}
+        />
+      )}
+      {loading ? (
+        <JourneyBadgesSkeleton />
+      ) : badges.length === 0 && (!error || hasLoaded) ? (
+        <PremiumEmptyState
+          asset="emptyGoals"
+          title="No badges configured"
+          description="Badge milestones will appear here when available."
+          size="compact"
+        />
+      ) : badges.length > 0 ? (
+        <BadgeDisplay
+          badges={badges}
+          earnedBadges={earnedBadges}
+          onBadgeClick={onBadgeClick}
+          catalog
+          initialStatus="in_progress"
+          pageSize={12}
+        />
+      ) : null}
+    </LoadingRegion>
   </div>
 );
-

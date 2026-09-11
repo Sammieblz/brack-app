@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBookLists } from "@/hooks/useBookLists";
 import { useListBooks } from "@/hooks/useListBooks";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { LoadingRegion, LoadingError } from "@/components/loading/LoadingRegion";
+import { BookListDetailSkeleton } from "@/components/skeletons/BookDetailSkeleton";
 import { Button } from "@/components/ui/button";
 import { NavArrowRight } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
@@ -61,7 +62,7 @@ interface SortableBookItemProps {
   onNavigate: (bookId: string) => void;
 }
 
-const SortableBookItem = ({ book, onRemove, onNavigate }: SortableBookItemProps) => {
+export const SortableBookItem = ({ book, onRemove, onNavigate }: SortableBookItemProps) => {
   const {
     attributes,
     listeners,
@@ -228,12 +229,12 @@ const SortableBookItem = ({ book, onRemove, onNavigate }: SortableBookItemProps)
   );
 };
 
-const BookListDetail = () => {
+const BookListDetailContent = () => {
   const { listId } = useParams();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { lists } = useBookLists(user?.id);
-  const { books, loading: booksLoading, refetch } = useListBooks(listId);
+  const { lists, loading: listsLoading, refreshing: listsRefreshing, error: listsError, refetch: refetchLists } = useBookLists(user?.id);
+  const { books, loading: booksLoading, refreshing: booksRefreshing, hasLoaded: booksLoaded, error: booksError, refetch } = useListBooks(listId, user?.id);
   const { toast } = useToast();
   const [sortableBooks, setSortableBooks] = useState<Book[]>([]);
   const isMobile = useIsMobile(); // Must be called before any early returns
@@ -309,14 +310,22 @@ const BookListDetail = () => {
     }
   };
 
-  if (authLoading || booksLoading) {
-    return <LoadingSpinner />;
+  if (authLoading || listsLoading || booksLoading || !list || (booksError && !booksLoaded)) {
+    const initialLoading = authLoading || listsLoading || booksLoading;
+    return (
+      <MobileLayout>
+        {isMobile && <MobileHeader title={!listsError && !booksError ? list?.name || "Book List" : "Book List"} back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/lists" }} />}
+        <main className="app-page space-y-6">
+          {!isMobile && <div><AppBackButton label="Back" ariaLabel="Go back" fallbackPath="/lists" showLabel variant="outline" className="mb-4 border-border/70 bg-card/45 shadow-none hover:bg-accent" /></div>}
+          <LoadingRegion loading={initialLoading} label="Loading book list">
+            {initialLoading ? <BookListDetailSkeleton count={list?.book_count} /> : <LoadingError message={listsError || booksError || "This book list could not be found."} onRetry={() => { void refetchLists(); void refetch(); }} />}
+          </LoadingRegion>
+        </main>
+      </MobileLayout>
+    );
   }
 
-  if (!user || !list) {
-    navigate('/lists');
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <MobileLayout>
@@ -327,6 +336,8 @@ const BookListDetail = () => {
         />
       )}
       <main className="app-page space-y-6">
+        <LoadingRegion loading={false} refreshing={listsRefreshing || booksRefreshing} label="Refreshing book list" className="space-y-6">
+        {(listsError || booksError) && <LoadingError message={listsError || booksError!} onRetry={() => { void refetchLists(); void refetch(); }} />}
         {!isMobile && (
           <div>
             <AppBackButton
@@ -412,9 +423,16 @@ const BookListDetail = () => {
             </DndContext>
           </>
         )}
+        </LoadingRegion>
       </main>
     </MobileLayout>
   );
+};
+
+const BookListDetail = () => {
+  const { listId } = useParams();
+  const { user } = useAuth();
+  return <BookListDetailContent key={`${user?.id ?? ""}:${listId ?? ""}`} />;
 };
 
 export default BookListDetail;

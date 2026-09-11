@@ -25,6 +25,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AppIcon } from "@/components/ui/app-icon";
 import { APP_ICONS } from "@/config/iconography";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
+import { getShelfRowSize } from "./libraryLayout";
 import { cn } from "@/lib/utils";
 import { getProgressPercentage } from "@/utils/bookProgress";
 import type { Book } from "@/types";
@@ -218,7 +219,7 @@ export const LibraryBookshelfView = ({
   onToggleSelect,
 }: LibraryBookshelfViewProps) => {
   const navigate = useNavigate();
-  const { isPhone, isTablet, isDesktop } = useBreakpoint();
+  const { width } = useBreakpoint();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -229,7 +230,7 @@ export const LibraryBookshelfView = ({
     })
   );
 
-  const rowSize = isPhone ? 3 : isTablet ? 5 : isDesktop ? 7 : 9;
+  const rowSize = getShelfRowSize(width);
   const rows = useMemo(() => chunkBooks(books, rowSize), [books, rowSize]);
   const bookIds = useMemo(() => books.map((book) => book.id), [books]);
   const selectedBookIdSet = useMemo(() => new Set(selectedBookIds), [selectedBookIds]);

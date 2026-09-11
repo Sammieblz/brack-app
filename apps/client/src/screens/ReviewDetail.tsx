@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { ChatBubble, Heart, ShareIos, Star, Trash } from "iconoir-react";
@@ -14,6 +14,7 @@ import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { RichTextRenderer } from "@/components/rich-text/RichTextRenderer";
 import { ReviewCard } from "@/components/social/ReviewCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingRegion, LoadingError } from "@/components/loading/LoadingRegion";
 import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -31,6 +32,7 @@ import {
 } from "@/services/api";
 import { sanitizeText } from "@/utils/sanitize";
 import { toast } from "sonner";
+import { getApiErrorStatus } from "@/services/api/client";
 
 const getInitials = (name: string | null | undefined) => {
   if (!name) return "R";
@@ -43,6 +45,12 @@ const getInitials = (name: string | null | undefined) => {
 };
 
 const ReviewDetail = () => {
+  const { reviewId } = useParams<{ reviewId: string }>();
+  const { user } = useAuth();
+  return <ReviewDetailContent key={`${user?.id ?? "guest"}:${reviewId}`} />;
+};
+
+const ReviewDetailContent = () => {
   const { reviewId } = useParams<{ reviewId: string }>();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -57,17 +65,28 @@ const ReviewDetail = () => {
   const [loading, setLoading] = useState(true);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [error, setError] = useState(false);
+  const [commentsError, setCommentsError] = useState(false);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
+  const failedCommentsRequest = useRef({ cursor: null as string | null, append: false });
 
   const loadReview = useCallback(async () => {
     if (!reviewId) return;
 
     try {
       setLoading(true);
+      setError(false);
       const detail = await fetchReviewDetail(reviewId);
       setReview(detail.review);
       setRelatedReviews(detail.related_reviews);
     } catch (error) {
       console.error("Failed to load review", error);
+      if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) {
+        setReview(null);
+        setRelatedReviews([]);
+        setComments([]);
+      }
+      setError(true);
       toast.error("Failed to load review");
     } finally {
       setLoading(false);
@@ -80,12 +99,17 @@ const ReviewDetail = () => {
 
       try {
         setCommentsLoading(true);
+        setCommentsError(false);
         const page = await fetchReviewComments(reviewId, cursor, 20);
         setComments((current) => (append ? [...current, ...page.comments] : page.comments));
         setCommentCursor(page.next_cursor ?? null);
         setCommentsHasMore(page.has_more);
+        setCommentsLoaded(true);
       } catch (error) {
+        failedCommentsRequest.current = { cursor, append };
         console.error("Failed to load review comments", error);
+        if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setComments([]); setCommentsLoaded(false); }
+        setCommentsError(true);
         toast.error("Failed to load comments");
       } finally {
         setCommentsLoading(false);
@@ -185,7 +209,7 @@ const ReviewDetail = () => {
   };
 
   const handleSubmitComment = async () => {
-    if (!review || !commentDraft.trim()) return;
+    if (!review || !commentDraft.trim() || !commentsLoaded || commentsLoading || commentsError || submittingComment) return;
 
     try {
       setSubmittingComment(true);
@@ -240,7 +264,9 @@ const ReviewDetail = () => {
       )}
 
       <main className="app-page">
-        {loading ? (
+        {error && <LoadingError className="mb-4" message="Review could not load. Check your connection or return to Reviews." onRetry={() => void loadReview()} />}
+        <LoadingRegion loading={loading && !review} refreshing={loading && Boolean(review)} label="Loading review">
+        {loading && !review ? (
           <ReviewDetailSkeleton />
         ) : review && book ? (
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
@@ -402,14 +428,16 @@ const ReviewDetail = () => {
                     <div className="flex justify-end">
                       <Button
                         onClick={handleSubmitComment}
-                        disabled={submittingComment || !commentDraft.trim()}
+                        disabled={submittingComment || !commentsLoaded || commentsLoading || commentsError || !commentDraft.trim()}
                       >
                         {submittingComment ? "Posting..." : "Post comment"}
                       </Button>
                     </div>
                   </div>
 
-                  {comments.length === 0 ? (
+                  {commentsError && <LoadingError message="Comments could not load." onRetry={() => void loadComments(failedCommentsRequest.current.cursor, failedCommentsRequest.current.append)} />}
+                  <LoadingRegion loading={commentsLoading && !commentsLoaded} refreshing={commentsLoading && commentsLoaded} label="Loading review comments">
+                  {commentsLoading && !commentsLoaded ? <div aria-hidden="true" className="space-y-3">{[0,1,2].map((i) => <div key={i} className="flex gap-3"><Skeleton className="h-9 w-9 shrink-0 rounded-full" /><Skeleton className="h-16 flex-1" /></div>)}</div> : commentsError && !commentsLoaded ? null : comments.length === 0 ? (
                     <PremiumEmptyState
                       asset="emptyComments"
                       title="No comments yet"
@@ -429,6 +457,7 @@ const ReviewDetail = () => {
                       ))}
                     </div>
                   )}
+                  </LoadingRegion>
 
                   {commentsHasMore && (
                     <div className="flex justify-center">
@@ -475,7 +504,7 @@ const ReviewDetail = () => {
               </Card>
             </aside>
           </div>
-        ) : (
+        ) : error ? null : (
           <PremiumEmptyState
             asset="emptyReviews"
             title="Review unavailable"
@@ -483,6 +512,7 @@ const ReviewDetail = () => {
             action={<Button onClick={() => navigate("/reviews")}>Back to Reviews</Button>}
           />
         )}
+        </LoadingRegion>
       </main>
     </MobileLayout>
   );
@@ -552,10 +582,11 @@ const ReviewCommentItem = ({
 );
 
 const ReviewDetailSkeleton = () => (
-  <div className="space-y-5">
+  <div aria-hidden="true" className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <div className="min-w-0 space-y-5">
     <Card>
       <CardContent className="grid gap-5 p-4 sm:grid-cols-[8rem_minmax(0,1fr)] sm:p-5">
-        <Skeleton className="h-48 w-32 rounded-md" />
+        <Skeleton className="mx-auto h-48 w-32 rounded-md sm:mx-0" />
         <div className="space-y-3">
           <Skeleton className="h-5 w-28" />
           <Skeleton className="h-10 w-3/4" />
@@ -577,6 +608,8 @@ const ReviewDetailSkeleton = () => (
         <Skeleton className="h-32 w-full" />
       </CardContent>
     </Card>
+    </div>
+    <Card className="hidden self-start space-y-4 p-4 xl:block"><Skeleton className="h-7 w-40" /><Skeleton className="h-10 w-full" />{[0,1,2,3].map((i) => <Skeleton key={i} className="h-5 w-full" />)}</Card>
   </div>
 );
 

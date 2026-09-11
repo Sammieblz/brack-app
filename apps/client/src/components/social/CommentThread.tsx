@@ -8,6 +8,8 @@ import { usePostComments, type PostComment } from "@/hooks/usePostComments";
 import { cn } from "@/lib/utils";
 import { sanitizeText } from "@/utils/sanitize";
 import { Trash } from "iconoir-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 
 interface CommentThreadProps {
   postId: string;
@@ -22,8 +24,13 @@ const initials = (name?: string | null) =>
     .slice(0, 2);
 
 export const CommentThread = ({ postId }: CommentThreadProps) => {
+  const { user } = useAuth();
+  return <CommentThreadContent key={`${user?.id ?? "guest"}:${postId}`} postId={postId} />;
+};
+
+const CommentThreadContent = ({ postId }: CommentThreadProps) => {
   const [content, setContent] = useState("");
-  const { comments, loading, hasMore, loadingMore, addComment, deleteComment, loadMore } =
+  const { comments, loading, refreshing, hasLoaded, error, refetchComments, hasMore, loadingMore, addComment, deleteComment, loadMore } =
     usePostComments(postId);
 
   const submit = async () => {
@@ -49,9 +56,11 @@ export const CommentThread = ({ postId }: CommentThreadProps) => {
         </div>
       </div>
 
+      <LoadingRegion loading={loading} refreshing={refreshing} label="Loading comments">
+      {error && <LoadingError message={error} onRetry={refetchComments} />}
       {loading ? (
-        <p className="font-sans text-sm text-muted-foreground">Loading comments...</p>
-      ) : comments.length === 0 ? (
+        <CommentListSkeleton />
+      ) : !hasLoaded ? null : comments.length === 0 ? (
         <PremiumEmptyState
           asset="emptyComments"
           title="No comments yet"
@@ -72,6 +81,7 @@ export const CommentThread = ({ postId }: CommentThreadProps) => {
           ))}
         </div>
       )}
+      </LoadingRegion>
 
       {hasMore && (
         <Button variant="outline" size="sm" onClick={loadMore} disabled={loadingMore}>
@@ -100,6 +110,10 @@ const CommentNode = ({
   const {
     comments: replies,
     loading: repliesLoading,
+    refreshing: repliesRefreshing,
+    hasLoaded: repliesLoaded,
+    error: repliesError,
+    refetchComments: refetchReplies,
     hasMore,
     loadingMore,
     addComment,
@@ -212,10 +226,11 @@ const CommentNode = ({
           )}
 
           {showReplies && (
-            <div className="space-y-3 pt-1">
+            <LoadingRegion loading={repliesLoading} refreshing={repliesRefreshing} label="Loading replies" className="space-y-3 pt-1">
+              {repliesError && <LoadingError message={repliesError} onRetry={refetchReplies} />}
               {repliesLoading ? (
-                <p className="font-sans text-xs text-muted-foreground">Loading replies...</p>
-              ) : level >= maxInlineDepth ? (
+                <CommentListSkeleton replies />
+              ) : !repliesLoaded ? null : level >= maxInlineDepth ? (
                 <p className="rounded-md bg-muted/50 p-2 font-sans text-xs text-muted-foreground">
                   Continue thread from this reply.
                 </p>
@@ -240,10 +255,16 @@ const CommentNode = ({
                   {loadingMore ? "Loading..." : "Load more replies"}
                 </Button>
               )}
-            </div>
+            </LoadingRegion>
           )}
         </div>
       </div>
     </div>
   );
 };
+
+const CommentListSkeleton = ({ replies = false }: { replies?: boolean }) => (
+  <div aria-hidden="true" className="pointer-events-none space-y-3">
+    {Array.from({ length: replies ? 1 : 2 }, (_, index) => <div key={index} data-skeleton="comment" className={cn("rounded-md border border-border/60 bg-card/60 p-3", replies && "ml-4 border-l-primary/30 sm:ml-6")}><div className="flex gap-3"><Skeleton className="h-8 w-8 shrink-0 rounded-full" /><div className="min-w-0 flex-1 space-y-2"><div><div className="flex flex-wrap items-center gap-2"><Skeleton className="h-[1.5em] w-20 text-sm" /><Skeleton className="h-[1.5em] w-12 text-xs" /></div><Skeleton className="mt-1 h-[2lh] w-full font-serif text-sm leading-relaxed" /></div><Skeleton className="h-[1.5em] w-10 text-xs" /></div></div></div>)}
+  </div>
+);

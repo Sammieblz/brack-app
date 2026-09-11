@@ -12,7 +12,7 @@ const mockedDataModules = [
   'hooks/useAuth', 'hooks/useBooks', 'hooks/useReadingProfile', 'hooks/useBadges',
   'hooks/useGamification', 'hooks/useFeatureFlags', 'hooks/useHapticFeedback',
   'contexts/ProfileContext', 'contexts/TimerContext',
-  'services/api/books', 'services/api/profiles', 'services/api/gamification',
+  'services/api/books', 'services/api/profiles', 'services/api/gamification', 'services/api/client',
   'services/telemetry', 'utils/offlineOperation', 'services/connectivity',
 ];
 const mockedComponentModules = [

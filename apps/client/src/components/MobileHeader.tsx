@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { AppBackButton } from "@/components/AppBackButton";
 import type { BackButtonConfig } from "@/hooks/useAppBack";
 import { UserNotificationsPopover } from "@/components/UserNotificationsPopover";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingRegion } from "@/components/loading/LoadingRegion";
 import { useAppHeader } from "@/hooks/useAppHeader";
 
 interface MobileHeaderProps {
@@ -76,6 +78,7 @@ export const MobileHeader = ({
             {showAvatar && (
               <>
                 <UserNotificationsPopover />
+                <LoadingRegion loading={profileLoading && !profile} label="Loading profile photo" containerClassName="shrink-0">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -86,8 +89,8 @@ export const MobileHeader = ({
                   className="shrink-0"
                   aria-label="Open profile menu"
                 >
-                  {profileLoading ? (
-                    <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                  {profileLoading && !profile ? (
+                    <Skeleton className="h-8 w-8 rounded-full" />
                   ) : (
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
@@ -97,6 +100,7 @@ export const MobileHeader = ({
                     </Avatar>
                   )}
                 </Button>
+                </LoadingRegion>
               </>
             )}
           </div>

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useRetainedReaderResource } from "@/hooks/useRetainedReaderResource";
 import { toast } from "sonner";
 import {
   createBookClub,
   deleteBookClub,
-  fetchBookClubs,
   getClubsHome,
   inviteClubMember,
   joinBookClub,
@@ -58,43 +59,16 @@ const uniqueById = (items: BookClub[]) => {
 };
 
 export const useBookClubs = (filters: { searchQuery?: string } = {}) => {
-  const [home, setHome] = useState<ClubsHomeResponse>(emptyHome);
-  const [clubs, setClubs] = useState<BookClub[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchClubs = async (nextFilters = filters) => {
-    try {
-      setLoading(true);
-      const response = await getClubsHome(nextFilters);
-      setHome(response);
-      setClubs(
-        uniqueById([
-          ...response.myClubs,
-          ...response.suggested,
-          ...response.nearby,
-          ...response.popular,
-          ...response.newest,
-          ...response.invites,
-          ...response.pendingRequests,
-          ...response.searchResults,
-        ]),
-      );
-    } catch (error: unknown) {
-      console.error("Error fetching clubs:", error);
-      toast.error("Failed to load book clubs");
-      const fallback = await fetchBookClubs().catch(() => []);
-      setClubs(fallback);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchClubs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.searchQuery]);
-
-  const refresh = async () => fetchClubs(filters);
+  const { user, loading: authLoading } = useAuth();
+  const searchQuery = filters.searchQuery ?? "";
+  const read = useCallback(() => getClubsHome({ searchQuery }), [searchQuery]);
+  const resource = useRetainedReaderResource(user ? JSON.stringify([user.id, searchQuery]) : undefined, read);
+  const home = resource.data ?? emptyHome;
+  const clubs = useMemo(() => uniqueById([
+    ...home.myClubs, ...home.suggested, ...home.nearby, ...home.popular,
+    ...home.newest, ...home.invites, ...home.pendingRequests, ...home.searchResults,
+  ]), [home]);
+  const refresh = resource.refetch;
 
   const createClub = async (clubData: CreateBookClubRequest) => {
     try {
@@ -223,7 +197,10 @@ export const useBookClubs = (filters: { searchQuery?: string } = {}) => {
     clubs,
     home,
     sections,
-    loading,
+    loading: authLoading || resource.loading,
+    refreshing: resource.refreshing,
+    error: resource.error,
+    hasLoaded: resource.data !== undefined,
     fetchClubs: refresh,
     createClub,
     joinClub,

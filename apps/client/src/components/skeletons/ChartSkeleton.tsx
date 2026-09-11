@@ -1,15 +1,25 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ApexChartCard } from "@/components/charts/ApexChartCard";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export const ChartSkeleton = () => {
+export const ChartSkeleton = ({ height = 320 }: { height?: number }) => {
   return (
-    <Card>
-      <CardHeader>
-        <Skeleton className="h-6 w-48" />
-      </CardHeader>
-      <CardContent>
-        <Skeleton className="h-[250px] sm:h-[300px] w-full rounded-lg" />
-      </CardContent>
-    </Card>
+    <div data-loading-contract="chart" aria-hidden="true">
+      <ApexChartCard
+        title={
+          <Skeleton
+            className="h-[1lh] w-48 max-w-full"
+            style={{ fontSize: "inherit", lineHeight: "inherit" }}
+          />
+        }
+        subtitle={
+          <Skeleton
+            className="h-[1lh] w-64 max-w-full"
+            style={{ fontSize: "inherit", lineHeight: "inherit" }}
+          />
+        }
+      >
+        <Skeleton className="w-full rounded-lg" style={{ height }} />
+      </ApexChartCard>
+    </div>
   );
 };

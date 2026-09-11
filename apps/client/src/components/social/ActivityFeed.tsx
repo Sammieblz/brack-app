@@ -1,7 +1,8 @@
 import { useSocialFeed } from "@/hooks/useSocialFeed";
 import { FeedItem } from "./FeedItem";
 import { Button } from "@/components/ui/button";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
+import { FeedSkeleton } from "@/components/skeletons/FeedSkeleton";
 import { EmptyActivity } from "@/components/empty/EmptyActivity";
 import { AppIcon } from "@/components/ui/app-icon";
 import { APP_ICONS } from "@/config/iconography";
@@ -10,40 +11,43 @@ export const ActivityFeed = () => {
   const {
     activities,
     loading,
+    hasLoaded,
+    error,
     loadingMore,
     hasMore,
     caughtUp,
     loadMore,
     formatTimeAgo,
     refetchFeed,
+    retryLastRequest,
   } = useSocialFeed();
 
-  if (loading && activities.length === 0) {
+  if (!hasLoaded) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 animate-fade-in">
-        <div className="mb-4">
-          <LoadingSpinner />
-        </div>
-        <p className="font-sans text-sm text-muted-foreground">Loading your feed...</p>
-      </div>
+      <LoadingRegion loading={loading} label="Loading activity">
+        {error && <LoadingError message={error} onRetry={retryLastRequest} />}
+        {loading && <FeedSkeleton />}
+      </LoadingRegion>
     );
   }
 
   if (activities.length === 0) {
     return (
-      <div className="space-y-4">
+      <LoadingRegion loading={false} refreshing={loading} label="Loading activity" className="space-y-4">
+        {error && <LoadingError message={error} onRetry={retryLastRequest} />}
         <EmptyActivity />
         <div className="rounded-md border border-dashed border-border/70 p-4 text-center">
           <p className="font-sans text-sm text-muted-foreground">
             Activity now only shows mutual-follow friends who have reading activity enabled.
           </p>
         </div>
-      </div>
+      </LoadingRegion>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <LoadingRegion loading={false} refreshing={loading} label="Loading activity" className="space-y-4">
+      {error && <LoadingError message={error} onRetry={retryLastRequest} />}
       <div className="flex justify-between items-center mb-6 p-4 rounded-lg bg-muted/30 border border-border/40">
         <div className="flex items-center gap-2">
           <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
@@ -110,6 +114,6 @@ export const ActivityFeed = () => {
           </p>
         </div>
       )}
-    </div>
+    </LoadingRegion>
   );
 };

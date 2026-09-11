@@ -1,4 +1,6 @@
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
+import { LoadingRegion, LoadingError } from "@/components/loading/LoadingRegion";
+import { BookDetailSkeleton, BOOK_DETAIL_GRID } from "@/components/skeletons/BookDetailSkeleton";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTimer } from "@/contexts/TimerContext";
 import { Button } from "@/components/ui/button";
@@ -119,65 +121,73 @@ const IconAction = ({
   </Tooltip>
 );
 
-const BookDetail = () => {
+const BookDetailContent = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [book, setBook] = useState<Book | null>(null);
   const [sessions, setSessions] = useState<ReadingSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const requestId = useRef(0);
   const [showProgressLogger, setShowProgressLogger] = useState(false);
   const navigate = useNavigate();
   const { startTimer } = useTimer();
   const { logs, refetchLogs } = useProgressLogs(id);
-  const { progress, refetchProgress } = useBookProgress(id);
-  const { user } = useAuth();
+  const { progress, refetchProgress } = useBookProgress(id, user?.id);
   const { reviews, averageRating, userHasReviewed, refetch: refetchReviews } = useReviews(id);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const isMobile = useIsMobile();
 
-  useEffect(() => {
+  const loadBookData = useCallback(async () => {
     if (!id) return;
-    loadBookData();
-  }, [id]);
-
-  const loadBookData = async () => {
-    if (!id) return;
+    const request = ++requestId.current;
+    const isCurrent = () => request === requestId.current;
+    setLoading(true);
+    setLoadError(null);
     
     try {
       const localBook = await booksRepo.get(id);
-      if (localBook && !localBook.deleted_at) {
+      if (!isCurrent()) return;
+      const usableLocalBook = localBook && !localBook.deleted_at && localBook.user_id === user?.id ? localBook : null;
+      if (usableLocalBook) {
         setBook(localBook);
         const localSessions = (await sessionsRepo.list(user?.id || ""))
           .filter((session) => session.book_id === id);
+        if (!isCurrent()) return;
         setSessions(localSessions);
       }
 
       if (!isConnectivityAvailable()) {
-        if (!localBook || localBook.deleted_at) {
-          toast.error("Book is not available offline yet");
-          navigate("/my-books");
+        if (!usableLocalBook) {
+          setLoadError("This book isn't available on this device yet. Reconnect and try again.");
         }
         return;
       }
 
       const bookData = await fetchActiveBookById(id);
+      if (!isCurrent()) return;
       if (!bookData) {
-        toast.error("Book not found");
-        navigate("/my-books");
+        setLoadError("This book could not be found. Return to your library or try again.");
         return;
       }
 
       setBook(bookData);
       if (bookData.user_id) await booksRepo.upsertRemote(bookData.user_id, bookData);
 
-      setSessions(await fetchBookReadingSessions(id));
-    } catch (error: unknown) {
-      console.error('Error loading book:', error);
-      toast.error("Failed to load book details");
+      const nextSessions = await fetchBookReadingSessions(id);
+      if (isCurrent()) setSessions(nextSessions);
+    } catch {
+      if (isCurrent()) setLoadError("We couldn't refresh this book. Any details already loaded remain available.");
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
-  };
+  }, [id, user?.id]);
+
+  useEffect(() => {
+    void loadBookData();
+    return () => { requestId.current += 1; };
+  }, [loadBookData]);
 
   const handleStatusChange = async (newStatus: 'reading' | 'completed' | 'to_read') => {
     if (!book) return;
@@ -224,24 +234,16 @@ const BookDetail = () => {
     loadBookData();
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading book details...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (!book) {
     return (
-      <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background">
-        <div className="text-center">
-          <p className="font-sans text-muted-foreground">Book not found</p>
-        </div>
-      </div>
+      <MobileLayout>
+        {isMobile ? <MobileHeader title="Book Details" back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/my-books" }} /> : <NativeHeader title="Book Details" subtitle="Reading progress, notes, reviews, and actions" back={{ label: "Library", ariaLabel: "Back to library", fallbackPath: "/my-books" }} showUtilityActions />}
+        <main className="app-page space-y-5 md:space-y-6">
+          <LoadingRegion loading={loading} label="Loading book details">
+            {loading ? <BookDetailSkeleton /> : <LoadingError message={loadError || "This book could not be found."} onRetry={() => void loadBookData()} />}
+          </LoadingRegion>
+        </main>
+      </MobileLayout>
     );
   }
 
@@ -287,7 +289,9 @@ const BookDetail = () => {
         />
       )}
       <main className="app-page space-y-5 md:space-y-6">
-        <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <LoadingRegion loading={false} refreshing={loading} label="Refreshing book details">
+        {loadError && <LoadingError message={loadError} onRetry={() => void loadBookData()} className="mb-5" />}
+        <div className={BOOK_DETAIL_GRID}>
           <div className="min-w-0 space-y-5">
             <Card className="overflow-hidden border-border/70 bg-card/80 shadow-sm animate-scale-in">
               <CardContent className="p-4 sm:p-5 md:p-6">
@@ -805,9 +809,16 @@ const BookDetail = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        </LoadingRegion>
       </main>
     </MobileLayout>
   );
+};
+
+const BookDetail = () => {
+  const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  return <BookDetailContent key={`${user?.id ?? ""}:${id ?? ""}`} />;
 };
 
 export default BookDetail;

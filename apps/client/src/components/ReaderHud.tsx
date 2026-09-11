@@ -3,6 +3,8 @@ import { formatDistanceToNow } from "date-fns";
 import { CurrencyIcon } from "@/components/CurrencyIcon";
 import { AppIcon } from "@/components/ui/app-icon";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingRegion } from "@/components/loading/LoadingRegion";
 import { APP_ICONS } from "@/config/iconography";
 import { cn } from "@/lib/utils";
 import { getLevelProgressDetails } from "@/lib/dashboardGamification";
@@ -51,21 +53,13 @@ export const ReaderHud = ({
 
   if (loading && !account) {
     return (
-      <div
-        className={cn("grid min-h-[70px] grid-cols-3 overflow-hidden rounded-xl border border-border/70 bg-card", className)}
-        aria-label="Loading Reader Journey"
-        aria-busy="true"
-      >
-        {[0, 1, 2].map((item) => (
-          <div key={item} className="flex items-center gap-2 border-r border-border/60 p-2.5 last:border-r-0">
-            <div className="h-7 w-7 shrink-0 animate-pulse rounded-full bg-muted" />
-            <div className="min-w-0 flex-1 space-y-1.5">
-              <div className="h-2.5 w-10 animate-pulse rounded bg-muted" />
-              <div className="h-3.5 w-14 animate-pulse rounded bg-muted" />
-            </div>
-          </div>
-        ))}
+      <LoadingRegion loading label="Loading Reader Journey" containerClassName={className} className="grid min-h-[70px] grid-cols-3 overflow-hidden rounded-xl border border-border/70 bg-card">
+      <div aria-hidden="true" className="min-w-0 border-r border-border/60 p-2.5 max-[359px]:p-1.5">
+        <div className="flex items-center gap-2 max-[359px]:gap-1"><Skeleton className="h-6 w-6 shrink-0 rounded-full max-[359px]:h-[22px] max-[359px]:w-[22px]" /><div className="min-w-0 flex-1"><Skeleton className="h-[1.5em] w-10 text-[10px]" /><Skeleton className="h-[1.5em] w-14 text-sm max-[359px]:text-xs" /></div></div>
+        <Skeleton className="mt-1.5 min-h-2.5 w-full rounded-full" style={{ height: "clamp(0.625rem, calc(0.55rem + 0.2vw), 0.75rem)" }} /><Skeleton className="mt-1 h-[1.6em] w-full text-base max-[359px]:hidden" />
       </div>
+      {[1, 2].map(item => <div key={item} aria-hidden="true" className="flex min-w-0 items-center gap-2 border-r border-border/60 p-2.5 last:border-r-0 max-[359px]:gap-1 max-[359px]:p-1.5"><Skeleton className="h-7 w-7 shrink-0 rounded-full max-[359px]:h-[22px] max-[359px]:w-[22px]" /><div className="min-w-0 flex-1"><Skeleton className="h-[1.5em] w-10 text-[10px]" /><Skeleton className="h-[1.5em] w-14 text-sm max-[359px]:text-xs" /><Skeleton className="h-[1.5em] w-14 text-[10px] max-[359px]:hidden" /></div></div>)}
+      </LoadingRegion>
     );
   }
 

@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { sanitizeInput } from "@/utils/sanitize";
 import { getCurrentAuthUser } from "./auth";
-import { invokeFunction } from "./client";
+import { getApiErrorStatus, invokeFunction } from "./client";
 import { withContentSnapshot } from "@/services/contentSnapshots";
 import { normalizeUploadMedia } from "@/utils/normalizeUploadMedia";
 
@@ -282,21 +282,24 @@ const fetchConversationDetailLegacy = async (
   conversationId: string
 ): Promise<ConversationDetail> => {
   const user = await getCurrentAuthUser();
-  if (!user) throw new Error("Not authenticated");
+  if (!user) throw Object.assign(new Error("Not authenticated"), { status: 401 });
 
-  const { data: conversation, error: conversationError } = await supabase
+  const { data: conversation, error: conversationError, status: conversationStatus } = await supabase
     .from("conversations")
     .select("*")
     .eq("id", conversationId)
     .maybeSingle();
 
-  if (conversationError) throw conversationError;
-  if (!conversation) throw new Error("Conversation not found");
+  if (conversationError) {
+    if ([401, 403, 404].includes(conversationStatus)) throw Object.assign(conversationError, { status: conversationStatus });
+    throw conversationError;
+  }
+  if (!conversation) throw Object.assign(new Error("Conversation not found"), { status: 404 });
 
   const otherUserId = getOtherParticipantId(conversation, user.id);
-  if (!otherUserId) throw new Error("Not allowed");
+  if (!otherUserId) throw Object.assign(new Error("Not allowed"), { status: 403 });
 
-  const [{ data: profile, error: profileError }, { data: messages, error: messagesError }] =
+  const [{ data: profile, error: profileError, status: profileStatus }, { data: messages, error: messagesError, status: messagesStatus }] =
     await Promise.all([
       supabase
         .from("profiles")
@@ -310,8 +313,14 @@ const fetchConversationDetailLegacy = async (
         .order("created_at", { ascending: true }),
     ]);
 
-  if (profileError) throw profileError;
-  if (messagesError) throw messagesError;
+  if (profileError) {
+    if ([401, 403, 404].includes(profileStatus)) throw Object.assign(profileError, { status: profileStatus });
+    throw profileError;
+  }
+  if (messagesError) {
+    if ([401, 403, 404].includes(messagesStatus)) throw Object.assign(messagesError, { status: messagesStatus });
+    throw messagesError;
+  }
 
   await supabase
     .from("messages")
@@ -381,6 +390,7 @@ export const fetchConversations = async (): Promise<ConversationSummary[]> => {
       );
       return response.conversations || [];
     } catch (error) {
+      if ([401, 403].includes(getApiErrorStatus(error) ?? 0)) throw error;
       console.warn("conversations-home unavailable; falling back to legacy conversation summaries", error);
       return fetchConversationsLegacy();
     }
@@ -413,6 +423,7 @@ export const fetchConversationDetail = async (
       body: { conversation_id: conversationId },
     });
   } catch (error) {
+    if ([401, 403].includes(getApiErrorStatus(error) ?? 0)) throw error;
     console.warn("conversation-detail unavailable; falling back to legacy messages", error);
     return fetchConversationDetailLegacy(conversationId);
   }

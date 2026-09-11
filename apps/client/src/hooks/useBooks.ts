@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { Book } from "@/types";
 import {
   BOOKS_CHANGED_EVENT,
@@ -19,67 +19,84 @@ export const useBooks = (userId?: string, enabled = true) => {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
+  const [owner, setOwner] = useState(userId);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const activeUser = useRef(userId);
+  activeUser.current = userId;
+  const requestId = useRef(0);
 
   const fetchBooks = useCallback(async (
     isInitial = true,
     forceRefresh = false,
-    silent = false,
     requestedOffset = 0
   ) => {
-    if (!userId || !enabled) return;
-
-    if (isInitial) {
-      const localBooks = await booksRepo.list(userId);
-      if (localBooks.length > 0 && !forceRefresh) {
-        setBooks(localBooks);
-        setHasMore(false);
-        setLoading(false);
-        setOffset(localBooks.length);
-      }
-
-      if (!isConnectivityAvailable()) {
-        setBooks(localBooks);
-        setHasMore(false);
-        setLoading(false);
-        return;
-      }
-    }
+    if (!userId || !enabled || activeUser.current !== userId) return;
+    const request = ++requestId.current;
+    const isCurrent = () => activeUser.current === userId && request === requestId.current;
     
     try {
       if (isInitial) {
-        if (!silent) setLoading(true);
-        setOffset(0);
+        setLoading(true);
       } else {
         setLoadingMore(true);
+      }
+      setError(null);
+
+      if (isInitial) {
+        const localBooks = await booksRepo.list(userId);
+        if (!isCurrent()) return;
+        if ((localBooks.length > 0 && !forceRefresh) || !isConnectivityAvailable()) {
+          setBooks(localBooks);
+          setHasLoaded(true);
+          setHasMore(false);
+          setOffset(localBooks.length);
+        }
+        if (!isConnectivityAvailable()) return;
       }
 
       const currentOffset = isInitial ? 0 : requestedOffset;
       
       if (isInitial) {
         await readingCoreSync.syncUser(userId);
+        if (!isCurrent()) return;
         const syncedBooks = await booksRepo.list(userId);
+        if (!isCurrent()) return;
         setBooks(syncedBooks);
+        setHasLoaded(true);
         setHasMore(false);
         setOffset(syncedBooks.length);
       } else {
         const { books: newBooks, hasMore: hasMoreData } =
           await fetchUserBooksPage(userId, currentOffset, PAGE_SIZE);
+        if (!isCurrent()) return;
         await booksRepo.upsertRemoteMany(userId, newBooks);
+        if (!isCurrent()) return;
         setHasMore(hasMoreData);
         setBooks((prev) => [...prev, ...newBooks]);
         setOffset((prev) => prev + PAGE_SIZE);
       }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch books');
+    } catch {
+      if (isCurrent()) setError("We couldn't refresh your library. Books already on this device are still available.");
     } finally {
-      setLoading(false);
-      setLoadingMore(false);
+      if (isCurrent()) {
+        setLoading(false);
+        setLoadingMore(false);
+      }
     }
   }, [enabled, userId]);
 
   useEffect(() => {
-    if (enabled) fetchBooks(true);
-  }, [enabled, fetchBooks]);
+    setOwner(userId);
+    setBooks([]);
+    setHasLoaded(false);
+    setError(null);
+    setHasMore(false);
+    setOffset(0);
+    setLoading(Boolean(userId && enabled));
+    setLoadingMore(false);
+    if (enabled) void fetchBooks(true);
+    return () => { requestId.current += 1; };
+  }, [enabled, fetchBooks, userId]);
 
   useEffect(() => {
     if (!userId || !enabled || typeof window === "undefined") return;
@@ -97,6 +114,7 @@ export const useBooks = (userId?: string, enabled = true) => {
           next[existingIndex] = detail.book;
           return next;
         });
+        setHasLoaded(true);
         setError(null);
         return;
       }
@@ -108,7 +126,7 @@ export const useBooks = (userId?: string, enabled = true) => {
       }
 
       if (detail.type === "refresh") {
-        void fetchBooks(true, true, true);
+        void fetchBooks(true, true);
       }
     };
 
@@ -117,17 +135,14 @@ export const useBooks = (userId?: string, enabled = true) => {
   }, [enabled, fetchBooks, userId]);
 
   const loadMore = useCallback(() => {
-    if (!loadingMore && hasMore) {
-      fetchBooks(false, false, false, offset);
+    if (!loading && !loadingMore && hasMore) {
+      return fetchBooks(false, false, offset);
     }
-  }, [fetchBooks, loadingMore, hasMore, offset]);
+  }, [fetchBooks, loading, loadingMore, hasMore, offset]);
 
   const refetchBooks = () => {
     invalidateBooksCache(userId);
-    if (isConnectivityAvailable() && userId) {
-      readingCoreSync.syncUser(userId).catch(console.error);
-    }
-    fetchBooks(true, true);
+    return fetchBooks(true, true);
   };
 
   const removeBookLocally = (bookId: string) => {
@@ -157,11 +172,13 @@ export const useBooks = (userId?: string, enabled = true) => {
   };
 
   return {
-    books,
-    loading,
-    loadingMore,
-    error,
-    hasMore,
+    books: owner === userId ? books : [],
+    loading: Boolean(userId && enabled) && (owner !== userId || (loading && !hasLoaded)),
+    refreshing: owner === userId && loading && hasLoaded,
+    hasLoaded: owner === userId && hasLoaded,
+    loadingMore: owner === userId && loadingMore,
+    error: owner === userId ? error : null,
+    hasMore: owner === userId && hasMore,
     loadMore,
     refetchBooks,
     removeBookLocally,

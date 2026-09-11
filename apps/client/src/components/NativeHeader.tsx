@@ -14,6 +14,8 @@ import type { BackButtonConfig } from "@/hooks/useAppBack";
 import { cn } from "@/lib/utils";
 import { useAppHeader } from "@/hooks/useAppHeader";
 import { UserNotificationsPopover } from "@/components/UserNotificationsPopover";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 
 interface NativeHeaderProps {
   title: string;
@@ -33,7 +35,7 @@ const getBookTimestamp = (book: { updated_at?: string | null; created_at?: strin
 const LibrarySearchAction = ({ compact = false }: { compact?: boolean }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { books, loading } = useBooks(user?.id);
+  const { books, loading, refreshing, hasLoaded, error, refetchBooks } = useBooks(user?.id);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -136,14 +138,14 @@ const LibrarySearchAction = ({ compact = false }: { compact?: boolean }) => {
           </div>
         </form>
 
-        <div className="p-2">
+        <LoadingRegion loading={loading} refreshing={refreshing} label="Loading recent books" className="p-2">
+          {error && <LoadingError message="Your library could not update." onRetry={refetchBooks} />}
           {loading ? (
-            <div className="space-y-2 p-2">
-              <div className="h-14 animate-pulse rounded-md bg-muted" />
-              <div className="h-14 animate-pulse rounded-md bg-muted" />
-              <div className="h-14 animate-pulse rounded-md bg-muted" />
+            <div aria-hidden="true">
+              <div className="px-2 pb-2 font-sans text-xs font-medium uppercase tracking-wide text-muted-foreground">{query.trim() ? "Results" : "Recent books"}</div>
+              <div className="space-y-1 pr-2">{[0, 1, 2].map(index => <div key={index} className="flex w-full items-center gap-3 rounded-md p-2"><Skeleton className="h-14 w-10 shrink-0 rounded" /><div className="min-w-0 flex-1"><Skeleton className="h-[1.5em] w-3/4 text-sm" /><Skeleton className="h-[1.5em] w-1/2 text-xs" /><Skeleton className="h-[1.5em] w-2/3 text-xs" /></div></div>)}</div>
             </div>
-          ) : books.length === 0 ? (
+          ) : error && !hasLoaded ? null : books.length === 0 ? (
             <PremiumEmptyState
               asset="emptyLibrary"
               title="No books in your library"
@@ -214,7 +216,7 @@ const LibrarySearchAction = ({ compact = false }: { compact?: boolean }) => {
               </div>
             </>
           )}
-        </div>
+        </LoadingRegion>
       </PopoverContent>
     </Popover>
   );

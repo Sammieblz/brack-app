@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingRegion } from "@/components/loading/LoadingRegion";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -103,13 +105,14 @@ export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
       >
         <div className="flex flex-col h-full">
           {/* Header Section */}
-          <div className="p-6 border-b border-border">
-            {isLoading ? (
+          <LoadingRegion loading={isLoading && !profile} label="Loading profile" className="p-6 border-b border-border">
+            {isLoading && !profile ? (
               <div className="flex items-center gap-3">
-                <div className="h-16 w-16 rounded-full bg-muted animate-pulse" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 w-24 bg-muted rounded animate-pulse" />
-                  <div className="h-3 w-32 bg-muted rounded animate-pulse" />
+                <Skeleton className="h-16 w-16 shrink-0 rounded-full" />
+                <div className="min-w-0 flex-1">
+                  <Skeleton className="h-[1.6em] w-24 text-base" />
+                  <Skeleton className="h-[1.5em] w-32 text-sm" />
+                  <div className="mt-2 flex gap-4"><Skeleton className="h-[1.6em] w-16 text-base" /><Skeleton className="h-[1.6em] w-16 text-base" /></div>
                 </div>
               </div>
             ) : (
@@ -130,7 +133,7 @@ export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
                 </div>
               </div>
             )}
-          </div>
+          </LoadingRegion>
 
           {/* Menu Items */}
           <div ref={menuItemsRef} className="flex-1 py-4">
