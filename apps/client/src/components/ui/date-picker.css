@@ -1,0 +1,20 @@
+/* RDP's programmatic arrow-key focus does not always match :focus-visible. */
+[data-date-picker] [role="grid"] button:focus {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: -2px;
+}
+
+/* A box-shadow ring alone can disappear in OS high-contrast palettes. */
+@media (forced-colors: active) {
+  [data-date-picker] input:focus,
+  [data-date-picker] button:focus,
+  [data-date-picker] [role="grid"] button:focus {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  [data-date-picker] button[aria-selected="true"] {
+    border: 2px solid Highlight;
+    font-weight: 700;
+  }
+}

@@ -191,6 +191,8 @@ const Onboarding = () => {
   }));
   const [editingFromReview, setEditingFromReview] = useState(false);
   const [validationStep, setValidationStep] = useState<OnboardingStepId | null>(null);
+  const [goalStartValid, setGoalStartValid] = useState(true);
+  const [goalEndValid, setGoalEndValid] = useState(true);
   const [saving, setSaving] = useState(false);
   const [transition, setTransition] = useState<OnboardingTransition | null>(null);
   const [completionSeal, setCompletionSeal] = useState(false);
@@ -365,7 +367,7 @@ const Onboarding = () => {
     if (
       (currentStep === "taste" && formData.favoriteGenres.length === 0) ||
       (currentStep === "pace" && getSessionValidationMessage(formData.preferredSessionMinutes)) ||
-      (currentStep === "goal" && getGoalValidationMessage(formData))
+      (currentStep === "goal" && (!goalStartValid || !goalEndValid || getGoalValidationMessage(formData)))
     ) {
       setValidationStep(currentStep);
       // The action dock stays visible while long chapters scroll. Bring the
@@ -377,7 +379,7 @@ const Onboarding = () => {
             ? "#sessionLength"
             : !formData.goalTargetBooks || !Number.isInteger(formData.goalTargetBooks) || formData.goalTargetBooks < 1 || formData.goalTargetBooks > 365
               ? "#targetBooks"
-              : !formData.goalStartDate ? "#goalStart" : "#goalEnd";
+              : !goalStartValid || !formData.goalStartDate ? "#goalStart" : "#goalEnd";
         const invalidControl = pageRef.current?.querySelector<HTMLElement>(selector);
         invalidControl?.focus({ preventScroll: true });
         invalidControl?.scrollIntoView({ block: "center", behavior: "instant" });
@@ -466,7 +468,7 @@ const Onboarding = () => {
       ? "taste"
       : getSessionValidationMessage(formData.preferredSessionMinutes)
         ? "pace"
-        : getGoalValidationMessage(formData) ? "goal" : null;
+        : !goalStartValid || !goalEndValid || getGoalValidationMessage(formData) ? "goal" : null;
     if (invalidStep) {
       selectStep(invalidStep, true);
       setValidationStep(invalidStep);
@@ -662,7 +664,14 @@ const Onboarding = () => {
                   )}
 
                   {currentStep === "goal" && (
-                    <GoalStep formData={formData} onFieldChange={updateField} onNumberFieldChange={setNumberField} showValidation={validationStep === "goal"} />
+                    <GoalStep
+                      formData={formData}
+                      onFieldChange={updateField}
+                      onNumberFieldChange={setNumberField}
+                      showValidation={validationStep === "goal"}
+                      onStartValidityChange={setGoalStartValid}
+                      onEndValidityChange={setGoalEndValid}
+                    />
                   )}
 
                   {currentStep === "review" && <ReviewStep formData={formData} isPreAuth={isGuestOnboarding} onEdit={(step) => selectStep(step, true)} />}
@@ -1053,9 +1062,11 @@ interface GoalStepProps {
   onFieldChange: <K extends keyof OnboardingFormData>(key: K, value: OnboardingFormData[K]) => void;
   onNumberFieldChange: (key: keyof OnboardingFormData, value: string) => void;
   showValidation: boolean;
+  onStartValidityChange: (valid: boolean) => void;
+  onEndValidityChange: (valid: boolean) => void;
 }
 
-const GoalStep = ({ formData, onFieldChange, onNumberFieldChange, showValidation }: GoalStepProps) => (
+const GoalStep = ({ formData, onFieldChange, onNumberFieldChange, showValidation, onStartValidityChange, onEndValidityChange }: GoalStepProps) => (
   <div className="onboarding-step-layout">
     <div className="min-w-0 space-y-5 sm:space-y-6">
       <OnboardingStepIntro
@@ -1081,6 +1092,10 @@ const GoalStep = ({ formData, onFieldChange, onNumberFieldChange, showValidation
           label="Start date"
           value={formData.goalStartDate}
           onChange={(value) => onFieldChange("goalStartDate", value)}
+          maxDate={formData.goalEndDate}
+          showToday
+          required
+          onValidityChange={onStartValidityChange}
         />
         <DatePicker
           id="goalEnd"
@@ -1088,6 +1103,10 @@ const GoalStep = ({ formData, onFieldChange, onNumberFieldChange, showValidation
           label="End date"
           value={formData.goalEndDate}
           onChange={(value) => onFieldChange("goalEndDate", value)}
+          minDate={formData.goalStartDate}
+          showToday
+          required
+          onValidityChange={onEndValidityChange}
         />
       </div>
       {showValidation && getGoalValidationMessage(formData) && (

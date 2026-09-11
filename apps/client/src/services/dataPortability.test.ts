@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Book } from "@/types";
 import {
   bookListItemsRepo,
@@ -30,6 +30,8 @@ import {
   previewReadingImport,
   type ParsedReadingImport,
 } from "./dataPortability";
+
+afterEach(() => vi.useRealTimers());
 
 const makeBook = (overrides: Partial<Book> = {}): Book => ({
   id: "book-1",
@@ -102,6 +104,28 @@ describe("CSV import parsing", () => {
 });
 
 describe("reading import commit", () => {
+  it.each([0, 23])("fills a missing completion date with the local import day at hour %i", async (hour) => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const now = new Date(2026, 11, 31, hour, 30);
+    vi.setSystemTime(now);
+    const userId = `user-${crypto.randomUUID()}`;
+    const existing = makeBook({ id: crypto.randomUUID(), user_id: userId });
+    await booksRepo.upsertRemote(userId, existing);
+    const incoming = makeBook({ id: "imported-book", status: "completed", current_page: 288, date_finished: null });
+    const bytes = new TextEncoder().encode(JSON.stringify([incoming]));
+    const parsed = await parseReadingImport({ name: "library.json", arrayBuffer: async () => bytes.buffer } as File);
+    const preview = await previewReadingImport(userId, parsed);
+
+    const result = await commitReadingImport(userId, parsed, preview);
+
+    expect(result).toMatchObject({ merged: 1, failed: 0 });
+    expect(await booksRepo.get(existing.id)).toMatchObject({
+      date_started: existing.date_started,
+      date_finished: "2026-12-31",
+      updated_at: now.toISOString(),
+    });
+  });
+
   it("merges a duplicate book and reports a completed import", async () => {
     const userId = `user-${crypto.randomUUID()}`;
     const existing = makeBook({ user_id: userId });

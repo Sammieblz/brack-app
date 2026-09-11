@@ -15,6 +15,7 @@ import {
 } from "@/services/api/onboarding";
 import { upsertThemePreferences } from "@/services/api/profiles";
 import type { OnboardingFormData, OnboardingStatus } from "@/types";
+import { todayDateOnly } from "@/lib/dateOnly";
 
 export const ONBOARDING_VERSION = 1;
 const FIRST_RUN_ONBOARDING_CUTOFF_ISO = "2026-05-01T00:00:00.000Z";
@@ -99,12 +100,10 @@ export const shouldEnterFirstRunOnboarding = (
   );
 };
 
-const todayDate = () => new Date().toISOString().split("T")[0];
-
 const defaultGoalEndDate = () => {
   const date = new Date();
   date.setMonth(date.getMonth() + 12);
-  return date.toISOString().split("T")[0];
+  return todayDateOnly(date);
 };
 
 const clampNumber = (value: number | null | undefined, min: number, max: number) => {
@@ -266,7 +265,7 @@ export const normalizeOnboardingFormData = (formData: OnboardingFormData) => {
     preferredSessionMinutes: clampNumber(formData.preferredSessionMinutes, 5, 300),
     motivation: formData.motivation.trim().slice(0, 240),
     goalTargetBooks,
-    goalStartDate: formData.goalStartDate || todayDate(),
+    goalStartDate: formData.goalStartDate || todayDateOnly(),
     goalEndDate: formData.goalEndDate || defaultGoalEndDate(),
     reminderTime: formData.reminderEnabled ? formData.reminderTime || "19:00" : null,
   };

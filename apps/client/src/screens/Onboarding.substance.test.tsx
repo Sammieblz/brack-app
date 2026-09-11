@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { OnboardingFormData } from "@/types";
@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
   toast: vi.fn(),
   refetch: vi.fn(),
   permissionPending: vi.fn(),
+  dateValidity: new Map<string, (valid: boolean) => void>(),
 }));
 
 // Keep persistence and authentication completely outside these interaction tests.
@@ -71,11 +72,13 @@ vi.mock("@/components/onboarding/OnboardingLoadingState", () => ({
 // The date/time picker components have their own interaction tests. Here these
 // adapters exercise the screen's value propagation and validation boundaries.
 vi.mock("@/components/ui/date-picker", () => ({
-  DatePicker: ({ id, label, value, onChange }: {
+  DatePicker: ({ id, label, value, onChange, minDate, maxDate, required, onValidityChange }: {
     id: string; label: string; value: string | null; onChange: (value: string | null) => void;
-  }) => (
-    <label htmlFor={id}>{label}<input id={id} type="date" value={value ?? ""} onChange={(event) => onChange(event.target.value || null)} /></label>
-  ),
+    minDate?: string | null; maxDate?: string | null; required?: boolean; onValidityChange: (valid: boolean) => void;
+  }) => {
+    mocks.dateValidity.set(id, onValidityChange);
+    return <label htmlFor={id}>{label}<input id={id} type="date" min={minDate ?? undefined} max={maxDate ?? undefined} required={required} value={value ?? ""} onChange={(event) => onChange(event.target.value || null)} /></label>;
+  },
 }));
 vi.mock("@/components/ui/time-picker", () => ({
   TimePicker: ({ id, label, value, onChange }: {
@@ -106,6 +109,7 @@ const originalScrollIntoView = Object.getOwnPropertyDescriptor(HTMLElement.proto
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.dateValidity.clear();
   Object.defineProperty(HTMLElement.prototype, "scrollIntoView", { configurable: true, value: vi.fn() });
   mocks.loadDraft.mockReturnValue(null);
   mocks.markReady.mockImplementation((value) => ({ ...value, flowId: "unit-test-flow" }));
@@ -177,6 +181,23 @@ describe("Onboarding substance and safe handoff", () => {
     expect(mocks.normalize).not.toHaveBeenCalled();
 
     setGoalDates("2027-01-01", "2027-12-31");
+    fireEvent.click(screen.getByRole("button", { name: "Review your plan" }));
+    expect(chapter("Review")).toBeInTheDocument();
+  });
+
+  it("cannot advance with an incomplete picker draft while the previous committed dates are valid", async () => {
+    await renderOnboarding();
+    goToChapter("Goal");
+    setGoalDates("1999-02-05", "1999-02-05");
+    expect(screen.getByLabelText("Start date")).toHaveAttribute("max", "1999-02-05");
+    expect(screen.getByLabelText("End date")).toHaveAttribute("min", "1999-02-05");
+    expect(screen.getByLabelText("End date")).not.toHaveAttribute("max");
+    act(() => mocks.dateValidity.get("goalStart")!(false));
+    fireEvent.click(screen.getByRole("button", { name: "Review your plan" }));
+    expect(chapter("Goal")).toBeInTheDocument();
+    expect(mocks.normalize).not.toHaveBeenCalled();
+    expect(mocks.markReady).not.toHaveBeenCalled();
+    act(() => mocks.dateValidity.get("goalStart")!(true));
     fireEvent.click(screen.getByRole("button", { name: "Review your plan" }));
     expect(chapter("Review")).toBeInTheDocument();
   });

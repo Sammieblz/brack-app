@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { booksRepo, createLocalId, progressRepo } from "@/services/local";
 import { readingCoreSync } from "@/services/sync/engine";
 import { isConnectivityAvailable } from "@/services/connectivity";
+import { todayDateOnly } from "@/lib/dateOnly";
 
 interface ProgressLoggerProps {
   bookId: string;
@@ -102,7 +103,9 @@ export const ProgressLogger = ({
     setLoading(true);
     try {
       if (!user) throw new Error("Not authenticated");
-      const timestamp = new Date().toISOString();
+      const now = new Date();
+      const timestamp = now.toISOString();
+      const activityDate = todayDateOnly(now);
       await progressRepo.createPending(user.id, {
         id: createLocalId(),
         user_id: user.id,
@@ -132,10 +135,10 @@ export const ProgressLogger = ({
           current_page: Math.max(localBook.current_page || 0, pageNumber),
           status: resultingStatus,
           date_started:
-            localBook.date_started || (pageNumber > 0 ? timestamp.split("T")[0] : null),
+            localBook.date_started || (pageNumber > 0 ? activityDate : null),
           date_finished:
             resultingStatus === "completed"
-              ? localBook.date_finished || timestamp.split("T")[0]
+              ? localBook.date_finished || activityDate
               : localBook.date_finished,
           updated_at: timestamp,
         };

@@ -61,6 +61,9 @@ jobs:
       - name: Typecheck and lint shell regression tests
         run: npm run test:e2e:shell:check
 
+      - name: Typecheck and lint date-picker regression tests
+        run: npm run test:date-picker:check
+
       - name: Verify optimized static media
         run: npm run media:assets:check
 
@@ -349,6 +352,19 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: shell-scroll-failure-traces
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Verify accessible date-picker behavior
+        id: date_picker
+        run: npm run test:date-picker
+
+      - name: Upload date-picker regression failure traces
+        if: ${{ failure() && steps.date_picker.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: date-picker-failure-traces
           path: test-results/
           if-no-files-found: ignore
           retention-days: 7
