@@ -5,7 +5,11 @@ import {
   optionsResponse,
 } from "../_shared/appEndpoint.ts";
 import { enforceRateLimit } from "../_shared/rateLimit.ts";
-import { isPairBlocked, otherParticipantId } from "../_shared/messaging.ts";
+import {
+  getDirectMessageEligibility,
+  isPairBlocked,
+  otherParticipantId,
+} from "../_shared/messaging.ts";
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin");
@@ -80,8 +84,9 @@ Deno.serve(async (req) => {
       const otherUserId = otherParticipantId(conversation, userId);
       if (!otherUserId) continue;
 
-      const [blocked, latestResult] = await Promise.all([
+      const [blocked, eligibility, latestResult] = await Promise.all([
         isPairBlocked(supabaseClient, userId, otherUserId),
+        getDirectMessageEligibility(supabaseClient, userId, otherUserId),
         supabaseClient
           .from("messages")
           .select("id,content,message_type,created_at,sender_id,deleted_at")
@@ -132,6 +137,7 @@ Deno.serve(async (req) => {
         unread_count: count || 0,
         settings: setting,
         is_blocked: blocked,
+        message_eligibility: eligibility,
       });
     }
 

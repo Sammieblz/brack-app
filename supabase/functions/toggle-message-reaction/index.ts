@@ -8,6 +8,7 @@ import {
 import { enforceRateLimit } from "../_shared/rateLimit.ts";
 import {
   enrichMessages,
+  getDirectMessageEligibility,
   isPairBlocked,
   MESSAGE_REACTIONS,
   requireConversationAccess,
@@ -57,6 +58,18 @@ Deno.serve(async (req) => {
 
     const access = await requireConversationAccess(supabaseClient, message.conversation_id, userId);
     if ("error" in access) return jsonResponse({ error: access.error }, access.status, origin);
+
+    const eligibility = await getDirectMessageEligibility(
+      supabaseClient,
+      userId,
+      access.otherUserId
+    );
+    if (eligibility !== "eligible") {
+      return jsonResponse({
+        error: "Messaging is unavailable for this reader",
+        code: eligibility,
+      }, 403, origin);
+    }
 
     const blocked = await isPairBlocked(supabaseClient, userId, access.otherUserId);
     if (blocked) {

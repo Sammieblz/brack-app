@@ -15,7 +15,12 @@ vi.mock("./gamification", () => ({ getPublicGamificationProfile: vi.fn() }));
 vi.mock("@/utils/normalizeUploadMedia", () => ({ normalizeUploadMedia: vi.fn() }));
 
 import { fetchUserProfileWithStats } from "./profiles";
-import { fetchConversationDetail, fetchConversations } from "./messaging";
+import {
+  fetchConversationDetail,
+  fetchConversations,
+  getOrCreateConversation,
+  sendMessage,
+} from "./messaging";
 
 type Response = { data: unknown; error: unknown; status: number };
 let responses: Response[];
@@ -57,6 +62,22 @@ describe("social read access error metadata", () => {
     const error = Object.assign(new Error("Denied"), { status });
     mocks.invoke.mockRejectedValueOnce(error);
     await expect(fetchConversations()).rejects.toBe(error);
+    expect(mocks.from).not.toHaveBeenCalled();
+  });
+
+  it("never bypasses an Edge rejection with direct conversation creation", async () => {
+    const error = Object.assign(new Error("Mutual follows required"), { status: 403 });
+    mocks.invoke.mockRejectedValueOnce(error);
+
+    await expect(getOrCreateConversation("other-reader")).rejects.toBe(error);
+    expect(mocks.from).not.toHaveBeenCalled();
+  });
+
+  it("never bypasses an Edge rejection with a direct message insert", async () => {
+    const error = Object.assign(new Error("Mutual follows required"), { status: 403 });
+    mocks.invoke.mockRejectedValueOnce(error);
+
+    await expect(sendMessage("thread", "hello")).rejects.toBe(error);
     expect(mocks.from).not.toHaveBeenCalled();
   });
 

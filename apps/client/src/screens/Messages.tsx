@@ -77,6 +77,8 @@ const MessagesContent = () => {
   const selectedConversation = conversations.find((c) => c.id === selectedConversationId);
   const selectedOtherUser = detail?.other_user || selectedConversation?.other_user;
   const selectedIsBlocked = Boolean(detail?.is_blocked || selectedConversation?.is_blocked);
+  const selectedMessageEligibility =
+    detail?.message_eligibility || selectedConversation?.message_eligibility || "restricted";
 
   const inbox = (
     <LoadingRegion loading={loading && !hasLoaded} refreshing={loading && hasLoaded} label="Loading conversations" className="space-y-3">
@@ -91,7 +93,7 @@ const MessagesContent = () => {
       {messagesError && <LoadingError message={messagesError} onRetry={refetchMessages} />}
       <div className="min-h-0 flex-1">
         {messagesLoading && !messagesLoaded ? <MessageThreadSkeleton isMobile={isMobile} /> : messagesLoaded && selectedConversationId ? (
-          <MessageThread key={selectedConversationId} messages={messages} onSendMessage={sendMessage} onToggleReaction={toggleReaction} onDeleteMessage={deleteMessage} currentUserId={user?.id} conversationId={selectedConversationId} otherUser={selectedOtherUser} isBlocked={selectedIsBlocked} onBack={() => setSelectedConversationId(null)} />
+          <MessageThread key={selectedConversationId} messages={messages} onSendMessage={sendMessage} onToggleReaction={toggleReaction} onDeleteMessage={deleteMessage} currentUserId={user?.id} conversationId={selectedConversationId} otherUser={selectedOtherUser} isBlocked={selectedIsBlocked} messageEligibility={selectedMessageEligibility} onBack={() => setSelectedConversationId(null)} />
         ) : null}
       </div>
     </LoadingRegion>

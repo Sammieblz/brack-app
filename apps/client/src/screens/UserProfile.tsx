@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 import { SocialProfileSkeleton, ProfileBooksSkeleton, ProfileClubsSkeleton } from "@/components/skeletons/SocialProfileSkeleton";
-import { FollowButton } from "@/components/social/FollowButton";
+import { FollowAction } from "@/components/social/FollowButton";
 import { PostCard } from "@/components/social/PostCard";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { PostCardSkeleton } from "@/components/skeletons/PostCardSkeleton";
@@ -55,7 +55,14 @@ const UserProfileContent = () => {
   const { user: currentUser, loading: authLoading } = useAuth();
   const resolvedUserId = routeUserId === "me" ? currentUser?.id ?? null : routeUserId ?? null;
   const { profile, stats, gamification, loading, error, refetch } = useUserProfile(resolvedUserId);
-  const { followersCount, followingCount } = useFollowing(resolvedUserId);
+  const relationship = useFollowing(resolvedUserId);
+  const {
+    followersCount,
+    followingCount,
+    isMutual,
+    messageEligibility,
+    loading: relationshipLoading,
+  } = relationship;
   const [userBooks, setUserBooks] = useState<Book[]>([]);
   const [userPosts, setUserPosts] = useState<PostWithRelations[]>([]);
   const [userClubs, setUserClubs] = useState<BookClub[]>([]);
@@ -241,7 +248,7 @@ const UserProfileContent = () => {
                   </div>
                   
                   {/* Action Buttons */}
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {isOwnProfile ? (
                       <Button onClick={() => {
                         triggerHaptic("light");
@@ -252,20 +259,35 @@ const UserProfileContent = () => {
                       </Button>
                     ) : (
                       <>
-                        <FollowButton userId={resolvedUserId!} />
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            triggerHaptic("light");
-                            navigate("/messages", { state: { startConversationWith: resolvedUserId } });
-                          }}
-                        >
-                          <APP_ICONS.profile.message className="mr-2 h-4 w-4" />
-                          {isMobile ? "" : "Message"}
-                        </Button>
+                        <FollowAction
+                          userId={resolvedUserId!}
+                          relationship={relationship}
+                          context="profile"
+                          displayName={profile.display_name}
+                        />
+                        {messageEligibility === "eligible" && (
+                          <Button
+                            variant="outline"
+                            aria-label={`Message ${profile.display_name || "this reader"}`}
+                            onClick={() => {
+                              triggerHaptic("light");
+                              navigate("/messages", { state: { startConversationWith: resolvedUserId } });
+                            }}
+                          >
+                            <APP_ICONS.profile.message className={isMobile ? "h-4 w-4" : "mr-2 h-4 w-4"} />
+                            {isMobile ? null : "Message"}
+                          </Button>
+                        )}
                       </>
                     )}
                   </div>
+                  {!isOwnProfile && !relationshipLoading && messageEligibility !== "eligible" && (
+                    <p className="max-w-md font-sans text-xs text-muted-foreground" role="status">
+                      {isMutual
+                        ? "Messaging is unavailable because of a privacy or safety setting."
+                        : "Messaging becomes available once you both follow each other."}
+                    </p>
+                  )}
                 </div>
 
                 {/* Stats Row */}

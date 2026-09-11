@@ -500,6 +500,12 @@
       "description": "restrict_claim_push_token_service_role",
       "file": "20260905015937_restrict_claim_push_token_service_role.sql",
       "sha256": "edefe1bf4c1e246dd04296055de9383f96e02b3c4b573050b87bc7b5826884c3"
+    },
+    {
+      "version": "20260911213545",
+      "description": "require_mutual_follows_for_direct_messaging",
+      "file": "20260911213545_require_mutual_follows_for_direct_messaging.sql",
+      "sha256": "931c70e6ba9bba8d2025a3f25cfaf5658948518e36b2ef14cd9c98e8fcc35cf6"
     }
   ]
 }
