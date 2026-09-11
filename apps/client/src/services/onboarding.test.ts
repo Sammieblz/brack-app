@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
   createOnboardingBookGoalMock,
@@ -38,8 +38,32 @@ vi.mock("@/services/api/profiles", () => ({
 
 import {
   DEFAULT_ONBOARDING_FORM,
+  normalizeOnboardingFormData,
   saveOnboardingProfile,
 } from "./onboarding";
+
+afterEach(() => vi.useRealTimers());
+
+describe("onboarding goal dates", () => {
+  it.each([[0, 10], [23, 50]])("defaults to local calendar dates at %s:%s around New Year", (hour, minute) => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 11, 31, hour, minute));
+    const { normalized } = normalizeOnboardingFormData({ ...DEFAULT_ONBOARDING_FORM, favoriteGenres: ["Fantasy"] });
+    expect(normalized.goalStartDate).toBe("2026-12-31");
+    expect(normalized.goalEndDate).toBe("2027-12-31");
+  });
+
+  it("preserves explicitly chosen goal dates", () => {
+    const { normalized } = normalizeOnboardingFormData({
+      ...DEFAULT_ONBOARDING_FORM,
+      favoriteGenres: ["Fantasy"],
+      goalStartDate: "1999-02-05",
+      goalEndDate: "2000-02-29",
+    });
+    expect(normalized.goalStartDate).toBe("1999-02-05");
+    expect(normalized.goalEndDate).toBe("2000-02-29");
+  });
+});
 
 describe("saveOnboardingProfile", () => {
   beforeEach(() => {

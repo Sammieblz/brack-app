@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { normalizeDateOnly, todayDateOnly } from "@/lib/dateOnly";
 
 export interface ProgressLog {
   id: string;
@@ -47,7 +48,9 @@ interface ReadingSessionTimelineInput {
 
 const toActivityDate = (value: string | null | undefined) => {
   const timestamp = Date.parse(value ?? "");
-  return Number.isFinite(timestamp) ? new Date(timestamp).toISOString().split("T")[0] : null;
+  // These values are event timestamps; group their instants by the reader's
+  // local day rather than treating the UTC timestamp's prefix as a civil date.
+  return Number.isFinite(timestamp) ? normalizeDateOnly(new Date(timestamp)) : null;
 };
 
 export const buildProgressTimeline = (
@@ -203,7 +206,7 @@ export const fetchProgressTrackingData = async (
       const predictedPage = (book.current_page || 0) + recentVelocity * i;
 
       forecastData.push({
-        date: futureDate.toISOString().split("T")[0],
+        date: todayDateOnly(futureDate),
         predicted_page: Math.min(Math.round(predictedPage), book.pages),
       });
     }
@@ -245,7 +248,7 @@ export const updateBookStatusForActivity = async (
     .from("books")
     .update({
       status: "reading",
-      date_started: new Date().toISOString(),
+      date_started: todayDateOnly(),
     })
     .eq("id", bookId);
 };

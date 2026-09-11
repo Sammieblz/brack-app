@@ -48,6 +48,7 @@ import {
 import { booksRepo, sessionsRepo } from "@/services/local";
 import { bookOperations } from "@/utils/offlineOperation";
 import { isConnectivityAvailable } from "@/services/connectivity";
+import { normalizeDateOnly, toLocalDate, todayDateOnly } from "@/lib/dateOnly";
 
 const formatStatus = (status: string) => status.replace("_", " ");
 
@@ -66,7 +67,8 @@ const getStatusClassName = (status: string) => {
 
 const formatDate = (date?: string | null) => {
   if (!date) return null;
-  return new Date(date).toLocaleDateString();
+  const canonical = normalizeDateOnly(date);
+  return toLocalDate(canonical)?.toLocaleDateString() ?? canonical;
 };
 
 const DetailRow = ({
@@ -186,11 +188,11 @@ const BookDetail = () => {
         updated_at: new Date().toISOString(),
       };
       if (newStatus === "reading" && !book.date_started) {
-        updates.date_started = new Date().toISOString();
+        updates.date_started = todayDateOnly();
       }
       if (newStatus === "completed") {
         updates.date_finished =
-          book.date_finished || new Date().toISOString().split("T")[0];
+          book.date_finished || todayDateOnly();
         if (book.pages) updates.current_page = book.pages;
       }
       await bookOperations.update(book.id, updates);

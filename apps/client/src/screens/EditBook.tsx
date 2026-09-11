@@ -24,6 +24,8 @@ import { bookOperations } from "@/utils/offlineOperation";
 import { validateBookForm, type ValidationError } from "@/utils/formValidation";
 import type { Book } from "@/types";
 import { fetchBookById, uploadPublicStorageFile } from "@/services/api";
+import { DatePicker } from "@/components/ui/date-picker";
+import { normalizeDateOnly, todayDateOnly, validateDateOnly } from "@/lib/dateOnly";
 
 export default function EditBook() {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +38,8 @@ export default function EditBook() {
   const [book, setBook] = useState<Book | null>(null);
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [startDateValid, setStartDateValid] = useState(true);
+  const [finishDateValid, setFinishDateValid] = useState(true);
   const { pickWithPrompt } = useImagePicker();
 
   useEffect(() => {
@@ -62,9 +66,16 @@ export default function EditBook() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!book) return;
+    if (!startDateValid || !finishDateValid) return;
 
     // Validate form
     const validationErrors: ValidationError[] = validateBookForm(book);
+    const startDate = normalizeDateOnly(book.date_started);
+    const finishDate = normalizeDateOnly(book.date_finished);
+    const today = todayDateOnly();
+    if (validateDateOnly(book.date_started, { max: today }) || validateDateOnly(book.date_finished, { max: today }) || (startDate && finishDate && startDate > finishDate)) {
+      return;
+    }
     if (validationErrors.length > 0) {
       const errorMap: Record<string, string> = {};
       validationErrors.forEach((err: ValidationError) => {
@@ -95,8 +106,8 @@ export default function EditBook() {
         notes: book.notes,
         cover_url: book.cover_url,
         tags: book.tags,
-        date_started: book.date_started,
-        date_finished: book.date_finished,
+        date_started: startDate,
+        date_finished: finishDate,
         series_name: book.series_name || null,
         series_position: book.series_position || null,
         series_total: book.series_total || null,
@@ -188,6 +199,8 @@ export default function EditBook() {
   }
 
   if (!book) return null;
+  const today = todayDateOnly();
+  const finishedDate = normalizeDateOnly(book.date_finished);
 
   return (
     <MobileLayout>
@@ -363,26 +376,26 @@ export default function EditBook() {
                 </Select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="date_started">Date Started</Label>
-                  <Input
-                    id="date_started"
-                    type="date"
-                    value={book.date_started || ''}
-                    onChange={(e) => setBook({ ...book, date_started: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="date_finished">Date Finished</Label>
-                  <Input
-                    id="date_finished"
-                    type="date"
-                    value={book.date_finished || ''}
-                    onChange={(e) => setBook({ ...book, date_finished: e.target.value })}
-                  />
-                </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <DatePicker
+                  id="date_started"
+                  label="Date Started"
+                  value={book.date_started}
+                  onChange={(value) => setBook({ ...book, date_started: value })}
+                  maxDate={finishedDate && finishedDate < today ? finishedDate : today}
+                  showToday
+                  onValidityChange={setStartDateValid}
+                />
+                <DatePicker
+                  id="date_finished"
+                  label="Date Finished"
+                  value={book.date_finished}
+                  onChange={(value) => setBook({ ...book, date_finished: value })}
+                  minDate={book.date_started}
+                  maxDate={today}
+                  showToday
+                  onValidityChange={setFinishDateValid}
+                />
               </div>
 
               <div>
@@ -468,7 +481,7 @@ export default function EditBook() {
                 "flex gap-2 pt-4",
                 isMobile && "fixed bottom-20 left-0 right-0 p-4 bg-background border-t z-40"
               )}>
-                <Button type="submit" disabled={saving} className="flex-1 min-h-[44px]">
+                <Button type="submit" disabled={saving || !startDateValid || !finishDateValid} className="flex-1 min-h-[44px]">
                   <FloppyDisk className="mr-2 h-4 w-4" />
                   {saving ? 'Saving...' : 'Save Changes'}
                 </Button>

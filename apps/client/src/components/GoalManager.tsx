@@ -20,6 +20,7 @@ import { BRACK_GOALS_IMAGE, BRACK_TROPHY_IMAGE } from "@/config/brackAssets";
 import { useGoals, type Goal } from "@/hooks/useGoals";
 import { useToast } from "@/hooks/use-toast";
 import { countUp } from "@/lib/animations/gsap-presets";
+import { normalizeDateOnly, toLocalDate } from "@/lib/dateOnly";
 
 interface GoalManagerProps {
   userId: string;
@@ -28,6 +29,11 @@ interface GoalManagerProps {
 type GoalType = "books_count" | "pages_count" | "reading_time";
 type PeriodType = "monthly" | "quarterly" | "yearly" | "custom";
 
+const formatGoalDate = (value: string, pattern: string) => {
+  const date = toLocalDate(normalizeDateOnly(value));
+  return date ? format(date, pattern) : normalizeDateOnly(value) ?? "Date unavailable";
+};
+
 export const GoalManager = ({ userId }: GoalManagerProps) => {
   const { goals, activeGoals, loading, error, createGoal, deleteGoal, completeGoal } = useGoals(userId);
   const { toast } = useToast();
@@ -35,8 +41,10 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
   const [goalType, setGoalType] = useState<GoalType>("books_count");
   const [periodType, setPeriodType] = useState<PeriodType>("yearly");
   const [targetValue, setTargetValue] = useState("");
-  const [startDate, setStartDate] = useState<Date>();
-  const [endDate, setEndDate] = useState<Date>();
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
+  const [startDateValid, setStartDateValid] = useState(true);
+  const [endDateValid, setEndDateValid] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
   const [completedGoalId, setCompletedGoalId] = useState<string | null>(null);
   const progressRefs = useRef<Record<string, HTMLSpanElement | null>>({});
@@ -44,6 +52,7 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
   const completedGoals = goals.filter((goal) => goal.is_completed);
 
   const handleCreate = async () => {
+    if (!startDateValid || !endDateValid) return;
     if (!targetValue || !startDate || !endDate) {
       toast({
         variant: "destructive",
@@ -52,13 +61,17 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
       });
       return;
     }
+    if (!normalizeDateOnly(startDate) || !normalizeDateOnly(endDate) || endDate < startDate) {
+      toast({ variant: "destructive", title: "Check your goal dates", description: "Choose an end date on or after your start date." });
+      return;
+    }
 
     const numericTarget = Math.max(1, Number.parseInt(targetValue, 10) || 0);
     const goalData: Record<string, unknown> = {
       goal_type: goalType,
       period_type: periodType,
-      start_date: format(startDate, "yyyy-MM-dd"),
-      end_date: format(endDate, "yyyy-MM-dd"),
+      start_date: startDate,
+      end_date: endDate,
       is_active: true,
     };
 
@@ -78,8 +91,8 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
       });
       setIsCreateOpen(false);
       setTargetValue("");
-      setStartDate(undefined);
-      setEndDate(undefined);
+      setStartDate(null);
+      setEndDate(null);
     }
   };
 
@@ -196,18 +209,28 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
 
                     <div className="grid gap-4 sm:grid-cols-2">
                       <DatePicker
+                        id="goal-start-date"
                         label="Start Date"
                         value={startDate}
-                        onChange={(_value, date) => setStartDate(date)}
+                        onChange={setStartDate}
+                        maxDate={endDate}
+                        showToday
+                        required
+                        onValidityChange={setStartDateValid}
                       />
                       <DatePicker
+                        id="goal-end-date"
                         label="End Date"
                         value={endDate}
-                        onChange={(_value, date) => setEndDate(date)}
+                        onChange={setEndDate}
+                        minDate={startDate}
+                        showToday
+                        required
+                        onValidityChange={setEndDateValid}
                       />
                     </div>
 
-                    <Button onClick={handleCreate} className="w-full">
+                    <Button onClick={handleCreate} disabled={!startDateValid || !endDateValid} className="w-full">
                       Create Goal
                     </Button>
                   </div>
@@ -368,8 +391,8 @@ const GoalCard = ({
                   <div className="flex items-start gap-2 font-sans text-sm">
                     <AppIcon icon={APP_ICONS.bookDetail.progressDate} variant="inline" className="mt-0.5 text-primary" />
                     <span>
-                      {format(new Date(goal.start_date), "MMM dd")} -{" "}
-                      {format(new Date(goal.end_date), "MMM dd, yyyy")}
+                      {formatGoalDate(goal.start_date, "MMM dd")} -{" "}
+                      {formatGoalDate(goal.end_date, "MMM dd, yyyy")}
                     </span>
                   </div>
                 </div>
@@ -445,8 +468,8 @@ const GoalSnapshot = ({
   const totalGoals = activeGoals.length + completedGoals.length;
   const completedRate = totalGoals > 0 ? Math.round((completedGoals.length / totalGoals) * 100) : 0;
   const nextDeadline = activeGoals
-    .filter((goal) => goal.end_date)
-    .sort((a, b) => new Date(a.end_date as string).getTime() - new Date(b.end_date as string).getTime())[0];
+    .filter((goal) => normalizeDateOnly(goal.end_date))
+    .sort((a, b) => normalizeDateOnly(a.end_date)!.localeCompare(normalizeDateOnly(b.end_date)!))[0];
 
   return (
     <Card>
@@ -461,7 +484,7 @@ const GoalSnapshot = ({
           <SnapshotRow label="Completion rate" value={`${completedRate}%`} />
           <SnapshotRow
             label="Next deadline"
-            value={nextDeadline?.end_date ? format(new Date(nextDeadline.end_date), "MMM dd") : "None"}
+            value={nextDeadline?.end_date ? formatGoalDate(nextDeadline.end_date, "MMM dd") : "None"}
           />
         </div>
 

@@ -29,6 +29,7 @@ import { canonicalizeIsbn } from "@/utils/isbn";
 import { normalizeGenre } from "@/utils/genres";
 import { readingCoreSync } from "@/services/sync/engine";
 import { isConnectivityAvailable } from "@/services/connectivity";
+import { todayDateOnly } from "@/lib/dateOnly";
 
 const BACKUP_FORMAT = "brack-reading-backup" as const;
 const BACKUP_VERSION = 1 as const;
@@ -537,7 +538,7 @@ const mergeBookState = (existing: Book, incoming: Book): Book => {
     status,
     date_started: existing.date_started || incoming.date_started,
     date_finished: status === "completed"
-      ? existing.date_finished || incoming.date_finished || new Date().toISOString().split("T")[0]
+      ? existing.date_finished || incoming.date_finished || todayDateOnly()
       : existing.date_finished,
     rating: existing.rating ?? incoming.rating,
     notes: existing.notes || incoming.notes,

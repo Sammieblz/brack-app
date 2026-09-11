@@ -30,6 +30,8 @@
     "test:e2e": "playwright test",
     "test:e2e:shell": "playwright test --config=playwright.shell-scroll.config.ts",
     "test:e2e:shell:check": "tsc -p tsconfig.shell-scroll.json --noEmit && eslint playwright.shell-scroll.config.ts tests/e2e/shell-scroll.spec.ts tests/fixtures/shell-scroll --max-warnings=0",
+    "test:date-picker": "playwright test --config=playwright.date-picker.config.ts",
+    "test:date-picker:check": "tsc -p tsconfig.date-picker.json --noEmit && eslint playwright.date-picker.config.ts tests/e2e/date-picker.spec.ts tests/fixtures/date-picker --max-warnings=0",
     "test:electron": "playwright test --config=playwright.electron.config.ts",
     "test:db": "supabase test db",
     "test:edge": "deno test supabase/functions/auth-email-availability supabase/functions/dashboard-home supabase/functions/core-telemetry",

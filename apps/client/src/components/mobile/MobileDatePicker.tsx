@@ -1,7 +1,8 @@
-import { forwardRef } from "react";
+import { forwardRef, useId } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import "@/components/ui/date-picker.css";
 
 interface MobileDatePickerProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -11,10 +12,13 @@ interface MobileDatePickerProps extends React.InputHTMLAttributes<HTMLInputEleme
 
 export const MobileDatePicker = forwardRef<HTMLInputElement, MobileDatePickerProps>(
   ({ label, error, helperText, className, ...props }, ref) => {
+    const generatedId = useId();
+    const id = props.id ?? `native-date-${generatedId}`;
+    const descriptionId = `${id}-description`;
     return (
-      <div className="space-y-2">
+      <div data-date-picker className="space-y-2">
         {label && (
-          <Label htmlFor={props.id} className="text-sm font-medium">
+          <Label htmlFor={id} className="text-sm font-medium">
             {label}
           </Label>
         )}
@@ -28,12 +32,16 @@ export const MobileDatePicker = forwardRef<HTMLInputElement, MobileDatePickerPro
             className
           )}
           {...props}
+          id={id}
+          aria-label={props["aria-label"] ?? label}
+          aria-invalid={!!error || props["aria-invalid"]}
+          aria-describedby={[props["aria-describedby"], (error || helperText) && descriptionId].filter(Boolean).join(" ") || undefined}
         />
         {error && (
-          <p className="font-sans text-sm text-destructive">{error}</p>
+          <p id={descriptionId} role="alert" className="font-sans text-sm text-destructive">{error}</p>
         )}
         {helperText && !error && (
-          <p className="font-sans text-sm text-muted-foreground">{helperText}</p>
+          <p id={descriptionId} className="font-sans text-sm text-muted-foreground">{helperText}</p>
         )}
       </div>
     );

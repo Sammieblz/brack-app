@@ -19,6 +19,7 @@ import {
 } from "@/services/connectivity";
 import { buildIsbnSearchQuery, canonicalizeIsbn } from "@/utils/isbn";
 import { trackCoreEvent } from "@/services/telemetry";
+import { todayDateOnly } from "@/lib/dateOnly";
 
 export interface SearchBooksRequest {
   query: string;
@@ -381,7 +382,7 @@ export const updateBookStatus = async (
     const updatedBook = result.book ?? {
       ...book,
       status: "completed",
-      date_finished: book.date_finished || new Date().toISOString().split("T")[0],
+      date_finished: book.date_finished || todayDateOnly(),
       updated_at: new Date().toISOString(),
     };
 
@@ -397,7 +398,7 @@ export const updateBookStatus = async (
   };
 
   if (newStatus === "reading" && !book.date_started) {
-    updateData.date_started = new Date().toISOString();
+    updateData.date_started = todayDateOnly();
   }
 
   const { error } = await supabase
@@ -474,11 +475,11 @@ export const updateBookQuickProgress = async (
 
   if (book.pages && pageNumber >= book.pages && book.status !== "completed") {
     updates.status = "completed";
-    updates.date_finished = new Date().toISOString().split("T")[0];
+    updates.date_finished = todayDateOnly();
   }
 
   if (!book.date_started && pageNumber > 0) {
-    updates.date_started = new Date().toISOString().split("T")[0];
+    updates.date_started = todayDateOnly();
   }
 
   if (

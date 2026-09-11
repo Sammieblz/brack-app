@@ -18,6 +18,7 @@ import { booksRepo, sessionsRepo } from "@/services/local";
 import { timerNativeService } from "@/services/timerNative";
 import { readingCoreSync } from "@/services/sync/engine";
 import { isConnectivityAvailable } from "@/services/connectivity";
+import { todayDateOnly } from "@/lib/dateOnly";
 import {
   MAX_READING_SESSION_MINUTES,
   MAX_READING_SESSION_SECONDS,
@@ -178,7 +179,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
         const updatedBook = {
           ...localBook,
           status: localBook.status === "to_read" ? "reading" : localBook.status,
-          date_started: localBook.date_started || startTime.toISOString().split("T")[0],
+          date_started: localBook.date_started || todayDateOnly(startTime),
           updated_at: new Date().toISOString(),
         };
         await booksRepo.upsertLocal(user.id, updatedBook, "update");
@@ -202,7 +203,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
             bookId: resolvedBookId,
             sessionId: session.id,
             durationMinutes,
-            activityDate: startTime.toISOString().split("T")[0],
+            activityDate: todayDateOnly(startTime),
             pendingSync: true,
           },
         }),

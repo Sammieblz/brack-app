@@ -51,6 +51,8 @@ vi.mock("sonner", () => ({ toast: mocks.toast }));
 
 import { TimerProvider, useTimer } from "./TimerContext";
 
+const SESSION_START = new Date(2026, 7, 10, 23, 50);
+
 const makeBook = (userId: string, id: string): Book => ({
   id,
   user_id: userId,
@@ -113,6 +115,8 @@ const expectCanonicalSession = async (
       user_id: userId,
       book_id: canonicalBook.id,
       duration: 10,
+      start_time: SESSION_START.toISOString(),
+      end_time: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
     });
     expect(await booksRepo.get(canonicalBook.id)).toMatchObject({
       id: canonicalBook.id,
@@ -161,7 +165,7 @@ describe("TimerProvider remapped book identities", () => {
       JSON.stringify({
         time: 600,
         isRunning: false,
-        startTime: "2026-08-10T10:00:00.000Z",
+        startTime: SESSION_START.toISOString(),
         runningSince: null,
         accumulatedSeconds: 600,
         bookId: staleBookId,
@@ -200,6 +204,7 @@ describe("TimerProvider remapped book identities", () => {
           userId,
           bookId: canonicalBook.id,
           sessionId,
+          activityDate: "2026-08-10",
         });
         expect(journalEvents[0]?.detail).toMatchObject({
           bookId: canonicalBook.id,
@@ -223,7 +228,7 @@ describe("TimerProvider remapped book identities", () => {
         bookId: staleBookId,
         bookTitle: canonicalBook.title,
         clientSessionId: sessionId,
-        startTime: "2026-08-10T10:00:00.000Z",
+        startTime: SESSION_START.toISOString(),
         elapsedSeconds: 600,
         suggestedMinutes: 10,
       }),
@@ -249,6 +254,7 @@ describe("TimerProvider remapped book identities", () => {
           userId,
           bookId: canonicalBook.id,
           sessionId,
+          activityDate: "2026-08-10",
         });
       });
     } finally {

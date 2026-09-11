@@ -10,6 +10,7 @@ import { Geolocation } from "@capacitor/geolocation";
 import { useToast } from "@/hooks/use-toast";
 import type { User, Profile } from "@/types";
 import { fetchProfile, type PersonalInfoUpdate, upsertPersonalInfo } from "@/services/api";
+import { normalizeDateOnly, todayDateOnly } from "@/lib/dateOnly";
 
 interface PersonalInfoProps {
   user: User;
@@ -22,6 +23,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
   const [locating, setLocating] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [locationAccuracy, setLocationAccuracy] = useState<number | null>(null);
+  const [birthDateValid, setBirthDateValid] = useState(true);
   
   const [formData, setFormData] = useState({
     first_name: "",
@@ -50,6 +52,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
 
   const buildPayload = (data = formData): PersonalInfoUpdate => ({
     ...data,
+    date_of_birth: normalizeDateOnly(data.date_of_birth),
     latitude: parseCoordinate(data.latitude, "Latitude", -90, 90),
     longitude: parseCoordinate(data.longitude, "Longitude", -180, 180),
     city: data.city.trim() || null,
@@ -136,6 +139,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
     }
   ): Promise<boolean> => {
     if (!user) return false;
+    if (!birthDateValid) return false;
 
     setSaving(true);
     try {
@@ -308,6 +312,10 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
             label="Date of Birth"
             value={formData.date_of_birth}
             onChange={(value) => setFormData(prev => ({ ...prev, date_of_birth: value ?? "" }))}
+            maxDate={todayDateOnly()}
+            showToday={false}
+            onValidityChange={setBirthDateValid}
+            disabled={locating || saving}
           />
         </CardContent>
       </Card>
@@ -377,7 +385,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
             type="button"
             variant="outline"
             onClick={handleGetCurrentLocation}
-            disabled={locating || saving}
+            disabled={locating || saving || !birthDateValid}
             className="flex items-center gap-2"
           >
             <MapPin className="h-4 w-4" />
@@ -399,7 +407,7 @@ export const PersonalInfo = ({ user }: PersonalInfoProps) => {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={handleSave} disabled={locating || saving || !birthDateValid}>
           {saving ? "Saving..." : "Save Changes"}
         </Button>
       </div>
