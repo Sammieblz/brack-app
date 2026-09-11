@@ -1,19 +1,27 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Tabs } from "@/components/ui/tabs";
 import { JourneyTabsRail } from "./JourneyTabsRail";
 
 describe("JourneyTabsRail", () => {
-  beforeAll(() => {
+  let restoreScrollIntoView: () => void;
+
+  beforeEach(() => {
+    const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollIntoView");
     Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
       configurable: true,
       value: vi.fn(),
     });
+    restoreScrollIntoView = () => {
+      if (original) Object.defineProperty(HTMLElement.prototype, "scrollIntoView", original);
+      else Reflect.deleteProperty(HTMLElement.prototype, "scrollIntoView");
+    };
   });
 
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
+    restoreScrollIntoView();
     vi.clearAllMocks();
   });
 
@@ -46,7 +54,13 @@ describe("JourneyTabsRail", () => {
     for (const tab of screen.getAllByRole("tab")) expect(tab).toBeEnabled();
   });
 
-  it("reveals clipped tabs using only the rail's horizontal scroll, never vertical ancestors", () => {
+  it.each([
+    { scenario: "clipped right", tabLeft: 380, scrollLeft: 0, expected: 225 },
+    { scenario: "right boundary", tabLeft: 480, scrollLeft: 0, expected: 300 },
+    { scenario: "clipped left with an existing offset", tabLeft: -30, scrollLeft: 200, expected: 15 },
+    { scenario: "left boundary", tabLeft: -200, scrollLeft: 200, expected: 0 },
+    { scenario: "already visible", tabLeft: 100, scrollLeft: 100, expected: null },
+  ])("reveals $scenario using only horizontal rail scrolling", ({ tabLeft, scrollLeft, expected }) => {
     const { rerender } = render(<Tabs value="overview"><JourneyTabsRail activeTab="overview" /></Tabs>);
     const rail = screen.getByRole("tablist").parentElement!;
     Object.defineProperties(rail, {
@@ -54,17 +68,14 @@ describe("JourneyTabsRail", () => {
       scrollWidth: { value: 600 },
       scrollTo: { value: vi.fn() },
     });
-    vi.spyOn(rail, "getBoundingClientRect").mockReturnValue({ left: 0, right: 300, width: 300 } as DOMRect);
+    rail.scrollLeft = scrollLeft;
+    vi.spyOn(rail, "getBoundingClientRect").mockReturnValue(new DOMRect(50, 0, 300, 44));
     vi.spyOn(screen.getByRole("tab", { name: "League" }), "getBoundingClientRect")
-      .mockReturnValue({ left: 430, right: 520, width: 90 } as DOMRect);
+      .mockReturnValue(new DOMRect(tabLeft, 0, 90, 44));
 
     rerender(<Tabs value="rankings"><JourneyTabsRail activeTab="rankings" /></Tabs>);
-    expect(rail.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 300, behavior: "auto" });
+    if (expected === null) expect(rail.scrollTo).not.toHaveBeenCalled();
+    else expect(rail.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: expected, behavior: "auto" });
     expect(HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
-
-    vi.spyOn(screen.getByRole("tab", { name: "Badges" }), "getBoundingClientRect")
-      .mockReturnValue({ left: 100, right: 190, width: 90 } as DOMRect);
-    rerender(<Tabs value="badges"><JourneyTabsRail activeTab="badges" /></Tabs>);
-    expect(rail.scrollTo).toHaveBeenCalledTimes(1);
   });
 });

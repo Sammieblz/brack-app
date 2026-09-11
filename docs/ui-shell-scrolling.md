@@ -87,11 +87,24 @@ Automated regression results and their exact invocation should be recorded with 
 ## Automated checks
 
 ```sh
+npm test
+npm run test:e2e:shell:check
 npx playwright install chromium firefox webkit
 npm run test:e2e:shell
 ```
 
 `playwright.shell-scroll.config.ts` starts a separate, local-only Vite fixture on port 8082. It renders the production Library and Journey screens, shell, headers, tab rail, and Library views with controlled data and selected unrelated components replaced. It does not sign in to or mutate a real backend. Position assertions run in Chromium, Firefox, and WebKit; the main preview smoke suite excludes this fixture-specific spec. CI runs both suites.
+
+The supporting checks have distinct responsibilities:
+
+- `NativeHeader.test.tsx` checks DOM continuity and working controls through scroll reversals, and verifies that the complete header is connected to the measurement hook. jsdom does not provide real layout, so these are not browser geometry assertions.
+- `useAppHeader.test.tsx` controls `ResizeObserver` deliveries to check border-box measurement, fallback measurement, unchanged/empty notifications, nearest-owner scoping, observer cleanup, restoring a previous height, and React StrictMode effect replay. Scroll events must not install a measurement loop.
+- `JourneyTabsRail.test.tsx` checks horizontal-only navigation with controlled element bounds; browser tests verify actual ancestor scroll positions.
+- `test:e2e:shell:check` type-checks and lints the root-level Playwright configuration, spec, and fixture explicitly. These files are outside the client workspace's usual `src` quality gates. CI runs this check before browser tests.
+
+Failed shell runs retain diagnostic traces, and CI uploads `test-results/` for seven days. Browser screenshots are not required to assert scroll geometry. Do not loosen position assertions or mock the production header just to obtain a passing regression.
+
+For Library fixture readiness, wait for the requested view itself (Flat, Bookshelf, or Carousel), not just the page heading. Preferences resolve asynchronously, and the original test measured geometry before checking that the selected view was visible. A baseline WebKit run failed with a missing scroll owner during that readiness window; its trace did not establish why the owner was temporarily absent. Do not attribute this to lazy loading or hot reload without further evidence. Delayed-cover checks must establish that images loaded successfully, not merely that the browser finished attempting the request. Keyboard checks must establish both the selected tab and the unchanged vertical position.
 
 The pre-fix Chromium reproduction at 1024px measured Library's header changing from 114px to 69px: a requested 70px scroll settled at 50px. Journey's header changed from 189px to 153px at a requested 80px scroll (settling at 70px), then to 128.25px when requesting 51px (settling at 26px). `window.scrollY` remained zero. The regression checks preserve the header and content geometry while repeatedly crossing that old threshold.
 
@@ -102,3 +115,12 @@ The pre-fix Chromium reproduction at 1024px measured Library's header changing f
 - Type checks and production build passed. Repository lint passed with 53 existing warnings; changed components/hooks and the reading-core lint gate passed without warnings. The `npm ci` dry run passed without dependency changes.
 - The fixture uses local fallback fonts and a controlled late font-metrics change; it does not test Google Fonts download behavior. Actual installed PWA, physical iOS/Android, and packaged Electron checks remain outstanding.
 - CI configuration includes the regression suite, but no commit, push, or remote workflow run was performed as part of this validation.
+
+### Supporting-test validation — 2026-09-11
+
+- The committed baseline passed 552 client tests; its full browser run passed 197/198, with one WebKit carousel failure before selected-view readiness had been established. No application behavior was changed in this follow-up.
+- After the supporting-test fixes, all **564 client tests across 84 files** passed (`npx vitest run --maxWorkers=2` from `apps/client`). The four focused header/Journey test files passed **20 tests**, including a separate shuffled run with seed 77.
+- A single fresh-server invocation of `npm run test:e2e:shell` passed **198/198 checks** in 7.2 minutes: 66 each in Chromium, WebKit, and Firefox, with no retries or skips. The updated keyboard, loading, delayed-image, and carousel checks also passed a preceding 12-test targeted run.
+- `npm run check-types`, `npm run test:e2e:shell:check`, and `npm run lint` passed. The dedicated fixture gate and changed unit tests were warning-free; repository lint retained its 53 existing warnings. The `npm ci` dry run passed, with no dependency/lockfile changes.
+- Default Chromium smoke-test discovery still lists 10 tests and excludes the separate shell suite. The fixture server stopped after the run; the existing developer server was left running.
+- This is local Windows browser-engine validation, not a remote Ubuntu CI run or physical-device, installed-PWA, packaged-Electron, or external-font validation. No commit, push, or remote workflow dispatch was performed.

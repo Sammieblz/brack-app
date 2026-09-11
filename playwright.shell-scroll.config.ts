@@ -6,11 +6,16 @@ export default defineConfig({
   timeout: 45_000,
   fullyParallel: true,
   workers: 2,
-  use: { baseURL: 'http://127.0.0.1:8082', trace: 'retain-on-failure', screenshot: 'off' },
+  use: {
+    baseURL: 'http://127.0.0.1:8082',
+    serviceWorkers: 'block',
+    trace: { mode: 'retain-on-failure', screenshots: false },
+    screenshot: 'off',
+  },
   webServer: {
     command: 'npx vite --config tests/fixtures/shell-scroll/vite.config.ts',
     url: 'http://127.0.0.1:8082',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120_000,
   },
   projects: [

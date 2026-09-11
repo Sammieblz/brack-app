@@ -12,7 +12,7 @@ import Achievements from '@/screens/Achievements';
 import '@/index.css';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-function FixtureRoutes() {
+export function FixtureRoutes() {
   useAppViewportHeight();
   return <SwipeBackHandler><PageTransition><Routes>
     <Route path="/my-books" element={<MyBooks />} /><Route path="/achievements" element={<Achievements />} />

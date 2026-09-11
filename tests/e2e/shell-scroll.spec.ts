@@ -1,5 +1,22 @@
 import { expect, test, type Page } from '@playwright/test';
 
+const fixtureOrigin = 'http://127.0.0.1:8082';
+const browserErrors = new WeakMap<Page, string[]>();
+
+test.beforeEach(async ({ page }) => {
+  const errors: string[] = [];
+  browserErrors.set(page, errors);
+  page.on('pageerror', error => errors.push(error.message));
+  // fallback keeps narrower routes (such as delayed covers) in the chain.
+  await page.route('**/*', route => new URL(route.request().url()).origin === fixtureOrigin
+    ? route.fallback()
+    : route.abort());
+});
+
+test.afterEach(async ({ page }) => {
+  expect(browserErrors.get(page) ?? [], 'Unexpected browser errors during the regression').toEqual([]);
+});
+
 async function geometry(page: Page) {
   return page.evaluate(() => {
     const scroll = document.querySelector<HTMLElement>('[data-app-scroll-container]')!;
@@ -28,8 +45,6 @@ for (const width of [320, 390, 768, 834, 1024, 1440]) {
       const initial = await geometry(page);
       expect(initial.ownerCount).toBe(1);
       expect(initial.maxScroll).toBeGreaterThan(100);
-      if (route.includes('bookshelf')) await expect(page.getByRole('region', { name: 'Interactive bookshelf' })).toBeVisible();
-      if (route.includes('carousel')) await expect(page.getByRole('region', { name: 'Library carousel' })).toBeVisible();
       for (const target of [90, 45, 0]) {
         await page.locator('[data-app-scroll-container]').evaluate((element, top) => { element.scrollTop = top; }, target);
         await page.waitForTimeout(160);
@@ -123,10 +138,13 @@ test('Journey tabs only scroll their own horizontal rail, including keyboard cha
   }
   await page.getByRole('tab', { name: 'Overview', exact: true }).focus();
   const keyboardStart = await geometry(page);
-  for (let count = 0; count < 4; count++) {
+  for (const name of ['Quests', 'Shop', 'Badges', 'League']) {
     await page.keyboard.press('ArrowRight');
+    const selected = page.getByRole('tab', { name, exact: true });
+    await expect(selected).toHaveAttribute('data-state', 'active');
+    await expect(selected).toBeFocused();
     await page.waitForTimeout(100);
-    expect((await geometry(page)).scrollTop, `keyboard ArrowRight ${count + 1}`).toBe(keyboardStart.scrollTop);
+    expect((await geometry(page)).scrollTop, `keyboard-selected ${name}`).toBe(keyboardStart.scrollTop);
     expect((await geometry(page)).documentScroll).toBe(0);
   }
 });
@@ -134,8 +152,12 @@ test('Journey tabs only scroll their own horizontal rail, including keyboard cha
 test('Journey reserves its header while data arrives and keeps later content anchored', async ({ page }) => {
   await openFixture(page, '/achievements?loading=1', 390);
   const beforeLoad = await geometry(page);
+  const tabs = page.getByRole('tab');
+  await expect(tabs).toHaveCount(5);
+  for (const tab of await tabs.all()) await expect(tab).toBeDisabled();
   await page.evaluate(() => window.dispatchEvent(new Event('fixture:journey-ready')));
   await expect(page.locator('[data-fixture-journey-content]')).toBeVisible();
+  for (const tab of await tabs.all()) await expect(tab).toBeEnabled();
   const loaded = await geometry(page);
   expect(loaded.headerHeight).toBeCloseTo(beforeLoad.headerHeight, 0);
   await page.locator('[data-app-scroll-container]').evaluate(element => { element.scrollTop = 180; });
@@ -181,20 +203,34 @@ for (const width of [390, 834, 1440]) {
 
 test('delayed Library covers preserve the reading position', async ({ page }) => {
   let releaseImages: (() => void) | undefined;
+  let imageRequested = false;
   const imagesReady = new Promise<void>(resolve => { releaseImages = resolve; });
   await page.route('**/brack-mark.webp', async route => {
+    imageRequested = true;
     await imagesReady;
-    await route.continue();
+    await route.fallback();
   });
-  await openFixture(page, '/my-books?view=flat', 1024);
-  await page.locator('[data-app-scroll-container]').evaluate(element => { element.scrollTop = 250; });
-  const before = await geometry(page);
-  releaseImages!();
-  await expect.poll(() => page.locator('#book-fixture-book-0 img').first().evaluate(image => (image as HTMLImageElement).complete)).toBe(true);
-  const after = await geometry(page);
-  expect(after.headerHeight).toBe(before.headerHeight);
-  expect(after.contentOffset).toBe(before.contentOffset);
-  expect(after.scrollTop).toBe(before.scrollTop);
+  try {
+    await openFixture(page, '/my-books?view=flat', 1024);
+    const cover = page.locator('#book-fixture-book-0 img').first();
+    await expect.poll(() => imageRequested).toBe(true);
+    await expect(cover).toHaveJSProperty('complete', false);
+    await page.locator('[data-app-scroll-container]').evaluate(element => { element.scrollTop = 250; });
+    const before = await geometry(page);
+    releaseImages!();
+    // `complete` is also true for broken images: require a decoded, non-empty cover.
+    await expect.poll(() => cover.evaluate(image => {
+      const cover = image as HTMLImageElement;
+      return cover.complete && cover.naturalWidth > 0;
+    })).toBe(true);
+    await cover.evaluate(image => (image as HTMLImageElement).decode());
+    const after = await geometry(page);
+    expect(after.headerHeight).toBe(before.headerHeight);
+    expect(after.contentOffset).toBe(before.contentOffset);
+    expect(after.scrollTop).toBe(before.scrollTop);
+  } finally {
+    releaseImages!();
+  }
 });
 
 test('last Library control clears mobile navigation at 200 percent text', async ({ page }) => {
@@ -250,16 +286,23 @@ test('mobile League scope picker keeps its accessible label and all ranking grou
 });
 
 async function openFixture(page: Page, route: string, width: number, expanded = false) {
-  const errors: string[] = [];
-  page.on('pageerror', error => errors.push(error.message));
   await page.setViewportSize({ width, height: 700 });
-  await page.context().addCookies([{ name: 'sidebar:state', value: String(expanded), url: 'http://127.0.0.1:8082' }]);
-  await page.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.fallback() : route.abort());
+  await page.context().addCookies([{ name: 'sidebar:state', value: String(expanded), url: fixtureOrigin }]);
   await page.goto(route, { waitUntil: 'domcontentloaded' });
   await expect(page.locator('[data-app-scroll-container] header h1')).toBeVisible().catch(error => {
-    throw new Error(`${String(error)}\nBrowser errors: ${[...new Set(errors)].join('\n')}`);
+    throw new Error(`${String(error)}\nBrowser errors: ${[...new Set(browserErrors.get(page))].join('\n')}`);
   });
+  // Library preferences resolve asynchronously before selecting the requested
+  // view. The first visible h1 is not a ready geometry baseline.
+  if (route.startsWith('/my-books')) {
+    const view = new URL(route, fixtureOrigin).searchParams.get('view') ?? 'flat';
+    if (view === 'bookshelf') await expect(page.getByRole('region', { name: 'Interactive bookshelf' })).toBeVisible();
+    else if (view === 'carousel') await expect(page.getByRole('region', { name: 'Library carousel' })).toBeVisible();
+    else await expect(page.locator('#book-fixture-book-0')).toBeVisible();
+  }
   await page.evaluate(() => document.fonts.ready);
+  // Allow the real entrance transition to settle; scroll-observation windows
+  // below remain intentional so the original delayed threshold jitter is seen.
   await page.waitForTimeout(400);
 }
 
