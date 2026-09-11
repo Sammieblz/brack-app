@@ -34,6 +34,8 @@
     "test:date-picker:check": "tsc -p tsconfig.date-picker.json --noEmit && eslint playwright.date-picker.config.ts tests/e2e/date-picker.spec.ts tests/fixtures/date-picker --max-warnings=0",
     "test:loading": "playwright test --config=playwright.loading.config.ts",
     "test:loading:check": "tsc -p tsconfig.loading.json --noEmit && eslint playwright.loading.config.ts tests/e2e/loading-layout.spec.ts tests/fixtures/loading --max-warnings=0",
+    "test:library-interactions": "playwright test --config=playwright.library-interactions.config.ts",
+    "test:library-interactions:check": "tsc -p tsconfig.library-interactions.json --noEmit && eslint playwright.library-interactions.config.ts tests/e2e/library-interactions.spec.ts tests/fixtures/library-interactions --max-warnings=0",
     "test:electron": "playwright test --config=playwright.electron.config.ts",
     "test:db": "supabase test db",
     "test:edge": "deno test supabase/functions/auth-email-availability supabase/functions/dashboard-home supabase/functions/core-telemetry",

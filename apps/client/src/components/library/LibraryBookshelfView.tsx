@@ -1,6 +1,5 @@
-import { type CSSProperties, useMemo, useState } from "react";
+import { type CSSProperties, type MouseEvent, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { gsap } from "gsap";
 import {
   closestCenter,
   DndContext,
@@ -21,7 +20,6 @@ import { CSS } from "@dnd-kit/utilities";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import { LibraryBookshelfSelection } from "@/components/library/LibraryBookshelfSelection";
 import { LibraryStatusBadge } from "@/components/library/LibraryBookActions";
-import { Checkbox } from "@/components/ui/checkbox";
 import { AppIcon } from "@/components/ui/app-icon";
 import { APP_ICONS } from "@/config/iconography";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
@@ -52,23 +50,6 @@ const chunkBooks = (books: Book[], chunkSize: number) => {
   return rows;
 };
 
-const prefersReducedMotion = () =>
-  typeof window !== "undefined" &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-const animateBook = (element: HTMLElement, active: boolean) => {
-  if (prefersReducedMotion()) return;
-  gsap.to(element, {
-    y: active ? -18 : 0,
-    rotateZ: active ? -1.2 : 0,
-    rotateY: active ? -8 : 0,
-    rotateX: active ? 2 : 0,
-    scale: active ? 1.055 : 1,
-    duration: 0.28,
-    ease: "power3.out",
-  });
-};
-
 interface SortableShelfBookProps {
   book: Book;
   bookIndex: number;
@@ -77,7 +58,7 @@ interface SortableShelfBookProps {
   reorderMode: boolean;
   selectMode: boolean;
   selected: boolean;
-  onSelect: (book: Book) => void;
+  onSelect: (book: Book, trigger: HTMLButtonElement) => void;
   onToggleSelect?: (bookId: string) => void;
 }
 
@@ -96,6 +77,7 @@ const SortableShelfBook = ({
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
@@ -111,12 +93,18 @@ const SortableShelfBook = ({
     zIndex: isDragging ? 40 : undefined,
   } as CSSProperties;
 
-  const handleActivate = () => {
+  const handleActivate = (event: MouseEvent<HTMLButtonElement>) => {
+    // Drag activation and selection are mutually exclusive with opening a book.
+    // Keeping this guard first also prevents a synthetic click after a drag.
+    if (reorderMode) return;
     if (selectMode) {
       onToggleSelect?.(book.id);
       return;
     }
-    if (!reorderMode) onSelect(book);
+    // Safari does not focus buttons on pointer activation by default. Remember
+    // the same native control for every input method before the preview opens.
+    event.currentTarget.focus({ preventScroll: true });
+    onSelect(book, event.currentTarget);
   };
 
   return (
@@ -131,48 +119,33 @@ const SortableShelfBook = ({
         isDragging && "library-shelf-book-dragging"
       )}
       style={bookStyle}
-      onClick={handleActivate}
-      onKeyDown={(event) => {
-        if (reorderMode) return;
-        if (event.key !== "Enter" && event.key !== " ") return;
-        event.preventDefault();
-        handleActivate();
-      }}
-      onMouseEnter={(event) => {
-        if (!reorderMode && !selectMode) animateBook(event.currentTarget, true);
-      }}
-      onMouseLeave={(event) => {
-        if (!reorderMode && !selectMode) animateBook(event.currentTarget, false);
-      }}
-      onFocus={(event) => {
-        if (!reorderMode && !selectMode) animateBook(event.currentTarget, true);
-      }}
-      onBlur={(event) => {
-        if (!reorderMode && !selectMode) animateBook(event.currentTarget, false);
-      }}
-      aria-label={selectMode ? `Select ${book.title}` : reorderMode ? `Move ${book.title}` : `Open ${book.title}`}
-      aria-pressed={selectMode ? selected : undefined}
-      {...(reorderMode ? attributes : { role: "button", tabIndex: 0 })}
-      {...(reorderMode ? listeners : {})}
     >
+      <button
+        ref={setActivatorNodeRef}
+        type="button"
+        className="library-shelf-primary"
+        {...(reorderMode ? attributes : {})}
+        {...(reorderMode ? listeners : {})}
+        onClick={handleActivate}
+        aria-label={reorderMode ? `Move ${book.title}` : selectMode ? `Select ${book.title}` : `Open ${book.title}`}
+        aria-pressed={reorderMode ? attributes["aria-pressed"] : selectMode ? selected : undefined}
+        aria-haspopup={!reorderMode && !selectMode ? "dialog" : undefined}
+      />
       <span className="library-shelf-book-shadow" aria-hidden="true" />
       {reorderMode && (
         <span className="library-shelf-drag-handle" aria-hidden="true">
           <AppIcon icon={APP_ICONS.common.drag} variant="inline" size="xs" />
         </span>
       )}
-      <span className="library-shelf-cover">
+      <span className="library-shelf-cover" aria-hidden="true">
         {selectMode && (
-          <span
-            className="library-shelf-select-checkbox"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <Checkbox
-              checked={selected}
-              onCheckedChange={() => onToggleSelect?.(book.id)}
-              aria-label={`Select ${book.title}`}
-              className="h-5 w-5 rounded-full"
-            />
+          <span className="library-shelf-select-checkbox">
+            <span className={cn(
+              "flex h-5 w-5 items-center justify-center rounded-full border border-primary",
+              selected && "bg-primary text-primary-foreground"
+            )}>
+              {selected && <AppIcon icon={APP_ICONS.common.check} variant="inline" size="xs" />}
+            </span>
           </span>
         )}
         <span className="library-shelf-cover-pages" aria-hidden="true" />
@@ -180,7 +153,7 @@ const SortableShelfBook = ({
           {book.cover_url ? (
             <OptimizedImage
               src={book.cover_url}
-              alt={book.title}
+              alt=""
               className="h-full w-full rounded-[0.22rem] object-cover"
             />
           ) : (
@@ -198,7 +171,7 @@ const SortableShelfBook = ({
           )}
         </span>
       </span>
-      <span className="mt-2 line-clamp-2 font-serif text-xs font-semibold text-foreground transition-colors group-hover:text-primary">
+      <span className="library-shelf-title mt-2 line-clamp-2 font-serif text-xs font-semibold text-foreground" aria-hidden="true">
         {book.title}
       </span>
     </div>
@@ -221,6 +194,8 @@ export const LibraryBookshelfView = ({
   const navigate = useNavigate();
   const { width } = useBreakpoint();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const selectedBookTrigger = useRef<HTMLButtonElement | null>(null);
+  const selectionOpen = useRef(false);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 6 },
@@ -270,7 +245,11 @@ export const LibraryBookshelfView = ({
                       reorderMode={reorderMode}
                       selectMode={selectMode}
                       selected={selectedBookIdSet.has(book.id)}
-                      onSelect={setSelectedBook}
+                      onSelect={(book, trigger) => {
+                        selectedBookTrigger.current = trigger;
+                        selectionOpen.current = true;
+                        setSelectedBook(book);
+                      }}
                       onToggleSelect={onToggleSelect}
                     />
                   ))}
@@ -303,7 +282,18 @@ export const LibraryBookshelfView = ({
         userId={userId}
         open={Boolean(selectedBook)}
         onOpenChange={(open) => {
+          selectionOpen.current = open;
           if (!open) setSelectedBook(null);
+        }}
+        onCloseAutoFocus={(event) => {
+          // This is a programmatically opened preview, so Radix has no
+          // DialogTrigger to restore. Do not steal focus during a responsive
+          // dialog/sheet switch or after navigating away from the shelf.
+          event.preventDefault();
+          if (!selectionOpen.current && selectedBookTrigger.current?.isConnected) {
+            selectedBookTrigger.current.focus({ preventScroll: true });
+            selectedBookTrigger.current = null;
+          }
         }}
         onView={onView}
         onEdit={onEdit}

@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests/e2e",
   // Deterministic component suites have their own data-isolated Vite servers.
-  testIgnore: ["shell-scroll*.spec.ts", "date-picker.spec.ts", "loading-layout.spec.ts"],
+  testIgnore: ["shell-scroll*.spec.ts", "date-picker.spec.ts", "loading-layout.spec.ts", "library-interactions.spec.ts"],
   timeout: 60_000,
   use: {
     baseURL: "http://127.0.0.1:4173",

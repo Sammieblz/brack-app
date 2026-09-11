@@ -38,7 +38,7 @@ const IconAction = ({ label, className, onClick, children }: IconActionProps) =>
         aria-label={label}
         title={label}
         onClick={onClick}
-        className={cn("h-10 w-10 rounded-full", className)}
+        className={cn("h-11 w-11 rounded-full transition-[background-color,border-color,color,box-shadow] hover:translate-y-0", className)}
       >
         {children}
       </Button>
@@ -98,7 +98,7 @@ export const LibraryBookActions = ({
               size="icon"
               aria-label="Add to list"
               title="Add to list"
-              className="h-10 w-10 rounded-full"
+              className="h-11 w-11 rounded-full transition-[background-color,border-color,color,box-shadow] hover:translate-y-0"
             >
               <AppIcon icon={APP_ICONS.library.bookLists} variant="action" />
             </Button>
@@ -116,7 +116,7 @@ export const LibraryBookActions = ({
                   size="icon"
                   aria-label="Delete book"
                   title="Delete book"
-                  className="h-10 w-10 rounded-full border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  className="h-11 w-11 rounded-full border-destructive/50 text-destructive transition-[background-color,border-color,color,box-shadow] hover:translate-y-0 hover:bg-destructive hover:text-destructive-foreground"
                 >
                   <AppIcon icon={APP_ICONS.common.delete} variant="action" />
                 </Button>

@@ -30,6 +30,7 @@ interface LibraryBookshelfSelectionProps {
   userId?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onCloseAutoFocus?: (event: Event) => void;
   onView: (bookId: string) => void;
   onEdit: (bookId: string) => void;
   onDelete: (bookId: string) => Promise<void> | void;
@@ -162,6 +163,7 @@ export const LibraryBookshelfSelection = ({
   userId,
   open,
   onOpenChange,
+  onCloseAutoFocus,
   onView,
   onEdit,
   onDelete,
@@ -176,6 +178,7 @@ export const LibraryBookshelfSelection = ({
         <SheetContent
           side="bottom"
           className="library-selected-book-sheet max-h-[90vh] overflow-y-auto rounded-t-3xl p-4"
+          onCloseAutoFocus={onCloseAutoFocus}
         >
           <SheetHeader className="sr-only">
             <SheetTitle>{book.title}</SheetTitle>
@@ -199,7 +202,10 @@ export const LibraryBookshelfSelection = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="library-selected-book-dialog max-h-[88vh] max-w-5xl overflow-hidden p-0">
+      <DialogContent
+        className="library-selected-book-dialog max-h-[88vh] max-w-5xl overflow-hidden p-0"
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
         <DialogHeader className="sr-only">
           <DialogTitle>{book.title}</DialogTitle>
           <DialogDescription>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LIBRARY_CAROUSEL_ITEM } from "./libraryLayout";
 import {
   Carousel,
@@ -14,7 +14,10 @@ import {
   LibraryStatusBadge,
 } from "@/components/library/LibraryBookActions";
 import { LibraryPhysicalBookCover } from "@/components/library/LibraryPhysicalBookCover";
-import { Checkbox } from "@/components/ui/checkbox";
+import { LibraryBookPrimaryAction } from "./LibraryBookPrimaryAction";
+import { activateLibraryBookSurface } from "./activateLibraryBookSurface";
+import { AppIcon } from "@/components/ui/app-icon";
+import { APP_ICONS } from "@/config/iconography";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { getProgressPercentage } from "@/utils/bookProgress";
@@ -46,6 +49,7 @@ export const LibraryCarouselView = ({
   const [api, setApi] = useState<CarouselApi>();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
   const selectedBookIdSet = useMemo(() => new Set(selectedBookIds), [selectedBookIds]);
 
   useEffect(() => {
@@ -77,6 +81,14 @@ export const LibraryCarouselView = ({
               const isSelected = index === selectedIndex;
               const highlighted = book.id === highlightedBookId;
               const selectedForBulk = selectedBookIdSet.has(book.id);
+              const activate = () => {
+                if (selectMode) {
+                  onToggleSelect?.(book.id);
+                  return;
+                }
+                returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+                setSelectedBook(book);
+              };
 
               return (
                 <CarouselItem
@@ -85,42 +97,29 @@ export const LibraryCarouselView = ({
                 >
                   <article
                     className={cn(
-                      "library-carousel-card relative flex h-full min-h-[24rem] flex-col rounded-xl border border-border/70 bg-background/80 p-4 shadow-sm transition-all duration-300",
+                      "library-book-surface library-carousel-card relative flex h-full min-h-[24rem] flex-col rounded-xl border border-border/70 bg-background/80 p-4 shadow-sm transition-[border-color,box-shadow] duration-150",
                       isSelected && "border-primary/55 shadow-medium",
                       highlighted && "ring-2 ring-primary/70 shadow-glow",
                       selectMode && "cursor-pointer",
                       selectedForBulk && "border-primary/70 ring-2 ring-primary/65"
                     )}
+                    onClick={(event) => activateLibraryBookSurface(event, activate)}
                   >
+                    <LibraryBookPrimaryAction title={book.title} selectMode={selectMode} selected={selectedForBulk} opensDialog onActivate={activate} />
                     {selectMode && (
                       <span
                         className={cn(
-                          "absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-background/95 backdrop-blur transition-colors",
+                          "pointer-events-none absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-background/95 backdrop-blur",
                           selectedForBulk && "bg-primary/10"
                         )}
-                        onClick={(event) => event.stopPropagation()}
+                        aria-hidden="true"
                       >
-                        <Checkbox
-                          checked={selectedForBulk}
-                          onCheckedChange={() => onToggleSelect?.(book.id)}
-                          aria-label={`Select ${book.title}`}
-                          className="h-5 w-5 rounded-full"
-                        />
+                        <span className={cn("flex h-5 w-5 items-center justify-center rounded-full border border-primary", selectedForBulk && "bg-primary text-primary-foreground")}>
+                          {selectedForBulk && <AppIcon icon={APP_ICONS.common.check} className="h-3.5 w-3.5" />}
+                        </span>
                       </span>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (selectMode) {
-                          onToggleSelect?.(book.id);
-                          return;
-                        }
-                        setSelectedBook(book);
-                      }}
-                      className="group flex flex-1 flex-col text-left"
-                      aria-label={selectMode ? `Select ${book.title}` : `Open ${book.title}`}
-                      aria-pressed={selectMode ? selectedForBulk : undefined}
-                    >
+                    <div className="relative z-[1] flex flex-1 flex-col text-left">
                       <LibraryPhysicalBookCover
                         book={book}
                         variant="carousel"
@@ -136,7 +135,7 @@ export const LibraryCarouselView = ({
                         )}
                       </span>
 
-                      <h3 className="mt-3 line-clamp-2 font-serif text-lg font-semibold leading-snug text-foreground group-hover:text-primary">
+                      <h3 className="mt-3 line-clamp-2 font-serif text-lg font-semibold leading-snug text-foreground">
                         {book.title}
                       </h3>
                       {book.author && (
@@ -158,10 +157,10 @@ export const LibraryCarouselView = ({
                           </p>
                         </div>
                       )}
-                    </button>
+                    </div>
 
                     {!selectMode && (
-                      <div className="mt-4 border-t border-border/60 pt-3">
+                      <div className="relative z-[1] mt-4 border-t border-border/60 pt-3">
                         <LibraryBookActions
                           book={book}
                           userId={userId}
@@ -179,27 +178,29 @@ export const LibraryCarouselView = ({
           </CarouselContent>
 
           <div className="mt-4 flex items-center justify-between gap-3">
-            <CarouselPrevious className="static translate-y-0" />
+            <CarouselPrevious className="static h-11 w-11 translate-y-0 hover:translate-y-0" />
             <div className="min-w-0 flex-1 text-center">
-              <div className="mb-1 flex max-w-full justify-start gap-1.5 overflow-x-auto px-1 sm:justify-center">
-                {books.map((book, index) => (
-                  <button
-                    key={book.id}
-                    type="button"
-                    className={cn(
-                      "h-1.5 rounded-full transition-all",
-                      selectedIndex === index ? "w-6 bg-primary" : "w-1.5 bg-muted-foreground/35"
-                    )}
-                    aria-label={`Go to ${book.title}`}
-                    onClick={() => api?.scrollTo(index)}
-                  />
-                ))}
+              <div className="max-w-full overflow-x-auto">
+                <div className="flex w-max min-w-full justify-center px-1">
+                  {books.map((book, index) => (
+                    <button
+                      key={book.id}
+                      type="button"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
+                      aria-label={`Go to ${book.title}`}
+                      aria-current={selectedIndex === index ? "true" : undefined}
+                      onClick={() => api?.scrollTo(index)}
+                    >
+                      <span aria-hidden="true" className={cn("h-1.5 rounded-full", selectedIndex === index ? "w-6 bg-primary" : "w-1.5 bg-muted-foreground/35")} />
+                    </button>
+                  ))}
+                </div>
               </div>
               <p className="font-sans text-xs text-muted-foreground">
                 {selectedIndex + 1} of {books.length}
               </p>
             </div>
-            <CarouselNext className="static translate-y-0" />
+            <CarouselNext className="static h-11 w-11 translate-y-0 hover:translate-y-0" />
           </div>
         </Carousel>
       </section>
@@ -214,6 +215,9 @@ export const LibraryCarouselView = ({
         onView={onView}
         onEdit={onEdit}
         onDelete={onDelete}
+        onCloseAutoFocus={() => {
+          if (returnFocus.current?.isConnected) returnFocus.current.focus({ preventScroll: true });
+        }}
       />
     </>
   );

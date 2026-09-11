@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import {
   Accordion,
@@ -14,7 +12,10 @@ import {
   LibraryStatusBadge,
 } from "@/components/library/LibraryBookActions";
 import { LibraryPhysicalBookCover } from "@/components/library/LibraryPhysicalBookCover";
-import { ImageLightbox } from "@/components/ui/image-lightbox";
+import { LibraryBookPrimaryAction } from "@/components/library/LibraryBookPrimaryAction";
+import { activateLibraryBookSurface } from "@/components/library/activateLibraryBookSurface";
+import { AppIcon } from "@/components/ui/app-icon";
+import { APP_ICONS } from "@/config/iconography";
 import { cn } from "@/lib/utils";
 import { getProgressPercentage } from "@/utils/bookProgress";
 import type { Book } from "@/types";
@@ -42,85 +43,44 @@ export const LibraryBookCard = ({
   onDelete,
   onToggleSelect,
 }: LibraryBookCardProps) => {
-  const [lightboxOpen, setLightboxOpen] = useState(false);
   const progress = getProgressPercentage(book);
   const hasProgress = book.status === "reading" && Boolean(book.pages);
-  const handleSelect = () => onToggleSelect?.(book.id);
+  const activate = () => selectMode ? onToggleSelect?.(book.id) : onView(book.id);
 
   return (
     <Card
       id={`book-${book.id}`}
       className={cn(
-        "relative overflow-hidden border-border/70 bg-card/85 shadow-sm transition-all duration-300",
+        "library-book-surface relative overflow-hidden border-border/70 bg-card/85 shadow-sm transition-[border-color,box-shadow] duration-150",
         highlighted && "ring-2 ring-primary/70 shadow-glow",
         selectMode && "cursor-pointer",
         selected && "border-primary/70 ring-2 ring-primary/65"
       )}
-      onClick={() => {
-        if (selectMode) handleSelect();
-      }}
-      role={selectMode ? "button" : undefined}
-      aria-pressed={selectMode ? selected : undefined}
+      onClick={(event) => activateLibraryBookSurface(event, activate)}
     >
+      <LibraryBookPrimaryAction title={book.title} selectMode={selectMode} selected={selected} onActivate={activate} />
       {selectMode && (
         <div
-          className="absolute right-3 top-3 z-10 rounded-full bg-background/90 p-1"
-          onClick={(event) => event.stopPropagation()}
+          className="pointer-events-none absolute right-3 top-3 z-10 rounded-full bg-background/90 p-1"
+          aria-hidden="true"
         >
-          <Checkbox
-            checked={selected}
-            onCheckedChange={handleSelect}
-            aria-label={`Select ${book.title}`}
-            className="h-5 w-5 rounded-full"
-          />
+          <span className={cn("flex h-5 w-5 items-center justify-center rounded-full border border-primary", selected && "bg-primary text-primary-foreground")}>
+            {selected && <AppIcon icon={APP_ICONS.common.check} className="h-3.5 w-3.5" />}
+          </span>
         </div>
       )}
-      <Accordion type="single" collapsible>
+      <Accordion type="single" collapsible className="relative z-[1]">
         <AccordionItem value={book.id} className="border-0">
           <CardContent className="p-0">
             <div className="flex min-h-[8.75rem] gap-3 p-3 sm:p-4">
-              <button
-                type="button"
-                className="group shrink-0"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  if (selectMode) {
-                    handleSelect();
-                    return;
-                  }
-                  if (book.cover_url) setLightboxOpen(true);
-                }}
-                aria-label={`Open ${book.title} cover`}
-              >
-                {book.cover_url ? (
-                  <ImageLightbox
-                    src={book.cover_url}
-                    alt={book.title}
-                    isOpen={lightboxOpen}
-                    onClose={() => setLightboxOpen(false)}
-                  >
-                    <LibraryPhysicalBookCover book={book} variant="card" />
-                  </ImageLightbox>
-                ) : (
-                  <LibraryPhysicalBookCover book={book} variant="card" />
-                )}
-              </button>
+              <div className="flex shrink-0 items-center">
+                <LibraryPhysicalBookCover book={book} variant="card" />
+              </div>
 
               <div className="min-w-0 flex-1">
                 <div className="flex min-w-0 items-start justify-between gap-2">
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      if (selectMode) {
-                        event.stopPropagation();
-                        handleSelect();
-                        return;
-                      }
-                      onView(book.id);
-                    }}
-                    className="min-w-0 text-left"
-                  >
-                    <h3 className="line-clamp-2 font-serif text-base font-semibold leading-snug text-foreground transition-colors hover:text-primary">
+                  <div className={cn("min-w-0 text-left", selectMode && "pr-7")}>
+                    <h3 className="line-clamp-2 font-serif text-base font-semibold leading-snug text-foreground">
                       {book.title}
                     </h3>
                     {book.author && (
@@ -128,11 +88,11 @@ export const LibraryBookCard = ({
                         by {book.author}
                       </p>
                     )}
-                  </button>
+                  </div>
 
                   {!selectMode && (
                     <AccordionTrigger
-                      className="h-9 w-9 shrink-0 justify-center rounded-full p-0 hover:bg-accent hover:no-underline"
+                      className="h-11 w-11 shrink-0 justify-center rounded-full p-0 hover:bg-accent hover:no-underline"
                       aria-label={`Expand ${book.title}`}
                     >
                       <span className="sr-only">Expand</span>
