@@ -25,6 +25,7 @@ interface LibraryBookDetailSheetProps {
   onView: (bookId: string) => void;
   onEdit: (bookId: string) => void;
   onDelete: (bookId: string) => Promise<void> | void;
+  onCloseAutoFocus?: () => void;
 }
 
 export const LibraryBookDetailSheet = ({
@@ -35,6 +36,7 @@ export const LibraryBookDetailSheet = ({
   onView,
   onEdit,
   onDelete,
+  onCloseAutoFocus,
 }: LibraryBookDetailSheetProps) => {
   const { isPhone } = useBreakpoint();
 
@@ -48,6 +50,10 @@ export const LibraryBookDetailSheet = ({
       <SheetContent
         side={isPhone ? "bottom" : "right"}
         className="max-h-[88vh] overflow-y-auto rounded-t-2xl p-5 sm:max-w-md sm:rounded-none"
+        onCloseAutoFocus={onCloseAutoFocus ? (event) => {
+          event.preventDefault();
+          onCloseAutoFocus();
+        } : undefined}
       >
         <SheetHeader className="pr-8 text-left">
           <SheetTitle className="line-clamp-2">{book.title}</SheetTitle>

@@ -67,6 +67,9 @@ jobs:
       - name: Typecheck and lint loading-layout regression tests
         run: npm run test:loading:check
 
+      - name: Typecheck and lint Library interaction regression tests
+        run: npm run test:library-interactions:check
+
       - name: Verify optimized static media
         run: npm run media:assets:check
 
@@ -381,6 +384,19 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: loading-layout-results
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Verify Library card interaction stability
+        id: library_interactions
+        run: npm run test:library-interactions
+
+      - name: Upload Library interaction failure traces
+        if: ${{ failure() && steps.library_interactions.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: library-interaction-failure-traces
           path: test-results/
           if-no-files-found: ignore
           retention-days: 7

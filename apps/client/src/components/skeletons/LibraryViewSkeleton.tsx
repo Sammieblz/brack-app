@@ -60,7 +60,7 @@ export const LibraryViewSkeleton = ({ viewMode = "flat", count, selectMode = fal
         </div>
         <div className="mt-4 flex items-center justify-between gap-3">
           <Skeleton className="h-11 w-11 shrink-0 rounded-full" />
-          <div className="space-y-1"><Skeleton className="mx-auto h-2 w-16 rounded-full" /><Skeleton className="h-4 w-24" /></div>
+          <div><div className="flex h-11 items-center"><Skeleton className="mx-auto h-1.5 w-16 rounded-full" /></div><Skeleton className="h-4 w-24" /></div>
           <Skeleton className="h-11 w-11 shrink-0 rounded-full" />
         </div>
       </div>

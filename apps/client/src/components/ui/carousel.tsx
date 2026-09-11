@@ -85,6 +85,13 @@ const Carousel = React.forwardRef<
 
     const handleKeyDown = React.useCallback(
       (event: React.KeyboardEvent<HTMLDivElement>) => {
+        const target = event.target
+        // React portals bubble through their owner, not their DOM location.
+        // A dialog or editable control owns its arrows, not the carousel below.
+        if (event.defaultPrevented || !(target instanceof Element) ||
+          !event.currentTarget.contains(target) || target.closest(
+            "input,textarea,select,[contenteditable]:not([contenteditable='false']),[role='slider'],[role='combobox'],[role='listbox'],[role='menu'],[role='tablist']"
+          )) return
         if (event.key === "ArrowLeft") {
           event.preventDefault()
           scrollPrev()

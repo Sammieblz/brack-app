@@ -837,13 +837,62 @@ All colors MUST be HSL.
     touch-action: manipulation;
   }
 
-  .library-bookshelf-reordering .library-shelf-book {
+  /* The native primary control owns a stable hit area. Covers and metadata
+     remain separate from secondary controls rather than nesting buttons. */
+  .library-book-surface {
+    isolation: isolate;
+    cursor: pointer;
+  }
+
+  .library-book-primary,
+  .library-shelf-primary {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    min-width: 44px;
+    min-height: 44px;
+    border: 0;
+    border-radius: inherit;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: none;
+  }
+
+  .library-shelf-primary {
+    z-index: 10;
+    border-radius: 0.5rem;
+  }
+
+  .library-shelf-book > :not(.library-shelf-primary),
+  .library-shelf-book > :not(.library-shelf-primary) * {
+    pointer-events: none;
+  }
+
+  .library-book-primary:focus-visible,
+  .library-shelf-primary:focus-visible,
+  .library-book-surface:has(.library-book-primary:focus-visible) {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: -2px;
+  }
+
+  /* Paper's tangible-button treatment must not move a card's hit target. */
+  html[data-brack-theme-style] :is(.library-book-primary, .library-shelf-primary),
+  html[data-brack-theme-style] :is(.library-book-primary, .library-shelf-primary):active {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .library-bookshelf-reordering .library-shelf-book,
+  .library-bookshelf-reordering .library-shelf-primary {
     cursor: grab;
     touch-action: none;
   }
 
-  .library-bookshelf-reordering .library-shelf-book:active,
-  .library-shelf-book-dragging {
+  .library-bookshelf-reordering .library-shelf-primary:active,
+  .library-shelf-book-dragging,
+  .library-shelf-book-dragging .library-shelf-primary {
     cursor: grabbing;
   }
 
@@ -887,8 +936,9 @@ All colors MUST be HSL.
   .library-shelf-select-checkbox {
     position: absolute;
     z-index: 8;
-    right: -0.65rem;
-    top: -0.65rem;
+    /* Keep the whole visual marker inside the owning book's hit area. */
+    right: 0;
+    top: 0;
     display: grid;
     height: 2rem;
     width: 2rem;
@@ -900,12 +950,7 @@ All colors MUST be HSL.
     box-shadow:
       0 0.45rem 1rem -0.65rem hsl(var(--foreground) / 0.34),
       0 0 0 1px hsl(var(--background) / 0.74);
-    pointer-events: auto;
-    transition:
-      background 180ms ease,
-      border-color 180ms ease,
-      box-shadow 180ms ease,
-      transform 180ms ease;
+    pointer-events: none;
   }
 
   .library-shelf-book-selected .library-shelf-select-checkbox {
@@ -914,7 +959,6 @@ All colors MUST be HSL.
     box-shadow:
       0 0.45rem 1rem -0.65rem hsl(var(--foreground) / 0.34),
       0 0 0 2px hsl(var(--primary) / 0.18);
-    transform: scale(1.06);
   }
 
   .library-shelf-book-selected .library-shelf-cover {
@@ -937,13 +981,7 @@ All colors MUST be HSL.
     background: radial-gradient(ellipse, var(--library-book-contact), transparent 70%);
     filter: blur(5px);
     opacity: 0.72;
-    transition: opacity 180ms ease, transform 180ms ease;
-  }
-
-  .library-shelf-book:hover .library-shelf-book-shadow,
-  .library-shelf-book:focus-visible .library-shelf-book-shadow {
-    opacity: 0.48;
-    transform: translateX(-50%) translateY(0.8rem) scale(0.78) rotate(var(--book-lean));
+    transition: opacity 180ms ease;
   }
 
   .library-shelf-add-book {
@@ -973,7 +1011,7 @@ All colors MUST be HSL.
     background: radial-gradient(ellipse, hsl(var(--primary) / 0.32), transparent 70%);
     filter: blur(5px);
     opacity: 0.58;
-    transition: opacity 180ms ease, transform 180ms ease;
+    transition: opacity 180ms ease;
   }
 
   .library-shelf-add-book-cover {
@@ -996,10 +1034,7 @@ All colors MUST be HSL.
     filter: drop-shadow(0.34rem 0.68rem 0.4rem hsl(var(--foreground) / 0.16));
     transition:
       border-color 180ms ease,
-      background 180ms ease,
-      color 180ms ease,
-      filter 180ms ease,
-      transform 180ms ease;
+      color 180ms ease;
   }
 
   .library-shelf-add-book-cover::before {
@@ -1028,22 +1063,6 @@ All colors MUST be HSL.
     pointer-events: none;
   }
 
-  .library-shelf-add-book:hover .library-shelf-add-book-shadow,
-  .library-shelf-add-book:focus-visible .library-shelf-add-book-shadow {
-    opacity: 0.38;
-    transform: translateX(-50%) translateY(0.75rem) scale(0.82);
-  }
-
-  .library-shelf-add-book:hover .library-shelf-add-book-cover,
-  .library-shelf-add-book:focus-visible .library-shelf-add-book-cover {
-    transform: translateY(-0.72rem) rotate(-1deg) rotateY(-13deg) scale(1.04);
-    border-color: hsl(var(--primary) / 0.82);
-    background:
-      radial-gradient(circle at 50% 36%, hsl(var(--primary) / 0.22), transparent 42%),
-      linear-gradient(145deg, hsl(var(--primary) / 0.1), hsl(var(--card) / 0.88));
-    filter: drop-shadow(0.58rem 0.92rem 0.48rem hsl(var(--foreground) / 0.18));
-  }
-
   .library-shelf-add-book:focus-visible {
     outline: none;
   }
@@ -1062,12 +1081,6 @@ All colors MUST be HSL.
     transform: rotate(var(--book-lean)) translateZ(0);
     transform-style: preserve-3d;
     filter: drop-shadow(0.38rem 0.75rem 0.48rem var(--library-cover-shadow));
-    transition: filter 180ms ease;
-  }
-
-  .library-shelf-book:hover .library-shelf-cover,
-  .library-shelf-book:focus-visible .library-shelf-cover {
-    filter: drop-shadow(0.72rem 1.05rem 0.62rem var(--library-cover-hover-shadow));
   }
 
   .library-shelf-cover-pages {
@@ -1176,16 +1189,8 @@ All colors MUST be HSL.
     flex: 0 0 auto;
     transform: rotateY(-9deg) rotateX(1deg) translateZ(0);
     transform-style: preserve-3d;
-    cursor: grab;
+    cursor: inherit;
     filter: drop-shadow(0.5rem 0.9rem 0.5rem var(--physical-book-shadow));
-    transition:
-      filter 220ms ease,
-      transform 220ms ease;
-    will-change: transform, filter;
-  }
-
-  .library-physical-book:active {
-    cursor: grabbing;
   }
 
   .library-physical-book-card {
@@ -1267,11 +1272,23 @@ All colors MUST be HSL.
     object-fit: cover;
   }
 
-  .library-physical-book:hover,
-  .group:hover .library-physical-book,
-  .group:focus-visible .library-physical-book {
-    transform: translateY(-0.48rem) rotateY(-16deg) rotateX(3deg) rotateZ(-1deg) scale(1.045);
-    filter: drop-shadow(0.85rem 1.25rem 0.72rem var(--physical-book-hover-shadow));
+  @media (hover: hover) and (pointer: fine) {
+    .library-book-surface:hover {
+      border-color: hsl(var(--primary) / 0.55);
+    }
+
+    .library-shelf-book:not(.library-shelf-book-reordering):hover .library-shelf-book-shadow,
+    .library-shelf-add-book:hover .library-shelf-add-book-shadow {
+      opacity: 0.85;
+    }
+
+    .library-shelf-book:not(.library-shelf-book-reordering):hover .library-shelf-title {
+      color: hsl(var(--primary));
+    }
+
+    .library-shelf-add-book:hover .library-shelf-add-book-cover {
+      border-color: hsl(var(--primary) / 0.82);
+    }
   }
 
   .library-selected-book-dialog,
@@ -1760,14 +1777,6 @@ All colors MUST be HSL.
   .dark .library-physical-book,
   .dark .library-selected-book-cover {
     filter: drop-shadow(0.38rem 0.62rem 0.34rem hsl(0 0% 0% / 0.48));
-  }
-
-  .dark .library-shelf-book:hover .library-shelf-cover,
-  .dark .library-shelf-book:focus-visible .library-shelf-cover,
-  .dark .library-physical-book:hover,
-  .dark .group:hover .library-physical-book,
-  .dark .group:focus-visible .library-physical-book {
-    filter: drop-shadow(0.5rem 0.78rem 0.42rem hsl(0 0% 0% / 0.44));
   }
 
   .dark .library-physical-book {

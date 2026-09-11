@@ -29,6 +29,7 @@ export const LibraryPhysicalBookCover = ({
           src={book.cover_url}
           alt={book.title}
           className="library-physical-book-image"
+          draggable={false}
         />
       ) : (
         <span className="flex h-full w-full items-center justify-center rounded-[0.28rem] bg-primary/10 text-primary">

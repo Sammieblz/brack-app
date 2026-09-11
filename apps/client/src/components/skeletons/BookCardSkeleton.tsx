@@ -21,7 +21,7 @@ export const BookCardSkeleton = ({ variant = "default", selectMode = false, show
                 <Skeleton className="h-[1.375rem] w-4/5" />
                 <Skeleton className="mt-0.5 h-5 w-3/5" />
               </div>
-              {(isLibrary || isList) && <Skeleton className="h-9 w-9 shrink-0 rounded-full" />}
+              {(isLibrary || isList) && <Skeleton className={cn("shrink-0 rounded-full", isLibrary ? "h-11 w-11" : "h-9 w-9")} />}
             </div>
             <div className="mt-2 flex flex-wrap gap-2">
               <Skeleton className="h-[1.375rem] w-16 rounded-full" />
