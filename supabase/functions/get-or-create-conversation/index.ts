@@ -6,7 +6,7 @@ import {
   parseJsonBody,
 } from "../_shared/appEndpoint.ts";
 import { enforceRateLimit } from "../_shared/rateLimit.ts";
-import { isPairBlocked } from "../_shared/messaging.ts";
+import { getDirectMessageEligibility } from "../_shared/messaging.ts";
 
 interface GetOrCreateConversationBody {
   other_user_id?: unknown;
@@ -38,8 +38,17 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "You cannot message yourself" }, 400, origin);
     }
 
-    const blocked = await isPairBlocked(supabaseClient, userId, otherUserId);
-    if (blocked) return jsonResponse({ error: "Messaging is unavailable for this reader" }, 403, origin);
+    const eligibility = await getDirectMessageEligibility(
+      supabaseClient,
+      userId,
+      otherUserId
+    );
+    if (eligibility !== "eligible") {
+      return jsonResponse({
+        error: "Messaging is unavailable for this reader",
+        code: eligibility,
+      }, 403, origin);
+    }
 
     const { data: profile, error: profileError } = await supabaseClient
       .from("profiles")

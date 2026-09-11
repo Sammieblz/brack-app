@@ -10,12 +10,21 @@ import {
   type PublicGamificationProfile,
 } from "./gamification";
 import type { Post, PostType, PostVisibility } from "./social";
+import {
+  fetchDirectMessageEligibility,
+  type DirectMessageEligibilityStatus,
+} from "./messaging";
 
 export interface FollowStats {
   followersCount: number;
   followingCount: number;
   isFollowing: boolean;
+  isFollowedBy: boolean;
+  isMutual: boolean;
+  messageEligibility: DirectMessageEligibilityStatus;
 }
+
+const FOLLOW_RELATIONSHIP_CHANGED_EVENT = "brack:follow-relationship-changed";
 
 export interface UserProfile {
   id: string;
@@ -60,7 +69,14 @@ export const fetchFollowStats = async (userId: string): Promise<FollowStats> => 
       .maybeSingle();
 
     if (block) {
-      return { followersCount: 0, followingCount: 0, isFollowing: false };
+      return {
+        followersCount: 0,
+        followingCount: 0,
+        isFollowing: false,
+        isFollowedBy: false,
+        isMutual: false,
+        messageEligibility: "restricted",
+      };
     }
   }
 
@@ -77,21 +93,42 @@ export const fetchFollowStats = async (userId: string): Promise<FollowStats> => 
     ]);
 
   let isFollowing = false;
-  if (currentUser) {
-    const { data } = await supabase
-      .from("user_follows")
-      .select("id")
-      .eq("follower_id", currentUser.id)
-      .eq("following_id", userId)
-      .maybeSingle();
+  let isFollowedBy = false;
+  let messageEligibility: DirectMessageEligibilityStatus = "restricted";
+  if (currentUser && currentUser.id !== userId) {
+    const [outboundResult, inboundResult, eligibility] = await Promise.all([
+      supabase
+        .from("user_follows")
+        .select("id")
+        .eq("follower_id", currentUser.id)
+        .eq("following_id", userId)
+        .maybeSingle(),
+      supabase
+        .from("user_follows")
+        .select("id")
+        .eq("follower_id", userId)
+        .eq("following_id", currentUser.id)
+        .maybeSingle(),
+      fetchDirectMessageEligibility(userId).catch((error) => {
+        console.warn("Unable to verify direct-message eligibility", error);
+        return { can_message: false, status: "restricted" as const };
+      }),
+    ]);
 
-    isFollowing = !!data;
+    if (outboundResult.error) throw outboundResult.error;
+    if (inboundResult.error) throw inboundResult.error;
+    isFollowing = Boolean(outboundResult.data);
+    isFollowedBy = Boolean(inboundResult.data);
+    messageEligibility = eligibility.status;
   }
 
   return {
     followersCount: followersCount || 0,
     followingCount: followingCount || 0,
     isFollowing,
+    isFollowedBy,
+    isMutual: isFollowing && isFollowedBy,
+    messageEligibility,
   };
 };
 
@@ -105,6 +142,7 @@ export const followUser = async (userId: string): Promise<void> => {
   });
 
   if (error) throw error;
+  window.dispatchEvent(new Event(FOLLOW_RELATIONSHIP_CHANGED_EVENT));
 };
 
 export const unfollowUser = async (userId: string): Promise<void> => {
@@ -118,6 +156,44 @@ export const unfollowUser = async (userId: string): Promise<void> => {
     .eq("following_id", userId);
 
   if (error) throw error;
+  window.dispatchEvent(new Event(FOLLOW_RELATIONSHIP_CHANGED_EVENT));
+};
+
+export const subscribeToFollowRelationship = (
+  currentUserId: string,
+  otherUserId: string,
+  onChange: () => void
+): (() => void) => {
+  const handleLocalChange = () => onChange();
+  const channel = supabase
+    .channel(`follow-relationship:${currentUserId}:${otherUserId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "user_follows",
+        filter: `follower_id=eq.${currentUserId}`,
+      },
+      onChange
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "user_follows",
+        filter: `following_id=eq.${currentUserId}`,
+      },
+      onChange
+    )
+    .subscribe();
+
+  window.addEventListener(FOLLOW_RELATIONSHIP_CHANGED_EVENT, handleLocalChange);
+  return () => {
+    supabase.removeChannel(channel);
+    window.removeEventListener(FOLLOW_RELATIONSHIP_CHANGED_EVENT, handleLocalChange);
+  };
 };
 
 export const fetchUserProfileWithStats = async (

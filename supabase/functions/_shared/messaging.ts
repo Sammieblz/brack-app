@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.53.0";
 
 export type MessageReactionType = "like" | "dislike" | "heart" | "laugh" | "wow" | "thanks";
+export type DirectMessageEligibilityStatus =
+  | "eligible"
+  | "relationship_required"
+  | "restricted";
 
 export const MESSAGE_REACTIONS = new Set<MessageReactionType>([
   "like",
@@ -93,6 +97,28 @@ export const isPairBlocked = async (
 
   if (error) throw error;
   return Boolean(data);
+};
+
+export const getDirectMessageEligibility = async (
+  supabaseClient: SupabaseClient,
+  userA: string,
+  userB: string
+): Promise<DirectMessageEligibilityStatus> => {
+  const { data, error } = await supabaseClient.rpc("direct_message_pair_status", {
+    p_user_a: userA,
+    p_user_b: userB,
+  });
+
+  if (error) throw error;
+  if (
+    data !== "eligible" &&
+    data !== "relationship_required" &&
+    data !== "restricted"
+  ) {
+    throw new Error("Direct-message eligibility returned an invalid status");
+  }
+
+  return data;
 };
 
 const signUploadedMedia = async (

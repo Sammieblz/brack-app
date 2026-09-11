@@ -1240,6 +1240,11 @@
     },
     {
       "type": "column",
+      "name": "public.conversations.eligibility_updated_at",
+      "sha256": "517f79387a56c5f215f8cfbd18b158f87bbe6f4c849ff8de1757434e9bf38fb4"
+    },
+    {
+      "type": "column",
       "name": "public.conversations.id",
       "sha256": "bf157fb661e083f172463521e3bdb514b75d90e7a861754f9dadb49ec39df884"
     },
@@ -5400,6 +5405,16 @@
     },
     {
       "type": "function",
+      "name": "public.current_user_direct_message_conversation_status(p_conversation_id uuid)",
+      "sha256": "a0ae0b51b8a55b173b908ce72f7bea99c5b7e74d1c8282f94c1fa716970ab9a5"
+    },
+    {
+      "type": "function",
+      "name": "public.current_user_direct_message_pair_status(p_other_user_id uuid)",
+      "sha256": "827ad09df519299f92de1431d378592956d99f75c084b8abb86094b8d203efb3"
+    },
+    {
+      "type": "function",
       "name": "public.delete_book_list_transaction(p_user_id uuid, p_list_id uuid)",
       "sha256": "1967b43d69617f9b772a576952e07fd80eaa2bb9ba58a0b32f35570545315a77"
     },
@@ -5407,6 +5422,26 @@
       "type": "function",
       "name": "public.delete_gamification_job(p_message_id bigint)",
       "sha256": "3c9e2153d5610ffb23fd97c487b94124146488860ba67627ba7bb400274a2396"
+    },
+    {
+      "type": "function",
+      "name": "public.direct_message_conversation_status(p_conversation_id uuid, p_user_id uuid)",
+      "sha256": "685786bc0b7d818691be9d486b92ebd61871974a8efb53a1c1e2d6aa2abea467"
+    },
+    {
+      "type": "function",
+      "name": "public.direct_message_pair_status(p_user_a uuid, p_user_b uuid)",
+      "sha256": "f31447690ace5c5c5b00419087fd3a530ce90be8dba34679455b7d6b3224ff6a"
+    },
+    {
+      "type": "function",
+      "name": "public.enforce_direct_conversation_eligibility()",
+      "sha256": "42e16b566287928902e5e8eb50ecce3f40793a14c0e4a8bed2563e24125004fa"
+    },
+    {
+      "type": "function",
+      "name": "public.enforce_direct_message_eligibility()",
+      "sha256": "2a96f2b5833404ef875a7227bad1d6fb0c274507fcb92a50c2fb70af55c121bd"
     },
     {
       "type": "function",
@@ -5645,6 +5680,31 @@
     },
     {
       "type": "function",
+      "name": "public.lock_direct_message_block_change()",
+      "sha256": "92287628ff87f5e9fe6a15fa9c15a709de56f3f002437e30a75827519c59fb55"
+    },
+    {
+      "type": "function",
+      "name": "public.lock_direct_message_pair(p_user_a uuid, p_user_b uuid)",
+      "sha256": "bd8265b3b81fdba82655bd641a3f37b4e8d8dd61068e8044b7eb7fc178c6e529"
+    },
+    {
+      "type": "function",
+      "name": "public.lock_direct_message_profile_change()",
+      "sha256": "7ff83c1ed8c7a8c717c78d1d9b69af57995d941d75aba3419bd184a44df3d305"
+    },
+    {
+      "type": "function",
+      "name": "public.lock_direct_message_relationship_change()",
+      "sha256": "c8be5ef36703bc8d705f5e29ea0be0d5159a6173d7e74102127cce188d4c6ad8"
+    },
+    {
+      "type": "function",
+      "name": "public.lock_direct_message_user(p_user_id uuid)",
+      "sha256": "856231cd92913755779b779399a37f5eb42ac045d7c040d34ea31581abae4f69"
+    },
+    {
+      "type": "function",
       "name": "public.log_progress_transaction(p_user_id uuid, p_book_id uuid, p_page_number integer, p_chapter_number integer, p_paragraph_number integer, p_notes text, p_log_type text, p_time_spent_minutes integer, p_photo_url text)",
       "sha256": "66a8e0266199652ac8cf5b79ba5fac38b993011f7af052b141731eee9102c8e1"
     },
@@ -5822,6 +5882,16 @@
       "type": "function",
       "name": "public.sync_reading_streak_day_from_session()",
       "sha256": "5b7bbecf3b4264181e2ea7cc410714389e7f5f34d37e4bb788220c745f651b7f"
+    },
+    {
+      "type": "function",
+      "name": "public.touch_direct_message_eligibility()",
+      "sha256": "cecf314d7203743ff732f700ffd1d28179f9709499d0226b4653b4b472819db8"
+    },
+    {
+      "type": "function",
+      "name": "public.touch_direct_message_profile_eligibility()",
+      "sha256": "1f5d5156a5ea81cea6526a4a41e7394f8a253ff4d239696801affec2618356ee"
     },
     {
       "type": "function",
@@ -7560,8 +7630,8 @@
     },
     {
       "type": "policy",
-      "name": "public.conversations.\"Users can create conversations\"",
-      "sha256": "a16450e979e918ef4b46496cc1db444ccb85c164871726589e268b293cae23df"
+      "name": "public.conversations.\"Mutual followers can create direct conversations\"",
+      "sha256": "882ab1731e0c9fe284dd05ea1cbee95d0f9b74942c781523a58037dcdfb96e5a"
     },
     {
       "type": "policy",
@@ -7650,8 +7720,8 @@
     },
     {
       "type": "policy",
-      "name": "public.message_media.\"Participants can register own message media\"",
-      "sha256": "d8c86f619a515007319fbce6a8b5699b9ae162611dc01e93c884c8b0f7544d60"
+      "name": "public.message_media.\"Eligible participants can register own message media\"",
+      "sha256": "48dd39ec70aebe97b5c1e6e53e0a21232e0ef38310d160eea2cc2f900fdcab92"
     },
     {
       "type": "policy",
@@ -7660,8 +7730,13 @@
     },
     {
       "type": "policy",
-      "name": "public.message_reactions.\"Participants can react to visible messages\"",
-      "sha256": "d8c86f619a515007319fbce6a8b5699b9ae162611dc01e93c884c8b0f7544d60"
+      "name": "public.message_reactions.\"Eligible participants can react to direct messages\"",
+      "sha256": "48dd39ec70aebe97b5c1e6e53e0a21232e0ef38310d160eea2cc2f900fdcab92"
+    },
+    {
+      "type": "policy",
+      "name": "public.message_reactions.\"Eligible users can update own message reaction\"",
+      "sha256": "3d9fc746d1feb74bb35bb2ad3d2565eaad27d47d0d282ca3829aec7bd9a51322"
     },
     {
       "type": "policy",
@@ -7675,13 +7750,8 @@
     },
     {
       "type": "policy",
-      "name": "public.message_reactions.\"Users can update own message reaction\"",
-      "sha256": "badcb1b2dc5df48e56b496a25d0c7fc3e7865e9c7d3e9d79bd2baaf0eca9749f"
-    },
-    {
-      "type": "policy",
-      "name": "public.messages.\"Users can send messages in their conversations\"",
-      "sha256": "86fa7aa1febab6f8e697f9f2bd316b3f054d646ab0514645ef7281b12c62d767"
+      "name": "public.messages.\"Eligible participants can send direct messages\"",
+      "sha256": "4d58e265be9dd62abe61531393b52548d29d3fde1878e694b47b4f6b55c8823e"
     },
     {
       "type": "policy",
@@ -8411,7 +8481,7 @@
     {
       "type": "relation",
       "name": "public.user_follows",
-      "sha256": "b16724a197ae578f48582f905920e63994031a14c32b4cb98ed49f2afcfd03f4"
+      "sha256": "434621d4c1610dbe8309d4d1a02ec217938512e9bee38b750a30a96b610064db"
     },
     {
       "type": "relation",
@@ -8565,8 +8635,8 @@
     },
     {
       "type": "trigger",
-      "name": "public.conversations.update_conversations_updated_at",
-      "sha256": "e19829ba19cb48e8262807dbdc225b1f536a605de4a55ddfc40d9a1b7d5b193d"
+      "name": "public.conversations.enforce_direct_conversation_eligibility_trigger",
+      "sha256": "9ae5906c7d5cb19751a2e97b639f309599f9ff47f98d7b9af598fdd207eab365"
     },
     {
       "type": "trigger",
@@ -8597,6 +8667,11 @@
       "type": "trigger",
       "name": "public.message_reactions.update_message_reactions_updated_at",
       "sha256": "8d4c4fa7f93145dcc556c62e709ff4be27485b453239791c5941fad454901cdd"
+    },
+    {
+      "type": "trigger",
+      "name": "public.messages.enforce_direct_message_eligibility_trigger",
+      "sha256": "f788a766c95159c60a7e89df44f5334a9e7c954ab73753dff5ebbd80fc66e5a8"
     },
     {
       "type": "trigger",
@@ -8665,8 +8740,23 @@
     },
     {
       "type": "trigger",
+      "name": "public.profiles.lock_direct_message_profile_delete_trigger",
+      "sha256": "70fbae664cdc4a9829a4f8208308c2dd39f6cca956c1298af44ff7474be43545"
+    },
+    {
+      "type": "trigger",
+      "name": "public.profiles.lock_direct_message_profile_visibility_trigger",
+      "sha256": "d3d00cd41a4eaca9b196ef44150fe3bb4f954b7aa4324e46d2b7bc1c3d57ba7d"
+    },
+    {
+      "type": "trigger",
       "name": "public.profiles.sync_activity_privacy_items_trigger",
       "sha256": "529bd9ba72f10461e965cc3b1dcf8f72bf08eacc753b7a189ca90d572762c4f4"
+    },
+    {
+      "type": "trigger",
+      "name": "public.profiles.touch_direct_message_profile_visibility_trigger",
+      "sha256": "e4450658693b5df2cd3684248748628b7094272bc004ffa1c08438d67c4037d5"
     },
     {
       "type": "trigger",
@@ -8760,8 +8850,28 @@
     },
     {
       "type": "trigger",
+      "name": "public.user_blocks.lock_direct_message_blocks_trigger",
+      "sha256": "d77c975b87ed30d33ec06dda914e21168e79ef25d145b0374e9c727ed13d47e1"
+    },
+    {
+      "type": "trigger",
+      "name": "public.user_blocks.touch_direct_message_blocks_trigger",
+      "sha256": "e44d50105801ec7e64e4065d7376a293d6473bd9531613b9a0bf3092c15ee0d4"
+    },
+    {
+      "type": "trigger",
       "name": "public.user_follows.create_follow_activity_trigger",
       "sha256": "6884abfe8b704453b6078017448ec5bb38b0e5c5ae20dea37111bb01d9b16af0"
+    },
+    {
+      "type": "trigger",
+      "name": "public.user_follows.lock_direct_message_follows_trigger",
+      "sha256": "d85171a38864d0ce1bafd34764c1d87db529bc198602b96f30ddf12e2091f8f7"
+    },
+    {
+      "type": "trigger",
+      "name": "public.user_follows.touch_direct_message_follows_trigger",
+      "sha256": "13fa7d472b10fcae91fb168f3338e02a038c08b6480a9e4949b1f6304666c770"
     },
     {
       "type": "trigger",

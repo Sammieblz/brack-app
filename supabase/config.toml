@@ -209,6 +209,9 @@ verify_jwt = true
 [functions.conversation-detail]
 verify_jwt = true
 
+[functions.direct-message-eligibility]
+verify_jwt = true
+
 [functions.get-or-create-conversation]
 verify_jwt = true
 

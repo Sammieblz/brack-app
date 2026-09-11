@@ -37,6 +37,7 @@ Rules:
 | `book_lists` | `is_public` exists, but RLS is owner-only | Needs RLS/policy migration. |
 | `book_list_items` | Owner-only through parent list | Needs public-list read behavior if lists are shareable. |
 | `user_follows` | Public follow graph | Product decision needed: public graph or follower-count-only public surface. |
+| Direct messages | Participant-readable history; creation/sending requires mutual follows, non-private profiles, and no block in either direction | Enforced consistently by Edge Functions, RLS, and database triggers. Club chat remains membership-scoped. |
 | `review_likes` | Public rows | Acceptable only for public reviews. |
 | `review_comments` | Parent review visibility | Keep, but document joins as policy-sensitive. |
 

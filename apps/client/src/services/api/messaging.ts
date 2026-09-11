@@ -9,6 +9,15 @@ export type MessageType = "text" | "media" | "gif";
 export type MessageReactionType = "like" | "dislike" | "heart" | "laugh" | "wow" | "thanks";
 export type MessageMediaSource = "upload" | "tenor";
 export type MessageMediaType = "image" | "gif";
+export type DirectMessageEligibilityStatus =
+  | "eligible"
+  | "relationship_required"
+  | "restricted";
+
+export interface DirectMessageEligibility {
+  can_message: boolean;
+  status: DirectMessageEligibilityStatus;
+}
 
 export interface ConversationUser {
   id: string;
@@ -50,6 +59,7 @@ export interface ConversationSummary {
   unread_count?: number;
   settings?: ConversationSettings | null;
   is_blocked?: boolean;
+  message_eligibility?: DirectMessageEligibilityStatus;
 }
 
 export interface MessageMedia {
@@ -111,6 +121,7 @@ export interface ConversationDetail {
   settings?: ConversationSettings | null;
   messages: DirectMessage[];
   is_blocked: boolean;
+  message_eligibility: DirectMessageEligibilityStatus;
 }
 
 export interface SendMessageRequest {
@@ -200,6 +211,7 @@ const normalizeLegacyConversation = (value: unknown): ConversationSummary | null
         : Number(record.unread_count || 0),
     settings: null,
     is_blocked: false,
+    message_eligibility: "restricted",
   };
 };
 
@@ -228,35 +240,6 @@ const getOtherParticipantId = (
     : conversation.participant_two_id === userId
       ? conversation.participant_one_id
       : null;
-
-const getOrCreateConversationLegacy = async (otherUserId: string): Promise<string | null> => {
-  const user = await getCurrentAuthUser();
-  if (!user) throw new Error("Not authenticated");
-  if (user.id === otherUserId) throw new Error("Cannot message yourself");
-
-  const { data: existing, error: existingError } = await supabase
-    .from("conversations")
-    .select("id")
-    .or(
-      `and(participant_one_id.eq.${user.id},participant_two_id.eq.${otherUserId}),and(participant_one_id.eq.${otherUserId},participant_two_id.eq.${user.id})`
-    )
-    .maybeSingle();
-
-  if (existingError) throw existingError;
-  if (existing?.id) return existing.id;
-
-  const { data: newConversation, error } = await supabase
-    .from("conversations")
-    .insert({
-      participant_one_id: user.id,
-      participant_two_id: otherUserId,
-    })
-    .select("id")
-    .single();
-
-  if (error) throw error;
-  return newConversation.id;
-};
 
 const normalizeLegacyMessage = (value: Record<string, unknown>): DirectMessage => ({
   id: asString(value.id),
@@ -350,6 +333,7 @@ const fetchConversationDetailLegacy = async (
     unread_count: 0,
     settings: null,
     is_blocked: false,
+    message_eligibility: "restricted",
   };
 
   return {
@@ -358,28 +342,8 @@ const fetchConversationDetailLegacy = async (
     settings: null,
     messages: normalizedMessages,
     is_blocked: false,
+    message_eligibility: "restricted",
   };
-};
-
-const sendTextMessageLegacy = async (
-  conversationId: string,
-  content: string
-): Promise<DirectMessage> => {
-  const user = await getCurrentAuthUser();
-  if (!user) throw new Error("Not authenticated");
-
-  const { data, error } = await supabase
-    .from("messages")
-    .insert({
-      conversation_id: conversationId,
-      sender_id: user.id,
-      content: sanitizeInput(content),
-    })
-    .select("id,conversation_id,sender_id,content,is_read,created_at,updated_at")
-    .single();
-
-  if (error) throw error;
-  return normalizeLegacyMessage(data as Record<string, unknown>);
 };
 
 export const fetchConversations = async (): Promise<ConversationSummary[]> => {
@@ -400,19 +364,19 @@ export const fetchConversations = async (): Promise<ConversationSummary[]> => {
 export const getOrCreateConversation = async (
   otherUserId: string
 ): Promise<string | null> => {
-  try {
-    const response = await invokeFunction<{ conversation_id: string }>(
-      "get-or-create-conversation",
-      { body: { other_user_id: otherUserId } }
-    );
-    return response.conversation_id;
-  } catch (error) {
-    console.warn(
-      "get-or-create-conversation unavailable; falling back to legacy conversation creation",
-      error
-    );
-    return getOrCreateConversationLegacy(otherUserId);
-  }
+  const response = await invokeFunction<{ conversation_id: string }>(
+    "get-or-create-conversation",
+    { body: { other_user_id: otherUserId } }
+  );
+  return response.conversation_id;
+};
+
+export const fetchDirectMessageEligibility = async (
+  otherUserId: string
+): Promise<DirectMessageEligibility> => {
+  return invokeFunction<DirectMessageEligibility>("direct-message-eligibility", {
+    body: { other_user_id: otherUserId },
+  });
 };
 
 export const fetchConversationDetail = async (
@@ -507,19 +471,10 @@ export const sendMessage = async (
           client_message_id: conversationOrRequest.client_message_id || crypto.randomUUID(),
         };
 
-  try {
-    const response = await invokeFunction<{ message: DirectMessage }>("send-message", {
-      body: payload,
-    });
-    return response.message;
-  } catch (error) {
-    const hasOnlyText =
-      !payload.media?.length && !payload.gif && !payload.reply_to_message_id && payload.content;
-    if (!hasOnlyText) throw error;
-
-    console.warn("send-message unavailable; falling back to legacy text send", error);
-    return sendTextMessageLegacy(payload.conversation_id, payload.content || "");
-  }
+  const response = await invokeFunction<{ message: DirectMessage }>("send-message", {
+    body: payload,
+  });
+  return response.message;
 };
 
 export const markConversationRead = async (
@@ -605,9 +560,18 @@ export const subscribeToConversationChanges = (
   onChange: () => void
 ): (() => void) => {
   const handle = () => onChange();
+  const channel = supabase
+    .channel("direct-conversations")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "conversations" },
+      onChange
+    )
+    .subscribe();
   window.addEventListener("messages-changed", handle);
   window.addEventListener("focus", handle);
   return () => {
+    supabase.removeChannel(channel);
     window.removeEventListener("messages-changed", handle);
     window.removeEventListener("focus", handle);
   };
@@ -646,6 +610,16 @@ export const subscribeToMessages = (
         schema: "public",
         table: "message_media",
         filter: `conversation_id=eq.${conversationId}`,
+      },
+      onChange
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "conversations",
+        filter: `id=eq.${conversationId}`,
       },
       onChange
     )

@@ -36,7 +36,7 @@ Legend:
 | `books` | Owner | Owner | Owner | Owner | Private library. |
 | `conversation_reads` | Participant | Participant self cursor | Participant self cursor | None | Per-user read cursor replaces fragile shared `messages.is_read` semantics. |
 | `conversation_user_settings` | Owner participant | Owner participant | Owner participant | None | Per-user mute, pin, archive, hidden inbox state. |
-| `conversations` | Participant | Participant | None | None | One-to-one conversation lifecycle is Edge-owned. |
+| `conversations` | Participant | Mutual follows, non-private profiles, unblocked pair | None | None | RLS plus a table trigger enforce the canonical direct-message predicate, including privileged inserts. |
 | `dashboard_home_snapshots` | Owner | None | None | None | Derived read model; writes are through security-definer RPC/service role. |
 | `goals` | Owner | Owner | Owner | Owner | Private with soft deletes. |
 | `gamification_accounts` | Owner through Edge | None | None | None | Balance changes are service-role reward operations only. |
@@ -51,10 +51,10 @@ Legend:
 | `reader_league_members` | Same-league projection through Edge | None | None | None | Blocked/private readers are filtered or anonymized. |
 | `user_notifications` | Owner | None | Owner `read_at` only | None | Notification content and push state are backend-owned. |
 | `journal_entries` | Owner | Owner | Owner | Owner | Private with soft deletes. |
-| `message_media` | Participant if not blocked | Sender participant if not blocked | None | None | Private `message-media` bucket reads use signed URLs from messaging Edge Functions. |
-| `message_reactions` | Participant | Participant self reaction if not blocked | Owner reaction | Owner reaction | One fixed reaction per user/message. |
+| `message_media` | Participant if not blocked | Eligible mutual-follow participant | None | None | Private `message-media` bucket reads use signed URLs from messaging Edge Functions. |
+| `message_reactions` | Participant | Eligible mutual-follow participant | Eligible owner reaction | Owner reaction | One fixed reaction per user/message; read-only history cannot receive new reactions. |
 | `message-media` Storage | Signed URL from messaging Edge Functions | Owner path prefix | Owner path prefix | Owner path prefix | Private bucket for direct-message image/GIF attachments. |
-| `messages` | Participant | Sender and participant | Sender | None | Sender soft-delete and heavy writes go through messaging Edge Functions. |
+| `messages` | Participant | Eligible mutual-follow sender and participant | Sender | None | A table trigger also protects service-role inserts and serializes relationship races. Existing history remains readable after unfollow. |
 | `notification_preferences` | Owner | Owner | Owner | None | No delete policy. |
 | `post_comments` | Parent post visibility | Visible post commenter | Owner | Owner | Thread metadata supports root/reply pagination. |
 | `post_likes` | Parent post visibility | Visible post liker | None | Owner | Like rows are no longer broadly public. |

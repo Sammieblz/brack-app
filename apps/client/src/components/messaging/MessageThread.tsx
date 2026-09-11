@@ -35,6 +35,7 @@ import { ReactionBar } from "@/components/reactions/ReactionBar";
 import { blockUser, searchMessageGifs, uploadMessageMediaFiles } from "@/services/api";
 import type {
   GifSearchResult,
+  DirectMessageEligibilityStatus,
   Message,
   MessageReactionType,
   SendMessageRequest,
@@ -59,6 +60,7 @@ interface MessageThreadProps {
     reader_status?: string | null;
   } | null;
   isBlocked?: boolean;
+  messageEligibility?: DirectMessageEligibilityStatus;
   onBack?: () => void;
 }
 
@@ -113,6 +115,7 @@ export const MessageThread = ({
   conversationId,
   otherUser,
   isBlocked,
+  messageEligibility = "eligible",
 }: MessageThreadProps) => {
   const [messageContent, setMessageContent] = useState("");
   const [sending, setSending] = useState(false);
@@ -133,6 +136,10 @@ export const MessageThread = ({
   const isOnline = useNetworkStatus();
   const navigate = useNavigate();
   const { profile } = useProfileContext();
+  const messagingDisabled = Boolean(isBlocked) || messageEligibility !== "eligible";
+  const unavailableMessage = isBlocked || messageEligibility === "restricted"
+    ? "Messaging is unavailable because of a privacy or safety setting. Existing history is still visible."
+    : "This conversation is read-only until you both follow each other again. Existing history is still visible.";
 
   const draftKey = conversationId ? `message_draft_${conversationId}` : null;
   const selectedFilePreviews = useMemo(
@@ -209,7 +216,7 @@ export const MessageThread = ({
   };
 
   const handleSend = async () => {
-    if (sending || !conversationId || isBlocked || !isOnline) return;
+    if (sending || !conversationId || messagingDisabled || !isOnline) return;
     if (!messageContent.trim() && files.length === 0) return;
     if (messageContent.length > 5000) {
       triggerHaptic("error");
@@ -253,7 +260,7 @@ export const MessageThread = ({
   };
 
   const handleSendGif = async (gif: GifSearchResult) => {
-    if (sending || !isOnline || isBlocked) return;
+    if (sending || !isOnline || messagingDisabled) return;
     try {
       setSending(true);
       const success = await onSendMessage({
@@ -298,7 +305,7 @@ export const MessageThread = ({
     }
   };
 
-  const canSend = isOnline && !isBlocked && (messageContent.trim().length > 0 || files.length > 0);
+  const canSend = isOnline && !messagingDisabled && (messageContent.trim().length > 0 || files.length > 0);
 
   return (
     <div className="flex h-full flex-col bg-card">
@@ -331,11 +338,10 @@ export const MessageThread = ({
       )}
 
       <div className={cn("min-h-0 flex-1 overflow-y-auto", isMobile ? "p-3" : "p-5")}>
-        {isBlocked && (
+        {messagingDisabled && (
           <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/[0.08] p-3">
             <p className="font-sans text-sm text-destructive">
-              Messaging is disabled because one of you blocked the other. Existing text history is
-              still visible.
+              {unavailableMessage}
             </p>
           </div>
         )}
@@ -487,21 +493,25 @@ export const MessageThread = ({
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-2">
-                            <ReactionBar
-                              currentReaction={message.current_user_reaction}
-                              onToggle={async (reactionType) => {
-                                await onToggleReaction(message.id, reactionType);
-                              }}
-                            />
+                            {!messagingDisabled && (
+                              <ReactionBar
+                                currentReaction={message.current_user_reaction}
+                                onToggle={async (reactionType) => {
+                                  await onToggleReaction(message.id, reactionType);
+                                }}
+                              />
+                            )}
                             <div className="mt-2 grid gap-1 border-t border-border pt-2">
-                              <button
-                                type="button"
-                                className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left font-sans text-sm hover:bg-muted"
-                                onClick={() => setReplyingTo(message)}
-                              >
-                                <ChatBubble className="h-4 w-4" />
-                                Reply
-                              </button>
+                              {!messagingDisabled && (
+                                <button
+                                  type="button"
+                                  className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left font-sans text-sm hover:bg-muted"
+                                  onClick={() => setReplyingTo(message)}
+                                >
+                                  <ChatBubble className="h-4 w-4" />
+                                  Reply
+                                </button>
+                              )}
                               {message.content && (
                                 <button
                                   type="button"
@@ -583,7 +593,7 @@ export const MessageThread = ({
           </div>
         )}
 
-      {otherUserTyping && !isBlocked && (
+      {otherUserTyping && !messagingDisabled && (
           <TypingIndicator
             className="mt-3"
             users={[
@@ -656,7 +666,7 @@ export const MessageThread = ({
             size="icon"
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
-            disabled={!isOnline || Boolean(isBlocked) || sending}
+            disabled={!isOnline || messagingDisabled || sending}
             aria-label="Attach image or GIF"
           >
             <Attachment className="h-4 w-4" />
@@ -667,7 +677,7 @@ export const MessageThread = ({
             size="icon"
             variant="outline"
             onClick={() => setGifOpen(true)}
-            disabled={!isOnline || Boolean(isBlocked) || sending}
+            disabled={!isOnline || messagingDisabled || sending}
             aria-label="Search GIFs"
           >
             <MediaImage className="h-4 w-4" />
@@ -679,7 +689,7 @@ export const MessageThread = ({
                 type="button"
                 size="icon"
                 variant="outline"
-                disabled={!isOnline || Boolean(isBlocked) || sending}
+                disabled={!isOnline || messagingDisabled || sending}
                 aria-label="Add emoji"
               >
                 <Emoji className="h-4 w-4" />
@@ -698,7 +708,7 @@ export const MessageThread = ({
           </Popover>
 
           <Textarea
-            placeholder={isBlocked ? "Messaging is disabled" : "Message"}
+            placeholder={messagingDisabled ? "Messaging is unavailable" : "Message"}
             value={messageContent}
             onChange={handleInputChange}
             onKeyDown={(event) => {
@@ -708,7 +718,7 @@ export const MessageThread = ({
               }
             }}
             rows={1}
-            disabled={Boolean(isBlocked)}
+            disabled={messagingDisabled}
             className="max-h-32 min-h-11 resize-none"
           />
 

@@ -8,6 +8,7 @@ import {
 import { enforceRateLimit } from "../_shared/rateLimit.ts";
 import {
   enrichMessages,
+  getDirectMessageEligibility,
   isPairBlocked,
   requireConversationAccess,
 } from "../_shared/messaging.ts";
@@ -47,8 +48,9 @@ Deno.serve(async (req) => {
     const access = await requireConversationAccess(supabaseClient, conversationId, userId);
     if ("error" in access) return jsonResponse({ error: access.error }, access.status, origin);
 
-    const [blocked, profileResult, settingsResult, messagesResult] = await Promise.all([
+    const [blocked, eligibility, profileResult, settingsResult, messagesResult] = await Promise.all([
       isPairBlocked(supabaseClient, userId, access.otherUserId),
+      getDirectMessageEligibility(supabaseClient, userId, access.otherUserId),
       supabaseClient
         .from("profiles")
         .select("id,display_name,avatar_url,show_online_status,last_seen_at,reader_status")
@@ -95,6 +97,7 @@ Deno.serve(async (req) => {
         settings: settingsResult.data || null,
         messages,
         is_blocked: blocked,
+        message_eligibility: eligibility,
       },
       200,
       origin
