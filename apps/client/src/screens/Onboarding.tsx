@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { TimePicker } from "@/components/ui/time-picker";
 import { OnboardingChapterIndicator, type OnboardingChapter } from "@/components/onboarding/OnboardingChapterIndicator";
 import { OnboardingLoadingState, OnboardingRouteTransition } from "@/components/onboarding/OnboardingLoadingState";
+import { BrandedLoadingScreen } from "@/components/animations/BrandedLoadingScreen";
 import { OnboardingReadingPractice } from "@/components/onboarding/OnboardingReadingPractice";
 import {
   getBookFormatLabel,
@@ -313,7 +314,7 @@ const Onboarding = () => {
   }, [habits, profileLoading]);
 
   if (transition) {
-    return <OnboardingRouteTransition to={transition.to} message={transition.message} minDisplayTime={950} />;
+    return <OnboardingRouteTransition to={transition.to} message={transition.message} />;
   }
 
   if (
@@ -574,6 +575,11 @@ const Onboarding = () => {
         event.currentTarget.dataset.input = "keyboard";
       }}
     >
+      <BrandedLoadingScreen
+        active={saving}
+        message={isGuestOnboarding ? "Preparing secure sign-up..." : "Saving your reading profile..."}
+      />
+
       {completionSeal && (
         <div className="onboarding-completion" aria-hidden="true">
           <span className="onboarding-completion__rule" />

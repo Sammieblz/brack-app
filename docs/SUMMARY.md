@@ -76,6 +76,7 @@ This documentation provides comprehensive coverage of:
 
 ### Development
 - [Components](./components.md) - UI component library
+- [Loading Motion](./loading-motion.md) - Loader storyboard and timing contract
 - [Hooks Reference](./hooks.md) - Custom React hooks
 - [State Management](./state-management.md) - State patterns
 - [Database Schema](./database-schema.md) - Data model

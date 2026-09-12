@@ -24,7 +24,6 @@ import { CurrencyIcon } from "@/components/CurrencyIcon";
 import { DashboardCardSkeleton, DashboardSummarySkeleton, DailyFocusSkeleton } from "@/components/skeletons/DashboardCardSkeleton";
 import { ActivityItemSkeleton } from "@/components/skeletons/ActivityItemSkeleton";
 import { LoadingRegion, LoadingError } from "@/components/loading/LoadingRegion";
-import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDashboardHomeData, type DashboardBookCandidate } from "@/hooks/useDashboardHomeData";
@@ -215,9 +214,18 @@ const Dashboard = () => {
   if (authLoading) {
     return (
       <MobileLayout showBottomNav={false}>
-        <div className="flex h-96 items-center justify-center">
-          <LoadingSpinner size="lg" text="Loading your reading journey..." />
-        </div>
+        <main className="app-page">
+          <LoadingRegion loading label="Loading your reading dashboard" className="space-y-4">
+            <DashboardCardSkeleton />
+            {gamificationEnabled && <DailyFocusSkeleton />}
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 28rem), 1fr))" }}
+            >
+              <DashboardSummarySkeleton showJourney={gamificationEnabled} />
+            </div>
+          </LoadingRegion>
+        </main>
       </MobileLayout>
     );
   }

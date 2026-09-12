@@ -2,8 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Calendar, FireFlame } from "iconoir-react";
 import { useStreakHistory } from "@/hooks/useStreakHistory";
 import { formatDistanceToNow } from "date-fns";
-import LoadingSpinner from "./LoadingSpinner";
 import { APP_ICONS } from "@/config/iconography";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingRegion } from "@/components/loading/LoadingRegion";
 
 interface StreakHistoryTimelineProps {
   userId: string;
@@ -22,9 +23,25 @@ export const StreakHistoryTimeline = ({ userId }: StreakHistoryTimelineProps) =>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex justify-center py-8">
-            <LoadingSpinner size="md" />
-          </div>
+          <LoadingRegion loading label="Loading streak milestones" className="space-y-5">
+            <div aria-hidden="true" className="grid grid-cols-3 gap-2">
+              {Array.from({ length: 3 }, (_, index) => (
+                <Skeleton key={index} className="h-20 w-full rounded-lg" />
+              ))}
+            </div>
+            <div aria-hidden="true" className="space-y-3">
+              <Skeleton className="h-4 w-36" />
+              {Array.from({ length: 3 }, (_, index) => (
+                <div key={index} className="flex items-center gap-3 rounded-lg border border-border/70 p-3">
+                  <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+                  <div className="min-w-0 flex-1">
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="mt-2 h-3 w-1/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </LoadingRegion>
         </CardContent>
       </Card>
     );

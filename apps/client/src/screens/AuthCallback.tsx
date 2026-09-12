@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { BrandedLoadingScreen } from "@/components/animations/BrandedLoadingScreen";
 import {
   AuthCallbackBootstrapError,
   completeAuthCallback,
@@ -59,12 +59,9 @@ const AuthCallback = () => {
 
   if (!error) {
     return (
-      <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background px-4">
-        <LoadingSpinner
-          size="lg"
-          text={returningToRequest ? "Returning to your sign-up..." : "Finishing sign in..."}
-        />
-      </div>
+      <BrandedLoadingScreen
+        message={returningToRequest ? "Returning to your sign-up..." : "Finishing sign in..."}
+      />
     );
   }
 

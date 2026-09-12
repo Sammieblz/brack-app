@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { BrandedLoadingScreen } from "@/components/animations/BrandedLoadingScreen";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
@@ -189,15 +189,12 @@ const ResetPassword = () => {
   }
 
   if (pageLoading) {
-    return (
-      <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background">
-        <LoadingSpinner size="lg" text="Opening secure password change..." />
-      </div>
-    );
+    return <BrandedLoadingScreen message="Opening secure password change..." />;
   }
 
   return (
     <div className="relative flex min-h-app-viewport items-center justify-center overflow-x-hidden overflow-y-auto bg-gradient-background px-4 py-8">
+      <BrandedLoadingScreen active={loading} message="Securing your new password..." />
       <ThemeToggle />
 
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

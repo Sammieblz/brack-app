@@ -59,6 +59,7 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 
 ### Reference
 - [Components Guide](./components.md) - UI components and patterns
+- [Loading Motion](./loading-motion.md) - Branded loader storyboard, lifecycle, and validation
 - [Hooks Reference](./hooks.md) - Custom React hooks
 - [State Management](./state-management.md) - Data flow and caching
 - [Authentication](./authentication.md) - User auth and security

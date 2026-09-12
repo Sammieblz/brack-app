@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { BrandedLoadingScreen } from "@/components/animations/BrandedLoadingScreen";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { LandingIllustration, LandingSentenceReveal } from "@/components/marketing/LandingEditorialArt";
 import { LandingGamificationShowcase } from "@/components/marketing/LandingGamificationShowcase";
@@ -109,11 +109,7 @@ const Index = () => {
   }, [navigate, resetToDefaultTheme]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-app-viewport items-center justify-center bg-background">
-        <LoadingSpinner size="lg" text="Opening Brack..." />
-      </div>
-    );
+    return <BrandedLoadingScreen message="Opening Brack..." />;
   }
 
   const isDark = resolvedTheme === "dark";

@@ -139,3 +139,123 @@ for (const count of [1, 4, 8]) {
     }
   });
 }
+
+async function waitForLoadingFixture(page: Page) {
+  await page.waitForFunction(() => typeof window.loadingFixture?.setState === 'function');
+}
+
+test('fast work completes before the loader appearance threshold without flashing', async ({ page }) => {
+  await page.goto('/?surface=loader&variant=fullscreen&delay=400');
+  await waitForLoadingFixture(page);
+  await page.evaluate(() => window.loadingFixture.setState('ready'));
+  await expect(page.getByTestId('loader-ready')).toBeVisible();
+  await page.waitForTimeout(450);
+  await expect(page.getByRole('status')).toHaveCount(0);
+});
+
+test('sustained work is centered and exits immediately when ready', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto('/?surface=loader&variant=fullscreen&delay=20');
+  const status = page.getByRole('status');
+  await expect(status).toHaveText('Opening your reading journey...');
+
+  const stage = await status.locator('.brack-loader__stage').boundingBox();
+  expect(stage).not.toBeNull();
+  expect(stage!.x + stage!.width / 2).toBeCloseTo(160, 0);
+  expect(stage!.y + stage!.height / 2).toBeGreaterThan(250);
+  expect(stage!.y + stage!.height / 2).toBeLessThan(450);
+
+  await page.evaluate(() => window.loadingFixture.setState('ready'));
+  await expect(page.getByTestId('loader-ready')).toBeVisible();
+  await expect(status).toHaveCount(0);
+});
+
+for (const { variant, width } of [
+  { variant: 'compact', width: 320 },
+  { variant: 'inline', width: 390 },
+  { variant: 'section', width: 834 },
+  { variant: 'fullscreen', width: 1440 },
+] as const) {
+  test(`${variant} loader shares the open-book visual system at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(`/?surface=loader&variant=${variant}&delay=0`);
+    const status = page.getByRole('status');
+    await expect(status).toHaveAttribute('data-variant', variant);
+    await expect(status.locator('.brack-loader__book')).toBeVisible();
+    await expect(status.locator('.brack-loader__cover')).toHaveCount(2);
+    await expect(status.locator('.brack-loader__cover-inlay')).toHaveCount(1);
+    await expect(status.locator('.brack-loader__mark-art')).toHaveCount(1);
+    await expect(status.locator('.brack-loader__page-block')).toHaveCount(1);
+    await expect(status.locator('.brack-loader__page-mark')).toHaveCount(1);
+    await expect(status.locator('.brack-loader__page')).toHaveCount(2);
+    await expect(status.locator('.brack-loader__turning-page')).toHaveCount(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+}
+
+test('the book loader stays legible across every palette and forced colors', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?surface=loader&variant=section&delay=0');
+  await waitForLoadingFixture(page);
+  const themes = await page.evaluate(() => window.loadingFixture.themes);
+
+  for (const id of themes) {
+    for (const dark of [false, true]) {
+      await page.evaluate(({ id, dark }) => window.loadingFixture.setTheme(id, dark), { id, dark });
+      const visual = await page.locator('.brack-loader__cover--front').evaluate((node) => {
+        const style = getComputedStyle(node);
+        return { background: style.backgroundImage, border: style.borderColor };
+      });
+      expect(visual.background, `${id}/${dark}`).not.toBe('none');
+      expect(visual.border, `${id}/${dark}`).not.toBe('rgba(0, 0, 0, 0)');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    }
+  }
+
+  await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active' });
+  await expect(page.getByRole('status')).toHaveAttribute('data-motion', 'reduced');
+  expect(await page.locator('.brack-loader__cover--front').evaluate((node) => getComputedStyle(node).borderStyle)).not.toBe('none');
+  expect(await page.locator('.brack-loader__stage').evaluate((node) => (
+    node.getAnimations({ subtree: true }).filter((animation) => (
+      animation instanceof CSSAnimation
+      && animation.animationName.startsWith('brack-loader-')
+      && animation.playState === 'running'
+    )).length
+  ))).toBe(0);
+});
+
+test('decorative loader motion settles once and creates no long animation tasks', async ({ page, browserName }, testInfo) => {
+  await page.goto('/?surface=loader&variant=section&delay=0');
+  const status = page.getByRole('status');
+  await expect(status).toHaveAttribute('data-motion', 'full');
+  const motionLimit = Number(await status.getAttribute('data-motion-limit-ms'));
+  expect(motionLimit).toBeGreaterThan(0);
+  expect(motionLimit).toBeLessThanOrEqual(2500);
+  await page.evaluate(() => {
+    window.loadingMetrics = { cls: 0, shifts: 0, longTasks: 0, maxLongTask: 0 };
+  });
+
+  await page.waitForTimeout(motionLimit + 100);
+  await expect(status).toHaveAttribute('data-motion', 'settled');
+  expect(await status.locator('.brack-loader__stage').evaluate((node) => node.getAnimations({ subtree: true }).length)).toBe(0);
+
+  const metrics = await page.evaluate(() => window.loadingMetrics);
+  if (browserName === 'chromium') expect(metrics.maxLongTask).toBeLessThanOrEqual(50);
+  await testInfo.attach('brack-loader-motion-metrics', {
+    body: JSON.stringify({ browserName, motionLimit, ...metrics }),
+    contentType: 'application/json',
+  });
+});
+
+test('progress is shown only when known and errors replace loading status', async ({ page }) => {
+  await page.goto('/?surface=loader&variant=section&delay=0&progress=37');
+  await expect(page.getByRole('progressbar', { name: 'Loading progress' })).toHaveAttribute('aria-valuenow', '37');
+  await page.evaluate(() => window.loadingFixture.setState('error'));
+  await expect(page.getByRole('status')).toHaveCount(0);
+  await expect(page.getByRole('alert')).toHaveText('Your reading journey could not load.');
+  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(page.getByRole('status')).toHaveText('Opening your reading journey...');
+
+  await page.goto('/?surface=loader&variant=section&delay=0');
+  await expect(page.getByRole('progressbar')).toHaveCount(0);
+});

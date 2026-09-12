@@ -10,6 +10,7 @@ import { searchBooks } from "@/services/api";
 import type { Book } from "@/types";
 import type { GoogleBookResult } from "@/types/googleBooks";
 import { findExistingLibraryBook } from "@/utils/bookIdentity";
+import { BrackLoader } from "@/components/animations/LogoSpinner";
 
 interface BookSearchProps {
   onSelectBook: (book: GoogleBookResult) => void;
@@ -235,19 +236,20 @@ export const BookSearch = ({
           />
         </div>
         <Button type="submit" disabled={searching}>
-          {searching ? (
-            <>
-              <Refresh className="mr-2 h-4 w-4 animate-spin" />
-              Searching...
-            </>
-          ) : (
-            "Search"
-          )}
+          {searching ? "Searching..." : "Search"}
         </Button>
       </form>
 
       {/* Search Results */}
-      {results.length > 0 && (
+      {searching && (
+        <BrackLoader
+          variant="section"
+          size="lg"
+          label="Searching Brack's book catalog..."
+        />
+      )}
+
+      {!searching && results.length > 0 && (
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground sticky top-0 bg-background/95 backdrop-blur z-10 py-2">
             Found {results.length} results

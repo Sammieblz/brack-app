@@ -12,6 +12,10 @@ import { ChartSkeleton } from '@/components/skeletons/ChartSkeleton';
 import { ApexChartCard } from '@/components/charts/ApexChartCard';
 import { LoadingRegion, LoadingError } from '@/components/loading/LoadingRegion';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  BrackLoader,
+  type BrackLoaderVariant,
+} from '@/components/animations/LogoSpinner';
 import { themes, getTheme } from '@/lib/themes';
 import type { Book } from '@/types';
 import type { Post, Conversation } from '@/services/api';
@@ -62,6 +66,16 @@ const count = Math.min(8, Math.max(0, Number(params.get('count') ?? '2')));
 const long = params.get('long') === '1';
 const date = '2026-09-01T12:00:00Z';
 const noop = () => {};
+const requestedLoaderVariant = params.get('variant');
+const loaderVariant: BrackLoaderVariant = requestedLoaderVariant === 'compact'
+  || requestedLoaderVariant === 'inline'
+  || requestedLoaderVariant === 'section'
+  || requestedLoaderVariant === 'fullscreen'
+  ? requestedLoaderVariant
+  : 'section';
+const loaderDelay = Math.max(0, Number(params.get('delay') ?? '160'));
+const requestedProgress = params.get('progress');
+const loaderProgress = requestedProgress === null ? undefined : Number(requestedProgress);
 const book: Book = {
   id: 'book', user_id: 'reader', title: long ? 'A very long book title that should wrap within its own column without widening the library' : 'A room of one’s own',
   author: 'Virginia Woolf', isbn: null, genre: null, pages: 200, chapters: null,
@@ -89,6 +103,38 @@ export function Fixture() {
   useEffect(() => { window.loadingFixture = { setState, setTheme, themes: themes.map((theme) => theme.id) }; }, []);
   const loading = state === 'loading';
   const ready = state === 'ready' || state === 'refreshing';
+
+  if (surface === 'loader') {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <header className="border-b border-border p-4">
+          <h1 className="font-display text-2xl">Brack loader motion prototype</h1>
+        </header>
+        <main
+          data-testid="loader-host"
+          data-state={state}
+          className="mx-auto flex min-h-[28rem] w-full max-w-4xl items-center justify-center p-4"
+        >
+          <BrackLoader
+            active={loading}
+            variant={loaderVariant}
+            size={loaderVariant === 'compact' ? 'sm' : loaderVariant === 'inline' ? 'md' : 'lg'}
+            label="Opening your reading journey..."
+            progress={loaderProgress}
+            delayMs={loaderDelay}
+          />
+          {ready && <p data-testid="loader-ready">Your reading journey is ready.</p>}
+          {state === 'error' && (
+            <LoadingError
+              message="Your reading journey could not load."
+              onRetry={() => setState('loading')}
+            />
+          )}
+        </main>
+      </div>
+    );
+  }
+
   let content: React.ReactNode;
   if (surface === 'chart') {
     content = loading ? <ChartSkeleton /> : <ApexChartCard title="Reading Progress" subtitle="Last 14 days - 35 minutes tracked"><div data-plot="" className="w-full" style={{ height: 320 }}><svg role="img" aria-label="Reading progress chart" viewBox="0 0 400 320" className="h-full w-full"><path d="M10 290 L90 220 L170 240 L250 80 L330 150 L390 20" fill="none" stroke="currentColor" strokeWidth="2" /></svg></div></ApexChartCard>;

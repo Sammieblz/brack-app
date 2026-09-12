@@ -1,5 +1,6 @@
 import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { BRACK_LOADER_TIMING } from "./brackLoaderTokens";
 import { BrandedLoadingScreen } from "./BrandedLoadingScreen";
 
 const reducedMotionMock = vi.hoisted(() => vi.fn(() => false));
@@ -16,61 +17,47 @@ afterEach(() => {
 });
 
 describe("BrandedLoadingScreen", () => {
-  it("uses the shared branded loader and dimensional progress at narrow widths", () => {
-    vi.useFakeTimers();
+  it("uses the shared fullscreen book and determinate progress at narrow widths", () => {
     render(
       <BrandedLoadingScreen
-        message="Preparing your reading journey..."
+        message="Importing your library..."
         progress={42}
-        minDisplayTime={10_000}
+        appearanceDelayMs={0}
       />,
     );
 
     const status = screen.getByRole("status");
-    expect(status).toHaveTextContent("Preparing your reading journey...");
+    expect(status).toHaveTextContent("Importing your library...");
     expect(status).toHaveAttribute("data-size", "lg");
-    expect(status.closest(".fixed")).toHaveClass("p-4");
-
-    const progress = screen.getByRole("progressbar", { name: "Loading progress" });
-    expect(progress).toHaveAttribute("aria-valuenow", "42");
-    expect(progress).toHaveAttribute("data-variant", "dimensional");
-    expect(progress).toHaveClass("max-w-[calc(100%_-_2rem)]");
+    expect(status).toHaveAttribute("data-variant", "fullscreen");
+    expect(document.querySelector(".brack-loader__book")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar", { name: "Loading progress" }))
+      .toHaveAttribute("aria-valuenow", "42");
   });
 
-  it("waits for the full-motion exit before completing", () => {
+  it("does not flash for work that completes inside the threshold", () => {
     vi.useFakeTimers();
-    const onComplete = vi.fn();
-    render(<BrandedLoadingScreen minDisplayTime={100} onComplete={onComplete} />);
+    const { rerender } = render(<BrandedLoadingScreen active />);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
 
-    act(() => vi.advanceTimersByTime(100));
-    expect(onComplete).not.toHaveBeenCalled();
-    act(() => vi.advanceTimersByTime(199));
-    expect(onComplete).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(BRACK_LOADER_TIMING.appearanceDelayMs - 1));
+    rerender(<BrandedLoadingScreen active={false} />);
     act(() => vi.advanceTimersByTime(1));
-    expect(onComplete).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
-  it("completes without an exit delay when motion is reduced", () => {
+  it("appears for a sustained wait and exits immediately when work completes", () => {
     vi.useFakeTimers();
-    reducedMotionMock.mockReturnValue(true);
-    const onComplete = vi.fn();
-    render(<BrandedLoadingScreen minDisplayTime={100} onComplete={onComplete} />);
+    const { rerender } = render(<BrandedLoadingScreen active />);
+    act(() => vi.advanceTimersByTime(BRACK_LOADER_TIMING.appearanceDelayMs));
+    expect(screen.getByRole("status")).toBeInTheDocument();
 
-    act(() => vi.advanceTimersByTime(100));
-    act(() => vi.advanceTimersByTime(1));
-    expect(onComplete).toHaveBeenCalledOnce();
+    rerender(<BrandedLoadingScreen active={false} />);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
-  it("clears a pending completion callback when unmounted", () => {
-    vi.useFakeTimers();
-    const onComplete = vi.fn();
-    const { unmount } = render(
-      <BrandedLoadingScreen minDisplayTime={100} onComplete={onComplete} />,
-    );
-
-    act(() => vi.advanceTimersByTime(100));
-    unmount();
-    act(() => vi.advanceTimersByTime(200));
-    expect(onComplete).not.toHaveBeenCalled();
+  it("never invents progress for an indeterminate operation", () => {
+    render(<BrandedLoadingScreen appearanceDelayMs={0} />);
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
   });
 });

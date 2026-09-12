@@ -2,6 +2,7 @@ import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
+import { BRACK_LOADER_TIMING } from "@/components/animations/brackLoaderTokens";
 import { OnboardingLoadingState, OnboardingRouteTransition } from "./OnboardingLoadingState";
 
 const reducedMotionMock = vi.hoisted(() => vi.fn(() => false));
@@ -18,36 +19,48 @@ describe("OnboardingLoadingState", () => {
     vi.useRealTimers();
   });
 
-  it("uses one polite status and no fake percentage", () => {
-    const { container } = render(<OnboardingLoadingState message="Preparing your saved setup…" />);
+  it("uses one polite shared-book status and no fake percentage", () => {
+    vi.useFakeTimers();
+    const { container } = render(
+      <OnboardingLoadingState message="Preparing your saved setup…" />,
+    );
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(BRACK_LOADER_TIMING.appearanceDelayMs));
 
     const status = screen.getByRole("status");
     expect(status).toHaveAttribute("aria-live", "polite");
     expect(status).toHaveTextContent("Preparing your saved setup…");
     expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
     expect(screen.getByText("Opening your reading room")).toBeInTheDocument();
-    expect(container.querySelector(".onboarding-loading__trace")).toBeInTheDocument();
-    expect(container.querySelector(".onboarding-loading__book")).not.toBeInTheDocument();
+    expect(container.querySelector(".onboarding-loading__book .brack-loader__book"))
+      .toBeInTheDocument();
+    expect(container.querySelector(".onboarding-loading__trace")).not.toBeInTheDocument();
   });
 
-  it("exposes the reactive reduced-motion state to its visual treatment", () => {
+  it("passes reduced motion to the shared book treatment", () => {
+    vi.useFakeTimers();
     const { container, rerender } = render(<OnboardingLoadingState />);
-    expect(container.querySelector(".onboarding-loading")).toHaveAttribute("data-motion", "full");
+    act(() => vi.advanceTimersByTime(BRACK_LOADER_TIMING.appearanceDelayMs));
+    expect(container.querySelector(".onboarding-loading__book"))
+      .toHaveAttribute("data-motion", "full");
 
     reducedMotionMock.mockReturnValue(true);
     rerender(<OnboardingLoadingState />);
-    expect(container.querySelector(".onboarding-loading")).toHaveAttribute("data-motion", "reduced");
+    expect(container.querySelector(".onboarding-loading__book"))
+      .toHaveAttribute("data-motion", "reduced");
   });
 
-  it("keeps the branded onboarding treatment through the post-save route transition", () => {
-    vi.useFakeTimers();
+  it("does not hold ready onboarding navigation for decorative motion", () => {
     render(
       <MemoryRouter initialEntries={["/onboarding"]}>
         <Routes>
           <Route
             path="/onboarding"
             element={
-              <OnboardingRouteTransition to="/dashboard" message="Personalizing your dashboard…" minDisplayTime={950} />
+              <OnboardingRouteTransition
+                to="/dashboard"
+                message="Personalizing your dashboard…"
+              />
             }
           />
           <Route path="/dashboard" element={<p>Dashboard ready</p>} />
@@ -55,10 +68,7 @@ describe("OnboardingLoadingState", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole("status")).toHaveTextContent("Personalizing your dashboard…");
-    act(() => vi.advanceTimersByTime(949));
-    expect(screen.queryByText("Dashboard ready")).not.toBeInTheDocument();
-    act(() => vi.advanceTimersByTime(1));
     expect(screen.getByText("Dashboard ready")).toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 });

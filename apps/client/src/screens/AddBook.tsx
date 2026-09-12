@@ -22,6 +22,7 @@ import { GENRES } from "@/constants";
 import type { GoogleBookResult } from "@/types/googleBooks";
 import { SuccessCheckmark } from "@/components/animations/SuccessCheckmark";
 import { Confetti } from "@/components/animations/Confetti";
+import { BrandedLoadingScreen } from "@/components/animations/BrandedLoadingScreen";
 import { APP_ICONS } from "@/config/iconography";
 import { useReadingProfile } from "@/hooks/useReadingProfile";
 import { useBooks } from "@/hooks/useBooks";
@@ -255,6 +256,7 @@ const AddBook = () => {
       series_total: book.series_total || null,
     };
 
+    setLoading(true);
     try {
       const addedBook = await bookOperations.create(bookData);
 
@@ -268,6 +270,8 @@ const AddBook = () => {
         return;
       }
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -314,6 +318,10 @@ const AddBook = () => {
 
   return (
     <MobileLayout>
+      <BrandedLoadingScreen
+        active={loading}
+        message="Adding this book to your library..."
+      />
       {showConfetti && <Confetti trigger={showConfetti} />}
       {showSuccess && (
         <div className="fixed inset-0 z-[9999] bg-background/80 backdrop-blur-sm flex items-center justify-center">

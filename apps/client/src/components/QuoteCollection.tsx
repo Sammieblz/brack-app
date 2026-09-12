@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Quote, Book, ShareIos, Search } from "iconoir-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { shareService } from "@/services/shareService";
-import LoadingSpinner from "./LoadingSpinner";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { fetchUserQuoteEntries, type QuoteEntry } from "@/services/api";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingRegion } from "@/components/loading/LoadingRegion";
 
 interface QuoteCollectionProps {
   userId: string;
@@ -19,11 +20,7 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchQuotes();
-  }, [userId]);
-
-  const fetchQuotes = async () => {
+  const fetchQuotes = useCallback(async () => {
     try {
       setLoading(true);
       setQuotes(await fetchUserQuoteEntries(userId));
@@ -37,7 +34,11 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast, userId]);
+
+  useEffect(() => {
+    void fetchQuotes();
+  }, [fetchQuotes]);
 
   const handleShareQuote = async (quote: typeof quotes[0]) => {
     try {
@@ -75,9 +76,17 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex justify-center py-8">
-            <LoadingSpinner size="md" />
-          </div>
+          <LoadingRegion loading label="Loading your quotes" className="space-y-4" containerClassName="w-full">
+            <Skeleton className="h-10 w-full" />
+            {Array.from({ length: 3 }, (_, index) => (
+              <div key={index} aria-hidden="true" className="rounded-lg border border-border/70 p-4">
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="mt-3 h-5 w-full" />
+                <Skeleton className="mt-2 h-5 w-4/5" />
+                <Skeleton className="mt-4 h-3 w-2/5" />
+              </div>
+            ))}
+          </LoadingRegion>
         </CardContent>
       </Card>
     );
