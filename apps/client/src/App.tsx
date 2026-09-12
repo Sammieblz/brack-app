@@ -16,7 +16,7 @@ import { ReadingSyncIndicator } from "@/components/ReadingSyncIndicator";
 import { syncService } from "@/services/syncService";
 import { deepLinkService } from "@/services/deepLinkService";
 import { DeepLinkHandler } from "@/components/DeepLinkHandler";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { BrandedLoadingScreen } from "@/components/animations/BrandedLoadingScreen";
 // Critical path screens - keep synchronous for instant loading
 import Index from "./screens/Index";
 import Auth from "./screens/Auth";
@@ -130,7 +130,7 @@ const App = () => {
                   <Toaster />
                   <Sonner />
                   <LiveRegion level="polite" />
-                  <Suspense fallback={<div className="p-10 flex justify-center"><LoadingSpinner size="lg" /></div>}>
+                  <Suspense fallback={<BrandedLoadingScreen message="Opening Brack..." />}>
                     <BrowserRouter>
                       <RewardFeedbackProvider>
                         <BadgeCelebrationProvider>

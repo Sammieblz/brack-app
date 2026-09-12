@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -6,9 +6,10 @@ import { NavArrowRight } from "iconoir-react";
 import { useToast } from "@/hooks/use-toast";
 import { shareService } from "@/services/shareService";
 import { useNavigate } from "react-router-dom";
-import LoadingSpinner from "@/components/LoadingSpinner";
 import { APP_ICONS } from "@/config/iconography";
 import { AppIcon } from "@/components/ui/app-icon";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingRegion } from "@/components/loading/LoadingRegion";
 import type { Book } from "@/types";
 import { fetchUserReadingSessions } from "@/services/api";
 
@@ -37,11 +38,7 @@ export const ReadingStatsWidget = ({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    loadStats();
-  }, [userId, books]);
-
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -80,7 +77,11 @@ export const ReadingStatsWidget = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [books, userId]);
+
+  useEffect(() => {
+    void loadStats();
+  }, [loadStats]);
 
   const handleShare = async () => {
     try {
@@ -138,10 +139,27 @@ export const ReadingStatsWidget = ({
   if (loading) {
     return (
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <LoadingSpinner size="sm" />
-          </div>
+        <CardHeader className="pb-4">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="mt-2 h-4 w-64 max-w-full" />
+        </CardHeader>
+        <CardContent>
+          <LoadingRegion
+            loading
+            label="Loading reading statistics"
+            className="grid gap-5 lg:grid-cols-[minmax(18rem,0.9fr)_1.6fr]"
+          >
+            <Skeleton className="h-64 w-full rounded-md" />
+            <div className="grid gap-px overflow-hidden rounded-md border border-border/70 p-px sm:grid-cols-2">
+              {Array.from({ length: 4 }, (_, index) => (
+                <div key={index} aria-hidden="true" className="space-y-3 bg-card p-4">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-3 w-28" />
+                </div>
+              ))}
+            </div>
+          </LoadingRegion>
         </CardContent>
       </Card>
     );

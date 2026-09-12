@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BrandedRouteTransition } from "@/components/animations/BrandedRouteTransition";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { BrandedLoadingScreen } from "@/components/animations/BrandedLoadingScreen";
 import { getAuthSession } from "@/services/api";
 import { resolvePostAuthPath } from "@/services/authRedirect";
 import { isOnboardingBackendUnavailable } from "@/services/onboarding";
@@ -35,11 +35,7 @@ export const OnboardingEntryRedirect = () => {
   }, [navigate]);
 
   if (!target) {
-    return (
-      <div className="flex min-h-app-viewport items-center justify-center bg-background">
-        <LoadingSpinner size="lg" text="Opening setup..." />
-      </div>
-    );
+    return <BrandedLoadingScreen message="Opening setup..." />;
   }
 
   return (

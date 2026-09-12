@@ -577,34 +577,43 @@ while onboarding is saving.
 
 **Location**: `apps/client/src/components/onboarding/OnboardingLoadingState.tsx`
 
-**Purpose**: Keeps onboarding bootstrap and post-save transitions inside the
-same restrained folio language as the questionnaire. It exposes one polite live
-status, never invents a completion percentage, and uses a single aria-hidden
-typesetting trace as its progress cue. Reduced-motion mode renders that trace
-as a static mark rather than looping it.
+**Purpose**: Keeps onboarding bootstrap inside the same restrained folio
+language as the questionnaire while reusing the shared Brack open-book loader.
+It exposes one polite live status, never invents a completion percentage, and
+inherits the same appearance threshold, finite motion, hidden-tab handling and
+reduced-motion state as every other loader. Once a destination is ready,
+onboarding navigates immediately instead of holding the route for decoration.
 
-#### LoadingSpinner
+#### BrackLoader and BrandedLoadingScreen
 
-**Location**: `apps/client/src/components/LoadingSpinner.tsx`
+**Locations**: `apps/client/src/components/animations/LogoSpinner.tsx` and
+`apps/client/src/components/animations/BrandedLoadingScreen.tsx`
 
-**Purpose**: Theme-aware Brack loading status for route and data waits
+**Purpose**: Theme-aware Brack loading status for focused, blocking workflows
 
 ```tsx
-<LoadingSpinner size="lg" text="Loading..." />
+<BrandedLoadingScreen active={saving} message="Adding this book to your library..." />
 ```
 
 **Sizes**: `sm`, `md`, `lg`
 
-The spinner uses the transparent Brack mark above two code-rendered page planes,
-an orbital highlight, and a soft ground shadow to create restrained depth
-without adding image variants. Motion is finite for inline loaders, reacts to
-the shared reduced-motion preference, and never rotates or crops the mark.
+The spinner uses the transparent Brack mark on a code-rendered cover that opens
+around a shared spine before one paper leaf turns. The complete 1650ms sequence
+is finite and then settles into a static open book; there is no orbit or
+perpetual loop. Compact, inline, section, and full-screen placements use the
+same geometry and timing tokens.
 Decorative geometry is hidden from assistive technology; the component exposes
 one polite status message and does not take focus or intercept input. The single
 512px lossless transparent mark is about 52KB and is explicitly included in the
 PWA shell so high-DPI and offline loading keep the same sharp identity.
-`BrandedLoadingScreen` composes this loader with the dimensional `Progress`
-variant instead of maintaining a separate animation or flat progress rail.
+The default 160ms appearance threshold avoids flashes and completion removes
+the loader immediately. `BrandedLoadingScreen` composes the full-screen variant
+and shows a progress rail only when the caller supplies real progress. See
+[`loading-motion.md`](loading-motion.md) for the storyboard and validation
+contract. Do not use the branded book inside dashboard cards, statistic tiles,
+or retained collections; those surfaces keep their geometry with structural
+skeletons and `LoadingRegion`. `LoadingSpinner` remains only as a compatibility
+wrapper for older callers.
 #### ErrorBoundary
 
 **Location**: `apps/client/src/components/ErrorBoundary.tsx`

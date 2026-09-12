@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/input-otp";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { BrandedLoadingScreen } from "@/components/animations/BrandedLoadingScreen";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -284,11 +284,7 @@ const Auth = () => {
   }
 
   if (authLoading) {
-    return (
-      <div className="flex min-h-app-viewport items-center justify-center bg-gradient-background">
-        <LoadingSpinner size="lg" text="Loading..." />
-      </div>
-    );
+    return <BrandedLoadingScreen message="Opening secure sign in..." />;
   }
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -681,9 +677,19 @@ const Auth = () => {
       : isSignUp
         ? "Your palette, taste, pace, and first goal are still held in this signup flow. An account makes them permanent."
         : "Sign in to return to your books, reading history, goals, and conversations.";
+  const loadingMessage = emailChallenge
+    ? emailChallenge.type === "recovery"
+      ? "Confirming your reset code..."
+      : "Confirming your Brack account..."
+    : isPasswordResetRequest
+      ? "Preparing your password reset..."
+      : isSignUp
+        ? "Creating your Brack account..."
+        : "Opening your library...";
 
   return (
     <div className="relative min-h-app-viewport overflow-x-hidden bg-background text-foreground">
+      <BrandedLoadingScreen active={loading} message={loadingMessage} />
       {backgroundVideoEnabled && !reducedMotion && (
         <video
           autoPlay
