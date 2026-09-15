@@ -14,6 +14,7 @@ import { DesktopLocalDb, type LocalDbRequest } from "./sqliteLocalDb.cjs";
 
 const APP_SCHEME = "brack-app";
 const DEEP_LINK_SCHEME = "brack";
+const SUPPORT_EMAIL = "support@brack-app.com";
 const DEV_SERVER_URL = process.env.BRACK_ELECTRON_DEV_SERVER_URL;
 
 protocol.registerSchemesAsPrivileged([
@@ -150,6 +151,27 @@ const openExternalUrl = async (url: string) => {
   await shell.openExternal(url);
 };
 
+const openSupportEmail = async (subject: unknown) => {
+  const hasControlCharacters = typeof subject === "string"
+    && Array.from(subject).some((character) => {
+      const code = character.charCodeAt(0);
+      return code <= 31 || code === 127;
+    });
+  if (
+    typeof subject !== "string"
+    || subject.length === 0
+    || subject.length > 120
+    || hasControlCharacters
+  ) {
+    throw new Error("Invalid support email subject");
+  }
+
+  const mailto = new URL(`mailto:${SUPPORT_EMAIL}`);
+  mailto.searchParams.set("subject", subject);
+  await shell.openExternal(mailto.toString());
+  return true;
+};
+
 const assertTrustedSender = (event: IpcMainInvokeEvent) => {
   if (!mainWindow || event.sender !== mainWindow.webContents) {
     throw new Error("Blocked IPC request from an untrusted renderer");
@@ -177,6 +199,11 @@ const registerIpcHandlers = () => {
     assertTrustedSender(event);
     await openExternalUrl(url);
     return null;
+  });
+
+  ipcMain.handle("support:open-email", async (event, subject: unknown) => {
+    assertTrustedSender(event);
+    return openSupportEmail(subject);
   });
 
   ipcMain.handle("auth:get-pending-callback", (event) => {

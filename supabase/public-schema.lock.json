@@ -3250,6 +3250,61 @@
     },
     {
       "type": "column",
+      "name": "public.support_delivery_requests.accepted_at",
+      "sha256": "dc346052d03ac3346613b095004d2b0ac44d2fc434327c3f060997f27fef635e"
+    },
+    {
+      "type": "column",
+      "name": "public.support_delivery_requests.actor_fingerprint",
+      "sha256": "5563b3c8e526dbe7a87317ea1db4b828463b0bdabb971f0eb726f2d3ed8d4de3"
+    },
+    {
+      "type": "column",
+      "name": "public.support_delivery_requests.attempt_count",
+      "sha256": "746c599d1c5c4128719d9900cd046c790167242eb0c8e5c77b3f7cacbc1d9d38"
+    },
+    {
+      "type": "column",
+      "name": "public.support_delivery_requests.claimed_at",
+      "sha256": "517f79387a56c5f215f8cfbd18b158f87bbe6f4c849ff8de1757434e9bf38fb4"
+    },
+    {
+      "type": "column",
+      "name": "public.support_delivery_requests.created_at",
+      "sha256": "517f79387a56c5f215f8cfbd18b158f87bbe6f4c849ff8de1757434e9bf38fb4"
+    },
+    {
+      "type": "column",
+      "name": "public.support_delivery_requests.last_failure_code",
+      "sha256": "35478b6c44a7a31e9a00fdb699b3322b02ceeca2ab360cd7f07538f36e4898c0"
+    },
+    {
+      "type": "column",
+      "name": "public.support_delivery_requests.payload_digest",
+      "sha256": "5563b3c8e526dbe7a87317ea1db4b828463b0bdabb971f0eb726f2d3ed8d4de3"
+    },
+    {
+      "type": "column",
+      "name": "public.support_delivery_requests.provider_message_id",
+      "sha256": "35478b6c44a7a31e9a00fdb699b3322b02ceeca2ab360cd7f07538f36e4898c0"
+    },
+    {
+      "type": "column",
+      "name": "public.support_delivery_requests.request_id",
+      "sha256": "9e268d2facd0661126f453e49bc563573e9bad2edef9951b196ee2061bfe9e05"
+    },
+    {
+      "type": "column",
+      "name": "public.support_delivery_requests.status",
+      "sha256": "caf1bd83f75896892476c13865c9846520f120c828f90d06bd9fb13108628111"
+    },
+    {
+      "type": "column",
+      "name": "public.support_delivery_requests.updated_at",
+      "sha256": "517f79387a56c5f215f8cfbd18b158f87bbe6f4c849ff8de1757434e9bf38fb4"
+    },
+    {
+      "type": "column",
       "name": "public.user_badges.badge_id",
       "sha256": "058cbca217d748e2c62f91e52681ed0e80e95b87b7585248360585f708493501"
     },
@@ -5075,6 +5130,36 @@
     },
     {
       "type": "constraint",
+      "name": "public.support_delivery_requests.support_delivery_requests_actor_fingerprint_check",
+      "sha256": "0767762a03ba5ea564b85e4a82d4218a6473fec7c3fc8bb9ff806f0fa518afa2"
+    },
+    {
+      "type": "constraint",
+      "name": "public.support_delivery_requests.support_delivery_requests_attempt_count_check",
+      "sha256": "bc764f75e4656cf43a189b631fcfd74c1348ffa79e3c975e9c685fade3bbbef8"
+    },
+    {
+      "type": "constraint",
+      "name": "public.support_delivery_requests.support_delivery_requests_check",
+      "sha256": "03353726d0e0f569c3916a529df62f87a5a0c909ce768b43b07af416da8dd61f"
+    },
+    {
+      "type": "constraint",
+      "name": "public.support_delivery_requests.support_delivery_requests_payload_digest_check",
+      "sha256": "665fc893c3d3238e4e1286bf54656733aa5df5f54f3ad73744a37b4a7d3e6640"
+    },
+    {
+      "type": "constraint",
+      "name": "public.support_delivery_requests.support_delivery_requests_pkey",
+      "sha256": "49d9354b14bb234eafe5837f85a08ca8230cdecd7c70eb0840616d379092200a"
+    },
+    {
+      "type": "constraint",
+      "name": "public.support_delivery_requests.support_delivery_requests_status_check",
+      "sha256": "ed1b4d9eef0280d711a0e91643363a7e42a80c8b529d8bc58da1e08c24a27ca8"
+    },
+    {
+      "type": "constraint",
       "name": "public.user_badges.user_badges_badge_id_fkey",
       "sha256": "f7da1e5e95e10a2800e20ca5fedd2308f8779d814b29e389f46a2d50a7e26691"
     },
@@ -5335,6 +5420,11 @@
     },
     {
       "type": "function",
+      "name": "public.claim_support_delivery(p_request_id uuid, p_actor_fingerprint text, p_payload_digest text)",
+      "sha256": "1ee13ba0b2bf64d5ecfe9928c01aecc9111224c8f6038d2e694fc515b8054905"
+    },
+    {
+      "type": "function",
       "name": "public.cleanup_block_relationships()",
       "sha256": "8ad64ccb31ef54f6324bdc1e33e54b20db288b4828ea484e554aa46d56d9ebc9"
     },
@@ -5352,6 +5442,11 @@
       "type": "function",
       "name": "public.complete_reading_transaction(p_user_id uuid, p_book_id uuid, p_start_time timestamp with time zone, p_end_time timestamp with time zone, p_duration_minutes integer, p_client_session_id text, p_page_number integer, p_chapter_number integer, p_paragraph_number integer, p_notes text, p_log_type text, p_time_spent_minutes integer, p_photo_url text, p_client_log_id text, p_mark_complete boolean)",
       "sha256": "1c42758f8b1e933dd5ae34aeafa08efa3847887b2fc1530e2b1d84115f82d01b"
+    },
+    {
+      "type": "function",
+      "name": "public.complete_support_delivery(p_request_id uuid, p_actor_fingerprint text, p_payload_digest text, p_accepted boolean, p_provider_message_id text, p_failure_code text)",
+      "sha256": "48dd18460e52e35692639c1593b4d61937d3ea5d2b80517a223bc8116cc90f3b"
     },
     {
       "type": "function",
@@ -7260,6 +7355,16 @@
     },
     {
       "type": "index",
+      "name": "public.support_delivery_requests_pkey",
+      "sha256": "ea990397779d6fb05f97adef69d119d8157224cb3d25a2107aa6d14c3ac9249b"
+    },
+    {
+      "type": "index",
+      "name": "public.support_delivery_requests_unresolved_idx",
+      "sha256": "22bd1e816ce1b30ce63e51822e785ddeaf9f243fc9b5ee222e824eee55c4372d"
+    },
+    {
+      "type": "index",
       "name": "public.uniq_book_club_pending_invite",
       "sha256": "56d762e8e2be9bb115dae1028f357f82c749854c048a7500ec0421e93a067db4"
     },
@@ -8467,6 +8572,11 @@
       "type": "relation",
       "name": "public.social_activities",
       "sha256": "434621d4c1610dbe8309d4d1a02ec217938512e9bee38b750a30a96b610064db"
+    },
+    {
+      "type": "relation",
+      "name": "public.support_delivery_requests",
+      "sha256": "b16724a197ae578f48582f905920e63994031a14c32b4cb98ed49f2afcfd03f4"
     },
     {
       "type": "relation",

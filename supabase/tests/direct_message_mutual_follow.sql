@@ -3,7 +3,7 @@ BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 SET LOCAL search_path = public, extensions;
 
-SELECT plan(27);
+SELECT plan(28);
 
 SELECT has_function(
   'public',
@@ -54,6 +54,25 @@ SELECT ok(
     'EXECUTE'
   ),
   'authenticated RLS checks can inspect only the caller relationship'
+);
+
+SELECT ok(
+  NOT EXISTS (
+    SELECT 1
+    FROM unnest(ARRAY[
+      'public.lock_direct_message_user(uuid)',
+      'public.lock_direct_message_pair(uuid,uuid)',
+      'public.lock_direct_message_relationship_change()',
+      'public.lock_direct_message_block_change()',
+      'public.lock_direct_message_profile_change()',
+      'public.enforce_direct_conversation_eligibility()',
+      'public.enforce_direct_message_eligibility()',
+      'public.touch_direct_message_eligibility()',
+      'public.touch_direct_message_profile_eligibility()'
+    ]) AS internal_function(signature)
+    WHERE has_function_privilege('service_role', signature, 'EXECUTE')
+  ),
+  'service_role cannot invoke internal direct-message trigger helpers directly'
 );
 
 SELECT ok(

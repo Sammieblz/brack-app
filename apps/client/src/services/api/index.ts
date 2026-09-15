@@ -24,4 +24,5 @@ export * from "./reviews";
 export * from "./social";
 export * from "./streaks";
 export * from "./storage";
+export * from "./support";
 export * from "./sync";

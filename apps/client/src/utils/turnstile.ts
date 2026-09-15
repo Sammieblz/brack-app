@@ -7,6 +7,7 @@ export const TURNSTILE_ACTIONS = [
   "resend_sign_up",
   "resend_recovery",
   "change_password",
+  "support_contact",
 ] as const;
 
 export type TurnstileAction = (typeof TURNSTILE_ACTIONS)[number];

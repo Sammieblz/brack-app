@@ -1,5 +1,14 @@
 import { Capacitor } from "@capacitor/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+const appLauncherMocks = vi.hoisted(() => ({
+  canOpenUrl: vi.fn(),
+  openUrl: vi.fn(),
+}));
+
+vi.mock("@capacitor/app-launcher", () => ({
+  AppLauncher: appLauncherMocks,
+}));
 import {
   BRACK_WEB_ORIGIN,
   getAuthFlowSurface,
@@ -9,6 +18,7 @@ import {
   isPasswordResetUrl,
   isStandalonePwaRuntime,
   isTrustedBrackWebUrl,
+  openSupportEmail,
   shouldRegisterPwaServiceWorker,
 } from "./platform";
 
@@ -27,6 +37,39 @@ afterEach(() => {
   Object.defineProperty(window, "matchMedia", {
     configurable: true,
     value: originalMatchMedia,
+  });
+});
+
+describe("support email composer", () => {
+  it("keeps browser and PWA support on the in-app form", async () => {
+    vi.spyOn(Capacitor, "isNativePlatform").mockReturnValue(false);
+    expect(await openSupportEmail("Brack support: Help")).toBe(false);
+    expect(appLauncherMocks.openUrl).not.toHaveBeenCalled();
+  });
+
+  it("uses the dedicated desktop bridge without exposing a recipient", async () => {
+    const openEmail = vi.fn().mockResolvedValue(true);
+    window.brackDesktop = { support: { openEmail } } as unknown as NonNullable<Window["brackDesktop"]>;
+
+    expect(await openSupportEmail("Brack support: Account & sign-in")).toBe(true);
+    expect(openEmail).toHaveBeenCalledWith("Brack support: Account & sign-in");
+  });
+
+  it("checks for a native mail handler before opening it", async () => {
+    vi.spyOn(Capacitor, "isNativePlatform").mockReturnValue(true);
+    vi.spyOn(Capacitor, "getPlatform").mockReturnValue("android");
+    appLauncherMocks.canOpenUrl.mockResolvedValue({ value: false });
+
+    expect(await openSupportEmail("Brack support: Help")).toBe(false);
+    expect(appLauncherMocks.openUrl).not.toHaveBeenCalled();
+  });
+
+  it("rejects unsafe subjects before crossing a platform boundary", async () => {
+    const openEmail = vi.fn().mockResolvedValue(true);
+    window.brackDesktop = { support: { openEmail } } as unknown as NonNullable<Window["brackDesktop"]>;
+
+    expect(await openSupportEmail("Hello\r\nBcc: attacker@example.com")).toBe(false);
+    expect(openEmail).not.toHaveBeenCalled();
   });
 });
 

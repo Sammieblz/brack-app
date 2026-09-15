@@ -11,6 +11,12 @@ const hasUrlCredentials = (url: URL) => Boolean(url.username || url.password);
 const isHttpProtocol = (protocol: string) =>
   protocol === "http:" || protocol === "https:";
 
+const hasControlCharacters = (value: string) =>
+  Array.from(value).some((character) => {
+    const code = character.charCodeAt(0);
+    return code <= 31 || code === 127;
+  });
+
 /**
  * Trust the canonical Brack origin and the HTTP(S) origin currently hosting the
  * web client. The latter keeps local and explicitly configured preview builds
@@ -139,6 +145,36 @@ export const openExternalUrl = async (url: string) => {
   }
 
   window.location.assign(url);
+};
+
+export const openSupportEmail = async (subject: string): Promise<boolean> => {
+  const safeSubject = subject.trim();
+  if (!safeSubject || safeSubject.length > 120 || hasControlCharacters(safeSubject)) {
+    return false;
+  }
+
+  if (isDesktopRuntime()) {
+    try {
+      return await window.brackDesktop?.support.openEmail(safeSubject) ?? false;
+    } catch {
+      return false;
+    }
+  }
+
+  if (isMobileNativeRuntime()) {
+    try {
+      const { AppLauncher } = await import("@capacitor/app-launcher");
+      const url = `mailto:support@brack-app.com?subject=${encodeURIComponent(safeSubject)}`;
+      const available = await AppLauncher.canOpenUrl({ url });
+      if (!available.value) return false;
+      await AppLauncher.openUrl({ url });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
 };
 
 export const closeExternalAuthSession = async () => {

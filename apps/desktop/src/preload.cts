@@ -59,6 +59,9 @@ contextBridge.exposeInMainWorld("brackDesktop", {
       };
     },
   },
+  support: {
+    openEmail: (subject: string) => ipcRenderer.invoke("support:open-email", subject),
+  },
   deepLinks: {
     onOpen: (handler: Callback) => {
       deepLinkCallbacks.add(handler);
