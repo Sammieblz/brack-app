@@ -14,7 +14,7 @@ export const SUPPORT_CATEGORIES = [
 ] as const;
 
 export type SupportCategory = (typeof SUPPORT_CATEGORIES)[number]["value"];
-export type SupportPlatform = "web" | "pwa" | "ios" | "android" | "desktop";
+export type SupportPlatform = "web" | "mobile" | "desktop";
 
 export type SupportRequest = {
   request_id: string;

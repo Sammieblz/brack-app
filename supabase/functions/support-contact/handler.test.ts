@@ -122,6 +122,19 @@ Deno.test("support contact sends authenticated submissions to the fixed producti
   ]);
 });
 
+Deno.test("support contact accepts selected mobile diagnostics without changing the destination", async () => {
+  const { handler, fetchCalls } = makeHandler();
+  const response = await handler(makeRequest({
+    ...validBody,
+    diagnostics: { app_version: "v1.0.0", platform: "mobile" },
+  }));
+  const providerBody = JSON.parse(String(fetchCalls[0].init?.body));
+  assertEquals(response.status, 200);
+  assertEquals(providerBody.to, [{ email: "support@brack-app.com", name: "Brack Support" }]);
+  assert(String(providerBody.textContent).includes("App version: v1.0.0"), "selected version missing");
+  assert(String(providerBody.textContent).includes("Platform: mobile"), "selected platform missing");
+});
+
 Deno.test("support contact uses the staging sink and never the real mailbox outside production", async () => {
   const { handler, fetchCalls } = makeHandler({ mode: "staging" });
   const response = await handler(makeRequest(validBody));

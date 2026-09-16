@@ -89,6 +89,9 @@ In the staging Supabase dashboard, configure:
   staging build, then enable CAPTCHA. A browser sitekey alone is insufficient.
   The workflow derives `VITE_TURNSTILE_BRIDGE_ORIGIN` as
   `https://staging.brack-app.com`; no additional GitHub value is required.
+- **Support browser destination:** the workflow sets
+  `VITE_SUPPORT_SITE_ORIGIN=https://staging.brack-app.com` so installed builds
+  made with this configuration open staging support rather than production.
 - **Google OAuth, if enabled:** authorize the staging branch project's
   `/auth/v1/callback` URL in Google Cloud.
 - **SMTP, if email flows are tested:** use server-side staging credentials and

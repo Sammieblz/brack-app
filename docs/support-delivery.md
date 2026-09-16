@@ -9,6 +9,18 @@ The canonical public address and the only production destination is
 `support@brack-app.com`. Capacitor and Electron may offer a secondary system
 composer action, but the in-app form remains available if no mail handler opens.
 
+## Opening support from installed apps
+
+Support links use the local `/support` route on web/PWA. In Capacitor mobile and
+Electron desktop builds they open the public `/support` URL in the system browser,
+with the local page as a fallback when offline or if the browser cannot be opened.
+The default external origin is `https://brack-app.com`; staging builds set
+`VITE_SUPPORT_SITE_ORIGIN=https://staging.brack-app.com`. Only those two exact
+HTTPS origins are accepted. Before releasing installed production builds,
+verify that `https://brack-app.com/support` resolves, serves the support page,
+and accepts contact submissions. The production-domain cutover remains tracked
+in `docs/deployment.md`.
+
 ## Data and privacy boundary
 
 The client sends a category, subject, message, one request UUID, and a validated
@@ -16,12 +28,17 @@ reply address. Signed-in requests derive the reply address from the verified
 Supabase Auth user. Anonymous requests require a reply address and a Turnstile
 token.
 
-Readers explicitly control the diagnostic summary. Its visible preview contains
+Readers opt in to diagnostic metadata and can select the displayed app version
+(currently `v1.0.0`) and platform (`web`, `mobile`, or `desktop`). The request ID
+is always shown and included for delivery tracking. The optional summary contains
 only:
 
 - app version;
-- runtime platform; and
-- request ID.
+- selected platform.
+
+The public `/support` center reuses this form. Its FAQ search is local; Terms,
+Privacy, and Known Issues are explicitly labeled placeholders until approved
+content and a live issue feed are available.
 
 Do not add auth/session tokens, database records, book or journal notes, social
 messages, precise location, user-agent strings, or logs to this payload. The

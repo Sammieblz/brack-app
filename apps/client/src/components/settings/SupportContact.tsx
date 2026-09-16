@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AppIcon } from "@/components/ui/app-icon";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,8 @@ import {
   submitSupportRequest,
   type SupportCategory,
 } from "@/services/api";
-import { getAuthFlowSurface, getRuntimePlatform, openSupportEmail } from "@/services/platform";
+import { getRuntimePlatform, openSupportEmail } from "@/services/platform";
+import type { SupportPlatform } from "@/services/api/support";
 
 type SubmissionState =
   | { kind: "idle" }
@@ -37,7 +38,11 @@ const createRequestId = () => {
   const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0"));
   return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex.slice(6, 8).join("")}-${hex.slice(8, 10).join("")}-${hex.slice(10).join("")}`;
 };
-const appVersion = String(import.meta.env.VITE_APP_VERSION || "development");
+const SUPPORT_APP_VERSIONS = ["v1.0.0"] as const;
+const initialSupportPlatform = (): SupportPlatform => {
+  const runtime = getRuntimePlatform();
+  return runtime === "desktop" ? "desktop" : runtime === "web" ? "web" : "mobile";
+};
 
 export const SupportContact = () => {
   const { user } = useAuth();
@@ -48,29 +53,24 @@ export const SupportContact = () => {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [replyEmail, setReplyEmail] = useState("");
-  const [includeDiagnostics, setIncludeDiagnostics] = useState(true);
+  const [includeDiagnostics, setIncludeDiagnostics] = useState(false);
+  const [appVersion, setAppVersion] = useState<string>(SUPPORT_APP_VERSIONS[0]);
+  const [supportPlatform, setSupportPlatform] = useState<SupportPlatform>(initialSupportPlatform);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [requestId, setRequestId] = useState(createRequestId);
   const [submission, setSubmission] = useState<SubmissionState>({ kind: "idle" });
   const isOnline = connectivity !== "offline";
   const isAnonymous = !user;
   const composerAvailable = getRuntimePlatform() !== "web";
-  const supportPlatform = getAuthFlowSurface();
-
-  const diagnosticLines = useMemo(
-    () => [
-      `App version: ${appVersion}`,
-      `Platform: ${supportPlatform}`,
-    ],
-    [supportPlatform],
-  );
 
   useEffect(() => {
     setCategory("bug");
     setSubject("");
     setMessage("");
     setReplyEmail("");
-    setIncludeDiagnostics(true);
+    setIncludeDiagnostics(false);
+    setAppVersion(SUPPORT_APP_VERSIONS[0]);
+    setSupportPlatform(initialSupportPlatform());
     setTurnstileToken(null);
     setRequestId(createRequestId());
     setSubmission({ kind: "idle" });
@@ -172,28 +172,10 @@ export const SupportContact = () => {
       </div>
 
       <Card>
-        <CardHeader><CardTitle>Frequently Asked Questions</CardTitle></CardHeader>
-        <CardContent className="space-y-4 text-sm">
-          <div>
-            <h3 className="font-sans font-medium">How do I reset my password?</h3>
-            <p className="mt-1 font-sans text-muted-foreground">Go to Account Settings and choose Send Password Reset Email.</p>
-          </div>
-          <div>
-            <h3 className="font-sans font-medium">How do I delete my account?</h3>
-            <p className="mt-1 font-sans text-muted-foreground">Go to Account Management in Settings and choose Delete Account.</p>
-          </div>
-          <div>
-            <h3 className="font-sans font-medium">How do I export my data?</h3>
-            <p className="mt-1 font-sans text-muted-foreground">Go to Account Management and choose Export My Data.</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
         <CardHeader>
           <CardTitle>Contact Brack support</CardTitle>
           <CardDescription>
-            This form is sent securely by Brack. Your message is never sent from the browser through SMTP.
+            This form is delivered server-side, never through browser SMTP.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -283,21 +265,38 @@ export const SupportContact = () => {
                   disabled={submission.kind === "sending"}
                   onCheckedChange={(checked) => { markEdited(); setIncludeDiagnostics(checked === true); }}
                 />
-                <div className="space-y-2">
+                <div className="min-w-0 flex-1 space-y-2">
                   <Label htmlFor="support-diagnostics" className="cursor-pointer leading-5">
-                    Also include app version and platform
+                    Include app version and platform
                   </Label>
                   {includeDiagnostics && (
-                    <ul className="space-y-1 font-mono text-xs text-muted-foreground" aria-label="Diagnostic summary preview">
-                      {diagnosticLines.map((line) => <li key={line}>{line}</li>)}
-                    </ul>
+                    <div className="grid gap-3 pt-2 sm:grid-cols-2" aria-label="Diagnostic summary preview">
+                      <div className="space-y-2">
+                        <Label htmlFor="support-app-version">App version</Label>
+                        <Select value={appVersion} disabled={submission.kind === "sending"} onValueChange={(value) => { markEdited(); setAppVersion(value); }}>
+                          <SelectTrigger id="support-app-version"><SelectValue /></SelectTrigger>
+                          <SelectContent>{SUPPORT_APP_VERSIONS.map((version) => <SelectItem key={version} value={version}>{version}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="support-platform">Platform</Label>
+                        <Select value={supportPlatform} disabled={submission.kind === "sending"} onValueChange={(value: SupportPlatform) => { markEdited(); setSupportPlatform(value); }}>
+                          <SelectTrigger id="support-platform"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="web">Web</SelectItem>
+                            <SelectItem value="mobile">Mobile</SelectItem>
+                            <SelectItem value="desktop">Desktop</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
             </div>
 
             <p id="support-privacy" className="text-sm leading-6 text-muted-foreground">
-              Please do not include passwords, authentication codes, private book notes, messages, precise location, or logs. The request ID tracks delivery; Brack only adds the app and platform summary shown above when you consent.
+              Please do not include passwords, authentication codes, private book notes, messages, precise location, or logs. The request ID tracks delivery; Brack only adds the selected app version and platform when you opt in.
             </p>
 
             {isAnonymous && (

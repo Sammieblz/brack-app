@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Search } from "iconoir-react";
 
 import { BrandedLoadingScreen } from "@/components/animations/BrandedLoadingScreen";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
@@ -16,6 +17,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { getAuthSession } from "@/services/api";
 import { resolvePostAuthPath } from "@/services/authRedirect";
 import { clearOnboardingDraft } from "@/services/onboardingDraft";
+import { SupportPageLink } from "@/components/SupportPageLink";
 
 const landingPrimaryCtaClass =
   "h-auto max-w-full whitespace-normal rounded-lg border border-primary bg-primary py-3 text-center font-semibold leading-snug text-[#251407] shadow-[inset_0_1px_0_hsl(var(--primary-foreground)/0.28),0_4px_0_hsl(var(--foreground)/0.22),0_12px_24px_-15px_hsl(var(--primary)/0.9)] transition-[transform,box-shadow,background-color] duration-200 hover:-translate-y-px hover:bg-primary hover:shadow-[inset_0_1px_0_hsl(var(--primary-foreground)/0.32),0_5px_0_hsl(var(--foreground)/0.22),0_15px_26px_-15px_hsl(var(--primary)/0.9)] active:translate-y-[3px] active:shadow-[inset_0_1px_0_hsl(var(--primary-foreground)/0.2),0_1px_0_hsl(var(--foreground)/0.2),0_5px_12px_-10px_hsl(var(--primary)/0.75)] motion-reduce:hover:translate-y-0 motion-reduce:active:translate-y-0";
@@ -168,6 +170,9 @@ const Index = () => {
           </nav>
 
           <div className="ml-auto flex items-center gap-1.5 lg:ml-5 sm:gap-2">
+            <SupportPageLink section="faqs" aria-label="Search help and FAQs" title="Search help" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+              <Search aria-hidden="true" className="h-5 w-5" />
+            </SupportPageLink>
             <ThemeToggle variant="inline" />
             <Button
               variant="ghost"
@@ -478,9 +483,11 @@ const Index = () => {
             <Link to="/auth?mode=signin" className="transition-colors duration-200 hover:text-foreground">
               Sign in
             </Link>
-            <a href="mailto:support@brack-app.com" className="transition-colors duration-200 hover:text-foreground">
+            <SupportPageLink className="transition-colors duration-200 hover:text-foreground">
               Support
-            </a>
+            </SupportPageLink>
+            <SupportPageLink section="terms" className="transition-colors duration-200 hover:text-foreground">Terms</SupportPageLink>
+            <SupportPageLink section="privacy" className="transition-colors duration-200 hover:text-foreground">Privacy</SupportPageLink>
           </LandingReveal>
         </div>
       </footer>

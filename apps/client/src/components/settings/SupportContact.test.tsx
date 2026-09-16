@@ -1,5 +1,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
 
 const mocks = vi.hoisted(() => ({
   auth: { user: { id: "reader-76", email: "reader@example.com" } as { id: string; email: string } | null },
@@ -66,7 +67,7 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("SupportContact", () => {
-  it("waits for server acceptance, blocks duplicate clicks, and sends only safe diagnostics", async () => {
+  it("waits for server acceptance, blocks duplicate clicks, and does not send diagnostics without consent", async () => {
     const send = deferred<{ accepted: true; request_id: string }>();
     mocks.submit.mockReturnValue(send.promise);
     render(<SupportContact />);
@@ -85,11 +86,9 @@ describe("SupportContact", () => {
     const request = mocks.submit.mock.calls[0][0];
     expect(request).toEqual(expect.objectContaining({
       category: "bug",
-      include_diagnostics: true,
-      diagnostics: expect.objectContaining({ platform: "web" }),
+      include_diagnostics: false,
     }));
-    expect(request.diagnostics).not.toHaveProperty("logs");
-    expect(request.diagnostics).not.toHaveProperty("location");
+    expect(request).not.toHaveProperty("diagnostics");
 
     await act(async () => send.resolve({
       accepted: true,
@@ -99,6 +98,24 @@ describe("SupportContact", () => {
     expect(await screen.findByText("Message accepted")).toBeInTheDocument();
     expect(screen.getByLabelText("Subject")).toHaveValue("");
     expect(screen.getByLabelText("What happened?")).toHaveValue("");
+  });
+
+  it("lets readers select the version and platform they choose to share", async () => {
+    const user = userEvent.setup();
+    mocks.submit.mockImplementation(async (request: { request_id: string }) => ({ accepted: true, request_id: request.request_id }));
+    render(<SupportContact />);
+    fillForm();
+    await user.click(screen.getByLabelText("Include app version and platform"));
+    expect(screen.getByRole("combobox", { name: "App version" })).toHaveTextContent("v1.0.0");
+    const platform = screen.getByRole("combobox", { name: "Platform" });
+    fireEvent.keyDown(platform, { key: "ArrowDown" });
+    fireEvent.click(screen.getByRole("option", { name: "Mobile" }));
+    await user.click(screen.getByRole("button", { name: "Send to support" }));
+    await waitFor(() => expect(mocks.submit).toHaveBeenCalledTimes(1));
+    const request = mocks.submit.mock.calls[0][0];
+    expect(request.diagnostics).toEqual({ app_version: "v1.0.0", platform: "mobile" });
+    expect(request.diagnostics).not.toHaveProperty("logs");
+    expect(request.diagnostics).not.toHaveProperty("location");
   });
 
   it("preserves the draft and request ID for a recoverable retry", async () => {

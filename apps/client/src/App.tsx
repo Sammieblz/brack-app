@@ -45,6 +45,7 @@ import { useAuth } from "@/hooks/useAuth";
 initSentry();
 
 const Analytics = lazy(() => import("./screens/Analytics"));
+const SupportCenter = lazy(() => import("./screens/SupportCenter"));
 const Onboarding = lazy(() => import("./screens/Onboarding"));
 const PostSignupPermissions = lazy(() => import("./screens/PostSignupPermissions"));
 const Dashboard = lazy(() => import("./screens/Dashboard"));
@@ -141,6 +142,7 @@ const App = () => {
                           <PageTransition>
                             <Routes>
                             <Route path="/" element={<Index />} />
+                            <Route path="/support" element={<SupportCenter />} />
                             <Route path="/auth" element={<Auth />} />
                             <Route path="/auth/callback" element={<AuthCallback />} />
                             <Route path="/auth/reset-password" element={<ResetPassword />} />

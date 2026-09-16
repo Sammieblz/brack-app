@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { SupportPageLink } from "@/components/SupportPageLink";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { AccountSettings } from "@/components/settings/AccountSettings";
@@ -8,7 +9,6 @@ import { PersonalInfo } from "@/components/settings/PersonalInfo";
 import { AppPreferences } from "@/components/settings/AppPreferences";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { PrivacySettings } from "@/components/settings/PrivacySettings";
-import { SupportContact } from "@/components/settings/SupportContact";
 import { ReadingProfileSettings } from "@/components/settings/ReadingProfileSettings";
 import { DataBackupSettings } from "@/components/settings/DataBackupSettings";
 import { useAuth } from "@/hooks/useAuth";
@@ -105,7 +105,7 @@ const sections: Array<{
     label: 'Support & Help', 
     icon: APP_ICONS.settings.support,
     description: 'FAQs, contact, feedback',
-    component: () => <SupportContact />
+    component: () => null
   },
 ];
 
@@ -133,6 +133,10 @@ const Settings = () => {
   useEffect(() => {
     setActiveSection(getSettingsSection(searchParams.get('section')) ?? 'account');
   }, [searchParams]);
+
+  useEffect(() => {
+    if (searchParams.get('section') === 'support') navigate('/support', { replace: true });
+  }, [navigate, searchParams]);
 
   const handleSectionChange = (section: SettingsSection) => {
     triggerHaptic("light");
@@ -176,7 +180,6 @@ const Settings = () => {
     if (section.id === "notifications") return <PreferenceSettingsSkeleton />;
     if (section.id === "privacy") return <PreferenceSettingsSkeleton privacy />;
     if (section.id === "app") return <AppPreferences />;
-    if (section.id === "support") return <SupportContact />;
     if (section.id === "data") return <div aria-hidden="true" className="pointer-events-none space-y-6"><h2 className="font-display text-2xl font-bold">Data &amp; Backup</h2>{["Export reading data", "Import and merge"].map(title => <Card key={title}><CardContent className="space-y-4 p-6"><h3 className="font-display text-lg font-semibold">{title}</h3><Skeleton className="h-12 w-full" /><Skeleton className="h-11 min-h-[44px] w-full" /></CardContent></Card>)}</div>;
     return <AccountSettingsSkeleton />;
   };
@@ -199,6 +202,13 @@ const Settings = () => {
           <Accordion type="single" collapsible defaultValue={activeSection} className="w-full space-y-2">
             {sections.map((section) => {
               const Icon = section.icon;
+
+              if (section.id === 'support') return (
+                <SupportPageLink key={section.id} onClick={() => triggerHaptic("light")} className="flex min-h-16 items-center gap-3 rounded-lg border bg-card px-4 py-3 focus-visible:ring-2 focus-visible:ring-ring">
+                  <AppIcon icon={Icon} variant="inline" size="md" className="text-primary" />
+                  <span><span className="block font-sans font-medium">{section.label}</span><span className="block font-sans text-xs text-muted-foreground">{section.description}</span></span>
+                </SupportPageLink>
+              );
               
               return (
                 <AccordionItem 
@@ -237,6 +247,20 @@ const Settings = () => {
                   const Icon = section.icon;
                   const active = activeSection === section.id;
 
+                  if (section.id === 'support') return (
+                    <SupportPageLink
+                      key={section.id}
+                      onClick={() => triggerHaptic("light")}
+                      className="flex w-full items-center gap-3 rounded-md px-3 py-3 text-left text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <AppIcon icon={Icon} variant="inline" size="md" className="shrink-0" />
+                      <span className="min-w-0">
+                        <span className="block font-sans text-sm font-medium">{section.label}</span>
+                        <span className="block truncate font-sans text-xs opacity-80">{section.description}</span>
+                      </span>
+                    </SupportPageLink>
+                  );
+
                   return (
                     <button
                       key={section.id}
@@ -267,6 +291,15 @@ const Settings = () => {
             </Card>
           </div>
         )}
+
+        <nav aria-label="Help and legal" className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+          <span className="font-medium text-muted-foreground">Help &amp; legal</span>
+          <SupportPageLink section="faqs" className="inline-flex min-h-11 items-center text-primary underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring">FAQs</SupportPageLink>
+          <SupportPageLink section="known-issues" className="inline-flex min-h-11 items-center text-primary underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring">Known issues</SupportPageLink>
+          <SupportPageLink section="contact" className="inline-flex min-h-11 items-center text-primary underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring">Contact</SupportPageLink>
+          <SupportPageLink section="terms" className="inline-flex min-h-11 items-center text-primary underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring">Terms</SupportPageLink>
+          <SupportPageLink section="privacy" className="inline-flex min-h-11 items-center text-primary underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring">Privacy notice</SupportPageLink>
+        </nav>
 
         {/* Sign Out Button */}
         <Card className="mt-6 border-primary/25 bg-primary/[0.03]">

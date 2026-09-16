@@ -51,7 +51,7 @@ const defaultDependencies: SupportDependencies = {
 
 const EMAIL_PATTERN = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const SAFE_PLATFORM_PATTERN = /^(web|pwa|ios|android|desktop)$/;
+const SAFE_PLATFORM_PATTERN = /^(web|pwa|ios|android|mobile|desktop)$/;
 
 const hasControlCharacters = (value: string, allowWhitespace = false) =>
   Array.from(value).some((character) => {

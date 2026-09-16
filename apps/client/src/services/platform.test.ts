@@ -18,6 +18,8 @@ import {
   isPasswordResetUrl,
   isStandalonePwaRuntime,
   isTrustedBrackWebUrl,
+  getSupportPageUrl,
+  openSupportPage,
   openSupportEmail,
   shouldRegisterPwaServiceWorker,
 } from "./platform";
@@ -33,10 +35,51 @@ const setStandaloneDisplayMode = (matches: boolean) => {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
+  appLauncherMocks.openUrl.mockReset();
   delete window.brackDesktop;
   Object.defineProperty(window, "matchMedia", {
     configurable: true,
     value: originalMatchMedia,
+  });
+});
+
+describe("public support page browser opening", () => {
+  it("keeps web and PWA on the local support route", async () => {
+    vi.spyOn(Capacitor, "isNativePlatform").mockReturnValue(false);
+    expect(await openSupportPage("faqs")).toBe(false);
+    expect(appLauncherMocks.openUrl).not.toHaveBeenCalled();
+  });
+
+  it("opens the staging support page in a native browser when configured", async () => {
+    vi.stubEnv("VITE_SUPPORT_SITE_ORIGIN", "https://staging.brack-app.com");
+    vi.spyOn(Capacitor, "isNativePlatform").mockReturnValue(true);
+    vi.spyOn(Capacitor, "getPlatform").mockReturnValue("ios");
+    appLauncherMocks.openUrl.mockResolvedValue({ completed: true });
+
+    expect(await openSupportPage("privacy")).toBe(true);
+    expect(appLauncherMocks.openUrl).toHaveBeenCalledWith({ url: "https://staging.brack-app.com/support#privacy" });
+  });
+
+  it("uses the desktop system-browser bridge", async () => {
+    const openExternal = vi.fn().mockResolvedValue(undefined);
+    window.brackDesktop = { auth: { openExternal } } as unknown as NonNullable<Window["brackDesktop"]>;
+
+    expect(await openSupportPage()).toBe(true);
+    expect(openExternal).toHaveBeenCalledWith(`${BRACK_WEB_ORIGIN}/support`);
+  });
+
+  it("rejects an unapproved origin and falls back if the browser fails", async () => {
+    vi.stubEnv("VITE_SUPPORT_SITE_ORIGIN", "https://brack-app.com.evil.example");
+    expect(getSupportPageUrl()).toBeNull();
+    vi.stubEnv("VITE_SUPPORT_SITE_ORIGIN", "https://staging.brack-app.com/path");
+    expect(getSupportPageUrl()).toBeNull();
+    vi.stubEnv("VITE_SUPPORT_SITE_ORIGIN", "https://staging.brack-app.com");
+    vi.spyOn(Capacitor, "isNativePlatform").mockReturnValue(true);
+    vi.spyOn(Capacitor, "getPlatform").mockReturnValue("android");
+    appLauncherMocks.openUrl.mockResolvedValue({ completed: false });
+
+    expect(await openSupportPage("contact")).toBe(false);
   });
 });
 

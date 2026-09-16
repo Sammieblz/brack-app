@@ -2,6 +2,24 @@ import { Capacitor } from "@capacitor/core";
 import type { BrackRuntimePlatform } from "@/types/desktop";
 
 export const BRACK_WEB_ORIGIN = "https://brack-app.com";
+const SUPPORT_SITE_ORIGINS = new Set([BRACK_WEB_ORIGIN, "https://staging.brack-app.com"]);
+
+export type SupportPageSection = "faqs" | "known-issues" | "contact" | "terms" | "privacy";
+
+export const getSupportPageUrl = (section?: SupportPageSection): string | null => {
+  const configuredOrigin = import.meta.env.VITE_SUPPORT_SITE_ORIGIN?.trim() || BRACK_WEB_ORIGIN;
+  try {
+    const origin = new URL(configuredOrigin);
+    if (
+      !SUPPORT_SITE_ORIGINS.has(origin.origin) ||
+      origin.href !== `${origin.origin}/` ||
+      hasUrlCredentials(origin)
+    ) return null;
+    return `${origin.origin}/support${section ? `#${section}` : ""}`;
+  } catch {
+    return null;
+  }
+};
 
 const hasDesktopBridge = () =>
   typeof window !== "undefined" && typeof window.brackDesktop !== "undefined";
@@ -145,6 +163,29 @@ export const openExternalUrl = async (url: string) => {
   }
 
   window.location.assign(url);
+};
+
+/** Open the public support page outside an installed app. Web/PWA use the local route. */
+export const openSupportPage = async (section?: SupportPageSection): Promise<boolean> => {
+  if (!isDesktopRuntime() && !isMobileNativeRuntime()) return false;
+  if (typeof navigator !== "undefined" && !navigator.onLine) return false;
+
+  const url = getSupportPageUrl(section);
+  if (!url || (isDesktopRuntime() && !window.brackDesktop?.auth?.openExternal)) return false;
+
+  try {
+    if (isMobileNativeRuntime()) {
+      // AppLauncher hands HTTPS links to the OS browser instead of presenting
+      // Capacitor's browser view on top of the app.
+      const { AppLauncher } = await import("@capacitor/app-launcher");
+      const result = await AppLauncher.openUrl({ url });
+      return result.completed;
+    }
+    await openExternalUrl(url);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 export const openSupportEmail = async (subject: string): Promise<boolean> => {
