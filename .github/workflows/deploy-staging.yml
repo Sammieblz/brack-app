@@ -246,6 +246,7 @@ jobs:
             printf 'VITE_SUPABASE_PUBLISHABLE_KEY=%s\n' "${STAGE_SUPABASE_PUBLISHABLE_KEY}"
             printf 'VITE_TURNSTILE_SITE_KEY=%s\n' "${STAGE_TURNSTILE_SITE_KEY}"
             printf 'VITE_TURNSTILE_BRIDGE_ORIGIN=https://staging.brack-app.com\n'
+            printf 'VITE_SUPPORT_SITE_ORIGIN=https://staging.brack-app.com\n'
             printf 'VITE_SOCIAL_FEATURES_ENABLED=%s\n' "${STAGE_SOCIAL_FEATURES_ENABLED}"
             printf 'VITE_GAMIFICATION_ENABLED=%s\n' "${STAGE_GAMIFICATION_ENABLED}"
             printf 'VITE_LEADERBOARDS_ENABLED=%s\n' "${STAGE_LEADERBOARDS_ENABLED}"

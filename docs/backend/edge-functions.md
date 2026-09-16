@@ -4,6 +4,8 @@ Source of truth: local `supabase/functions/`, `supabase/config.toml`, and remote
 
 Maintained app-facing functions use the shared distributed limiter in `_shared/rateLimit.ts`. The limiter stores buckets in `api_rate_limits` through the service-role-only `check_api_rate_limit` RPC, with an instance-memory fallback if the RPC is temporarily unavailable. The retained legacy Auth email-availability endpoint fails closed when its protected lookup cannot return a valid boolean; current clients do not call it.
 
+The maintained shared Supabase client imports use the exact `npm:@supabase/supabase-js@2.53.0` specifier rather than `esm.sh`. Run `npm ci` before `npm run test:edge`; the Deno test command uses the npm-installed, lockfile-pinned dependencies in manual `node_modules` mode and refuses uncached remote fetches. This avoids a test run depending on the availability of a third-party ESM CDN. Edge Function deployment remains separate from this local test command; verify bundling against the target Supabase CLI before any authorized deployment.
+
 ## Current Remote State
 
 - The legacy, inactive `auth-email-availability`, plus `search-books`, `feature-flags`, and

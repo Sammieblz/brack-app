@@ -100,7 +100,7 @@ describe("settings loading contracts", () => {
     const request = deferred<never[]>();
     mocks.maybeSingle.mockResolvedValue({ data: {}, error: null });
     mocks.getBlockedUsers.mockReturnValueOnce(request.promise);
-    render(<PrivacySettings user={user} />);
+    render(<MemoryRouter><PrivacySettings user={user} /></MemoryRouter>);
     expect(screen.queryByRole("switch")).not.toBeInTheDocument();
     expect(screen.queryByText("You have not blocked anyone.")).not.toBeInTheDocument();
     await act(async () => { request.resolve([]); });

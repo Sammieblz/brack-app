@@ -506,6 +506,18 @@
       "description": "require_mutual_follows_for_direct_messaging",
       "file": "20260911213545_require_mutual_follows_for_direct_messaging.sql",
       "sha256": "931c70e6ba9bba8d2025a3f25cfaf5658948518e36b2ef14cd9c98e8fcc35cf6"
+    },
+    {
+      "version": "20260915175012",
+      "description": "support_contact_delivery",
+      "file": "20260915175012_support_contact_delivery.sql",
+      "sha256": "c3df98ad73bcd8916d7f84ad5a6849509d2a506e8485374237ac7d43b9bd1475"
+    },
+    {
+      "version": "20260915194156",
+      "description": "reconcile_hosted_direct_message_function_acl",
+      "file": "20260915194156_reconcile_hosted_direct_message_function_acl.sql",
+      "sha256": "3a26126d0ffbcca4e203ab4f261dd48fd4b5fc529a8a00b01b373bc8764571d7"
     }
   ]
 }

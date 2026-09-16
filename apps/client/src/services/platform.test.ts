@@ -1,5 +1,14 @@
 import { Capacitor } from "@capacitor/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+const appLauncherMocks = vi.hoisted(() => ({
+  canOpenUrl: vi.fn(),
+  openUrl: vi.fn(),
+}));
+
+vi.mock("@capacitor/app-launcher", () => ({
+  AppLauncher: appLauncherMocks,
+}));
 import {
   BRACK_WEB_ORIGIN,
   getAuthFlowSurface,
@@ -9,6 +18,9 @@ import {
   isPasswordResetUrl,
   isStandalonePwaRuntime,
   isTrustedBrackWebUrl,
+  getSupportPageUrl,
+  openSupportPage,
+  openSupportEmail,
   shouldRegisterPwaServiceWorker,
 } from "./platform";
 
@@ -23,10 +35,84 @@ const setStandaloneDisplayMode = (matches: boolean) => {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
+  appLauncherMocks.openUrl.mockReset();
   delete window.brackDesktop;
   Object.defineProperty(window, "matchMedia", {
     configurable: true,
     value: originalMatchMedia,
+  });
+});
+
+describe("public support page browser opening", () => {
+  it("keeps web and PWA on the local support route", async () => {
+    vi.spyOn(Capacitor, "isNativePlatform").mockReturnValue(false);
+    expect(await openSupportPage("faqs")).toBe(false);
+    expect(appLauncherMocks.openUrl).not.toHaveBeenCalled();
+  });
+
+  it("opens the staging support page in a native browser when configured", async () => {
+    vi.stubEnv("VITE_SUPPORT_SITE_ORIGIN", "https://staging.brack-app.com");
+    vi.spyOn(Capacitor, "isNativePlatform").mockReturnValue(true);
+    vi.spyOn(Capacitor, "getPlatform").mockReturnValue("ios");
+    appLauncherMocks.openUrl.mockResolvedValue({ completed: true });
+
+    expect(await openSupportPage("privacy")).toBe(true);
+    expect(appLauncherMocks.openUrl).toHaveBeenCalledWith({ url: "https://staging.brack-app.com/support#privacy" });
+  });
+
+  it("uses the desktop system-browser bridge", async () => {
+    const openExternal = vi.fn().mockResolvedValue(undefined);
+    window.brackDesktop = { auth: { openExternal } } as unknown as NonNullable<Window["brackDesktop"]>;
+
+    expect(await openSupportPage()).toBe(true);
+    expect(openExternal).toHaveBeenCalledWith(`${BRACK_WEB_ORIGIN}/support`);
+  });
+
+  it("rejects an unapproved origin and falls back if the browser fails", async () => {
+    vi.stubEnv("VITE_SUPPORT_SITE_ORIGIN", "https://brack-app.com.evil.example");
+    expect(getSupportPageUrl()).toBeNull();
+    vi.stubEnv("VITE_SUPPORT_SITE_ORIGIN", "https://staging.brack-app.com/path");
+    expect(getSupportPageUrl()).toBeNull();
+    vi.stubEnv("VITE_SUPPORT_SITE_ORIGIN", "https://staging.brack-app.com");
+    vi.spyOn(Capacitor, "isNativePlatform").mockReturnValue(true);
+    vi.spyOn(Capacitor, "getPlatform").mockReturnValue("android");
+    appLauncherMocks.openUrl.mockResolvedValue({ completed: false });
+
+    expect(await openSupportPage("contact")).toBe(false);
+  });
+});
+
+describe("support email composer", () => {
+  it("keeps browser and PWA support on the in-app form", async () => {
+    vi.spyOn(Capacitor, "isNativePlatform").mockReturnValue(false);
+    expect(await openSupportEmail("Brack support: Help")).toBe(false);
+    expect(appLauncherMocks.openUrl).not.toHaveBeenCalled();
+  });
+
+  it("uses the dedicated desktop bridge without exposing a recipient", async () => {
+    const openEmail = vi.fn().mockResolvedValue(true);
+    window.brackDesktop = { support: { openEmail } } as unknown as NonNullable<Window["brackDesktop"]>;
+
+    expect(await openSupportEmail("Brack support: Account & sign-in")).toBe(true);
+    expect(openEmail).toHaveBeenCalledWith("Brack support: Account & sign-in");
+  });
+
+  it("checks for a native mail handler before opening it", async () => {
+    vi.spyOn(Capacitor, "isNativePlatform").mockReturnValue(true);
+    vi.spyOn(Capacitor, "getPlatform").mockReturnValue("android");
+    appLauncherMocks.canOpenUrl.mockResolvedValue({ value: false });
+
+    expect(await openSupportEmail("Brack support: Help")).toBe(false);
+    expect(appLauncherMocks.openUrl).not.toHaveBeenCalled();
+  });
+
+  it("rejects unsafe subjects before crossing a platform boundary", async () => {
+    const openEmail = vi.fn().mockResolvedValue(true);
+    window.brackDesktop = { support: { openEmail } } as unknown as NonNullable<Window["brackDesktop"]>;
+
+    expect(await openSupportEmail("Hello\r\nBcc: attacker@example.com")).toBe(false);
+    expect(openEmail).not.toHaveBeenCalled();
   });
 });
 

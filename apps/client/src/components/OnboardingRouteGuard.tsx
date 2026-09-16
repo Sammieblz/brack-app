@@ -35,7 +35,7 @@ export const OnboardingRouteGuard = () => {
     // These screens own their own redirect lifecycle. In particular, Auth and
     // AuthCallback must finish the draft before any global guard moves the
     // reader elsewhere.
-    if (pathname === "/" || AUTH_HANDOFF_ROUTES.has(pathname)) return;
+    if (pathname === "/" || pathname === "/support" || AUTH_HANDOFF_ROUTES.has(pathname)) return;
 
     if (!user) {
       // Pre-auth onboarding is intentionally public. Native permissions are

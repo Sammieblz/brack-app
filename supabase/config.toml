@@ -370,3 +370,9 @@ verify_jwt = false
 
 [functions.gamification-shop]
 verify_jwt = true
+
+[functions.support-contact]
+# This endpoint accepts authenticated Settings requests and future anonymous
+# Contact-page requests. The handler validates user JWTs and requires
+# Turnstile whenever no authenticated user is present.
+verify_jwt = false

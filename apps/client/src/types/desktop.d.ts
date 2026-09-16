@@ -46,6 +46,9 @@ export interface BrackDesktopBridge {
     openExternal(url: string): Promise<void>;
     onCallback(handler: (url: string) => void): () => void;
   };
+  support: {
+    openEmail(subject: string): Promise<boolean>;
+  };
   deepLinks: {
     onOpen(handler: (url: string) => void): () => void;
   };

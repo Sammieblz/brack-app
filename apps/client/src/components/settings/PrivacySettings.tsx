@@ -2,6 +2,7 @@ import { getApiErrorStatus } from "@/services/api/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 import { useCallback, useEffect, useState } from "react";
+import { SupportPageLink } from "@/components/SupportPageLink";
 import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -223,6 +224,7 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
         <p className="font-sans text-muted-foreground mt-1">
           Control who can see you, your activity, and your social interactions.
         </p>
+        <SupportPageLink section="privacy" className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-primary underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring">Privacy information and support</SupportPageLink>
       </div>
 
       {loadError && <LoadingError message={loadError} onRetry={loadPrivacy} />}

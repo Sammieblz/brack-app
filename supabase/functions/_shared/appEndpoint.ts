@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient, type User } from "https://esm.sh/@supabase/supabase-js@2.53.0";
+import { createClient, type SupabaseClient, type User } from "npm:@supabase/supabase-js@2.53.0";
 import { getCorsHeaders } from "./cors.ts";
 
 type JsonBody = Record<string, unknown> | unknown[] | string | number | boolean | null;
