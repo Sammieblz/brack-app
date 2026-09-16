@@ -17,7 +17,7 @@ import {
   processBookUpdate,
   rememberSyncAlias,
 } from "../_shared/bookSync.ts";
-import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.53.0";
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2.53.0";
 
 interface OutboxItem {
   id: string;

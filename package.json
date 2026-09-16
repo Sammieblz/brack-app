@@ -38,7 +38,7 @@
     "test:library-interactions:check": "tsc -p tests/playwright/tsconfig.library-interactions.json --noEmit && eslint tests/playwright/library-interactions.config.ts tests/e2e/library-interactions.spec.ts tests/fixtures/library-interactions --max-warnings=0",
     "test:electron": "playwright test --config=tests/playwright/electron.config.ts",
     "test:db": "supabase test db",
-    "test:edge": "deno test supabase/functions/auth-email-availability supabase/functions/dashboard-home supabase/functions/core-telemetry supabase/functions/support-contact supabase/functions/_shared/messaging.test.ts",
+    "test:edge": "deno test --cached-only --node-modules-dir=manual --allow-env=WS_NO_BUFFER_UTIL,WS_NO_UTF_8_VALIDATE supabase/functions/auth-email-availability supabase/functions/dashboard-home supabase/functions/core-telemetry supabase/functions/support-contact supabase/functions/_shared/messaging.test.ts",
     "db:migration:new": "node scripts/create-migration.mjs",
     "db:migrations:lock": "node scripts/verify-migration-integrity.mjs --write-lock",
     "db:migrations:verify": "node scripts/verify-migration-integrity.mjs",
