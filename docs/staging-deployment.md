@@ -93,12 +93,14 @@ In the staging Supabase dashboard, configure:
   `VITE_SUPPORT_SITE_ORIGIN=https://staging.brack-app.com` so installed builds
   made with this configuration open staging support rather than production.
 - **Google OAuth, if enabled:** authorize the staging branch project's
-  `/auth/v1/callback` URL in Google Cloud.
+  `/auth/v1/callback` URL in the Google OAuth client; see the two redirect hops
+  below.
 - **SMTP, if email flows are tested:** use server-side staging credentials and
   a verified sender. Never put Brevo credentials in GitHub variables prefixed
   with `VITE_`.
-- **Edge Function CORS:** include `https://staging.brack-app.com` in the
-  stage branch's `ALLOWED_ORIGINS` secret.
+- **Edge Function CORS:** include `https://staging.brack-app.com` and any
+  deliberately used local or packaged-app origins in the stage branch's
+  `ALLOWED_ORIGINS` secret; verify the live preflight response below.
 - **Edge-generated links:** set the stage branch's `PUBLIC_APP_URL` secret
   to `https://staging.brack-app.com`; do not change the production project's
   canonical value.
@@ -113,6 +115,91 @@ In the staging Supabase dashboard, configure:
 The browser callback helpers use the current `window.location.origin`, so the
 same client code produces the correct staging URLs once the exact routes above
 are allowlisted.
+
+### Google OAuth: keep the two redirect hops separate
+
+Google's **Authorized redirect URIs** must contain the exact stage Supabase
+callback `https://satrvrfapnnpsvqgpjer.supabase.co/auth/v1/callback` for the
+**Web application** OAuth client configured under **stage Supabase >
+Authentication > Providers > Google**. Add `https://staging.brack-app.com` as an
+**Authorized JavaScript origin** in that Google client; include
+`http://localhost:8080` or `http://127.0.0.1:8080` there only when that client
+is used for local browser testing. Origins have no path. Save the new client ID
+and client secret in the stage provider settings, never in a `VITE_` variable or
+the repository. Prefer a separate Google Cloud project and OAuth client for
+stage so deleting or rotating a staging client cannot interrupt production.
+
+Supabase **Authentication > URL Configuration > Redirect URLs** controls the
+*next* hop, from stage Supabase back into Brack. It needs
+`https://staging.brack-app.com/auth/callback` and, for local browser testing
+against the hosted stage backend, the exact local `/auth/callback` URL in use.
+Adding the Supabase `/auth/v1/callback` to this list does not authorize it at
+Google. A Google `redirect_uri_mismatch` means the callback is missing from
+the **matching Google client**, not that database migrations failed. Keep the
+hosted stage redirect list and `[remotes.test.auth].additional_redirect_urls`
+in `supabase/config.toml` aligned: the checked-in remote override currently
+omits loopback callbacks, while the local `[auth]` block configures only the
+local Supabase stack. Reconcile that drift in a reviewed configuration change
+if local-to-stage OAuth must remain supported after future branch config syncs.
+
+If a Google OAuth client was deleted, check **Google Auth Platform > Deleted
+credentials** first. Google permits restoration for 30 days; restore a shared
+production client before replacing it. If restoration is unavailable, create a
+new Web application client and update the corresponding Supabase provider's
+client ID and secret. Verify stage and production separately; never replace
+production's provider credentials with a stage-only client.
+
+### Local frontend against stage: Edge Function CORS
+
+When the Vite app runs at `http://localhost:8080` but its Supabase URL points
+to stage, Edge Functions receive `Origin: http://localhost:8080`. The stage
+branch's **Edge Function secret** `ALLOWED_ORIGINS` must include that exact
+scheme, host, and port. Include `http://127.0.0.1:8080` only if that address is
+also used. Keep `https://staging.brack-app.com` for the hosted web app; review
+any other origin against the staging access policy. Set one comma-separated
+value with ordinary `://` characters, no literal backslashes, surrounding
+quotes, or `ALLOWED_ORIGINS=` prefix inside the value. Do not add development
+origins to production by default.
+
+Before changing the secret, select the persistent `stage` branch in the
+Supabase dashboard or verify its ref with
+`supabase branches list --project-ref waftnaqgkcgufzapcihe`. When using the
+CLI, target `satrvrfapnnpsvqgpjer` explicitly with `--project-ref`. The
+local `.env`, GitHub's lowercase `stage` environment, Supabase Auth Redirect
+URLs, and Google OAuth settings do **not** set Edge Function CORS. Secret
+listings expose a fingerprint rather than the stored value, so the presence
+of an `ALLOWED_ORIGINS` row does not prove its contents. Never print secret
+values or paste them into issue logs. Supabase says secret updates do not
+require a function redeploy; check the live preflight before changing code or
+schema.
+
+Verify the live function response from PowerShell without credentials:
+
+```powershell
+$stageRef = 'satrvrfapnnpsvqgpjer'
+$origin = 'http://localhost:8080'
+$preflight = Invoke-WebRequest -UseBasicParsing -Method Options `
+  -Uri "https://${stageRef}.supabase.co/functions/v1/feature-flags" `
+  -Headers @{
+    Origin = $origin
+    'Access-Control-Request-Method' = 'POST'
+    'Access-Control-Request-Headers' = 'authorization,apikey,content-type,x-client-info'
+  }
+if ($preflight.Headers['Access-Control-Allow-Origin'] -ne $origin) {
+  throw 'Stage Edge Function CORS does not allow the requested origin.'
+}
+```
+
+Repeat with the actual browser origin and affected function. An HTTP 200
+`OPTIONS` response is **not** enough: `Access-Control-Allow-Origin` must match
+the request's `Origin`. On 2026-09-18, stage preflights for `feature-flags`,
+`dashboard-home`, and `conversations-home` were verified from both loopback
+origins and `https://staging.brack-app.com`; a localhost-origin `feature-flags`
+GET returned 200. That confirms CORS and one public function query, **not**
+authenticated dashboard data or the completeness of the production-to-stage
+snapshot. If a request still fails after CORS passes, inspect its real HTTP
+status, function logs, Auth, and stage schema/data separately. Do not repair
+migrations or repeat a production data transfer to address a CORS error.
 
 ## 2. Configure the existing Cloudflare Pages project
 
@@ -358,7 +445,8 @@ Before accepting the staging release, verify:
   `waftnaqgkcgufzapcihe.supabase.co`.
 - Signup, confirmation, sign-in, password reset, Google OAuth (if enabled), and
   onboarding profile finalization work with staging-only accounts.
-- Edge Function preflights accept `https://staging.brack-app.com`.
+- Edge Function preflights return a matching `Access-Control-Allow-Origin` for
+  `https://staging.brack-app.com` and any approved local development origins.
 - Cloudflare Access protects both the custom hostname and any retained
   `pages.dev` entry point.
 
@@ -379,6 +467,11 @@ reviewed operation.
 - [Cloudflare: production and preview branch controls](https://developers.cloudflare.com/pages/configuration/branch-build-controls/)
 - [GitHub: configuration-variable precedence and environment timing](https://docs.github.com/en/actions/reference/workflows-and-actions/variables#configuration-variable-precedence)
 - [Supabase: separate staging and production environments](https://supabase.com/docs/guides/deployment/managing-environments)
+- [Supabase: Google sign-in setup](https://supabase.com/docs/guides/auth/social-login/auth-google)
+- [Supabase: application redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls)
+- [Supabase: Edge Function CORS](https://supabase.com/docs/guides/functions/cors)
+- [Supabase: Edge Function secrets](https://supabase.com/docs/guides/functions/secrets)
+- [Google: OAuth clients and deleted-client restoration](https://support.google.com/cloud/answer/15549257)
 
 ## Native and desktop scope
 
