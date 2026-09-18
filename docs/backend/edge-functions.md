@@ -160,6 +160,14 @@ The maintained shared Supabase client imports use the exact `npm:@supabase/supab
 
 Use these checks when a function works locally but fails remotely:
 
+If a browser reports a CORS preflight failure against the stage branch, first
+check that the response's `Access-Control-Allow-Origin` exactly matches the
+request's `Origin`. An HTTP 200 `OPTIONS` response with a different origin is
+still blocked by the browser; it is not evidence of a database migration or
+function-deployment failure. See the [stage CORS and local-browser runbook](../staging-deployment.md#local-frontend-against-stage-edge-function-cors)
+before deploying functions or changing schema. `ALLOWED_ORIGINS` is scoped to
+the target Supabase branch's Edge Function secrets, not to the local Vite env.
+
 ```bash
 npx supabase functions deploy --project-ref waftnaqgkcgufzapcihe --use-api
 npx supabase functions deploy conversations-home --project-ref waftnaqgkcgufzapcihe --use-api
