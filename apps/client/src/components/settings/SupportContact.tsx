@@ -18,6 +18,7 @@ import {
   SUPPORT_EMAIL,
   SUPPORT_MESSAGE_MAX_LENGTH,
   SUPPORT_SUBJECT_MAX_LENGTH,
+  SupportSubmissionError,
   submitSupportRequest,
   type SupportCategory,
 } from "@/services/api";
@@ -128,10 +129,15 @@ export const SupportContact = () => {
       setMessage("");
       setTurnstileToken(null);
       turnstileRef.current?.reset();
-    } catch {
+    } catch (error) {
+      const message = error instanceof SupportSubmissionError
+        ? error.code === "turnstile_failed"
+          ? "The security check wasn't accepted. Please complete it again and retry; your message is still here."
+          : "This app address isn't allowed to send support messages. Your message is still here; use email or copy the address below."
+        : "We couldn't confirm delivery. Your message is still here—retry, email us, or copy the address below.";
       setSubmission({
         kind: "error",
-        message: "We couldn't confirm delivery. Your message is still here—retry, email us, or copy the address below.",
+        message,
       });
       setTurnstileToken(null);
       turnstileRef.current?.reset();
@@ -178,7 +184,7 @@ export const SupportContact = () => {
             This form is delivered server-side, never through browser SMTP.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6">
           <form className="space-y-5" onSubmit={handleSubmit} noValidate>
             <div className="space-y-2">
               <Label htmlFor="support-category">Category</Label>

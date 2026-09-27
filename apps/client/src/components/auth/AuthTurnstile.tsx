@@ -293,7 +293,7 @@ export const AuthTurnstile = forwardRef<
     <div
       ref={containerRef}
       className={cn(
-        "w-full rounded-xl bg-muted/45 p-2.5 text-foreground transition-colors",
+        "w-full rounded-xl bg-muted/45 py-2.5 text-foreground transition-colors",
         disabled && "pointer-events-none opacity-75",
         className
       )}
@@ -370,7 +370,7 @@ export const AuthTurnstile = forwardRef<
           key={`${turnstileTheme}-${widgetSize}`}
           ref={turnstileRef}
           siteKey={siteKey}
-          className="flex w-full justify-center overflow-hidden rounded-lg"
+          className="flex w-full justify-center"
           options={{
             action,
             appearance: "interaction-only",

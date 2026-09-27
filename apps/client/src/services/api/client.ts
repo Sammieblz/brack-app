@@ -63,7 +63,8 @@ export const getApiRetryAfterMs = (error: unknown) => {
 
 export const invokeFunction = async <T>(
   functionName: string,
-  options?: FunctionInvokeOptions
+  options?: FunctionInvokeOptions,
+  { forbiddenRequiresAuth = true }: { forbiddenRequiresAuth?: boolean } = {},
 ): Promise<T> => {
   const cooldownUntil = functionCooldowns.get(functionName) ?? 0;
   if (cooldownUntil > Date.now()) {
@@ -77,7 +78,7 @@ export const invokeFunction = async <T>(
 
   if (error) {
     const status = getApiErrorStatus(error);
-    if (status === 401 || status === 403) {
+    if (status === 401 || (status === 403 && forbiddenRequiresAuth)) {
       markAuthenticationRequired();
     } else if (status === 429) {
       const retryAfterMs = getApiRetryAfterMs(error) ?? 60_000;

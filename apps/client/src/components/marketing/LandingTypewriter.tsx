@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { cn } from "@/lib/utils";
@@ -50,7 +50,9 @@ export const LandingTypewriter = ({ text, className }: LandingTypewriterProps) =
         {text.split(/(\s+)/u).map((part, partIndex) => {
           if (/^\s+$/u.test(part)) {
             characterIndex += Array.from(part).length;
-            return <Fragment key={partIndex}>{part}</Fragment>;
+            // A text node needs no key and avoids passing dev-tool attributes
+            // to React.Fragment, which accepts only key and children.
+            return part;
           }
 
           return (

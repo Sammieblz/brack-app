@@ -22,6 +22,9 @@ vi.mock("@/services/platform", () => ({
   openSupportEmail: mocks.openEmail,
 }));
 vi.mock("@/services/api", () => ({
+  SupportSubmissionError: class SupportSubmissionError extends Error {
+    constructor(public readonly code: string) { super(code); }
+  },
   SUPPORT_EMAIL: "support@brack-app.com",
   SUPPORT_SUBJECT_MAX_LENGTH: 120,
   SUPPORT_MESSAGE_MAX_LENGTH: 5_000,
@@ -37,6 +40,7 @@ vi.mock("@/services/api", () => ({
 }));
 
 import { SupportContact } from "./SupportContact";
+import { SupportSubmissionError } from "@/services/api";
 
 const deferred = <T,>() => {
   let resolve!: (value: T) => void;
@@ -132,6 +136,18 @@ describe("SupportContact", () => {
 
     await waitFor(() => expect(mocks.submit).toHaveBeenCalledTimes(2));
     expect(mocks.submit.mock.calls[1][0].request_id).toBe(firstRequestId);
+  });
+
+  it("explains a rejected security check without losing the draft", async () => {
+    mocks.submit.mockRejectedValueOnce(new SupportSubmissionError("turnstile_failed"));
+    render(<SupportContact />);
+    fillForm();
+    fireEvent.click(screen.getByRole("button", { name: "Send to support" }));
+
+    expect(await screen.findByText(/security check wasn't accepted/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("What happened?")).toHaveValue(
+      "The library remains blank after reopening Brack.",
+    );
   });
 
   it("does not queue private support content while offline", () => {

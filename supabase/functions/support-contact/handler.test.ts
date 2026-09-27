@@ -43,6 +43,11 @@ const makeHandler = ({
   providerStatus = 201,
   mode = "production",
   rateLimitResponse = null as Response | null,
+  turnstileResult = {
+    success: true,
+    action: "support_contact",
+    hostname: "brack-app.com",
+  } as Record<string, unknown>,
 } = {}) => {
   const rpcCalls: RpcCall[] = [];
   const fetchCalls: FetchCall[] = [];
@@ -80,11 +85,7 @@ const makeHandler = ({
       const url = String(input);
       fetchCalls.push({ url, init });
       if (url.includes("siteverify")) {
-        return new Response(JSON.stringify({
-          success: true,
-          action: "support_contact",
-          hostname: "brack-app.com",
-        }), { status: 200 });
+        return new Response(JSON.stringify(turnstileResult), { status: 200 });
       }
       return new Response(
         providerStatus === 201 ? JSON.stringify({ messageId: "brevo-message-76" }) : "{}",
@@ -200,10 +201,43 @@ Deno.test("anonymous support requires and verifies Turnstile before delivery", a
     turnstile_token: "valid-turnstile-token",
   }, { authenticated: false }));
   assertEquals(accepted.status, 200);
-  assert(fetchCalls.some((call) => call.url.includes("siteverify")), "Turnstile was not verified");
+  const verificationCall = fetchCalls.find((call) => call.url.includes("siteverify"));
+  if (!verificationCall) throw new Error("Turnstile was not verified");
+  const verificationBody = verificationCall.init?.body as FormData;
+  assertEquals(verificationBody.get("response"), "valid-turnstile-token");
+  assertEquals(verificationBody.has("idempotency_key"), false);
   const providerCall = fetchCalls.find((call) => call.url.includes("api.brevo.com"));
   const providerBody = JSON.parse(String(providerCall?.init?.body));
   assertEquals(providerBody.replyTo, { email: "guest@example.com" });
+});
+
+Deno.test("anonymous support logs safe Siteverify diagnostics without logging the token", async () => {
+  const warningCalls: unknown[][] = [];
+  const originalWarn = console.warn;
+  console.warn = (...values: unknown[]) => warningCalls.push(values);
+  try {
+    const { handler, fetchCalls } = makeHandler({
+      authenticated: false,
+      turnstileResult: {
+        success: false,
+        "error-codes": ["invalid-input-secret"],
+      },
+    });
+    const response = await handler(makeRequest({
+      ...validBody,
+      reply_email: "guest@example.com",
+      turnstile_token: "private-token-must-not-be-logged",
+    }, { authenticated: false }));
+
+    assertEquals(response.status, 403);
+    assertEquals((await response.json()).code, "turnstile_failed");
+    assertEquals(fetchCalls.filter((call) => call.url.includes("api.brevo.com")).length, 0);
+    const warningText = JSON.stringify(warningCalls);
+    assert(warningText.includes("invalid-input-secret"), "Siteverify error code was not logged");
+    assert(!warningText.includes("private-token-must-not-be-logged"), "Turnstile token leaked to logs");
+  } finally {
+    console.warn = originalWarn;
+  }
 });
 
 Deno.test("support contact rejects header injection, oversized fields, and recipient override", async () => {

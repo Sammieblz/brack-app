@@ -138,12 +138,10 @@ const isAllowedOrigin = (origin: string | null, env: SupportDependencies["env"])
 const verifyTurnstile = async ({
   token,
   remoteIp,
-  requestId,
   dependencies,
 }: {
   token: string;
   remoteIp: string;
-  requestId: string;
   dependencies: SupportDependencies;
 }) => {
   const secret = dependencies.env("TURNSTILE_SECRET_KEY");
@@ -152,7 +150,6 @@ const verifyTurnstile = async ({
   const form = new FormData();
   form.set("secret", secret);
   form.set("response", token);
-  form.set("idempotency_key", requestId);
   if (remoteIp !== "unknown") form.set("remoteip", remoteIp);
 
   const controller = new AbortController();
@@ -162,16 +159,38 @@ const verifyTurnstile = async ({
       "https://challenges.cloudflare.com/turnstile/v0/siteverify",
       { method: "POST", body: form, signal: controller.signal },
     );
-    if (!response.ok) return false;
+    if (!response.ok) {
+      return { valid: false as const, reason: `siteverify_http_${response.status}` };
+    }
     const result = await response.json() as JsonRecord;
-    if (result.success !== true || result.action !== TURNSTILE_ACTION) return false;
+    if (result.success !== true) {
+      const errorCodes = Array.isArray(result["error-codes"])
+        ? result["error-codes"].filter((value): value is string => typeof value === "string").slice(0, 5)
+        : [];
+      return {
+        valid: false as const,
+        reason: "siteverify_rejected",
+        errorCodes,
+      };
+    }
+    if (result.action !== TURNSTILE_ACTION) {
+      return {
+        valid: false as const,
+        reason: "action_mismatch",
+        action: typeof result.action === "string" ? result.action.slice(0, 64) : "missing",
+      };
+    }
     const allowedHostnames = (dependencies.env("TURNSTILE_ALLOWED_HOSTNAMES") ?? "")
       .split(",")
       .map((value) => value.trim().toLowerCase())
       .filter(Boolean);
-    return allowedHostnames.length > 0
-      && typeof result.hostname === "string"
-      && allowedHostnames.includes(result.hostname.toLowerCase());
+    const hostname = typeof result.hostname === "string"
+      ? result.hostname.toLowerCase().slice(0, 255)
+      : "missing";
+    if (allowedHostnames.length === 0 || !allowedHostnames.includes(hostname)) {
+      return { valid: false as const, reason: "hostname_mismatch", hostname };
+    }
+    return { valid: true as const };
   } finally {
     clearTimeout(timeout);
   }
@@ -324,7 +343,17 @@ export const createSupportContactHandler = (
         const token = typeof body.turnstile_token === "string" && body.turnstile_token.length <= 2_048
           ? body.turnstile_token
           : "";
-        if (!token || !await verifyTurnstile({ token, remoteIp: clientIp, requestId, dependencies })) {
+        const verification = token
+          ? await verifyTurnstile({ token, remoteIp: clientIp, dependencies })
+          : { valid: false as const, reason: "missing_token" };
+        if (!verification.valid) {
+          console.warn("support-contact turnstile rejected", {
+            request_id: requestId,
+            reason: verification.reason,
+            ...("errorCodes" in verification ? { error_codes: verification.errorCodes } : {}),
+            ...("action" in verification ? { action: verification.action } : {}),
+            ...("hostname" in verification ? { hostname: verification.hostname } : {}),
+          });
           return respond({ error: "Complete the security check and try again", code: "turnstile_failed" }, 403, origin);
         }
       }

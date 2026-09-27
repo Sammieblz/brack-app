@@ -54,7 +54,7 @@ never put these values in a `VITE_` variable:
 
 | Secret | Purpose |
 | --- | --- |
-| `BREVO_API_KEY` | Server-only transactional email API key with the minimum sending scope. |
+| `BREVO_API_KEY` | Server-only Brevo API v3 key for the transactional email HTTP API. An SMTP key is not valid here. |
 | `SUPPORT_FROM_EMAIL` | A Brevo-verified sender on the Brack domain. |
 | `SUPPORT_DELIVERY_MODE` | Exactly `production`, `staging`, or `test`. |
 | `SUPPORT_STAGING_SINK_EMAIL` | Required outside production; must not equal the public support address. |
@@ -65,6 +65,14 @@ never put these values in a `VITE_` variable:
 
 The web build needs only the public `VITE_TURNSTILE_SITE_KEY` and, for packaged
 app bridges, the existing public `VITE_TURNSTILE_BRIDGE_ORIGIN`.
+
+Brevo's SMTP credentials are separate from this function. Supabase Auth uses
+the SMTP login and SMTP key configured under Authentication's custom SMTP
+settings; `support-contact` sends through Brevo's HTTP API and needs an API
+v3 key in `BREVO_API_KEY`. Never copy the SMTP password into that secret.
+Treat any key shown in screenshots, tickets, or logs as exposed: rotate it,
+update every environment that uses it, test Auth email delivery, and revoke
+the old key. Do not paste replacement credentials into chat or documentation.
 
 Staging must use `SUPPORT_DELIVERY_MODE=staging` and a dedicated sink mailbox.
 The function refuses to use `support@brack-app.com` as that sink. Before any
@@ -91,6 +99,8 @@ Anonymous callers must pass Turnstile with action `support_contact` and an
 allowed hostname. All callers use fail-closed distributed IP limits; signed-in
 callers also receive an account limit. Header control characters, unknown
 categories, invalid addresses, and oversized bodies are rejected.
+The support request UUID is not reused as Turnstile's optional Siteverify
+idempotency key: a failed check must be retryable with a fresh, single-use token.
 
 The request UUID is claimed atomically in Postgres. A retry with identical
 content reuses that UUID; changed content receives a new UUID. Brevo also
@@ -119,6 +129,23 @@ tickets, or incident chat.
 For a failed request:
 
 1. Confirm the request ID and environment.
+   For HTTP 403, inspect only the response JSON (not request headers or the
+   Turnstile token): `code: "turnstile_failed"` means the anonymous security
+   check was rejected; `error: "Origin not allowed"` means the exact browser
+   origin is missing from `ALLOWED_ORIGINS`. A 403 happens before Brevo is
+   called, so changing the email credential cannot resolve it.
+   For Turnstile rejection, confirm the deployed `VITE_TURNSTILE_SITE_KEY`
+   and server-only `TURNSTILE_SECRET_KEY` are from the same widget, that the
+   widget allows the browser hostname, and that
+   `TURNSTILE_ALLOWED_HOSTNAMES` contains bare hostnames (for example,
+   `staging.brack-app.com,localhost,127.0.0.1`), not URLs or ports. Retry
+   with a fresh single-use token after any correction.
+   The function records a content-free `support-contact turnstile rejected`
+   warning with the request ID and one of `siteverify_rejected`,
+   `action_mismatch`, or `hostname_mismatch`. It may include Cloudflare's
+   documented error code or the returned action/hostname, but never records
+   the Turnstile token, email address, or message. Use this warning to avoid
+   guessing at secret or hostname configuration.
 2. Check the Edge Function status/error class and the content-free delivery
    receipt.
 3. Check the Brevo event by provider message ID when one exists.
