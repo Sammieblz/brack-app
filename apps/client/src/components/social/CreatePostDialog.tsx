@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,6 +36,9 @@ const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const VIDEO_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime"]);
 
 export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostDialogProps) => {
+  const id = useId();
+  const [error, setError] = useState<{ target: "required" | "book" | "club" | "media" | "submit"; message: string } | null>(null);
+  const clearError = (target: NonNullable<typeof error>["target"]) => setError((previous) => previous?.target === target ? null : previous);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [richText, setRichText] = useState<RichTextPayload>(() => toPlainRichTextPayload(""));
@@ -66,6 +69,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
   }, [previews]);
 
   const reset = () => {
+    setError(null);
     setTitle("");
     setRichText(toPlainRichTextPayload(""));
     setGenre("none");
@@ -103,31 +107,38 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
       const selected = Array.from(fileList || []);
       validateFiles(selected);
       setFiles(selected);
+      clearError("media");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Invalid media");
+      const message = error instanceof Error ? error.message : "Invalid media";
+      setError({ target: "media", message });
+      toast.error(message);
       if (inputRef.current) inputRef.current.value = "";
     }
   };
 
   const handleSubmit = async () => {
     if (!title.trim() || !richText.content.trim()) {
+      setError({ target: "required", message: "Please fill in all required fields" });
       triggerHaptic("error");
       toast.error("Please fill in all required fields");
       return;
     }
 
     if (postType === "book" && bookId === "none") {
+      setError({ target: "book", message: "Choose a book for this post" });
       toast.error("Choose a book for this post");
       return;
     }
 
     if (postType === "club" && clubId === "none") {
+      setError({ target: "club", message: "Choose a book club for this post" });
       toast.error("Choose a book club for this post");
       return;
     }
 
     try {
       setLoading(true);
+      setError(null);
       const media = files.length > 0 ? await uploadPostMediaFiles(files) : [];
       await createPost({
         title,
@@ -151,7 +162,9 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
     } catch (error: unknown) {
       console.error("Error creating post:", error);
       triggerHaptic("error");
-      toast.error(error instanceof Error ? error.message : "Failed to create post");
+      const message = error instanceof Error ? error.message : "Failed to create post";
+      setError({ target: "submit", message });
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -177,9 +190,9 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
           <div className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Post Type</Label>
+                <Label htmlFor={`${id}-type`}>Post Type</Label>
                 <Select value={postType} onValueChange={(value) => setPostType(value as PostType)}>
-                  <SelectTrigger>
+                  <SelectTrigger id={`${id}-type`}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -191,12 +204,12 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
               </div>
 
               <div className="space-y-2">
-                <Label>Visibility</Label>
+                <Label htmlFor={`${id}-visibility`}>Visibility</Label>
                 <Select
                   value={visibility}
                   onValueChange={(value) => setVisibility(value as PostVisibility)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id={`${id}-visibility`}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -210,9 +223,9 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
 
             {postType === "book" && (
               <div className="space-y-2">
-                <Label>Book</Label>
-                <Select value={bookId} onValueChange={setBookId}>
-                  <SelectTrigger>
+                <Label htmlFor={`${id}-book`}>Book</Label>
+                <Select value={bookId} onValueChange={(value) => { setBookId(value); clearError("book"); }}>
+                  <SelectTrigger id={`${id}-book`} aria-invalid={error?.target === "book"} aria-describedby={error?.target === "book" ? `${id}-error` : undefined}>
                     <SelectValue placeholder="Choose a book" />
                   </SelectTrigger>
                   <SelectContent>
@@ -229,9 +242,9 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
 
             {postType === "club" && (
               <div className="space-y-2">
-                <Label>Book Club</Label>
-                <Select value={clubId} onValueChange={setClubId}>
-                  <SelectTrigger>
+                <Label htmlFor={`${id}-club`}>Book Club</Label>
+                <Select value={clubId} onValueChange={(value) => { setClubId(value); clearError("club"); }}>
+                  <SelectTrigger id={`${id}-club`} aria-invalid={error?.target === "club"} aria-describedby={error?.target === "club" ? `${id}-error` : undefined}>
                     <SelectValue placeholder="Choose a club" />
                   </SelectTrigger>
                   <SelectContent>
@@ -247,20 +260,22 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor={`${id}-title`}>Title *</Label>
               <Input
-                id="title"
+                id={`${id}-title`} aria-required="true"
+                aria-invalid={error?.target === "required" && !title.trim()}
+                aria-describedby={error?.target === "required" && !title.trim() ? `${id}-error` : undefined}
                 placeholder="Give your post a clear title..."
                 maxLength={200}
                 value={title}
-                onChange={(event) => setTitle(event.target.value)}
+                onChange={(event) => { setTitle(event.target.value); clearError("required"); }}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Genre/Theme</Label>
+              <Label htmlFor={`${id}-genre`}>Genre/Theme</Label>
               <Select value={genre} onValueChange={setGenre}>
-                <SelectTrigger>
+                <SelectTrigger id={`${id}-genre`}>
                   <SelectValue placeholder="Select a genre or theme" />
                 </SelectTrigger>
                 <SelectContent>
@@ -275,25 +290,29 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="content">Content *</Label>
+              <Label id={`${id}-content-label`} htmlFor={`${id}-content`}>Content *</Label>
               <RichTextEditor
+                id={`${id}-content`} labelledBy={`${id}-content-label`} aria-required="true"
+                aria-invalid={error?.target === "required" && !richText.content.trim()}
+                aria-describedby={error?.target === "required" && !richText.content.trim() ? `${id}-error` : undefined}
                 placeholder="Share your thoughts, insight, quote, recommendation, or question..."
                 limit={10000}
                 value={richText}
-                onChange={setRichText}
+                onChange={(value) => { setRichText(value); clearError("required"); }}
               />
             </div>
           </div>
 
           <aside className="space-y-3 rounded-md border border-border/70 bg-muted/20 p-3">
             <div className="space-y-1">
-              <Label>Media</Label>
-              <p className="font-sans text-xs text-muted-foreground">
+              <Label htmlFor={`${id}-media`}>Media</Label>
+              <p id={`${id}-media-help`} className="font-sans text-xs text-muted-foreground">
                 Up to 4 images at 10 MB each, or 1 video at 60 MB.
               </p>
             </div>
 
             <input
+              id={`${id}-media`}
               ref={inputRef}
               type="file"
               accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
@@ -305,6 +324,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
               type="button"
               variant="outline"
               className="w-full gap-2"
+              aria-describedby={`${id}-media-help${error?.target === "media" ? ` ${id}-error` : ""}`}
               onClick={() => inputRef.current?.click()}
             >
               <MediaImage className="h-4 w-4" />
@@ -371,11 +391,12 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
           </aside>
         </div>
 
+        {error && <p id={`${id}-error`} role="alert" className="text-sm text-destructive">{error.message}</p>}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={loading || !title.trim() || !richText.content.trim()}>
+          <Button onClick={handleSubmit} aria-describedby={error?.target === "submit" ? `${id}-error` : undefined} disabled={loading || !title.trim() || !richText.content.trim()}>
             {loading ? "Publishing..." : "Publish Post"}
           </Button>
         </div>

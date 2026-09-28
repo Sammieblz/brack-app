@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Crown,
@@ -502,6 +502,7 @@ const PreviewOnlyPanel = ({
         </div>
         <div className="space-y-3">
           <Textarea
+            aria-label="Optional note for the admins"
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             rows={4}
@@ -590,10 +591,12 @@ const DiscussionComposer = ({
   announcement?: boolean;
   onSubmit: (data: RichTextPayload & { title?: string; files?: File[] }) => Promise<void>;
 }) => {
+  const id = useId();
   const [title, setTitle] = useState("");
   const [richText, setRichText] = useState<RichTextPayload>(() => toPlainRichTextPayload(""));
   const [files, setFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const hasContent = richText.content.trim().length > 0;
 
   if (!canPost) {
@@ -620,6 +623,7 @@ const DiscussionComposer = ({
             event.preventDefault();
             if (!hasContent) return;
             setSubmitting(true);
+            setSubmitError(null);
             try {
               await onSubmit({
                 title: title.trim() || undefined,
@@ -632,29 +636,34 @@ const DiscussionComposer = ({
               setTitle("");
               setRichText(toPlainRichTextPayload(""));
               setFiles([]);
+            } catch (error) {
+              setSubmitError(error instanceof Error ? error.message : "Failed to post message");
             } finally {
               setSubmitting(false);
             }
           }}
         >
           <div className="space-y-2">
-            <Label htmlFor={`club-title-${announcement ? "announcement" : "discussion"}`}>Title</Label>
+            <Label htmlFor={`${id}-title`}>Title</Label>
             <Input
-              id={`club-title-${announcement ? "announcement" : "discussion"}`}
+              id={`${id}-title`}
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               placeholder={announcement ? "Announcement title" : "Discussion topic"}
             />
           </div>
           <div className="space-y-2">
-            <Label>Message</Label>
+            <Label id={`${id}-message-label`} htmlFor={`${id}-message`}>Message</Label>
             <RichTextEditor
+              id={`${id}-message`} labelledBy={`${id}-message-label`} aria-required="true"
+              aria-describedby={submitError ? `${id}-error` : undefined}
               value={richText}
               onChange={setRichText}
               placeholder="Share what members should know..."
               minHeightClassName="min-h-36"
             />
           </div>
+          {submitError && <p id={`${id}-error`} role="alert" className="text-sm text-destructive">{submitError}</p>}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border px-3 py-2 font-sans text-sm text-muted-foreground transition hover:border-primary hover:text-primary">
               <MediaImage className="h-4 w-4" />
@@ -667,7 +676,7 @@ const DiscussionComposer = ({
                 onChange={(event) => setFiles(Array.from(event.target.files || []))}
               />
             </label>
-            <Button type="submit" disabled={submitting || !hasContent}>
+            <Button type="submit" aria-describedby={submitError ? `${id}-error` : undefined} disabled={submitting || !hasContent}>
               <Send className="mr-2 h-4 w-4" />
               {submitting ? "Posting..." : announcement ? "Post Announcement" : "Post Discussion"}
             </Button>
@@ -759,7 +768,7 @@ const MembersTab = ({
                   onManage(member.user_id, "set_role", value as ClubMemberRole)
                 }
               >
-                <SelectTrigger className="h-9 w-28">
+                <SelectTrigger className="h-9 w-28" aria-label={`Role for ${member.user?.display_name || "Reader"}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1062,6 +1071,7 @@ const AdminTab = ({
               )}
             </div>
             <Textarea
+              aria-label="Optional invite note"
               value={message}
               onChange={(event) => setMessage(event.target.value)}
               rows={3}
@@ -1129,8 +1139,8 @@ const ClubMediaPicker = ({
   <div className="rounded-xl border border-border/70 bg-card/60 p-3">
     <div className="mb-3 flex items-start justify-between gap-3">
       <div>
-        <p className="font-sans text-sm font-semibold">{label}</p>
-        <p className="font-sans text-xs text-muted-foreground">{description}</p>
+        <p id={`${id}-label`} className="font-sans text-sm font-semibold">{label}</p>
+        <p id={`${id}-description`} className="font-sans text-xs text-muted-foreground">{description}</p>
       </div>
       {file && (
         <Button type="button" variant="ghost" size="sm" onClick={() => onFile(undefined)}>
@@ -1151,6 +1161,7 @@ const ClubMediaPicker = ({
       <MediaImage className="h-5 w-5 shrink-0 text-primary" />
       <input
         id={id}
+        aria-labelledby={`${id}-label`} aria-describedby={`${id}-description`}
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"
         className="sr-only"

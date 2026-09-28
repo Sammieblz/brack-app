@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { forwardRef, useEffect, useId, useImperativeHandle, type AriaAttributes } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -10,7 +10,8 @@ import { richTextToPlainText } from "@/lib/richText";
 import type { RichTextDocument, RichTextPayload } from "@/types/richText";
 import { cn } from "@/lib/utils";
 
-interface RichTextEditorProps {
+interface RichTextEditorProps extends Pick<AriaAttributes,
+  "aria-label" | "aria-labelledby" | "aria-describedby" | "aria-invalid" | "aria-required"> {
   value?: RichTextPayload | null;
   onChange: (payload: RichTextPayload) => void;
   placeholder?: string;
@@ -20,9 +21,14 @@ interface RichTextEditorProps {
   id?: string;
   labelledBy?: string;
   disabled?: boolean;
+  onBlur?: () => void;
 }
 
-export const RichTextEditor = ({
+export interface RichTextEditorHandle {
+  focus: () => void;
+}
+
+export const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(({
   value,
   onChange,
   placeholder = "Write something thoughtful...",
@@ -32,7 +38,25 @@ export const RichTextEditor = ({
   id,
   labelledBy,
   disabled = false,
-}: RichTextEditorProps) => {
+  onBlur,
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledBy,
+  "aria-describedby": ariaDescribedBy,
+  "aria-invalid": ariaInvalid,
+  "aria-required": ariaRequired,
+}, ref) => {
+  const generatedId = useId();
+  const editorId = id ?? `${generatedId}-editor`;
+  const countId = `${editorId}-count`;
+  const accessibility = {
+    id: editorId,
+    "aria-label": ariaLabel ?? "",
+    "aria-labelledby": labelledBy || ariaLabelledBy || "",
+    "aria-describedby": [ariaDescribedBy, countId].filter(Boolean).join(" "),
+    "aria-invalid": String(ariaInvalid ?? false),
+    "aria-required": String(ariaRequired ?? false),
+    "aria-disabled": String(disabled),
+  };
   const editor = useEditor({
     editable: !disabled,
     extensions: [
@@ -52,14 +76,14 @@ export const RichTextEditor = ({
     content: value?.content_format === "tiptap" && value.content_json ? value.content_json : value?.content || "",
     editorProps: {
       attributes: {
-        ...(id ? { id } : {}),
-        ...(labelledBy ? { "aria-labelledby": labelledBy } : {}),
+        ...accessibility,
         role: "textbox",
         "aria-multiline": "true",
         class:
           "prose prose-sm max-w-none focus:outline-none dark:prose-invert prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-blockquote:my-2",
       },
     },
+    onBlur: () => onBlur?.(),
     onUpdate: ({ editor: instance }) => {
       const json = instance.getJSON() as RichTextDocument;
       const content = richTextToPlainText(json).slice(0, limit);
@@ -72,6 +96,8 @@ export const RichTextEditor = ({
     },
   });
 
+  useImperativeHandle(ref, () => ({ focus: () => { editor?.commands.focus(); } }), [editor]);
+
   useEffect(() => {
     editor?.setEditable(!disabled, false);
   }, [editor, disabled]);
@@ -82,13 +108,13 @@ export const RichTextEditor = ({
       editorProps: {
         attributes: {
           ...editor.options.editorProps.attributes,
-          ...(id ? { id } : {}),
-          ...(labelledBy ? { "aria-labelledby": labelledBy } : {}),
-          "aria-disabled": String(disabled),
+          ...accessibility,
         },
       },
     });
-  }, [editor, id, labelledBy, disabled]);
+    // Use only scalar semantics so typing does not reset editor options.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor, editorId, labelledBy, ariaLabel, ariaLabelledBy, ariaDescribedBy, ariaInvalid, ariaRequired, disabled]);
 
   useEffect(() => {
     if (!editor || !value) return;
@@ -111,10 +137,11 @@ export const RichTextEditor = ({
         <EditorContent editor={editor} />
       </div>
       {editor && (
-        <div className="mt-1 text-right font-sans text-xs text-muted-foreground">
+        <div id={countId} className="mt-1 text-right font-sans text-xs text-muted-foreground">
           {editor.storage.characterCount.characters()} / {limit}
         </div>
       )}
     </div>
   );
-};
+});
+RichTextEditor.displayName = "RichTextEditor";

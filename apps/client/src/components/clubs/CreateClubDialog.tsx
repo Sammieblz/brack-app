@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +33,7 @@ interface CreateClubDialogProps {
 }
 
 export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDialogProps) => {
+  const id = useId();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -47,6 +48,7 @@ export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDi
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!bannerFile) {
@@ -81,6 +83,7 @@ export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDi
 
     try {
       setLoading(true);
+      setSubmitError(null);
       const [bannerImagePath, avatarImagePath] = await Promise.all([
         bannerFile ? uploadClubImageFile(bannerFile, "banner") : Promise.resolve(undefined),
         avatarFile ? uploadClubImageFile(avatarFile, "avatar") : Promise.resolve(undefined),
@@ -110,6 +113,7 @@ export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDi
       setAvatarFile(null);
     } catch (error) {
       console.error('Error creating club:', error);
+      setSubmitError(error instanceof Error ? error.message : "Failed to create club");
     } finally {
       setLoading(false);
     }
@@ -133,9 +137,9 @@ export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDi
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Club Name *</Label>
+              <Label htmlFor={`${id}-name`}>Club Name *</Label>
               <Input
-                id="name"
+                id={`${id}-name`}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Mystery Lovers Club"
@@ -143,9 +147,9 @@ export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDi
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor={`${id}-description`}>Description</Label>
               <Textarea
-                id="description"
+                id={`${id}-description`}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Tell members what your club is about..."
@@ -155,9 +159,9 @@ export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDi
             </div>
             <div className="grid gap-4 sm:grid-cols-[1fr_9rem]">
               <div className="grid gap-2">
-                <Label htmlFor="club-banner">Banner image</Label>
+                <Label htmlFor={`${id}-banner`}>Banner image</Label>
                 <label
-                  htmlFor="club-banner"
+                  htmlFor={`${id}-banner`}
                   className="flex min-h-32 cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-border bg-muted/30 text-sm text-muted-foreground transition hover:border-primary/50 hover:bg-primary/5"
                 >
                   {bannerPreview ? (
@@ -170,7 +174,7 @@ export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDi
                   )}
                 </label>
                 <Input
-                  id="club-banner"
+                  id={`${id}-banner`}
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif"
                   className="sr-only"
@@ -178,9 +182,9 @@ export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDi
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="club-avatar">Profile image</Label>
+                <Label htmlFor={`${id}-avatar`}>Profile image</Label>
                 <label
-                  htmlFor="club-avatar"
+                  htmlFor={`${id}-avatar`}
                   className="flex aspect-square cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-border bg-muted/30 text-muted-foreground transition hover:border-primary/50 hover:bg-primary/5"
                 >
                   {avatarPreview ? (
@@ -190,7 +194,7 @@ export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDi
                   )}
                 </label>
                 <Input
-                  id="club-avatar"
+                  id={`${id}-avatar`}
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif"
                   className="sr-only"
@@ -200,30 +204,31 @@ export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDi
             </div>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Private Club</Label>
-                <p className="font-sans text-xs text-muted-foreground">
+                <Label htmlFor={`${id}-private`}>Private Club</Label>
+                <p id={`${id}-private-description`} className="font-sans text-xs text-muted-foreground">
                   Readers can find a preview, but discussions and members stay private
                 </p>
               </div>
               <Switch
+                id={`${id}-private`} aria-describedby={`${id}-private-description`}
                 checked={isPrivate}
                 onCheckedChange={setIsPrivate}
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label htmlFor="genres">Genres</Label>
+                <Label htmlFor={`${id}-genres`}>Genres</Label>
                 <Input
-                  id="genres"
+                  id={`${id}-genres`}
                   value={genres}
                   onChange={(e) => setGenres(e.target.value)}
                   placeholder="Fiction, Mystery, History"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="tags">Tags</Label>
+                <Label htmlFor={`${id}-tags`}>Tags</Label>
                 <Input
-                  id="tags"
+                  id={`${id}-tags`}
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
                   placeholder="Buddy reads, slow pace"
@@ -232,27 +237,27 @@ export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDi
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="grid gap-2">
-                <Label htmlFor="city">City</Label>
+                <Label htmlFor={`${id}-city`}>City</Label>
                 <Input
-                  id="city"
+                  id={`${id}-city`}
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="Optional"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="country">Country</Label>
+                <Label htmlFor={`${id}-country`}>Country</Label>
                 <Input
-                  id="country"
+                  id={`${id}-country`}
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
                   placeholder="Optional"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="memberLimit">Member limit</Label>
+                <Label htmlFor={`${id}-memberLimit`}>Member limit</Label>
                 <Input
-                  id="memberLimit"
+                  id={`${id}-memberLimit`}
                   type="number"
                   min={2}
                   value={memberLimit}
@@ -262,6 +267,7 @@ export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDi
               </div>
             </div>
           </div>
+          {submitError && <p id={`${id}-submit-error`} role="alert" className="mb-3 text-sm text-destructive">{submitError}</p>}
           <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
             <Button
               type="button"
@@ -270,7 +276,7 @@ export const CreateClubDialog = ({ onCreateClub, compact = false }: CreateClubDi
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !name.trim()}>
+            <Button type="submit" aria-describedby={submitError ? `${id}-submit-error` : undefined} disabled={loading || !name.trim()}>
               {loading ? 'Creating...' : 'Create Club'}
             </Button>
           </DialogFooter>

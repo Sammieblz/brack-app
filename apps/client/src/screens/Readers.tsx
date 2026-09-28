@@ -174,6 +174,7 @@ export default function Readers() {
                   <div className="relative">
                     <APP_ICONS.common.search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
+                      aria-label="Search readers by name"
                       placeholder="Search readers by name"
                       value={searchQuery}
                       onChange={(event) => setSearchQuery(event.target.value)}

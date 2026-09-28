@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   LoadingError,
   LoadingRegion,
@@ -39,6 +39,16 @@ export default function ReadingHistory() {
   const journalEntries: ReadingHistoryJournalEntry[] =
     data?.journalEntries ?? [];
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") === "journals" ? "journals" : "logs";
+  const setActiveTab = (tab: string) => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      if (tab === "journals") next.set("tab", tab);
+      else next.delete("tab");
+      return next;
+    }, { replace: true });
+  };
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -109,6 +119,7 @@ export default function ReadingHistory() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              aria-label="Search reading history"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by book title, notes, or tags..."
@@ -128,7 +139,7 @@ export default function ReadingHistory() {
               onRetry={() => void refetch()}
             />
           )}
-          <Tabs defaultValue="logs" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="logs">
                 Progress Logs ({loading ? "…" : filteredLogs.length})
@@ -155,11 +166,13 @@ export default function ReadingHistory() {
                 />
               ) : (
                 filteredLogs.map((log) => (
-                  <Card
+                  <Link
                     key={log.id}
-                    className="cursor-pointer"
-                    onClick={() => navigate(`/book/${log.book_id}`)}
+                    to={`/book/${encodeURIComponent(log.book_id)}`}
+                    aria-label={`Open ${log.books.title}, progress log from ${format(new Date(log.logged_at), "PPp")}`}
+                    className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
+                  <Card>
                     <CardContent className="p-4">
                       <div className="flex gap-4">
                         {/* Book Cover */}
@@ -222,6 +235,7 @@ export default function ReadingHistory() {
                       </div>
                     </CardContent>
                   </Card>
+                  </Link>
                 ))
               )}
             </TabsContent>
@@ -243,11 +257,13 @@ export default function ReadingHistory() {
                 />
               ) : (
                 filteredJournals.map((entry) => (
-                  <Card
+                  <Link
                     key={entry.id}
-                    className="cursor-pointer"
-                    onClick={() => navigate(`/book/${entry.book_id}`)}
+                    to={`/book/${encodeURIComponent(entry.book_id)}`}
+                    aria-label={`Open ${entry.books.title}, ${entry.title || entry.entry_type} from ${format(new Date(entry.created_at), "PPp")}`}
+                    className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
+                  <Card>
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -322,6 +338,7 @@ export default function ReadingHistory() {
                       </div>
                     </CardContent>
                   </Card>
+                  </Link>
                 ))
               )}
             </TabsContent>

@@ -27,7 +27,9 @@ For conflicts, current user intent wins. Revalidate stale remembered facts again
 
 ## Execute and hand off
 
-Implement one authorized, coherent ticket slice and relevant failure/accessibility states. Run meaningful existing checks and add regressions for demonstrated defects. No decorative animation may delay a confirmed save or navigation. Do not broaden into database or product-rule changes merely to simplify a visual component.
+Implement the authorized, coherent ticket slice and relevant failure/accessibility states. When the user permits a batch, include only tickets that can be completed and verified before the requested review stop. Run meaningful existing checks and add regressions for demonstrated defects. No decorative animation may delay a confirmed save or navigation. Do not broaden into database or product-rule changes merely to simplify a visual component.
+
+For current navigation/notification ownership read the [living contract](../../../docs/ui-navigation-notifications.md); for editor/input semantics read [form accessibility](../../../docs/ui-form-accessibility.md). These avoid rediscovering established invariants; still inspect source before changing them. Shared primitive changes require a consumer check for regressions outside the original screen. Keep Playwright artifact output independent before running suites concurrently.
 
 Update the work ledger with exact files, decisions, commands/results, evidence limits and the next bounded action. Mark implemented, verified and shipped separately. Update living UI docs after behavior changes. After code edits, update an existing Graphify index locally according to project instructions; do not enable semantic/cloud extraction, database introspection, hooks or watchers implicitly.
 

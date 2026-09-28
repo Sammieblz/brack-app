@@ -172,6 +172,7 @@ const BookClubs = () => {
               <div className="relative">
                 <APP_ICONS.common.search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
+                  aria-label="Search clubs"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search clubs by name, genre, tag, region, or current book"

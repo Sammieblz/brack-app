@@ -331,6 +331,7 @@ export const BookListManager = ({ userId }: BookListManagerProps) => {
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
               <Input
+                aria-label="Search lists"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search lists by name or description"

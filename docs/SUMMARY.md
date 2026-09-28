@@ -83,6 +83,8 @@ This documentation provides comprehensive coverage of:
 ### Development
 - [Components](./components.md) - UI component library
 - [Journal Editing](./ui-journal-editing.md) - Local save, draft and attachment contracts
+- [Navigation and Notifications](./ui-navigation-notifications.md) - Destination links, recovery and account-scoped read states
+- [Form Accessibility](./ui-form-accessibility.md) - Input/editor naming, focus and error associations
 - [Loading Motion](./loading-motion.md) - Loader storyboard and timing contract
 - [Hooks Reference](./hooks.md) - Custom React hooks
 - [State Management](./state-management.md) - State patterns

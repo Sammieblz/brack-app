@@ -10,6 +10,8 @@ interface JournalEditorFeedbackProps {
   keepEditing: () => void;
   discard: () => void;
   editorId: string;
+  pageId: string;
+  errorField: "content" | "pageReference" | "photo" | null;
 }
 
 /** Keep discard feedback inside the editor's existing focus scope. */
@@ -22,12 +24,19 @@ export const JournalEditorFeedback = ({
   keepEditing,
   discard,
   editorId,
+  pageId,
+  errorField,
 }: JournalEditorFeedbackProps) => {
   const keepEditingRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (discardRequested) keepEditingRef.current?.focus();
   }, [discardRequested]);
+
+  useEffect(() => {
+    if (errorField === "content") document.getElementById(editorId)?.focus();
+    if (errorField === "pageReference") document.getElementById(pageId)?.focus();
+  }, [errorField, editorId, pageId]);
 
   return (
     <>
@@ -36,7 +45,7 @@ export const JournalEditorFeedback = ({
           {saving ? "Saving your entry on this device…" : "Preparing your photo…"}
         </p>
       )}
-      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+      {error && <p id={`${editorId}-error`} role="alert" className="text-sm text-destructive">{error}</p>}
       {discardRequested && (
         <section aria-label="Discard draft confirmation" className="space-y-3 rounded-lg border p-4">
           <p className="font-semibold">Discard this draft?</p>

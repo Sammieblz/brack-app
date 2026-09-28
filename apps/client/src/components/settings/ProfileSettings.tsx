@@ -1,7 +1,7 @@
 import { getApiErrorStatus } from "@/services/api/client";
 import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 import { ProfileSkeleton } from "@/components/skeletons/ProfileSkeleton";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +29,7 @@ interface ProfileSettingsProps {
 }
 
 const ProfileSettingsContent = ({ user }: ProfileSettingsProps) => {
+  const id = useId();
   const { toast } = useToast();
   const navigate = useNavigate();
   const { followersCount, followingCount } = useFollowing(user?.id || null);
@@ -37,6 +38,7 @@ const ProfileSettingsContent = ({ user }: ProfileSettingsProps) => {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -86,6 +88,7 @@ const ProfileSettingsContent = ({ user }: ProfileSettingsProps) => {
     if (!user) return;
     
     setSaving(true);
+    setSaveError(null);
     try {
       await upsertProfileBasics(user.id, {
         display_name: formData.display_name || null,
@@ -99,6 +102,7 @@ const ProfileSettingsContent = ({ user }: ProfileSettingsProps) => {
       
       loadProfile();
     } catch (error: unknown) {
+      setSaveError(error instanceof Error ? error.message : "Failed to update profile");
       toast({
         variant: "destructive",
         title: "Error",
@@ -291,15 +295,15 @@ const ProfileSettingsContent = ({ user }: ProfileSettingsProps) => {
       <Card>
         <CardHeader>
           <CardTitle className="font-display">Display Name</CardTitle>
-          <CardDescription className="font-sans">
+          <CardDescription id={`${id}-name-help`} className="font-sans">
             This is how your name appears to other users
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <Label htmlFor="display_name">Display Name</Label>
+            <Label htmlFor={`${id}-display-name`}>Display Name</Label>
             <Input
-              id="display_name"
+              id={`${id}-display-name`} aria-describedby={`${id}-name-help`}
               value={formData.display_name}
               onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
               placeholder="How you'd like to be addressed"
@@ -312,15 +316,15 @@ const ProfileSettingsContent = ({ user }: ProfileSettingsProps) => {
       <Card>
         <CardHeader>
           <CardTitle className="font-display">Bio</CardTitle>
-          <CardDescription className="font-sans">
+          <CardDescription id={`${id}-bio-help`} className="font-sans">
             Tell others about yourself and your reading interests
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <Label htmlFor="bio">Bio</Label>
+            <Label htmlFor={`${id}-bio`}>Bio</Label>
             <Textarea
-              id="bio"
+              id={`${id}-bio`} aria-describedby={`${id}-bio-help`}
               value={formData.bio}
               onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
               placeholder="Tell us a bit about yourself and your reading interests..."
@@ -332,8 +336,9 @@ const ProfileSettingsContent = ({ user }: ProfileSettingsProps) => {
       </Card>
 
       {/* Save Button */}
+      {saveError && <p id={`${id}-save-error`} role="alert" className="text-sm text-destructive">{saveError}</p>}
       <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={handleSave} disabled={saving} aria-describedby={saveError ? `${id}-save-error` : undefined}>
           {saving ? "Saving..." : "Save Changes"}
         </Button>
       </div>

@@ -1,5 +1,10 @@
 import { useCallback } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
+// BrowserRouter's index counts app-owned history entries. Replacing a direct
+// entry (for example, changing a tab query) creates a key without a prior page.
+export const hasAppHistory = () => Number.isInteger(window.history.state?.idx)
+  && window.history.state.idx > 0;
 
 export interface BackButtonConfig {
   label?: string;
@@ -15,7 +20,6 @@ export const useAppBack = ({
   onBack,
 }: BackButtonConfig = {}) => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const goBack = useCallback(() => {
     if (onBack) {
@@ -28,13 +32,13 @@ export const useAppBack = ({
       return;
     }
 
-    if (location.key && location.key !== "default") {
+    if (hasAppHistory()) {
       navigate(-1);
       return;
     }
 
     navigate(fallbackPath);
-  }, [fallbackPath, location.key, navigate, onBack, to]);
+  }, [fallbackPath, navigate, onBack, to]);
 
   return { goBack };
 };

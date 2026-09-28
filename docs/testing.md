@@ -10,6 +10,8 @@ For frontend renewal, use the [verification matrix and current commands](./front
 
 The [journal save fixture](../tests/fixtures/journal-save/README.md) exercises the real full/quick editors and save hook against controlled service boundaries. Run `npx playwright test --config tests/playwright/journal-save.config.ts` for Chromium, Firefox and WebKit. The [F01 implementation tracker](./frontend-renewal/13-implementation-tracker.md) records actual results and persistence/native testing limits.
 
+The [frontend semantics fixture](../tests/fixtures/frontend-semantics/README.md) covers F02/F03 destination links, Back/404 recovery, notification failure/account/remount behavior and actual rich-text validation semantics. Run `npx playwright test --config tests/playwright/frontend-semantics.config.ts`. Its [batch checkpoint](./frontend-renewal/14-next-implementation-batch.md) records exact results and limits. Run suites sequentially unless their artifact directories are fully independent; a suite that cleans `test-results` can remove another running suite's traces.
+
 **Stack**:
 - **Unit Tests**: Vitest
 - **Component Tests**: React Testing Library

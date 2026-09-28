@@ -214,8 +214,9 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <Label>Email</Label>
+            <Label htmlFor="account-email">Email</Label>
             <Input
+              id="account-email"
               value={email}
               disabled
               className="bg-muted"
@@ -351,8 +352,9 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
           <LoadingRegion loading={profileLoading && !profile} refreshing={profileLoading && Boolean(profile)} label="Loading account information">
           {profileError && <LoadingError message="Account information could not load." onRetry={() => setProfileRequest(value => value + 1)} />}
           <div className="space-y-2">
-            <Label>Account Created</Label>
+            <Label htmlFor="account-created">Account Created</Label>
             {profileLoading && !profile ? <Skeleton className="h-11 min-h-[44px] w-full" /> : profileError && !profile ? null : <Input
+              id="account-created"
               value={profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : "Unknown"}
               disabled
               className="bg-muted"

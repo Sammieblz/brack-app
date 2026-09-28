@@ -69,6 +69,26 @@ afterEach(() => {
 });
 
 describe("journal editor session lifecycle", () => {
+  it("identifies the invalid field separately from persistence and photo errors", async () => {
+    const props = options();
+    const { result } = renderHook(() => useJournalEditor(props));
+    act(() => {
+      result.current.setField("richText", richText);
+      result.current.setField("pageReference", "0");
+    });
+    await act(async () => { await result.current.save(); });
+    expect(result.current.errorField).toBe("pageReference");
+    expect(props.onSave).not.toHaveBeenCalled();
+    act(() => {
+      result.current.setField("pageReference", "1");
+      result.current.setField("richText", { ...richText, content: "" });
+    });
+    expect(result.current.errorField).toBeNull();
+    await act(async () => { await result.current.save(); });
+    expect(result.current.errorField).toBe("content");
+    expect(props.onSave).not.toHaveBeenCalled();
+  });
+
   it("retains all draft fields on failed save and prevents duplicate writes and edits while pending", async () => {
     const pending = deferred<JournalSaveResult>();
     const props = options();
@@ -94,6 +114,7 @@ describe("journal editor session lifecycle", () => {
     expect(props.onOpenChange).not.toHaveBeenCalled();
     await act(async () => { pending.reject(new Error("local write failed")); await saving; });
     expect(result.current.error).toBe("Could not save your entry. Your draft is still here. Try again.");
+    expect(result.current.errorField).toBeNull();
     expect(result.current.draft).toMatchObject({ title: "My title", richText, pageReference: "12", tags: ["thoughts"], photoUrl: "https://example.test/draft.png" });
     expect(mocks.toast).not.toHaveBeenCalled();
     await act(async () => { await result.current.save(); });
@@ -280,6 +301,7 @@ describe("journal attachment integrity", () => {
     expect(result.current.draft.photoUrl).toBe(entry.photo_url);
     expect(result.current.draft.photoPreview).toBe(entry.photo_url);
     expect(result.current.error).toContain("Could not upload your photo");
+    expect(result.current.errorField).toBe("photo");
     expect(mocks.remove).not.toHaveBeenCalled();
   });
 

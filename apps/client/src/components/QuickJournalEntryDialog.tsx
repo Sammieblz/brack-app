@@ -44,7 +44,7 @@ export const QuickJournalEntryDialog = (props: QuickJournalEntryDialogProps) => 
             Save your thoughts about "{bookTitle}"{readingTimeMinutes ? ` (${Math.round(readingTimeMinutes)} min read)` : ""}
           </DialogDescription>
         </DialogHeader>
-        <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); void editor.save(); }}>
+        <form noValidate className="space-y-4" onSubmit={(event) => { event.preventDefault(); void editor.save(); }}>
           <fieldset disabled={busy || discardRequested} className="min-w-0 space-y-4">
             <legend className="sr-only">Journal entry</legend>
             <div>
@@ -68,13 +68,15 @@ export const QuickJournalEntryDialog = (props: QuickJournalEntryDialogProps) => 
             <div className="space-y-2">
               <Label id={`${id}-content-label`} htmlFor={editorId}>{draft.entryType === "quote" ? "Quote" : draft.entryType === "reflection" ? "Reflection" : "Note"} *</Label>
               <RichTextEditor id={editorId} labelledBy={`${id}-content-label`} disabled={busy || discardRequested}
+                aria-required="true" aria-invalid={editor.errorField === "content"}
+                aria-describedby={editor.errorField === "content" ? `${editorId}-error` : undefined}
                 value={draft.richText} onChange={(value) => setField("richText", value)}
                 placeholder={draft.entryType === "quote" ? "Paste your favorite quote here..." : draft.entryType === "reflection" ? "What did you think about this reading session?" : "Write your notes here..."}
                 minHeightClassName="min-h-36" />
             </div>
             <div className="space-y-2">
               <Label id={`${id}-page-label`} htmlFor={`${id}-page`}>Page Reference (optional)</Label>
-              <Input id={`${id}-page`} aria-labelledby={`${id}-page-label`} type="number" value={draft.pageReference} onChange={(event) => setField("pageReference", event.target.value)} placeholder="Page number" min="1" step="1" />
+              <Input id={`${id}-page`} aria-labelledby={`${id}-page-label`} aria-invalid={editor.errorField === "pageReference"} aria-describedby={editor.errorField === "pageReference" ? `${editorId}-error` : undefined} type="number" value={draft.pageReference} onChange={(event) => setField("pageReference", event.target.value)} placeholder="Page number" min="1" step="1" />
             </div>
             <div className="space-y-2">
               <p className="text-sm font-medium">Photo (optional)</p>
@@ -82,16 +84,16 @@ export const QuickJournalEntryDialog = (props: QuickJournalEntryDialogProps) => 
                 <img src={draft.photoPreview} alt="Journal attachment preview" className="w-full h-48 object-cover rounded-lg border" />
                 <Button type="button" variant="destructive" size="icon" aria-label="Remove photo" className="absolute top-2 right-2 size-11" onClick={editor.removePhoto}><Xmark className="h-4 w-4" aria-hidden="true" /></Button>
               </div>}
-              <div className="flex flex-wrap gap-2">
+              <div role="group" aria-label="Photo" aria-describedby={editor.errorField === "photo" ? `${editorId}-error` : undefined} className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" onClick={() => void editor.pickPhoto("prompt")} className="flex-1"><Camera className="h-4 w-4 mr-2" aria-hidden="true" />Quick Add</Button>
                 <Button type="button" variant="outline" onClick={() => void editor.pickPhoto("photos")} className="flex-1"><MediaImage className="h-4 w-4 mr-2" aria-hidden="true" />{draft.photoPreview ? "Replace Photo" : "Choose Photo"}</Button>
               </div>
             </div>
           </fieldset>
-          <JournalEditorFeedback {...editor} editorId={editorId} />
+          <JournalEditorFeedback {...editor} editorId={editorId} pageId={`${id}-page`} />
           <div className="flex flex-wrap gap-2 justify-end pt-2">
             <Button type="button" variant="outline" onClick={() => editor.requestOpenChange(false)} disabled={editor.saving || editor.picking || editor.uploadingPhoto || discardRequested}>Skip</Button>
-            <Button type="submit" disabled={busy || discardRequested || !draft.richText.content.trim()}>{editor.saving ? "Saving…" : "Save Entry"}</Button>
+            <Button type="submit" aria-describedby={editor.error && !editor.errorField ? `${editorId}-error` : undefined} disabled={busy || discardRequested || !draft.richText.content.trim()}>{editor.saving ? "Saving…" : "Save Entry"}</Button>
           </div>
         </form>
       </DialogContent>

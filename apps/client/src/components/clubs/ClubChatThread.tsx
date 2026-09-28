@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
 import {
@@ -99,6 +99,9 @@ const ClubChatThreadContent = ({
   currentUserId,
   canModerate = false,
 }: ClubChatThreadProps) => {
+  const id = useId();
+  const [composerError, setComposerError] = useState<{ target: "media" | "send"; message: string } | null>(null);
+  const [gifError, setGifError] = useState<string | null>(null);
   const [messages, setMessages] = useState<ClubChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -228,8 +231,11 @@ const ClubChatThreadContent = ({
       const selected = Array.from(fileList || []);
       validateFiles(selected);
       setFiles(selected);
+      setComposerError(null);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Invalid media");
+      const message = error instanceof Error ? error.message : "Invalid media";
+      setComposerError({ target: "media", message });
+      toast.error(message);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
@@ -257,6 +263,7 @@ const ClubChatThreadContent = ({
     if (!content.trim() && files.length === 0 && !gif) return;
     try {
       setSending(true);
+      setComposerError(null);
       const media = files.length > 0 ? await uploadClubChatMediaFiles(files, clubId) : [];
       const message = await sendClubChatMessage({
         club_id: clubId,
@@ -272,7 +279,9 @@ const ClubChatThreadContent = ({
       setGifResults([]);
       setGifQuery("");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to send message");
+      const message = error instanceof Error ? error.message : "Failed to send message";
+      setComposerError({ target: "send", message });
+      toast.error(message);
     } finally {
       setSending(false);
     }
@@ -282,10 +291,13 @@ const ClubChatThreadContent = ({
     if (!gifQuery.trim()) return;
     try {
       setGifSearching(true);
+      setGifError(null);
       const response = await searchGifs(gifQuery);
       setGifResults(response.results || []);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to search GIFs");
+      const message = error instanceof Error ? error.message : "Failed to search GIFs";
+      setGifError(message);
+      toast.error(message);
     } finally {
       setGifSearching(false);
     }
@@ -626,6 +638,8 @@ const ClubChatThreadContent = ({
           onChange={(event: ChangeEvent<HTMLInputElement>) => handleFileChange(event.target.files)}
         />
 
+        {composerError && <p id={`${id}-composer-error`} role="alert" className="mb-2 text-sm text-destructive">{composerError.message}</p>}
+        <p id={`${id}-message-help`} className="sr-only">Use @ to mention a member. Enter sends; Shift+Enter adds a new line.</p>
         <div className="flex items-end gap-2">
           <Button
             type="button"
@@ -634,6 +648,7 @@ const ClubChatThreadContent = ({
             disabled={!isOnline || sending}
             onClick={() => fileInputRef.current?.click()}
             aria-label="Attach image or GIF"
+            aria-describedby={composerError?.target === "media" ? `${id}-composer-error` : undefined}
           >
             <Attachment className="h-4 w-4" />
           </Button>
@@ -670,6 +685,8 @@ const ClubChatThreadContent = ({
             </PopoverContent>
           </Popover>
           <Textarea
+            aria-label="Message the club"
+            aria-describedby={`${id}-message-help${composerError?.target === "send" ? ` ${id}-composer-error` : ""}`}
             value={content}
             onChange={(event) => handleContentChange(event.target.value)}
             onKeyDown={(event) => {
@@ -689,6 +706,7 @@ const ClubChatThreadContent = ({
             size="icon"
             className="h-11 w-11 shrink-0"
             aria-label="Send club message"
+            aria-describedby={composerError?.target === "send" ? `${id}-composer-error` : undefined}
           >
             <Send className="h-4 w-4" />
           </Button>
@@ -717,6 +735,8 @@ const ClubChatThreadContent = ({
             <div className="relative flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
+                aria-label="Search GIFs"
+                aria-describedby={gifError ? `${id}-gif-error` : undefined}
                 value={gifQuery}
                 onChange={(event) => setGifQuery(event.target.value)}
                 onKeyDown={(event) => {
@@ -730,7 +750,8 @@ const ClubChatThreadContent = ({
               {gifSearching ? "Searching..." : "Search"}
             </Button>
           </div>
-          {gifResults.length === 0 ? (
+          {gifError && <p id={`${id}-gif-error`} role="alert" className="text-sm text-destructive">{gifError}</p>}
+          {gifSearching ? <p role="status" className="text-sm text-muted-foreground">Searching...</p> : gifError ? null : gifResults.length === 0 ? (
             <div className="flex min-h-40 items-center justify-center rounded-md border border-dashed border-border text-center">
               <p className="font-sans text-sm text-muted-foreground">Search for a reaction, scene, or mood.</p>
             </div>

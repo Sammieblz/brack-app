@@ -112,6 +112,38 @@ afterEach(() => {
 });
 
 describe("submission during independent thread loading", () => {
+  it("names the actual review composer and associates a failed send without losing its draft", async () => {
+    mocks.fetchReviewComments.mockResolvedValue({ comments: [], has_more: false, next_cursor: null });
+    mocks.addReviewComment.mockRejectedValueOnce(new Error("Offline"));
+    render(<ReviewDetail />);
+    const composer = await screen.findByRole("textbox", { name: "Comment" });
+    fireEvent.change(composer, { target: { value: "Keep my reply" } });
+    const submit = screen.getByRole("button", { name: "Post comment" });
+    await waitFor(() => expect(submit).toBeEnabled());
+    fireEvent.click(submit);
+    expect(await screen.findByRole("alert")).toHaveTextContent("Failed to add comment");
+    expect(composer).toHaveValue("Keep my reply");
+    expect(composer).toHaveAccessibleDescription("Failed to add comment");
+    expect(submit).toHaveAccessibleDescription("Failed to add comment");
+    expect(composer).not.toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("names club chat and preserves its message when a send fails", async () => {
+    mocks.getClubChatHistory.mockResolvedValue({ messages: [] });
+    mocks.sendClubChatMessage.mockRejectedValueOnce(new Error("Message unavailable"));
+    render(<ClubChatThread clubId="club" currentUserId="reader" members={[]} />);
+    const composer = screen.getByRole("textbox", { name: "Message the club" });
+    expect(composer).toHaveAccessibleDescription(/Enter sends; Shift\+Enter adds a new line/);
+    fireEvent.change(composer, { target: { value: "Keep my message" } });
+    const submit = screen.getByRole("button", { name: "Send club message" });
+    await waitFor(() => expect(submit).toBeEnabled());
+    fireEvent.click(submit);
+    expect(await screen.findByRole("alert")).toHaveTextContent("Message unavailable");
+    expect(composer).toHaveValue("Keep my message");
+    expect(composer).toHaveAccessibleDescription(/Message unavailable/);
+    expect(submit).toHaveAccessibleDescription("Message unavailable");
+  });
+
   it("preserves a review draft and prevents posting until the slow initial comments read completes", async () => {
     const comments = deferred<{
       comments: [];

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -32,19 +32,27 @@ export const ReviewComments = ({
   onAddComment,
   onDeleteComment,
 }: ReviewCommentsProps) => {
+  const id = useId();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     if (!newComment.trim()) return;
 
     setSubmitting(true);
-    const sanitized = sanitizeInput(newComment);
-    await onAddComment(sanitized);
-    setNewComment("");
-    setSubmitting(false);
+    setSubmitError(null);
+    try {
+      const sanitized = sanitizeInput(newComment);
+      await onAddComment(sanitized);
+      setNewComment("");
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Failed to post comment");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const getInitials = (name: string | null) => {
@@ -67,14 +75,18 @@ export const ReviewComments = ({
         {user && (
           <div className="space-y-2">
             <Textarea
+              aria-label="Comment"
+              aria-describedby={submitError ? `${id}-error` : undefined}
               placeholder="Write a comment..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               rows={3}
               className="font-sans"
             />
+            {submitError && <p id={`${id}-error`} role="alert" className="text-sm text-destructive">{submitError}</p>}
             <Button
               onClick={handleSubmit}
+              aria-describedby={submitError ? `${id}-error` : undefined}
               disabled={!newComment.trim() || submitting}
               size="sm"
             >

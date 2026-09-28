@@ -480,7 +480,7 @@ export default function EditBook() {
               </div>
 
               <div>
-                <Label>Cover Image</Label>
+                <Label htmlFor="cover_url">Cover Image</Label>
                 <div className="space-y-3">
                   {book.cover_url && (
                     <img

@@ -126,6 +126,7 @@ const Reviews = () => {
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
+                    aria-label="Search reviews, books, authors, readers"
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
                     placeholder="Search reviews, books, authors, readers"
@@ -434,6 +435,7 @@ const ReviewBookPickerDialog = ({
 
         <div className="space-y-4 overflow-hidden">
           <Input
+            aria-label="Search your library"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search your library"

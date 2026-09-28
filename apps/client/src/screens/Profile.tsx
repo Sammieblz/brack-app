@@ -1,7 +1,7 @@
 import { getApiErrorStatus } from "@/services/api/client";
 import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 import { ProfileSkeleton } from "@/components/skeletons/ProfileSkeleton";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -32,6 +32,7 @@ import {
 } from "@/services/api";
 
 const ProfilePageContent = () => {
+  const id = useId();
   const { user, loading: authLoading } = useAuth();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ const ProfilePageContent = () => {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showImagePicker, setShowImagePicker] = useState(false);
@@ -153,6 +155,7 @@ const ProfilePageContent = () => {
     if (!user) return;
     
     setSaving(true);
+    setSaveError(null);
     try {
       await upsertProfileBasics(user.id, {
         display_name: formData.display_name || null,
@@ -167,6 +170,7 @@ const ProfilePageContent = () => {
       loadProfile();
     } catch (error: unknown) {
       console.error('Error updating profile:', error);
+      setSaveError(error instanceof Error ? error.message : "An error occurred");
       toast({
         variant: "destructive",
         title: "Error updating profile",
@@ -319,15 +323,15 @@ const ProfilePageContent = () => {
         <Card>
           <CardHeader>
             <CardTitle>Display Name</CardTitle>
-            <CardDescription>
+            <CardDescription id={`${id}-name-help`}>
               This is how your name appears to other users
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Label htmlFor="display_name">Display Name</Label>
+              <Label htmlFor={`${id}-display-name`}>Display Name</Label>
               <Input
-                id="display_name"
+                id={`${id}-display-name`} aria-describedby={`${id}-name-help`}
                 value={formData.display_name}
                 onChange={(e) => setFormData(prev => ({ ...prev, display_name: e.target.value }))}
                 placeholder="How you'd like to be addressed"
@@ -340,15 +344,15 @@ const ProfilePageContent = () => {
         <Card>
           <CardHeader>
             <CardTitle>Bio</CardTitle>
-            <CardDescription>
+            <CardDescription id={`${id}-bio-help`}>
               Tell others about yourself and your reading interests
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
+              <Label htmlFor={`${id}-bio`}>Bio</Label>
               <Textarea
-                id="bio"
+                id={`${id}-bio`} aria-describedby={`${id}-bio-help`}
                 value={formData.bio}
                 onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
                 placeholder="Tell us a bit about yourself and your reading interests..."
@@ -359,9 +363,11 @@ const ProfilePageContent = () => {
         </Card>
 
         {/* Save Button */}
+        {saveError && <p id={`${id}-save-error`} role="alert" className="text-sm text-destructive">{saveError}</p>}
         <div className="flex justify-end">
           <Button 
             onClick={handleSave}
+            aria-describedby={saveError ? `${id}-save-error` : undefined}
             disabled={saving}
             className="bg-gradient-primary hover:shadow-glow transition-all duration-300"
           >

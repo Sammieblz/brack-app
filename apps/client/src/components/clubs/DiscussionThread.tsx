@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import {
   ChatBubble,
@@ -47,11 +47,13 @@ const DiscussionNode = ({
   canModerate = false,
   depth,
 }: DiscussionThreadProps & { depth: number }) => {
+  const replyId = useId();
   const [collapsed, setCollapsed] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState<RichTextPayload>(() => toPlainRichTextPayload(""));
   const [replyFiles, setReplyFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [replyError, setReplyError] = useState<string | null>(null);
 
   const replies = discussion.replies || [];
   const canDelete = currentUserId === discussion.user_id || canModerate;
@@ -62,6 +64,7 @@ const DiscussionNode = ({
     if (!replyText.content.trim()) return;
     try {
       setSubmitting(true);
+      setReplyError(null);
       await onReply(discussion.id, {
         content: replyText.content.trim(),
         content_format: replyText.content_format,
@@ -72,6 +75,8 @@ const DiscussionNode = ({
       setReplyText(toPlainRichTextPayload(""));
       setReplyFiles([]);
       setShowReplyForm(false);
+    } catch (error) {
+      setReplyError(error instanceof Error ? error.message : "Failed to post reply");
     } finally {
       setSubmitting(false);
     }
@@ -184,11 +189,16 @@ const DiscussionNode = ({
           {showReplyForm && (
             <div className="mt-3 rounded-xl border border-border/70 bg-muted/20 p-3">
               <RichTextEditor
+                id={`${replyId}-reply`}
+                aria-label="Reply"
+                aria-required="true"
+                aria-describedby={replyError ? `${replyId}-error` : undefined}
                 value={replyText}
                 onChange={setReplyText}
                 placeholder="Write your reply..."
                 minHeightClassName="min-h-28"
               />
+              {replyError && <p id={`${replyId}-error`} role="alert" className="mt-2 text-sm text-destructive">{replyError}</p>}
               <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border px-3 py-2 font-sans text-xs text-muted-foreground transition hover:border-primary hover:text-primary">
                   <MediaImage className="h-4 w-4" />
@@ -213,7 +223,7 @@ const DiscussionNode = ({
                   >
                     Cancel
                   </Button>
-                  <Button size="sm" onClick={handleReply} disabled={submitting || !replyText.content.trim()}>
+                  <Button size="sm" aria-describedby={replyError ? `${replyId}-error` : undefined} onClick={handleReply} disabled={submitting || !replyText.content.trim()}>
                     <Send className="mr-1 h-3.5 w-3.5" />
                     {submitting ? "Posting..." : "Post Reply"}
                   </Button>

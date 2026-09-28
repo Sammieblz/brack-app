@@ -1,6 +1,6 @@
 import { getApiErrorStatus } from "@/services/api/client";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useFollowing } from "@/hooks/useFollowing";
 import { useAuth } from "@/hooks/useAuth";
@@ -71,7 +71,17 @@ const UserProfileContent = () => {
   const [loadedDataId, setLoadedDataId] = useState<string | null>(null);
   const [tabRequest, setTabRequest] = useState(0);
   const dataLoaded = loadedDataId === resolvedUserId && resolvedUserId !== null;
-  const [activeTab, setActiveTab] = useState("books");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const activeTab = requestedTab === "posts" || requestedTab === "clubs" ? requestedTab : "books";
+  const setActiveTab = (tab: string) => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      if (tab === "books") next.delete("tab");
+      else next.set("tab", tab);
+      return next;
+    }, { replace: true });
+  };
   const isMobile = useIsMobile();
   const { triggerHaptic } = useHapticFeedback();
 
@@ -392,13 +402,13 @@ const UserProfileContent = () => {
           triggerHaptic("selection");
         }} className="w-full">
           <TabsList className="grid w-full grid-cols-3 sticky top-0 z-10 bg-background">
-            <TabsTrigger value="books" className="text-xs sm:text-sm">
+            <TabsTrigger value="books" aria-label="Books" className="text-xs sm:text-sm">
               {isMobile ? <APP_ICONS.profile.booksTab className="h-4 w-4" /> : <><APP_ICONS.profile.booksTab className="h-4 w-4 mr-2" />Books</>}
             </TabsTrigger>
-            <TabsTrigger value="posts" className="text-xs sm:text-sm">
+            <TabsTrigger value="posts" aria-label="Posts" className="text-xs sm:text-sm">
               {isMobile ? <APP_ICONS.profile.posts className="h-4 w-4" /> : <><APP_ICONS.profile.posts className="h-4 w-4 mr-2" />Posts</>}
             </TabsTrigger>
-            <TabsTrigger value="clubs" className="text-xs sm:text-sm">
+            <TabsTrigger value="clubs" aria-label="Clubs" className="text-xs sm:text-sm">
               {isMobile ? <APP_ICONS.profile.clubs className="h-4 w-4" /> : <><APP_ICONS.profile.clubs className="h-4 w-4 mr-2" />Clubs</>}
             </TabsTrigger>
           </TabsList>
@@ -418,14 +428,14 @@ const UserProfileContent = () => {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                 {userBooks.map((book) => (
-                  <Card
+                  <Link
                     key={book.id}
-                    className="cursor-pointer hover-scale active:scale-95 transition-transform touch-manipulation"
-                    onClick={() => {
-                      triggerHaptic("light");
-                      navigate(`/book/${book.id}`);
-                    }}
+                    to={`/book/${encodeURIComponent(book.id)}`}
+                    aria-label={`Open ${book.title}`}
+                    className="block rounded-lg hover-scale active:scale-95 transition-transform touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    onClick={() => triggerHaptic("light")}
                   >
+                  <Card className="h-full">
                     <CardContent className="p-3">
                       {book.cover_url && (
                         <img
@@ -444,6 +454,7 @@ const UserProfileContent = () => {
                       </Badge>
                     </CardContent>
                   </Card>
+                  </Link>
                 ))}
               </div>
             )}
@@ -507,14 +518,14 @@ const UserProfileContent = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {userClubs.map((club) => (
-                  <Card
+                  <Link
                     key={club.id}
-                    className="cursor-pointer hover-scale active:scale-95 transition-transform touch-manipulation"
-                    onClick={() => {
-                      triggerHaptic("light");
-                      navigate(`/book-clubs/${club.id}`);
-                    }}
+                    to={`/clubs/${encodeURIComponent(club.id)}`}
+                    aria-label={`Open ${club.name}`}
+                    className="block rounded-lg hover-scale active:scale-95 transition-transform touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    onClick={() => triggerHaptic("light")}
                   >
+                  <Card className="h-full">
                     <CardContent className="p-4">
                       {club.cover_image_url && (
                         <img
@@ -537,6 +548,7 @@ const UserProfileContent = () => {
                       </div>
                     </CardContent>
                   </Card>
+                  </Link>
                 ))}
               </div>
             )}

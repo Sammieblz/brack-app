@@ -75,6 +75,7 @@ export const JournalEntriesList = ({ bookId }: JournalEntriesListProps) => {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex-1 w-full sm:w-auto">
           <Input
+            aria-label="Search entries"
             placeholder="Search entries..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -82,7 +83,7 @@ export const JournalEntriesList = ({ bookId }: JournalEntriesListProps) => {
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px]" aria-label="Entry type filter">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

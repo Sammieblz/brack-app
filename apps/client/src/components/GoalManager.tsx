@@ -1,4 +1,4 @@
-import { type MutableRefObject, useRef, useState } from "react";
+import { type MutableRefObject, useId, useRef, useState } from "react";
 import { format } from "date-fns";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +37,7 @@ const formatGoalDate = (value: string, pattern: string) => {
 };
 
 export const GoalManager = ({ userId }: GoalManagerProps) => {
+  const targetInputId = useId();
   const { goals, activeGoals, loading, refreshing, hasLoaded, error, refetch, createGoal, deleteGoal, completeGoal } = useGoals(userId);
   const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -193,8 +194,9 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Target</Label>
+                      <Label htmlFor={targetInputId}>Target</Label>
                       <Input
+                        id={targetInputId}
                         type="number"
                         min={1}
                         placeholder={

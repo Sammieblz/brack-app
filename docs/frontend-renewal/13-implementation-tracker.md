@@ -2,6 +2,10 @@
 
 ## Current checkpoint
 
+**Superseded by the user's next-pass authorization:** F01 is now committed in `229dd677e33a8b7c6e81ac31d75b34aa94ea728d` ("First front-end renewal pass F01"). The worktree was clean at resumption. The active batch is **F02 + F03**, tracked in [14-next-implementation-batch.md](14-next-implementation-batch.md). The user permits multiple tickets only when each is completed and tested. No commit for the new batch has been requested. The F01 details and original stop below are historical; follow 14 for the current stop/next action.
+
+## F01 completed checkpoint (historical)
+
 - Active implementation: **F01 — Journal save and attachment integrity**.
 - Status: **implemented and browser-verified; awaiting user review**.
 - Baseline HEAD: `8d3b35ecd778f30d52e40498509dc4beab056e42`.

@@ -197,6 +197,7 @@ export const BookClubCard = ({
         {requestOpen && (
           <div className="space-y-2 rounded-lg border border-primary/25 bg-primary/[0.03] p-3">
             <Textarea
+              aria-label={`Note for ${club.name} admins`}
               value={requestMessage}
               onChange={(event) => setRequestMessage(event.target.value)}
               rows={3}

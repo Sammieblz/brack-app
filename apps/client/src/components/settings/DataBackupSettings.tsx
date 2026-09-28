@@ -193,6 +193,7 @@ export const DataBackupSettings = ({ user }: DataBackupSettingsProps) => {
           </Alert>
           <Input
             ref={fileInputRef}
+            aria-label="Import backup file"
             type="file"
             accept=".zip,.brack,.json,.csv,application/zip,application/json,text/csv"
             onChange={(event) => {

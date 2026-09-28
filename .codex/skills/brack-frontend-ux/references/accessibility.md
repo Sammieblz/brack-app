@@ -2,6 +2,8 @@
 
 Accessibility is a product requirement.
 
+For the implemented input/editor boundary, read [form field semantics](../../../../docs/ui-form-accessibility.md). It covers native labels, RichTextEditor ARIA forwarding/focus and field-specific error ownership; do not restore placeholder-derived names in shared Input.
+
 ## 33.1 Keyboard
 
 All web/desktop functionality must be reachable by keyboard unless the interaction inherently requires a pointer and an equivalent alternative is provided.

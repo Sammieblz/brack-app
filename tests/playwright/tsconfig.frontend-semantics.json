@@ -1,0 +1,5 @@
+{
+  "extends": "../../apps/client/tsconfig.app.json",
+  "compilerOptions": { "noEmit": true, "types": ["node", "vite/client"] },
+  "include": ["frontend-semantics.config.ts", "../e2e/frontend-semantics.spec.ts", "../fixtures/frontend-semantics/**/*.ts", "../fixtures/frontend-semantics/**/*.tsx", "../../apps/client/src/vite-env.d.ts"]
+}

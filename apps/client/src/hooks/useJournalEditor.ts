@@ -36,6 +36,7 @@ interface EditorSnapshot {
   uploadingPhoto: boolean;
   picking: boolean;
   error: string | null;
+  errorField: "content" | "pageReference" | "photo" | null;
   committed: boolean;
 }
 
@@ -85,6 +86,7 @@ const createSnapshot = (draft: JournalEditorDraft): EditorSnapshot => ({
   uploadingPhoto: false,
   picking: false,
   error: null,
+  errorField: null,
   committed: false,
 });
 
@@ -105,7 +107,7 @@ const releaseCleanSession = (session: EditorSession) => {
 
 const updateDraft = (session: EditorSession, patch: Partial<JournalEditorDraft>) => {
   const draft = { ...session.snapshot.draft, ...patch };
-  publish(session, { draft, dirty: JSON.stringify(draft) !== session.baseline, error: null });
+  publish(session, { draft, dirty: JSON.stringify(draft) !== session.baseline, error: null, errorField: null });
 };
 
 export function useJournalEditor({ open, onOpenChange, bookId, editEntry, onSave, kind }: JournalEditorOptions) {
@@ -251,18 +253,18 @@ export function useJournalEditor({ open, onOpenChange, bookId, editEntry, onSave
     if (!canEdit(session)) return;
     const draft = session.snapshot.draft;
     if (!draft.richText.content.trim()) {
-      publish(session, { error: "Enter some content before saving your entry." });
+      publish(session, { error: "Enter some content before saving your entry.", errorField: "content" });
       return;
     }
     const page = draft.pageReference.trim() ? Number(draft.pageReference) : null;
     if (page !== null && (!Number.isInteger(page) || page < 1)) {
-      publish(session, { error: "Enter a whole page number greater than zero." });
+      publish(session, { error: "Enter a whole page number greater than zero.", errorField: "pageReference" });
       return;
     }
     const saveEntry = current.current.onSave;
     // Store state changes synchronously, so a second click/remounted editor
     // sees the same pending operation before React has rendered again.
-    publish(session, { saving: true, error: null });
+    publish(session, { saving: true, error: null, errorField: null });
     setDiscardRequested(false);
     try {
       const authenticatedUser = await getCurrentAuthUser();
@@ -285,7 +287,7 @@ export function useJournalEditor({ open, onOpenChange, bookId, editEntry, onSave
       if (sessions.get(session.key) === session) sessions.delete(session.key);
       publish(session, { saving: false, dirty: false, committed: true, error: null });
     } catch (error) {
-      if (!session.snapshot.committed) publish(session, { saving: false, error: SAVE_ERROR });
+      if (!session.snapshot.committed) publish(session, { saving: false, error: SAVE_ERROR, errorField: null });
       console.error("Journal entry could not be saved", error);
     }
     releaseCleanSession(session);
@@ -293,7 +295,7 @@ export function useJournalEditor({ open, onOpenChange, bookId, editEntry, onSave
 
   const pickPhoto = async (source: "prompt" | "camera" | "photos") => {
     if (!canEdit(session)) return;
-    publish(session, { picking: true, error: null });
+    publish(session, { picking: true, error: null, errorField: null });
     const startedGeneration = current.current.generation;
     const uploadStillCurrent = () => isLive(session)
       && current.current.generation === startedGeneration
@@ -315,7 +317,7 @@ export function useJournalEditor({ open, onOpenChange, bookId, editEntry, onSave
       // that remote/other-device references have stopped using its asset.
       updateDraft(session, { photoUrl: url, photoPreview: url });
     } catch (error) {
-      if (uploadStillCurrent()) publish(session, { error: UPLOAD_ERROR });
+      if (uploadStillCurrent()) publish(session, { error: UPLOAD_ERROR, errorField: "photo" });
       console.error("Journal photo could not be uploaded", error);
     } finally {
       publish(session, { picking: false, uploadingPhoto: false });
@@ -336,6 +338,7 @@ export function useJournalEditor({ open, onOpenChange, bookId, editEntry, onSave
     busy: isPending(snapshot) || snapshot.committed || !userId || identityMismatch,
     error: !userId ? "Sign in to write a journal entry."
       : identityMismatch ? "This entry is no longer available for this reader." : snapshot.error,
+    errorField: !userId || identityMismatch ? null : snapshot.errorField,
     pickPhoto,
   };
 }

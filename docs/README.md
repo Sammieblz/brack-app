@@ -8,7 +8,7 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 
 ## Frontend renewal plan
 
-The [frontend audit and implementation dossier](./frontend-renewal/README.md) covers mobile/native/browser boundaries, tablets, every current route, branded components, gestures, motion, accessibility, and an ordered delivery/verification plan. It records the 2026-09-27 baseline; proposed changes are not yet implemented. Start with its index and load the specification for the selected ticket.
+The [frontend audit and implementation dossier](./frontend-renewal/README.md) covers mobile/native/browser boundaries, tablets, every current route, branded components, gestures, motion, accessibility, and an ordered delivery/verification plan. It retains the 2026-09-27 audit baseline; its work ledger and active checkpoint distinguish implemented tickets from future proposals. Start with its index and load the specification for the selected ticket.
 
 ## 📚 Table of Contents
 
@@ -64,6 +64,8 @@ The [frontend audit and implementation dossier](./frontend-renewal/README.md) co
 ### Reference
 - [Components Guide](./components.md) - UI components and patterns
 - [Journal Editing](./ui-journal-editing.md) - Local save, draft, attachment and failure contracts
+- [Navigation and Notifications](./ui-navigation-notifications.md) - Destination links, Back recovery, read states and account ownership
+- [Form Accessibility](./ui-form-accessibility.md) - Native labels, rich-text semantics, error associations and focus
 - [Loading Motion](./loading-motion.md) - Branded loader storyboard, lifecycle, and validation
 - [Hooks Reference](./hooks.md) - Custom React hooks
 - [State Management](./state-management.md) - Data flow and caching

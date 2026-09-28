@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentType } from "react";
+import { useEffect, useId, useState, type ComponentType } from "react";
 import type { Editor } from "@tiptap/react";
 import { useEditorState } from "@tiptap/react";
 import {
@@ -18,6 +18,7 @@ import {
 } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -54,13 +55,14 @@ const ToolbarButton = ({
         variant="ghost"
         size="icon"
         aria-label={label}
+        aria-pressed={active}
         title={label}
         disabled={disabled}
         className={toolbarButtonClass(active)}
         onMouseDown={(event) => event.preventDefault()}
         onClick={onClick}
       >
-        <Icon className="h-4 w-4" />
+        <span aria-hidden="true"><Icon className="h-4 w-4" /></span>
       </Button>
     </TooltipTrigger>
     <TooltipContent>{label}</TooltipContent>
@@ -68,6 +70,7 @@ const ToolbarButton = ({
 );
 
 export const RichTextToolbar = ({ editor }: RichTextToolbarProps) => {
+  const linkId = useId();
   const [linkOpen, setLinkOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
 
@@ -184,9 +187,10 @@ export const RichTextToolbar = ({ editor }: RichTextToolbarProps) => {
         </Tooltip>
         <PopoverContent align="start" className="w-80 p-3">
           <div className="space-y-2">
-            <p className="font-sans text-sm font-medium">Link URL</p>
+            <Label htmlFor={linkId} className="font-sans text-sm font-medium">Link URL</Label>
             <div className="flex gap-2">
               <Input
+                id={linkId}
                 value={linkUrl}
                 onChange={(event) => setLinkUrl(event.target.value)}
                 onKeyDown={(event) => {

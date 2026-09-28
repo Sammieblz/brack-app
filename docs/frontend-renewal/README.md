@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Status: **planning and source audit complete; F01 implemented and browser-verified, awaiting user review**. Follow the [implementation tracker](13-implementation-tracker.md) for actual changes, validation and the stop before commit/next ticket. Other tickets remain unimplemented unless the work ledger says otherwise. Device testing, performance measurements, accessibility conformance evaluation, and proposed Ionic integration remain future work except for explicitly recorded observations.
+Status: **F01 committed; F02 + F03 implemented and browser-verified, awaiting user review**. Follow the [active batch checkpoint](14-next-implementation-batch.md) for scope, actual validation and the stop before a new commit/next batch. [13](13-implementation-tracker.md) preserves F01's record. Other tickets remain unimplemented unless the work ledger says otherwise. Device testing, real assistive-technology acceptance, performance measurements, accessibility conformance evaluation, and proposed Ionic integration remain future work except for explicitly recorded observations.
 
 ## Outcome
 
@@ -36,7 +36,8 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [10 — Verification and acceptance](10-verification.md) | Device/state matrix, existing commands, usability and release gates |
 | [11 — Agent handoff](11-agent-handoff.md) | Durable memory, evidence discipline, efficient retrieval and progress ledger |
 | [12 — Research and decision register](12-research-decisions.md) | Source provenance, accepted direction, conditional decisions, unresolved evidence |
-| [13 — Implementation tracker](13-implementation-tracker.md) | Active ticket, actual changes/checks, session handoff and user review stop |
+| [13 — F01 implementation tracker](13-implementation-tracker.md) | Historical F01 changes/checks and pointer to the current batch |
+| [14 — F02 + F03 batch](14-next-implementation-batch.md) | Current multi-ticket scope, actual changes/checks and review checkpoint |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability

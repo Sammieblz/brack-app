@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -45,9 +45,11 @@ interface ReviewFormProps {
 }
 
 export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
+  const id = useId();
   const { createReview } = useReviews(bookId);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [richText, setRichText] = useState<RichTextPayload>(() => toPlainRichTextPayload(""));
 
   const form = useForm<ReviewFormData>({
@@ -63,7 +65,9 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
 
   const onSubmit = async (data: ReviewFormData) => {
     setSubmitting(true);
-    const result = await createReview({
+    setSubmitError(null);
+    try {
+      const result = await createReview({
       book_id: bookId,
       rating: data.rating,
       title: data.title ? sanitizeInput(data.title) : undefined,
@@ -75,12 +79,18 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
       is_public: data.is_public,
     });
 
-    if (result.success) {
-      form.reset();
-      setRichText(toPlainRichTextPayload(""));
-      onOpenChange(false);
+      if (result.success) {
+        form.reset();
+        setRichText(toPlainRichTextPayload(""));
+        onOpenChange(false);
+      } else {
+        setSubmitError(result.error || "Failed to create review");
+      }
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Failed to create review");
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   const rating = form.watch("rating");
@@ -102,33 +112,37 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
               name="rating"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-sans">Rating *</FormLabel>
+                  <FormLabel id={`${id}-rating-label`} className="font-sans">Rating *</FormLabel>
                   <FormControl>
-                    <div className="flex gap-2">
+                    <div role="radiogroup" aria-labelledby={`${id}-rating-label`} aria-required="true" className="flex gap-2">
                       {Array.from({ length: 5 }).map((_, i) => {
                         const starValue = i + 1;
                         return (
-                          <button
+                          <label
                             key={i}
-                            type="button"
-                            onClick={() => field.onChange(starValue)}
                             onMouseEnter={() => setHoveredRating(starValue)}
                             onMouseLeave={() => setHoveredRating(0)}
-                            className="focus:outline-none"
+                            className="relative cursor-pointer rounded focus-within:outline focus-within:outline-2 focus-within:outline-ring"
                           >
+                            <input type="radio" name={`${id}-rating`} value={starValue}
+                              checked={rating === starValue} onChange={() => field.onChange(starValue)}
+                              onBlur={field.onBlur} ref={starValue === 1 ? field.ref : undefined}
+                              aria-label={`${starValue} ${starValue === 1 ? "star" : "stars"}`} className="sr-only" />
                             <Star
+                              aria-hidden="true"
                               className={`h-8 w-8 transition-colors ${
                                 starValue <= (hoveredRating || rating)
                                   ? "fill-primary text-primary"
                                   : "text-muted-foreground"
                               }`}
                             />
-                          </button>
+                          </label>
                         );
                       })}
                     </div>
                   </FormControl>
-                  <FormMessage />
+                  <FormDescription className="sr-only">Choose a rating from 1 to 5 stars.</FormDescription>
+                  <FormMessage role="alert" />
                 </FormItem>
               )}
             />
@@ -145,7 +159,8 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormDescription className="sr-only">Optional review title, up to 200 characters.</FormDescription>
+                  <FormMessage role="alert" />
                 </FormItem>
               )}
             />
@@ -155,9 +170,13 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-sans">Review *</FormLabel>
+                  <FormLabel id={`${id}-review-label`} className="font-sans">Review *</FormLabel>
                   <FormControl>
                     <RichTextEditor
+                      ref={field.ref}
+                      onBlur={field.onBlur}
+                      labelledBy={`${id}-review-label`}
+                      aria-required="true"
                       placeholder="What did you think about this book?"
                       value={richText}
                       limit={5000}
@@ -169,7 +188,7 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
                     />
                   </FormControl>
                   <FormDescription className="font-sans">Minimum 10 characters</FormDescription>
-                  <FormMessage />
+                  <FormMessage role="alert" />
                 </FormItem>
               )}
             />
@@ -216,6 +235,7 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
               )}
             />
 
+            {submitError && <p id={`${id}-submit-error`} role="alert" className="text-sm text-destructive">{submitError}</p>}
             <div className="flex gap-3 justify-end">
               <Button
                 type="button"
@@ -224,7 +244,7 @@ export const ReviewForm = ({ bookId, open, onOpenChange }: ReviewFormProps) => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={submitting}>
+              <Button type="submit" disabled={submitting} aria-describedby={submitError ? `${id}-submit-error` : undefined}>
                 {submitting ? "Submitting..." : "Submit Review"}
               </Button>
             </div>

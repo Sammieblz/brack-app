@@ -132,6 +132,7 @@ export const QuoteCollection = ({ userId }: QuoteCollectionProps) => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              aria-label="Search quotes"
               placeholder="Search quotes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

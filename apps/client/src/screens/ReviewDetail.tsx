@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { ChatBubble, Heart, ShareIos, Star, Trash } from "iconoir-react";
@@ -51,6 +51,7 @@ const ReviewDetail = () => {
 };
 
 const ReviewDetailContent = () => {
+  const id = useId();
   const { reviewId } = useParams<{ reviewId: string }>();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -65,6 +66,7 @@ const ReviewDetailContent = () => {
   const [loading, setLoading] = useState(true);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [commentSubmitError, setCommentSubmitError] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [commentsError, setCommentsError] = useState(false);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
@@ -213,6 +215,7 @@ const ReviewDetailContent = () => {
 
     try {
       setSubmittingComment(true);
+      setCommentSubmitError(null);
       const comment = await addReviewComment(review.id, commentDraft.trim());
       setComments((current) => [...current, comment]);
       setReview((current) =>
@@ -221,6 +224,7 @@ const ReviewDetailContent = () => {
       setCommentDraft("");
     } catch (error) {
       console.error("Failed to add review comment", error);
+      setCommentSubmitError("Failed to add comment");
       toast.error("Failed to add comment");
     } finally {
       setSubmittingComment(false);
@@ -420,14 +424,18 @@ const ReviewDetailContent = () => {
 
                   <div className="space-y-3">
                     <Textarea
+                      aria-label="Comment"
+                      aria-describedby={commentSubmitError ? `${id}-comment-error` : undefined}
                       value={commentDraft}
                       onChange={(event) => setCommentDraft(event.target.value)}
                       placeholder="Add a thoughtful reply..."
                       rows={3}
                     />
+                    {commentSubmitError && <p id={`${id}-comment-error`} role="alert" className="text-sm text-destructive">{commentSubmitError}</p>}
                     <div className="flex justify-end">
                       <Button
                         onClick={handleSubmitComment}
+                        aria-describedby={commentSubmitError ? `${id}-comment-error` : undefined}
                         disabled={submittingComment || !commentsLoaded || commentsLoading || commentsError || !commentDraft.trim()}
                       >
                         {submittingComment ? "Posting..." : "Post comment"}

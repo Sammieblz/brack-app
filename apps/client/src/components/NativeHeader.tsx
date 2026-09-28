@@ -119,6 +119,7 @@ const LibrarySearchAction = ({ compact = false }: { compact?: boolean }) => {
             />
             <Input
               ref={inputRef}
+              aria-label="Search your library"
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}

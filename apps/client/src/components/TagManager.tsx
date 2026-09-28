@@ -34,6 +34,7 @@ export const TagManager = ({ tags, onChange }: TagManagerProps) => {
     <div className="space-y-3">
       <div className="flex gap-2">
         <Input
+          aria-label="Add a tag"
           value={newTag}
           onChange={(e) => setNewTag(e.target.value)}
           onKeyPress={handleKeyPress}
