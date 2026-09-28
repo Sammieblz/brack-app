@@ -26,6 +26,7 @@ import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { AppBackButton } from "@/components/AppBackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 import { MobileInput } from "@/components/mobile/MobileInput";
 import { MobileTextarea } from "@/components/mobile/MobileTextarea";
 import { cn } from "@/lib/utils";
@@ -209,11 +210,12 @@ export default function EditBook() {
   };
 
   const isMobile = useIsMobile();
+  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded");
 
   if (loading || !book) {
     return (
       <MobileLayout>
-        {isMobile && (
+        {compactNavigation && (
           <MobileHeader
             title="Edit Book"
             back={{
@@ -224,7 +226,7 @@ export default function EditBook() {
           />
         )}
         <div className="app-page-form pb-24 md:pb-8">
-          {!isMobile && (
+          {!compactNavigation && (
             <AppBackButton
               label="Book"
               ariaLabel="Back to book"
@@ -258,14 +260,14 @@ export default function EditBook() {
 
   return (
     <MobileLayout>
-      {isMobile && (
+      {compactNavigation && (
         <MobileHeader
           title="Edit Book"
           back={{ label: "Book", ariaLabel: "Back to book", to: `/book/${id}` }}
         />
       )}
       <div className="app-page-form pb-24 md:pb-8">
-        {!isMobile && (
+        {!compactNavigation && (
           <AppBackButton
             label="Book"
             ariaLabel="Back to book"
@@ -277,10 +279,10 @@ export default function EditBook() {
         )}
 
         <Card className="max-w-4xl mx-auto">
-          <CardHeader>
+          {!compactNavigation && <CardHeader>
             <CardTitle className="font-display">Edit Book</CardTitle>
-          </CardHeader>
-          <CardContent>
+          </CardHeader>}
+          <CardContent className={compactNavigation ? "pt-6" : undefined}>
             <form onSubmit={handleSubmit} className="space-y-4">
               <MobileInput
                 id="title"
@@ -573,7 +575,7 @@ export default function EditBook() {
                 className={cn(
                   "flex gap-2 pt-4",
                   isMobile &&
-                    "fixed bottom-20 left-0 right-0 p-4 bg-background border-t z-40",
+                    "sticky bottom-0 py-4 bg-background border-t z-40",
                 )}
               >
                 <Button

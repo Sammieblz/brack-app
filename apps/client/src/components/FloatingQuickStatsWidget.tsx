@@ -1,135 +1,77 @@
-import { useRef, useState } from "react";
-import { Xmark } from "iconoir-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { APP_ICONS } from "@/config/iconography";
-import { AppIcon } from "@/components/ui/app-icon";
+import type { RefObject } from "react";
+import { Dialog } from "@/components/ui/dialog";
+import {
+  AdaptiveDialogBody, AdaptiveDialogContent, AdaptiveDialogDescription,
+  AdaptiveDialogHeader, AdaptiveDialogTitle,
+} from "@/components/ui/adaptive-dialog";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
-import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useStreaks } from "@/hooks/useStreaks";
 
 interface FloatingQuickStatsWidgetProps {
   isVisible: boolean;
   onClose: () => void;
+  returnFocusRef?: RefObject<HTMLElement | null>;
 }
 
-export const FloatingQuickStatsWidget = ({ isVisible, onClose }: FloatingQuickStatsWidgetProps) => {
+/** Kept as a compatibility export; stats now have one modal focus owner. */
+export const FloatingQuickStatsWidget = ({ isVisible, onClose, returnFocusRef }: FloatingQuickStatsWidgetProps) => (
+  <Dialog open={isVisible} onOpenChange={(open) => { if (!open) onClose(); }}>
+    <AdaptiveDialogContent size="compact" openHaptic={false} onCloseAutoFocus={(event) => {
+      if (!returnFocusRef?.current?.isConnected) return;
+      event.preventDefault();
+      const activeDialog = document.activeElement?.closest('[role="dialog"], [role="alertdialog"]');
+      if (activeDialog && activeDialog !== event.target && activeDialog.getAttribute("data-state") !== "closed") return;
+      returnFocusRef.current.focus();
+    }}>
+      <AdaptiveDialogHeader>
+        <AdaptiveDialogTitle>Quick stats</AdaptiveDialogTitle>
+        <AdaptiveDialogDescription>A snapshot of your reading progress.</AdaptiveDialogDescription>
+      </AdaptiveDialogHeader>
+      <AdaptiveDialogBody><QuickStatsContent /></AdaptiveDialogBody>
+    </AdaptiveDialogContent>
+  </Dialog>
+);
+
+const QuickStatsContent = () => {
   const { user } = useAuth();
-  const { books } = useBooks(user?.id);
-  const { streakData } = useStreaks(user?.id);
-  const { triggerHaptic } = useHapticFeedback();
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
-  const dragRef = useRef<HTMLDivElement>(null);
-
-  if (!isVisible) return null;
-
+  const { books, loading, refreshing, hasLoaded, error, refetchBooks } = useBooks(user?.id);
+  const { streakData, loading: streakLoading } = useStreaks(user?.id);
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
-
   const booksReadThisMonth = books.filter((book) => {
     if (book.status !== "completed" || !book.date_finished) return false;
     const finishedDate = new Date(book.date_finished);
     return finishedDate.getMonth() === currentMonth && finishedDate.getFullYear() === currentYear;
   }).length;
-
-  const totalPages = books
-    .filter((book) => book.status === "completed")
-    .reduce((sum, book) => sum + (book.pages || 0), 0);
+  const totalPages = books.filter((book) => book.status === "completed").reduce((sum, book) => sum + (book.pages || 0), 0);
   const totalReadingTime = Math.floor(totalPages / 40) * 60;
-
   const readingHours = Math.floor(totalReadingTime / 60);
   const readingMinutes = totalReadingTime % 60;
 
-  const handleTouchStart = (event: React.TouchEvent) => {
-    setIsDragging(true);
-    setStartPos({
-      x: event.touches[0].clientX - position.x,
-      y: event.touches[0].clientY - position.y,
-    });
-    triggerHaptic("light");
-  };
-
-  const handleTouchMove = (event: React.TouchEvent) => {
-    if (!isDragging) return;
-    const newX = event.touches[0].clientX - startPos.x;
-    const newY = event.touches[0].clientY - startPos.y;
-    setPosition({ x: newX, y: newY });
-  };
-
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-
-    if (position.y > 100 || position.x > 150) {
-      triggerHaptic("medium");
-      onClose();
-      return;
-    }
-
-    setPosition({ x: 0, y: 0 });
-  };
-
-  const handleClose = () => {
-    triggerHaptic("light");
-    onClose();
-  };
-
-  return (
-    <div
-      ref={dragRef}
-      className="fixed bottom-24 right-6 z-[9998] animate-scale-in cursor-move touch-none"
-      style={{
-        transform: `translate(${position.x}px, ${position.y}px)`,
-        transition: isDragging ? "none" : "transform 0.3s ease-out",
-        opacity: isDragging && (position.y > 50 || position.x > 100) ? 0.7 : 1,
-      }}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      <Card className="w-[300px] border-0 bg-gradient-card shadow-glow backdrop-blur-sm">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="font-display text-base font-bold">Quick Stats</CardTitle>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleClose}
-              className="h-8 w-8 p-0"
-              disableHaptic
-            >
-              <AppIcon icon={APP_ICONS.common.close} variant="action" />
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center gap-3 rounded-lg bg-background/50 p-3">
-            <div className="min-w-0 flex-1">
-              <div className="font-sans text-2xl font-bold text-foreground">{booksReadThisMonth}</div>
-              <div className="font-sans text-xs text-muted-foreground">Books this month</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 rounded-lg bg-background/50 p-3">
-            <div className="min-w-0 flex-1">
-              <div className="font-sans text-2xl font-bold text-foreground">{streakData.currentStreak}</div>
-              <div className="font-sans text-xs text-muted-foreground">Day streak</div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 rounded-lg bg-background/50 p-3">
-            <div className="min-w-0 flex-1">
-              <div className="font-sans text-2xl font-bold text-foreground">
-                {readingHours > 0 ? `${readingHours}h` : `${readingMinutes}m`}
-              </div>
-              <div className="font-sans text-xs text-muted-foreground">Total reading time</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return <LoadingRegion loading={loading || streakLoading} refreshing={refreshing} label="Loading reading stats">
+    {error && <LoadingError message="Reading stats could not be refreshed." onRetry={() => void refetchBooks()} />}
+    {loading || streakLoading ? <div className="space-y-3" aria-hidden="true">
+      {[0, 1, 2].map((index) => <Skeleton key={index} className="h-16 w-full" />)}
+    </div> : error && !hasLoaded ? null : <>
+      <dl className="divide-y divide-border">
+        <div className="flex flex-wrap items-baseline justify-between gap-3 py-3">
+          <dt className="font-sans text-sm text-muted-foreground">Books this month</dt>
+          <dd className="font-sans text-2xl font-semibold tabular-nums">{booksReadThisMonth}</dd>
+        </div>
+        <div className="flex flex-wrap items-baseline justify-between gap-3 py-3">
+          <dt className="font-sans text-sm text-muted-foreground">Day streak</dt>
+          <dd className="font-sans text-2xl font-semibold tabular-nums">{streakData.currentStreak}</dd>
+        </div>
+        <div className="flex flex-wrap items-baseline justify-between gap-3 py-3">
+          <dt className="font-sans text-sm text-muted-foreground">Estimated reading time</dt>
+          <dd className="font-sans text-2xl font-semibold tabular-nums">{readingHours > 0 ? `${readingHours}h` : `${readingMinutes}m`}</dd>
+        </div>
+      </dl>
+      <p className="mt-3 font-sans text-xs text-muted-foreground">Time estimate uses completed-book pages at 40 pages per hour.</p>
+    </>}
+  </LoadingRegion>;
 };

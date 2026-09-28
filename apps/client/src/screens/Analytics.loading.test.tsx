@@ -2,8 +2,10 @@ import type { ReactNode } from "react";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AnalyticsChartData } from "@/services/api";
+import type { UIEnvironment } from "@/services/uiEnvironment";
 
 const mocks = vi.hoisted(() => ({
+  windowClass: "expanded" as UIEnvironment["windowClass"],
   chart: {} as AnalyticsChartData & {
     data?: AnalyticsChartData;
     loading: boolean;
@@ -17,7 +19,15 @@ vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: { id: "reader" } }) 
 vi.mock("@/hooks/useBooks", () => ({ useBooks: () => ({ books: [], loading: false }) }));
 vi.mock("@/hooks/useChartData", () => ({ useChartData: () => mocks.chart }));
 vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => false }));
+vi.mock("@/hooks/useUIEnvironment", () => ({
+  useUIEnvironmentValue: (selector: (environment: Pick<UIEnvironment, "windowClass">) => unknown) =>
+    selector({ windowClass: mocks.windowClass }),
+}));
 vi.mock("@/components/MobileLayout", () => ({ MobileLayout: ({ children }: { children: ReactNode }) => <main>{children}</main> }));
+// Exercise this screen's real header; menu interactions belong to the shell
+// browser fixture. These boundaries keep unrelated account queries out.
+vi.mock("@/components/ShellNavigation", () => ({ ShellNavigationTrigger: () => <button type="button">Menu</button> }));
+vi.mock("@/components/UserNotificationsPopover", () => ({ UserNotificationsPopover: () => null }));
 vi.mock("@/contexts/ThemeContext", () => ({ useTheme: () => ({ currentTheme: "default", resolvedTheme: "light" }) }));
 vi.mock("@/hooks/useHapticFeedback", () => ({ useHapticFeedback: () => ({ triggerHaptic: vi.fn() }) }));
 // Only the external renderer is replaced: real chart/card/title/subtitle markup stays under test.
@@ -32,11 +42,29 @@ const emptyData = (): AnalyticsChartData => ({
 });
 
 beforeEach(() => {
+  mocks.windowClass = "expanded";
   mocks.chart = { ...emptyData(), loading: true, refreshing: false, error: null, refetch: vi.fn() };
 });
 afterEach(cleanup);
 
 describe("Analytics loading contract", () => {
+  it("keeps the medium-window navigation header through loading, failure and content", () => {
+    mocks.windowClass = "medium";
+    const view = render(<Analytics />);
+    const heading = screen.getByRole("heading", { level: 1, name: "Analytics" });
+    const menu = screen.getByRole("button", { name: "Menu" });
+    expect(screen.queryByRole("heading", { name: "Analytics Dashboard" })).not.toBeInTheDocument();
+    mocks.chart = { ...mocks.chart, loading: false, error: new Error("offline") };
+    view.rerender(<Analytics />);
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Menu" })).toBe(menu);
+    const data = emptyData();
+    mocks.chart = { ...mocks.chart, ...data, data, error: null };
+    view.rerender(<Analytics />);
+    expect(screen.getByRole("heading", { level: 1, name: "Analytics" })).toBe(heading);
+    expect(screen.getByRole("button", { name: "Menu" })).toBe(menu);
+  });
+
   it("keeps the heading and tabs mounted and replaces one 320px plot with the real chart", async () => {
     const view = render(<Analytics />);
     const heading = screen.getByRole("heading", { name: "Analytics Dashboard" });

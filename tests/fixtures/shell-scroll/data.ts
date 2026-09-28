@@ -24,7 +24,7 @@ export const useBadges = () => ({ badges: [], earnedBadges: [], loading: false, 
 export const useFeatureFlags = () => ({ socialEnabled: true, gamificationEnabled: true, leaderboardsEnabled: true });
 export const useHapticFeedback = () => ({ triggerHaptic: noop });
 export const useProfileContext = () => ({ profile: { display_name: 'Fixture reader' }, isLoading: false });
-export const useTimer = () => ({ startTimer: noop });
+export const useTimer = () => ({ startTimer: noop, isVisible: false });
 export const fetchThemePreferences = async () => ({ library_view_mode: new URLSearchParams(location.search).get('view') ?? 'flat' });
 export const upsertThemePreferences = resolved;
 export const reorderLibraryShelf = resolved;

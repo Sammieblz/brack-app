@@ -1,32 +1,38 @@
-import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useRef, type MouseEvent, type RefObject } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { LogOut, User } from "iconoir-react";
+import { Dialog } from "@/components/ui/dialog";
+import {
+  AdaptiveDialogBody, AdaptiveDialogContent, AdaptiveDialogDescription,
+  AdaptiveDialogHeader, AdaptiveDialogTitle,
+} from "@/components/ui/adaptive-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingRegion } from "@/components/loading/LoadingRegion";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { useProfileContext } from "@/contexts/ProfileContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useFollowing } from "@/hooks/useFollowing";
 import { useConversations } from "@/hooks/useConversations";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { useGSAPTimeline } from "@/hooks/useGSAP";
-import { gsap } from "gsap";
 import { getInitials } from "@/lib/avatarUtils";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { User, LogOut } from "iconoir-react";
+import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { cn } from "@/lib/utils";
-import { NAV_GROUPS, getNavItemsBySection, isNavItemActive, type NavItem } from "@/config/navigation";
+import { getMobileNavItems, getNavItemsBySection, isNavItemActive, type NavItem } from "@/config/navigation";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
 
 interface ProfileDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  returnFocusRef?: RefObject<HTMLElement | null>;
 }
 
-export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
+const linkClassName = "flex min-h-11 min-w-0 items-center gap-3 rounded-lg px-3 py-3 font-sans text-sm font-medium outline-offset-2 hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring";
+
+/** The existing profile drawer now serves as the shell's visible destination menu. */
+export const ProfileDrawer = ({ open, onOpenChange, returnFocusRef }: ProfileDrawerProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, isLoading } = useProfileContext();
@@ -35,220 +41,134 @@ export const ProfileDrawer = ({ open, onOpenChange }: ProfileDrawerProps) => {
   const { conversations } = useConversations();
   const { triggerHaptic } = useHapticFeedback();
   const { socialEnabled } = useFeatureFlags();
-  
-  const menuItemsRef = useRef<HTMLDivElement>(null);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  // Get unread messages count
-  const unreadCount = conversations.reduce((sum, conv) => sum + (conv.unread_count || 0), 0);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
-    const handleChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  // GSAP animations for menu items
-  useGSAPTimeline(
-    (tl) => {
-      if (!open || prefersReducedMotion || !menuItemsRef.current) return;
-
-      const items = menuItemsRef.current.querySelectorAll('[data-menu-item]');
-      gsap.set(items, { opacity: 0, y: 10 });
-      
-      tl.to(items, {
-        opacity: 1,
-        y: 0,
-        duration: 0.3,
-        ease: "power2.out",
-        stagger: 0.05,
-      });
-    },
-    { dependencies: [open, prefersReducedMotion] }
-  );
-
-  const getBadge = (item: NavItem) =>
-    item.path === "/messages" && unreadCount > 0 ? unreadCount : undefined;
-
-  const drawerGroups = NAV_GROUPS
-    .map((group) => ({
-      ...group,
-      items: getNavItemsBySection(group.section, socialEnabled),
-    }))
-    .filter((group) => group.items.length > 0);
-
+  const navigated = useRef(false);
+  const openedLocation = useRef(location.key);
+  const unreadCount = conversations.reduce((sum, conversation) => sum + (conversation.unread_count || 0), 0);
+  const primaryItems = getMobileNavItems(socialEnabled);
+  const primaryPaths = new Set(primaryItems.map((item) => item.path));
+  const readingItems = (["overview", "books", "progress"] as const)
+    .flatMap((section) => getNavItemsBySection(section, socialEnabled))
+    .filter((item) => !primaryPaths.has(item.path));
+  const communityItems = getNavItemsBySection("community", socialEnabled)
+    .filter((item) => !primaryPaths.has(item.path));
   const accountItems = getNavItemsBySection("account", socialEnabled);
 
-  const handleMenuItemClick = (path: string) => {
+  useEffect(() => {
+    if (open && location.key !== openedLocation.current) {
+      navigated.current = true;
+      onOpenChange(false);
+    }
+    openedLocation.current = location.key;
+  }, [location.key, open, onOpenChange]);
+
+  const handleDestination = (event: MouseEvent<HTMLAnchorElement>) => {
+    // Keep native link behavior and the current menu for modifier/new-tab actions.
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    navigated.current = true;
     triggerHaptic("selection");
-    navigate(path);
     onOpenChange(false);
   };
 
   const handleSignOut = async () => {
     triggerHaptic("medium");
     await signOut();
+    navigated.current = true;
     navigate("/");
     onOpenChange(false);
   };
 
-  const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
-  const email = user?.email || '';
+  const renderLink = (item: NavItem, primary = false) => {
+    const Icon = item.icon;
+    const active = isNavItemActive(location.pathname, item);
+    const messages = item.path === "/messages" && unreadCount > 0;
+    return <Link key={item.path} to={item.path} onClick={handleDestination}
+      aria-current={active ? "page" : undefined}
+      className={cn(linkClassName, primary && "border border-border/70", active && "border-primary/40 bg-primary/10 text-foreground")}>
+      <Icon className={cn("size-5 shrink-0", active ? "text-primary" : "text-muted-foreground")} aria-hidden="true" />
+      <span className="min-w-0 flex-1 break-words">{item.label}</span>
+      {messages && <Badge variant="secondary" className="shrink-0 px-2">
+        <span aria-hidden="true">{unreadCount > 99 ? "99+" : unreadCount}</span>
+        <span className="sr-only">{unreadCount} unread</span>
+      </Badge>}
+    </Link>;
+  };
 
-  return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent 
-        side="right" 
-        className="w-[280px] sm:w-[320px] p-0 overflow-y-auto safe-top safe-bottom"
-      >
-        <div className="flex flex-col h-full">
-          {/* Header Section */}
-          <LoadingRegion loading={isLoading && !profile} label="Loading profile" className="p-6 border-b border-border">
-            {isLoading && !profile ? (
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-16 w-16 shrink-0 rounded-full" />
-                <div className="min-w-0 flex-1">
-                  <Skeleton className="h-[1.6em] w-24 text-base" />
-                  <Skeleton className="h-[1.5em] w-32 text-sm" />
-                  <div className="mt-2 flex gap-4"><Skeleton className="h-[1.6em] w-16 text-base" /><Skeleton className="h-[1.6em] w-16 text-base" /></div>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
-                  <AvatarFallback name={displayName}>
-                    {getInitials(displayName)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="font-sans font-semibold text-foreground truncate">{displayName}</p>
-                  <p className="font-sans text-sm text-muted-foreground truncate">{email}</p>
-                  <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                    <span className="font-sans">{followingCount} Following</span>
-                    <span className="font-sans">{followersCount} Followers</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </LoadingRegion>
+  const displayName = profile?.display_name || user?.email?.split("@")[0] || "Reader";
 
-          {/* Menu Items */}
-          <div ref={menuItemsRef} className="flex-1 py-4">
-            <div className="px-3 pb-2">
-              <button
-                data-menu-item
-                onClick={() => handleMenuItemClick("/profile")}
-                className={cn(
-                  "w-full flex items-center gap-3 rounded-lg px-3 py-3 text-left transition-colors",
-                  "hover:bg-muted/50 active:bg-muted focus:outline-none focus:bg-muted/50",
-                  location.pathname === "/profile" && "bg-primary/10 text-primary"
-                )}
-              >
-                <User className={cn("h-5 w-5", location.pathname === "/profile" ? "text-primary" : "text-muted-foreground")} />
-                <span className="font-sans flex-1 font-medium">Profile</span>
-              </button>
-            </div>
-
-            {drawerGroups.map((group) => (
-              <div key={group.section} className="px-3 py-2">
-                <div className="px-3 pb-1.5 font-sans text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  {group.label}
-                </div>
-                <div className="space-y-1">
-                  {group.items.map((item) => {
-                    const Icon = item.icon;
-                    const active = isNavItemActive(location.pathname, item);
-                    const badge = getBadge(item);
-
-                    return (
-                      <button
-                        key={item.path}
-                        data-menu-item
-                        onClick={() => handleMenuItemClick(item.path)}
-                        className={cn(
-                          "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
-                          "hover:bg-muted/50 active:bg-muted focus:outline-none focus:bg-muted/50",
-                          active && "bg-primary/10 text-primary"
-                        )}
-                      >
-                        <Icon className={cn("h-5 w-5", active ? "text-primary" : "text-muted-foreground")} />
-                        <span className="font-sans flex-1 font-medium">{item.label}</span>
-                        {badge !== undefined && badge > 0 && (
-                          <Badge
-                            variant="destructive"
-                            className="h-5 min-w-5 flex items-center justify-center px-1.5 text-xs"
-                          >
-                            {badge > 9 ? "9+" : badge}
-                          </Badge>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-
-            {accountItems.length > 0 && (
-              <div className="px-3 py-2">
-                <div className="px-3 pb-1.5 font-sans text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Account
-                </div>
-                <div className="space-y-1">
-                  {accountItems.map((item) => {
-                    const Icon = item.icon;
-                    const active = isNavItemActive(location.pathname, item);
-
-                    return (
-                      <button
-                        key={item.path}
-                        data-menu-item
-                        onClick={() => handleMenuItemClick(item.path)}
-                        className={cn(
-                          "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
-                          "hover:bg-muted/50 active:bg-muted focus:outline-none focus:bg-muted/50",
-                          active && "bg-primary/10 text-primary"
-                        )}
-                      >
-                        <Icon className={cn("h-5 w-5", active ? "text-primary" : "text-muted-foreground")} />
-                        <span className="font-sans flex-1 font-medium">{item.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <Separator />
-
-          {/* Footer Section */}
-          <div className="p-6 space-y-4">
-            {/* Theme Toggle */}
-            <div className="flex items-center justify-between">
-              <span className="font-sans text-sm text-muted-foreground">Theme</span>
-              <ThemeToggle variant="inline" />
-            </div>
-
-            {/* Sign Out */}
-            <Button
-              variant="ghost"
-              onClick={handleSignOut}
-              className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
-            >
-              <LogOut className="mr-3 h-5 w-5" />
-              Sign Out
-            </Button>
-
-            {/* App Version */}
-            <p className="font-sans text-xs text-center text-muted-foreground">
-              v2.1.0
-            </p>
-          </div>
+  return <Dialog open={open} onOpenChange={onOpenChange}>
+    <AdaptiveDialogContent size="regular"
+      onOpenAutoFocus={() => { navigated.current = false; openedLocation.current = location.key; }}
+      onCloseAutoFocus={(event) => {
+        if (navigated.current) { event.preventDefault(); return; }
+        if (returnFocusRef?.current?.isConnected) {
+          event.preventDefault();
+          returnFocusRef.current.focus();
+          return;
+        }
+        // Expanded layouts can replace Menu with a persistent sidebar while this
+        // task stays open. Give focus a visible page destination in that case.
+        const fallback = document.querySelector<HTMLElement>("[data-app-scroll-container] h1")
+          ?? document.querySelector<HTMLElement>("[data-app-scroll-container]");
+        if (fallback) {
+          event.preventDefault();
+          if (!fallback.hasAttribute("tabindex")) fallback.tabIndex = -1;
+          fallback.focus();
+        }
+      }}>
+      <AdaptiveDialogHeader>
+        <div className="flex items-center gap-3">
+          <ThemeAwareLogo variant="icon" size="size-8" />
+          <AdaptiveDialogTitle className="font-display text-xl">Your reading space</AdaptiveDialogTitle>
         </div>
-      </SheetContent>
-    </Sheet>
-  );
+        <AdaptiveDialogDescription>Find your books, reading progress and community.</AdaptiveDialogDescription>
+      </AdaptiveDialogHeader>
+      <AdaptiveDialogBody>
+        <nav aria-label="Main navigation" className="space-y-5">
+          <div role="group" className="grid gap-2" aria-label="Primary destinations"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 10rem), 1fr))" }}>
+            {primaryItems.map((item) => renderLink(item, true))}
+          </div>
+          {[
+            { name: "Reading", items: readingItems },
+            { name: "Community", items: communityItems },
+          ].filter((group) => group.items.length > 0).map((group) => <section key={group.name} aria-label={group.name} className="border-t border-border/70 pt-4">
+            <h3 className="px-3 pb-1 font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">{group.name}</h3>
+            <div>{group.items.map((item) => renderLink(item))}</div>
+          </section>)}
+          <section aria-label="Account" className="border-t border-border/70 pt-4">
+            <h3 className="px-3 pb-1 font-sans text-xs font-semibold uppercase tracking-wider text-muted-foreground">Account</h3>
+            <Link to="/profile" onClick={handleDestination} aria-current={location.pathname === "/profile" ? "page" : undefined}
+              className={cn(linkClassName, location.pathname === "/profile" && "bg-primary/10")}>
+              <User className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <span>Profile</span>
+            </Link>
+            {accountItems.map((item) => renderLink(item))}
+          </section>
+        </nav>
+        <div className="mt-5 space-y-4 border-t border-border/70 pt-4">
+          <LoadingRegion loading={isLoading && !profile} label="Loading profile">
+            {isLoading && !profile ? <div className="flex items-center gap-3">
+              <Skeleton className="size-9 shrink-0 rounded-full" /><Skeleton className="h-5 w-32" />
+            </div> : <div className="flex items-center gap-3 px-3">
+              <Avatar className="size-9 shrink-0">
+                <AvatarImage src={profile?.avatar_url || undefined} alt="" />
+                <AvatarFallback name={displayName}>{getInitials(displayName)}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 font-sans">
+                <p className="break-words text-sm font-medium">{displayName}</p>
+                {socialEnabled && <p className="text-xs text-muted-foreground">{followingCount} following · {followersCount} followers</p>}
+              </div>
+            </div>}
+          </LoadingRegion>
+          <div className="flex flex-wrap items-center justify-between gap-2 px-3">
+            <span className="font-sans text-sm text-muted-foreground">Appearance</span>
+            <ThemeToggle variant="inline" />
+          </div>
+          <Button type="button" variant="ghost" disableHaptic onClick={handleSignOut} className="h-auto min-h-11 w-full justify-start gap-3 whitespace-normal text-foreground hover:bg-destructive/10">
+            <LogOut className="size-5 shrink-0" aria-hidden="true" />Sign out
+          </Button>
+        </div>
+      </AdaptiveDialogBody>
+    </AdaptiveDialogContent>
+  </Dialog>;
 };

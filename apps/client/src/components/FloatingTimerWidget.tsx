@@ -1,295 +1,96 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Pause, Play, Square, Timer } from "iconoir-react";
 import { useTimer } from "@/contexts/TimerContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Play, Pause, Square, Collapse, Expand, Xmark } from "iconoir-react";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AdaptiveDialogBody,
+  AdaptiveDialogContent,
+  AdaptiveDialogDescription,
+  AdaptiveDialogFooter,
+  AdaptiveDialogHeader,
+  AdaptiveDialogTitle,
+} from "@/components/ui/adaptive-dialog";
 import { formatTime } from "@/utils";
-import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { useGSAP } from "@/hooks/useGSAP";
-import { BREAKPOINTS, useBreakpoint } from "@/hooks/useBreakpoint";
-import { gsap } from "gsap";
-import { Confetti } from "@/components/animations/Confetti";
 
-const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
-const STORAGE_KEY = "floatingTimerPosition";
-const DEFAULT_MARGIN = 12;
-const DEFAULT_SIZE = { w: 260, h: 140 };
-
+/** The historical export now renders inside the shell's measured utility area. */
 export const FloatingTimerWidget = () => {
-  const {
-    time,
-    isRunning,
-    isVisible,
-    isMinimized,
-    bookTitle,
-    pauseTimer,
-    resumeTimer,
-    finishTimer,
-    cancelTimer,
-    toggleMinimized,
-  } = useTimer();
+  const { time, isRunning, isVisible, bookTitle, pauseTimer, resumeTimer, finishTimer, cancelTimer } = useTimer();
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const finishing = useRef(false);
+  useEffect(() => {
+    if (!isVisible) {
+      setOpen(false);
+      setError(null);
+    }
+  }, [isVisible]);
 
-  const { isPhone } = useBreakpoint();
-  const { triggerHaptic } = useHapticFeedback();
-  const isFloatingTimerViewport =
-    isPhone && (typeof window === "undefined" || window.innerWidth < BREAKPOINTS.tablet);
-  const [position, setPosition] = useState<{ x: number; y: number }>(() => ({ x: 0, y: 0 }));
-  const [isDragging, setIsDragging] = useState(false);
-  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
-  const dragStartPosition = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const dragRef = useRef<HTMLDivElement>(null);
-  const dragBounds = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
-  const timeDisplayRef = useRef<HTMLDivElement>(null);
-  const [showSessionComplete, setShowSessionComplete] = useState(false);
-
-  const constrainToViewport = (pos: { x: number; y: number }, size = DEFAULT_SIZE) => {
-    if (typeof window === "undefined") return pos;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    return {
-      x: clamp(pos.x, DEFAULT_MARGIN, Math.max(DEFAULT_MARGIN, vw - size.w - DEFAULT_MARGIN)),
-      y: clamp(pos.y, DEFAULT_MARGIN, Math.max(DEFAULT_MARGIN, vh - size.h - DEFAULT_MARGIN)),
-    };
-  };
-
-  const savePosition = (pos: { x: number; y: number }) => {
+  const handleFinish = async () => {
+    if (finishing.current) return;
+    finishing.current = true;
+    setSaving(true);
+    setError(null);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(pos));
+      // The provider owns local persistence, recovery, error feedback and the
+      // journal prompt. A resolved promise is not proof that saving succeeded:
+      // retain these controls until the provider clears the active session.
+      await finishTimer();
     } catch {
-      // ignore
+      setError("The session could not be saved. Your timer is still available; try again.");
+    } finally {
+      finishing.current = false;
+      setSaving(false);
     }
   };
 
-  // Initialize position once we know viewport size
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setPosition(constrainToViewport(parsed));
-        return;
-      } catch {
-        // ignore invalid storage
-      }
-    }
-    // Default near bottom-right with margin
-    setPosition(constrainToViewport({ x: vw - DEFAULT_SIZE.w, y: vh - DEFAULT_SIZE.h }));
-  }, []);
-
-  // Smooth time display updates
-  useGSAP(() => {
-    if (timeDisplayRef.current && isRunning) {
-      gsap.to(timeDisplayRef.current, {
-        scale: 1.05,
-        duration: 0.1,
-        yoyo: true,
-        ease: "power2.out",
-      });
-    }
-  }, { dependencies: [time, isRunning] });
-
-  // Trigger celebration on session completion
-  useEffect(() => {
-    if (time === 0 && !isRunning && !isVisible) {
-      // Timer was just finished
-      setShowSessionComplete(true);
-      setTimeout(() => setShowSessionComplete(false), 3000);
-    }
-  }, [time, isRunning, isVisible]);
-
-  if (!isFloatingTimerViewport || !isVisible) return null;
-
-  const updateBounds = () => {
-    const w = dragRef.current?.offsetWidth ?? 0;
-    const h = dragRef.current?.offsetHeight ?? 0;
-    dragBounds.current = { width: w, height: h };
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    updateBounds();
-    dragStartPosition.current = { ...position };
-    setIsDragging(true);
-    setStartPos({
-      x: e.touches[0].clientX - position.x,
-      y: e.touches[0].clientY - position.y,
-    });
-    triggerHaptic('light');
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const { width, height } = dragBounds.current;
-    const newX = e.touches[0].clientX - startPos.x;
-    const newY = e.touches[0].clientY - startPos.y;
-
-    // constrain to viewport with a small margin
-    const constrained = {
-      x: clamp(newX, DEFAULT_MARGIN, vw - (width || DEFAULT_SIZE.w) - DEFAULT_MARGIN),
-      y: clamp(newY, DEFAULT_MARGIN, vh - (height || DEFAULT_SIZE.h) - DEFAULT_MARGIN),
-    };
-
-    setPosition(constrained);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    setIsDragging(false);
-    const deltaX = position.x - dragStartPosition.current.x;
-    const deltaY = position.y - dragStartPosition.current.y;
-    
-    // Swipe to dismiss only on intentional fling distances
-    const verticalDismiss = deltaY > 140;
-    const horizontalDismiss = deltaX > 180;
-    if (verticalDismiss || horizontalDismiss) {
-      triggerHaptic('medium');
-      cancelTimer();
-      return;
-    }
-    
-    // Persist position on end (clamped once more)
-    const clamped = constrainToViewport(position, {
-      w: dragBounds.current.width || DEFAULT_SIZE.w,
-      h: dragBounds.current.height || DEFAULT_SIZE.h,
-    });
-    setPosition(clamped);
-    savePosition(clamped);
-  };
-
-  const commonDragProps = {
-    ref: dragRef,
-    className: "fixed z-[9999] animate-scale-in cursor-move touch-none",
-    style: {
-      transform: `translate(${position.x}px, ${position.y}px)`,
-      transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-      opacity: isDragging && (position.y > 50 || position.x > 100) ? 0.9 : 1,
-      touchAction: "none",
-      left: 0,
-      top: 0,
-      maxWidth: "calc(100vw - 24px)",
-    } as React.CSSProperties,
-    onTouchStart: handleTouchStart,
-    onTouchMove: handleTouchMove,
-    onTouchEnd: handleTouchEnd,
-  };
-
-  if (isMinimized) {
-    return (
-      <div {...commonDragProps}>
-        <Card className="bg-gradient-card shadow-soft border border-border/50 backdrop-blur-sm min-w-[200px] max-w-[90vw]">
-          <CardContent className="p-3 flex items-center gap-3">
-            <span className="font-sans text-lg font-semibold">Timer</span>
-            <span className="font-mono font-bold text-foreground min-w-[80px]">
-              {formatTime(time)}
-            </span>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={isRunning ? pauseTimer : resumeTimer}
-              className="h-8 w-8 p-0"
-            >
-              {isRunning ? (
-                <Pause className="h-4 w-4" />
-              ) : (
-                <Play className="h-4 w-4" />
-              )}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={toggleMinimized}
-              className="h-8 w-8 p-0"
-            >
-              <Expand className="h-4 w-4" />
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  if (!isVisible) return null;
 
   return (
-    <>
-      {showSessionComplete && <Confetti trigger={showSessionComplete} />}
-      <div {...commonDragProps}>
-        <Card className="bg-gradient-card shadow-soft border border-border/60 backdrop-blur-sm w-[340px] max-w-[90vw]">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="font-display text-lg font-bold">Reading Timer</CardTitle>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={cancelTimer}
-              className="h-8 w-8 p-0"
-            >
-              <Xmark className="h-4 w-4" />
-            </Button>
-          </div>
-          <p className="font-sans text-sm text-muted-foreground truncate">
-            {bookTitle}
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Time Display */}
-          <div className="text-center py-4">
-            <div ref={timeDisplayRef} className="text-5xl font-mono font-bold text-foreground">
-              {formatTime(time)}
-            </div>
-            <p className="font-sans text-sm text-muted-foreground mt-2">
-              {isRunning ? "Reading in progress..." : time > 0 ? "Paused" : "Ready"}
-            </p>
-          </div>
-
-          {/* Control Buttons */}
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              onClick={isRunning ? pauseTimer : resumeTimer}
-              size="sm"
-              variant={isRunning ? "outline" : "default"}
-              className={isRunning ? "" : "bg-gradient-primary"}
-            >
-              {isRunning ? (
-                <>
-                  <Pause className="mr-2 h-4 w-4" />
-                  Pause
-                </>
-              ) : (
-                <>
-                  <Play className="mr-2 h-4 w-4" />
-                  Resume
-                </>
-              )}
-            </Button>
-            
-            {time > 0 && (
-              <Button
-                onClick={() => void finishTimer()}
-                size="sm"
-                variant="outline"
-                className="border-green-500/50 text-green-600 hover:bg-green-500/10"
-              >
-                <Square className="mr-2 h-4 w-4" />
-                Finish
-              </Button>
-            )}
-          </div>
-
-          {/* Minimize Button */}
-          <Button
-            onClick={toggleMinimized}
-            size="sm"
-            variant="ghost"
-            className="w-full"
-          >
-            <Collapse className="mr-2 h-4 w-4" />
-            Minimize
+    <Dialog open={open} onOpenChange={(nextOpen) => { if (!finishing.current) setOpen(nextOpen); }}>
+      <section aria-label="Active reading session" className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2">
+        <Timer className="size-5 shrink-0 text-primary" aria-hidden="true" />
+        <div className="min-w-0 flex-[1_1_8rem]">
+          <p className="truncate font-serif text-sm font-semibold">{bookTitle || "Reading session"}</p>
+          <p className="font-sans text-xs text-muted-foreground">{isRunning ? "Reading" : "Paused"}</p>
+        </div>
+        <span className="font-mono text-sm font-semibold tabular-nums" aria-label={`Elapsed time ${formatTime(time)}`}>
+          {formatTime(time)}
+        </span>
+        <div className="ml-auto flex shrink-0 items-center gap-1">
+          <Button type="button" variant="ghost" size="icon" disabled={saving}
+            onClick={isRunning ? pauseTimer : resumeTimer} aria-label={isRunning ? "Pause timer" : "Resume timer"}>
+            {isRunning ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
           </Button>
-        </CardContent>
-      </Card>
-      </div>
-    </>
+          <DialogTrigger asChild>
+            <Button type="button" variant="ghost" disableHaptic className="h-auto whitespace-normal" aria-label="Open timer details">Details</Button>
+          </DialogTrigger>
+        </div>
+      </section>
+      <AdaptiveDialogContent size="compact" showClose={!saving} aria-busy={saving}>
+        <AdaptiveDialogHeader>
+          <AdaptiveDialogTitle>Reading session</AdaptiveDialogTitle>
+          <AdaptiveDialogDescription className="break-words">{bookTitle || "Your current reading session"}</AdaptiveDialogDescription>
+        </AdaptiveDialogHeader>
+        <AdaptiveDialogBody>
+          <p className="font-mono text-4xl font-semibold tabular-nums">{formatTime(time)}</p>
+          <p className="mt-2 font-sans text-sm text-muted-foreground">{isRunning ? "Reading in progress" : "Paused"}</p>
+          <p role="status" className="mt-3 font-sans text-sm">{saving ? "Saving reading session…" : ""}</p>
+          {error && <p role="alert" className="mt-3 font-sans text-sm">{error}</p>}
+        </AdaptiveDialogBody>
+        <AdaptiveDialogFooter>
+          <Button type="button" variant="outline" disabled={saving} onClick={isRunning ? pauseTimer : resumeTimer}>
+            {isRunning ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}{isRunning ? "Pause" : "Resume"}
+          </Button>
+          <Button type="button" disabled={saving || time === 0} onClick={() => void handleFinish()}>
+            <Square aria-hidden="true" />{saving ? "Saving…" : "Finish session"}
+          </Button>
+          <Button type="button" variant="ghost" disabled={saving} onClick={cancelTimer}>
+            Cancel session
+          </Button>
+        </AdaptiveDialogFooter>
+      </AdaptiveDialogContent>
+    </Dialog>
   );
 };

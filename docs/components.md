@@ -10,7 +10,7 @@ Guide to key components in Brack and their usage.
 
 **Location**: `apps/client/src/components/MobileLayout.tsx`
 
-**Purpose**: Wrapper for mobile screens with bottom navigation
+**Purpose**: Adaptive page shell with one main scroller, runtime-aware navigation and measured utility/footer space. See [adaptive shell ownership](ui-adaptive-shell.md).
 
 ```tsx
 <MobileLayout showBottomNav={true}>
@@ -20,7 +20,10 @@ Guide to key components in Brack and their usage.
 
 **Props**:
 - `children` - Content to render
-- `showBottomNav` - Show/hide bottom navigation (default: true)
+- `showBottomNav` - Permit bottom destinations in native/standalone PWA compact and medium windows (default: true); it does not force browser bottom navigation.
+- `showTopNav` - Enable shell navigation policy (default: true). Expanded windows use sidebar; compact/medium browser windows use the labelled Menu surface supplied through headers.
+
+`App` owns one `ShellUtilitiesProvider` outside route replacement. `MobileLayout` attaches its stable timer/sync host through `ShellUtilitiesSlot`; do not mount separate timer/sync controllers in each screen. `ShellNavigationProvider` keeps Menu mounted through responsive header changes and loads its data on first opening.
 
 #### MobileHeader
 
@@ -45,27 +48,26 @@ Guide to key components in Brack and their usage.
 
 **Location**: `apps/client/src/components/NativeHeader.tsx`
 
-**Purpose**: Desktop header with large title and subtitle
+**Purpose**: Content-sized sticky header for tablet and expanded layouts, with title, optional subtitle, Back, actions and secondary controls.
 
 ```tsx
 <NativeHeader 
   title="Dashboard"
   subtitle="Your reading journey"
   action={<Button>Action</Button>}
-  scrollContainerId="scroll-container"
 />
 ```
 
 **Features**:
-- Hides on scroll down
-- Shows on scroll up
-- Smooth transitions
+- Measures its complete border box on the nearest application scroller through `useAppHeader`.
+- Wraps controls and adapts to available width without changing geometry in response to scrolling.
+- Exposes Menu below the expanded shell boundary; global navigation does not depend on the legacy screen-content breakpoint.
 
 #### NativeScrollView
 
 **Location**: `apps/client/src/components/NativeScrollView.tsx`
 
-**Purpose**: Scrollable container with native scrolling behavior
+**Purpose**: Content wrapper, non-scrollable by default so `MobileLayout` owns page scrolling. Opt into `scrollable` only for an explicitly separate, named scroll region.
 
 ```tsx
 <NativeScrollView id="scroll-container" className="p-4">
@@ -217,26 +219,26 @@ the same announcement and static confirmation without spatial travel.
 
 **Location**: `apps/client/src/components/FloatingTimerWidget.tsx`
 
-**Purpose**: Floating reading timer with minimize/expand
+**Purpose**: Active reading-session row in the shell's measured utility region, with adaptive Details. The historical export name remains for compatibility; the widget is no longer draggable or independently positioned.
 
 ```tsx
-<FloatingTimerWidget />
+// App owns ShellUtilitiesProvider; each MobileLayout renders its utility slot.
+// Do not mount another FloatingTimerWidget inside a route.
 ```
 
 **Features**:
-- Minimized/expanded states
-- Play/pause controls
-- Finish with session save
+- Elapsed time, book title and Pause/Resume controls
+- Adaptive Details with guarded pending Finish
+- Finish delegates to the existing session-save owner
 - Cancel with confirmation
-- Draggable position (could be added)
 
-**State**: Managed by `TimerContext`
+**State**: Domain state belongs to `TimerContext`; the app-owned utility controller retains Details/pending state across route changes. Sync status shares that persistent utility host.
 
 #### FloatingActionButton
 
 **Location**: `apps/client/src/components/FloatingActionButton.tsx`
 
-**Purpose**: Mobile FAB with quick actions
+**Purpose**: Labelled Quick actions control on compact/medium windows, opening the shared adaptive action surface. It uses measured footer clearance and is hidden on expanded windows; it does not expand a stack of floating buttons.
 
 ```tsx
 <FloatingActionButton />
@@ -244,9 +246,12 @@ the same announcement and static confirmation without spatial travel.
 
 **Actions**:
 - Add book
+- Search books
 - Scan barcode
 - Scan cover
-- Add to list
+- Start reading timer, with an adaptive current-reading book picker
+- Quick stats
+- Reading history
 
 #### ProgressLogger
 

@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { AppBackButton } from "@/components/AppBackButton";
 import { HeaderTimerWidget } from "@/components/HeaderTimerWidget";
+import { ShellNavigationTrigger } from "@/components/ShellNavigation";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { AppIcon } from "@/components/ui/app-icon";
 import { APP_ICONS } from "@/config/iconography";
@@ -258,6 +260,7 @@ export const NativeHeader = ({
   showTimerAction = true,
 }: NativeHeaderProps) => {
   const headerRef = useAppHeader();
+  const expanded = useUIEnvironmentValue((environment) => environment.windowClass === "expanded");
 
   return (
     <header
@@ -286,11 +289,12 @@ export const NativeHeader = ({
             )}
           </div>
         </div>
-        {(showUtilityActions || action) && (
+        {(showUtilityActions || action || !expanded) && (
           <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
             {showTimerAction && <HeaderTimerWidget />}
-            {showUtilityActions && <HeaderUtilityActions />}
+            {showUtilityActions && expanded && <HeaderUtilityActions />}
             {action}
+            {!expanded && <ShellNavigationTrigger />}
           </div>
         )}
       </div>

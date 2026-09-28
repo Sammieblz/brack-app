@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { AppBackButton } from "@/components/AppBackButton";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useBookProgress } from "@/hooks/useBookProgress";
 import { ReadingVelocityChart } from "@/components/charts/ReadingVelocityChart";
@@ -28,7 +28,7 @@ const ProgressTracking = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isMobile = useIsMobile(); // Must be called before any early returns
+  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded"); // Must be called before any early returns
   const readBook = useCallback(() => fetchBookById(id!), [id]);
   const { data: book, loading: bookLoading } = useRetainedReaderResource(
     id ? `${user?.id ?? ""}:${id}` : undefined,
@@ -52,14 +52,14 @@ const ProgressTracking = () => {
 
   return (
     <MobileLayout>
-      {isMobile && (
+      {compactNavigation && (
         <MobileHeader
           title="Progress Tracking"
           back={{ label: "Book", ariaLabel: "Back to book", to: `/book/${id}` }}
         />
       )}
       <div className="app-page-narrow space-y-6">
-        {!isMobile && (
+        {!compactNavigation && (
           <AppBackButton
             label="Book"
             ariaLabel="Back to book"
@@ -72,9 +72,9 @@ const ProgressTracking = () => {
 
         {/* Title */}
         <div className="text-center space-y-2">
-          <h1 className="font-display text-3xl font-bold text-gradient">
+          {!compactNavigation && <h1 className="font-display text-3xl font-bold text-gradient">
             Progress Tracking
-          </h1>
+          </h1>}
           {bookLoading ? (
             <Skeleton className="mx-auto h-6 w-48" />
           ) : (

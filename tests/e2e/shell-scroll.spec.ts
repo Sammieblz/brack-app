@@ -72,7 +72,12 @@ for (const route of ['/my-books', '/achievements']) {
       for (const width of [1440, 1024, 834]) {
         await page.setViewportSize({ width, height: 700 });
         for (let iteration = 0; iteration < 2; iteration++) {
-          await page.getByRole('button', { name: 'Toggle sidebar' }).click();
+          if (width >= 1024) {
+            await page.getByRole('button', { name: 'Toggle sidebar' }).click();
+          } else {
+            await expect(page.getByRole('button', { name: 'Toggle sidebar' })).toHaveCount(0);
+            await expect(page.getByRole('button', { name: 'Menu', exact: true })).toBeVisible();
+          }
           await page.waitForTimeout(350);
           const initial = await geometry(page);
           await page.locator('[data-app-scroll-container]').evaluate(element => { element.scrollTop = 90; });
@@ -236,7 +241,7 @@ test('delayed Library covers preserve the reading position', async ({ page }) =>
   }
 });
 
-test('last Library control clears mobile navigation at 200 percent text', async ({ page }) => {
+test('last Library control clears browser shell at 200 percent text', async ({ page }) => {
   await openFixture(page, '/my-books?view=flat', 390);
   await page.evaluate(() => {
     document.documentElement.style.fontSize = '32px';
@@ -249,9 +254,12 @@ test('last Library control clears mobile navigation at 200 percent text', async 
   const last = page.getByRole('button', { name: 'End of library fixture control' });
   await last.evaluate(element => element.scrollIntoView({ block: 'end', behavior: 'instant' }));
   await last.focus();
+  await expect(last).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Menu', exact: true })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Primary navigation' })).toHaveCount(0);
   const control = await last.boundingBox();
-  const nav = await page.getByRole('navigation').boundingBox();
-  expect(control!.y + control!.height).toBeLessThanOrEqual(nav!.y);
+  const owner = await page.locator('[data-app-scroll-container]').boundingBox();
+  expect(control!.y + control!.height).toBeLessThanOrEqual(owner!.y + owner!.height);
   expect((await geometry(page)).documentScroll).toBe(0);
 });
 

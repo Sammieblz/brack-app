@@ -10,6 +10,7 @@ export function AppSidebar() {
 export const HeaderTimerWidget = () => <button type="button" aria-label="Reading timer" className="h-10 w-10 rounded-full">◷</button>;
 export const UserNotificationsPopover = () => <button type="button" aria-label="Notifications" className="h-10 w-10 rounded-full">•</button>;
 export const ProfileDrawer = () => null;
+export const OfflineIndicator = () => null;
 export const AddToListDialog = () => null;
 export const BadgeDetailsDialog = () => null;
 export const FloatingActionButton = () => null;

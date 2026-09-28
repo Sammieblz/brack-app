@@ -14,6 +14,7 @@ import { DataBackupSettings } from "@/components/settings/DataBackupSettings";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 import { MobileAlertDialog } from "@/components/ui/mobile-dialog";
 import { LoadingRegion } from "@/components/loading/LoadingRegion";
 import { AccountSettingsSkeleton, PersonalInfoSkeleton, PreferenceSettingsSkeleton, ProfileFormSkeleton, ReadingHabitsSkeleton } from "@/components/skeletons/SettingsSkeleton";
@@ -118,6 +119,7 @@ const Settings = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded");
   const { triggerHaptic } = useHapticFeedback();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const signOutTriggerRef = useRef<HTMLButtonElement>(null);
@@ -187,10 +189,10 @@ const Settings = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Settings" />}
+      {compactNavigation && <MobileHeader title="Settings" />}
       
       <LoadingRegion loading={authLoading} label="Loading settings" className="app-page-narrow min-w-0 overflow-x-hidden">
-        {!isMobile && (
+        {!compactNavigation && (
           <div className="mb-6">
             <h1 className="font-display text-3xl font-bold">Settings</h1>
             <p className="font-sans text-muted-foreground mt-1">

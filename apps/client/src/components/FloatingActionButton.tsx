@@ -1,234 +1,110 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Plus } from "iconoir-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useHapticFeedback } from "@/hooks/useHapticFeedback";
+import { ActionSheet } from "@/components/ui/action-sheet";
+import { Dialog } from "@/components/ui/dialog";
+import {
+  AdaptiveDialogBody, AdaptiveDialogContent, AdaptiveDialogDescription,
+  AdaptiveDialogHeader, AdaptiveDialogTitle,
+} from "@/components/ui/adaptive-dialog";
 import { useTimer } from "@/contexts/TimerContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooks } from "@/hooks/useBooks";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { FloatingQuickStatsWidget } from "./FloatingQuickStatsWidget";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
+import { Skeleton } from "@/components/ui/skeleton";
 import { APP_ICONS } from "@/config/iconography";
-
-interface FABAction {
-  icon: React.ElementType;
-  label: string;
-  onClick: () => void;
-}
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 
 export const FloatingActionButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showTimerSheet, setShowTimerSheet] = useState(false);
   const [showQuickStats, setShowQuickStats] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const fallbackFocusRef = useRef<HTMLElement | null>(null);
+  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded");
+  useLayoutEffect(() => {
+    if (compactNavigation) return;
+    // An open task remains mounted when the expanded header takes over.
+    // Its closing focus must go to visible page content, not the hidden button.
+    const fallback = document.querySelector<HTMLElement>("[data-app-scroll-container] h1")
+      ?? document.querySelector<HTMLElement>("[data-app-scroll-container]");
+    if (fallback && !fallback.hasAttribute("tabindex")) fallback.tabIndex = -1;
+    fallbackFocusRef.current = fallback;
+    return () => { fallbackFocusRef.current = null; };
+  }, [compactNavigation]);
+  const returnFocusRef = compactNavigation ? triggerRef : fallbackFocusRef;
   const navigate = useNavigate();
-  const { triggerHaptic } = useHapticFeedback();
   const { startTimer } = useTimer();
   const { user } = useAuth();
-  const { books } = useBooks(user?.id);
-
-  const readingBooks = books.filter(book => book.status === 'reading');
-
-  const actions: FABAction[] = [
-    {
-      icon: APP_ICONS.floatingAction.quickStats,
-      label: "Quick Stats",
-      onClick: () => {
-        triggerHaptic("light");
-        setShowQuickStats(true);
-        setIsOpen(false);
-      },
-    },
-    {
-      icon: APP_ICONS.floatingAction.timer,
-      label: "Start Reading Time",
-      onClick: () => {
-        triggerHaptic("light");
-        setShowTimerSheet(true);
-        setIsOpen(false);
-      },
-    },
-    {
-      icon: APP_ICONS.floatingAction.addBook,
-      label: "Add Book",
-      onClick: () => {
-        triggerHaptic("light");
-        navigate("/add-book");
-        setIsOpen(false);
-      },
-    },
-    {
-      icon: APP_ICONS.floatingAction.scanBarcode,
-      label: "Scan Barcode",
-      onClick: () => {
-        triggerHaptic("light");
-        navigate("/scan-barcode");
-        setIsOpen(false);
-      },
-    },
-    {
-      icon: APP_ICONS.floatingAction.scanCover,
-      label: "Scan Cover",
-      onClick: () => {
-        triggerHaptic("light");
-        navigate("/scan-cover");
-        setIsOpen(false);
-      },
-    },
-    {
-      icon: APP_ICONS.floatingAction.search,
-      label: "Search Books",
-      onClick: () => {
-        triggerHaptic("light");
-        navigate("/add-book");
-        setIsOpen(false);
-      },
-    },
-    {
-      icon: APP_ICONS.floatingAction.history,
-      label: "Reading History",
-      onClick: () => {
-        triggerHaptic("light");
-        navigate("/history");
-        setIsOpen(false);
-      },
-    },
+  const { books, loading, refreshing, hasLoaded, error, refetchBooks } = useBooks(user?.id);
+  const readingBooks = books.filter((book) => book.status === "reading");
+  const actions = [
+    { label: "Add Book", icon: <APP_ICONS.floatingAction.addBook className="size-5" />, onClick: () => navigate("/add-book") },
+    { label: "Search Books", icon: <APP_ICONS.floatingAction.search className="size-5" />, onClick: () => navigate("/add-book") },
+    { label: "Scan Barcode", icon: <APP_ICONS.floatingAction.scanBarcode className="size-5" />, onClick: () => navigate("/scan-barcode") },
+    { label: "Scan Cover", icon: <APP_ICONS.floatingAction.scanCover className="size-5" />, onClick: () => navigate("/scan-cover") },
+    { label: "Start Reading Timer", icon: <APP_ICONS.floatingAction.timer className="size-5" />, onClick: () => setShowTimerSheet(true) },
+    { label: "Quick Stats", icon: <APP_ICONS.floatingAction.quickStats className="size-5" />, onClick: () => setShowQuickStats(true) },
+    { label: "Reading History", icon: <APP_ICONS.floatingAction.history className="size-5" />, onClick: () => navigate("/history") },
   ];
 
-  const handleStartTimer = (bookId: string, bookTitle: string) => {
-    triggerHaptic("success");
-    startTimer(bookId, bookTitle);
-    setShowTimerSheet(false);
-  };
-
-  const handleToggle = () => {
-    triggerHaptic(isOpen ? "light" : "medium");
-    setIsOpen(!isOpen);
-  };
-
-  const dockOffset = "calc(max(env(safe-area-inset-bottom), 24px) + 92px)";
-
-  return (
-    <div
-      className="md:hidden fixed inset-x-0 z-[60] pointer-events-none flex justify-center"
-      style={{ bottom: dockOffset }}
-    >
-      {/* Speed Dial Actions */}
-      <div className="flex flex-col items-center">
-        <div
-          className={cn(
-            "flex flex-col items-end gap-3 mb-4 transition-all duration-200 pointer-events-auto",
-            isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
-          )}
-        >
-          {actions.map((action, index) => {
-            const Icon = action.icon;
-            return (
-              <div
-                key={index}
-                className="flex items-center gap-3 justify-end animate-in fade-in slide-in-from-bottom-2"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <span className="bg-popover/95 text-popover-foreground px-3.5 py-2 rounded-xl text-sm font-semibold shadow-[0_14px_32px_rgba(0,0,0,0.35)] border border-border/80 whitespace-nowrap supports-[backdrop-filter]:backdrop-blur-md">
-                  {action.label}
-                </span>
-                <Button
-                  size="icon"
-                  onClick={action.onClick}
-                  className="h-12 w-12 rounded-full shadow-[0_18px_38px_rgba(0,0,0,0.45)] bg-primary text-primary-foreground hover:bg-primary/90 border border-white/[0.12]"
-                >
-                  <Icon className="h-5 w-5" />
-                </Button>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Main FAB */}
-        <div className="pointer-events-auto">
-          <Button
-            size="icon"
-            onClick={handleToggle}
-            className={cn(
-              "h-16 w-16 rounded-full shadow-[0_22px_50px_rgba(0,0,0,0.48)] bg-primary text-primary-foreground transition-transform supports-[backdrop-filter]:backdrop-blur-xl border border-white/[0.12]",
-              isOpen && "rotate-45"
-            )}
-          >
-            <Plus className="h-7 w-7" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Timer Book Selection Sheet */}
-      <Sheet open={showTimerSheet} onOpenChange={setShowTimerSheet}>
-        <SheetContent side="bottom" className="h-[85vh]">
-          <SheetHeader>
-            <SheetTitle>Start Reading Timer</SheetTitle>
-            <SheetDescription>
-              Select a book you're currently reading
-            </SheetDescription>
-          </SheetHeader>
-          <ScrollArea className="h-[calc(85vh-100px)] mt-4">
-            {readingBooks.length === 0 ? (
-              <PremiumEmptyState
-                asset="emptyLibrary"
-                title="No books currently being read"
-                description='Add books and mark them as "Reading" to start tracking time.'
-                variant="plain"
-                size="compact"
-              />
-            ) : (
-              <div className="space-y-2">
-                {readingBooks.map((book) => (
-                  <Button
-                    key={book.id}
-                    variant="outline"
-                    className="w-full h-auto p-4 flex items-start gap-3 hover:bg-accent"
-                    onClick={() => handleStartTimer(book.id, book.title)}
-                  >
-                    {book.cover_url ? (
-                      <img
-                        src={book.cover_url}
-                        alt={book.title}
-                        className="w-12 h-16 object-cover rounded"
-                      />
-                    ) : (
-                      <div className="w-12 h-16 bg-muted rounded flex items-center justify-center">
-                        <APP_ICONS.floatingAction.bookFallback className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="flex-1 text-left">
-                      <div className="font-serif font-semibold line-clamp-2">{book.title}</div>
-                      {book.author && (
-                        <div className="font-serif text-sm text-muted-foreground">{book.author}</div>
-                      )}
-                      {book.current_page && book.pages && (
-                        <div className="font-sans text-xs text-muted-foreground mt-1">
-                          Page {book.current_page} of {book.pages}
-                        </div>
-                      )}
-                    </div>
-                  </Button>
-                ))}
-              </div>
-            )}
-          </ScrollArea>
-        </SheetContent>
-      </Sheet>
-
-      {/* Quick Stats Widget */}
-      <FloatingQuickStatsWidget 
-        isVisible={showQuickStats} 
-        onClose={() => setShowQuickStats(false)} 
-      />
+  return <>
+    <div className="fixed right-4 z-40 max-w-[calc(100%-2rem)]" data-shell-float="action" hidden={!compactNavigation}>
+      <Button ref={triggerRef} type="button" variant="outline"
+        className="h-auto min-h-11 gap-2 whitespace-normal rounded-full bg-background px-4 py-2 shadow-sm hover:translate-y-0"
+        aria-haspopup="dialog" aria-expanded={isOpen} onClick={() => setIsOpen(true)}>
+        <Plus aria-hidden="true" /><span>Quick actions</span>
+      </Button>
     </div>
-  );
+    <ActionSheet title="Quick actions" description="Add a book, start reading or review your progress."
+      open={isOpen} onOpenChange={setIsOpen} returnFocusRef={returnFocusRef} openHaptic={false} actions={actions} />
+    <Dialog open={showTimerSheet} onOpenChange={setShowTimerSheet}>
+      <AdaptiveDialogContent size="compact" openHaptic={false}
+        onCloseAutoFocus={(event) => {
+          if (!returnFocusRef.current?.isConnected) return;
+          event.preventDefault();
+          const activeDialog = document.activeElement?.closest('[role="dialog"], [role="alertdialog"]');
+          if (activeDialog && activeDialog !== event.target && activeDialog.getAttribute("data-state") !== "closed") return;
+          returnFocusRef.current.focus();
+        }}>
+        <AdaptiveDialogHeader>
+          <AdaptiveDialogTitle>Start reading timer</AdaptiveDialogTitle>
+          <AdaptiveDialogDescription>Choose a book you are currently reading.</AdaptiveDialogDescription>
+        </AdaptiveDialogHeader>
+        <AdaptiveDialogBody>
+          <LoadingRegion loading={loading} refreshing={refreshing} label="Loading books for the reading timer">
+            {error && <LoadingError message="Reading books could not be refreshed." onRetry={() => void refetchBooks()} />}
+            {loading ? <div className="space-y-3" aria-hidden="true">
+              {[0, 1, 2].map((index) => <Skeleton key={index} className="h-16 w-full" />)}
+            </div> : error && !hasLoaded ? null : readingBooks.length > 0 ? <div className="space-y-2">
+              {readingBooks.map((book) => <Button key={book.id} type="button" variant="ghost"
+                className="h-auto min-h-16 w-full justify-start gap-3 whitespace-normal rounded-lg px-3 py-3 text-left"
+                onClick={() => {
+                  // The timer provider owns replacement confirmation, permission
+                  // prompts and the actual start outcome.
+                  startTimer(book.id, book.title);
+                  setShowTimerSheet(false);
+                }}>
+                {book.cover_url ? <img src={book.cover_url} alt="" className="h-14 w-10 shrink-0 rounded object-cover" />
+                  : <APP_ICONS.floatingAction.bookFallback className="!size-6 shrink-0 text-muted-foreground" aria-hidden="true" />}
+                <span className="min-w-0">
+                  <span className="block break-words font-serif font-semibold">{book.title}</span>
+                  {book.author && <span className="block break-words font-serif text-sm text-muted-foreground">{book.author}</span>}
+                  {typeof book.current_page === "number" && book.pages ? <span className="block font-sans text-xs text-muted-foreground">
+                    Page {book.current_page} of {book.pages}
+                  </span> : null}
+                </span>
+              </Button>)}
+            </div> : <PremiumEmptyState asset="emptyLibrary" title="No books currently being read"
+              description='Mark a book as "Reading" to start tracking time.' variant="plain" size="compact"
+              action={<Button type="button" onClick={() => { setShowTimerSheet(false); navigate("/add-book"); }}>Add Book</Button>} />}
+          </LoadingRegion>
+        </AdaptiveDialogBody>
+      </AdaptiveDialogContent>
+    </Dialog>
+    <FloatingQuickStatsWidget isVisible={showQuickStats} onClose={() => setShowQuickStats(false)} returnFocusRef={returnFocusRef} />
+  </>;
 };

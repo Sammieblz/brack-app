@@ -18,7 +18,7 @@ import { useImagePicker } from "@/hooks/useImagePicker";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { useFollowing } from "@/hooks/useFollowing";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 import { getInitials } from "@/lib/avatarUtils";
 import { APP_ICONS } from "@/config/iconography";
 import { AppIcon } from "@/components/ui/app-icon";
@@ -34,7 +34,7 @@ import {
 const ProfilePageContent = () => {
   const id = useId();
   const { user, loading: authLoading } = useAuth();
-  const isMobile = useIsMobile();
+  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded");
   const navigate = useNavigate();
   const { toast } = useToast();
   const { pickWithPrompt } = useImagePicker();
@@ -184,7 +184,7 @@ const ProfilePageContent = () => {
   if (authLoading || !hasLoaded) {
     return (
       <MobileLayout>
-        {isMobile && <MobileHeader title="Profile Settings" />}
+        {compactNavigation && <MobileHeader title="Profile Settings" />}
         <div className="app-page-narrow">
           <LoadingRegion loading={authLoading || loading} label="Loading profile settings">
             {loadError && <LoadingError message={loadError} onRetry={loadProfile} />}
@@ -202,7 +202,7 @@ const ProfilePageContent = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Profile Settings" />}
+      {compactNavigation && <MobileHeader title="Profile Settings" />}
       <LoadingRegion loading={false} refreshing={loading} label="Loading profile settings" className="app-page-narrow space-y-6">
         {loadError && <LoadingError message={loadError} onRetry={loadProfile} />}
 

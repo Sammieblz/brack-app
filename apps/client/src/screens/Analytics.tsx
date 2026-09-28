@@ -25,7 +25,7 @@ import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { useBooks } from "@/hooks/useBooks";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { APP_ICONS } from "@/config/iconography";
 
@@ -52,7 +52,7 @@ const Analytics = () => {
     refetch,
     data,
   } = useChartData(user?.id);
-  const isMobile = useIsMobile();
+  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded");
 
   // Calculate analytics stats
   const totalMinutes = readingProgress.reduce(
@@ -68,11 +68,11 @@ const Analytics = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Analytics" />}
+      {compactNavigation && <MobileHeader title="Analytics" />}
 
       <div className="app-page space-y-6">
         {/* Header - Desktop only */}
-        {!isMobile && (
+        {!compactNavigation && (
           <div className="flex items-center space-x-3">
             <APP_ICONS.analytics.header className="h-8 w-8 text-primary" />
             <div>

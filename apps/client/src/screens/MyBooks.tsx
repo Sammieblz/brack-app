@@ -652,13 +652,13 @@ const MyBooks = () => {
           <Button
             type="button"
             variant="outline"
-            className="min-h-[46px] w-full justify-between rounded-xl px-3 text-left"
+            className="h-auto min-h-[46px] w-full flex-wrap justify-between whitespace-normal rounded-xl px-3 py-2 text-left"
           >
-            <span className="flex min-w-0 items-center gap-2">
+            <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
               <APP_ICONS.library.filter className="h-4 w-4 shrink-0" />
-              <span className="min-w-0">
-                <span className="block font-sans text-sm font-semibold">Library controls</span>
-                <span className="block truncate font-sans text-xs text-muted-foreground">
+              <span className="min-w-0 flex-[1_1_7rem]">
+                <span className="block break-words font-sans text-sm font-semibold">Library controls</span>
+                <span className="block break-words font-sans text-xs text-muted-foreground">
                   {VIEW_OPTIONS.find((option) => option.value === viewMode)?.label.replace(" view", "")} ·{" "}
                   {sortOptions.find((option) => option.value === sortKey)?.label}
                 </span>
@@ -1156,7 +1156,7 @@ const MyBooks = () => {
         onConfirm={handleBulkDeleteBooks}
       />
 
-      {isMobile && <FloatingActionButton />}
+      <FloatingActionButton />
     </MobileLayout>
   );
 };

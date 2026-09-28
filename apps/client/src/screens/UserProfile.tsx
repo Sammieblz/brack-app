@@ -19,6 +19,7 @@ import { PostCard } from "@/components/social/PostCard";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { PostCardSkeleton } from "@/components/skeletons/PostCardSkeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 import { useSwipeable } from "react-swipeable";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { APP_ICONS } from "@/config/iconography";
@@ -83,6 +84,7 @@ const UserProfileContent = () => {
     }, { replace: true });
   };
   const isMobile = useIsMobile();
+  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded");
   const { triggerHaptic } = useHapticFeedback();
 
   const isOwnProfile = currentUser?.id === resolvedUserId;
@@ -155,14 +157,14 @@ const UserProfileContent = () => {
   if (authLoading || (loading && !profile) || (routeUserId === "me" && !resolvedUserId)) {
     return (
       <MobileLayout>
-        {isMobile && (
+        {compactNavigation && (
           <MobileHeader
             title="Profile"
             back={{ label: "Back", ariaLabel: "Go back", fallbackPath: profileBackPath }}
           />
         )}
         <div className="app-page-narrow space-y-6">
-          {!isMobile && <AppBackButton label="Back" ariaLabel="Go back" fallbackPath={profileBackPath} showLabel variant="outline" className="border-border/70 bg-card/45 shadow-none hover:bg-accent" />}
+          {!compactNavigation && <AppBackButton label="Back" ariaLabel="Go back" fallbackPath={profileBackPath} showLabel variant="outline" className="border-border/70 bg-card/45 shadow-none hover:bg-accent" />}
           <LoadingRegion loading label="Loading profile"><SocialProfileSkeleton /></LoadingRegion>
         </div>
       </MobileLayout>
@@ -172,7 +174,7 @@ const UserProfileContent = () => {
   if (!profile) {
     return (
       <MobileLayout>
-        {isMobile && (
+        {compactNavigation && (
           <MobileHeader
             title="Profile"
             back={{ label: "Back", ariaLabel: "Go back", fallbackPath: profileBackPath }}
@@ -213,7 +215,7 @@ const UserProfileContent = () => {
 
   return (
     <MobileLayout>
-      {isMobile && (
+      {compactNavigation && (
         <MobileHeader
           title={profile.display_name || "Profile"}
           back={{ label: "Back", ariaLabel: "Go back", fallbackPath: profileBackPath }}
@@ -221,7 +223,7 @@ const UserProfileContent = () => {
       )}
       <LoadingRegion loading={false} refreshing={loading} label="Loading profile" className="app-page-narrow space-y-6">
         {error && <LoadingError message={error} onRetry={refetch} />}
-        {!isMobile && (
+        {!compactNavigation && (
           <AppBackButton
             label="Back"
             ariaLabel="Go back"
@@ -249,9 +251,9 @@ const UserProfileContent = () => {
               <div className="flex-1 space-y-4 w-full">
                 <div className="space-y-3">
                   <div>
-                    <h1 className="font-display text-2xl sm:text-3xl font-bold mb-2">
+                    {!compactNavigation && <h1 className="font-display text-2xl sm:text-3xl font-bold mb-2">
                       {profile.display_name || "Anonymous User"}
-                    </h1>
+                    </h1>}
                     {profile.bio && (
                       <p className="font-sans text-muted-foreground text-sm sm:text-base">{profile.bio}</p>
                     )}

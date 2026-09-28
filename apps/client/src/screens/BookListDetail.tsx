@@ -10,7 +10,7 @@ import { NavArrowRight } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { AppBackButton } from "@/components/AppBackButton";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 import { AddBooksToListDialog } from "@/components/AddBooksToListDialog";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { useToast } from "@/hooks/use-toast";
@@ -237,7 +237,7 @@ const BookListDetailContent = () => {
   const { books, loading: booksLoading, refreshing: booksRefreshing, hasLoaded: booksLoaded, error: booksError, refetch } = useListBooks(listId, user?.id);
   const { toast } = useToast();
   const [sortableBooks, setSortableBooks] = useState<Book[]>([]);
-  const isMobile = useIsMobile(); // Must be called before any early returns
+  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded"); // Must be called before any early returns
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -314,9 +314,9 @@ const BookListDetailContent = () => {
     const initialLoading = authLoading || listsLoading || booksLoading;
     return (
       <MobileLayout>
-        {isMobile && <MobileHeader title={!listsError && !booksError ? list?.name || "Book List" : "Book List"} back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/lists" }} />}
+        {compactNavigation && <MobileHeader title={!listsError && !booksError ? list?.name || "Book List" : "Book List"} back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/lists" }} />}
         <main className="app-page space-y-6">
-          {!isMobile && <div><AppBackButton label="Back" ariaLabel="Go back" fallbackPath="/lists" showLabel variant="outline" className="mb-4 border-border/70 bg-card/45 shadow-none hover:bg-accent" /></div>}
+          {!compactNavigation && <div><AppBackButton label="Back" ariaLabel="Go back" fallbackPath="/lists" showLabel variant="outline" className="mb-4 border-border/70 bg-card/45 shadow-none hover:bg-accent" /></div>}
           <LoadingRegion loading={initialLoading} label="Loading book list">
             {initialLoading ? <BookListDetailSkeleton count={list?.book_count} /> : <LoadingError message={listsError || booksError || "This book list could not be found."} onRetry={() => { void refetchLists(); void refetch(); }} />}
           </LoadingRegion>
@@ -329,7 +329,7 @@ const BookListDetailContent = () => {
 
   return (
     <MobileLayout>
-      {isMobile && (
+      {compactNavigation && (
         <MobileHeader
           title={list.name}
           back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/lists" }}
@@ -338,7 +338,7 @@ const BookListDetailContent = () => {
       <main className="app-page space-y-6">
         <LoadingRegion loading={false} refreshing={listsRefreshing || booksRefreshing} label="Refreshing book list" className="space-y-6">
         {(listsError || booksError) && <LoadingError message={listsError || booksError!} onRetry={() => { void refetchLists(); void refetch(); }} />}
-        {!isMobile && (
+        {!compactNavigation && (
           <div>
             <AppBackButton
               label="Back"
@@ -353,7 +353,7 @@ const BookListDetailContent = () => {
           
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="font-display text-3xl font-bold mb-2">{list.name}</h1>
+            {!compactNavigation && <h1 className="font-display text-3xl font-bold mb-2">{list.name}</h1>}
             {list.description && (
               <p className="font-sans text-muted-foreground">{list.description}</p>
             )}

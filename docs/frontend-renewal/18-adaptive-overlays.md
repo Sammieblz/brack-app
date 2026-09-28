@@ -1,12 +1,12 @@
 # F08 adaptive overlays checkpoint
 
-## Current state
+## Historical state — committed in `bd342dc`
 
 - Baseline: clean `83e032bfc77d240b545cbbbc2a091ceac76538b0` (F07 committed by the user).
 - Authorization: proceed with a complete next implementation, keep durable progress, run Playwright and stop for review. No commit requested.
-- Status: **implementation and validation complete for the listed F08 scope; awaiting user review.** No commit made. F09 is not included.
+- Status: **implementation and validation complete for the listed F08 scope; subsequently committed in `bd342dc`.** F09 is not included in this record.
 - Scope: stable responsive modal foundation, MobileDialog/confirmation, ActionSheet, Goals, journal editors and date-picker presentation. Preserve existing date-only parsing/calendar, domain writes, editor guards, Back ownership, themes, fonts and icons.
-- Next: **STOP for user review**. The next authorized implementation is F09; preserve this work until the user directs a commit or next batch.
+- Current continuation: [19 — F09 adaptive shell](19-adaptive-shell.md). The prior review stop was superseded by the user's next implementation request. Retain this document as historical evidence.
 
 ## Source findings and decisions
 

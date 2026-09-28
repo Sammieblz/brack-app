@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Status: **F01–F07 committed; F08 adaptive overlays implemented and verified within its documented scope, awaiting user review**. The [decision](../ui-ionic-fit.md) defers production Ionic9.0.5 router/modal adoption after failed lifecycle/focus gates. Follow the [active checkpoint](18-adaptive-overlays.md) for scope, actual validation and the review stop. Checkpoints 13–17 preserve earlier batches. Other tickets remain unimplemented unless the work ledger says otherwise. Device testing, real assistive-technology acceptance, production performance and accessibility conformance remain future work except for explicitly recorded observations.
+Status: **F01–F08 committed; F09 adaptive shell implemented and browser-verified, uncommitted, awaiting user review**. The [decision](../ui-ionic-fit.md) defers production Ionic9.0.5 router/modal adoption after failed lifecycle/focus gates. Follow the [active checkpoint](19-adaptive-shell.md) for scope, actual validation and the review stop, with [current screenshots](evidence/f09-shell/README.md). Checkpoints 13–18 preserve earlier batches. Other tickets remain unimplemented unless the work ledger says otherwise. Device testing, real assistive-technology acceptance, production performance and accessibility conformance remain future work except for explicitly recorded observations.
 
 ## Outcome
 
@@ -41,7 +41,8 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [15 — F04 + F05 batch](15-feedback-environment-batch.md) | Historical committed feedback/runtime foundation implementation and actual checks |
 | [16 — F06 Ionic fit](16-ionic-fit-experiment.md) | Historical committed experiment, integration evidence and adoption decision |
 | [17 — F07 Back ownership](17-back-ownership.md) | Historical committed ancestry, overlays, task protection and local gestures |
-| [18 — F08 adaptive overlays](18-adaptive-overlays.md) | Active stable modal, action, form and date presentation implementation and verification |
+| [18 — F08 adaptive overlays](18-adaptive-overlays.md) | Historical stable modal, action, form and date implementation evidence; committed `bd342dc` |
+| [19 — F09 adaptive shell](19-adaptive-shell.md) | Current shell implementation, critical review, validation and continuation record |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability

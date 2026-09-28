@@ -39,7 +39,7 @@ const renderNavGroup = (label: string, items: NavItem[], pathname: string) => (
           return (
             <SidebarMenuItem key={item.path}>
               <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
-                <Link to={item.path}>
+                <Link to={item.path} aria-current={active ? "page" : undefined}>
                   <Icon className="h-4 w-4" />
                   <span>{item.label}</span>
                 </Link>
@@ -82,7 +82,7 @@ export const AppSidebar = () => {
   };
 
   return (
-    <Sidebar collapsible="icon" variant="sidebar">
+    <Sidebar collapsible="icon" variant="sidebar" role="navigation" aria-label="Primary navigation">
       <SidebarHeader className="px-2 py-3 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
         <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
           <SidebarMenuButton
@@ -161,7 +161,7 @@ export const AppSidebar = () => {
                   tooltip={item.label}
                   isActive={isNavItemActive(location.pathname, item)}
                 >
-                  <Link to={item.path}>
+                  <Link to={item.path} aria-current={isNavItemActive(location.pathname, item) ? "page" : undefined}>
                     <Icon className="h-4 w-4" />
                     <span>{item.label}</span>
                   </Link>

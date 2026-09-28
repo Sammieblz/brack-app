@@ -9,10 +9,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PageTransition } from "@/components/animations/PageTransition";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TimerProvider } from "@/contexts/TimerContext";
-import { FloatingTimerWidget } from "@/components/FloatingTimerWidget";
 import { AppNavigationProvider } from "@/contexts/AppNavigationProvider";
 import { JournalPromptHandler } from "@/components/JournalPromptHandler";
-import { ReadingSyncIndicator } from "@/components/ReadingSyncIndicator";
+import { ShellUtilitiesProvider } from "@/components/ShellUtilities";
 import { syncService } from "@/services/syncService";
 import { deepLinkService } from "@/services/deepLinkService";
 import { DeepLinkHandler } from "@/components/DeepLinkHandler";
@@ -136,6 +135,7 @@ const App = () => {
                       <AppNavigationProvider accountScope={authLoading ? undefined : authenticatedUserId ?? null}>
                       <RewardFeedbackProvider>
                         <BadgeCelebrationProvider>
+                        <ShellUtilitiesProvider>
                         <DeepLinkHandler />
                         <JourneyLevelUpObserver />
                         <OnboardingRouteGuard />
@@ -185,11 +185,10 @@ const App = () => {
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </PageTransition>
-                        <FloatingTimerWidget />
                         <JournalPromptHandler />
-                        <ReadingSyncIndicator />
                           </div>
                         </div>
+                        </ShellUtilitiesProvider>
                         </BadgeCelebrationProvider>
                       </RewardFeedbackProvider>
                       </AppNavigationProvider>

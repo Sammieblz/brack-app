@@ -1,6 +1,6 @@
 # UI environment contract
 
-Implemented in frontend renewal F05, based on commit `06d5190` plus this batch. Exact validation and review status belong to [checkpoint 15](frontend-renewal/15-feedback-environment-batch.md). This is the current observable environment foundation; the broader shell redesign remains F09.
+Implemented in frontend renewal F05, based on commit `06d5190` plus that batch. Its historical validation belongs to [checkpoint 15](frontend-renewal/15-feedback-environment-batch.md). F09 now consumes this foundation through the [adaptive shell contract](ui-adaptive-shell.md), with current validation in [19](frontend-renewal/19-adaptive-shell.md).
 
 ## Ownership and outputs
 
@@ -20,13 +20,13 @@ Media-query changes, window resize/orientation, visual viewport resize/scroll, p
 
 Authentication redirects, custom-scheme policy, PWA service worker decisions, plugin permissions and security never depend on window class. An installed PWA is still a web runtime and retains same-origin HTTPS auth callbacks. No auth-service change was needed for F05.
 
-Safe areas retain their CSS `env(safe-area-inset-*)` ownership and [shell-scrolling contract](ui-shell-scrolling.md). The environment does not manufacture inset values or browser-toolbar heights. `useAppViewportHeight` still publishes layout height to `--app-viewport-height`; F08's [useOverlayViewport](ui-adaptive-overlays.md) consumes visual geometry separately for available task-surface space without inferring keyboard state. A VisualViewport event alone does not change page-scroller sizing.
+Safe areas retain their CSS `env(safe-area-inset-*)` ownership and [shell-scrolling contract](ui-shell-scrolling.md). The environment does not manufacture inset values or browser-toolbar heights. `useAppViewportHeight` still publishes layout height to `--app-viewport-height`. F08's [useOverlayViewport](ui-adaptive-overlays.md) derives clamped available geometry for task surfaces; F09 also uses that hook to size and position `MobileLayout`, so unscaled VisualViewport changes can change the page scroller's available height. Pinch zoom uses layout geometry. Neither consumer infers keyboard visibility or changes runtime/window class from visual geometry.
 
 ## Compatibility migration
 
 `usePlatform` now selects canonical runtime synchronously on its first client render. Its legacy `platform` remains `ios | android | web`, mapping desktop to web styling. Its legacy `isMobile` means **native iOS/Android**, not small layout. `lib/platform.detectPlatform` delegates to the same canonical service. New code should use the explicit environment outputs rather than the ambiguous legacy name.
 
-`useBreakpoint` selects the environment's layout width but preserves all existing 768/1024/1440 thresholds. `useIsMobile` remains `useBreakpoint().isPhone`; all current MobileLayout, sidebar and width-based screen branches therefore retain their existing layout threshold. New 600/1024 policy bands do not silently migrate those consumers. Resize changes state in mounted components, not route keys or form/session ownership.
+`useBreakpoint` selects the environment's layout width but preserves its 768/1024/1440 thresholds. `useIsMobile` remains `useBreakpoint().isPhone`; unmigrated screen-content branches retain that legacy meaning. F09 explicitly migrates `MobileLayout` navigation to runtime/display mode and the environment's 1024px expanded boundary: compact/medium native or standalone PWA windows use bottom destinations, browser/small Electron windows use Menu, and expanded windows use sidebar. The sidebar primitive's legacy width check is not the global shell policy; the shell mounts it only in expanded windows. Resize does not change route keys, and the shell retains its main/content ancestor chain; feature-specific responsive parents still require their own state-preservation checks.
 
 Source review of every `usePlatform` branch:
 
@@ -37,7 +37,7 @@ Source review of every `usePlatform` branch:
 | `NativeSearchBar` | Native-specific radii, focus decoration and iOS Cancel/Back affordances apply only to native. Browser retains input, search, clear and recent-search controls. No query/draft behavior changes. |
 | `ActionSheet` | F08 replaces the iOS-only position branch with shared compact/medium-touch sheet versus centered presentation. One Radix root preserves focus/state and internal uncontrolled dismissal. |
 | `Toaster` / `native-toast` | Native typography/decoration is selected only for native; browser/PWA use existing web toast variants. `native-toast` has an unused legacy import, not a second detector. F04 owns haptic feedback behavior. |
-| Route/drawer edge gestures | F07 retired `useSwipeBack`, `useSwipeToOpenDrawer` and the fake page-swipe wrapper. System edges remain unclaimed by those owners; visible Back/profile controls remain. See [local gesture ownership](ui-local-gestures.md) for reserved edges, cancellation and the unverified native-swipe boundary. |
+| Route/drawer edge gestures | F07 retired `useSwipeBack`, `useSwipeToOpenDrawer` and the fake page-swipe wrapper. System edges remain unclaimed by those owners; visible Back and F09's labelled Menu remain. See [local gesture ownership](ui-local-gestures.md) for reserved edges, cancellation and the unverified native-swipe boundary. |
 | Goals overlay | F08 keeps one adaptive Dialog across window changes; Dashboard no longer mounts it inside switching headers. F07's disconnected pull recognizer remains removed. Visible Close and existing Back ownership remain. |
 
 ## Verification boundary

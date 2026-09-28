@@ -17,7 +17,7 @@ The original audit proposed starting at [F00](09-execution-plan.md), with F01–
 - F07 removes duplicate edge navigation and provides [one app Back coordinator](../ui-back-navigation.md) plus [local contact cancellation](../ui-local-gestures.md). Its exact implemented scope and remaining native gates are in checkpoint 17. Preserve F04's [action feedback](../ui-action-feedback.md). Do not infer measured latency improvements from source changes alone.
 - Preserve themes, logos, Inter/Merriweather/Playfair roles, Iconoir, domain language, offline capture, timer reliability and service ownership.
 - Accessibility is default behavior. App settings may reduce effects/haptics; they cannot substitute for semantic access or enable OS screen readers.
-- Ticket progress is recorded in 09 and the linked active checkpoint. F01–F07 are committed; F07 is at `83e032bfc77d240b545cbbbc2a091ceac76538b0`. [18](18-adaptive-overlays.md) owns active F08 implementation and validation. F09 onward is not started; real-AT/device evidence remains unverified.
+- Ticket progress is recorded in 09 and the linked active checkpoint. F01–F08 are committed; F08 is at `bd342dc`. [19](19-adaptive-shell.md) owns the active F09 batch; [18](18-adaptive-overlays.md) preserves F08 evidence. F10 onward remains future work; real-AT/device evidence remains unverified.
 
 ## Bounded retrieval workflow
 
@@ -64,7 +64,7 @@ Do not duplicate the entire source file, graph report or transcript. Prefer a us
 
 ## Progress checkpoint template
 
-The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). Checkpoints 13–17 preserve committed batches; [18](18-adaptive-overlays.md) owns active F08. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate detailed active status across competing records.
+The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). Checkpoints 13–18 preserve committed batches; [19](19-adaptive-shell.md) owns active F09. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate detailed active status across competing records.
 
 Update the relevant ticket and append a concise checkpoint when handing off:
 
@@ -85,7 +85,7 @@ An interrupted session should be resumable from this checkpoint without asking t
 
 ## Active implementation checkpoint
 
-**Current:** F01–F06 are committed. The user approved the experiment and authorized F07. Read [17-back-ownership.md](17-back-ownership.md) for current implementation, actual validation and the required review stop. F06's [defer decision](../ui-ionic-fit.md) still applies. Do not commit or begin F08/F09 without the next user instruction; no physical native or real-AT acceptance is implied by browser results.
+**Current:** F01–F08 are committed. F09 is implemented and browser-verified, **uncommitted and stopped for user review**. The user authorized F09 after clarifying that visible progress and generic/cluttered composition were missing the mark. Read [19-adaptive-shell.md](19-adaptive-shell.md) for implementation, exact validation, retained failures, screenshots and the review stop. F06's [defer decision](../ui-ionic-fit.md) still applies. Do not commit or begin F10 without the next user instruction; no physical browser/native/PWA or real-AT acceptance is implied by browser results.
 
 Earlier F02/F03 results and their review stop are historical in [14](14-next-implementation-batch.md). Actual native/AT/live-service checks remain release evidence gaps. The original audit above is historical; do not restart completed tickets from its defect list.
 

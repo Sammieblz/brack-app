@@ -8,7 +8,7 @@ import { Camera, Xmark, CheckCircle, EditPencil, Sparks } from "iconoir-react";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { AppBackButton } from "@/components/AppBackButton";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 import { toast } from "sonner";
 import { useCoverScanner } from "@/hooks/useCoverScanner";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
@@ -75,18 +75,18 @@ const ScanCover = () => {
     return "text-red-500";
   };
 
-  const isMobile = useIsMobile();
+  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded");
 
   return (
     <MobileLayout>
-      {isMobile && (
+      {compactNavigation && (
         <MobileHeader
           title="Scan Cover"
           back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/add-book" }}
         />
       )}
       <div className="app-page-scan">
-        {!isMobile && (
+        {!compactNavigation && (
           <AppBackButton
             label="Back"
             ariaLabel="Go back"

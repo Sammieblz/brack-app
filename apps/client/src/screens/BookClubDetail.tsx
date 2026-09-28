@@ -38,7 +38,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { APP_ICONS } from "@/config/iconography";
 import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 import { toPlainRichTextPayload } from "@/lib/richText";
 import { cn } from "@/lib/utils";
 import { discoverReaders, type UserSearchResult } from "@/services/api/readers";
@@ -76,7 +76,7 @@ const BookClubDetail = () => {
   const { clubId } = useParams<{ clubId: string }>();
   const navigate = useNavigate();
   const confirm = useConfirmDialog();
-  const isMobile = useIsMobile();
+  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded");
   const { user, loading: authLoading } = useAuth();
   const readClub = useCallback(() => getClubDetail(clubId!), [clubId]);
   const { data: detail, loading: clubLoading, refreshing, error, refetch: loadClub } = useRetainedReaderResource(
@@ -162,14 +162,14 @@ const BookClubDetail = () => {
   if (loading) {
     return (
       <MobileLayout>
-        {isMobile && (
+        {compactNavigation && (
           <MobileHeader
             title="Book Club"
             back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/clubs" }}
           />
         )}
         <main className="app-page">
-          {!isMobile && <AppBackButton label="Back" ariaLabel="Go back" fallbackPath="/clubs" showLabel variant="outline" className="mb-4" />}
+          {!compactNavigation && <AppBackButton label="Back" ariaLabel="Go back" fallbackPath="/clubs" showLabel variant="outline" className="mb-4" />}
           <LoadingRegion loading label="Loading book club"><ClubDetailSkeleton /></LoadingRegion>
         </main>
       </MobileLayout>
@@ -179,7 +179,7 @@ const BookClubDetail = () => {
   if (!club || !detail) {
     return (
       <MobileLayout>
-        {isMobile && (
+        {compactNavigation && (
           <MobileHeader
             title="Book Club"
             back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/clubs" }}
@@ -194,14 +194,14 @@ const BookClubDetail = () => {
 
   return (
     <MobileLayout>
-      {isMobile && (
+      {compactNavigation && (
         <MobileHeader
           title={club.name}
           back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/clubs" }}
         />
       )}
       <main className="app-page">
-        {!isMobile && (
+        {!compactNavigation && (
           <AppBackButton
             label="Back"
             ariaLabel="Go back"
@@ -216,6 +216,7 @@ const BookClubDetail = () => {
         <LoadingRegion loading={false} refreshing={refreshing} label="Loading book club">
         <ClubHero
           detail={detail}
+          showTitle={!compactNavigation}
           onJoin={handleJoin}
           onRequest={handleRequest}
           onLeave={isMember && userRole !== "admin" ? handleLeave : undefined}
@@ -362,11 +363,13 @@ const BookClubDetail = () => {
 
 const ClubHero = ({
   detail,
+  showTitle,
   onJoin,
   onRequest,
   onLeave,
 }: {
   detail: ClubDetailResponse;
+  showTitle: boolean;
   onJoin: () => Promise<void>;
   onRequest: (message?: string) => Promise<void>;
   onLeave?: () => Promise<void>;
@@ -407,9 +410,9 @@ const ClubHero = ({
               )}
               {club.join_status === "requested" && <Badge variant="outline">Request pending</Badge>}
             </div>
-            <h1 className="font-display text-3xl font-semibold leading-tight sm:text-4xl">
+            {showTitle && <h1 className="font-display text-3xl font-semibold leading-tight sm:text-4xl">
               {club.name}
-            </h1>
+            </h1>}
             <p className="mt-2 max-w-3xl font-sans text-muted-foreground">
               {club.description || "A shared reading space for this group."}
             </p>

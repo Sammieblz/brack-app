@@ -4,22 +4,22 @@ import { BarcodeScannerFlow } from "@/components/BarcodeScannerFlow";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MobileHeader } from "@/components/MobileHeader";
 import { MobileLayout } from "@/components/MobileLayout";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 
 const ScanBarcode = () => {
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
+  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded");
 
   return (
     <MobileLayout>
-      {isMobile && (
+      {compactNavigation && (
         <MobileHeader
           title="Scan Barcode"
           back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/add-book" }}
         />
       )}
       <div className="app-page-scan">
-        {!isMobile && (
+        {!compactNavigation && (
           <AppBackButton
             label="Back"
             ariaLabel="Go back"

@@ -2,18 +2,18 @@ import { BookListManager } from "@/components/BookListManager";
 import { useAuth } from "@/hooks/useAuth";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 import { BookListGridSkeleton } from "@/components/skeletons/BookListCardSkeleton";
 import { LoadingRegion } from "@/components/loading/LoadingRegion";
 
 const BookLists = () => {
   const { user, loading } = useAuth();
-  const isMobile = useIsMobile();
+  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded");
 
   if (loading) {
     return (
       <MobileLayout>
-        {isMobile && <MobileHeader title="Book Lists" />}
+        {compactNavigation && <MobileHeader title="Book Lists" />}
         <main className="app-page">
           <LoadingRegion loading label="Loading your book lists">
             <BookListGridSkeleton />
@@ -29,7 +29,7 @@ const BookLists = () => {
 
   return (
     <MobileLayout>
-      {isMobile && <MobileHeader title="Book Lists" />}
+      {compactNavigation && <MobileHeader title="Book Lists" />}
       <main className="app-page">
         <BookListManager key={user.id} userId={user.id} />
       </main>

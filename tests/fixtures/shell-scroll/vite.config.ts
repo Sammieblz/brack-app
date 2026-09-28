@@ -17,6 +17,7 @@ const mockedDataModules = [
 ];
 const mockedComponentModules = [
   'components/AppSidebar', 'components/HeaderTimerWidget', 'components/ProfileDrawer',
+  'components/OfflineIndicator',
   'components/UserNotificationsPopover', 'components/AddToListDialog',
   'components/BadgeDetailsDialog', 'components/FloatingActionButton',
   'components/journey/JourneyOverview', 'components/journey/JourneyQuests',
@@ -46,6 +47,7 @@ export default defineConfig({
   }), autoprefixer()] } },
   server: {
     host: '127.0.0.1', port: 8082, strictPort: true,
+    hmr: false,
     fs: { allow: [path.resolve(__dirname, '../../..')] },
     // Unrelated unit-test edits must not trigger a stylesheet reload mid-run.
     watch: { ignored: ['**/*.{test,spec}.{ts,tsx}'] },

@@ -90,20 +90,23 @@ export const OfflineIndicator = () => {
   return (
     <>
       <Alert
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
         className={cn(
-          "fixed inset-x-4 bottom-[calc(max(env(safe-area-inset-bottom),24px)+96px)] z-40 mx-auto w-auto max-w-md border border-primary/25 bg-background/90 text-foreground shadow-lg backdrop-blur md:bottom-4 md:left-auto md:right-4 md:mx-0 md:w-[calc(100%-2rem)]",
+          "rounded-none border-x-0 border-b-0 border-t border-border bg-background px-4 py-2 text-foreground shadow-none",
           !isOnline && "border-primary/35",
           hasFailures && "border-destructive/40"
         )}
       >
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1">
+          <div className="flex min-w-0 flex-[1_1_14rem] items-center gap-2">
             {isOnline ? (
               <>
                 {hasFailures ? (
-                  <WarningTriangle className="h-4 w-4 text-destructive" />
+                  <WarningTriangle className="h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
                 ) : (
-                  <Refresh className="h-4 w-4 text-primary" />
+                  <Refresh className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                 )}
                 <AlertDescription className="min-w-0 font-sans leading-tight text-current">
                   {hasFailures ? (
@@ -127,7 +130,7 @@ export const OfflineIndicator = () => {
               </>
             ) : (
               <>
-                <WifiOff className="h-4 w-4 text-primary" />
+                <WifiOff className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                 <AlertDescription className="font-sans text-current">
                   You're offline. Reading changes save locally{pendingCount > 0 ? ` (${pendingCount} pending)` : ""}.
                 </AlertDescription>
@@ -136,14 +139,14 @@ export const OfflineIndicator = () => {
           </div>
           
           {isOnline && pendingCount > 0 && (
-            <div className="flex shrink-0 items-center justify-end gap-2">
+            <div className="ml-auto flex max-w-full flex-wrap items-center justify-end gap-2">
               {hasFailures && (
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={() => setReviewOpen(true)}
                   aria-label="Review reading changes"
-                  className="h-11 min-w-11"
+                  className="h-auto min-w-11 whitespace-normal"
                 >
                   Review
                 </Button>
@@ -155,17 +158,17 @@ export const OfflineIndicator = () => {
                   onClick={() => void handleSync(true)}
                   disabled={syncing}
                   aria-label={syncing ? "Syncing reading changes" : "Sync reading changes now"}
-                  className="h-11 min-w-11 bg-background/80 px-3"
+                  className="h-auto min-w-11 whitespace-normal bg-background/80 px-3"
                 >
                   {syncing ? (
                     <>
-                      <Refresh className="h-4 w-4 animate-spin min-[380px]:mr-1" />
-                      <span className="hidden min-[380px]:inline">Syncing...</span>
+                      <Refresh className="h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />
+                      <span>Syncing...</span>
                     </>
                   ) : (
                     <>
-                      <Refresh className="h-4 w-4 min-[380px]:mr-1" />
-                      <span className="hidden min-[380px]:inline">Sync now</span>
+                      <Refresh className="h-4 w-4" aria-hidden="true" />
+                      <span>Sync now</span>
                     </>
                   )}
                 </Button>

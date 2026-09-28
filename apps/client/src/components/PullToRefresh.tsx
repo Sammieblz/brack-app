@@ -120,11 +120,9 @@ export const PullToRefresh = ({ onRefresh, children, disabled = false }: PullToR
     }
   };
 
-  if (disabled || !isMobile) {
-    return <>{children}</>;
-  }
-
-  const visibleDistance = refreshing ? 48 : pullDistance;
+  // Keep the page ancestor mounted when resizing or disabling the gesture.
+  // Switching div -> Fragment remounts descendants and loses input focus/caret.
+  const visibleDistance = disabled || !isMobile ? 0 : refreshing ? 48 : pullDistance;
   const progress = Math.min(1, visibleDistance / PULL_THRESHOLD);
 
   return (

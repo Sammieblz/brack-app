@@ -14,6 +14,7 @@ import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { AppBackButton } from "@/components/AppBackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 import { MobileInput } from "@/components/mobile/MobileInput";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -312,6 +313,7 @@ const AddBook = () => {
   };
 
   const isMobile = useIsMobile();
+  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded");
   const suggestedGenres = [
     ...(habits?.genres || []),
     ...GENRES.filter((genre) => !(habits?.genres || []).includes(genre)),
@@ -323,14 +325,14 @@ const AddBook = () => {
         active={loading}
         message="Adding this book to your library..."
       />
-      {isMobile && (
+      {compactNavigation && (
         <MobileHeader
           title="Add Book"
           back={{ label: "Back", ariaLabel: "Go back", fallbackPath: "/my-books" }}
         />
       )}
       <div className="app-page-form">
-        {!isMobile && (
+        {!compactNavigation && (
           <AppBackButton
             label="Back"
             ariaLabel="Go back"
@@ -508,15 +510,13 @@ const AddBook = () => {
                     />
                   </div>
 
-                  {/* Spacer for fixed button */}
-                  <div className="h-24 md:h-4" />
                 </form>
 
-                {/* Fixed Save Button - Properly positioned above bottom nav */}
+                {/* Task action stays in the page's scroll flow, clear of shell chrome. */}
                 <div className={cn(
-                  "fixed left-0 right-0 z-40 bg-background/95 backdrop-blur-sm border-t border-border/50",
+                  "sticky bottom-0 z-40 bg-background/95 border-t border-border/50",
                   isMobile 
-                    ? "bottom-[calc(max(env(safe-area-inset-bottom),24px)+72px+16px)] px-4 py-3"
+                    ? "px-0 py-3"
                     : "relative bottom-0 px-0 py-4 border-t-0 bg-transparent"
                 )}>
                   <Button

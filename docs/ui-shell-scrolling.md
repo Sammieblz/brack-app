@@ -1,5 +1,7 @@
 # Application shell scrolling
 
+F09 update: [adaptive shell](ui-adaptive-shell.md) owns current runtime navigation/occupancy. `MobileLayout` retains one main/ancestor chain across resize; browser compact/medium windows have Menu, native/PWA use in-flow tabs, expanded windows use sidebar. Footer reserves its space/safe inset; main adds no guessed nav gap. Header measurement and single page-scroller rules below remain. Earlier breakpoint descriptions are historical where superseded by that contract.
+
 Scope: [issue #77](https://github.com/Sammieblz/brack-app/issues/77), the Library and Reader Journey header/page jump when scrolling down and then reversing direction.
 
 ## Root cause
@@ -23,10 +25,11 @@ The cross-browser regression also exposed a separate WebKit jump on entering Lea
 | --- | --- |
 | Vertical page scrolling | `MobileLayout` marks the page's single vertical owner with `data-app-scroll-container="true"`. Listen to or restore this container, not `window`. |
 | Page content | Library's `#library-scroll` and Journey's `#journey-scroll` identify content regions. They are not additional vertical page scrollers. `NativeScrollView` remains non-scrollable by default. |
-| Desktop header | `NativeHeader` retains its expanded, content-sized geometry. It does not shrink its title, remove its subtitle, resize actions, or subscribe to scroll position. |
+| Adaptive header | `NativeHeader` and `MobileHeader` retain content-sized geometry. Their width-based presentation and wrapping may change dimensions; scrolling alone does not shrink titles, remove subtitles or resize actions. Neither header subscribes to page scroll position. |
 | Header measurement | `useAppHeader` measures the complete header border box, including safe-area padding and secondary controls, and publishes `--app-header-height` on its nearest marked scroll owner. |
-| Safe area | `--app-safe-top` uses `env(safe-area-inset-top, 0px)` for both Capacitor and installed PWAs; ordinary web/desktop viewports report zero. The header reserves this space as internal top padding and sticks at `top: 0`, painting its background beneath the status bar. Do not put the same inset on both the scroll owner's padding and the sticky offset: browsers add them. |
-| Revealing content | The owner's `scroll-padding-top` includes the measured complete header height and a `0.75rem` breathing gap. Safe-area padding is already included in that measurement. |
+| Safe area | `--app-safe-top` uses the viewport's actual `env(safe-area-inset-top, 0px)` value, without inferring it from runtime. The header reserves this space as internal top padding and sticks at `top: 0`, painting its background beneath the status bar. Do not put the same inset on both the scroll owner's padding and sticky offset. Footer owns the bottom inset when shown; editable focus hides the footer and transfers bottom clearance to main. Native inset interaction remains a device test. |
+| Footer and local actions | Tabs, session controls and sync status occupy normal flow in one measured footer. Its full height supplies `--app-shell-bottom-height`; main does not reserve a second estimated tab height. At large text/short heights the footer can scroll as its own bounded chrome region. Visible local floating actions reserve their own page clearance. |
+| Revealing content | The owner's `scroll-padding-top` includes the measured complete header height and a `0.75rem` breathing gap. Safe-area padding is already included in that measurement. F09 rechecks focused content on width, available viewport, footer and header-size changes; immediate scrolling preserves focus/caret and excludes controls inside the header. Pinch zoom remains browser-owned. |
 | Journey fallback status | The sticky current-reader panel uses the same header-height + `0.75rem` sum. Do not restore a fixed pixel/rem estimate for this offset or count the safe area twice. |
 | Horizontal navigation | Journey reveals an off-screen selected tab by scrolling only the rail horizontally. Selection, including keyboard selection, does not request a smooth vertical page movement. |
 | Scrollbar space | The application scroll owner reserves a stable scrollbar gutter where supported, avoiding width changes as content becomes scrollable. |
@@ -34,7 +37,7 @@ The cross-browser regression also exposed a separate WebKit jump on entering Lea
 
 The header measurement is layout-driven, not scroll-driven. `ResizeObserver` observes its border box so delayed secondary content, font loading, text scaling, and sidebar-induced wrapping update the offset. Measuring only `contentRect.height` would omit padding and borders. The header's own dimensions must not depend on `--app-header-height`, which would create a measurement/layout feedback loop.
 
-Journey renders its tab rail from the first loading frame, with tabs disabled until data is available. This reserves the navigation footprint without a second header-height jump when the request completes. Mobile page padding and scroll-padding also reserve bottom-navigation clearance (including the safe inset) so the last focusable action can be fully revealed.
+Journey renders its tab rail from the first loading frame, with tabs disabled until data is available. This reserves the navigation footprint without a second header-height jump when the request completes. F09's footer occupies its own height outside main, including bottom safe-area padding; do not restore the former mobile padding estimate for global bottom navigation. The scroller retains focus breathing space and any visible local-action clearance.
 
 Keep the variable scoped to its scroll container rather than the document root. A header must release its observer and restore/remove its published value when it unmounts. Responsive navigation can replace the desktop header with the mobile header without leaving another route's dimensions behind.
 

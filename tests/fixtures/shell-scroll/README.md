@@ -29,6 +29,11 @@ has its real sizing/collapse behavior with minimal contents. This is a geometry
 regression, not coverage of remote data, Journey panel internals, or native OS
 gestures.
 
+F09 mounts reading utilities inside the shell. This older geometry fixture
+declares an inactive timer and replaces the offline status boundary; it does
+not establish timer, sync or destination-menu behavior. The adaptive-shell
+fixture exercises those real controls with local data.
+
 The fixture uses local fallback fonts and deliberately omits the application's
 external Google Fonts stylesheet. `document.fonts.ready` only settles fonts in
 this fixture. A deterministic late font-family/size/line-height change tests

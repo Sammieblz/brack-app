@@ -9,7 +9,7 @@ import { useRetainedReaderResource } from "@/hooks/useRetainedReaderResource";
 import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { AppBackButton } from "@/components/AppBackButton";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -49,7 +49,7 @@ export default function ReadingHistory() {
       return next;
     }, { replace: true });
   };
-  const isMobile = useIsMobile();
+  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded");
 
   useEffect(() => {
     if (authLoading) return;
@@ -82,7 +82,7 @@ export default function ReadingHistory() {
 
   return (
     <MobileLayout>
-      {isMobile && (
+      {compactNavigation && (
         <MobileHeader
           title="Reading History"
           back={{
@@ -93,7 +93,7 @@ export default function ReadingHistory() {
         />
       )}
       <div className="app-page">
-        {!isMobile && (
+        {!compactNavigation && (
           <div className="mb-6 flex items-center gap-4">
             <AppBackButton
               label="Back"

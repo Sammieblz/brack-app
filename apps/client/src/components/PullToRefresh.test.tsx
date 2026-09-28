@@ -29,6 +29,25 @@ function renderRefresh(disabled = false) {
 describe('Pull-to-refresh contact ownership', () => {
   beforeEach(() => { vi.clearAllMocks(); mocks.mobile = true; });
 
+  it('retains the exact input, draft, focus and caret across capability changes', () => {
+    const refresh = vi.fn().mockResolvedValue(undefined);
+    const task = (disabled = false) => <PullToRefresh onRefresh={refresh} disabled={disabled}><input aria-label="Draft" defaultValue="Reading thought" /></PullToRefresh>;
+    const { rerender } = render(task());
+    const input = screen.getByRole('textbox', { name: 'Draft' }) as HTMLInputElement;
+    input.focus();
+    input.setSelectionRange(2, 7);
+    for (const mobile of [false, true]) {
+      mocks.mobile = mobile;
+      for (const disabled of [true, false]) {
+        rerender(task(disabled));
+        expect(screen.getByRole('textbox', { name: 'Draft' })).toBe(input);
+        expect(input).toHaveFocus();
+        expect(input).toHaveValue('Reading thought');
+        expect([input.selectionStart, input.selectionEnd]).toEqual([2, 7]);
+      }
+    }
+  });
+
   it('refreshes once after an intentional downward pull at the scroll boundary', async () => {
     const { surface, refresh } = renderRefresh();
     touch(surface, 'touchStart', 150, 50);
