@@ -5,13 +5,12 @@ const device = vi.hoisted(() => ({
   impact: vi.fn(), notification: vi.fn(),
   selectionStart: vi.fn(), selectionChanged: vi.fn(), selectionEnd: vi.fn(),
 }));
-vi.mock('@capacitor/core', () => ({ Capacitor: { isNativePlatform: () => true, isPluginAvailable: () => true } }));
+vi.mock('@capacitor/core', () => ({ Capacitor: { isNativePlatform: () => true, getPlatform: () => 'android', isPluginAvailable: () => true } }));
 vi.mock('@capacitor/haptics', () => ({
   Haptics: device,
   ImpactStyle: { Light: 'LIGHT', Medium: 'MEDIUM', Heavy: 'HEAVY' },
   NotificationType: { Success: 'SUCCESS', Error: 'ERROR' },
 }));
-vi.mock('@/hooks/usePlatform', () => ({ usePlatform: () => ({ isIOS: false }) }));
 import { ContextMenuNative } from './context-menu-native';
 
 class TestPointerEvent extends MouseEvent {

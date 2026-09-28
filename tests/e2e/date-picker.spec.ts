@@ -37,7 +37,7 @@ async function openFixture(page: Page, query = '', width = 1024) {
 
 async function openPicker(page: Page, label = 'Reading date') {
   await page.getByRole('button', { name: triggerName(page, label), exact: true }).click();
-  const name = page.viewportSize()!.width < 768 ? label : triggerName(page, label);
+  const name = triggerName(page, label);
   const dialog = page.getByRole('dialog', { name, exact: true });
   await expect(dialog).toBeVisible();
   await expect(dialog).toHaveAccessibleName(name);
@@ -144,6 +144,47 @@ test('invalid and partial input is preserved without saving the previous committ
   await expect(page.getByRole('button', { name: 'Save reading dates' })).toBeEnabled();
   await expect(page.getByTestId('committed-date')).toHaveText('2000-02-29');
 });
+
+for (const initialWidth of [390, 1280]) {
+  test(`an open picker preserves an invalid draft and focused year while resizing from ${initialWidth}px`, async ({ page }) => {
+    await openFixture(page, '', initialWidth);
+    const input = page.getByRole('textbox', { name: 'Reading date', exact: true });
+    await input.fill('02/');
+    await input.press('Tab');
+    const dialog = await openPicker(page);
+    const initialPresentation = initialWidth === 390 ? 'dialog' : 'popover';
+    await expect(dialog).toHaveAttribute('data-date-picker-presentation', initialPresentation);
+    await dialog.getByRole('button', { name: 'Choose year', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Next decade', exact: true }).click();
+    const year = dialog.getByRole('button', { name: '2000', exact: true });
+    await expect(year).toBeFocused();
+    await year.press('ArrowRight');
+    const nextYear = dialog.getByRole('button', { name: '2001', exact: true });
+    await expect(nextYear).toBeFocused();
+
+    for (const width of [834, initialWidth === 390 ? 1280 : 390]) {
+      await page.setViewportSize({ width, height: 650 });
+      await expect(dialog).toHaveCount(1);
+      await expect(dialog).toBeVisible();
+      await expect(dialog).toHaveAttribute('data-date-picker-presentation', initialPresentation);
+      await expect(nextYear).toBeFocused();
+      await expect(page.getByTestId('committed-date')).toHaveText('1999-02-05');
+      await expectNoHorizontalOverflow(page);
+    }
+
+    await nextYear.press('Escape');
+    await expect(dialog).not.toBeVisible();
+    const trigger = page.getByRole('button', { name: triggerName(page), exact: true });
+    await expect(trigger).toBeFocused();
+    await expect(input).toHaveValue('02/');
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByRole('button', { name: 'Save reading dates' })).toBeDisabled();
+    const reopened = await openPicker(page);
+    await expect(reopened).toHaveAttribute('data-date-picker-presentation', initialWidth === 390 ? 'popover' : 'dialog');
+    await expect(dateButton(reopened, 1999, 2, 5)).toBeFocused();
+    await expect(page.getByTestId('saved-date')).toHaveText('not saved');
+  });
+}
 
 test('optional dates clear, while required empty dates prevent submission', async ({ page }) => {
   await openFixture(page);
@@ -337,6 +378,42 @@ test('a short mobile viewport retains reachable footer actions with safe-area pa
   await dateButton(dialog, 1999, 2, 20).click();
   await expect(dialog).not.toBeVisible();
   await expect(page.getByTestId('committed-date')).toHaveText('1999-02-20');
+});
+
+test('an extremely short viewport scrolls the whole calendar instead of clipping enlarged actions', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await openFixture(page, 'text=200', 390);
+  await page.setViewportSize({ width: 390, height: 160 });
+  const dialog = await openPicker(page);
+  await expect(dialog).toHaveAttribute('data-scroll-whole-panel', 'true');
+  await expectNoHorizontalOverflow(page);
+  await dialog.getByRole('button', { name: 'Choose year', exact: true }).click();
+  await expect(dialog.getByRole('button', { name: '1999', exact: true })).toBeFocused();
+  const cancel = dialog.getByRole('button', { name: 'Cancel', exact: true });
+  await cancel.scrollIntoViewIfNeeded();
+  const bounds = await cancel.boundingBox();
+  expect(bounds).not.toBeNull();
+  expect(bounds!.y).toBeGreaterThanOrEqual(0);
+  expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(160);
+  await cancel.click();
+  await expect(dialog).not.toBeVisible();
+  await expect(page.getByTestId('committed-date')).toHaveText('1999-02-05');
+});
+
+test.describe('touch tablet calendar', () => {
+  test.use({ hasTouch: true });
+
+  test('uses the adaptive sheet and preserves the selected-day focus at834px', async ({ page }) => {
+    await openFixture(page, '', 834);
+    const dialog = await openPicker(page);
+    await expect(dialog).toHaveAttribute('data-date-picker-presentation', 'dialog');
+    await expect(dialog).toHaveAttribute('data-presentation', 'sheet');
+    await expect(dateButton(dialog, 1999, 2, 5)).toBeFocused();
+    await expectNoHorizontalOverflow(page);
+    await dateButton(dialog, 1999, 2, 6).click();
+    await expect(dialog).not.toBeVisible();
+    await expect(page.getByTestId('committed-date')).toHaveText('1999-02-06');
+  });
 });
 
 for (const width of [390, 1024]) {

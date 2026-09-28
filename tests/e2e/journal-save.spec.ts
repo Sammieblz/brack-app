@@ -88,6 +88,28 @@ async function submit(page: Page, dialog: Locator, expectedCount: number) {
 }
 
 for (const kind of ['full', 'quick'] as const) {
+  test(`${kind}: resizing an open task retains the actual field, selection and draft`, async ({ page }) => {
+    await load(page, '', 390);
+    const dialog = await openEditor(page, kind, true);
+    const title = dialog.getByLabel(/Title \(Optional\)/i);
+    await title.fill(draftTitle);
+    const original = await title.elementHandle();
+    await title.evaluate((node: HTMLInputElement) => node.setSelectionRange(4, 9));
+    for (const size of [{ width: 834, height: 1000 }, { width: 1280, height: 800 }, { width: 390, height: 360 }]) {
+      await page.setViewportSize(size);
+      await expect(title).toHaveValue(draftTitle);
+      await expect(title).toBeFocused();
+      expect(await title.evaluate((node, previous) => node === previous, original)).toBe(true);
+      expect(await title.evaluate((node: HTMLInputElement) => [node.selectionStart, node.selectionEnd])).toEqual([4, 9]);
+      await expect(dialog).toHaveCount(1);
+    }
+    await title.press('Escape');
+    await expect(dialog.getByText('Discard this draft?', { exact: true })).toBeVisible();
+    expect((await snapshot(page)).writes).toHaveLength(0);
+    await dialog.getByRole('button', { name: 'Keep editing', exact: true }).click();
+    await expect(title).toHaveValue(draftTitle);
+  });
+
   test(`${kind}: opening an empty editor and cancelling does not prompt to discard`, async ({ page }) => {
     await load(page, '', 390);
     const dialog = await openEditor(page, kind, true);

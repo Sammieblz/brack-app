@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +53,7 @@ const formatDate = (dateString: string) => {
 export const PostCard = ({ post, onLike, onDelete, onBlocked, compact }: PostCardProps) => {
   const [showComments, setShowComments] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const actionsTriggerRef = useRef<HTMLButtonElement>(null);
   const [shareCount, setShareCount] = useState(post.share_count || 0);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -180,6 +181,9 @@ export const PostCard = ({ post, onLike, onDelete, onBlocked, compact }: PostCar
                 size="icon"
                 className="h-9 w-9"
                 aria-label="Post options"
+                ref={actionsTriggerRef}
+                aria-haspopup="dialog"
+                aria-expanded={actionsOpen}
                 onClick={() => setActionsOpen(true)}
               >
                 <AppIcon icon={APP_ICONS.common.more} variant="action" />
@@ -250,6 +254,7 @@ export const PostCard = ({ post, onLike, onDelete, onBlocked, compact }: PostCar
         </article>
       </Card>
       <ActionSheet
+        returnFocusRef={actionsTriggerRef}
         open={actionsOpen}
         onOpenChange={setActionsOpen}
         title="Post Options"

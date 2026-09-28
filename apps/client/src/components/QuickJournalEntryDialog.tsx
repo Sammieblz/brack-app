@@ -1,5 +1,6 @@
 import { useId, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
+import { AdaptiveDialogContent as DialogContent, AdaptiveDialogHeader as DialogHeader, AdaptiveDialogTitle as DialogTitle, AdaptiveDialogDescription as DialogDescription, AdaptiveDialogFooter } from "@/components/ui/adaptive-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,7 +31,7 @@ export const QuickJournalEntryDialog = (props: QuickJournalEntryDialogProps) => 
 
   return (
     <Dialog open={open} onOpenChange={editor.requestOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90dvh] overflow-y-auto"
+      <DialogContent
         onOpenAutoFocus={() => { returnFocus.current = document.activeElement as HTMLElement | null; }}
         onCloseAutoFocus={(event) => {
           if (returnFocus.current?.isConnected) {
@@ -91,10 +92,10 @@ export const QuickJournalEntryDialog = (props: QuickJournalEntryDialogProps) => 
             </div>
           </fieldset>
           <JournalEditorFeedback {...editor} editorId={editorId} pageId={`${id}-page`} />
-          <div className="flex flex-wrap gap-2 justify-end pt-2">
+          <AdaptiveDialogFooter>
             <Button type="button" variant="outline" onClick={() => editor.requestOpenChange(false)} disabled={editor.saving || editor.picking || editor.uploadingPhoto || discardRequested}>Skip</Button>
             <Button type="submit" aria-describedby={editor.error && !editor.errorField ? `${editorId}-error` : undefined} disabled={busy || discardRequested || !draft.richText.content.trim()}>{editor.saving ? "Saving…" : "Save Entry"}</Button>
-          </div>
+          </AdaptiveDialogFooter>
         </form>
       </DialogContent>
     </Dialog>

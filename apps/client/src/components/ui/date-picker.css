@@ -1,3 +1,25 @@
+/* Dates keep their short actions visible and use one calendar-body scroller. */
+.adaptive-dialog[data-date-picker] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+  padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
+  background: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+}
+
+/* At extreme text sizes/short heights, every control remains scrollable. */
+[data-date-picker-presentation][data-scroll-whole-panel="true"] {
+  display: block;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+[data-date-picker-presentation][data-scroll-whole-panel="true"] .date-picker-body {
+  overflow: visible;
+}
+
 /* RDP's programmatic arrow-key focus does not always match :focus-visible. */
 [data-date-picker] [role="grid"] button:focus {
   outline: 2px solid hsl(var(--ring));

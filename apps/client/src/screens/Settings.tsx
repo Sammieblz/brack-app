@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { SupportPageLink } from "@/components/SupportPageLink";
 import { MobileLayout } from "@/components/MobileLayout";
@@ -120,6 +120,7 @@ const Settings = () => {
   const isMobile = useIsMobile();
   const { triggerHaptic } = useHapticFeedback();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
+  const signOutTriggerRef = useRef<HTMLButtonElement>(null);
   const [activeSection, setActiveSection] = useState<SettingsSection>(
     () => getSettingsSection(searchParams.get('section')) ?? 'account'
   );
@@ -307,6 +308,9 @@ const Settings = () => {
             <Button
               variant="outline"
               disabled={authLoading}
+              ref={signOutTriggerRef}
+              aria-haspopup="dialog"
+              aria-expanded={showSignOutDialog}
               className="w-full border-primary/35 bg-primary/10 text-primary hover:border-primary/50 hover:bg-primary/15 hover:text-primary focus-visible:ring-primary/40"
               onClick={() => {
                 triggerHaptic("medium");
@@ -322,6 +326,7 @@ const Settings = () => {
 
       {/* Sign Out Confirmation Dialog */}
       <MobileAlertDialog
+        returnFocusRef={signOutTriggerRef}
         open={showSignOutDialog}
         onOpenChange={setShowSignOutDialog}
         title="Sign Out"

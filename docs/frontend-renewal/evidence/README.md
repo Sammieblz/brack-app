@@ -1,5 +1,7 @@
 # Current-state fixture observations
 
+F08's active evidence is in [checkpoint18](../18-adaptive-overlays.md), the [adaptive contract](../../ui-adaptive-overlays.md) and [action/Goals audit](f08-action-goals.md). Its new fixture screenshots and final browser traces stay in the local Playwright artifact directories named by the checkpoint; these are synthetic renderer observations, not physical-device captures.
+
 F07 implementation evidence is recorded separately in [navigation ownership](f07-navigation-ownership.md) and [overlay ownership](f07-overlay-ownership.md), with the current results/review stop in [checkpoint 17](../17-back-ownership.md). It preserves the distinction between synthetic browser policy checks and native-device acceptance.
 
 These Library images preserve the original audit baseline. The later F06 experiment has its own [retained artifacts](ionic-fit/README.md), [modal evidence](ionic-fit-modal.md), [navigation evidence](ionic-fit-navigation.md) and [bundle comparison](ionic-fit-bundle.md); it does not replace these baseline captures or represent a production redesign.

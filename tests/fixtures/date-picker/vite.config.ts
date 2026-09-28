@@ -25,6 +25,7 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 8083,
     strictPort: true,
+    hmr: false,
     fs: { allow: [path.resolve(__dirname, '../../..')] },
     watch: { ignored: ['**/*.{test,spec}.{ts,tsx}'] },
   },

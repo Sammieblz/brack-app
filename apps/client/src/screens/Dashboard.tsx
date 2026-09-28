@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Link, useNavigate } from "react-router-dom";
 import { Clock, Medal1st, NavArrowRight } from "iconoir-react";
@@ -14,7 +14,7 @@ import { MobileLayout } from "@/components/MobileLayout";
 import { MobileHeader } from "@/components/MobileHeader";
 import { NativeHeader } from "@/components/NativeHeader";
 import { NativeScrollView } from "@/components/NativeScrollView";
-import { GoalsSheet } from "@/components/GoalsSheet";
+import { GoalsSheet, GoalsSheetTrigger } from "@/components/GoalsSheet";
 import { AppIcon } from "@/components/ui/app-icon";
 import { ReaderHud } from "@/components/ReaderHud";
 import { DailyFocusCard } from "@/components/DailyFocusCard";
@@ -79,6 +79,8 @@ const Dashboard = () => {
     refetch,
   } = useDashboardHomeData(user?.id, gamificationEnabled);
   const [progressBook, setProgressBook] = useState<BookType | null>(null);
+  const [goalsOpen, setGoalsOpen] = useState(false);
+  const goalsTriggerRef = useRef<HTMLButtonElement>(null);
   const [usingFreeze, setUsingFreeze] = useState(false);
   const [streakClock, setStreakClock] = useState(Date.now);
 
@@ -245,17 +247,20 @@ const Dashboard = () => {
   ) : undefined;
 
   const hasAnyBooks = (dashboardHome?.stats.totalBooks ?? 0) > 0;
+  const goalsAction = <GoalsSheetTrigger ref={goalsTriggerRef} aria-haspopup="dialog"
+    aria-expanded={goalsOpen} onClick={() => setGoalsOpen(true)} />;
 
   return (
     <MobileLayout>
+      <GoalsSheet open={goalsOpen} onOpenChange={setGoalsOpen} trigger={null} returnFocusRef={goalsTriggerRef} />
       <PullToRefresh onRefresh={handleRefresh}>
         {isMobile ? (
-          <MobileHeader title="Home" action={<GoalsSheet />} secondary={readerHud} />
+          <MobileHeader title="Home" action={goalsAction} secondary={readerHud} />
         ) : (
           <NativeHeader
             title={profile?.display_name ? `Welcome back, ${profile.display_name}` : "Welcome back"}
             subtitle="Your next page, quest, and reward are ready"
-            action={<GoalsSheet />}
+            action={goalsAction}
             secondary={readerHud}
             showTimerAction={false}
           />

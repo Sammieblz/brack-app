@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { AdaptiveDialogBody, AdaptiveDialogContent, AdaptiveDialogDescription, AdaptiveDialogHeader, AdaptiveDialogTitle } from "@/components/ui/adaptive-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
@@ -159,15 +160,16 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
                     Create Goal
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-h-[min(42rem,calc(var(--app-viewport-height,100dvh)-2rem))] max-w-md overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="font-display">Create New Goal</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
+                <AdaptiveDialogContent size="compact">
+                  <AdaptiveDialogHeader>
+                    <AdaptiveDialogTitle>Create New Goal</AdaptiveDialogTitle>
+                    <AdaptiveDialogDescription>Choose your reading target and the dates you want to work toward it.</AdaptiveDialogDescription>
+                  </AdaptiveDialogHeader>
+                  <AdaptiveDialogBody className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Goal Type</Label>
+                      <Label htmlFor={`${targetInputId}-type`}>Goal Type</Label>
                       <Select value={goalType} onValueChange={(value) => setGoalType(value as GoalType)}>
-                        <SelectTrigger>
+                        <SelectTrigger id={`${targetInputId}-type`}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -179,9 +181,9 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Period</Label>
+                      <Label htmlFor={`${targetInputId}-period`}>Period</Label>
                       <Select value={periodType} onValueChange={(value) => setPeriodType(value as PeriodType)}>
-                        <SelectTrigger>
+                        <SelectTrigger id={`${targetInputId}-period`}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -237,8 +239,8 @@ export const GoalManager = ({ userId }: GoalManagerProps) => {
                     <Button onClick={handleCreate} disabled={!startDateValid || !endDateValid} className="w-full">
                       Create Goal
                     </Button>
-                  </div>
-                </DialogContent>
+                  </AdaptiveDialogBody>
+                </AdaptiveDialogContent>
               </Dialog>
             </div>
           </div>

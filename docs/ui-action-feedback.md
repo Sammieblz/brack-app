@@ -22,6 +22,8 @@ The native path checks `Capacitor.isNativePlatform()` and `Capacitor.isPluginAva
 
 The installed Capacitor 7 plugin declarations and native implementation were checked against the [version 7 Haptics documentation](https://capacitorjs.com/docs/v7/apis/haptics) on 2026-09-27. Keep the full selection lifecycle when updating the plugin; `selectionChanged()` alone does not prepare its native generator.
 
+F08 moves ActionSheet presentation to the shared adaptive Radix surface while preserving these feedback rules. `AdaptiveDialogContent.openHaptic` separates the opening request from the full `disableHaptic` opt-out, so a ContextMenu hold still has one feedback owner. ActionSheet also owns uncontrolled close state and can restore an external invoker without stealing focus from a new dialog. The [action/Goals evidence](frontend-renewal/evidence/f08-action-goals.md) records the focused checks; the [adaptive contract](ui-adaptive-overlays.md) owns geometry and scroll behavior.
+
 ## Long-press ownership
 
 [`useLongPress`](../apps/client/src/hooks/useLongPress.ts) is a local optional context-action recognizer, not the future F07 global gesture arbiter. Its only production consumer is [`ContextMenuNative`](../apps/client/src/components/ui/context-menu-native.tsx), currently used by [`BookCard`](../apps/client/src/components/BookCard.tsx).

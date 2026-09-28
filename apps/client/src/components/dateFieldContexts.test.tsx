@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Book, Goal } from "@/types";
 import { todayDateOnly } from "@/lib/dateOnly";
+import { ConfirmDialogProvider } from "@/contexts/ConfirmDialogContext";
 
 interface DateFieldContract {
   id: string;
@@ -174,7 +175,7 @@ describe("date-field context contracts", () => {
   });
 
   it("bounds historical book dates independently and preserves empty optional values as null", async () => {
-    render(<MemoryRouter initialEntries={["/edit-book/book"]}><Routes><Route path="/edit-book/:id" element={<EditBook />} /><Route path="/book/:id" element={<p>Saved book</p>} /></Routes></MemoryRouter>);
+    render(<ConfirmDialogProvider><MemoryRouter initialEntries={["/edit-book/book"]}><Routes><Route path="/edit-book/:id" element={<EditBook />} /><Route path="/book/:id" element={<p>Saved book</p>} /></Routes></MemoryRouter></ConfirmDialogProvider>);
     await screen.findByLabelText("Date Started");
     expect(mocks.dateFields.get("date_started")).toMatchObject({ maxDate: "1999-02-10", showToday: true });
     expect(mocks.dateFields.get("date_finished")).toMatchObject({ minDate: "1999-02-05", maxDate: todayDateOnly(), showToday: true });

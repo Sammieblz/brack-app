@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavArrowDown } from "iconoir-react";
 import { Button } from "@/components/ui/button";
@@ -140,6 +140,7 @@ const MyBooks = () => {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedBookIds, setSelectedBookIds] = useState<string[]>([]);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const bulkDeleteTriggerRef = useRef<HTMLButtonElement>(null);
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
 
   const loadMoreRef = useInfiniteScroll({
@@ -969,6 +970,9 @@ const MyBooks = () => {
             variant="destructive"
             size="sm"
             onClick={() => setBulkDeleteOpen(true)}
+            ref={bulkDeleteTriggerRef}
+            aria-haspopup="dialog"
+            aria-expanded={bulkDeleteOpen}
             disabled={selectedBookIds.length === 0}
             className="rounded-full"
           >
@@ -1141,6 +1145,7 @@ const MyBooks = () => {
       </PullToRefresh>
 
       <MobileAlertDialog
+        returnFocusRef={bulkDeleteTriggerRef}
         open={bulkDeleteOpen}
         onOpenChange={setBulkDeleteOpen}
         title={`Delete ${selectedBookIds.length} selected books?`}

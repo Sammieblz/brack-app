@@ -32,7 +32,7 @@ Positive router `idx`, non-default key and browser history length are insufficie
 - Library Back exits selection/reorder mode before navigation. Mode guards use priority 100; task guards use the default priority.
 - Existing journal pending/dirty guards remain owners of journal closure. Confirmation dismissal resolves to Keep editing; discarded route changes invalidate old asynchronous responses.
 - Shared Dialog, AlertDialog, Sheet, Drawer, Popover, Select, menu variants and their direct primitive consumers register content with `useBackLayer`. A new custom overlay must register its actual dismissable content, not infer membership from arbitrary roles or z-index.
-- Goals uses a controlled bottom Sheet with a visible Close button. The obsolete dismissable wrappers and disconnected delayed pull hook were removed after verifying their consumers; a tested handle-only drag interaction belongs to F08.
+- F08 Goals uses one controlled adaptive Dialog with a visible Close button and a stable Dashboard parent. The obsolete dismissable wrappers and disconnected delayed pull hook remain removed. No drag handle is implied; [adaptive surfaces](ui-adaptive-overlays.md) preserve the same Back registration and primitive Escape policy.
 
 These guards cover app/native Back, not every link, browser reload or browser Back. They do not add persistence for every form. Timer state remains in its existing provider; the new synthetic fixture checks only that its representative timer/draft state survives navigation.
 

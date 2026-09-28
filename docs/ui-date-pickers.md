@@ -8,6 +8,8 @@ Use the shared `components/ui/date-picker.tsx` for active date fields. Readers c
 
 The picker uses a constrained popover on larger screens and a scrollable accessible sheet on compact screens. Essential day, month, year, and navigation controls have at least 44px targets. The compact layout must remain inside the viewport at 320px and 200% text, including its confirmation/dismissal controls. Respect viewport height, safe areas, focus restoration, and reduced motion; do not add decorative movement to keyboard navigation.
 
+F08 uses the [adaptive-overlay contract](ui-adaptive-overlays.md): compact and medium/coarse-pointer windows choose Dialog; suitable wider/fine-pointer windows choose a modal Popover. The family stays mounted throughout an open session, preserving month/year browsing, focused control and invalid input through resize. Reopening reevaluates presentation. Available geometry comes from UIEnvironment, without independent viewport listeners. Actions remain fixed when they fit; extreme short-height/large-text conditions use one whole-panel scroller. The localized accessible name is consistent across both families.
+
 Mobile native date input is not automatically preferable: use it only when the target operating system provides equivalent direct month/year navigation. The existing `MobileDatePicker` is a compatibility input, not the active DOB, goal, or historical-book implementation. Native input value tests verify canonical value handling, not the usability or appearance of an operating-system picker.
 
 ## Locale and validation

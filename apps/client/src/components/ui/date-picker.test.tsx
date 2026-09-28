@@ -4,7 +4,10 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DatePicker } from "./date-picker";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 function Controlled({ initial = "1999-02-05", required = false, minDate, maxDate }: {
   initial?: string; required?: boolean; minDate?: string; maxDate?: string;
@@ -118,5 +121,43 @@ describe("DatePicker's editable date contract", () => {
     expect(onChange).not.toHaveBeenCalled();
     expect(onValidityChange).toHaveBeenLastCalledWith(false);
     expect(screen.getByRole("alert")).toHaveTextContent("Choose a date");
+  });
+
+  it.each([390, 1280])("preserves an invalid draft, browsing state and focus when an open picker resizes from %spx", async (initialWidth) => {
+    const user = userEvent.setup();
+    vi.stubGlobal("innerWidth", initialWidth);
+    render(<Controlled />);
+    const input = screen.getByRole("textbox", { name: "Reading date" });
+    const trigger = screen.getByRole("button", { name: "Choose date: Reading date" });
+    fireEvent.change(input, { target: { value: "02/" } });
+    fireEvent.blur(input);
+    await user.click(trigger);
+    const dialog = screen.getByRole("dialog");
+    const initialPresentation = initialWidth === 390 ? "dialog" : "popover";
+    expect(dialog).toHaveAttribute("data-date-picker-presentation", initialPresentation);
+    await user.click(within(dialog).getByRole("button", { name: "Choose year" }));
+    await user.click(within(dialog).getByRole("button", { name: "Next decade" }));
+    const year = within(dialog).getByRole("button", { name: "2000" });
+    await waitFor(() => expect(year).toHaveFocus());
+
+    for (const width of [834, initialWidth === 390 ? 1280 : 390]) {
+      vi.stubGlobal("innerWidth", width);
+      fireEvent(window, new Event("resize"));
+      expect(screen.getByRole("dialog")).toBe(dialog);
+      expect(dialog).toHaveAttribute("data-date-picker-presentation", initialPresentation);
+      expect(year).toHaveFocus();
+      expect(input).toHaveValue("02/");
+      expect(screen.getByTestId("value")).toHaveTextContent("1999-02-05");
+    }
+
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(input).toHaveValue("02/");
+    expect(input).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+    await user.click(trigger);
+    const reopened = screen.getByRole("dialog");
+    expect(reopened).toHaveAttribute("data-date-picker-presentation", initialWidth === 390 ? "popover" : "dialog");
+    expect(within(reopened).getByRole("grid")).toHaveAccessibleName("February 1999");
   });
 });

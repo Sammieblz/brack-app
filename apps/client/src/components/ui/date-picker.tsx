@@ -1,10 +1,12 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Calendar as CalendarIcon, Xmark } from "iconoir-react";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { AdaptiveDialogContent, AdaptiveDialogDescription, AdaptiveDialogTitle } from "@/components/ui/adaptive-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useBackLayer } from "@/hooks/useBackLayer";
+import { useUIEnvironment } from "@/hooks/useUIEnvironment";
+import { useOverlayViewport } from "@/hooks/useOverlayViewport";
+import { prefersSheetPresentation } from "@/lib/overlayViewport";
 import { getDateInputFormat, normalizeDateOnly, todayDateOnly, toLocalDate, validateDateOnly, type DateOnlyInput } from "@/lib/dateOnly";
 import { cn } from "@/lib/utils";
 import { DatePickerCalendar } from "./date-picker-calendar";
@@ -52,15 +54,29 @@ export const DatePicker = ({
   const [draft, setDraft] = useState(() => selected ? format.format(selected) : String(value ?? ""));
   const [touched, setTouched] = useState(false);
   const [open, setOpen] = useState(false);
+  const environment = useUIEnvironment();
+  const viewport = useOverlayViewport();
+  // Keep one primitive/focus scope mounted throughout an open interaction.
+  // Reconsider its family on the next opening, after focus has returned.
+  const [presentation, setPresentation] = useState(() => prefersSheetPresentation(environment) ? "dialog" : "popover");
+  const [scrollWholePanel, setScrollWholePanel] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const mobilePanelRef = useBackLayer(panelRef);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const [panelElement, setPanelElement] = useState<HTMLDivElement | null>(null);
+  const attachPanel = useCallback((element: HTMLDivElement | null) => {
+    panelRef.current = element;
+    setPanelElement(element);
+  }, []);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
   const emitted = useRef<string | null | undefined>(undefined);
   const previousFormat = useRef(format);
   const previousValidity = useRef<boolean>();
-  const isMobile = useIsMobile();
-  const [viewport, setViewport] = useState<{ height: number; bottom: number }>();
+  const changeOpen = (next: boolean) => {
+    if (next && !open) setPresentation(prefersSheetPresentation(environment) ? "dialog" : "popover");
+    setOpen(next);
+  };
 
   useEffect(() => {
     // An echo of our own keystroke must not reformat the field or move its caret.
@@ -99,23 +115,26 @@ export const DatePicker = ({
     if (disabled) setOpen(false);
   }, [disabled]);
 
-  useEffect(() => {
-    if (!open || !isMobile) return;
-    const visual = window.visualViewport;
-    const measure = () => setViewport({
-      height: visual?.height ?? window.innerHeight,
-      bottom: Math.max(0, window.innerHeight - (visual?.height ?? window.innerHeight) - (visual?.offsetTop ?? 0)),
-    });
-    measure();
-    visual?.addEventListener("resize", measure);
-    visual?.addEventListener("scroll", measure);
-    window.addEventListener("resize", measure);
-    return () => {
-      visual?.removeEventListener("resize", measure);
-      visual?.removeEventListener("scroll", measure);
-      window.removeEventListener("resize", measure);
+  useLayoutEffect(() => {
+    if (!open) return;
+    const panel = panelElement;
+    const header = headerRef.current;
+    const footer = footerRef.current;
+    if (!panel || !header || !footer) return;
+    // Keep calendar actions visible when they fit. With extreme text/viewport
+    // constraints, use one whole-panel scroller instead of clipping controls.
+    const measure = () => {
+      if (panel.clientHeight > 0) {
+        setScrollWholePanel(header.offsetHeight + footer.offsetHeight + 44 > panel.clientHeight);
+      }
     };
-  }, [open, isMobile]);
+    measure();
+    const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(measure);
+    for (const element of [panel, header, footer]) observer?.observe(element);
+    return () => {
+      observer?.disconnect();
+    };
+  }, [open, panelElement, viewport.height, viewport.width]);
 
   const emit = (next: string | null) => {
     emitted.current = next;
@@ -148,20 +167,20 @@ export const DatePicker = ({
   );
   const panel = (
     <>
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-2 py-1">
-        {isMobile ? <Dialog.Title className="pl-1 font-sans text-base font-semibold">{label ?? labels.chooseDate}</Dialog.Title>
+      <div ref={headerRef} className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-2 py-1">
+        {presentation === "dialog" ? <AdaptiveDialogTitle className="pl-1 font-sans text-base font-semibold">{label ?? labels.chooseDate}</AdaptiveDialogTitle>
           : <h2 id={titleId} className="pl-1 font-sans text-base font-semibold">{label ?? labels.chooseDate}</h2>}
         <button type="button" className={cn(actionClass, "shrink-0 px-2")} aria-label={labels.close} onClick={() => setOpen(false)}>
           <Xmark aria-hidden="true" className="h-5 w-5" />
         </button>
       </div>
-      <div className="min-h-0 overflow-y-auto overscroll-contain px-[4px] py-2">
+      <div className="date-picker-body min-h-0 overflow-y-auto overscroll-contain px-[4px] py-2">
         <DatePickerCalendar selected={selected} initialDate={initialDate} min={minimum} max={maximum}
           locale={format.locale} labels={labels} onSelect={commit} />
-        {isMobile ? <Dialog.Description className="sr-only">{labels.help} {labels.browseHelp}</Dialog.Description>
+        {presentation === "dialog" ? <AdaptiveDialogDescription className="sr-only">{labels.help} {labels.browseHelp}</AdaptiveDialogDescription>
           : <p id={helpId} className="sr-only">{labels.help} {labels.browseHelp}</p>}
       </div>
-      <div className="flex shrink-0 flex-wrap items-center justify-end gap-1 border-t border-border px-1 pt-1 pb-[max(4px,env(safe-area-inset-bottom))]">
+      <div ref={footerRef} className="flex shrink-0 flex-wrap items-center justify-end gap-1 border-t border-border px-1 pt-1 pb-[max(4px,env(safe-area-inset-bottom))]">
         {allowClear && !required && <button type="button" className={cn(actionClass, "mr-auto")} onClick={() => commit(null)}>{labels.clear}</button>}
         {showToday && !validateDateOnly(today, { min: minimum, max: maximum }) && (
           <button type="button" className={actionClass} onClick={() => commit(today)}>{labels.today}</button>
@@ -194,29 +213,28 @@ export const DatePicker = ({
           }}
           onInvalid={() => setTouched(true)}
           onKeyDown={(event) => {
-            if (event.altKey && event.key === "ArrowDown") { event.preventDefault(); setOpen(true); }
+            if (event.altKey && event.key === "ArrowDown") { event.preventDefault(); changeOpen(true); }
           }}
         />
-        {isMobile ? (
-          <Dialog.Root open={open} onOpenChange={setOpen}>
-            <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
-            <Dialog.Portal>
-              <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
-              <Dialog.Content ref={mobilePanelRef} data-date-picker
-                onOpenAutoFocus={focusCalendar} onCloseAutoFocus={restoreFocus}
-                className="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-md flex-col overflow-hidden rounded-t-xl border border-border bg-popover font-sans text-popover-foreground shadow-xl outline-none"
-                style={{ maxHeight: viewport ? `${Math.max(0, viewport.height - 8)}px` : "calc(100dvh - 8px)", bottom: viewport?.bottom ?? 0 }}>
-                {panel}
-              </Dialog.Content>
-            </Dialog.Portal>
-          </Dialog.Root>
+        {presentation === "dialog" ? (
+          <Dialog open={open} onOpenChange={changeOpen}>
+            <DialogTrigger asChild>{trigger}</DialogTrigger>
+            <AdaptiveDialogContent ref={attachPanel} data-date-picker data-date-picker-presentation="dialog"
+              data-scroll-whole-panel={scrollWholePanel} size="compact" showClose={false} disableHaptic
+              aria-label={title} aria-labelledby={undefined} onOpenAutoFocus={focusCalendar} onCloseAutoFocus={restoreFocus}
+              className="font-sans outline-none">
+              {panel}
+            </AdaptiveDialogContent>
+          </Dialog>
         ) : (
-          <Popover modal open={open} onOpenChange={setOpen}>
+          <Popover modal open={open} onOpenChange={changeOpen}>
             <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-            <PopoverContent ref={panelRef} data-date-picker align="end" aria-label={title} aria-labelledby={undefined} aria-describedby={helpId}
+            <PopoverContent ref={attachPanel} data-date-picker data-date-picker-presentation="popover"
+              data-scroll-whole-panel={scrollWholePanel} align="end" collisionPadding={4}
+              aria-label={title} aria-labelledby={undefined} aria-describedby={helpId}
               onOpenAutoFocus={focusCalendar} onCloseAutoFocus={restoreFocus}
               className="flex w-[360px] max-w-[calc(100vw-8px)] flex-col overflow-hidden p-0 data-[state=open]:animate-none data-[state=closed]:animate-none"
-              style={{ maxHeight: "var(--radix-popover-content-available-height)" }}>
+              style={{ maxHeight: `min(var(--radix-popover-content-available-height), ${Math.max(0, viewport.height - 8)}px)` }}>
               {panel}
             </PopoverContent>
           </Popover>

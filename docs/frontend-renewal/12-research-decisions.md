@@ -47,6 +47,7 @@ F07 source/version follow-up (2026-09-28): [navigation evidence](evidence/f07-na
 | D12 | Fixed behavioral constraint | Accessibility works without opt-in; reduced effects/haptics preferences add control. | Scope of an optional preference changes, never basic access |
 | D13 | Conditional legal scope | WCAG 2.2 AA engineering target; applicable statutes/contracts require actual business/jurisdiction review. | Deployment market, customer type, service scope or law changes |
 | D14 | Fixed evidence policy | Separate confirmed source, fixture observation, hypothesis and unverified device claims. | Always maintained; new evidence changes status explicitly |
+| D15 | F08 implemented renderer boundary | Keep one adaptive Radix task owner through resize; latch date Dialog/Popover per opening; shared viewport geometry and feature-owned guards. [Contract/evidence](../ui-adaptive-overlays.md). | Physical-device or real-AT checks require a documented adjustment; no replacement parser, competing trap or browser pinch owner |
 
 ## Outstanding evidence and who resolves it
 

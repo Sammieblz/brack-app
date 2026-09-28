@@ -20,7 +20,7 @@ Media-query changes, window resize/orientation, visual viewport resize/scroll, p
 
 Authentication redirects, custom-scheme policy, PWA service worker decisions, plugin permissions and security never depend on window class. An installed PWA is still a web runtime and retains same-origin HTTPS auth callbacks. No auth-service change was needed for F05.
 
-Safe areas retain their existing CSS `env(safe-area-inset-*)` ownership and [shell-scrolling contract](ui-shell-scrolling.md). The environment does not manufacture inset values or browser-toolbar heights. `useAppViewportHeight` still publishes layout height to `--app-viewport-height`; visual geometry is exposed separately for later, explicitly tested overlay/keyboard consumers. A VisualViewport event alone does not change page-scroller sizing.
+Safe areas retain their CSS `env(safe-area-inset-*)` ownership and [shell-scrolling contract](ui-shell-scrolling.md). The environment does not manufacture inset values or browser-toolbar heights. `useAppViewportHeight` still publishes layout height to `--app-viewport-height`; F08's [useOverlayViewport](ui-adaptive-overlays.md) consumes visual geometry separately for available task-surface space without inferring keyboard state. A VisualViewport event alone does not change page-scroller sizing.
 
 ## Compatibility migration
 
@@ -35,10 +35,10 @@ Source review of every `usePlatform` branch:
 | `MobileBackButton` | Native iOS keeps its radius/icon presentation; browser/PWA receives web presentation with the same visible Back action and fallback contract. |
 | `NativeScrollView` | Native iOS/Android retain their platform scroll styling when explicitly scrollable. Browser/PWA use ordinary scroll behavior. Single-page-scroll ownership is unchanged. |
 | `NativeSearchBar` | Native-specific radii, focus decoration and iOS Cancel/Back affordances apply only to native. Browser retains input, search, clear and recent-search controls. No query/draft behavior changes. |
-| `ActionSheet` | iOS-only placement/radius branch now requires native iOS. Browser/PWA use the existing web dialog branch. Actions and visible Cancel remain. |
+| `ActionSheet` | F08 replaces the iOS-only position branch with shared compact/medium-touch sheet versus centered presentation. One Radix root preserves focus/state and internal uncontrolled dismissal. |
 | `Toaster` / `native-toast` | Native typography/decoration is selected only for native; browser/PWA use existing web toast variants. `native-toast` has an unused legacy import, not a second detector. F04 owns haptic feedback behavior. |
 | Route/drawer edge gestures | F07 retired `useSwipeBack`, `useSwipeToOpenDrawer` and the fake page-swipe wrapper. System edges remain unclaimed by those owners; visible Back/profile controls remain. See [local gesture ownership](ui-local-gestures.md) for reserved edges, cancellation and the unverified native-swipe boundary. |
-| Goals overlay | F07 replaced its disconnected pull recognizer with controlled Sheet/visible Close and removed unused dismissable wrappers and usePullToDismiss. Tested adaptive handle gestures remain F08 work. |
+| Goals overlay | F08 keeps one adaptive Dialog across window changes; Dashboard no longer mounts it inside switching headers. F07's disconnected pull recognizer remains removed. Visible Close and existing Back ownership remain. |
 
 ## Verification boundary
 

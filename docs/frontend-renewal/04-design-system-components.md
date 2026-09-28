@@ -103,6 +103,8 @@ Existing `DismissableSheetContent` (`components/ui/dismissable-sheet.tsx`) has i
 
 F07 resolution of this baseline finding: Goals now uses the existing controlled Sheet with visible Close, tested Escape/app Back and focus return. Unused dismissable wrappers and their delayed pull hook were removed. A future F08 handle gesture must satisfy the full interaction contract; [overlay evidence](evidence/f07-overlay-ownership.md) records the actual checks.
 
+F08 replaces that intermediate Goals Sheet/Dialog switch and the related MobileDialog branch with one stable [adaptive Dialog boundary](../ui-adaptive-overlays.md). Dashboard keeps the Goals owner outside switching headers. Date Dialog/Popover family is latched per opening; other migrated forms adapt geometry on the same DOM. One whole-form scroller avoids fixed header/footer starvation at large text; the calendar retains fixed actions only when they fit. No drag handle is added: visible controls and the existing Back contract meet dismissal needs without introducing an unverified gesture.
+
 ## 6. Date picker and calendar specification
 
 Read [the existing date-picker contract](../ui-date-pickers.md) before editing. Keep one canonical parser and one active field API. `Calendar` is a low-level DayPicker v8 wrapper; `DatePickerCalendar` supplies the active historical-date behavior. A class in the generic wrapper alone does not prove the actual date field has that class's target size because the composite overrides it.

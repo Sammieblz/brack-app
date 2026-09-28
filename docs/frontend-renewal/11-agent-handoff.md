@@ -17,7 +17,7 @@ The original audit proposed starting at [F00](09-execution-plan.md), with F01–
 - F07 removes duplicate edge navigation and provides [one app Back coordinator](../ui-back-navigation.md) plus [local contact cancellation](../ui-local-gestures.md). Its exact implemented scope and remaining native gates are in checkpoint 17. Preserve F04's [action feedback](../ui-action-feedback.md). Do not infer measured latency improvements from source changes alone.
 - Preserve themes, logos, Inter/Merriweather/Playfair roles, Iconoir, domain language, offline capture, timer reliability and service ownership.
 - Accessibility is default behavior. App settings may reduce effects/haptics; they cannot substitute for semantic access or enable OS screen readers.
-- Ticket progress is recorded in 09 and the linked active checkpoint. F01–F06 are committed; F06 is at `f90509d9ee2092e872d91933020a4a71deb4798a`. [17](17-back-ownership.md) owns the active F07 implementation and validation. F08 onward is not started; real-AT/device evidence remains unverified.
+- Ticket progress is recorded in 09 and the linked active checkpoint. F01–F07 are committed; F07 is at `83e032bfc77d240b545cbbbc2a091ceac76538b0`. [18](18-adaptive-overlays.md) owns active F08 implementation and validation. F09 onward is not started; real-AT/device evidence remains unverified.
 
 ## Bounded retrieval workflow
 
@@ -64,7 +64,7 @@ Do not duplicate the entire source file, graph report or transcript. Prefer a us
 
 ## Progress checkpoint template
 
-The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). Checkpoints 13–16 preserve committed batches; [17](17-back-ownership.md) owns active F07. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate detailed active status across competing records.
+The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). Checkpoints 13–17 preserve committed batches; [18](18-adaptive-overlays.md) owns active F08. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate detailed active status across competing records.
 
 Update the relevant ticket and append a concise checkpoint when handing off:
 

@@ -1,0 +1,49 @@
+/* Geometry follows the available viewport; Radix alone owns focus and body lock. */
+.adaptive-dialog-backdrop { position: fixed; inset: 0; z-index: 50; background: rgb(0 0 0 / .6); transition: none; }
+.adaptive-dialog {
+  --overlay-max-width: 36rem;
+  position: fixed;
+  z-index: 50;
+  left: calc(var(--overlay-left) + var(--overlay-width) / 2);
+  top: calc(var(--overlay-top) + var(--overlay-height) / 2);
+  transform: translate(-50%, -50%);
+  width: min(var(--overlay-max-width), calc(var(--overlay-width) - 2rem - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+  max-height: calc(var(--overlay-height) - 2rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y pinch-zoom;
+  scroll-padding-block: 1rem;
+  padding: 1.25rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  box-shadow: 0 16px 48px rgb(0 0 0 / .2);
+  overflow-wrap: anywhere;
+  transition: none;
+}
+.adaptive-dialog[data-size="compact"] { --overlay-max-width: 28rem; }
+.adaptive-dialog[data-size="wide"] { --overlay-max-width: 44rem; }
+.adaptive-dialog[data-presentation="sheet"] {
+  top: calc(var(--overlay-top) + var(--overlay-height));
+  transform: translate(-50%, -100%);
+  width: min(var(--overlay-max-width), var(--overlay-width));
+  max-height: calc(var(--overlay-height) - max(.5rem, env(safe-area-inset-top, 0px)));
+  padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  border-radius: max(var(--radius), 1.25rem) max(var(--radius), 1.25rem) 0 0;
+}
+.adaptive-dialog-header { display: grid; gap: .5rem; padding-right: 2.75rem; margin-bottom: 1.25rem; text-align: left; }
+.adaptive-dialog-header > h2 { line-height: 1.35; }
+.adaptive-dialog-body { min-width: 0; }
+.adaptive-dialog-footer { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .5rem; margin-top: 1.25rem; }
+.adaptive-dialog-footer > button { height: auto; white-space: normal; min-width: 0; overflow-wrap: anywhere; }
+.adaptive-dialog[data-presentation="sheet"] .adaptive-dialog-footer > button { flex: 1 1 9rem; }
+.adaptive-dialog-close { position: absolute; right: .5rem; top: .5rem; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius); }
+.adaptive-dialog-close:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: -3px; }
+@media (hover: hover) { .adaptive-dialog-close:hover { background: hsl(var(--accent)); } }
+@media (forced-colors: active) {
+  .adaptive-dialog, .adaptive-dialog-close { border: 1px solid CanvasText; }
+  .adaptive-dialog[data-presentation] :focus { outline: 2px solid Highlight; outline-offset: -2px; }
+}

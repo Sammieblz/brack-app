@@ -537,17 +537,18 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
       <MobileDialog
         open={Boolean(recovery)}
         onOpenChange={() => undefined}
+        showClose={false}
         title="Review old timer"
         description={`This timer ran past Brack's ${MAX_READING_SESSION_MINUTES / 60}-hour safety limit. Save the time you actually read, or discard it.`}
         footer={
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <>
             <Button type="button" variant="outline" onClick={handleDiscardRecovery}>
               Discard timer
             </Button>
             <Button type="button" onClick={handleSaveRecovery}>
               Save reviewed time
             </Button>
-          </div>
+          </>
         }
       >
         {recovery && (

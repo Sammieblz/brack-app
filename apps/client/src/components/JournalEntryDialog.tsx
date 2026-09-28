@@ -1,5 +1,6 @@
 import { useId, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
+import { AdaptiveDialogContent as DialogContent, AdaptiveDialogHeader as DialogHeader, AdaptiveDialogTitle as DialogTitle, AdaptiveDialogDescription as DialogDescription, AdaptiveDialogFooter as DialogFooter } from "@/components/ui/adaptive-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,7 +31,7 @@ export const JournalEntryDialog = (props: JournalEntryDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={editor.requestOpenChange}>
       <DialogContent
-        className="max-w-2xl max-h-[90dvh] overflow-y-auto"
+        size="wide"
         onOpenAutoFocus={() => { returnFocus.current = document.activeElement as HTMLElement | null; }}
         onCloseAutoFocus={(event) => {
           if (returnFocus.current?.isConnected) {

@@ -1,5 +1,7 @@
 # F07 Back and gesture ownership checkpoint
 
+Historical checkpoint: committed at `83e032bfc77d240b545cbbbc2a091ceac76538b0`. The user approved the next implementation; [checkpoint 18](18-adaptive-overlays.md) now owns active F08 work. The review-stop statements below describe the completed F07 handoff.
+
 ## Current state
 
 - Baseline: clean worktree at committed F06 `f90509d9ee2092e872d91933020a4a71deb4798a`.

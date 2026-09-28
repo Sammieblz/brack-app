@@ -1,78 +1,61 @@
-import { useState } from "react";
+import { forwardRef, useState, type ComponentPropsWithoutRef, type ReactNode, type RefObject } from "react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  AdaptiveDialogBody,
+  AdaptiveDialogContent,
+  AdaptiveDialogDescription,
+  AdaptiveDialogHeader,
+  AdaptiveDialogTitle,
+} from "@/components/ui/adaptive-dialog";
 import { GoalManager } from "@/components/GoalManager";
 import { useAuth } from "@/hooks/useAuth";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { APP_ICONS } from "@/config/iconography";
 
-export const GoalsSheet = () => {
-  const [open, setOpen] = useState(false);
+export const GoalsSheetTrigger = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef<typeof Button>>(
+  (props, ref) => <Button ref={ref} variant="outline" size="sm" className="gap-2" {...props}>
+    <APP_ICONS.dashboard.goal className="h-4 w-4" aria-hidden="true" />
+    Goals
+  </Button>,
+);
+GoalsSheetTrigger.displayName = "GoalsSheetTrigger";
+
+interface GoalsSheetProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Pass null when the invoker lives in a responsive header outside this root. */
+  trigger?: ReactNode;
+  returnFocusRef?: RefObject<HTMLElement | null>;
+}
+
+export const GoalsSheet = ({ open, onOpenChange, trigger, returnFocusRef }: GoalsSheetProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
   const { user } = useAuth();
-  const isMobile = useIsMobile();
+  const isOpen = open ?? internalOpen;
+  const setOpen = (nextOpen: boolean) => {
+    if (open === undefined) setInternalOpen(nextOpen);
+    onOpenChange?.(nextOpen);
+  };
 
   if (!user) return null;
 
-  const content = (
-    <div className="p-4">
-      <GoalManager userId={user.id} />
-    </div>
-  );
-
-  if (isMobile) {
-    return (
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-2">
-            <APP_ICONS.dashboard.goal className="h-4 w-4" />
-            Goals
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="bottom" className="flex max-h-[85dvh] flex-col gap-0 rounded-t-[20px] p-0 [&>button]:size-11 [&>button]:right-2 [&>button]:top-2">
-          <SheetHeader className="px-6 pr-14 pt-4">
-            <SheetTitle className="font-display">Reading Goals</SheetTitle>
-            <SheetDescription className="font-sans">
-              Set and track your reading goals
-            </SheetDescription>
-          </SheetHeader>
-          <div className="min-h-0 overflow-y-auto overscroll-contain">{content}</div>
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <APP_ICONS.dashboard.goal className="h-4 w-4" />
-          Goals
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="font-display">Reading Goals</DialogTitle>
-          <DialogDescription className="font-sans">
-            Set and track your reading goals
-          </DialogDescription>
-        </DialogHeader>
-        {content}
-      </DialogContent>
+    <Dialog open={isOpen} onOpenChange={setOpen}>
+      {trigger !== null && <DialogTrigger asChild>{trigger ?? <GoalsSheetTrigger />}</DialogTrigger>}
+      <AdaptiveDialogContent size="wide" onCloseAutoFocus={(event) => {
+        if (returnFocusRef?.current?.isConnected) {
+          event.preventDefault();
+          returnFocusRef.current.focus();
+        }
+      }}>
+        <AdaptiveDialogHeader>
+          <AdaptiveDialogTitle>Reading Goals</AdaptiveDialogTitle>
+          <AdaptiveDialogDescription>Set and track your reading goals</AdaptiveDialogDescription>
+        </AdaptiveDialogHeader>
+        <AdaptiveDialogBody>
+          <GoalManager userId={user.id} />
+        </AdaptiveDialogBody>
+      </AdaptiveDialogContent>
     </Dialog>
   );
 };
