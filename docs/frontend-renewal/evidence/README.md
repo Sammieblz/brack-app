@@ -1,5 +1,7 @@
 # Current-state fixture observations
 
+These Library images preserve the original audit baseline. The later F06 experiment has its own [retained artifacts](ionic-fit/README.md), [modal evidence](ionic-fit-modal.md), [navigation evidence](ionic-fit-navigation.md) and [bundle comparison](ionic-fit-bundle.md); it does not replace these baseline captures or represent a production redesign.
+
 Captured 2026-09-27 from the existing `tests/fixtures/shell-scroll` harness at `http://127.0.0.1:8082/my-books?view=flat`, using installed Playwright Chromium in headless mode. These are baseline screenshots, not redesign mockups.
 
 | Artifact | Viewport in CSS px | Direct observation |

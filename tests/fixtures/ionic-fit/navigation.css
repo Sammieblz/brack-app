@@ -1,0 +1,40 @@
+.navigation-fixture {
+  --ion-background-color: hsl(var(--background));
+  --ion-text-color: hsl(var(--foreground));
+  --ion-toolbar-background: hsl(var(--background));
+  --ion-toolbar-color: hsl(var(--foreground));
+  --ion-tab-bar-background: hsl(var(--card));
+  --ion-tab-bar-color: hsl(var(--muted-foreground));
+  --ion-tab-bar-color-selected: hsl(var(--primary));
+  --ion-border-color: hsl(var(--border));
+  --ion-font-family: 'Inter', system-ui, sans-serif;
+  color: hsl(var(--foreground));
+}
+.navigation-fixture ion-toolbar { --min-height: 4rem; }
+.navigation-fixture ion-tab-bar { min-height: 4rem; border-color: hsl(var(--border)); }
+.navigation-fixture ion-tab-button { min-width: 5rem; font-size: 0.875rem; }
+.navigation-fixture ion-tab-button svg { width: 1.5rem; height: 1.5rem; margin: 0.25rem; }
+.fixture-content { max-width: 48rem; margin: auto; padding: 1.5rem max(1.25rem, env(safe-area-inset-right)) max(2rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left)); }
+.fixture-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.4rem; margin: 0.75rem 1.25rem; font-weight: 700; }
+.fixture-kicker { font-size: 0.8rem; letter-spacing: 0.08em; font-weight: 600; }
+.fixture-caption { color: hsl(var(--muted-foreground)); font-size: 0.875rem; margin: 0.5rem 0 1.5rem; }
+.fixture-intro { font-family: 'Merriweather', Georgia, serif; font-size: 1.05rem; margin: 1.5rem 0; }
+.fixture-books { display: grid; gap: 0.75rem; list-style: none; margin: 0; padding: 0; }
+.fixture-book { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid hsl(var(--border)); border-radius: 1rem; background: hsl(var(--card)); color: hsl(var(--card-foreground)); text-decoration: none; }
+.fixture-book strong { font-family: 'Merriweather', Georgia, serif; }
+.fixture-author { display: block; margin-top: 0.5rem; color: hsl(var(--muted-foreground)); font-size: 0.875rem; }
+.fixture-cover, .fixture-detail-cover { display: grid; place-items: center; flex-shrink: 0; background: hsl(var(--muted)); border-radius: 0.5rem; color: hsl(var(--primary)); }
+.fixture-cover { width: 3.75rem; height: 5rem; }
+.fixture-detail-cover { width: 7rem; height: 10rem; margin: 1.5rem 0; }
+.fixture-cover svg, .fixture-detail-cover svg { width: 2rem; height: 2rem; }
+.fixture-content label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+.fixture-content textarea { display: block; width: 100%; resize: vertical; padding: 0.75rem; color: hsl(var(--foreground)); background: hsl(var(--background)); border: 1px solid hsl(var(--border)); border-radius: 0.75rem; font: inherit; }
+.fixture-primary { padding: 0.75rem 1rem; border-radius: 0.75rem; color: hsl(var(--primary-foreground)); background: hsl(var(--primary)); min-height: 2.75rem; font-weight: 600; margin: 0 0 1rem; }
+.fixture-primary:disabled { opacity: 0.75; }
+.fixture-back { display: flex; align-items: center; gap: 0.25rem; padding: 0.5rem; margin-left: 0.5rem; min-height: 2.75rem; color: hsl(var(--foreground)); }
+.fixture-back svg { width: 1.5rem; height: 1.5rem; }
+.fixture-link { display: inline-flex; min-height: 2.75rem; align-items: center; text-decoration: underline; margin-top: 0.5rem; }
+.fixture-reading-card { border: 1px solid hsl(var(--border)); background: hsl(var(--card)); border-radius: 1rem; padding: 1.25rem; margin-top: 1.5rem; }
+.fixture-reading-card > svg { width: 2rem; height: 2rem; margin-bottom: 1rem; }
+.navigation-fixture :is(a, button, textarea, h1):focus-visible { outline: 3px solid hsl(var(--ring)); outline-offset: 3px; }
+@media (min-width: 700px) { .fixture-books { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

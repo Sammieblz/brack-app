@@ -1,0 +1,33 @@
+/* Fixture-local adapter. No Ionic reset/structure stylesheet enters the primitive comparison. */
+:root { --fit-gap: 1rem; }
+body { margin: 0; }
+.fit-header { display: flex; align-items: center; gap: .75rem; padding: 1rem max(1rem, env(safe-area-inset-left)); border-bottom: 1px solid hsl(var(--border)); }
+.fit-header > svg, .fit-button > svg { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }
+.fit-header > span:first-of-type { font-weight: 700; letter-spacing: .16em; }
+.fit-caption { margin-left: auto; font-size: .75rem; color: hsl(var(--muted-foreground)); }
+.fit-page { width: min(100%, 52rem); margin: auto; padding: 1.5rem 1rem; }
+.fit-eyebrow { margin-bottom: .5rem; color: hsl(var(--muted-foreground)); }
+.fit-page h1 { margin-bottom: 1rem; }
+.fit-page nav { display: flex; flex-wrap: wrap; gap: 1.5rem; margin: 1.5rem 0; }
+.fit-page nav a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-underline-offset: 4px; }
+.fit-book { display: flex; gap: 1rem; padding: 1.25rem; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 1rem; }
+.fit-book h2 { margin-bottom: .5rem; }
+.fit-cover { width: 5rem; min-width: 3rem; min-height: 7rem; display: grid; place-items: center; border-radius: .25rem .7rem .7rem .25rem; background: hsl(var(--primary) / .13); color: hsl(var(--foreground)); }
+.fit-book button { margin-top: 1rem; }
+.fit-long-content { display: grid; gap: 2rem; margin-top: 3rem; }
+.fit-button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 44px; min-width: 44px; border: 1px solid hsl(var(--border)); border-radius: .65rem; padding: .65rem 1rem; color: hsl(var(--foreground)); background: hsl(var(--background)); font: inherit; line-height: 1.4; }
+.fit-button:disabled { opacity: .55; }
+.fit-button:focus-visible, .fit-field:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+.fit-primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+.fit-modal { --height: min(90dvh, 48rem); --width: min(100%, 38rem); --border-radius: 1.25rem 1.25rem 0 0; --background: var(--ion-background-color); --backdrop-opacity: .36; --box-shadow: 0 -10px 40px hsl(var(--foreground) / .12); color: hsl(var(--foreground)); font-family: var(--ion-font-family); }
+.fit-modal::part(content) { border: 1px solid hsl(var(--border)); }
+.fit-modal::part(handle) { background: hsl(var(--muted-foreground)); }
+.fit-modal .ion-page { position: relative; min-height: 0; height: 100%; contain: none; }
+.fit-radix { display: flex !important; flex-direction: column; width: min(calc(100vw - 1rem), 38rem) !important; max-width: none !important; max-height: min(90dvh, 48rem); padding: 0 !important; overflow: hidden; gap: 0 !important; }
+.fit-radix > button:last-child { display: none; /* shared form supplies the same visible Close control */ }
+.fit-form { --background: var(--fit-background-channels); display: flex; flex-direction: column; min-height: 0; height: 100%; color: hsl(var(--foreground)); font-family: 'Inter', system-ui, sans-serif; }
+.fit-field { width: 100%; min-width: 0; min-height: 44px; padding: .7rem; border: 1px solid hsl(var(--input)); border-radius: .6rem; background: hsl(var(--background)); color: hsl(var(--foreground)); font: inherit; }
+.fit-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+[data-testid="reading-scroll"] { overflow-y: auto; overscroll-behavior: contain; min-height: 0; padding: 1rem; }
+@media (min-width: 768px) { .fit-modal { --height: min(90dvh, 48rem); --border-radius: 1.25rem; } }
+@media (forced-colors: active) { .fit-button, .fit-field { border: 1px solid ButtonText; } .fit-button:focus-visible, .fit-field:focus-visible { outline: 2px solid Highlight; } }

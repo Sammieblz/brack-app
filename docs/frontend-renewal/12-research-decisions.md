@@ -36,7 +36,7 @@ BRACK's proposed response is concrete: simplify fixed chrome, keep native compac
 | D03 | Proposed default with validation gate | Native and standalone compact app surfaces keep bottom destinations; compact browser uses header + explicit destination menu. | Browser findability test supports slim tabs instead; record tradeoff, keep single chrome owner |
 | D04 | Fixed initial rollout | Keep Home/Library/Lists/Feed/Readers destination identities and social gating. | Evidence supports a separately scoped information-architecture change |
 | D05 | Proposed default | Compact <600, medium 600–1023, expanded ≥1024 CSS px are trial bands; pane fit/text/input decide details. | Large-text, localization or physical tablet tests show poor fit |
-| D06 | Conditional | Adopt Ionic only at coherent tested boundaries with pinned compatibility; existing router remains until proved migration beneficial. | F06 evidence selects components/router or existing-foundation fallback |
+| D06 | F06 decision: defer production adoption | The isolated published Ionic9.0.5 experiment failed tab lifecycle and modal focus-cycle gates; retain React Router6/Radix and custom BRACK composition. [Decision and evidence](../ui-ionic-fit.md). | A pinned supported release passes the unchanged gates, measured cost is justified, then physical-device/AT checks pass |
 | D07 | Fixed behavioral constraint | One scroll owner and one effective back/gesture/overlay owner; system gestures have priority. | A documented scoped nested surface needs explicit arbitration |
 | D08 | Fixed behavioral constraint | Visible gesture alternatives, preserved zoom, cancellation/movement thresholds and accessible reorder. | Particular nonessential gesture fails ergonomics and should be removed |
 | D09 | Fixed behavioral constraint | No decorative delay before content, save or navigation; brand effect follows state. | Never weaken for exposure time; adjust art/timing only |
@@ -51,7 +51,7 @@ BRACK's proposed response is concrete: simplify fixed chrome, keep native compac
 | Question | Default that lets work proceed | Resolution owner / gate |
 | --- | --- | --- |
 | Exact supported OS/browser floor | Use current project build targets; don't invent support policy | Product/release owner at F00; actual device matrix recorded |
-| Which Ionic release and routing boundary | Existing router stays; build bounded experiment | Frontend/platform owner at F06 |
+| Which Ionic release and routing boundary | F06 tested published9.0.5; production adoption deferred. Existing router/primitives support continued renewal. | Reopening criteria in the [integration decision](../ui-ionic-fit.md) |
 | Browser destination menu discoverability | Proposed explicit labeled menu with current primary routes | UX/implementation owner at F09 study; slim-tab fallback in 03 |
 | Warm route lag root causes | Preserve data and remove proven artificial waits; trace suspects | Frontend performance owner F00/F19 |
 | Contrast of every theme and native text behavior | Keep brand; treat contrast/AT as unverified until measured | Accessibility/design owner each slice and F20 |

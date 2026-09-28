@@ -32,7 +32,7 @@ The detailed standard is preserved in topical references. Read the matching refe
 
 For the frontend renewal, start with [the plan index](../../../docs/frontend-renewal/README.md) and load only the selected ticket's specifications. The [agent handoff](../../../docs/frontend-renewal/11-agent-handoff.md) defines evidence and continuation records. The separate `brack-frontend-delivery` skill supports executing this plan with bounded retrieval.
 
-The renewal dossier describes proposed behavior and audited baseline facts separately. It does not mean implementation or device QA has happened. Older examples in the detailed standard describe direction, not installed packages. At the audit baseline Ionic is not installed and the app uses React Router 6. Verify actual package/lockfile versions and current official compatibility before adoption. Do not silently replace the router, data layer, icon library or fonts.
+The renewal dossier describes proposed behavior and audited baseline facts separately. It does not mean implementation or device QA has happened. Older examples in the detailed standard describe direction, not installed packages. The [F06 Ionic decision](../../../docs/ui-ionic-fit.md) defers production adoption after the isolated 9.0.5 experiment; the app retains React Router 6 and existing primitives. Verify actual package/lockfile versions and current official compatibility before reconsideration. Do not silently replace the router, data layer, icon library or fonts.
 
 ## Essential constraints
 

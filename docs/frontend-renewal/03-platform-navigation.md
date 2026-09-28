@@ -2,7 +2,7 @@
 
 Status: implementation specification, not an implemented migration. Source inspection and external documentation review: 2026-09-27. No packaged-device tests, navigation traces, or performance measurements were run for this document. Numbers called targets below are proposed acceptance budgets, not measured results.
 
-Implementation update: F05 now supplies the observable [UI environment contract](../ui-environment.md); see [checkpoint 15](15-feedback-environment-batch.md) for actual validation. The broad shell, Ionic and native gesture migrations remain planned. Baseline findings below describe the original audit.
+Implementation update: F05 supplies the observable [UI environment contract](../ui-environment.md), committed with F04 at `2ddc1c25c3b453a5b3f923c99f4d3e58b45b7754`; [checkpoint 15](15-feedback-environment-batch.md) preserves that validation. The isolated F06 experiment now selects **DEFER for the tested Ionic 9.0.5 route shell and modal**. Follow the [current integration decision](../ui-ionic-fit.md) and [checkpoint 16](16-ionic-fit-experiment.md), including failed adoption gates and reopening conditions. Continue with the existing React Router 6 and Radix foundations; F07 is next after review. No production shell or native gesture migration is included. Baseline findings and conditional Ionic proposals below remain historical specifications, not evidence of adoption.
 
 ## 1. What exists and what that implies
 

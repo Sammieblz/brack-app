@@ -18,6 +18,8 @@ This documentation provides comprehensive coverage of:
 - [Audit and implementation plan](./frontend-renewal/README.md) — source-backed route audit, mobile/tablet/native/browser design, components, motion, accessibility and delivery tickets.
 - [Implementation sequence](./frontend-renewal/09-execution-plan.md) — dependencies, acceptance and rollback.
 - [Agent continuation protocol](./frontend-renewal/11-agent-handoff.md) — evidence, efficient retrieval and durable work records.
+- [Ionic integration decision](./ui-ionic-fit.md) — defer the tested route shell and modal; preserve the current router/primitives for F07 onward.
+- [F06 checkpoint](./frontend-renewal/16-ionic-fit-experiment.md) — exact experiment results, failed adoption gates and review stop; [fixture reproduction](../tests/fixtures/ionic-fit/README.md).
 
 ---
 
@@ -87,6 +89,7 @@ This documentation provides comprehensive coverage of:
 - [Form Accessibility](./ui-form-accessibility.md) - Input/editor naming, focus and error associations
 - [Action Feedback](./ui-action-feedback.md) - Immediate add completion, haptics and context gestures
 - [UI Environment](./ui-environment.md) - Canonical runtime and observable presentation inputs
+- [Ionic Integration Decision](./ui-ionic-fit.md) - Isolated feasibility evidence and production adoption boundaries
 - [Loading Motion](./loading-motion.md) - Loader storyboard and timing contract
 - [Hooks Reference](./hooks.md) - Custom React hooks
 - [State Management](./state-management.md) - State patterns

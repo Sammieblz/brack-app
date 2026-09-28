@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Status: **F01–F03 committed; F04 + F05 implemented and browser-verified, awaiting user review**. The current batch is uncommitted and unreleased. Follow the [active batch checkpoint](15-feedback-environment-batch.md) for scope, actual validation and the review stop. [13](13-implementation-tracker.md) preserves F01 and [14](14-next-implementation-batch.md) preserves F02/F03. Other tickets remain unimplemented unless the work ledger says otherwise. Device testing, real assistive-technology acceptance, performance measurements, accessibility conformance evaluation, and proposed Ionic integration remain future work except for explicitly recorded observations.
+Status: **F01–F05 committed; F06 Ionic fit experiment completed, awaiting review**. The [decision](../ui-ionic-fit.md) defers production Ionic9.0.5 router/modal adoption after failed lifecycle/focus gates. Follow the [active checkpoint](16-ionic-fit-experiment.md) for scope, actual validation and the review stop. [13](13-implementation-tracker.md), [14](14-next-implementation-batch.md) and [15](15-feedback-environment-batch.md) preserve earlier batches. Other tickets remain unimplemented unless the work ledger says otherwise. Device testing, real assistive-technology acceptance, production performance and accessibility conformance remain future work except for explicitly recorded observations.
 
 ## Outcome
 
@@ -38,7 +38,8 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [12 — Research and decision register](12-research-decisions.md) | Source provenance, accepted direction, conditional decisions, unresolved evidence |
 | [13 — F01 implementation tracker](13-implementation-tracker.md) | Historical F01 changes/checks and pointer to the current batch |
 | [14 — F02 + F03 batch](14-next-implementation-batch.md) | Historical committed batch, changes and actual verification |
-| [15 — F04 + F05 batch](15-feedback-environment-batch.md) | Active feedback/runtime foundation implementation, actual checks and continuation |
+| [15 — F04 + F05 batch](15-feedback-environment-batch.md) | Historical committed feedback/runtime foundation implementation and actual checks |
+| [16 — F06 Ionic fit](16-ionic-fit-experiment.md) | Active isolated experiment, integration evidence, adoption decision and continuation |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability
@@ -63,7 +64,7 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 - Installed PWA is a distinct presentation mode, while retaining web capabilities and web authentication contracts.
 - Window size, available pane width, input capabilities, text scaling, and runtime jointly determine presentation. A tablet is not a stretched phone or an automatically dense desktop.
 - Keep the current five primary destination identities (three with social disabled) for initial rollout. Test findability before changing information architecture.
-- Ionic is a candidate owner for suitable mobile primitives. Introduce it through a pinned integration experiment. Do not simultaneously run competing route, overlay, scroll, or back owners.
+- F06 tested pinned Ionic9.0.5 and deferred production router/modal adoption. Continue F07–F09 with the existing router and accessible primitives; the decision records evidence required to reconsider Ionic. Do not simultaneously run competing route, overlay, scroll, or back owners.
 - Keep proven accessible headless foundations. Build BRACK-specific content composition above them. Date-only values, focus restoration, locale handling, drafts, and offline writes are invariants.
 - Fix correctness and accessibility before motion polish. Fast actions do not wait for an animation; brand moments follow meaningful confirmed outcomes.
 

@@ -1,0 +1,6 @@
+{
+  "extends": "../../apps/client/tsconfig.app.json",
+  "compilerOptions": { "noEmit": true, "types": ["node", "vite/client"] },
+  "include": ["ionic-fit.config.ts", "../e2e/ionic-fit.spec.ts", "../e2e/ionic-navigation.spec.ts", "../fixtures/ionic-fit/**/*.ts", "../fixtures/ionic-fit/**/*.tsx", "../../apps/client/src/vite-env.d.ts"],
+  "exclude": ["../fixtures/ionic-fit/node_modules", "../fixtures/ionic-fit/dist"]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "brack-ionic-fit-experiment",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Isolated F06 feasibility fixture; not a BRACK application dependency.",
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1"
+  },
+  "dependencies": {
+    "@ionic/react": "9.0.5",
+    "@ionic/react-router": "9.0.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router": "6.30.4",
+    "react-router-dom": "6.30.4"
+  }
+}

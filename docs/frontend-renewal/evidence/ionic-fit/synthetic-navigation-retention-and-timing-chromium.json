@@ -1,0 +1,138 @@
+{
+  "before": {
+    "runtime": "native",
+    "mode": "ios",
+    "draft": "",
+    "timer": {
+      "running": false,
+      "elapsedSeconds": 0
+    },
+    "reducedMotion": true,
+    "route": "/navigation.html/reading/session",
+    "readerOwner": 1,
+    "pages": [
+      {
+        "instance": 1,
+        "name": "library",
+        "active": false,
+        "enters": 1,
+        "leaves": 1,
+        "pulses": 0
+      },
+      {
+        "instance": 2,
+        "name": "book-1",
+        "active": true,
+        "enters": 1,
+        "leaves": 0,
+        "pulses": 0
+      },
+      {
+        "instance": 3,
+        "name": "reading",
+        "active": false,
+        "enters": 0,
+        "leaves": 1,
+        "pulses": 0
+      },
+      {
+        "instance": 4,
+        "name": "session",
+        "active": true,
+        "enters": 1,
+        "leaves": 0,
+        "pulses": 0
+      }
+    ],
+    "activePages": [
+      "book-1",
+      "session"
+    ],
+    "retainedPages": 4,
+    "visiblePages": 1,
+    "mountedPages": 4,
+    "unmountedPages": 0,
+    "transitions": [
+      {
+        "page": "library",
+        "durationMs": 0
+      },
+      {
+        "page": "book-1",
+        "durationMs": 0.1
+      },
+      {
+        "page": "session",
+        "durationMs": 0
+      }
+    ]
+  },
+  "after": {
+    "runtime": "native",
+    "mode": "ios",
+    "draft": "",
+    "timer": {
+      "running": false,
+      "elapsedSeconds": 0
+    },
+    "reducedMotion": true,
+    "route": "/navigation.html/reading/session",
+    "readerOwner": 1,
+    "pages": [
+      {
+        "instance": 1,
+        "name": "library",
+        "active": false,
+        "enters": 1,
+        "leaves": 1,
+        "pulses": 0
+      },
+      {
+        "instance": 2,
+        "name": "book-1",
+        "active": true,
+        "enters": 1,
+        "leaves": 0,
+        "pulses": 0
+      },
+      {
+        "instance": 3,
+        "name": "reading",
+        "active": false,
+        "enters": 0,
+        "leaves": 1,
+        "pulses": 0
+      },
+      {
+        "instance": 4,
+        "name": "session",
+        "active": true,
+        "enters": 1,
+        "leaves": 0,
+        "pulses": 0
+      }
+    ],
+    "activePages": [
+      "book-1",
+      "session"
+    ],
+    "retainedPages": 4,
+    "visiblePages": 1,
+    "mountedPages": 4,
+    "unmountedPages": 0,
+    "transitions": [
+      {
+        "page": "library",
+        "durationMs": 0
+      },
+      {
+        "page": "book-1",
+        "durationMs": 0.1
+      },
+      {
+        "page": "session",
+        "durationMs": 0
+      }
+    ]
+  }
+}

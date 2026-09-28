@@ -1,0 +1,62 @@
+[
+  {
+    "tab": 1,
+    "inside": true,
+    "documentHasFocus": true,
+    "element": "<button type=\"button\" class=\"fit-button min-h-11\" aria-label=\"Close reading note\">Close</button>"
+  },
+  {
+    "tab": 2,
+    "inside": true,
+    "documentHasFocus": true,
+    "element": "<input id=\"reading-note-title\" class=\"min-h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base\" required=\"\" value=\"A quieter reading habit\">"
+  },
+  {
+    "tab": 3,
+    "inside": true,
+    "documentHasFocus": true,
+    "element": "<input id=\"reading-date\" type=\"text\" inputmode=\"text\" autocomplete=\"off\" class=\"min-h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base\" aria-required=\"false\" aria-invalid=\"fa"
+  },
+  {
+    "tab": 4,
+    "inside": true,
+    "documentHasFocus": true,
+    "element": "<button type=\"button\" class=\"fit-button min-h-11\" aria-expanded=\"false\" aria-controls=\"reading-calendar\">Choose reading date</button>"
+  },
+  {
+    "tab": 5,
+    "inside": true,
+    "documentHasFocus": true,
+    "element": "<button type=\"button\" class=\"fit-button min-h-11\">Clear reading date</button>"
+  },
+  {
+    "tab": 6,
+    "inside": true,
+    "documentHasFocus": true,
+    "element": "<textarea id=\"reading-notes\" rows=\"5\" class=\"w-full rounded-md border border-input bg-background px-3 py-2 text-base\" aria-describedby=\"reading-notes-help\"></textarea>"
+  },
+  {
+    "tab": 7,
+    "inside": true,
+    "documentHasFocus": true,
+    "element": "<summary class=\"min-h-11 cursor-pointer font-medium\">Ideas for your note</summary>"
+  },
+  {
+    "tab": 8,
+    "inside": true,
+    "documentHasFocus": true,
+    "element": "<button type=\"submit\" class=\"fit-button min-h-11\">Save reading note</button>"
+  },
+  {
+    "tab": 9,
+    "inside": true,
+    "documentHasFocus": true,
+    "element": "<button type=\"button\" class=\"fit-button min-h-11\">Cancel</button>"
+  },
+  {
+    "tab": 10,
+    "inside": false,
+    "documentHasFocus": false,
+    "element": "<body class=\"backdrop-no-scroll\"><div id=\"root\"><div id=\"ion-view-container-root\" data-testid=\"experience-background\" aria-hidden=\"true\"><header class=\"fit-header\"><svg width=\"1.5em\" stroke-width=\"1.5"
+  }
+]

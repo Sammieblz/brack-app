@@ -1,0 +1,125 @@
+{
+  "before": {
+    "runtime": "native",
+    "mode": "ios",
+    "draft": "Lifecycle probe",
+    "timer": {
+      "running": false,
+      "elapsedSeconds": 0
+    },
+    "reducedMotion": true,
+    "route": "/navigation.html/library/book/1",
+    "readerOwner": 1,
+    "pages": [
+      {
+        "instance": 1,
+        "name": "library",
+        "active": false,
+        "enters": 1,
+        "leaves": 1,
+        "pulses": 0
+      },
+      {
+        "instance": 2,
+        "name": "book-1",
+        "active": true,
+        "enters": 1,
+        "leaves": 0,
+        "pulses": 0
+      }
+    ],
+    "activePages": [
+      "book-1"
+    ],
+    "retainedPages": 2,
+    "visiblePages": 1,
+    "mountedPages": 2,
+    "unmountedPages": 0,
+    "transitions": [
+      {
+        "page": "library",
+        "durationMs": 0
+      },
+      {
+        "page": "book-1",
+        "durationMs": 0
+      }
+    ]
+  },
+  "after": {
+    "runtime": "native",
+    "mode": "ios",
+    "draft": "Lifecycle probe",
+    "timer": {
+      "running": false,
+      "elapsedSeconds": 0
+    },
+    "reducedMotion": true,
+    "route": "/navigation.html/reading",
+    "readerOwner": 1,
+    "pages": [
+      {
+        "instance": 1,
+        "name": "library",
+        "active": false,
+        "enters": 1,
+        "leaves": 1,
+        "pulses": 0
+      },
+      {
+        "instance": 2,
+        "name": "book-1",
+        "active": true,
+        "enters": 1,
+        "leaves": 0,
+        "pulses": 1
+      },
+      {
+        "instance": 3,
+        "name": "reading",
+        "active": false,
+        "enters": 0,
+        "leaves": 0,
+        "pulses": 0
+      }
+    ],
+    "activePages": [
+      "book-1"
+    ],
+    "retainedPages": 3,
+    "visiblePages": 1,
+    "mountedPages": 3,
+    "unmountedPages": 0,
+    "transitions": [
+      {
+        "page": "library",
+        "durationMs": 0
+      },
+      {
+        "page": "book-1",
+        "durationMs": 0
+      }
+    ]
+  },
+  "dom": {
+    "pages": [
+      {
+        "name": "library",
+        "display": "none",
+        "hidden": "true"
+      },
+      {
+        "name": "book-1",
+        "display": "none",
+        "hidden": "true"
+      },
+      {
+        "name": "reading",
+        "display": "flex",
+        "hidden": null
+      }
+    ],
+    "focusedTag": "BODY",
+    "focusedText": "LibraryBRACK · Navigation experimentSynthetic books and session state. No account data.A quiet place for your next chapt"
+  }
+}

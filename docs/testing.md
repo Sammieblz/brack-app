@@ -14,6 +14,10 @@ The [frontend semantics fixture](../tests/fixtures/frontend-semantics/README.md)
 
 F04/F05 use separate [action-feedback](../tests/fixtures/action-feedback/README.md) and [UI-environment](../tests/fixtures/ui-environment/README.md) fixtures. Their configs are `tests/playwright/action-feedback.config.ts` and `tests/playwright/ui-environment.config.ts`; [checkpoint 15](./frontend-renewal/15-feedback-environment-batch.md) records actual runs. Frozen-clock save checks establish absence of a decorative delay, not device latency. Synthetic plugin/viewport inputs do not certify hardware haptics, native keyboard or installed PWA behavior.
 
+F06 uses the [isolated Ionic feasibility fixture](../tests/fixtures/ionic-fit/README.md), with its own pinned package/lockfile and no production dependency adoption. Follow that guide for the fixture-only install, then run `npx playwright test --config tests/playwright/ionic-fit.config.ts`. It compares the Ionic and existing Radix form surfaces and exercises one real Ionic Router 6 tab/outlet tree. Do not run another fixture server on port 8090 concurrently.
+
+The [current decision](./ui-ionic-fit.md) defers the tested Ionic route shell and modal. Expected-failing adoption gates preserve the desired lifecycle and keyboard contracts; report ordinary behavioral passes and declared gate failures separately, because Playwright can count expected failures in its successful-run summary. An unexpected pass requires investigation, not automatically changing the expectation. [Checkpoint 16](./frontend-renewal/16-ionic-fit-experiment.md) owns exact final counts and validation limits. Synthetic timers, local navigation, screenshots and runtime emulation do not certify production performance, physical devices or assistive technology.
+
 **Stack**:
 - **Unit Tests**: Vitest
 - **Component Tests**: React Testing Library

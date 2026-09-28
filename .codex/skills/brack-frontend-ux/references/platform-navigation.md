@@ -2,6 +2,8 @@
 
 Current implementation: [UI environment contract](../../../../docs/ui-environment.md). Use the canonical runtime separately from display mode, window class and input capabilities. Legacy `usePlatform.isMobile` now means native iOS/Android; `useIsMobile` remains the existing 768px layout check. F05 does not mean the F09 shell or Ionic adoption has shipped.
 
+Current adoption boundary: [F06 defers Ionic 9.0.5 production routing and modal adoption](../../../../docs/ui-ionic-fit.md) after browser lifecycle/focus gates failed. Use existing React Router/Radix foundations for F07–F09. The Ionic examples below are conditional patterns for a future proven integration, not instructions to bypass that decision or install the isolated fixture's dependencies in the app.
+
 BRACK uses React and Capacitor. When Ionic React is present or being adopted, use Ionic primarily where it improves **native interaction behavior**, not merely because a component exists.
 
 ## 7.1 Keep adaptive styling

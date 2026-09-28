@@ -2,6 +2,8 @@
 
 Status: proposed frontend implementation specification informed by source review on 2026-09-27. Existing behavior is identified explicitly. This document does not claim a visual/device audit or WCAG conformance test has been completed.
 
+Current decision: the isolated F06 experiment **defers production adoption of the tested Ionic 9.0.5 route shell and modal**. Continue custom BRACK composition over the existing router, Radix primitives and date-only controls. The [living decision](../ui-ionic-fit.md) owns failed gates, integration boundaries and reopening conditions; [checkpoint 16](16-ionic-fit-experiment.md) owns actual validation and the review stop. The conditional candidate table below preserves the original plan; it does not authorize replacing a primitive or importing Ionic styles. F07 remains the next sequenced implementation after review.
+
 ## 1. Preserve the identity; fix the composition
 
 Retain the theme system, theme-aware marks, chosen fonts and Iconoir. The redesign should be recognized through books, reading progress, typography, spatial hierarchy and consistent controls. A framework replacement alone will not create that identity.

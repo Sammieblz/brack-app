@@ -33,6 +33,8 @@ For current navigation/notification ownership read the [living contract](../../.
 
 For confirmed-action feedback and local context gestures, read [action feedback](../../../docs/ui-action-feedback.md); for runtime/window/input observation and legacy adapter semantics, read [UI environment](../../../docs/ui-environment.md). These describe implemented foundations; they do not imply the later shell, global gesture or settings migrations are complete. Browser fixture readiness must be established for each newly opened page before asserting product behavior.
 
+Before selecting Ionic primitives or routing, read the [F06 integration decision](../../../docs/ui-ionic-fit.md). The pinned 9.0.5 experiment defers production adoption; its nested test dependency is not an installed application dependency. Preserve desired assertions for failed adoption gates and report expected failures separately from ordinary passes. Wait for observable React/lifecycle readiness, not arbitrary delays; a component prop alone does not prove animation playback honors a live preference.
+
 Update the work ledger with exact files, decisions, commands/results, evidence limits and the next bounded action. Mark implemented, verified and shipped separately. Update living UI docs after behavior changes. After code edits, update an existing Graphify index locally according to project instructions; do not enable semantic/cloud extraction, database introspection, hooks or watchers implicitly.
 
 Use the handoff template instead of copying the entire transcript. The next agent should be able to continue without re-auditing the whole repo or asking the user to repeat established choices.

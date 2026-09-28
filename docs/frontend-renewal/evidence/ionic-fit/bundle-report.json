@@ -1,0 +1,553 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-28T03:33:04.148Z",
+  "manifest": "tests/fixtures/ionic-fit/dist/.vite/manifest.json",
+  "method": {
+    "raw": "Exact emitted file bytes.",
+    "gzip": "Each unique emitted file compressed independently using Node gzip level 9; actual server encoding may differ.",
+    "initial": "Entry file plus transitive static imports and their CSS, counted once per entry.",
+    "lazy": "Reachable dynamic chunks and their static imports, excluding initial files; possible later loads, not initial transfer.",
+    "exclusions": "HTML, maps, fonts, images, native binaries, HTTP headers and cache effects are excluded from JS/CSS totals.",
+    "comparison": "index.html versus baseline.html is the matched primitive comparison. navigation.html exercises a different route/tab experience and is not an apples-to-apples baseline delta."
+  },
+  "entries": {
+    "index.html": {
+      "manifestKey": "index.html",
+      "initial": {
+        "js": {
+          "fileCount": 4,
+          "rawBytes": 1221108,
+          "gzipBytes": 291660,
+          "files": [
+            {
+              "file": "assets/NavArrowLeft-CXhm9Suh.js",
+              "rawBytes": 192514,
+              "gzipBytes": 59394
+            },
+            {
+              "file": "assets/core-DIwFu0fO.js",
+              "rawBytes": 908442,
+              "gzipBytes": 195114
+            },
+            {
+              "file": "assets/experience-QyttdxUn.js",
+              "rawBytes": 115781,
+              "gzipBytes": 35341
+            },
+            {
+              "file": "assets/primitives-C__XuHfV.js",
+              "rawBytes": 4371,
+              "gzipBytes": 1811
+            }
+          ]
+        },
+        "css": {
+          "fileCount": 3,
+          "rawBytes": 211347,
+          "gzipBytes": 34626,
+          "files": [
+            {
+              "file": "assets/NavArrowLeft-D3ZfqRxl.css",
+              "rawBytes": 196652,
+              "gzipBytes": 30948
+            },
+            {
+              "file": "assets/core-SRVJgj-g.css",
+              "rawBytes": 11085,
+              "gzipBytes": 2489
+            },
+            {
+              "file": "assets/experience-WIoGG6zX.css",
+              "rawBytes": 3610,
+              "gzipBytes": 1189
+            }
+          ]
+        },
+        "total": {
+          "fileCount": 7,
+          "rawBytes": 1432455,
+          "gzipBytes": 326286
+        }
+      },
+      "lazyAdditional": {
+        "js": {
+          "fileCount": 6,
+          "rawBytes": 19120,
+          "gzipBytes": 7481,
+          "files": [
+            {
+              "file": "assets/p-BjIkK172-CQgrqWbQ.js",
+              "rawBytes": 506,
+              "gzipBytes": 363
+            },
+            {
+              "file": "assets/p-CaLdTi8C-iprI01jS.js",
+              "rawBytes": 708,
+              "gzipBytes": 495
+            },
+            {
+              "file": "assets/p-DNT7yQ4z-Pz8PFrxu.js",
+              "rawBytes": 1649,
+              "gzipBytes": 850
+            },
+            {
+              "file": "assets/p-DiqHxuia-_7Yduwwf.js",
+              "rawBytes": 10436,
+              "gzipBytes": 3049
+            },
+            {
+              "file": "assets/p-DrzCm5Hh-De9dC-Kf.js",
+              "rawBytes": 4849,
+              "gzipBytes": 2182
+            },
+            {
+              "file": "assets/p-ls85vUWB-iXT-3756.js",
+              "rawBytes": 972,
+              "gzipBytes": 542
+            }
+          ]
+        },
+        "css": {
+          "fileCount": 0,
+          "rawBytes": 0,
+          "gzipBytes": 0,
+          "files": []
+        },
+        "total": {
+          "fileCount": 6,
+          "rawBytes": 19120,
+          "gzipBytes": 7481
+        }
+      },
+      "lazyChunks": [
+        {
+          "manifestKey": "node_modules/@ionic/core/components/p-BjIkK172.js",
+          "file": "assets/p-BjIkK172-CQgrqWbQ.js",
+          "rawBytes": 506,
+          "gzipBytes": 363,
+          "imports": [
+            "_core-DIwFu0fO.js",
+            "_NavArrowLeft-CXhm9Suh.js"
+          ],
+          "dynamicImports": [],
+          "css": []
+        },
+        {
+          "manifestKey": "node_modules/@ionic/core/components/p-CaLdTi8C.js",
+          "file": "assets/p-CaLdTi8C-iprI01jS.js",
+          "rawBytes": 708,
+          "gzipBytes": 495,
+          "imports": [
+            "_core-DIwFu0fO.js",
+            "_NavArrowLeft-CXhm9Suh.js"
+          ],
+          "dynamicImports": [],
+          "css": []
+        },
+        {
+          "manifestKey": "node_modules/@ionic/core/components/p-DNT7yQ4z.js",
+          "file": "assets/p-DNT7yQ4z-Pz8PFrxu.js",
+          "rawBytes": 1649,
+          "gzipBytes": 850,
+          "imports": [
+            "_core-DIwFu0fO.js",
+            "_NavArrowLeft-CXhm9Suh.js"
+          ],
+          "dynamicImports": [],
+          "css": []
+        },
+        {
+          "manifestKey": "node_modules/@ionic/core/components/p-DiqHxuia.js",
+          "file": "assets/p-DiqHxuia-_7Yduwwf.js",
+          "rawBytes": 10436,
+          "gzipBytes": 3049,
+          "imports": [
+            "_core-DIwFu0fO.js",
+            "_NavArrowLeft-CXhm9Suh.js"
+          ],
+          "dynamicImports": [],
+          "css": []
+        },
+        {
+          "manifestKey": "node_modules/@ionic/core/components/p-DrzCm5Hh.js",
+          "file": "assets/p-DrzCm5Hh-De9dC-Kf.js",
+          "rawBytes": 4849,
+          "gzipBytes": 2182,
+          "imports": [
+            "_core-DIwFu0fO.js",
+            "_NavArrowLeft-CXhm9Suh.js"
+          ],
+          "dynamicImports": [],
+          "css": []
+        },
+        {
+          "manifestKey": "node_modules/@ionic/core/components/p-ls85vUWB.js",
+          "file": "assets/p-ls85vUWB-iXT-3756.js",
+          "rawBytes": 972,
+          "gzipBytes": 542,
+          "imports": [
+            "_core-DIwFu0fO.js",
+            "_NavArrowLeft-CXhm9Suh.js"
+          ],
+          "dynamicImports": [],
+          "css": []
+        }
+      ],
+      "referencedNonCodeAssets": []
+    },
+    "baseline.html": {
+      "manifestKey": "baseline.html",
+      "initial": {
+        "js": {
+          "fileCount": 3,
+          "rawBytes": 341773,
+          "gzipBytes": 106395,
+          "files": [
+            {
+              "file": "assets/NavArrowLeft-CXhm9Suh.js",
+              "rawBytes": 192514,
+              "gzipBytes": 59394
+            },
+            {
+              "file": "assets/baseline-BThQ1BBj.js",
+              "rawBytes": 33478,
+              "gzipBytes": 11660
+            },
+            {
+              "file": "assets/experience-QyttdxUn.js",
+              "rawBytes": 115781,
+              "gzipBytes": 35341
+            }
+          ]
+        },
+        "css": {
+          "fileCount": 2,
+          "rawBytes": 200262,
+          "gzipBytes": 32137,
+          "files": [
+            {
+              "file": "assets/NavArrowLeft-D3ZfqRxl.css",
+              "rawBytes": 196652,
+              "gzipBytes": 30948
+            },
+            {
+              "file": "assets/experience-WIoGG6zX.css",
+              "rawBytes": 3610,
+              "gzipBytes": 1189
+            }
+          ]
+        },
+        "total": {
+          "fileCount": 5,
+          "rawBytes": 542035,
+          "gzipBytes": 138532
+        }
+      },
+      "lazyAdditional": {
+        "js": {
+          "fileCount": 0,
+          "rawBytes": 0,
+          "gzipBytes": 0,
+          "files": []
+        },
+        "css": {
+          "fileCount": 0,
+          "rawBytes": 0,
+          "gzipBytes": 0,
+          "files": []
+        },
+        "total": {
+          "fileCount": 0,
+          "rawBytes": 0,
+          "gzipBytes": 0
+        }
+      },
+      "lazyChunks": [],
+      "referencedNonCodeAssets": []
+    },
+    "navigation.html": {
+      "manifestKey": "navigation.html",
+      "initial": {
+        "js": {
+          "fileCount": 3,
+          "rawBytes": 1152990,
+          "gzipBytes": 269566,
+          "files": [
+            {
+              "file": "assets/NavArrowLeft-CXhm9Suh.js",
+              "rawBytes": 192514,
+              "gzipBytes": 59394
+            },
+            {
+              "file": "assets/core-DIwFu0fO.js",
+              "rawBytes": 908442,
+              "gzipBytes": 195114
+            },
+            {
+              "file": "assets/navigation-C5ZjLPOa.js",
+              "rawBytes": 52034,
+              "gzipBytes": 15058
+            }
+          ]
+        },
+        "css": {
+          "fileCount": 3,
+          "rawBytes": 211730,
+          "gzipBytes": 34691,
+          "files": [
+            {
+              "file": "assets/NavArrowLeft-D3ZfqRxl.css",
+              "rawBytes": 196652,
+              "gzipBytes": 30948
+            },
+            {
+              "file": "assets/core-SRVJgj-g.css",
+              "rawBytes": 11085,
+              "gzipBytes": 2489
+            },
+            {
+              "file": "assets/navigation-BqPmVtN0.css",
+              "rawBytes": 3993,
+              "gzipBytes": 1254
+            }
+          ]
+        },
+        "total": {
+          "fileCount": 6,
+          "rawBytes": 1364720,
+          "gzipBytes": 304257
+        }
+      },
+      "lazyAdditional": {
+        "js": {
+          "fileCount": 6,
+          "rawBytes": 19120,
+          "gzipBytes": 7481,
+          "files": [
+            {
+              "file": "assets/p-BjIkK172-CQgrqWbQ.js",
+              "rawBytes": 506,
+              "gzipBytes": 363
+            },
+            {
+              "file": "assets/p-CaLdTi8C-iprI01jS.js",
+              "rawBytes": 708,
+              "gzipBytes": 495
+            },
+            {
+              "file": "assets/p-DNT7yQ4z-Pz8PFrxu.js",
+              "rawBytes": 1649,
+              "gzipBytes": 850
+            },
+            {
+              "file": "assets/p-DiqHxuia-_7Yduwwf.js",
+              "rawBytes": 10436,
+              "gzipBytes": 3049
+            },
+            {
+              "file": "assets/p-DrzCm5Hh-De9dC-Kf.js",
+              "rawBytes": 4849,
+              "gzipBytes": 2182
+            },
+            {
+              "file": "assets/p-ls85vUWB-iXT-3756.js",
+              "rawBytes": 972,
+              "gzipBytes": 542
+            }
+          ]
+        },
+        "css": {
+          "fileCount": 0,
+          "rawBytes": 0,
+          "gzipBytes": 0,
+          "files": []
+        },
+        "total": {
+          "fileCount": 6,
+          "rawBytes": 19120,
+          "gzipBytes": 7481
+        }
+      },
+      "lazyChunks": [
+        {
+          "manifestKey": "node_modules/@ionic/core/components/p-BjIkK172.js",
+          "file": "assets/p-BjIkK172-CQgrqWbQ.js",
+          "rawBytes": 506,
+          "gzipBytes": 363,
+          "imports": [
+            "_core-DIwFu0fO.js",
+            "_NavArrowLeft-CXhm9Suh.js"
+          ],
+          "dynamicImports": [],
+          "css": []
+        },
+        {
+          "manifestKey": "node_modules/@ionic/core/components/p-CaLdTi8C.js",
+          "file": "assets/p-CaLdTi8C-iprI01jS.js",
+          "rawBytes": 708,
+          "gzipBytes": 495,
+          "imports": [
+            "_core-DIwFu0fO.js",
+            "_NavArrowLeft-CXhm9Suh.js"
+          ],
+          "dynamicImports": [],
+          "css": []
+        },
+        {
+          "manifestKey": "node_modules/@ionic/core/components/p-DNT7yQ4z.js",
+          "file": "assets/p-DNT7yQ4z-Pz8PFrxu.js",
+          "rawBytes": 1649,
+          "gzipBytes": 850,
+          "imports": [
+            "_core-DIwFu0fO.js",
+            "_NavArrowLeft-CXhm9Suh.js"
+          ],
+          "dynamicImports": [],
+          "css": []
+        },
+        {
+          "manifestKey": "node_modules/@ionic/core/components/p-DiqHxuia.js",
+          "file": "assets/p-DiqHxuia-_7Yduwwf.js",
+          "rawBytes": 10436,
+          "gzipBytes": 3049,
+          "imports": [
+            "_core-DIwFu0fO.js",
+            "_NavArrowLeft-CXhm9Suh.js"
+          ],
+          "dynamicImports": [],
+          "css": []
+        },
+        {
+          "manifestKey": "node_modules/@ionic/core/components/p-DrzCm5Hh.js",
+          "file": "assets/p-DrzCm5Hh-De9dC-Kf.js",
+          "rawBytes": 4849,
+          "gzipBytes": 2182,
+          "imports": [
+            "_core-DIwFu0fO.js",
+            "_NavArrowLeft-CXhm9Suh.js"
+          ],
+          "dynamicImports": [],
+          "css": []
+        },
+        {
+          "manifestKey": "node_modules/@ionic/core/components/p-ls85vUWB.js",
+          "file": "assets/p-ls85vUWB-iXT-3756.js",
+          "rawBytes": 972,
+          "gzipBytes": 542,
+          "imports": [
+            "_core-DIwFu0fO.js",
+            "_NavArrowLeft-CXhm9Suh.js"
+          ],
+          "dynamicImports": [],
+          "css": []
+        }
+      ],
+      "referencedNonCodeAssets": []
+    }
+  },
+  "primitiveMinusBaselineInitial": {
+    "rawBytes": 890420,
+    "gzipBytes": 187754
+  },
+  "allEmittedManifestJavaScriptAndCss": {
+    "js": {
+      "fileCount": 12,
+      "rawBytes": 1325740,
+      "gzipBytes": 325859,
+      "files": [
+        {
+          "file": "assets/NavArrowLeft-CXhm9Suh.js",
+          "rawBytes": 192514,
+          "gzipBytes": 59394
+        },
+        {
+          "file": "assets/baseline-BThQ1BBj.js",
+          "rawBytes": 33478,
+          "gzipBytes": 11660
+        },
+        {
+          "file": "assets/core-DIwFu0fO.js",
+          "rawBytes": 908442,
+          "gzipBytes": 195114
+        },
+        {
+          "file": "assets/experience-QyttdxUn.js",
+          "rawBytes": 115781,
+          "gzipBytes": 35341
+        },
+        {
+          "file": "assets/navigation-C5ZjLPOa.js",
+          "rawBytes": 52034,
+          "gzipBytes": 15058
+        },
+        {
+          "file": "assets/p-BjIkK172-CQgrqWbQ.js",
+          "rawBytes": 506,
+          "gzipBytes": 363
+        },
+        {
+          "file": "assets/p-CaLdTi8C-iprI01jS.js",
+          "rawBytes": 708,
+          "gzipBytes": 495
+        },
+        {
+          "file": "assets/p-DNT7yQ4z-Pz8PFrxu.js",
+          "rawBytes": 1649,
+          "gzipBytes": 850
+        },
+        {
+          "file": "assets/p-DiqHxuia-_7Yduwwf.js",
+          "rawBytes": 10436,
+          "gzipBytes": 3049
+        },
+        {
+          "file": "assets/p-DrzCm5Hh-De9dC-Kf.js",
+          "rawBytes": 4849,
+          "gzipBytes": 2182
+        },
+        {
+          "file": "assets/p-ls85vUWB-iXT-3756.js",
+          "rawBytes": 972,
+          "gzipBytes": 542
+        },
+        {
+          "file": "assets/primitives-C__XuHfV.js",
+          "rawBytes": 4371,
+          "gzipBytes": 1811
+        }
+      ]
+    },
+    "css": {
+      "fileCount": 4,
+      "rawBytes": 215340,
+      "gzipBytes": 35880,
+      "files": [
+        {
+          "file": "assets/NavArrowLeft-D3ZfqRxl.css",
+          "rawBytes": 196652,
+          "gzipBytes": 30948
+        },
+        {
+          "file": "assets/core-SRVJgj-g.css",
+          "rawBytes": 11085,
+          "gzipBytes": 2489
+        },
+        {
+          "file": "assets/experience-WIoGG6zX.css",
+          "rawBytes": 3610,
+          "gzipBytes": 1189
+        },
+        {
+          "file": "assets/navigation-BqPmVtN0.css",
+          "rawBytes": 3993,
+          "gzipBytes": 1254
+        }
+      ]
+    },
+    "total": {
+      "fileCount": 16,
+      "rawBytes": 1541080,
+      "gzipBytes": 361739
+    }
+  }
+}
