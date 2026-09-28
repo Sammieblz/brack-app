@@ -2,6 +2,8 @@
 
 Status: implementation plan, not completed remediation. Source inspection and external research: 2026-09-27. No device recording, runtime profiling, or gesture test was performed for this document. Read with [accessibility](07-accessibility.md) and the plan index. Proposed timing values below are BRACK design targets to validate, not measurements or platform requirements.
 
+Implementation update: F04 supplies immediate AddBook completion, semantic haptics and bounded local context gestures in the [action feedback contract](../ui-action-feedback.md); see [checkpoint 15](15-feedback-environment-batch.md) for actual validation. Broader animation changes, native gesture arbitration and performance measurements remain planned. Baseline findings below describe the original audit.
+
 ## 1. Evidence and priority
 
 Graphify was queried before scoped source reads. Its broad query was truncated; the source files below were then inspected directly. Graph relationships locate owners; current source establishes behavior. `apps/client/src/` is abbreviated as `src/` in this document.

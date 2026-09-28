@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Status: **F01 committed; F02 + F03 implemented and browser-verified, awaiting user review**. Follow the [active batch checkpoint](14-next-implementation-batch.md) for scope, actual validation and the stop before a new commit/next batch. [13](13-implementation-tracker.md) preserves F01's record. Other tickets remain unimplemented unless the work ledger says otherwise. Device testing, real assistive-technology acceptance, performance measurements, accessibility conformance evaluation, and proposed Ionic integration remain future work except for explicitly recorded observations.
+Status: **F01–F03 committed; F04 + F05 implemented and browser-verified, awaiting user review**. The current batch is uncommitted and unreleased. Follow the [active batch checkpoint](15-feedback-environment-batch.md) for scope, actual validation and the review stop. [13](13-implementation-tracker.md) preserves F01 and [14](14-next-implementation-batch.md) preserves F02/F03. Other tickets remain unimplemented unless the work ledger says otherwise. Device testing, real assistive-technology acceptance, performance measurements, accessibility conformance evaluation, and proposed Ionic integration remain future work except for explicitly recorded observations.
 
 ## Outcome
 
@@ -37,7 +37,8 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [11 — Agent handoff](11-agent-handoff.md) | Durable memory, evidence discipline, efficient retrieval and progress ledger |
 | [12 — Research and decision register](12-research-decisions.md) | Source provenance, accepted direction, conditional decisions, unresolved evidence |
 | [13 — F01 implementation tracker](13-implementation-tracker.md) | Historical F01 changes/checks and pointer to the current batch |
-| [14 — F02 + F03 batch](14-next-implementation-batch.md) | Current multi-ticket scope, actual changes/checks and review checkpoint |
+| [14 — F02 + F03 batch](14-next-implementation-batch.md) | Historical committed batch, changes and actual verification |
+| [15 — F04 + F05 batch](15-feedback-environment-batch.md) | Active feedback/runtime foundation implementation, actual checks and continuation |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability

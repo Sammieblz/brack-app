@@ -1,23 +1,11 @@
 import { useEffect } from "react";
+import { useUIEnvironmentValue } from "./useUIEnvironment";
 
 export const useAppViewportHeight = () => {
+  const layoutHeight = useUIEnvironmentValue((environment) => environment.layoutHeight);
   useEffect(() => {
-    const updateViewportHeight = () => {
-      document.documentElement.style.setProperty(
-        "--app-viewport-height",
-        `${window.innerHeight}px`
-      );
-    };
-
-    updateViewportHeight();
-    window.addEventListener("resize", updateViewportHeight);
-    window.addEventListener("orientationchange", updateViewportHeight);
-    window.visualViewport?.addEventListener("resize", updateViewportHeight);
-
-    return () => {
-      window.removeEventListener("resize", updateViewportHeight);
-      window.removeEventListener("orientationchange", updateViewportHeight);
-      window.visualViewport?.removeEventListener("resize", updateViewportHeight);
-    };
-  }, []);
+    // Preserve the page scroller's layout-height contract. Keyboard/pinch
+    // visual geometry is available separately through useUIEnvironment.
+    document.documentElement.style.setProperty("--app-viewport-height", `${layoutHeight}px`);
+  }, [layoutHeight]);
 };

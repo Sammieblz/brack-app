@@ -15,6 +15,7 @@ desktop/dist
 release
 *.local
 test-results
+test-results-ui-environment/
 playwright-report
 
 # Editor directories and files

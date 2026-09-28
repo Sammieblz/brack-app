@@ -1,8 +1,8 @@
 # Frontend implementation tracker
 
-## Current checkpoint
+## Historical checkpoint
 
-**Superseded by the user's next-pass authorization:** F01 is now committed in `229dd677e33a8b7c6e81ac31d75b34aa94ea728d` ("First front-end renewal pass F01"). The worktree was clean at resumption. The active batch is **F02 + F03**, tracked in [14-next-implementation-batch.md](14-next-implementation-batch.md). The user permits multiple tickets only when each is completed and tested. No commit for the new batch has been requested. The F01 details and original stop below are historical; follow 14 for the current stop/next action.
+**Superseded:** F01 is committed in `229dd677e33a8b7c6e81ac31d75b34aa94ea728d` ("First front-end renewal pass F01"). F02/F03 are also committed, with historical evidence in [14](14-next-implementation-batch.md). The active batch is **F04 + F05**, tracked in [15-feedback-environment-batch.md](15-feedback-environment-batch.md). The user permits multiple tickets only when each is completed and tested. No commit for the current batch has been requested. The F01 details and original stop below are historical; follow 15 for the current stop/next action.
 
 ## F01 completed checkpoint (historical)
 

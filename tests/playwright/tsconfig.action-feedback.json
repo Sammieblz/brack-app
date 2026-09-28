@@ -1,0 +1,5 @@
+{
+  "extends": "../../apps/client/tsconfig.app.json",
+  "compilerOptions": { "noEmit": true, "types": ["node", "vite/client"] },
+  "include": ["action-feedback.config.ts", "../e2e/action-feedback.spec.ts", "../fixtures/action-feedback/**/*.ts", "../fixtures/action-feedback/**/*.tsx", "../../apps/client/src/vite-env.d.ts"]
+}

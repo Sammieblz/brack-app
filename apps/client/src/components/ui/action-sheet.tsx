@@ -24,6 +24,9 @@ interface ActionSheetProps {
   cancelLabel?: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** The initiating control may already own the opening feedback. */
+  openHaptic?: boolean;
+  hapticsEnabled?: boolean;
 }
 
 export function ActionSheet({
@@ -34,9 +37,11 @@ export function ActionSheet({
   cancelLabel = "Cancel",
   open,
   onOpenChange,
+  openHaptic = true,
+  hapticsEnabled = true,
 }: ActionSheetProps) {
   const { isIOS } = usePlatform();
-  const { triggerHaptic } = useHapticFeedback();
+  const { triggerHaptic } = useHapticFeedback({ enabled: hapticsEnabled });
 
   const handleActionClick = (action: ActionSheetProps['actions'][0]) => {
     triggerHaptic('selection');
@@ -48,6 +53,8 @@ export function ActionSheet({
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent 
+        disableHaptic={!hapticsEnabled}
+        {...(!openHaptic ? { onOpenAutoFocus: () => undefined } : {})}
         className={cn(
           "sm:max-w-md",
           isIOS 

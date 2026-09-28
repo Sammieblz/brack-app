@@ -31,6 +31,8 @@ Implement the authorized, coherent ticket slice and relevant failure/accessibili
 
 For current navigation/notification ownership read the [living contract](../../../docs/ui-navigation-notifications.md); for editor/input semantics read [form accessibility](../../../docs/ui-form-accessibility.md). These avoid rediscovering established invariants; still inspect source before changing them. Shared primitive changes require a consumer check for regressions outside the original screen. Keep Playwright artifact output independent before running suites concurrently.
 
+For confirmed-action feedback and local context gestures, read [action feedback](../../../docs/ui-action-feedback.md); for runtime/window/input observation and legacy adapter semantics, read [UI environment](../../../docs/ui-environment.md). These describe implemented foundations; they do not imply the later shell, global gesture or settings migrations are complete. Browser fixture readiness must be established for each newly opened page before asserting product behavior.
+
 Update the work ledger with exact files, decisions, commands/results, evidence limits and the next bounded action. Mark implemented, verified and shipped separately. Update living UI docs after behavior changes. After code edits, update an existing Graphify index locally according to project instructions; do not enable semantic/cloud extraction, database introspection, hooks or watchers implicitly.
 
 Use the handoff template instead of copying the entire transcript. The next agent should be able to continue without re-auditing the whole repo or asking the user to repeat established choices.

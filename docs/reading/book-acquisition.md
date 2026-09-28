@@ -13,6 +13,8 @@ Brack has three acquisition paths:
 
 The direct scanner flow is implemented by `apps/client/src/components/BarcodeScannerFlow.tsx` and is reused by both the Add Book scan tab and `apps/client/src/screens/ScanBarcode.tsx`.
 
+Current manual/search quick-add feedback is documented in the [action-feedback contract](../ui-action-feedback.md). A resolved local create opens the library immediately with its highlight identity; no first-book query or decorative timeout holds navigation. This frontend change does not alter the separate scanner service or synchronization rules.
+
 ## Direct Barcode Flow
 
 The release target flow is:

@@ -12,6 +12,8 @@ The [journal save fixture](../tests/fixtures/journal-save/README.md) exercises t
 
 The [frontend semantics fixture](../tests/fixtures/frontend-semantics/README.md) covers F02/F03 destination links, Back/404 recovery, notification failure/account/remount behavior and actual rich-text validation semantics. Run `npx playwright test --config tests/playwright/frontend-semantics.config.ts`. Its [batch checkpoint](./frontend-renewal/14-next-implementation-batch.md) records exact results and limits. Run suites sequentially unless their artifact directories are fully independent; a suite that cleans `test-results` can remove another running suite's traces.
 
+F04/F05 use separate [action-feedback](../tests/fixtures/action-feedback/README.md) and [UI-environment](../tests/fixtures/ui-environment/README.md) fixtures. Their configs are `tests/playwright/action-feedback.config.ts` and `tests/playwright/ui-environment.config.ts`; [checkpoint 15](./frontend-renewal/15-feedback-environment-batch.md) records actual runs. Frozen-clock save checks establish absence of a decorative delay, not device latency. Synthetic plugin/viewport inputs do not certify hardware haptics, native keyboard or installed PWA behavior.
+
 **Stack**:
 - **Unit Tests**: Vitest
 - **Component Tests**: React Testing Library

@@ -10,11 +10,14 @@ test.beforeEach(async ({ page, context }) => {
   await context.route('**/*', (route) => new URL(route.request().url()).origin === 'http://127.0.0.1:8087' ? route.continue() : route.abort());
 });
 test.afterEach(async ({ context }) => { expect(errors.get(context), 'No uncaught browser errors').toEqual([]); });
+async function waitForFixtureReady(page: Page) {
+  await expect(page.getByText('Frontend semantics fixture', { exact: true })).toBeVisible({ timeout: 15_000 });
+  await page.waitForFunction(() => Boolean(window.renewalFixture));
+}
 async function load(page: Page, path: string, width = 390) {
   await page.setViewportSize({ width, height: 1000 });
   await page.goto(path);
-  await expect(page.getByText('Frontend semantics fixture', { exact: true })).toBeVisible({ timeout: 15_000 });
-  await page.waitForFunction(() => Boolean(window.renewalFixture));
+  await waitForFixtureReady(page);
 }
 const snapshot = (page: Page): Promise<ReturnType<typeof renewalFixture.snapshot>> => page.evaluate(() => window.renewalFixture.snapshot());
 async function openNotifications(page: Page) {
@@ -42,6 +45,7 @@ test.describe('F02 destination semantics', () => {
     const popupPromise = context.waitForEvent('page');
     await link.click({ modifiers: ['ControlOrMeta'] });
     const popup = await popupPromise;
+    await waitForFixtureReady(popup);
     await expect(popup.getByTestId('destination')).toHaveText('/book/fixture-book');
     await expect(page).toHaveURL(/\/history$/);
     await popup.close();
@@ -186,10 +190,19 @@ test.describe('F03 notification states', () => {
   test('explicit close and Escape restore focus to the trigger', async ({ page }) => {
     await load(page, '/'); await resolveNotifications(page);
     const trigger = page.getByRole('button', { name: 'Notifications, 2 unread', exact: true });
+    const popover = page.getByRole('dialog', { name: 'Notifications', exact: true });
+    const close = popover.getByRole('button', { name: 'Close notifications', exact: true });
     await trigger.focus(); await trigger.press('Enter');
-    await page.getByRole('button', { name: 'Close notifications' }).click();
+    await expect(popover).toBeVisible();
+    await expect(close).toBeFocused();
+    await close.click();
+    await expect(popover).toBeHidden();
     await expect(trigger).toBeFocused();
-    await trigger.press('Enter'); await page.keyboard.press('Escape');
+    await trigger.press('Enter');
+    await expect(popover).toBeVisible();
+    await expect(close).toBeFocused();
+    await close.press('Escape');
+    await expect(popover).toBeHidden();
     await expect(trigger).toBeFocused();
   });
 

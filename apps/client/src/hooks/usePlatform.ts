@@ -1,12 +1,9 @@
-import { useState, useEffect } from 'react';
-import { detectPlatform, type Platform } from '@/lib/platform';
+import { useUIEnvironmentValue } from './useUIEnvironment';
+import type { Platform } from '@/lib/platform';
 
 export const usePlatform = () => {
-  const [platform, setPlatform] = useState<Platform>('web');
-
-  useEffect(() => {
-    setPlatform(detectPlatform());
-  }, []);
+  const runtime = useUIEnvironmentValue((environment) => environment.runtime);
+  const platform: Platform = runtime === 'ios' || runtime === 'android' ? runtime : 'web';
 
   return {
     platform,

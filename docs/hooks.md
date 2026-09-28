@@ -152,11 +152,23 @@ const { clubs, loading, createClub, joinClub, leaveClub, updateClub, deleteClub 
 
 **Location**: `apps/client/src/hooks/usePlatform.ts`
 
-**Purpose**: Detect current platform
+**Purpose**: Compatibility view of the canonical native runtime; not a window-size or user-agent detector.
 
 ```typescript
-const { platform, isNative, isIOS, isAndroid, isWeb } = usePlatform();
+const { platform, isIOS, isAndroid, isMobile } = usePlatform();
 ```
+
+Here `isMobile` means native iOS/Android. Browser/PWA and Electron map to legacy `web` styling. For explicit runtime/display/geometry/input policy use the new observable environment below. Authentication still uses the existing platform service.
+
+### useUIEnvironment
+
+**Location**: `apps/client/src/hooks/useUIEnvironment.ts`
+
+```typescript
+const { runtime, displayMode, windowClass, layoutWidth, visualHeight, reducedMotion } = useUIEnvironment();
+```
+
+The [UI environment contract](./ui-environment.md) defines outputs, subscriptions, optional-API fallbacks and consumer compatibility. `useUIEnvironmentValue(selector)` selects a primitive value so unrelated geometry updates do not rerender runtime-only controls. New 600/1024 window classes do not change existing 768px layout branches or auth redirects.
 
 ### useNativeApp
 

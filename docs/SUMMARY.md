@@ -85,6 +85,8 @@ This documentation provides comprehensive coverage of:
 - [Journal Editing](./ui-journal-editing.md) - Local save, draft and attachment contracts
 - [Navigation and Notifications](./ui-navigation-notifications.md) - Destination links, recovery and account-scoped read states
 - [Form Accessibility](./ui-form-accessibility.md) - Input/editor naming, focus and error associations
+- [Action Feedback](./ui-action-feedback.md) - Immediate add completion, haptics and context gestures
+- [UI Environment](./ui-environment.md) - Canonical runtime and observable presentation inputs
 - [Loading Motion](./loading-motion.md) - Loader storyboard and timing contract
 - [Hooks Reference](./hooks.md) - Custom React hooks
 - [State Management](./state-management.md) - State patterns

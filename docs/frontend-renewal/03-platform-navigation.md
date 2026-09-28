@@ -2,6 +2,8 @@
 
 Status: implementation specification, not an implemented migration. Source inspection and external documentation review: 2026-09-27. No packaged-device tests, navigation traces, or performance measurements were run for this document. Numbers called targets below are proposed acceptance budgets, not measured results.
 
+Implementation update: F05 now supplies the observable [UI environment contract](../ui-environment.md); see [checkpoint 15](15-feedback-environment-batch.md) for actual validation. The broad shell, Ionic and native gesture migrations remain planned. Baseline findings below describe the original audit.
+
 ## 1. What exists and what that implies
 
 Discovery used `graphify query "frontend application shell navigation routing platform detection responsive layout"`, then the existing Obsidian notes `graphify-out/obsidian/App.tsx.md` and `graphify-out/obsidian/MobileLayout.tsx.md`, then the source below. The graph query returned a truncated scoped result; source inspection, not graph labels, establishes these findings. `graphify-out/wiki/index.md` was absent in this checkout.

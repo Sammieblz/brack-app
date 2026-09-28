@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,8 +20,6 @@ import { toast } from "sonner";
 import { bookOperations } from "@/utils/offlineOperation";
 import { GENRES } from "@/constants";
 import type { GoogleBookResult } from "@/types/googleBooks";
-import { SuccessCheckmark } from "@/components/animations/SuccessCheckmark";
-import { Confetti } from "@/components/animations/Confetti";
 import { BrandedLoadingScreen } from "@/components/animations/BrandedLoadingScreen";
 import { APP_ICONS } from "@/config/iconography";
 import { useReadingProfile } from "@/hooks/useReadingProfile";
@@ -29,7 +27,6 @@ import { useBooks } from "@/hooks/useBooks";
 import { findExistingLibraryBook } from "@/utils/bookIdentity";
 import { normalizeGenre } from "@/utils/genres";
 import { canonicalizeIsbn } from "@/utils/isbn";
-import { booksRepo } from "@/services/local";
 
 const AddBook = () => {
   const [user, setUser] = useState<{ id: string } | null>(null);
@@ -38,9 +35,8 @@ const AddBook = () => {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [isFirstBook, setIsFirstBook] = useState(false);
+  const pendingCreate = useRef(false);
+  const mounted = useRef(false);
   const { habits } = useReadingProfile(user?.id);
   const { books } = useBooks(user?.id);
   
@@ -69,8 +65,11 @@ const AddBook = () => {
   )?.scannedBook;
 
   useEffect(() => {
+    let active = true;
+    mounted.current = true;
     const getUser = async () => {
       const user = await getCurrentAuthUser();
+      if (!active) return;
       if (!user) {
         navigate("/auth");
         return;
@@ -79,7 +78,16 @@ const AddBook = () => {
     };
     
     getUser();
+    return () => { active = false; mounted.current = false; };
   }, [navigate]);
+
+  const finishCreate = (book: { id: string; title: string }) => {
+    if (!mounted.current) return;
+    toast.success(`${book.title} added to your library`, {
+      description: "Saved on this device. It will sync automatically.",
+    });
+    navigate("/my-books", { state: { highlightBookId: book.id } });
+  };
 
   // Update ISBN when URL param changes
   useEffect(() => {
@@ -120,8 +128,9 @@ const AddBook = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || pendingCreate.current) return;
     
+    pendingCreate.current = true;
     setLoading(true);
     try {
       const isbn = formData.isbn.trim() ? canonicalizeIsbn(formData.isbn) : null;
@@ -171,25 +180,11 @@ const AddBook = () => {
       };
 
       const addedBook = await bookOperations.create(bookData);
-
-      const firstBook =
-        (await booksRepo.list(user.id)).filter((book) => !book.deleted_at).length <= 1;
-      setIsFirstBook(firstBook);
-
-      // Show success animation
-      setShowSuccess(true);
-      if (firstBook) {
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 3000);
-      }
-
-      setTimeout(() => {
-        setShowSuccess(false);
-        navigate("/my-books", {
-          state: { highlightBookId: addedBook?.id },
-        });
-      }, 1500);
+      // The local create is the completion boundary. Presentation must not
+      // add a second read, decorative timeout or delayed route change.
+      finishCreate(addedBook);
     } catch (error: unknown) {
+      if (!mounted.current) return;
       console.error('Error adding book:', error);
       if (isBookAlreadyExistsError(error)) {
         toast.error("Book already exists in your library");
@@ -197,7 +192,8 @@ const AddBook = () => {
         toast.error(error instanceof Error ? error.message : "Failed to add book");
       }
     } finally {
-      setLoading(false);
+      pendingCreate.current = false;
+      if (mounted.current) setLoading(false);
     }
   };
 
@@ -222,7 +218,7 @@ const AddBook = () => {
   };
 
   const handleQuickAdd = async (book: GoogleBookResult) => {
-    if (!user) return;
+    if (!user || pendingCreate.current) return;
     
     const existingBook = findExistingLibraryBook(book, books);
     if (existingBook) {
@@ -256,22 +252,22 @@ const AddBook = () => {
       series_total: book.series_total || null,
     };
 
+    pendingCreate.current = true;
     setLoading(true);
     try {
       const addedBook = await bookOperations.create(bookData);
 
-      toast.success(`${book.title} added to your library`);
-      navigate("/my-books", {
-        state: { highlightBookId: addedBook?.id },
-      });
+      finishCreate(addedBook);
     } catch (error) {
+      if (!mounted.current) return;
       if (isBookAlreadyExistsError(error)) {
         toast.error("Book already exists in your library");
         return;
       }
       throw error;
     } finally {
-      setLoading(false);
+      pendingCreate.current = false;
+      if (mounted.current) setLoading(false);
     }
   };
 
@@ -322,17 +318,6 @@ const AddBook = () => {
         active={loading}
         message="Adding this book to your library..."
       />
-      {showConfetti && <Confetti trigger={showConfetti} />}
-      {showSuccess && (
-        <div className="fixed inset-0 z-[9999] bg-background/80 backdrop-blur-sm flex items-center justify-center">
-          <div className="text-center space-y-4">
-            <SuccessCheckmark show={showSuccess} size={64} />
-            <p className="font-sans text-xl font-semibold">
-              {isFirstBook ? "Your first book! 🎉" : "Book added successfully!"}
-            </p>
-          </div>
-        </div>
-      )}
       {isMobile && (
         <MobileHeader
           title="Add Book"
@@ -359,6 +344,7 @@ const AddBook = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            <fieldset disabled={loading} aria-busy={loading} className="min-w-0">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="w-full grid grid-cols-3 mb-6">
                 <TabsTrigger value="search" className="flex items-center gap-2">
@@ -433,7 +419,7 @@ const AddBook = () => {
                   <div className="space-y-2">
                     <Label htmlFor="genre" className="text-sm font-medium">Genre</Label>
                     <Select value={formData.genre} onValueChange={(value) => setFormData({ ...formData, genre: value })}>
-                      <SelectTrigger className="min-h-[44px]">
+                      <SelectTrigger id="genre" className="min-h-[44px]">
                         <SelectValue placeholder="Select a genre" />
                       </SelectTrigger>
                       <SelectContent>
@@ -567,6 +553,7 @@ const AddBook = () => {
                 </div>
               </TabsContent>
             </Tabs>
+            </fieldset>
           </CardContent>
         </Card>
       </div>

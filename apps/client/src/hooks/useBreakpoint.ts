@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useUIEnvironmentValue } from "./useUIEnvironment";
 
 export const BREAKPOINTS = {
   tablet: 768,
@@ -6,18 +6,8 @@ export const BREAKPOINTS = {
   wide: 1440,
 } as const;
 
-const getWidth = () => (typeof window === "undefined" ? 0 : window.innerWidth);
-
 export const useBreakpoint = () => {
-  const [width, setWidth] = React.useState(getWidth);
-
-  React.useEffect(() => {
-    const handleResize = () => setWidth(getWidth());
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const width = useUIEnvironmentValue((environment) => environment.layoutWidth);
 
   return {
     width,

@@ -1,5 +1,7 @@
 # 31. Motion system
 
+Current add/haptic/context-action behavior is maintained in the [action-feedback contract](../../../../docs/ui-action-feedback.md). Preserve immediate confirmed navigation and one feedback owner; use its focused fixture rather than recreating production accounts to inspect gesture timing. Device API requests are not proof of physical haptic or OS gesture behavior.
+
 Motion must serve one of four purposes:
 
 1. **Feedback** — the app received input.

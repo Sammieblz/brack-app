@@ -66,6 +66,8 @@ The [frontend audit and implementation dossier](./frontend-renewal/README.md) co
 - [Journal Editing](./ui-journal-editing.md) - Local save, draft, attachment and failure contracts
 - [Navigation and Notifications](./ui-navigation-notifications.md) - Destination links, Back recovery, read states and account ownership
 - [Form Accessibility](./ui-form-accessibility.md) - Native labels, rich-text semantics, error associations and focus
+- [Action Feedback](./ui-action-feedback.md) - Add completion, semantic haptics and local long-press ownership
+- [UI Environment](./ui-environment.md) - Runtime, display mode, layout/visual viewport and input capabilities
 - [Loading Motion](./loading-motion.md) - Branded loader storyboard, lifecycle, and validation
 - [Hooks Reference](./hooks.md) - Custom React hooks
 - [State Management](./state-management.md) - Data flow and caching

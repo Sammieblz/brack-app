@@ -19,7 +19,7 @@ and installation-scoped push identity.
 | Image cache/filesystem | `apps/client/src/services/imageCache.ts` | Browser cache/data URL path. |
 | Offline DB | `apps/client/src/services/local/driver.ts` | Dexie on web, SQLite on native. |
 | App lifecycle sync | `apps/client/src/services/syncService.ts` | Browser `visibilitychange`; native Capacitor App plugin. |
-| Haptics | `apps/client/src/hooks/useHapticFeedback.ts` | No-op on web. |
+| Haptics | `apps/client/src/hooks/useHapticFeedback.ts` | Optional `navigator.vibrate` when supported and user activation permits it; otherwise a no-op. Explicit `enabled: false` disables either runtime path. |
 | Sharing | `apps/client/src/services/shareService.ts` | Web Share API / clipboard fallback. |
 | Timer notifications and app-state bridge | `apps/client/src/services/timerNative.ts`, used by `apps/client/src/contexts/TimerContext.tsx` | Native local notifications only; web is a no-op. |
 
@@ -55,6 +55,8 @@ Electron skip it. Camera, photos, and location stay out of onboarding because
 the reader has not invoked those features yet and must retain a manual path.
 
 ## Current State
+
+- Haptic selection uses the Capacitor selection lifecycle, serialized with cleanup. The local long-press recognizer owns its feedback; the context action sheet suppresses redundant opening feedback. There is no persisted global haptics preference at the F04 baseline. See the [action-feedback contract](../ui-action-feedback.md) for opt-out, cancellation, visible keyboard alternatives and evidence limits. Plugin availability does not prove hardware feedback.
 
 - `TimerContext` owns timer state and UI events; native app-state and Local Notification plugin calls live in `timerNativeService`.
 - `useBadges` owns badge UI/toast behavior; native badge push dispatch lives in `badgeNotificationService`.

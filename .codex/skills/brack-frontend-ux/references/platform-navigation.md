@@ -1,5 +1,7 @@
 # 7. Ionic React strategy
 
+Current implementation: [UI environment contract](../../../../docs/ui-environment.md). Use the canonical runtime separately from display mode, window class and input capabilities. Legacy `usePlatform.isMobile` now means native iOS/Android; `useIsMobile` remains the existing 768px layout check. F05 does not mean the F09 shell or Ionic adoption has shipped.
+
 BRACK uses React and Capacitor. When Ionic React is present or being adopted, use Ionic primarily where it improves **native interaction behavior**, not merely because a component exists.
 
 ## 7.1 Keep adaptive styling

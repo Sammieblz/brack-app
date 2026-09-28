@@ -30,9 +30,9 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => {
-  const { triggerHaptic } = useHapticFeedback()
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { disableHaptic?: boolean }
+>(({ className, children, disableHaptic = false, ...props }, ref) => {
+  const { triggerHaptic } = useHapticFeedback({ enabled: !disableHaptic })
   
   return (
     <DialogPortal>

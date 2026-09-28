@@ -1,17 +1,12 @@
-// Platform detection utilities for iOS/Android specific features
+import { getRuntimePlatform } from '@/services/platform';
+
+// Legacy presentation adapter. Browser/PWA user agents never imply native APIs.
 
 export type Platform = 'ios' | 'android' | 'web';
 
 export const detectPlatform = (): Platform => {
-  if (typeof window === 'undefined') return 'web';
-  
-  const userAgent = window.navigator.userAgent.toLowerCase();
-  const isIOS = /iphone|ipad|ipod/.test(userAgent);
-  const isAndroid = /android/.test(userAgent);
-  
-  if (isIOS) return 'ios';
-  if (isAndroid) return 'android';
-  return 'web';
+  const runtime = getRuntimePlatform();
+  return runtime === 'ios' || runtime === 'android' ? runtime : 'web';
 };
 
 export const getPlatformStyles = (platform: Platform) => {

@@ -17,7 +17,7 @@ Start future implementation at [F00](09-execution-plan.md), with F01–F04 able 
 - Navigation/gesture problems include duplicate back-swipe ownership, history-length assumptions, long-press cancellation gaps and decoration-imposed route waits. Some consequences require reproduction; no latency trace was fabricated.
 - Preserve themes, logos, Inter/Merriweather/Playfair roles, Iconoir, domain language, offline capture, timer reliability and service ownership.
 - Accessibility is default behavior. App settings may reduce effects/haptics; they cannot substitute for semantic access or enable OS screen readers.
-- Ticket progress is recorded in 09 and the linked active checkpoint. F01 is committed; F02/F03 are implemented and browser-verified in 14, with real-AT/device evidence unverified. Other ticket specifications remain plans.
+- Ticket progress is recorded in 09 and the linked active checkpoint. F01–F03 are committed; F04/F05 implementation and validation are recorded in 15, with real-AT/device evidence unverified. Other ticket specifications remain plans.
 
 ## Bounded retrieval workflow
 
@@ -64,7 +64,7 @@ Do not duplicate the entire source file, graph report or transcript. Prefer a us
 
 ## Progress checkpoint template
 
-The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). The user explicitly requested durable implementation documents: [13](13-implementation-tracker.md) preserves F01 and [14](14-next-implementation-batch.md) owns the current F02/F03 checkpoint. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate the active status across competing detailed records.
+The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). The user explicitly requested durable implementation documents: [13](13-implementation-tracker.md) preserves F01, [14](14-next-implementation-batch.md) preserves F02/F03, and [15](15-feedback-environment-batch.md) owns the current F04/F05 checkpoint. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate the active status across competing detailed records.
 
 Update the relevant ticket and append a concise checkpoint when handing off:
 
@@ -85,7 +85,9 @@ An interrupted session should be resumable from this checkpoint without asking t
 
 ## Active implementation checkpoint
 
-F01 is committed at `229dd677e33a8b7c6e81ac31d75b34aa94ea728d`. The user authorized the next implementation and multiple tickets only if completed. **F02 + F03 implementation and browser checks are complete**, with detailed scope/results in [14-next-implementation-batch.md](14-next-implementation-batch.md): 63 current-batch Playwright checks, 54 journal browser regressions, 86 combined focused unit/component tests, plus the additional consumer checks. Follow 14 for final graph/vault status. **STOP for user review; no new commit or F04 work was requested.** Actual native/AT/live-service checks remain release evidence gaps. [13](13-implementation-tracker.md) preserves F01; the original audit above remains historical.
+**Current:** F01 is committed at `229dd677e33a8b7c6e81ac31d75b34aa94ea728d`; F02/F03 are committed in `06d519044155d1cb1d9f6e6ab3a0e23a2397e801`. **F04 + F05 are implemented and browser-verified; STOP for user review.** Read [15-feedback-environment-batch.md](15-feedback-environment-batch.md) for the complete work, exact validation and continuation. No commit or F06+ implementation is authorized by this batch.
+
+Earlier F02/F03 results and their review stop are historical in [14](14-next-implementation-batch.md). Actual native/AT/live-service checks remain release evidence gaps. The original audit above is historical; do not restart completed tickets from its defect list.
 
 ## Skills and documentation maintenance
 
