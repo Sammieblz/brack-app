@@ -1,327 +1,115 @@
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useId, useRef } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RichTextEditor } from "@/components/rich-text/RichTextEditor";
-import { JournalEntry } from "@/hooks/useJournalEntries";
+import type { JournalEntry, JournalSaveResult } from "@/hooks/useJournalEntries";
+import { useJournalEditor } from "@/hooks/useJournalEditor";
+import { JournalEditorFeedback } from "@/components/journal/JournalEditorFeedback";
 import { Badge } from "@/components/ui/badge";
 import { Xmark, Camera, MediaImage } from "iconoir-react";
-import { ImagePickerDialog } from "@/components/ImagePickerDialog";
-import { useImagePicker } from "@/hooks/useImagePicker";
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import { removeStorageFiles, uploadPublicStorageFile } from "@/services/api";
-import { toPlainRichTextPayload } from "@/lib/richText";
-import type { RichTextPayload } from "@/types/richText";
 
 interface JournalEntryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (entry: Omit<JournalEntry, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
+  onSave: (entry: Omit<JournalEntry, "id" | "user_id" | "created_at" | "updated_at">) => Promise<JournalSaveResult>;
   editEntry?: JournalEntry | null;
   bookId: string;
 }
 
-export const JournalEntryDialog = ({
-  open,
-  onOpenChange,
-  onSave,
-  editEntry,
-  bookId,
-}: JournalEntryDialogProps) => {
-  const [entryType, setEntryType] = useState<'note' | 'quote' | 'reflection'>('note');
-  const [title, setTitle] = useState('');
-  const [richText, setRichText] = useState<RichTextPayload>(() => toPlainRichTextPayload(""));
-  const [pageReference, setPageReference] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [showImagePicker, setShowImagePicker] = useState(false);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const { pickImage, picking } = useImagePicker();
-
-  useEffect(() => {
-    if (editEntry) {
-      setEntryType(editEntry.entry_type);
-      setTitle(editEntry.title || '');
-      setRichText({
-        content: editEntry.content,
-        content_format: editEntry.content_format || "plain",
-        content_json: editEntry.content_json || null,
-        content_html: editEntry.content_html || null,
-      });
-      setPageReference(editEntry.page_reference?.toString() || '');
-      setTags(editEntry.tags || []);
-      setPhotoUrl(editEntry.photo_url || null);
-      setPhotoPreview(editEntry.photo_url || null);
-    } else {
-      resetForm();
-    }
-  }, [editEntry, open]);
-
-  const resetForm = () => {
-    setEntryType('note');
-    setTitle('');
-    setRichText(toPlainRichTextPayload(""));
-    setPageReference('');
-    setTags([]);
-    setTagInput('');
-    setPhotoUrl(null);
-    setPhotoPreview(null);
-  };
-
-  const handleImagePicked = async (image: { dataUrl: string; format: string; base64?: string }) => {
-    if (!user || !image.base64) return;
-
-    setUploadingPhoto(true);
-    try {
-      // Convert base64 to blob
-      const byteCharacters = atob(image.base64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: `image/${image.format}` });
-
-      // Delete old photo if editing
-      if (editEntry?.photo_url) {
-        const oldPath = editEntry.photo_url.split('/').slice(-2).join('/');
-        await removeStorageFiles('journal-photos', [oldPath]);
-      }
-
-      // Upload to storage
-      const fileName = `journal-${Date.now()}.${image.format}`;
-      const filePath = `${user.id}/${fileName}`;
-
-      const publicUrl = await uploadPublicStorageFile(
-        'journal-photos',
-        filePath,
-        blob,
-        { contentType: `image/${image.format}` }
-      );
-
-      setPhotoUrl(publicUrl);
-      setPhotoPreview(image.dataUrl);
-    } catch (error: unknown) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to upload photo",
-      });
-    } finally {
-      setUploadingPhoto(false);
-    }
-  };
-
-  const handleRemovePhoto = () => {
-    setPhotoUrl(null);
-    setPhotoPreview(null);
-  };
-
-  const handleAddTag = () => {
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()]);
-      setTagInput('');
-    }
-  };
-
-  const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter(t => t !== tag));
-  };
-
-  const handleSave = () => {
-    if (!richText.content.trim()) return;
-
-    onSave({
-      book_id: bookId,
-      entry_type: entryType,
-      title: title.trim() || undefined,
-      content: richText.content.trim(),
-      content_format: richText.content_format,
-      content_json: richText.content_json,
-      content_html: richText.content_html,
-      page_reference: pageReference ? parseInt(pageReference) : undefined,
-      tags: tags.length > 0 ? tags : undefined,
-      photo_url: photoUrl || undefined,
-    });
-
-    onOpenChange(false);
-    resetForm();
-  };
+export const JournalEntryDialog = (props: JournalEntryDialogProps) => {
+  const { open, editEntry } = props;
+  const editor = useJournalEditor({ ...props, kind: "full" });
+  const { draft, setField, busy, discardRequested } = editor;
+  const id = useId();
+  const editorId = `${id}-content`;
+  const returnFocus = useRef<HTMLElement | null>(null);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={editor.requestOpenChange}>
+      <DialogContent
+        className="max-w-2xl max-h-[90dvh] overflow-y-auto"
+        onOpenAutoFocus={() => { returnFocus.current = document.activeElement as HTMLElement | null; }}
+        onCloseAutoFocus={(event) => {
+          if (returnFocus.current?.isConnected) {
+            event.preventDefault();
+            returnFocus.current.focus();
+          }
+        }}
+      >
         <DialogHeader>
-          <DialogTitle className="font-display">{editEntry ? 'Edit' : 'Add'} Journal Entry</DialogTitle>
+          <DialogTitle className="font-display">{editEntry ? "Edit" : "Add"} Journal Entry</DialogTitle>
+          <DialogDescription>Keep your notes, quotes, and reflections with this book.</DialogDescription>
         </DialogHeader>
-        
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="entry-type">Entry Type</Label>
-            <Select
-              value={entryType}
-              onValueChange={(value) => {
-                if (value === "note" || value === "quote" || value === "reflection") {
-                  setEntryType(value);
-                }
-              }}
-            >
-              <SelectTrigger id="entry-type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="note">Note</SelectItem>
-                <SelectItem value="quote">Quote</SelectItem>
-                <SelectItem value="reflection">Reflection</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="title">Title (Optional)</Label>
-            <Input
-              id="title"
-              placeholder="Give your entry a title..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Content *</Label>
-            <RichTextEditor
-              value={richText}
-              onChange={setRichText}
-              placeholder={
-                entryType === 'quote'
-                  ? 'Enter the quote...'
-                  : entryType === 'reflection'
-                  ? 'Share your thoughts and reflections...'
-                  : 'Write your notes...'
-              }
-              minHeightClassName="min-h-[200px]"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="page-reference">Page Reference (Optional)</Label>
-            <Input
-              id="page-reference"
-              type="number"
-              placeholder="Enter page number..."
-              value={pageReference}
-              onChange={(e) => setPageReference(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="tags">Tags (Optional)</Label>
-            <div className="flex gap-2">
-              <Input
-                id="tags"
-                placeholder="Add a tag..."
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddTag();
-                  }
-                }}
-              />
-              <Button type="button" onClick={handleAddTag} variant="outline">
-                Add
-              </Button>
+        <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); void editor.save(); }}>
+          <fieldset disabled={busy || discardRequested} className="min-w-0 space-y-4">
+            <legend className="sr-only">Journal entry</legend>
+            <div className="space-y-2">
+              <Label htmlFor={`${id}-type`}>Entry Type</Label>
+              <Select value={draft.entryType} disabled={busy || discardRequested} onValueChange={(value) => {
+                if (value === "note" || value === "quote" || value === "reflection") setField("entryType", value);
+              }}>
+                <SelectTrigger id={`${id}-type`}><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="note">Note</SelectItem>
+                  <SelectItem value="quote">Quote</SelectItem>
+                  <SelectItem value="reflection">Reflection</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="gap-1">
-                    {tag}
-                    <Xmark
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => handleRemoveTag(tag)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Photo Attachment */}
-          <div className="space-y-2">
-            <Label>Photo (Optional)</Label>
-            {photoPreview ? (
-              <div className="relative">
-                <img
-                  src={photoPreview}
-                  alt="Preview"
-                  className="w-full h-64 object-cover rounded-lg border"
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2 h-8 w-8"
-                  onClick={handleRemovePhoto}
-                >
-                  <Xmark className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
+            <div className="space-y-2">
+              <Label id={`${id}-title-label`} htmlFor={`${id}-title`}>Title (Optional)</Label>
+              <Input id={`${id}-title`} aria-labelledby={`${id}-title-label`} placeholder="Give your entry a title..." value={draft.title} onChange={(event) => setField("title", event.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label id={`${id}-content-label`} htmlFor={editorId}>Content *</Label>
+              <RichTextEditor id={editorId} labelledBy={`${id}-content-label`} disabled={busy || discardRequested}
+                value={draft.richText} onChange={(value) => setField("richText", value)}
+                placeholder={draft.entryType === "quote" ? "Enter the quote..." : draft.entryType === "reflection" ? "Share your thoughts and reflections..." : "Write your notes..."}
+                minHeightClassName="min-h-[200px]" />
+            </div>
+            <div className="space-y-2">
+              <Label id={`${id}-page-label`} htmlFor={`${id}-page`}>Page Reference (Optional)</Label>
+              <Input id={`${id}-page`} aria-labelledby={`${id}-page-label`} type="number" min="1" step="1" placeholder="Enter page number..." value={draft.pageReference} onChange={(event) => setField("pageReference", event.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label id={`${id}-tags-label`} htmlFor={`${id}-tags`}>Tags (Optional)</Label>
               <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={async () => {
-                    const image = await pickImage({ source: 'prompt' });
-                    if (image) {
-                      handleImagePicked(image);
-                    }
-                  }}
-                  disabled={uploadingPhoto || picking}
-                  className="flex-1"
-                >
-                  <Camera className="h-4 w-4 mr-2" />
-                  {uploadingPhoto || picking ? "Processing..." : "Quick Add"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowImagePicker(true)}
-                  disabled={uploadingPhoto || picking}
-                  className="flex-1"
-                >
-                  <MediaImage className="h-4 w-4 mr-2" />
-                  {uploadingPhoto ? "Uploading..." : "Choose Photo"}
-                </Button>
+                <Input id={`${id}-tags`} aria-labelledby={`${id}-tags-label`} placeholder="Add a tag..." value={draft.tagInput} onChange={(event) => setField("tagInput", event.target.value)}
+                  onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); editor.addTag(); } }} />
+                <Button type="button" onClick={editor.addTag} variant="outline">Add</Button>
               </div>
-            )}
-            <ImagePickerDialog
-              open={showImagePicker}
-              onOpenChange={setShowImagePicker}
-              onImagePicked={handleImagePicked}
-              title="Add Photo to Journal Entry"
-              description="Take a photo or select from your library"
-            />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={!richText.content.trim()}>
-            {editEntry ? 'Update' : 'Add'} Entry
-          </Button>
-        </DialogFooter>
+              {draft.tags.length > 0 && <div className="flex flex-wrap gap-2">
+                {draft.tags.map((tag) => <Badge key={tag} variant="secondary" className="gap-1">
+                  {tag}
+                  <button type="button" aria-label={`Remove tag ${tag}`} className="inline-flex size-11 items-center justify-center rounded focus-visible:outline focus-visible:outline-2" onClick={() => editor.removeTag(tag)}>
+                    <Xmark className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </Badge>)}
+              </div>}
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Photo (Optional)</p>
+              {draft.photoPreview && <div className="relative">
+                <img src={draft.photoPreview} alt="Journal attachment preview" className="w-full h-64 object-cover rounded-lg border" />
+                <Button type="button" variant="destructive" size="icon" aria-label="Remove photo" className="absolute top-2 right-2 size-11" onClick={editor.removePhoto}>
+                  <Xmark className="h-4 w-4" aria-hidden="true" />
+                </Button>
+              </div>}
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="outline" onClick={() => void editor.pickPhoto("prompt")} className="flex-1"><Camera className="h-4 w-4 mr-2" aria-hidden="true" />Quick Add</Button>
+                <Button type="button" variant="outline" onClick={() => void editor.pickPhoto("photos")} className="flex-1"><MediaImage className="h-4 w-4 mr-2" aria-hidden="true" />{draft.photoPreview ? "Replace Photo" : "Choose Photo"}</Button>
+              </div>
+            </div>
+          </fieldset>
+          <JournalEditorFeedback {...editor} editorId={editorId} />
+          <DialogFooter className="gap-2">
+            <Button type="button" variant="outline" disabled={editor.saving || editor.picking || editor.uploadingPhoto || discardRequested} onClick={() => editor.requestOpenChange(false)}>Cancel</Button>
+            <Button type="submit" disabled={busy || discardRequested || !draft.richText.content.trim()}>{editor.saving ? "Saving…" : `${editEntry ? "Update" : "Add"} Entry`}</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

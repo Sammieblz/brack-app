@@ -17,6 +17,9 @@ interface RichTextEditorProps {
   limit?: number;
   className?: string;
   minHeightClassName?: string;
+  id?: string;
+  labelledBy?: string;
+  disabled?: boolean;
 }
 
 export const RichTextEditor = ({
@@ -26,8 +29,12 @@ export const RichTextEditor = ({
   limit = 10000,
   className,
   minHeightClassName = "min-h-40",
+  id,
+  labelledBy,
+  disabled = false,
 }: RichTextEditorProps) => {
   const editor = useEditor({
+    editable: !disabled,
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
@@ -45,6 +52,10 @@ export const RichTextEditor = ({
     content: value?.content_format === "tiptap" && value.content_json ? value.content_json : value?.content || "",
     editorProps: {
       attributes: {
+        ...(id ? { id } : {}),
+        ...(labelledBy ? { "aria-labelledby": labelledBy } : {}),
+        role: "textbox",
+        "aria-multiline": "true",
         class:
           "prose prose-sm max-w-none focus:outline-none dark:prose-invert prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-blockquote:my-2",
       },
@@ -62,19 +73,40 @@ export const RichTextEditor = ({
   });
 
   useEffect(() => {
+    editor?.setEditable(!disabled, false);
+  }, [editor, disabled]);
+
+  useEffect(() => {
+    if (!editor) return;
+    editor.setOptions({
+      editorProps: {
+        attributes: {
+          ...editor.options.editorProps.attributes,
+          ...(id ? { id } : {}),
+          ...(labelledBy ? { "aria-labelledby": labelledBy } : {}),
+          "aria-disabled": String(disabled),
+        },
+      },
+    });
+  }, [editor, id, labelledBy, disabled]);
+
+  useEffect(() => {
     if (!editor || !value) return;
     const current = editor.getJSON();
     if (JSON.stringify(current) === JSON.stringify(value.content_json)) return;
     if (value.content_format === "tiptap" && value.content_json) {
-      editor.commands.setContent(value.content_json);
-    } else if (value.content) {
-      editor.commands.setContent(value.content);
+      editor.commands.setContent(value.content_json, { emitUpdate: false });
+    } else if (editor.getText() !== (value.content || "")) {
+      editor.commands.setContent(value.content || "", { emitUpdate: false });
     }
   }, [editor, value]);
 
   return (
     <div className={cn("overflow-hidden rounded-md", className)}>
-      <RichTextToolbar editor={editor} />
+      <fieldset disabled={disabled} className="min-w-0">
+        <legend className="sr-only">Text formatting</legend>
+        <RichTextToolbar editor={editor} />
+      </fieldset>
       <div className={cn("rounded-b-md border border-t-0 border-border bg-background px-3 py-2", minHeightClassName)}>
         <EditorContent editor={editor} />
       </div>

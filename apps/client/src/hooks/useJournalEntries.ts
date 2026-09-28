@@ -10,6 +10,12 @@ import { getApiErrorStatus } from "@/services/api/client";
 
 export type { JournalEntry } from "@/services/api";
 
+/** A durable local repository/outbox commit; remote sync may still be pending. */
+export interface JournalSaveResult {
+  entryId: string;
+  savedLocally: true;
+}
+
 export const useJournalEntries = (bookId: string, userId?: string) => {
   const identity = `${userId ?? ""}:${bookId}`;
   const currentIdentity = useRef(identity);
@@ -24,7 +30,7 @@ export const useJournalEntries = (bookId: string, userId?: string) => {
   }>({ identity, entries: [], hasLoaded: false, pending: true, error: null });
   const { toast } = useToast();
 
-  const fetchEntries = useCallback(async () => {
+  const fetchEntries = useCallback(async (localOnly = false) => {
     const request = ++requestId.current;
     const isCurrent = () =>
       currentIdentity.current === identity && requestId.current === request;
@@ -63,17 +69,24 @@ export const useJournalEntries = (bookId: string, userId?: string) => {
         publish(localEntries);
       }
 
-      if (!isConnectivityAvailable()) {
+      if (localOnly || !user || !isConnectivityAvailable()) {
         publish(localEntries);
         return;
       }
 
       const remoteEntries = await fetchJournalEntries(bookId);
       if (!isCurrent()) return;
-      publish(remoteEntries);
-      for (const entry of remoteEntries) {
-        await journalRepo.upsertRemote(entry.user_id, entry);
-      }
+      // A read can race background synchronization. Preserve unsynced words and
+      // tombstones instead of replacing a durable local commit with an old pull.
+      await journalRepo.upsertRemoteManyPreservingLocal(user.id, remoteEntries);
+      if (!isCurrent()) return;
+      const refreshedRecords = await journalRepo.listRecords(user.id, { includeDeleted: true });
+      const remoteIds = new Set(remoteEntries.map((entry) => entry.id));
+      publish(refreshedRecords
+        .filter((record) => record.data.book_id === bookId
+          && record.status !== "deleted" && !record.deleted_at && !record.data.deleted_at
+          && (remoteIds.has(record.data.id) || record.status !== "synced"))
+        .map((record) => record.data));
     } catch (error) {
       if (!isCurrent()) return;
       console.error("Error fetching journal entries:", error);
@@ -92,53 +105,65 @@ export const useJournalEntries = (bookId: string, userId?: string) => {
     }
   }, [bookId, identity, userId]);
 
+  const refetchEntries = useCallback(() => fetchEntries(), [fetchEntries]);
+
   const addEntry = async (
     entry: Omit<JournalEntry, "id" | "user_id" | "created_at" | "updated_at">,
-  ) => {
-    try {
-      const user = await getCurrentAuthUser();
-      if (!user) throw new Error("No user found");
+  ): Promise<JournalSaveResult> => {
+    const user = await getCurrentAuthUser();
+    if (!user) throw new Error("No user found");
+    if (currentIdentity.current !== identity || (userId && user.id !== userId)) {
+      throw new Error("Reader identity changed. Reopen your journal to save.");
+    }
 
-      await journalOperations.create({
-        ...entry,
-        user_id: user.id,
-      });
+    // Only the durable write determines save success. Editors own its feedback.
+    const savedEntry = await journalOperations.create({
+      ...entry,
+      user_id: user.id,
+    });
 
-      toast({
-        title: "Success",
-        description: "Journal entry added",
-      });
-
-      await updateBookStatusIfNeeded(bookId);
-      await fetchEntries();
-    } catch (error) {
-      console.error("Error adding journal entry:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add journal entry",
-        variant: "destructive",
+    if (currentIdentity.current === identity) {
+      setState((previous) => ({
+        identity,
+        entries: [
+          savedEntry,
+          ...(previous.identity === identity
+            ? previous.entries.filter((item) => item.id !== savedEntry.id)
+            : []),
+        ],
+        hasLoaded: true,
+        pending: false,
+        error: null,
+      }));
+      // A stale remote snapshot must not erase a just-committed local entry.
+      // Refresh/status failure cannot turn that commit into a retryable create.
+      void fetchEntries(true);
+      void updateBookStatusIfNeeded(bookId).catch((error) => {
+        console.error("Journal saved, but book status could not refresh:", error);
       });
     }
+
+    return { entryId: savedEntry.id, savedLocally: true };
   };
 
-  const updateEntry = async (id: string, updates: Partial<JournalEntry>) => {
-    try {
-      await journalOperations.update(id, updates);
+  const updateEntry = async (
+    id: string,
+    updates: Partial<JournalEntry>,
+  ): Promise<JournalSaveResult> => {
+    await journalOperations.update(id, updates);
 
-      toast({
-        title: "Success",
-        description: "Journal entry updated",
-      });
-
-      await fetchEntries();
-    } catch (error) {
-      console.error("Error updating journal entry:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update journal entry",
-        variant: "destructive",
-      });
+    if (currentIdentity.current === identity) {
+      setState((previous) => previous.identity === identity ? {
+        ...previous,
+        entries: previous.entries.map((entry) =>
+          entry.id === id ? { ...entry, ...updates } : entry,
+        ),
+        error: null,
+      } : previous);
+      void fetchEntries(true);
     }
+
+    return { entryId: id, savedLocally: true };
   };
 
   const deleteEntry = async (id: string) => {
@@ -177,6 +202,6 @@ export const useJournalEntries = (bookId: string, userId?: string) => {
     addEntry,
     updateEntry,
     deleteEntry,
-    refetchEntries: fetchEntries,
+    refetchEntries,
   };
 };

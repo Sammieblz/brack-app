@@ -41,14 +41,16 @@ export const JournalEntryCard = ({ entry, onEdit, onDelete }: JournalEntryCardPr
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Edit journal entry"
               className="h-8 w-8"
-              onClick={() => onEdit(entry)}
+              onClick={(event) => { event.currentTarget.focus(); onEdit(entry); }}
             >
               <EditPencil className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Delete journal entry"
               className="h-8 w-8 text-destructive hover:text-destructive"
               onClick={() => onDelete(entry.id)}
             >

@@ -31,6 +31,8 @@ This is a separate operation from installation. It skips semantic processing of 
 
 ## Obsidian vault and browser graph
 
+The [frontend renewal dossier](./frontend-renewal/README.md) is maintained planning material outside the generated vault. Its [handoff protocol](./frontend-renewal/11-agent-handoff.md) explains how to use scoped graph queries and Obsidian source links without mistaking generated or historical notes for current implementation evidence. The frontend skill is now split into topical references; old graph locations into its previous long entrypoint may need source revalidation until the next local graph refresh.
+
 The repository-wide code graph is exported to `graphify-out/obsidian/`. In Obsidian, choose **Open folder as vault** and select that folder. No Obsidian community plugin is required. The browser visualization is `graphify-out/graph.html`; the audit report is `graphify-out/GRAPH_REPORT.md`.
 
 After extracting or updating the graph, regenerate the exports:

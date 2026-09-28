@@ -157,6 +157,9 @@ const asJournalEntry = (
     entry_type: (entryData.entry_type as JournalEntry["entry_type"]) || "note",
     title: (entryData.title as string | null) ?? null,
     content: String(entryData.content || ""),
+    content_format: (entryData.content_format as JournalEntry["content_format"]) ?? "plain",
+    content_json: (entryData.content_json as JournalEntry["content_json"]) ?? null,
+    content_html: (entryData.content_html as string | null) ?? null,
     page_reference: (entryData.page_reference as number | null) ?? null,
     tags: (entryData.tags as string[] | null) ?? null,
     photo_url: (entryData.photo_url as string | null) ?? null,
@@ -165,19 +168,30 @@ const asJournalEntry = (
   };
 };
 
+const syncJournalAfterCommit = (userId: string) => {
+  try {
+    syncInBackground(userId);
+  } catch (error) {
+    // Sync startup is ancillary: retrying an already committed create duplicates it.
+    console.error("Journal saved locally, but synchronization could not start:", error);
+  }
+};
+
 /**
  * Journal operations with durable local repository + outbox support.
  */
 export const journalOperations = {
   async create(entryData: Record<string, unknown>) {
     const user = await getCurrentAuthUser();
-    const userId = (entryData.user_id as string | undefined) || user?.id;
-    if (!userId) throw new Error("Not authenticated");
+    if (!user) throw new Error("Not authenticated");
+    if (entryData.user_id !== undefined && entryData.user_id !== user.id) {
+      throw new Error("Journal entry belongs to another reader");
+    }
+    const userId = user.id;
 
     const localEntry = asJournalEntry({ ...entryData, user_id: userId }, userId);
     await journalRepo.upsertLocal(userId, localEntry, "create");
-    syncInBackground(userId);
-    if (!isConnectivityAvailable()) toast.info("Journal entry saved offline.");
+    syncJournalAfterCommit(userId);
     return localEntry;
   },
 
@@ -187,13 +201,18 @@ export const journalOperations = {
 
     const existing = await journalRepo.get(entryId);
     if (!existing) throw new Error("This journal entry is not available locally yet");
+    if (existing.user_id !== user.id ||
+        (updates.user_id !== undefined && updates.user_id !== user.id)) {
+      throw new Error("Journal entry belongs to another reader");
+    }
     await journalRepo.upsertLocal(user.id, {
       ...existing,
       ...updates,
+      id: existing.id,
+      user_id: user.id,
       updated_at: new Date().toISOString(),
     } as JournalEntry, "update");
-    syncInBackground(user.id);
-    if (!isConnectivityAvailable()) toast.info("Journal update saved offline.");
+    syncJournalAfterCommit(user.id);
   },
 
   async delete(entryId: string) {

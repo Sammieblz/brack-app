@@ -4,9 +4,13 @@ Guide to testing strategies and best practices for Brack.
 
 ## Overview
 
-**Current Status**: No automated tests implemented yet
+**Current status (2026-09-27)**: Automated tests exist. The client uses Vitest and React Testing Library; Playwright covers web/Electron workflows and isolated shell, date-picker, loading, and Library-interaction fixtures. Test files and scripts establish available coverage, not a passing result in any particular session. See the root `package.json`, `apps/client/vitest.config.ts`, and `tests/playwright/` for current configuration.
 
-**Recommended Stack**:
+For frontend renewal, use the [verification matrix and current commands](./frontend-renewal/10-verification.md). Physical-device and assistive-technology checks complement the browser fixtures.
+
+The [journal save fixture](../tests/fixtures/journal-save/README.md) exercises the real full/quick editors and save hook against controlled service boundaries. Run `npx playwright test --config tests/playwright/journal-save.config.ts` for Chromium, Firefox and WebKit. The [F01 implementation tracker](./frontend-renewal/13-implementation-tracker.md) records actual results and persistence/native testing limits.
+
+**Stack**:
 - **Unit Tests**: Vitest
 - **Component Tests**: React Testing Library
 - **E2E Tests**: Playwright

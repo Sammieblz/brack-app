@@ -11,7 +11,13 @@ This documentation provides comprehensive coverage of:
 - **Deployment** - Ship to production
 - **Troubleshooting** - Solve common issues
 
-**Last Updated**: August 15, 2026
+**Last Updated**: September 27, 2026
+
+## Frontend renewal
+
+- [Audit and implementation plan](./frontend-renewal/README.md) — source-backed route audit, mobile/tablet/native/browser design, components, motion, accessibility and delivery tickets.
+- [Implementation sequence](./frontend-renewal/09-execution-plan.md) — dependencies, acceptance and rollback.
+- [Agent continuation protocol](./frontend-renewal/11-agent-handoff.md) — evidence, efficient retrieval and durable work records.
 
 ---
 
@@ -76,6 +82,7 @@ This documentation provides comprehensive coverage of:
 
 ### Development
 - [Components](./components.md) - UI component library
+- [Journal Editing](./ui-journal-editing.md) - Local save, draft and attachment contracts
 - [Loading Motion](./loading-motion.md) - Loader storyboard and timing contract
 - [Hooks Reference](./hooks.md) - Custom React hooks
 - [State Management](./state-management.md) - State patterns

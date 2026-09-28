@@ -1,0 +1,5 @@
+{
+  "extends": "../../apps/client/tsconfig.app.json",
+  "compilerOptions": { "noEmit": true, "types": ["node", "vite/client"] },
+  "include": ["journal-save.config.ts", "../e2e/journal-save.spec.ts", "../fixtures/journal-save/**/*.ts", "../fixtures/journal-save/**/*.tsx", "../../apps/client/src/vite-env.d.ts"]
+}

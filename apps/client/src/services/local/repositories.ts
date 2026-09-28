@@ -132,26 +132,17 @@ const createEntityRepo = <T extends { id: string }>(table: LocalTableName, entit
       deleted_at?: string | null;
     })[],
   ): Promise<T[]> {
-    const resolved: T[] = [];
-    const cleanRemoteItems: typeof items = [];
-
-    for (const item of items) {
+    // The condition belongs to the same driver transaction as the write:
+    // a repository-side precheck can race a newly committed local mutation.
+    await localDriver.upsertRecords(
+      table,
+      items.map((item) => toLocalRecord(userId, item, "synced")),
+      { preserveUnsynced: true },
+    );
+    return Promise.all(items.map(async (item) => {
       const local = await localDriver.getRecord<T>(table, item.id);
-      if (local && local.status !== "synced") {
-        resolved.push(local.data);
-      } else {
-        cleanRemoteItems.push(item);
-        resolved.push(item);
-      }
-    }
-
-    if (cleanRemoteItems.length > 0) {
-      await localDriver.upsertRecords(
-        table,
-        cleanRemoteItems.map((item) => toLocalRecord(userId, item, "synced")),
-      );
-    }
-    return resolved;
+      return local?.user_id === userId ? local.data : item;
+    }));
   },
 
   async upsertLocal(userId: string, item: T, operation: SyncOperation = "update") {

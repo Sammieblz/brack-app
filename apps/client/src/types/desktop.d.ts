@@ -16,7 +16,7 @@ export interface BrackDesktopPlatformInfo {
 
 export type BrackDesktopLocalDbRequest =
   | { operation: "upsertRecord"; table: LocalTableName; record: LocalRecord }
-  | { operation: "upsertRecords"; table: LocalTableName; records: LocalRecord[] }
+  | { operation: "upsertRecords"; table: LocalTableName; records: LocalRecord[]; options?: { preserveUnsynced?: boolean } }
   | { operation: "getRecord"; table: LocalTableName; id: string }
   | {
       operation: "listRecords";

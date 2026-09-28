@@ -6,6 +6,10 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 > **⚡ Need something quick?** Check the [Quick Reference](./quick-reference.md) cheat sheet.  
 > **📚 Want to see everything?** View the [Documentation Summary](./SUMMARY.md).
 
+## Frontend renewal plan
+
+The [frontend audit and implementation dossier](./frontend-renewal/README.md) covers mobile/native/browser boundaries, tablets, every current route, branded components, gestures, motion, accessibility, and an ordered delivery/verification plan. It records the 2026-09-27 baseline; proposed changes are not yet implemented. Start with its index and load the specification for the selected ticket.
+
 ## 📚 Table of Contents
 
 ### Getting Started
@@ -59,6 +63,7 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 
 ### Reference
 - [Components Guide](./components.md) - UI components and patterns
+- [Journal Editing](./ui-journal-editing.md) - Local save, draft, attachment and failure contracts
 - [Loading Motion](./loading-motion.md) - Branded loader storyboard, lifecycle, and validation
 - [Hooks Reference](./hooks.md) - Custom React hooks
 - [State Management](./state-management.md) - Data flow and caching

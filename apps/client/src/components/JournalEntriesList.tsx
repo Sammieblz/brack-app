@@ -52,10 +52,9 @@ export const JournalEntriesList = ({ bookId }: JournalEntriesListProps) => {
     entry: Omit<JournalEntry, "id" | "user_id" | "created_at" | "updated_at">,
   ) => {
     if (editingEntry) {
-      await updateEntry(editingEntry.id, entry);
-      setEditingEntry(null);
+      return updateEntry(editingEntry.id, entry);
     } else {
-      await addEntry(entry);
+      return addEntry(entry);
     }
   };
 
@@ -94,7 +93,8 @@ export const JournalEntriesList = ({ bookId }: JournalEntriesListProps) => {
             </SelectContent>
           </Select>
           <Button
-            onClick={() => {
+            onClick={(event) => {
+              event.currentTarget.focus();
               setEditingEntry(null);
               setDialogOpen(true);
             }}
@@ -156,7 +156,7 @@ export const JournalEntriesList = ({ bookId }: JournalEntriesListProps) => {
             size="compact"
             variant="plain"
             action={
-              <Button onClick={() => setDialogOpen(true)}>
+              <Button onClick={(event) => { event.currentTarget.focus(); setEditingEntry(null); setDialogOpen(true); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Your First Entry
               </Button>
@@ -178,7 +178,10 @@ export const JournalEntriesList = ({ bookId }: JournalEntriesListProps) => {
 
       <JournalEntryDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) setEditingEntry(null);
+        }}
         onSave={handleSave}
         editEntry={editingEntry}
         bookId={bookId}

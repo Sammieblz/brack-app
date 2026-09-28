@@ -42,6 +42,11 @@ export interface LocalMutationRecord {
   record: LocalRecord<unknown>;
 }
 
+export interface LocalUpsertOptions {
+  /** Hydration must check local ownership/status in the same atomic write. */
+  preserveUnsynced?: boolean;
+}
+
 export interface LocalBookIdentityRemap {
   userId: string;
   staleBookId: string;
@@ -293,7 +298,7 @@ const assertBookRemapSourceIsCurrent = (
 export interface LocalDriver {
   init(): Promise<void>;
   upsertRecord<T>(table: LocalTableName, record: LocalRecord<T>): Promise<void>;
-  upsertRecords<T>(table: LocalTableName, records: LocalRecord<T>[]): Promise<void>;
+  upsertRecords<T>(table: LocalTableName, records: LocalRecord<T>[], options?: LocalUpsertOptions): Promise<void>;
   getRecord<T>(table: LocalTableName, id: string): Promise<LocalRecord<T> | null>;
   listRecords<T>(
     table: LocalTableName,
@@ -378,9 +383,23 @@ class DexieLocalDriver implements LocalDriver {
     await this.table<T>(table).put(record);
   }
 
-  async upsertRecords<T>(table: LocalTableName, records: LocalRecord<T>[]) {
+  async upsertRecords<T>(table: LocalTableName, records: LocalRecord<T>[], options: LocalUpsertOptions = {}) {
     await this.init();
     if (records.length === 0) return;
+    if (options.preserveUnsynced) {
+      const target = this.table<T>(table);
+      // IndexedDB serializes overlapping write transactions across tabs too.
+      // A read outside this transaction could race a committed local edit.
+      await this.db.transaction("rw", target, async () => {
+        for (const record of records) {
+          const existing = await target.get(record.id);
+          if (!existing || (existing.status === "synced" && existing.user_id === record.user_id)) {
+            await target.put(record);
+          }
+        }
+      });
+      return;
+    }
     await this.table<T>(table).bulkPut(records);
   }
 
@@ -659,9 +678,21 @@ class SQLiteLocalDriver implements LocalDriver {
     table: LocalTableName,
     record: LocalRecord<T>,
     transaction = true,
+    preserveUnsynced = false,
   ) {
     await this.connection().run(
-      `INSERT OR REPLACE INTO ${table}
+      preserveUnsynced ? `INSERT INTO ${table}
+       (id, user_id, data, status, updated_at, deleted_at, last_synced_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET
+         user_id = excluded.user_id,
+         data = excluded.data,
+         status = excluded.status,
+         updated_at = excluded.updated_at,
+         deleted_at = excluded.deleted_at,
+         last_synced_at = excluded.last_synced_at
+       WHERE ${table}.status = 'synced' AND ${table}.user_id = excluded.user_id`
+      : `INSERT OR REPLACE INTO ${table}
        (id, user_id, data, status, updated_at, deleted_at, last_synced_at)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       this.serializeRecord(record),
@@ -715,9 +746,10 @@ class SQLiteLocalDriver implements LocalDriver {
     await this.writeRecord(table, record);
   }
 
-  async upsertRecords<T>(table: LocalTableName, records: LocalRecord<T>[]) {
+  async upsertRecords<T>(table: LocalTableName, records: LocalRecord<T>[], options: LocalUpsertOptions = {}) {
+    await this.init();
     for (const record of records) {
-      await this.upsertRecord(table, record);
+      await this.writeRecord(table, record, true, options.preserveUnsynced);
     }
   }
 
@@ -952,8 +984,8 @@ class SerializedLocalDriver implements LocalDriver {
     return this.run(() => this.delegate.upsertRecord(table, record));
   }
 
-  upsertRecords<T>(table: LocalTableName, records: LocalRecord<T>[]) {
-    return this.run(() => this.delegate.upsertRecords(table, records));
+  upsertRecords<T>(table: LocalTableName, records: LocalRecord<T>[], options?: LocalUpsertOptions) {
+    return this.run(() => this.delegate.upsertRecords(table, records, options));
   }
 
   getRecord<T>(table: LocalTableName, id: string) {
@@ -1037,8 +1069,8 @@ class ElectronSQLiteLocalDriver implements LocalDriver {
     await this.invoke({ operation: "upsertRecord", table, record });
   }
 
-  async upsertRecords<T>(table: LocalTableName, records: LocalRecord<T>[]) {
-    await this.invoke({ operation: "upsertRecords", table, records });
+  async upsertRecords<T>(table: LocalTableName, records: LocalRecord<T>[], options?: LocalUpsertOptions) {
+    await this.invoke({ operation: "upsertRecords", table, records, options });
   }
 
   async getRecord<T>(table: LocalTableName, id: string) {

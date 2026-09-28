@@ -68,7 +68,12 @@ interface SyncState {
 
 export type LocalDbRequest =
   | { operation: "upsertRecord"; table: LocalTableName; record: LocalRecord }
-  | { operation: "upsertRecords"; table: LocalTableName; records: LocalRecord[] }
+  | {
+      operation: "upsertRecords";
+      table: LocalTableName;
+      records: LocalRecord[];
+      options?: { preserveUnsynced?: boolean };
+    }
   | { operation: "getRecord"; table: LocalTableName; id: string }
   | {
       operation: "listRecords";
@@ -375,7 +380,7 @@ export class DesktopLocalDb {
       case "upsertRecord":
         return this.upsertRecord(assertTable(request.table), request.record);
       case "upsertRecords":
-        return this.upsertRecords(assertTable(request.table), request.records);
+        return this.upsertRecords(assertTable(request.table), request.records, request.options);
       case "getRecord":
         return this.getRecord(assertTable(request.table), assertString(request.id, "id"));
       case "listRecords":
@@ -526,7 +531,11 @@ export class DesktopLocalDb {
     };
   }
 
-  private upsertRecord(table: LocalTableName, record: LocalRecord) {
+  private upsertRecord(
+    table: LocalTableName,
+    record: LocalRecord,
+    options: { preserveUnsynced?: boolean } = {},
+  ) {
     this.connection()
       .prepare(
         `INSERT INTO ${table}
@@ -539,19 +548,28 @@ export class DesktopLocalDb {
           status = excluded.status,
           updated_at = excluded.updated_at,
           deleted_at = excluded.deleted_at,
-          last_synced_at = excluded.last_synced_at`
+          last_synced_at = excluded.last_synced_at
+         ${options.preserveUnsynced
+           ? `WHERE ${table}.status = 'synced' AND ${table}.user_id = excluded.user_id`
+           : ""}`
       )
       .run(this.serializeRecord(record));
     return null;
   }
 
-  private upsertRecords(table: LocalTableName, records: LocalRecord[]) {
+  private upsertRecords(
+    table: LocalTableName,
+    records: LocalRecord[],
+    options: { preserveUnsynced?: boolean } = {},
+  ) {
     if (!Array.isArray(records)) {
       throw new Error("Invalid local database request: records must be an array");
     }
     const transaction = this.connection().transaction((items: LocalRecord[]) => {
       for (const record of items) {
-        this.upsertRecord(table, record);
+        // Evaluate against the record at write time, not a hydration pre-read:
+        // a local mutation may have committed while remote data was loading.
+        this.upsertRecord(table, record, options);
       }
     });
     transaction(records);
