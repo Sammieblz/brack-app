@@ -27,6 +27,7 @@ import { useBooks } from "@/hooks/useBooks";
 import { findExistingLibraryBook } from "@/utils/bookIdentity";
 import { normalizeGenre } from "@/utils/genres";
 import { canonicalizeIsbn } from "@/utils/isbn";
+import { useUnsavedAppBack } from "@/hooks/useUnsavedAppBack";
 
 const AddBook = () => {
   const [user, setUser] = useState<{ id: string } | null>(null);
@@ -63,6 +64,10 @@ const AddBook = () => {
   const scannedBook = (
     location.state as { scannedBook?: GoogleBookResult } | null
   )?.scannedBook;
+  useUnsavedAppBack({
+    dirty: Object.values(formData).some((value) => typeof value === "string" && value.trim().length > 0),
+    pending: loading,
+  });
 
   useEffect(() => {
     let active = true;

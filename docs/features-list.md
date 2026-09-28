@@ -110,7 +110,7 @@ Comprehensive list of all features, screens, and capabilities in Brack.
 - `MobileLayout` - Mobile screen wrapper
 - `NativeScrollView` - Native scroll container
 - `NativeHeader` - Native-style header
-- `SwipeBackHandler` - Swipe back gesture
+- `AppNavigationProvider` - Shared app Back and overlay/task ownership ([contract](ui-back-navigation.md)); system edges remain platform-owned
 
 ### Specialized Components
 

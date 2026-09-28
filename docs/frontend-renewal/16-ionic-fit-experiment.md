@@ -1,6 +1,8 @@
 # F06 Ionic fit experiment checkpoint
 
-## Current checkpoint
+Historical checkpoint: the user approved this experiment and committed it as `f90509d9ee2092e872d91933020a4a71deb4798a`. The original review-stop statements below describe that completed batch. [Checkpoint 17](17-back-ownership.md) now owns the authorized F07 work; the Ionic adoption decision remains unchanged.
+
+## Original F06 checkpoint
 
 - Baseline: clean worktree at `2ddc1c25c3b453a5b3f923c99f4d3e58b45b7754` (F04/F05 committed by the preceding review cycle).
 - Selected ticket: **F06 only**, a complete isolated feasibility experiment and adoption decision. F07 and later product migrations are not started.

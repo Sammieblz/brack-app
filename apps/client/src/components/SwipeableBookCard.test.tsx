@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Book } from "@/types";
 import { SwipeableBookCard } from "./SwipeableBookCard";
+import { registerBackLayer } from "@/lib/backLayers";
 
 const mocks = vi.hoisted(() => ({
   confirm: vi.fn().mockResolvedValue(true),
@@ -32,7 +33,10 @@ const renderCard = () => {
   const result = render(
     <SwipeableBookCard book={book} onView={fallbackOpen} onEdit={edit} onDelete={remove} onStatusChange={status}>
       <article className="library-book-surface">
-        <button type="button" onClick={open}>Open Orlando</button>
+        <button type="button" className="library-book-primary" onClick={open}>Open Orlando</button>
+        <button type="button">More actions</button>
+        <input aria-label="Reading note" />
+        <span data-gesture-ignore>Selectable annotation</span>
         <span>Metadata</span>
       </article>
     </SwipeableBookCard>
@@ -44,11 +48,11 @@ const renderCard = () => {
 
 const start = (target: HTMLElement, x = 250, y = 80) => {
   fireEvent.pointerDown(target, { pointerType: "touch", pointerId: 1 });
-  fireEvent.touchStart(target, { touches: [{ clientX: x, clientY: y }] });
+  fireEvent.touchStart(target, { touches: [{ identifier: 1, clientX: x, clientY: y }] });
 };
 
 const move = (target: HTMLElement, x: number, y = 80) => {
-  const event = createEvent.touchMove(target, { touches: [{ clientX: x, clientY: y }], cancelable: true });
+  const event = createEvent.touchMove(target, { touches: [{ identifier: 1, clientX: x, clientY: y }], cancelable: true });
   fireEvent(target, event);
   return event;
 };
@@ -178,5 +182,145 @@ describe("Swipeable book gesture isolation", () => {
     const { primary, sliding } = renderCard();
     swipeLeft(primary);
     expect(sliding.style.transition).toBe("none");
+  });
+
+  it.each([2, 24, window.innerWidth - 2, window.innerWidth - 24])("leaves the system edge at x=%s unclaimed", (x) => {
+    const { primary, sliding, open } = renderCard();
+    start(primary, x);
+    expect(move(primary, x - 140).defaultPrevented).toBe(false);
+    end(primary);
+    expect(sliding.style.transform).toBe("translateX(0px)");
+    fireEvent.click(primary, { detail: 1 });
+    expect(open).not.toHaveBeenCalled();
+    expect(mocks.haptic).not.toHaveBeenCalled();
+    start(primary, x);
+    end(primary);
+    fireEvent.click(primary, { detail: 1 });
+    expect(open).toHaveBeenCalledOnce();
+  });
+
+  it.each(["More actions", "Reading note", "Selectable annotation"])("does not claim a gesture on %s", (name) => {
+    const { sliding } = renderCard();
+    const target = screen.queryByLabelText(name) ?? screen.getByText(name);
+    start(target);
+    expect(move(target, 100).defaultPrevented).toBe(false);
+    end(target);
+    expect(sliding.style.transform).toBe("translateX(0px)");
+    expect(mocks.haptic).not.toHaveBeenCalled();
+  });
+
+  it.each(["blur", "pagehide", "scroll", "contextmenu"])("cancels on %s without reviving on a late touchend", (event) => {
+    const { primary, sliding, open } = renderCard();
+    start(primary);
+    move(primary, 100);
+    fireEvent(window, new Event(event));
+    expect(sliding.style.transform).toBe("translateX(0px)");
+    expect(move(primary, 90).defaultPrevented).toBe(false);
+    end(primary);
+    fireEvent.click(primary, { detail: 1 });
+    expect(open).not.toHaveBeenCalled();
+    expect(mocks.haptic).not.toHaveBeenCalled();
+    start(primary);
+    end(primary);
+    fireEvent.click(primary, { detail: 1 });
+    expect(open).toHaveBeenCalledOnce();
+  });
+
+  it("cancels for a second touch anywhere, leaving pinch default behavior available", () => {
+    const { primary, sliding } = renderCard();
+    start(primary);
+    move(primary, 100);
+    const second = createEvent.touchStart(document.body, {
+      touches: [{ identifier: 1, clientX: 100, clientY: 80 }, { identifier: 2, clientX: 190, clientY: 80 }],
+      cancelable: true,
+    });
+    fireEvent(document.body, second);
+    expect(second.defaultPrevented).toBe(false);
+    expect(sliding.style.transform).toBe("translateX(0px)");
+    expect(move(primary, 90).defaultPrevented).toBe(false);
+    end(primary);
+    expect(mocks.haptic).not.toHaveBeenCalled();
+  });
+
+  it("cancels when the tracked finger is replaced", () => {
+    const { primary, sliding } = renderCard();
+    start(primary);
+    move(primary, 100);
+    fireEvent.touchMove(primary, { touches: [{ identifier: 2, clientX: 90, clientY: 80 }] });
+    end(primary);
+    expect(sliding.style.transform).toBe("translateX(0px)");
+    expect(mocks.haptic).not.toHaveBeenCalled();
+  });
+
+  it("does not start on selected text and cancels when a selection appears mid-contact", () => {
+    const selection = window.getSelection()!;
+    const { primary, sliding } = renderCard();
+    const range = document.createRange();
+    range.selectNodeContents(screen.getByText("Metadata"));
+    selection.removeAllRanges();
+    selection.addRange(range);
+    expect(selection.toString()).toBe("Metadata");
+    start(primary);
+    expect(move(primary, 100).defaultPrevented).toBe(false);
+    end(primary);
+    selection.removeAllRanges();
+    start(primary);
+    move(primary, 100);
+    selection.addRange(range);
+    fireEvent(document, new Event("selectionchange"));
+    end(primary);
+    expect(sliding.style.transform).toBe("translateX(0px)");
+    expect(mocks.haptic).not.toHaveBeenCalled();
+    selection.removeAllRanges();
+  });
+
+  it("cancels an active contact when the document becomes hidden", () => {
+    const hidden = vi.spyOn(document, "hidden", "get").mockReturnValue(true);
+    const { primary, sliding } = renderCard();
+    start(primary);
+    move(primary, 100);
+    fireEvent(document, new Event("visibilitychange"));
+    end(primary);
+    expect(sliding.style.transform).toBe("translateX(0px)");
+    expect(mocks.haptic).not.toHaveBeenCalled();
+    hidden.mockRestore();
+  });
+
+  it.each(["before start", "before release"])("yields to an overlay opened %s without dismissing it", (timing) => {
+    const { primary, sliding } = renderCard();
+    const overlay = document.createElement("div");
+    overlay.dataset.state = "open";
+    const register = () => { document.body.append(overlay); return registerBackLayer(overlay); };
+    let unregister: (() => void) | undefined;
+    try {
+      if (timing === "before start") unregister = register();
+      start(primary);
+      move(primary, 100);
+      if (timing === "before release") unregister = register();
+      end(primary);
+      expect(sliding.style.transform).toBe("translateX(0px)");
+      expect(mocks.haptic).not.toHaveBeenCalled();
+      expect(overlay.dataset.state).toBe("open");
+    } finally {
+      unregister?.(); overlay.remove();
+    }
+  });
+
+  it("does not install contact listeners while idle and removes them on end or unmount", () => {
+    const add = vi.spyOn(window, "addEventListener");
+    const remove = vi.spyOn(window, "removeEventListener");
+    const { primary, unmount } = renderCard();
+    const contactAdds = () => add.mock.calls.filter(([type]) => type === "touchstart");
+    expect(contactAdds()).toHaveLength(0);
+    start(primary);
+    const observer = contactAdds()[0][1];
+    end(primary);
+    expect(remove).toHaveBeenCalledWith("touchstart", observer, true);
+    start(primary);
+    const nextObserver = contactAdds()[1][1];
+    unmount();
+    expect(remove).toHaveBeenCalledWith("touchstart", nextObserver, true);
+    add.mockRestore();
+    remove.mockRestore();
   });
 });

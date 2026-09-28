@@ -20,8 +20,9 @@ component mocks are kept separate so React Fast Refresh boundaries remain valid.
 The fixture renders the production `MyBooks` and `Achievements` route screens,
 `MobileLayout`, sidebar primitives, `NativeHeader`, `MobileHeader`, scroll hooks,
 `JourneyTabsRail`, the actual League/standings panel, and all three actual Library
-view components using production styles. The route wrappers (`SwipeBackHandler`,
-`PageTransition`) and viewport-height hook also match the application. Data hooks,
+view components using production styles. The plain shell wrappers (retaining the
+retired edge-swipe owner's geometry), `PageTransition` and viewport-height hook
+also match the application. Data hooks,
 persistence/telemetry calls, unrelated account overlays, and the other interior
 Journey panels are replaced by test-only Vite aliases. The sidebar
 has its real sizing/collapse behavior with minimal contents. This is a geometry

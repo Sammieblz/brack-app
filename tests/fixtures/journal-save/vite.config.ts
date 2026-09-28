@@ -9,6 +9,7 @@ const client = path.resolve(__dirname, '../../../apps/client');
 const adapters = path.join(__dirname, 'adapters.ts');
 
 export default defineConfig({
+  cacheDir: path.resolve(__dirname, '../../../node_modules/.vite/journal-save'),
   root: __dirname,
   publicDir: path.join(client, 'public'),
   plugins: [react()],

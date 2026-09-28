@@ -18,6 +18,10 @@ F06 uses the [isolated Ionic feasibility fixture](../tests/fixtures/ionic-fit/RE
 
 The [current decision](./ui-ionic-fit.md) defers the tested Ionic route shell and modal. Expected-failing adoption gates preserve the desired lifecycle and keyboard contracts; report ordinary behavioral passes and declared gate failures separately, because Playwright can count expected failures in its successful-run summary. An unexpected pass requires investigation, not automatically changing the expectation. [Checkpoint 16](./frontend-renewal/16-ionic-fit-experiment.md) owns exact final counts and validation limits. Synthetic timers, local navigation, screenshots and runtime emulation do not certify production performance, physical devices or assistive technology.
 
+F07 uses the [Back ownership fixture](../tests/fixtures/back-ownership/README.md): `npx playwright test --config tests/playwright/back-ownership.config.ts` on port8091. It runs the real coordinator/router/overlays against synthetic account/plugin/draft/timer inputs. The action-feedback fixture additionally tests the actual Add Book form; EditBook has real form/router/confirmation integration tests. [Checkpoint 17](./frontend-renewal/17-back-ownership.md) records actual results and device limits.
+
+Concurrent fixture servers need independent Vite `cacheDir` as well as independent Playwright artifact output and ports. F07 reproduced `504 Outdated Optimize Dep` from the shared root cache and separated the affected fixtures. Do not classify a page that never loaded as a product assertion result. Firefox may tab first to the actual scrollable root: verify that named container and the next semantic control instead of assuming the first Tab always reaches a card. Pointer reordering must wait for observable activation and destination-over state before release.
+
 **Stack**:
 - **Unit Tests**: Vitest
 - **Component Tests**: React Testing Library

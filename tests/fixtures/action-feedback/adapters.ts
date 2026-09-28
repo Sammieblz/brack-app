@@ -17,6 +17,11 @@ export const NotificationType = { Success: 'SUCCESS', Warning: 'WARNING', Error:
 const unsupported = async () => { throw new Error('External launch is outside this fixture'); };
 export const Browser = { open: unsupported };
 export const AppLauncher = { openUrl: unsupported, canOpenUrl: unsupported };
+// Native Back is exercised by the dedicated back-ownership fixture.
+export const App = {
+  addListener: async () => ({ remove: async () => undefined }),
+  minimizeApp: async () => undefined,
+};
 export const Haptics = {
   impact: (options: unknown) => recordHaptic('impact', options),
   notification: (options: unknown) => recordHaptic('notification', options),

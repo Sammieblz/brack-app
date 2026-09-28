@@ -9,6 +9,8 @@ import { ContextMenuNative } from '@/components/ui/context-menu-native';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { hapticsEnabled } from './state';
 import '@/index.css';
+import { AppNavigationProvider } from '@/contexts/AppNavigationProvider';
+import { ConfirmDialogProvider } from '@/contexts/ConfirmDialogContext';
 
 export function Destination() {
   const location = useLocation();
@@ -32,10 +34,10 @@ export function Gestures() {
   </section>;
 }
 export function Fixture() {
-  return <TooltipProvider><BrowserRouter><header className="flex flex-wrap gap-4 border-b p-4"><p>Action feedback fixture</p>
+  return <TooltipProvider><ConfirmDialogProvider><BrowserRouter><AppNavigationProvider accountScope="fixture-reader"><header className="flex flex-wrap gap-4 border-b p-4"><p>Action feedback fixture</p>
     <Link to="/add-book">Add fixture</Link><Link to="/gestures">Gesture fixture</Link><Link to="/elsewhere">Leave fixture</Link>
   </header><Routes>
     <Route path="/add-book" element={<AddBook />} /><Route path="/gestures" element={<Gestures />} /><Route path="*" element={<Destination />} />
-  </Routes><SonnerToaster /><Toaster /></BrowserRouter></TooltipProvider>;
+  </Routes><SonnerToaster /><Toaster /></AppNavigationProvider></BrowserRouter></ConfirmDialogProvider></TooltipProvider>;
 }
 createRoot(document.getElementById('root')!).render(<Fixture />);

@@ -5,6 +5,7 @@ import { BRACK_STREAK_HAPPY_IMAGE } from "@/config/brackAssets";
 import { useGSAP } from "@/hooks/useGSAP";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useBackLayer } from "@/hooks/useBackLayer";
 
 export const STREAK_CELEBRATION_DURATION_MS = 2_000;
 /** Other celebration observers can use this marker to queue instead of overlap. */
@@ -48,6 +49,7 @@ export const StreakCelebrationOverlay = ({
   durationMs = STREAK_CELEBRATION_DURATION_MS,
 }: StreakCelebrationOverlayProps) => {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const backLayerRef = useBackLayer(overlayRef);
   const stageRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
@@ -213,7 +215,7 @@ export const StreakCelebrationOverlay = ({
       <DialogPrimitive.Portal>
           <DialogPrimitive.Overlay className="fixed inset-0 z-[10019] bg-background/90" />
           <DialogPrimitive.Content
-      ref={overlayRef}
+      ref={backLayerRef}
       className="fixed inset-0 z-[10020] flex h-[100dvh] w-screen touch-manipulation cursor-pointer items-center justify-center overflow-hidden px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] text-foreground backdrop-blur-[3px]"
       style={{
         background: "radial-gradient(circle at 50% 43%, hsl(var(--primary) / 0.22) 0%, hsl(var(--background) / 0.74) 48%, hsl(var(--background) / 0.9) 100%)",

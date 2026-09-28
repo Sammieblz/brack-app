@@ -26,6 +26,7 @@ vi.mock("@/components/BookSearch", () => ({ BookSearch: ({ onQuickAdd }: { onQui
 } }));
 
 import AddBook from "./AddBook";
+import { ConfirmDialogProvider } from "@/contexts/ConfirmDialogContext";
 
 function Destination() {
   const { pathname, state } = useLocation();
@@ -38,9 +39,9 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 async function setup(path = "/add-book?isbn=9780140328721") {
-  await act(async () => { render(<MemoryRouter initialEntries={[path]}><Link to="/elsewhere">Leave form</Link><Routes>
+  await act(async () => { render(<ConfirmDialogProvider><MemoryRouter initialEntries={[path]}><Link to="/elsewhere">Leave form</Link><Routes>
     <Route path="/add-book" element={<AddBook />} /><Route path="*" element={<Destination />} />
-  </Routes></MemoryRouter>); });
+  </Routes></MemoryRouter></ConfirmDialogProvider>); });
 }
 function submit(title = "A manual book") {
   fireEvent.change(screen.getByRole("textbox", { name: "Title" }), { target: { value: title } });

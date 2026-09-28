@@ -14,10 +14,10 @@ The original audit proposed starting at [F00](09-execution-plan.md), with F01–
 - Initial native navigation retains Home, Library, Lists, Feed, Readers; social gating removes the last two. Browser menu presentation changes chrome, not the destination model.
 - The existing custom DatePicker, library modes, region loading, brand loader and reduced-motion/reward work contain valuable contracts. Inspect before replacing.
 - The original audit's journal save-outcome, draft-clearing, invalid club-link, click-only card and notification-state defects were addressed in F01–F03. Preserve the living journal/navigation contracts rather than reopening them from the baseline list.
-- Duplicate back-swipe ownership and remaining gesture/history arbitration belong to F07. F04 addressed its scoped long-press cancellation and add-book decoration waits; [its contract](../ui-action-feedback.md) distinguishes actual changes from broader gesture work. Do not infer a measured latency improvement from source changes alone.
+- F07 removes duplicate edge navigation and provides [one app Back coordinator](../ui-back-navigation.md) plus [local contact cancellation](../ui-local-gestures.md). Its exact implemented scope and remaining native gates are in checkpoint 17. Preserve F04's [action feedback](../ui-action-feedback.md). Do not infer measured latency improvements from source changes alone.
 - Preserve themes, logos, Inter/Merriweather/Playfair roles, Iconoir, domain language, offline capture, timer reliability and service ownership.
 - Accessibility is default behavior. App settings may reduce effects/haptics; they cannot substitute for semantic access or enable OS screen readers.
-- Ticket progress is recorded in 09 and the linked active checkpoint. F01–F05 are committed; F04/F05 are at `2ddc1c25c3b453a5b3f923c99f4d3e58b45b7754`. F06 is an implemented isolated experiment awaiting review in [16](16-ionic-fit-experiment.md); real-AT/device evidence remains unverified. F07 and later implementation remains planned.
+- Ticket progress is recorded in 09 and the linked active checkpoint. F01–F06 are committed; F06 is at `f90509d9ee2092e872d91933020a4a71deb4798a`. [17](17-back-ownership.md) owns the active F07 implementation and validation. F08 onward is not started; real-AT/device evidence remains unverified.
 
 ## Bounded retrieval workflow
 
@@ -64,7 +64,7 @@ Do not duplicate the entire source file, graph report or transcript. Prefer a us
 
 ## Progress checkpoint template
 
-The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). The user explicitly requested durable implementation documents: [13](13-implementation-tracker.md) preserves F01, [14](14-next-implementation-batch.md) preserves F02/F03, [15](15-feedback-environment-batch.md) preserves committed F04/F05, and [16](16-ionic-fit-experiment.md) owns the active F06 checkpoint. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate the active status across competing detailed records.
+The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). Checkpoints 13–16 preserve committed batches; [17](17-back-ownership.md) owns active F07. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate detailed active status across competing records.
 
 Update the relevant ticket and append a concise checkpoint when handing off:
 
@@ -85,7 +85,7 @@ An interrupted session should be resumable from this checkpoint without asking t
 
 ## Active implementation checkpoint
 
-**Current:** F01–F05 are committed, with F04/F05 at `2ddc1c25c3b453a5b3f923c99f4d3e58b45b7754`. **F06 is an implemented isolated Ionic fit experiment awaiting review.** Its [decision](../ui-ionic-fit.md) defers the tested route shell and modal because the adoption gates fail; compatible package peers do not waive lifecycle or keyboard requirements. Read [16-ionic-fit-experiment.md](16-ionic-fit-experiment.md) for exact validation, final counts and continuation. Report ordinary passes and declared adoption-gate failures separately. Stop for review; no commit or F07+ implementation is authorized by this batch. F07 is next using the existing router and primitives. The earlier F04/F05 review stop in [15](15-feedback-environment-batch.md) is historical.
+**Current:** F01–F06 are committed. The user approved the experiment and authorized F07. Read [17-back-ownership.md](17-back-ownership.md) for current implementation, actual validation and the required review stop. F06's [defer decision](../ui-ionic-fit.md) still applies. Do not commit or begin F08/F09 without the next user instruction; no physical native or real-AT acceptance is implied by browser results.
 
 Earlier F02/F03 results and their review stop are historical in [14](14-next-implementation-batch.md). Actual native/AT/live-service checks remain release evidence gaps. The original audit above is historical; do not restart completed tickets from its defect list.
 

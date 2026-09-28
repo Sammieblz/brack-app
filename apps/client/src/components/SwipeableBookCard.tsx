@@ -1,10 +1,11 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useSwipeable } from "react-swipeable";
 import { Trash, CheckCircle, EditPencil } from "iconoir-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { Book } from "@/types";
+import { getLocalGestureTouch, observeTouchCancellation } from "@/utils/touchGesture";
 
 interface SwipeableBookCardProps {
   book: Book;
@@ -28,6 +29,8 @@ export const SwipeableBookCard = ({
   const swipeDirection = useRef<"horizontal" | "vertical" | null>(null);
   const swipeStartOffset = useRef(0);
   const suppressNextClick = useRef(false);
+  const contact = useRef<number | null>(null);
+  const removeContactListeners = useRef<() => void>();
   const prefersReducedMotion = useReducedMotion();
   const { triggerHaptic } = useHapticFeedback();
   const confirmDialog = useConfirmDialog();
@@ -35,17 +38,42 @@ export const SwipeableBookCard = ({
   const SWIPE_THRESHOLD = 100;
   const MAX_SWIPE = 200;
 
+  const endContact = useCallback(() => {
+    contact.current = null;
+    removeContactListeners.current?.();
+    removeContactListeners.current = undefined;
+  }, []);
+
+  const cancelSwipe = useCallback(() => {
+    if (contact.current === null) return;
+    endContact();
+    swipeDirection.current = null;
+    suppressNextClick.current = true;
+    setIsSwiping(false);
+    setSwipeOffset(swipeStartOffset.current);
+  }, [endContact]);
+
+  useEffect(() => () => endContact(), [endContact, book.id]);
+
   const handlers = useSwipeable({
-    onTouchStartOrOnMouseDown: () => {
+    onTouchStartOrOnMouseDown: ({ event }) => {
+      endContact();
       swipeDirection.current = null;
       swipeStartOffset.current = swipeOffset;
       suppressNextClick.current = false;
+      if (!('touches' in event)) return;
+      const touch = getLocalGestureTouch(event, '.library-book-primary');
+      if (!touch) return;
+      contact.current = touch.identifier;
+      removeContactListeners.current = observeTouchCancellation(touch.identifier, cancelSwipe);
     },
     onSwiping: (e) => {
+      // Even a rejected edge/scroll contact must not become a synthesized card tap.
+      suppressNextClick.current = true;
+      if (contact.current === null) return;
       // Lock direction once the gesture passes the library's movement threshold.
       // A vertical page scroll must never become a book action or block scrolling.
       swipeDirection.current ??= e.absX > e.absY ? "horizontal" : "vertical";
-      suppressNextClick.current = true;
       if (swipeDirection.current !== "horizontal") return;
       if (e.event.cancelable) e.event.preventDefault();
       setIsSwiping(true);
@@ -56,6 +84,7 @@ export const SwipeableBookCard = ({
         : offset > 0 ? offset * 0.2 : offset);
     },
     onSwiped: (e) => {
+      if (contact.current === null) return;
       setIsSwiping(false);
       if (swipeDirection.current !== "horizontal") return;
       if (swipeStartOffset.current + e.deltaX <= -SWIPE_THRESHOLD && e.deltaX < 0) {
@@ -65,6 +94,7 @@ export const SwipeableBookCard = ({
         setSwipeOffset(0);
       }
     },
+    onTouchEndOrOnMouseUp: endContact,
     trackMouse: false,
     // Only horizontal gestures call preventDefault above. The built-in option
     // would also cancel vertical scrolling whenever onSwiping is registered.
@@ -121,12 +151,10 @@ export const SwipeableBookCard = ({
     <div
       className="relative overflow-hidden"
       {...handlers}
-      onPointerDownCapture={() => { suppressNextClick.current = false; }}
-      onTouchCancel={() => {
-        setIsSwiping(false);
-        setSwipeOffset(swipeStartOffset.current);
-        suppressNextClick.current = true;
+      onPointerDownCapture={(event) => {
+        if (event.isPrimary !== false) suppressNextClick.current = false;
       }}
+      onTouchCancel={cancelSwipe}
       onClickCapture={(event) => {
         // Capture runs before the card's native primary button. A completed or
         // cancelled swipe must not also open/select the book underneath it.

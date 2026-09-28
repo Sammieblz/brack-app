@@ -82,7 +82,24 @@ for (const view of views) {
   test(`${view}: native Enter/Space activation and predictable focus restoration`, async ({ page }) => {
     await load(page, `view=${view}`, 390);
     const primary = page.getByRole('button', { name: `Open ${title}`, exact: true });
+    const focusBefore = await page.evaluate(() => ({ documentHasFocus: document.hasFocus(), active: document.activeElement?.tagName }));
     await page.keyboard.press('Tab');
+    const firstTab = await page.evaluate(() => {
+      const active = document.activeElement as HTMLElement;
+      return { documentHasFocus: document.hasFocus(), tag: active.tagName, id: active.id,
+        overflowY: getComputedStyle(active).overflowY, scrollHeight: active.scrollHeight, clientHeight: active.clientHeight };
+    });
+    // Firefox includes this real scrolling surface in its native Tab order.
+    // Permit that one named container, then require the first book immediately.
+    if (firstTab.id === 'root') {
+      expect(firstTab.overflowY).toMatch(/^(auto|scroll)$/);
+      expect(firstTab.scrollHeight).toBeGreaterThan(firstTab.clientHeight);
+      await page.keyboard.press('Tab');
+    }
+    await test.info().attach('initial-tab-focus', {
+      contentType: 'application/json',
+      body: JSON.stringify({ before: focusBefore, firstTab, after: await page.evaluate(() => ({ documentHasFocus: document.hasFocus(), tag: document.activeElement?.tagName, label: document.activeElement?.getAttribute('aria-label') })) }),
+    });
     await expect(primary).toBeFocused();
     for (const key of ['Enter', 'Space']) {
       await primary.focus();
@@ -232,7 +249,9 @@ test('shelf pointer reorder keeps the whole book draggable without opening', asy
   await page.mouse.move(start.x, start.y);
   await page.mouse.down();
   await page.mouse.move(start.x + 10, start.y, { steps: 3 });
+  await expect(page.getByRole('button', { name: `Move ${title}`, exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.mouse.move(second!.x + second!.width / 2, second!.y + second!.height / 2, { steps: 12 });
+  await expect(page.getByRole('status').filter({ hasText: 'was moved over droppable area fixture-book-1' })).toHaveCount(1);
   await page.mouse.up();
   await expect.poll(() => events(page)).toEqual([{ action: 'reorder', id: 'fixture-book-1,fixture-book-0,fixture-book-2,fixture-book-3,fixture-book-4,fixture-book-5,fixture-book-6,fixture-book-7' }]);
   await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -278,3 +297,37 @@ test('touch swipe reveals actions without opening and a later tap remains usable
   await expect.poll(() => events(page)).toEqual([{ action: 'view', id: bookId }]);
   await context.close();
 });
+
+for (const interruption of ['touchcancel', 'second-finger'] as const) {
+  test(`interrupted row swipe (${interruption}) restores the card and permits a fresh tap`, async ({ browser, browserName }) => {
+    test.skip(browserName !== 'chromium', 'Browser touch input uses Chromium CDP; this does not claim native device gesture support.');
+    const context = await browser.newContext({ hasTouch: true, viewport: { width: 390, height: 1000 } });
+    const page = await context.newPage();
+    await localOnly(page);
+    await load(page, 'view=flat&swipe=1', 390);
+    const card = page.locator('.library-book-surface').first();
+    const initial = (await card.boundingBox())!;
+    const y = initial.y + 70;
+    const startX = initial.x + initial.width - 25;
+    const session = await context.newCDPSession(page);
+    await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ id: 1, x: startX, y }] });
+    for (let step = 1; step <= 8; step++) {
+      await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ id: 1, x: startX - step * 13, y }] });
+    }
+    await expect.poll(async () => initial.x - (await card.boundingBox())!.x).toBeGreaterThan(50);
+    if (interruption === 'touchcancel') {
+      await session.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
+    } else {
+      await session.send('Input.dispatchTouchEvent', {
+        type: 'touchStart', touchPoints: [{ id: 1, x: startX - 104, y }, { id: 2, x: startX - 40, y: y + 40 }],
+      });
+      await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    }
+    await expect.poll(async () => Math.abs((await card.boundingBox())!.x - initial.x)).toBeLessThan(0.5);
+    await expect(page.getByRole('button', { name: 'Mark as complete', exact: true })).toHaveCount(0);
+    expect(await events(page)).toEqual([]);
+    await page.touchscreen.tap(initial.x + 5, initial.y + 30);
+    await expect.poll(() => events(page)).toEqual([{ action: 'view', id: bookId }]);
+    await context.close();
+  });
+}

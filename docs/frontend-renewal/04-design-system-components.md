@@ -101,6 +101,8 @@ For rotation or breakpoint changes while open, keep the same form state outside 
 
 Existing `DismissableSheetContent` (`components/ui/dismissable-sheet.tsx`) has internal `open` state changed by its pull callback without passing that state to the parent Radix root; `GoalsSheet.tsx` controls the root separately. Treat this as a source-level dismissal ownership defect to reproduce and correct during overlay consolidation. Do not retain a visual pull-away that leaves the actual modal open. Also review its blanket autofocus prevention and nested overflow against the accessibility contract.
 
+F07 resolution of this baseline finding: Goals now uses the existing controlled Sheet with visible Close, tested Escape/app Back and focus return. Unused dismissable wrappers and their delayed pull hook were removed. A future F08 handle gesture must satisfy the full interaction contract; [overlay evidence](evidence/f07-overlay-ownership.md) records the actual checks.
+
 ## 6. Date picker and calendar specification
 
 Read [the existing date-picker contract](../ui-date-pickers.md) before editing. Keep one canonical parser and one active field API. `Calendar` is a low-level DayPicker v8 wrapper; `DatePickerCalendar` supplies the active historical-date behavior. A class in the generic wrapper alone does not prove the actual date field has that class's target size because the composite overrides it.

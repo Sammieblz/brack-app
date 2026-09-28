@@ -217,7 +217,8 @@ All colors MUST be HSL.
     height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
-    overscroll-behavior-x: none;
+    /* Leave browser/system horizontal navigation gestures under platform control. */
+    overscroll-behavior-x: auto;
   }
 
   body {
@@ -706,7 +707,7 @@ All colors MUST be HSL.
     scroll-padding-top: calc(var(--app-header-height) + 0.75rem);
     scroll-padding-bottom: var(--app-scroll-bottom-inset);
     scroll-behavior: auto;
-    touch-action: pan-y;
+    touch-action: pan-y pinch-zoom;
   }
 
   .app-equal-panel-grid {
@@ -1823,7 +1824,7 @@ All colors MUST be HSL.
       overscroll-behavior-y: contain;
       -webkit-overflow-scrolling: touch;
       scrollbar-gutter: stable;
-      touch-action: pan-y;
+      touch-action: pan-y pinch-zoom;
     }
   }
 
@@ -1832,7 +1833,7 @@ All colors MUST be HSL.
     overscroll-behavior-y: auto;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
-    touch-action: pan-y;
+    touch-action: pan-y pinch-zoom;
   }
 
   .app-page {

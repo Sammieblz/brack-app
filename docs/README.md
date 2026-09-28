@@ -10,7 +10,7 @@ Welcome to the Brack (Book Tracking) application documentation! This wiki provid
 
 The [frontend audit and implementation dossier](./frontend-renewal/README.md) covers mobile/native/browser boundaries, tablets, every current route, branded components, gestures, motion, accessibility, and an ordered delivery/verification plan. It retains the 2026-09-27 audit baseline; its work ledger and active checkpoint distinguish implemented tickets from future proposals. Start with its index and load the specification for the selected ticket.
 
-The [F06 Ionic decision](./ui-ionic-fit.md) defers the tested route shell and modal after the isolated experiment. [Checkpoint 16](./frontend-renewal/16-ionic-fit-experiment.md) records actual results and the review stop; F07 is next using the existing production router and primitives. The [fixture guide](../tests/fixtures/ionic-fit/README.md) explains reproduction and expected-failing adoption gates.
+The [F06 Ionic decision](./ui-ionic-fit.md) defers the tested route shell and modal after the committed experiment. [Checkpoint 17](./frontend-renewal/17-back-ownership.md) owns current F07 implementation and verification. The [Ionic fixture guide](../tests/fixtures/ionic-fit/README.md) preserves reproduction and expected-failing adoption gates.
 
 ## 📚 Table of Contents
 
@@ -71,6 +71,8 @@ The [F06 Ionic decision](./ui-ionic-fit.md) defers the tested route shell and mo
 - [Action Feedback](./ui-action-feedback.md) - Add completion, semantic haptics and local long-press ownership
 - [UI Environment](./ui-environment.md) - Runtime, display mode, layout/visual viewport and input capabilities
 - [Ionic Integration Decision](./ui-ionic-fit.md) - F06 evidence, deferred adoption and current component/router ownership
+- [App Back Ownership](./ui-back-navigation.md) - Verified ancestry, Android callback policy, overlays and task guards
+- [Local Gesture Ownership](./ui-local-gestures.md) - System edges, cancellation, row swipe and refresh
 - [Loading Motion](./loading-motion.md) - Branded loader storyboard, lifecycle, and validation
 - [Hooks Reference](./hooks.md) - Custom React hooks
 - [State Management](./state-management.md) - Data flow and caching

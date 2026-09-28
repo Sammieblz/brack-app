@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Status: **F01–F05 committed; F06 Ionic fit experiment completed, awaiting review**. The [decision](../ui-ionic-fit.md) defers production Ionic9.0.5 router/modal adoption after failed lifecycle/focus gates. Follow the [active checkpoint](16-ionic-fit-experiment.md) for scope, actual validation and the review stop. [13](13-implementation-tracker.md), [14](14-next-implementation-batch.md) and [15](15-feedback-environment-batch.md) preserve earlier batches. Other tickets remain unimplemented unless the work ledger says otherwise. Device testing, real assistive-technology acceptance, production performance and accessibility conformance remain future work except for explicitly recorded observations.
+Status: **F01–F06 committed; F07 Back ownership implemented and verified within its documented scope, awaiting user review**. The [decision](../ui-ionic-fit.md) defers production Ionic9.0.5 router/modal adoption after failed lifecycle/focus gates. Follow the [active checkpoint](17-back-ownership.md) for scope, actual validation and the review stop. Checkpoints 13–16 preserve earlier batches. Other tickets remain unimplemented unless the work ledger says otherwise. Device testing, real assistive-technology acceptance, production performance and accessibility conformance remain future work except for explicitly recorded observations.
 
 ## Outcome
 
@@ -39,7 +39,8 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [13 — F01 implementation tracker](13-implementation-tracker.md) | Historical F01 changes/checks and pointer to the current batch |
 | [14 — F02 + F03 batch](14-next-implementation-batch.md) | Historical committed batch, changes and actual verification |
 | [15 — F04 + F05 batch](15-feedback-environment-batch.md) | Historical committed feedback/runtime foundation implementation and actual checks |
-| [16 — F06 Ionic fit](16-ionic-fit-experiment.md) | Active isolated experiment, integration evidence, adoption decision and continuation |
+| [16 — F06 Ionic fit](16-ionic-fit-experiment.md) | Historical committed experiment, integration evidence and adoption decision |
+| [17 — F07 Back ownership](17-back-ownership.md) | Active implementation, verified ancestry, overlays, task protection and local gestures |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability

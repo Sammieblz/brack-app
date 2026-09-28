@@ -1,9 +1,10 @@
-import { ReactNode, useRef, useState } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { Refresh } from "iconoir-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { getScrollParent, getScrollTop } from "@/utils/scroll";
+import { getLocalGestureTouch, observeTouchCancellation } from "@/utils/touchGesture";
 
 interface PullToRefreshProps {
   onRefresh: () => Promise<void>;
@@ -19,28 +20,50 @@ export const PullToRefresh = ({ onRefresh, children, disabled = false }: PullToR
   const { triggerHaptic } = useHapticFeedback();
   const containerRef = useRef<HTMLDivElement>(null);
   const startYRef = useRef(0);
+  const startXRef = useRef(0);
   const trackingRef = useRef(false);
+  const verticalRef = useRef(false);
+  const removeContactListeners = useRef<() => void>();
+  const refreshingRef = useRef(false);
   const thresholdHapticRef = useRef(false);
   const pullDistanceRef = useRef(0);
   const [pullDistance, setPullDistance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
-  const resetPull = () => {
+  const endContact = useCallback(() => {
+    removeContactListeners.current?.();
+    removeContactListeners.current = undefined;
+  }, []);
+
+  const resetPull = useCallback(() => {
+    endContact();
     trackingRef.current = false;
+    verticalRef.current = false;
     thresholdHapticRef.current = false;
     startYRef.current = 0;
     pullDistanceRef.current = 0;
     setPullDistance(0);
-  };
+  }, [endContact]);
+
+  useEffect(() => {
+    if (disabled || !isMobile) resetPull();
+    return endContact;
+  }, [disabled, isMobile, resetPull, endContact]);
 
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (disabled || refreshing || !isMobile || !containerRef.current) return;
+    resetPull();
+    if (disabled || refreshingRef.current || !isMobile || !containerRef.current) return;
+
+    const touch = getLocalGestureTouch(event.nativeEvent, '.library-book-primary');
+    if (!touch) return;
 
     const scrollParent = getScrollParent(containerRef.current);
     if (getScrollTop(scrollParent) > 0) return;
 
     trackingRef.current = true;
-    startYRef.current = event.touches[0].clientY;
+    startYRef.current = touch.clientY;
+    startXRef.current = touch.clientX;
+    removeContactListeners.current = observeTouchCancellation(touch.identifier, resetPull);
   };
 
   const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
@@ -53,6 +76,15 @@ export const PullToRefresh = ({ onRefresh, children, disabled = false }: PullToR
     }
 
     const deltaY = event.touches[0].clientY - startYRef.current;
+    const deltaX = event.touches[0].clientX - startXRef.current;
+    if (!verticalRef.current) {
+      if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < 10) return;
+      if (Math.abs(deltaX) >= Math.abs(deltaY)) {
+        resetPull();
+        return;
+      }
+      verticalRef.current = true;
+    }
     if (deltaY <= 0) {
       resetPull();
       return;
@@ -77,11 +109,13 @@ export const PullToRefresh = ({ onRefresh, children, disabled = false }: PullToR
     if (!shouldRefresh) return;
 
     try {
+      refreshingRef.current = true;
       setRefreshing(true);
       triggerHaptic("medium");
       await onRefresh();
       triggerHaptic("success");
     } finally {
+      refreshingRef.current = false;
       setRefreshing(false);
     }
   };
@@ -96,7 +130,7 @@ export const PullToRefresh = ({ onRefresh, children, disabled = false }: PullToR
   return (
     <div
       ref={containerRef}
-      className="relative min-h-full touch-pan-y"
+      className="relative min-h-full touch-pan-y touch-pinch-zoom"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

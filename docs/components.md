@@ -653,17 +653,11 @@ wrapper for older callers.
 
 **Purpose**: Desktop sidebar navigation
 
-#### SwipeBackHandler
+#### AppNavigationProvider
 
-**Location**: `apps/client/src/components/SwipeBackHandler.tsx`
+**Location**: `apps/client/src/contexts/AppNavigationProvider.tsx`
 
-**Purpose**: iOS-style swipe back gesture
-
-```tsx
-<SwipeBackHandler>
-  <YourRoutes />
-</SwipeBackHandler>
-```
+Coordinates app/native Back, verified ancestry and task/overlay guards inside BrowserRouter. See [Back ownership](ui-back-navigation.md). F07 retired the duplicate SwipeBackHandler edge recognizer; no native iOS route stack is implied.
 
 ## shadcn/ui Components
 

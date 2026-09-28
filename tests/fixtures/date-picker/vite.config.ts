@@ -8,6 +8,7 @@ import baseTailwind from '../../../apps/client/tailwind.config';
 const client = path.resolve(__dirname, '../../../apps/client');
 
 export default defineConfig({
+  cacheDir: path.resolve(__dirname, '../../../node_modules/.vite/date-picker'),
   root: __dirname,
   publicDir: false,
   plugins: [react()],

@@ -9,6 +9,7 @@ const client = path.resolve(__dirname, '../../../apps/client');
 
 export default defineConfig({
   root: __dirname,
+  cacheDir: path.resolve(__dirname, '../../../node_modules/.vite/library-interactions'),
   publicDir: path.join(client, 'public'),
   plugins: [react()],
   define: {

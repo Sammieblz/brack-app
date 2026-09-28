@@ -49,4 +49,6 @@ The renewal dossier describes proposed behavior and audited baseline facts separ
 
 ## Delivery
 
+Before changing Back, overlays or touch handlers, use the living [app Back](../../../docs/ui-back-navigation.md) and [local gesture](../../../docs/ui-local-gestures.md) contracts. Preserve the shared coordinator, explicit overlay registration, pending/dirty guards and browser-owned history. The Android callback fixture does not establish hardware IME or iOS edge behavior; independent native stacks remain future shell work.
+
 Define useful states, semantic structure and responsive behavior before motion. Run relevant existing contracts, add meaningful behavior regressions, and attach actual results. Update current-behavior docs after implementation; mark incomplete device checks honestly. For code changes update an existing Graphify index locally per project instructions; do not trigger cloud extraction or a new broad index merely to finish a UI task.

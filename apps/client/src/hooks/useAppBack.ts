@@ -1,10 +1,7 @@
-import { useCallback } from "react";
+import { useCallback, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-
-// BrowserRouter's index counts app-owned history entries. Replacing a direct
-// entry (for example, changing a tab query) creates a key without a prior page.
-export const hasAppHistory = () => Number.isInteger(window.history.state?.idx)
-  && window.history.state.idx > 0;
+import { AppNavigationContext } from "@/contexts/appNavigation";
+import { requestOverlayBack } from "@/lib/backLayers";
 
 export interface BackButtonConfig {
   label?: string;
@@ -15,13 +12,19 @@ export interface BackButtonConfig {
 }
 
 export const useAppBack = ({
-  fallbackPath = "/dashboard",
+  fallbackPath,
   to,
   onBack,
 }: BackButtonConfig = {}) => {
   const navigate = useNavigate();
+  const navigation = useContext(AppNavigationContext);
+  const requestBack = navigation?.requestBack;
 
   const goBack = useCallback(() => {
+    if (requestBack) { requestBack({ fallbackPath, to, onBack }); return; }
+    // Isolated consumers without the app boundary still dismiss existing layers,
+    // but cannot infer a predecessor from another router's numeric index.
+    if (requestOverlayBack()) return;
     if (onBack) {
       onBack();
       return;
@@ -32,13 +35,8 @@ export const useAppBack = ({
       return;
     }
 
-    if (hasAppHistory()) {
-      navigate(-1);
-      return;
-    }
+    navigate(fallbackPath ?? "/dashboard", { replace: true });
+  }, [fallbackPath, navigate, onBack, to, requestBack]);
 
-    navigate(fallbackPath);
-  }, [fallbackPath, navigate, onBack, to]);
-
-  return { goBack };
+  return { goBack, canGoBack: navigation?.canGoBack ?? false };
 };

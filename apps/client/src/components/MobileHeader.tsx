@@ -1,12 +1,9 @@
 import { ReactNode, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useProfileContext } from "@/contexts/ProfileContext";
 import { ProfileDrawer } from "@/components/ProfileDrawer";
-import { useSwipeToOpenDrawer } from "@/hooks/useSwipeToOpenDrawer";
 import { getInitials } from "@/lib/avatarUtils";
 import { cn } from "@/lib/utils";
 import { AppBackButton } from "@/components/AppBackButton";
@@ -34,32 +31,20 @@ export const MobileHeader = ({
   className
 }: MobileHeaderProps) => {
   const headerRef = useAppHeader();
-  const { triggerHaptic } = useHapticFeedback();
   const { profile, isLoading: profileLoading } = useProfileContext();
   const isMobile = useIsMobile();
   const backConfig = back ?? (showBack ? {} : undefined);
   const hasBack = Boolean(backConfig);
-  const { isSwiping } = useSwipeBack(isMobile && hasBack && !backConfig?.onBack && !backConfig?.to);
   const [drawerOpen, setDrawerOpen] = useState(false);
   
   // Determine if we should show avatar (root-level pages without back button)
   const showAvatar = !hasBack && isMobile;
   const displayName = profile?.display_name || 'User';
 
-  // Enable swipe-to-open drawer only on root-level pages (when avatar is shown)
-  useSwipeToOpenDrawer({
-    onSwipeOpen: () => {
-      triggerHaptic("selection");
-      setDrawerOpen(true);
-    },
-    enabled: showAvatar,
-  });
-
   return (
     <>
       <header ref={headerRef} className={cn(
         "sticky top-0 z-50 bg-background/95 pt-[var(--app-safe-top,0px)] backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border shrink-0",
-        isSwiping && "transition-transform duration-300",
         className
       )}>
         <div className="flex items-center justify-between h-14 px-4">
@@ -83,7 +68,6 @@ export const MobileHeader = ({
                   variant="ghost"
                   size="icon"
                   onClick={() => {
-                    triggerHaptic("selection");
                     setDrawerOpen(true);
                   }}
                   className="shrink-0"

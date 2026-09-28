@@ -4,6 +4,7 @@ import { Calendar as CalendarIcon, Xmark } from "iconoir-react";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useBackLayer } from "@/hooks/useBackLayer";
 import { getDateInputFormat, normalizeDateOnly, todayDateOnly, toLocalDate, validateDateOnly, type DateOnlyInput } from "@/lib/dateOnly";
 import { cn } from "@/lib/utils";
 import { DatePickerCalendar } from "./date-picker-calendar";
@@ -54,6 +55,7 @@ export const DatePicker = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const mobilePanelRef = useBackLayer(panelRef);
   const emitted = useRef<string | null | undefined>(undefined);
   const previousFormat = useRef(format);
   const previousValidity = useRef<boolean>();
@@ -200,7 +202,7 @@ export const DatePicker = ({
             <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
             <Dialog.Portal>
               <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
-              <Dialog.Content ref={panelRef} data-date-picker
+              <Dialog.Content ref={mobilePanelRef} data-date-picker
                 onOpenAutoFocus={focusCalendar} onCloseAutoFocus={restoreFocus}
                 className="fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-md flex-col overflow-hidden rounded-t-xl border border-border bg-popover font-sans text-popover-foreground shadow-xl outline-none"
                 style={{ maxHeight: viewport ? `${Math.max(0, viewport.height - 8)}px` : "calc(100dvh - 8px)", bottom: viewport?.bottom ?? 0 }}>

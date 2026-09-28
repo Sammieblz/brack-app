@@ -37,8 +37,8 @@ Source review of every `usePlatform` branch:
 | `NativeSearchBar` | Native-specific radii, focus decoration and iOS Cancel/Back affordances apply only to native. Browser retains input, search, clear and recent-search controls. No query/draft behavior changes. |
 | `ActionSheet` | iOS-only placement/radius branch now requires native iOS. Browser/PWA use the existing web dialog branch. Actions and visible Cancel remain. |
 | `Toaster` / `native-toast` | Native typography/decoration is selected only for native; browser/PWA use existing web toast variants. `native-toast` has an unused legacy import, not a second detector. F04 owns haptic feedback behavior. |
-| `useSwipeBack`, `useSwipeToOpenDrawer` | Custom native edge listeners no longer attach in phone browser/PWA merely because of UA. Browser Back/Forward gestures remain available; visible app navigation remains. Existing native listener ownership/arbitration issues remain F07, not a claim of solved native gesture conflicts. |
-| `usePullToDismiss` / `dismissable-sheet` | Pull recognizer only attaches in native runtime; browser/PWA keep Radix Close/Escape. The sheet's own `platform` binding was unused; the hook is the actual gate. Existing native pull dismissal implementation remains for F07 review. |
+| Route/drawer edge gestures | F07 retired `useSwipeBack`, `useSwipeToOpenDrawer` and the fake page-swipe wrapper. System edges remain unclaimed by those owners; visible Back/profile controls remain. See [local gesture ownership](ui-local-gestures.md) for reserved edges, cancellation and the unverified native-swipe boundary. |
+| Goals overlay | F07 replaced its disconnected pull recognizer with controlled Sheet/visible Close and removed unused dismissable wrappers and usePullToDismiss. Tested adaptive handle gestures remain F08 work. |
 
 ## Verification boundary
 

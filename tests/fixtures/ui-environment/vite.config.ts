@@ -6,6 +6,7 @@ import path from "node:path";
 import baseTailwind from "../../../apps/client/tailwind.config";
 const client = path.resolve(__dirname, "../../../apps/client");
 export default defineConfig({
+  cacheDir: path.resolve(__dirname, '../../../node_modules/.vite/ui-environment'),
   root: __dirname, publicDir: false, plugins: [react()],
   resolve: { alias: [
     { find: "@/hooks/useHapticFeedback", replacement: path.join(__dirname, "haptics.ts") },

@@ -42,10 +42,10 @@ export const ImageLightbox = ({
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Radix owns Escape and the topmost layer. A nested surface must not also
+      // dismiss this lightbox, or invoke its close callback a second time.
+      if (e.defaultPrevented) return;
       switch (e.key) {
-        case 'Escape':
-          onClose();
-          break;
         case '+':
         case '=':
           handleZoomIn();

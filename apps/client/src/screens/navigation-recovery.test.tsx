@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -34,6 +34,7 @@ import UserProfile from "./UserProfile";
 import ReadingHistory from "./ReadingHistory";
 import NotFound from "./NotFound";
 import { FeatureGate } from "@/components/FeatureGate";
+import { AppNavigationProvider } from "@/contexts/AppNavigationProvider";
 
 const book = { id: "book-one", title: "The Left Hand of Darkness", author: "Ursula K. Le Guin", cover_url: null, status: "reading" };
 const club = { id: "club-one", name: "Evening readers", description: "Shared reading", is_private: false, cover_image_url: null };
@@ -50,8 +51,19 @@ function LocationProbe() {
   const location = useLocation();
   return <output data-testid="location">{location.pathname}{location.search}</output>;
 }
+function SeedObservedEntries({ entries }: { entries: string[] }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const cursor = useRef(1);
+  useEffect(() => {
+    if (cursor.current < entries.length) navigate(entries[cursor.current++]);
+  }, [navigate, location.key, entries]);
+  return null;
+}
 function renderRoutes(initialEntries: string[]) {
-  return render(<MemoryRouter initialEntries={initialEntries}>
+  window.history.replaceState(window.history.state ?? { idx: 0 }, "", initialEntries[0]);
+  return render(<BrowserRouter><AppNavigationProvider accountScope={mocks.user?.id ?? null}>
+    <SeedObservedEntries entries={initialEntries} />
     <LocationProbe />
     <Routes>
       <Route path="/users/:userId" element={<FeatureGate feature="social"><UserProfile /></FeatureGate>} />
@@ -65,7 +77,7 @@ function renderRoutes(initialEntries: string[]) {
       <Route path="/" element={<Destination name="Home destination" />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
-  </MemoryRouter>);
+  </AppNavigationProvider></BrowserRouter>);
 }
 
 function expectBrowserHandledModifier(link: HTMLElement, modifier: "ctrlKey" | "metaKey") {
@@ -82,6 +94,7 @@ function expectBrowserHandledModifier(link: HTMLElement, modifier: "ctrlKey" | "
 }
 
 beforeEach(() => {
+  window.sessionStorage.clear();
   vi.clearAllMocks();
   mocks.user = { id: "reader" };
   mocks.mobile = false;
@@ -178,7 +191,7 @@ describe("profile and history navigation", () => {
 });
 
 describe("unknown route recovery", () => {
-  it.each([undefined, 0, -1, "2"])("offers a Library link without unsafe Back on direct entry (index %s)", async (idx) => {
+  it.each([undefined, 0, -1, "2", 5])("offers a Library link without unsafe Back on direct entry (index %s)", async (idx) => {
     window.history.replaceState({ idx, key: "a-nondefault-key" }, "");
     const user = userEvent.setup();
     renderRoutes(["/missing"]);
@@ -187,7 +200,7 @@ describe("unknown route recovery", () => {
     const recovery = screen.getByRole("link", { name: "Go to my library" });
     expect(recovery).toHaveAttribute("href", "/my-books");
     await user.click(recovery);
-    expect(screen.getByRole("heading", { name: "Library destination" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Library destination" })).toBeInTheDocument();
   });
 
   it("offers an in-app Home link for a signed-out reader", async () => {

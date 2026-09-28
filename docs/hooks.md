@@ -347,29 +347,11 @@ const longPressHandlers = useLongPress(() => {
 <div {...longPressHandlers}>Long press me</div>
 ```
 
-### useSwipeBack
+### App Back and overlay ownership
 
-**Location**: `apps/client/src/hooks/useSwipeBack.ts`
+`hooks/useAppBack.ts` delegates to `AppNavigationProvider`; `useAppBackGuard` protects route tasks, and `useBackLayer` registers primitive content. Read the [Back contract](ui-back-navigation.md) before adding a consumer.
 
-**Purpose**: iOS-style swipe back gesture
-
-```typescript
-const swipeHandlers = useSwipeBack(() => {
-  navigate(-1);
-});
-
-<div {...swipeHandlers}>Content</div>
-```
-
-### usePullToDismiss
-
-**Location**: `apps/client/src/hooks/usePullToDismiss.ts`
-
-**Purpose**: Pull down to dismiss modals
-
-```typescript
-const pullHandlers = usePullToDismiss(onDismiss, threshold);
-```
+F07 retired `useSwipeBack`, `useSwipeToOpenDrawer` and the disconnected `usePullToDismiss`. System edges have no custom document recognizer; Goals uses a controlled Sheet and visible Close. Existing row/refresh interactions follow [local gesture ownership](ui-local-gestures.md). Do not copy the obsolete hook examples from historical audit records.
 
 ## Utility Hooks
 

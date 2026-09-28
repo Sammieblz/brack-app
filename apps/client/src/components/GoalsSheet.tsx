@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  DismissableSheet,
-  DismissableSheetContent,
-  DismissableSheetDescription,
-  DismissableSheetHeader,
-  DismissableSheetTitle,
-  DismissableSheetTrigger,
-} from "@/components/ui/dismissable-sheet";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   Dialog,
   DialogContent,
@@ -36,23 +36,23 @@ export const GoalsSheet = () => {
 
   if (isMobile) {
     return (
-      <DismissableSheet open={open} onOpenChange={setOpen}>
-        <DismissableSheetTrigger asChild>
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>
           <Button variant="outline" size="sm" className="gap-2">
             <APP_ICONS.dashboard.goal className="h-4 w-4" />
             Goals
           </Button>
-        </DismissableSheetTrigger>
-        <DismissableSheetContent className="max-h-[85vh]">
-          <DismissableSheetHeader>
-            <DismissableSheetTitle className="font-display">Reading Goals</DismissableSheetTitle>
-            <DismissableSheetDescription className="font-sans">
+        </SheetTrigger>
+        <SheetContent side="bottom" className="flex max-h-[85dvh] flex-col gap-0 rounded-t-[20px] p-0 [&>button]:size-11 [&>button]:right-2 [&>button]:top-2">
+          <SheetHeader className="px-6 pr-14 pt-4">
+            <SheetTitle className="font-display">Reading Goals</SheetTitle>
+            <SheetDescription className="font-sans">
               Set and track your reading goals
-            </DismissableSheetDescription>
-          </DismissableSheetHeader>
-          <div className="overflow-y-auto">{content}</div>
-        </DismissableSheetContent>
-      </DismissableSheet>
+            </SheetDescription>
+          </SheetHeader>
+          <div className="min-h-0 overflow-y-auto overscroll-contain">{content}</div>
+        </SheetContent>
+      </Sheet>
     );
   }
 

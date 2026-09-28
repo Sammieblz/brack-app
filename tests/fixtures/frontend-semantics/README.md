@@ -2,6 +2,8 @@
 
 This local fixture exercises F02/F03 with synthetic readers and service results. It runs no real account operation and writes no reader data.
 
+F07 mounts the real AppNavigationProvider so recovery tests use observed ancestry and resolved fixture identity. The server has an independent Vite optimizer cache. Broader native callback/overlay/task coverage lives in the [Back fixture](../back-ownership/README.md).
+
 ```powershell
 npx playwright test --config tests/playwright/frontend-semantics.config.ts
 npx tsc -p tests/playwright/tsconfig.frontend-semantics.json --noEmit

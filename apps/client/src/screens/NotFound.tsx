@@ -1,15 +1,15 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { hasAppHistory } from "@/hooks/useAppBack";
+import { useAppBack } from "@/hooks/useAppBack";
 import { NavArrowLeft } from "iconoir-react";
 
 const NotFound = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { user } = useAuth();
   const recoveryPath = user ? "/my-books" : "/";
+  const { goBack, canGoBack } = useAppBack({ fallbackPath: recoveryPath });
 
   useEffect(() => {
     console.error(
@@ -25,10 +25,7 @@ const NotFound = () => {
         <h1 className="font-display text-3xl font-bold">Page not found</h1>
         <p className="font-sans text-muted-foreground">This link may have changed or the page may no longer exist.</p>
         <div className="flex flex-wrap justify-center gap-3">
-          {hasAppHistory() && <Button type="button" variant="outline" onClick={() => {
-            if (hasAppHistory()) navigate(-1);
-            else navigate(recoveryPath, { replace: true });
-          }}>
+          {canGoBack && <Button type="button" variant="outline" onClick={goBack}>
             <NavArrowLeft className="mr-2 h-5 w-5" aria-hidden="true" />Go back
           </Button>}
           <Button asChild><Link to={recoveryPath} replace>{user ? "Go to my library" : "Go home"}</Link></Button>

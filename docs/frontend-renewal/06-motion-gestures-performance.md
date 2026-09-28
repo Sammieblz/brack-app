@@ -6,6 +6,8 @@ Implementation update: F04 supplies immediate AddBook completion, semantic hapti
 
 ## 1. Evidence and priority
 
+F07 update: [checkpoint 17](17-back-ownership.md) and [local gestures](../ui-local-gestures.md) record retirement of duplicate edge navigation and disconnected pull-dismiss, plus cancellation/axis/overlay guards for existing row and refresh gestures. These address the relevant baseline findings below. They do not establish measured navigation latency or verified native route transitions; broader brand motion remains F19 work.
+
 Graphify was queried before scoped source reads. Its broad query was truncated; the source files below were then inspected directly. Graph relationships locate owners; current source establishes behavior. `apps/client/src/` is abbreviated as `src/` in this document.
 
 | ID | Evidence class | Finding and consequence | Implementation owner and priority |

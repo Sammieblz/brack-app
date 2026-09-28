@@ -5,8 +5,6 @@ import { useUIEnvironment } from "@/hooks/useUIEnvironment";
 import { usePlatform } from "@/hooks/usePlatform";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { useAppViewportHeight } from "@/hooks/useAppViewportHeight";
-import { useSwipeBack } from "@/hooks/useSwipeBack";
-import { useSwipeToOpenDrawer } from "@/hooks/useSwipeToOpenDrawer";
 import { MobileBackButton } from "@/components/mobile/MobileBackButton";
 import { NativeScrollView } from "@/components/NativeScrollView";
 import { getAuthFlowSurface, getAuthRedirectUrl } from "@/services/platform";
@@ -20,10 +18,7 @@ export function EnvironmentFixture() {
   const [draft, setDraft] = useState("");
   const [pages, setPages] = useState(0);
   const [instance] = useState(() => ++mounts);
-  const [drawers, setDrawers] = useState(0);
   useAppViewportHeight();
-  useSwipeBack();
-  useSwipeToOpenDrawer({ onSwipeOpen: () => setDrawers((value) => value + 1) });
   return <NativeScrollView className="mx-auto max-w-3xl space-y-4 p-6">
     <h1 className="text-2xl font-semibold">UI environment fixture</h1>
     <MobileBackButton to="/library" />
@@ -34,7 +29,6 @@ export function EnvironmentFixture() {
     <p>Auth surface: <span data-testid="auth-surface">{getAuthFlowSurface()}</span></p>
     <p>Auth redirect: <span data-testid="auth-redirect">{getAuthRedirectUrl()}</span></p>
     <p>Instance: <span data-testid="instance">{instance}</span></p>
-    <p>Gesture drawer opens: <span data-testid="drawers">{drawers}</span></p>
     <label htmlFor="draft" className="block">Reading note</label>
     <textarea id="draft" className="w-full border p-3" value={draft} onChange={(event) => setDraft(event.target.value)} />
     <button type="button" className="border p-3" onClick={() => setPages((value) => value + 1)}>Read one page</button>

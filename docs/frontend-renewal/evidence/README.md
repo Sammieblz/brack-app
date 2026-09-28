@@ -1,5 +1,7 @@
 # Current-state fixture observations
 
+F07 implementation evidence is recorded separately in [navigation ownership](f07-navigation-ownership.md) and [overlay ownership](f07-overlay-ownership.md), with the current results/review stop in [checkpoint 17](../17-back-ownership.md). It preserves the distinction between synthetic browser policy checks and native-device acceptance.
+
 These Library images preserve the original audit baseline. The later F06 experiment has its own [retained artifacts](ionic-fit/README.md), [modal evidence](ionic-fit-modal.md), [navigation evidence](ionic-fit-navigation.md) and [bundle comparison](ionic-fit-bundle.md); it does not replace these baseline captures or represent a production redesign.
 
 Captured 2026-09-27 from the existing `tests/fixtures/shell-scroll` harness at `http://127.0.0.1:8082/my-books?view=flat`, using installed Playwright Chromium in headless mode. These are baseline screenshots, not redesign mockups.

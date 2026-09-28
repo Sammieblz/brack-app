@@ -9,6 +9,8 @@ import { FeatureGate } from '@/components/FeatureGate';
 import ReadingHistory from '@/screens/ReadingHistory';
 import UserProfile from '@/screens/UserProfile';
 import NotFound from '@/screens/NotFound';
+import { AppNavigationProvider } from '@/contexts/AppNavigationProvider';
+import { useAuth } from './adapters';
 import { ReviewForm } from '@/components/social/ReviewForm';
 import { getHeaderVersion, queryClient, subscribe } from './state';
 import '@/index.css';
@@ -26,7 +28,8 @@ export function Editors() {
 }
 export function Fixture() {
   const headerVersion = useSyncExternalStore(subscribe, getHeaderVersion, getHeaderVersion);
-  return <div className="min-h-screen bg-background text-foreground">
+  const { user } = useAuth();
+  return <AppNavigationProvider accountScope={user?.id ?? null}><div className="min-h-screen bg-background text-foreground">
     <header className="flex flex-wrap items-center gap-4 border-b p-4">
       <p className="font-display">Frontend semantics fixture</p>
       <nav aria-label="Fixture routes" className="flex flex-wrap gap-4">
@@ -47,6 +50,6 @@ export function Fixture() {
       <Route path="/editors" element={<Editors />} />
       <Route path="*" element={<NotFound />} />
     </Routes><Toaster />
-  </div>;
+  </div></AppNavigationProvider>;
 }
 createRoot(document.getElementById('root')!).render(<QueryClientProvider client={queryClient}><TooltipProvider><BrowserRouter><Fixture /></BrowserRouter></TooltipProvider></QueryClientProvider>);

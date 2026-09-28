@@ -25,6 +25,7 @@ const mockedComponentModules = [
 ];
 
 export default defineConfig({
+  cacheDir: path.resolve(__dirname, '../../../node_modules/.vite/shell-scroll'),
   root: __dirname,
   publicDir: path.join(client, 'public'),
   plugins: [react()],

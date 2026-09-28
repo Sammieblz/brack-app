@@ -36,6 +36,8 @@ import { validateBookForm, type ValidationError } from "@/utils/formValidation";
 import type { Book } from "@/types";
 import { fetchBookById, uploadPublicStorageFile } from "@/services/api";
 import { DatePicker } from "@/components/ui/date-picker";
+import { useUnsavedAppBack } from "@/hooks/useUnsavedAppBack";
+import { useAppBack } from "@/hooks/useAppBack";
 import {
   normalizeDateOnly,
   todayDateOnly,
@@ -69,6 +71,11 @@ export default function EditBook() {
   const [startDateValid, setStartDateValid] = useState(true);
   const [finishDateValid, setFinishDateValid] = useState(true);
   const { pickWithPrompt } = useImagePicker();
+  const { goBack: cancelEdit } = useAppBack({ to: id ? `/book/${id}` : "/my-books" });
+  useUnsavedAppBack({
+    dirty: !startDateValid || !finishDateValid || (draft?.id === resourceId && JSON.stringify(draft.book) !== JSON.stringify(loadedBook)),
+    pending: saving || uploading,
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -432,16 +439,16 @@ export default function EditBook() {
               <div>
                 <Label htmlFor="rating">Rating (1-5)</Label>
                 <Select
-                  value={book.rating?.toString() || ""}
+                  value={book.rating?.toString() ?? "none"}
                   onValueChange={(value) =>
-                    setBook({ ...book, rating: value ? parseInt(value) : null })
+                    setBook({ ...book, rating: value === "none" ? null : parseInt(value, 10) })
                   }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="No rating" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No rating</SelectItem>
+                    <SelectItem value="none">No rating</SelectItem>
                     <SelectItem value="1">★ 1 Star</SelectItem>
                     <SelectItem value="2">★★ 2 Stars</SelectItem>
                     <SelectItem value="3">★★★ 3 Stars</SelectItem>
@@ -581,7 +588,7 @@ export default function EditBook() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate(`/book/${id}`)}
+                    onClick={cancelEdit}
                   >
                     Cancel
                   </Button>

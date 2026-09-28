@@ -10,7 +10,7 @@ import { PageTransition } from "@/components/animations/PageTransition";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { TimerProvider } from "@/contexts/TimerContext";
 import { FloatingTimerWidget } from "@/components/FloatingTimerWidget";
-import { SwipeBackHandler } from "@/components/SwipeBackHandler";
+import { AppNavigationProvider } from "@/contexts/AppNavigationProvider";
 import { JournalPromptHandler } from "@/components/JournalPromptHandler";
 import { ReadingSyncIndicator } from "@/components/ReadingSyncIndicator";
 import { syncService } from "@/services/syncService";
@@ -133,12 +133,14 @@ const App = () => {
                   <LiveRegion level="polite" />
                   <Suspense fallback={<BrandedLoadingScreen message="Opening Brack..." />}>
                     <BrowserRouter>
+                      <AppNavigationProvider accountScope={authLoading ? undefined : authenticatedUserId ?? null}>
                       <RewardFeedbackProvider>
                         <BadgeCelebrationProvider>
                         <DeepLinkHandler />
                         <JourneyLevelUpObserver />
                         <OnboardingRouteGuard />
-                        <SwipeBackHandler>
+                        <div className="relative min-h-full w-full overflow-x-hidden">
+                          <div className="relative min-h-full w-full bg-background">
                           <PageTransition>
                             <Routes>
                             <Route path="/" element={<Index />} />
@@ -186,9 +188,11 @@ const App = () => {
                         <FloatingTimerWidget />
                         <JournalPromptHandler />
                         <ReadingSyncIndicator />
-                      </SwipeBackHandler>
+                          </div>
+                        </div>
                         </BadgeCelebrationProvider>
                       </RewardFeedbackProvider>
+                      </AppNavigationProvider>
                     </BrowserRouter>
                   </Suspense>
                 </TooltipProvider>

@@ -30,6 +30,6 @@ describe("app back ownership", () => {
     const { result } = renderHook(() => useAppBack({ fallbackPath: "/my-books" }));
     window.history.replaceState({ idx: 0, key: "replaced-entry" }, "");
     act(() => result.current.goBack());
-    expect(navigate).toHaveBeenCalledExactlyOnceWith("/my-books");
+    expect(navigate).toHaveBeenCalledExactlyOnceWith("/my-books", { replace: true });
   });
 });

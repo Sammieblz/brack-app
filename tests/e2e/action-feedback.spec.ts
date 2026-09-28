@@ -27,6 +27,38 @@ async function pointer(page: Page, type: string, extra: Record<string, unknown> 
 }
 
 test.describe('F04 Add Book feedback', () => {
+  test('F07 dirty app Back keeps the manual draft until explicit discard', async ({ page }) => {
+    await manual(page);
+    await page.getByRole('textbox', { name: 'Author', exact: true }).fill('A. Reader');
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    const prompt = page.getByRole('dialog', { name: 'Discard unsaved changes?' });
+    await expect(prompt).toBeVisible();
+    await page.getByRole('button', { name: 'Keep editing', exact: true }).click();
+    await expect(prompt).toBeHidden();
+    await expect(page.getByRole('textbox', { name: 'Title', exact: true })).toHaveValue('A manual fixture book');
+    await expect(page.getByRole('textbox', { name: 'Author', exact: true })).toHaveValue('A. Reader');
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await page.getByRole('button', { name: 'Discard changes', exact: true }).click();
+    await expect(page.getByTestId('destination')).toHaveText('/my-books:');
+    expect((await snapshot(page)).creates).toHaveLength(0);
+  });
+
+  test('F07 pending app Back waits for the write and rejected draft remains guarded', async ({ page }) => {
+    await manual(page);
+    await page.getByRole('button', { name: 'Save Book', exact: true }).click();
+    await expect.poll(async () => (await snapshot(page)).pending).toBe(1);
+    // The actual header remains enabled; app Back must consume the request.
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(page).toHaveURL(/\/add-book/);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    expect((await snapshot(page)).creates).toHaveLength(1);
+    await page.evaluate(() => window.actionFixture.rejectCreate());
+    await expect(page.getByRole('textbox', { name: 'Title', exact: true })).toHaveValue('A manual fixture book');
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await page.getByRole('button', { name: 'Keep editing', exact: true }).click();
+    await expect(page.getByRole('textbox', { name: 'Title', exact: true })).toHaveValue('A manual fixture book');
+  });
+
   for (const delay of [80, 180, 700, 4500]) {
     test(`local create at ${delay}ms navigates without advancing a success timer`, async ({ page }) => {
       await page.clock.install({ time: clockStart });

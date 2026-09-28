@@ -33,6 +33,7 @@ import { APP_ICONS } from "@/config/iconography";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { reorderLibraryShelf } from "@/services/api/books";
+import { useAppBackGuard } from "@/hooks/useAppBackGuard";
 import { fetchThemePreferences, upsertThemePreferences } from "@/services/api/profiles";
 import { bookOperations } from "@/utils/offlineOperation";
 import { getProgressPercentage } from "@/utils/bookProgress";
@@ -286,6 +287,11 @@ const MyBooks = () => {
     setSelectedBookIds([]);
     setBulkDeleteOpen(false);
   };
+  useAppBackGuard(selectMode || reorderMode, () => {
+    exitSelectMode();
+    setReorderMode(false);
+    return false;
+  }, 100);
 
   const clearSelectionForContextChange = () => {
     if (!selectMode && selectedBookIds.length === 0) return;

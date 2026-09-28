@@ -8,9 +8,9 @@ Current renderer behavior from frontend renewal F02/F03. [Batch evidence and con
 
 The profile's Books/Posts/Clubs tabs and history's Progress Logs/Journal Entries tabs retain their selection in the `tab` query parameter. The default tab omits the parameter. Changing tabs replaces the current entry and preserves other query parameters; returning from detail or reloading restores the tab. This does not persist search text, scroll position or unsaved work.
 
-`useAppBack` resolves an explicit `onBack`, explicit `to`, app history, then the configured fallback in that order. Its `hasAppHistory` helper requires a positive integer BrowserRouter history index (`window.history.state.idx`). A non-default location key or browser history length does not establish a prior app page: replacing a direct-entry tab can change the key without adding history. Recheck availability when activating recovery.
+F07 supersedes the original positive-index recovery heuristic with the [app Back ownership contract](ui-back-navigation.md). `useAppBack` delegates to the coordinator: overlay/route guard, explicit `onBack`, explicit `to`, verified observed app ancestry, then a replacing contextual fallback. A positive BrowserRouter index alone does not prove a predecessor. Recheck live history identity when activating recovery.
 
-`NotFound` offers a router link to My Library for a signed-in reader or public Home otherwise. Go back is present only when app history exists, with an activation-time recovery fallback. Route gates remain owned by `App`/`FeatureGate`; these fixes do not add an alternate club URL or bypass social/gamification gates. Native Back, gestures, scroll restoration and broader shell ownership remain F07 work.
+`NotFound` offers a router link to My Library for a signed-in reader or public Home otherwise. Go back is present only when verified app ancestry exists, with an activation-time recovery fallback. Route gates remain owned by `App`/`FeatureGate`; these fixes do not add an alternate club URL or bypass social/gamification gates. Native callback policy and local gesture cancellation are implemented in F07; physical device acceptance, independent tab stacks and broader shell scroll/focus restoration remain outstanding.
 
 ## Notification ownership and states
 

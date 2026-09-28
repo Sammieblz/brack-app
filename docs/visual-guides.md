@@ -315,7 +315,7 @@ App
 │                           ├── Sonner (sonner)
 │                           └── BrowserRouter
 │                               ├── DeepLinkHandler
-│                               ├── SwipeBackHandler
+│                               ├── AppNavigationProvider
 │                               │   ├── Routes
 │                               │   │   ├── Dashboard
 │                               │   │   ├── MyBooks

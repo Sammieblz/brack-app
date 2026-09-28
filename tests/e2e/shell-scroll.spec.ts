@@ -44,6 +44,9 @@ for (const width of [320, 390, 768, 834, 1024, 1440]) {
       await openFixture(page, route, width);
       const initial = await geometry(page);
       expect(initial.ownerCount).toBe(1);
+      const touchPolicy = await page.evaluate(() => CSS.supports('touch-action', 'pan-y pinch-zoom')
+        ? 'pan-y pinch-zoom' : CSS.supports('touch-action', 'auto') ? 'auto' : '');
+      await expect(page.locator('[data-app-scroll-container]')).toHaveCSS('touch-action', touchPolicy);
       expect(initial.maxScroll).toBeGreaterThan(100);
       for (const target of [90, 45, 0]) {
         await page.locator('[data-app-scroll-container]').evaluate((element, top) => { element.scrollTop = top; }, target);
@@ -194,7 +197,7 @@ for (const width of [390, 834, 1440]) {
     const card = await target.boundingBox();
     expect(card!.y).toBeGreaterThanOrEqual(header!.y + header!.height);
     await page.locator('[data-app-scroll-container]').evaluate(element => { element.scrollTop = 0; });
-    await target.getByRole('button', { name: 'Open Reading collection 13 cover', exact: true }).focus();
+    await target.getByRole('button', { name: 'Open Reading collection 13', exact: true }).focus();
     const focused = await page.locator(':focus').boundingBox();
     expect(focused!.y).toBeGreaterThanOrEqual(header!.y + header!.height);
     expect((await geometry(page)).documentScroll).toBe(0);

@@ -2,6 +2,8 @@
 
 Local synthetic fixture for real AddBook, BookSearch, mobile inputs, loading feedback, haptic hook, ContextMenuNative, ActionSheet and Dialog. It does not access a real reader, database, search provider or native device.
 
+F07 adds the real AppNavigationProvider/ConfirmDialogProvider and two Add Book Back cases per engine: dirty keep/discard, and pending/rejected-write retention. The low-level App plugin is a fixture adapter; dedicated [Back ownership](../back-ownership/README.md) exercises synthetic native callbacks. This server uses its own Vite optimizer cache to avoid cross-fixture module invalidation.
+
 ```powershell
 npx playwright test --config tests/playwright/action-feedback.config.ts
 npx tsc -p tests/playwright/tsconfig.action-feedback.json --noEmit

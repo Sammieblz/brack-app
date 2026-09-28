@@ -23,6 +23,11 @@ test("F05 iPad desktop UA stays web and browser edge gestures remain browser own
   await page.addInitScript(() => Object.defineProperty(navigator, "userAgent", { get: () => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1" }));
   await page.goto("/");
   await expect(page.getByTestId("runtime")).toHaveText("web");
+  // Computed policy is browser evidence; physical edge-navigation support is a device gate.
+  const supportsOverscroll = await page.evaluate(() => CSS.supports('overscroll-behavior-x', 'auto'));
+  for (const selector of ["html", "body", "#root"]) {
+    await expect(page.locator(selector)).toHaveCSS("overscroll-behavior-x", supportsOverscroll ? "auto" : "");
+  }
   await page.getByRole("link", { name: "Fixture detail" }).click();
   await page.evaluate(() => {
     const touch = (type: string, x: number) => {
@@ -37,7 +42,6 @@ test("F05 iPad desktop UA stays web and browser edge gestures remain browser own
     if (touch("touchmove", 20)) throw new Error("Browser forward edge gesture was intercepted");
     touch("touchend", 20);
   });
-  await expect(page.getByTestId("drawers")).toHaveText("0");
   await expect(page).toHaveURL(/\/detail$/);
 });
 

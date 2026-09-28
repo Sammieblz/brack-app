@@ -11,7 +11,7 @@ This documentation provides comprehensive coverage of:
 - **Deployment** - Ship to production
 - **Troubleshooting** - Solve common issues
 
-**Last Updated**: September 27, 2026
+**Last Updated**: September 28, 2026
 
 ## Frontend renewal
 
@@ -19,7 +19,8 @@ This documentation provides comprehensive coverage of:
 - [Implementation sequence](./frontend-renewal/09-execution-plan.md) — dependencies, acceptance and rollback.
 - [Agent continuation protocol](./frontend-renewal/11-agent-handoff.md) — evidence, efficient retrieval and durable work records.
 - [Ionic integration decision](./ui-ionic-fit.md) — defer the tested route shell and modal; preserve the current router/primitives for F07 onward.
-- [F06 checkpoint](./frontend-renewal/16-ionic-fit-experiment.md) — exact experiment results, failed adoption gates and review stop; [fixture reproduction](../tests/fixtures/ionic-fit/README.md).
+- [F06 checkpoint](./frontend-renewal/16-ionic-fit-experiment.md) — committed experiment results and failed adoption gates; [fixture reproduction](../tests/fixtures/ionic-fit/README.md).
+- [F07 checkpoint](./frontend-renewal/17-back-ownership.md) — current Back/overlay/gesture implementation and verification; [Back contract](./ui-back-navigation.md), [local gestures](./ui-local-gestures.md).
 
 ---
 
