@@ -1,0 +1,62 @@
+{
+  "kind": "Synthetic plain DOM; native textarea/button keyboard baseline only",
+  "engine": "webkit",
+  "browserVersion": "26.6",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "rootFontPixels": 32,
+  "steps": [
+    "Fill textarea",
+    "End",
+    "ArrowLeft",
+    "Tab to following button",
+    "Shift+Tab to textarea"
+  ],
+  "runs": [
+    {
+      "before": {
+        "start": 25,
+        "end": 25
+      },
+      "actionFocused": true,
+      "after": {
+        "start": 0,
+        "end": 0,
+        "focused": true,
+        "value": "A reading thought to keep."
+      },
+      "draftUnchanged": true
+    },
+    {
+      "before": {
+        "start": 25,
+        "end": 25
+      },
+      "actionFocused": true,
+      "after": {
+        "start": 0,
+        "end": 0,
+        "focused": true,
+        "value": "A reading thought to keep."
+      },
+      "draftUnchanged": true
+    },
+    {
+      "before": {
+        "start": 25,
+        "end": 25
+      },
+      "actionFocused": true,
+      "after": {
+        "start": 0,
+        "end": 0,
+        "focused": true,
+        "value": "A reading thought to keep."
+      },
+      "draftUnchanged": true
+    }
+  ],
+  "limits": "No React, BRACK components, sticky header, shell handlers or native mobile runtime. Browser-engine keyboard policy evidence only."
+}

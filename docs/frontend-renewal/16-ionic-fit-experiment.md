@@ -1,6 +1,6 @@
 # F06 Ionic fit experiment checkpoint
 
-Historical checkpoint: the user approved this experiment and committed it as `f90509d9ee2092e872d91933020a4a71deb4798a`. The original review-stop statements below describe that completed batch. [Checkpoint 17](17-back-ownership.md) now owns the authorized F07 work; the Ionic adoption decision remains unchanged.
+Historical checkpoint: the user approved this experiment and committed it as `f90509d9ee2092e872d91933020a4a71deb4798a`. The original review-stop statements below describe that completed batch. [Checkpoint20](20-coverage-reconciliation.md) now owns current coverage corrections after F09; the specific Ionic adoption decision remains unchanged.
 
 ## Original F06 checkpoint
 

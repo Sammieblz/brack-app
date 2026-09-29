@@ -2,6 +2,8 @@
 
 Status: planning and source audit; no application changes. Source review date: 2026-09-27. This document records the checkout inspected for this plan, not the state of a deployed build.
 
+Historical baseline, not a completed current consumer audit. [Checkpoint20](20-coverage-reconciliation.md) reconciles the current `db076cf` source, all39 route paths and live nested consumers. The original route table was accurate as an index, but did not prove implementation or state coverage. Use the new census/reports for omitted shared requirements; preserve baseline findings as history.
+
 ## How to read the evidence
 
 `V` means the cited implementation or route declaration was directly inspected. `H` means a design/performance hypothesis requiring rendered or device validation. `U` means not measured. A source-verified implementation can establish a defect such as an unregistered link destination; it cannot establish measured latency, contrast, actual keyboard overlap, or a reader's subjective response.

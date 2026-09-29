@@ -2,6 +2,8 @@
 
 Implemented renderer behavior for frontend renewal F04, based on the working-tree changes after `06d5190`. The [F04/F05 checkpoint](frontend-renewal/15-feedback-environment-batch.md) owns final batch results and review status. Browser/plugin-adapter evidence does not establish physical-device haptic, gesture or assistive-technology behavior.
 
+Coverage correction at `db076cf`: [RC-04/05/09](frontend-renewal/coverage-review/02-correctness-consumers.md) identify live duplicate/bypassed haptics, the unwired BookCard/ContextMenuNative path and onboarding completion waiting. The canonical hook and AddBook fixes remain valid; caller-wide feedback and live long-press delivery are not complete. [Checkpoint20](frontend-renewal/20-coverage-reconciliation.md) owns corrective status.
+
 ## Add Book completion
 
 `screens/AddBook.tsx` treats a resolved `bookOperations.create` as its completion boundary for manual entry and search quick-add. It immediately opens `/my-books` with the returned `highlightBookId` and announces that the book was saved on this device and will sync. It performs no second library read to decide first-book decoration, creates no blocking success overlay and schedules no delayed route change. Scanner acquisition keeps its existing separate workflow.

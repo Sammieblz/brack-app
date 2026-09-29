@@ -6,6 +6,8 @@ Implementation update: F04 supplies immediate AddBook completion, semantic hapti
 
 ## 1. Evidence and priority
 
+Current coverage correction: [RM01–RM09](coverage-review/05-loading-motion-and-global-surfaces.md) trace live App/Suspense, route animation, loading callers, onboarding waiting, toast/reward ownership and native wrapper boundaries. [Active20](20-coverage-reconciliation.md) requires missing foundational work and relevant performance baselines before routine F10 progression; F19 is not a waiver for action-imposed waiting or unsupported route-performance claims.
+
 F07 update: [checkpoint 17](17-back-ownership.md) and [local gestures](../ui-local-gestures.md) record retirement of duplicate edge navigation and disconnected pull-dismiss, plus cancellation/axis/overlay guards for existing row and refresh gestures. These address the relevant baseline findings below. They do not establish measured navigation latency or verified native route transitions; broader brand motion remains F19 work.
 
 Graphify was queried before scoped source reads. Its broad query was truncated; the source files below were then inspected directly. Graph relationships locate owners; current source establishes behavior. `apps/client/src/` is abbreviated as `src/` in this document.

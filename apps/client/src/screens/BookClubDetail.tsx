@@ -85,12 +85,22 @@ const BookClubDetail = () => {
   );
   const loading = authLoading || clubLoading;
   const currentUserId = user?.id;
+  const [activeTab, setActiveTab] = useState("overview");
+  const [chatVisited, setChatVisited] = useState(false);
+
+  useEffect(() => {
+    setActiveTab("overview");
+    setChatVisited(false);
+  }, [clubId, currentUserId]);
 
   const club = detail?.club;
   const userRole = detail?.user_role ?? club?.user_role ?? null;
   const isAdmin = userRole === "admin";
   const canModerate = userRole === "admin" || userRole === "moderator";
   const isMember = Boolean(userRole);
+  const selectedTab = (activeTab === "chat" && !isMember) || (activeTab === "admin" && !isAdmin)
+    ? "overview"
+    : activeTab;
 
   const handleJoin = async () => {
     if (!club) return;
@@ -226,7 +236,14 @@ const BookClubDetail = () => {
         {club.preview_only ? (
           <PreviewOnlyPanel clubName={club.name} onRequest={handleRequest} requested={club.join_status === "requested"} />
         ) : (
-          <Tabs defaultValue="overview" className="mt-6 space-y-5">
+          <Tabs
+            value={selectedTab}
+            onValueChange={(value) => {
+              setActiveTab(value);
+              if (value === "chat") setChatVisited(true);
+            }}
+            className="mt-6 space-y-5"
+          >
             <div className="max-w-full overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
               <TabsList className="w-max min-w-max justify-start gap-1 overflow-visible shadow-sm">
                 <TabsTrigger value="overview" className="flex-none px-4 sm:px-5">
@@ -259,12 +276,17 @@ const BookClubDetail = () => {
             </TabsContent>
 
             {isMember && (
-              <TabsContent value="chat">
+              <TabsContent
+                value="chat"
+                forceMount={chatVisited || selectedTab === "chat" ? true : undefined}
+                hidden={selectedTab !== "chat"}
+              >
                 <ClubChatThread
                   clubId={club.id}
                   members={detail.members}
                   currentUserId={currentUserId}
                   canModerate={canModerate}
+                  active={selectedTab === "chat"}
                 />
               </TabsContent>
             )}

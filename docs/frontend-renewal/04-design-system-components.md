@@ -2,7 +2,7 @@
 
 Status: proposed frontend implementation specification informed by source review on 2026-09-27. Existing behavior is identified explicitly. This document does not claim a visual/device audit or WCAG conformance test has been completed.
 
-Current decision: the isolated F06 experiment **defers production adoption of the tested Ionic 9.0.5 route shell and modal**. Continue custom BRACK composition over the existing router, Radix primitives and date-only controls. The [living decision](../ui-ionic-fit.md) owns failed gates, integration boundaries and reopening conditions; [checkpoint 16](16-ionic-fit-experiment.md) owns actual validation and the review stop. The conditional candidate table below preserves the original plan; it does not authorize replacing a primitive or importing Ionic styles. F07 remains the next sequenced implementation after review.
+Current decision: the isolated F06 experiment **defers production adoption of the tested Ionic 9.0.5 route shell and modal**. Continue custom BRACK composition over the existing router, Radix primitives and date-only controls. The [living decision](../ui-ionic-fit.md) owns failed gates, integration boundaries and reopening conditions; [checkpoint16](16-ionic-fit-experiment.md) preserves experiment evidence. The conditional candidate table below preserves the original plan; it does not authorize replacing a primitive or importing Ionic styles. F07–F09 code is now committed, but [checkpoint20](20-coverage-reconciliation.md) reopens missing consumer coverage; its corrective sequence is current.
 
 ## 1. Preserve the identity; fix the composition
 

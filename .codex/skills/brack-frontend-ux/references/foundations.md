@@ -90,7 +90,7 @@ Known product capabilities include:
 - notes;
 - quotes;
 - analytics;
-- personalized recommendations based on reading history/preferences;
+- reader/club discovery and book metadata search; do not infer a personalized book-recommendation service from suggested people/clubs or product copy;
 - book discovery/search;
 - book lookup using external book metadata;
 - barcode/OCR-assisted book entry;

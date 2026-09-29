@@ -74,10 +74,29 @@ export const MobileLayout = ({ children, showBottomNav = true, showTopNav = true
       }
     };
     reveal();
-    if (!header || typeof ResizeObserver === "undefined") return;
-    const observer = new ResizeObserver(reveal);
-    observer.observe(header);
-    return () => observer.disconnect();
+    // Keyboard/programmatic return needs the same clearance as resizing.
+    // A pointer contact must keep its target still through activation; it also
+    // lets readers intentionally scroll a focused field without snapping back.
+    const pointers = new Set<number>();
+    const pointerDown = (event: PointerEvent) => { pointers.add(event.pointerId); };
+    const pointerEnd = (event: PointerEvent) => { pointers.delete(event.pointerId); };
+    const resetPointers = () => pointers.clear();
+    const focusIn = () => { if (pointers.size === 0) reveal(); };
+    owner.addEventListener("pointerdown", pointerDown, true);
+    window.addEventListener("pointerup", pointerEnd, true);
+    window.addEventListener("pointercancel", pointerEnd, true);
+    window.addEventListener("blur", resetPointers);
+    owner.addEventListener("focusin", focusIn);
+    const observer = header && typeof ResizeObserver !== "undefined" ? new ResizeObserver(reveal) : null;
+    if (header && observer) observer.observe(header);
+    return () => {
+      owner.removeEventListener("pointerdown", pointerDown, true);
+      window.removeEventListener("pointerup", pointerEnd, true);
+      window.removeEventListener("pointercancel", pointerEnd, true);
+      window.removeEventListener("blur", resetPointers);
+      owner.removeEventListener("focusin", focusIn);
+      observer?.disconnect();
+    };
   }, [environment.layoutWidth, viewport.height, viewport.top, footerHeight, environment.visualScale, scrollRef]);
 
   // Preserve the complete ancestor chain and main node while changing chrome.

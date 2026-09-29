@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -117,16 +117,36 @@ export const MessageThread = ({
   isBlocked,
   messageEligibility = "eligible",
 }: MessageThreadProps) => {
+  const id = useId();
   const [messageContent, setMessageContent] = useState("");
   const [sending, setSending] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [previewMedia, setPreviewMedia] = useState<string | null>(null);
+  const [previewFailed, setPreviewFailed] = useState(false);
   const [gifOpen, setGifOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [gifQuery, setGifQuery] = useState("");
   const [gifResults, setGifResults] = useState<GifSearchResult[]>([]);
   const [gifSearching, setGifSearching] = useState(false);
+  const [composerError, setComposerError] = useState<{ target: "media" | "send"; message: string; invalid?: boolean } | null>(null);
+  const [gifError, setGifError] = useState<string | null>(null);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
+  const mediaOpenerRef = useRef<HTMLButtonElement | null>(null);
+  const gifOpenerRef = useRef<HTMLButtonElement>(null);
+  const sendingRef = useRef(false);
+  const textRevision = useRef(0);
+  const mountedRef = useRef(true);
+  const owner = useMemo(() => ({ conversationId, currentUserId }), [conversationId, currentUserId]);
+  const activeOwner = useRef(owner);
+  activeOwner.current = owner;
+  const retryRequest = useRef<{
+    content: string;
+    files: File[];
+    replyId: string | null;
+    gifId?: string;
+    request: Omit<SendMessageRequest, "conversation_id">;
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -141,7 +161,9 @@ export const MessageThread = ({
     ? "Messaging is unavailable because of a privacy or safety setting. Existing history is still visible."
     : "This conversation is read-only until you both follow each other again. Existing history is still visible.";
 
-  const draftKey = conversationId ? `message_draft_${conversationId}` : null;
+  // Legacy conversation-only keys are intentionally not read: their reader owner
+  // cannot be established on a shared device. Leave them untouched.
+  const draftKey = conversationId && currentUserId ? `message_draft_${currentUserId}_${conversationId}` : null;
   const selectedFilePreviews = useMemo(
     () => files.map((file) => ({ file, url: URL.createObjectURL(file) })),
     [files]
@@ -152,16 +174,28 @@ export const MessageThread = ({
   }, [selectedFilePreviews]);
 
   useEffect(() => {
-    if (!draftKey) return;
-    setMessageContent(localStorage.getItem(draftKey) || "");
-    setFiles([]);
-    setReplyingTo(null);
-  }, [draftKey]);
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   useEffect(() => {
-    if (!draftKey) return;
-    localStorage.setItem(draftKey, messageContent);
-  }, [draftKey, messageContent]);
+    let saved = "";
+    try { saved = draftKey ? localStorage.getItem(draftKey) || "" : ""; } catch { /* In-memory composing still works. */ }
+    setMessageContent(saved);
+    textRevision.current += 1;
+    setFiles([]);
+    setReplyingTo(null);
+    setComposerError(null);
+    setGifError(null);
+    setGifOpen(false);
+    setGifResults([]);
+    setGifQuery("");
+    setGifSearching(false);
+    setPreviewMedia(null);
+    setSending(false);
+    sendingRef.current = false;
+    retryRequest.current = null;
+  }, [draftKey, owner]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -179,8 +213,20 @@ export const MessageThread = ({
     if (userId) navigate(`/users/${userId}`);
   };
 
+  const updateText = (value: string) => {
+    textRevision.current += 1;
+    setMessageContent(value);
+    try {
+      if (draftKey) {
+        if (value) localStorage.setItem(draftKey, value);
+        else localStorage.removeItem(draftKey);
+      }
+    } catch { /* Storage restrictions must not block writing a message. */ }
+  };
+
   const handleInputChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    setMessageContent(event.target.value);
+    updateText(event.target.value);
+    if (composerError?.invalid) setComposerError(null);
     setTyping(true);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => setTyping(false), 2000);
@@ -197,90 +243,122 @@ export const MessageThread = ({
   };
 
   const handleFileChange = (fileList: FileList | null) => {
+    if (sendingRef.current) return;
     try {
       const selected = Array.from(fileList || []);
       validateFiles(selected);
       setFiles(selected);
+      setComposerError(null);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Invalid media");
+      setComposerError({ target: "media", message: error instanceof Error ? error.message : "Invalid media" });
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
-  const clearComposer = () => {
-    setMessageContent("");
-    setFiles([]);
-    setReplyingTo(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-    if (draftKey) localStorage.removeItem(draftKey);
-  };
-
-  const handleSend = async () => {
-    if (sending || !conversationId || messagingDisabled || !isOnline) return;
-    if (!messageContent.trim() && files.length === 0) return;
+  const submitMessage = async (gif?: GifSearchResult) => {
+    if (sendingRef.current || !conversationId || messagingDisabled || !isOnline) return;
+    if (!gif && !messageContent.trim() && files.length === 0) return;
     if (messageContent.length > 5000) {
       triggerHaptic("error");
-      toast.error("Message must be less than 5000 characters");
+      const message = "Message must be 5000 characters or fewer.";
+      setComposerError({ target: "send", message, invalid: true });
+      if (gif) setGifError(message);
+      else composerRef.current?.focus();
       return;
     }
 
+    // Snapshot one submission; continued typing belongs to the next draft.
+    const revision = textRevision.current;
+    const submittedFiles = files;
+    const replyId = replyingTo?.id || null;
+    const current = () => mountedRef.current && activeOwner.current === owner;
+    const previous = retryRequest.current;
+    const attempt = previous && previous.content === messageContent && previous.files === files &&
+      previous.replyId === replyId && previous.gifId === gif?.id
+      ? previous
+      : {
+          content: messageContent,
+          files,
+          replyId,
+          gifId: gif?.id,
+          request: {
+            content: messageContent.trim() ? sanitizeInput(messageContent) : null,
+            reply_to_message_id: replyId,
+            client_message_id: crypto.randomUUID(),
+            ...(gif ? { gif } : {}),
+          } as Omit<SendMessageRequest, "conversation_id">,
+        };
+    retryRequest.current = attempt;
+    sendingRef.current = true;
+    setSending(true);
+    setComposerError(null);
+    setGifError(null);
+    let uploading = false;
     try {
       triggerHaptic("light");
-      setSending(true);
       setTyping(false);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-
-      const media = files.length > 0 ? await uploadMessageMediaFiles(files) : [];
-      const success = await onSendMessage({
-        content: sanitizeInput(messageContent),
-        media,
-        reply_to_message_id: replyingTo?.id || null,
-      });
-
-      if (success) {
-        clearComposer();
-        triggerHaptic("success");
+      if (!gif && !attempt.request.media) {
+        uploading = true;
+        attempt.request.media = files.length ? await uploadMessageMediaFiles(files) : [];
+        uploading = false;
       }
+      // A completed upload must not send into a task that was replaced meanwhile.
+      if (!current()) return;
+      const success = await onSendMessage(attempt.request);
+      if (!current()) return;
+      if (success) {
+        if (textRevision.current === revision) updateText("");
+        if (!gif) {
+          setFiles((currentFiles) => currentFiles === submittedFiles ? [] : currentFiles);
+          if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+        setReplyingTo((reply) => reply?.id === replyId ? null : reply);
+        retryRequest.current = null;
+        if (gif) {
+          setGifOpen(false);
+          setGifResults([]);
+          setGifQuery("");
+        }
+        triggerHaptic("success");
+      } else {
+        const message = "Message wasn't sent. Your draft is still here. Try again.";
+        setComposerError({ target: "send", message });
+        if (gif) setGifError(message);
+      }
+    } catch (error) {
+      if (!current()) return;
+      const message = error instanceof Error ? error.message : uploading ? "Couldn't upload media. Try again." : "Couldn't send message. Try again.";
+      setComposerError({ target: uploading ? "media" : "send", message });
+      if (gif) setGifError(message);
     } finally {
-      setSending(false);
+      if (current()) {
+        sendingRef.current = false;
+        setSending(false);
+      }
     }
   };
+
+  const handleSend = () => submitMessage();
 
   const handleGifSearch = async () => {
-    if (!gifQuery.trim()) return;
+    if (!gifQuery.trim() || gifSearching || sendingRef.current) return;
     try {
       setGifSearching(true);
+      setGifError(null);
       const response = await searchMessageGifs(gifQuery);
+      if (!mountedRef.current || activeOwner.current !== owner) return;
       setGifResults(response.results || []);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to search GIFs");
+      if (mountedRef.current && activeOwner.current === owner) setGifError(error instanceof Error ? error.message : "Failed to search GIFs");
     } finally {
-      setGifSearching(false);
-    }
-  };
-
-  const handleSendGif = async (gif: GifSearchResult) => {
-    if (sending || !isOnline || messagingDisabled) return;
-    try {
-      setSending(true);
-      const success = await onSendMessage({
-        content: messageContent.trim() ? sanitizeInput(messageContent) : null,
-        gif,
-        reply_to_message_id: replyingTo?.id || null,
-      });
-      if (success) {
-        clearComposer();
-        setGifOpen(false);
-        setGifResults([]);
-        setGifQuery("");
-      }
-    } finally {
-      setSending(false);
+      if (mountedRef.current && activeOwner.current === owner) setGifSearching(false);
     }
   };
 
   const handleEmojiClick = (emoji: EmojiClickData) => {
-    setMessageContent((value) => `${value}${emoji.emoji}`);
+    if (sendingRef.current || messagingDisabled) return;
+    updateText(`${messageContent}${emoji.emoji}`);
     setEmojiOpen(false);
   };
 
@@ -308,7 +386,7 @@ export const MessageThread = ({
   const canSend = isOnline && !messagingDisabled && (messageContent.trim().length > 0 || files.length > 0);
 
   return (
-    <div className="flex h-full flex-col bg-card">
+    <div data-shell-composer-active="true" className="flex h-full flex-col bg-card">
       {!isMobile && (
         <div className="border-b border-border/70 bg-card/95 p-4">
           <div className="flex items-center justify-between gap-3">
@@ -462,7 +540,12 @@ export const MessageThread = ({
                                     <button
                                       type="button"
                                       key={item.id || item.storage_path || item.provider_id}
-                                      onClick={() => setPreviewMedia(url)}
+                                      onClick={(event) => {
+                                        mediaOpenerRef.current = event.currentTarget;
+                                        setPreviewFailed(false);
+                                        setPreviewMedia(url);
+                                      }}
+                                      aria-label={item.media_type === "gif" ? "Open message GIF" : "Open message image"}
                                       className="overflow-hidden rounded-lg border border-current/10 bg-background/10"
                                     >
                                       <img
@@ -506,7 +589,11 @@ export const MessageThread = ({
                                 <button
                                   type="button"
                                   className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left font-sans text-sm hover:bg-muted"
-                                  onClick={() => setReplyingTo(message)}
+                                  disabled={sending}
+                                  onClick={() => {
+                                    setReplyingTo(message);
+                                    composerRef.current?.focus();
+                                  }}
                                 >
                                   <ChatBubble className="h-4 w-4" />
                                   Reply
@@ -611,7 +698,7 @@ export const MessageThread = ({
       <div className={cn("border-t border-border/70 bg-card", isMobile ? "p-3 pb-safe" : "p-4")}>
         {!isOnline && (
           <div className="mb-2 rounded-md border border-border bg-muted/60 px-3 py-2 font-sans text-sm text-muted-foreground">
-            Messages need a connection. Your draft is saved on this device.
+            Messages need a connection. You can keep writing while offline.
           </div>
         )}
 
@@ -623,7 +710,7 @@ export const MessageThread = ({
                 {previewText(replyingTo)}
               </p>
             </div>
-            <Button size="icon" variant="ghost" onClick={() => setReplyingTo(null)}>
+            <Button size="icon" variant="ghost" disabled={sending} aria-label="Cancel reply" onClick={() => setReplyingTo(null)}>
               <Xmark className="h-4 w-4" />
             </Button>
           </div>
@@ -641,6 +728,8 @@ export const MessageThread = ({
               size="icon"
               variant="ghost"
               className="shrink-0"
+              disabled={sending}
+              aria-label="Remove attached media"
               onClick={() => {
                 setFiles([]);
                 if (fileInputRef.current) fileInputRef.current.value = "";
@@ -657,10 +746,37 @@ export const MessageThread = ({
           accept="image/jpeg,image/png,image/webp,image/gif"
           multiple
           className="hidden"
+          aria-label="Attach message media"
+          disabled={sending || messagingDisabled || !isOnline}
           onChange={(event) => handleFileChange(event.target.files)}
         />
 
-        <div className="flex items-end gap-2">
+        <label htmlFor={`${id}-message`} className="sr-only">Message</label>
+        <p id={`${id}-message-help`} className="mb-2 text-xs text-muted-foreground">
+          {messagingDisabled ? unavailableMessage : !isOnline ? "Connect to send. You can keep writing while offline." : "Enter sends; Shift+Enter adds a new line."}
+        </p>
+        {composerError && <p id={`${id}-composer-error`} role="alert" className="mb-2 text-sm text-destructive">{composerError.message}</p>}
+        <p role="status" className={sending ? "mb-2 text-xs text-muted-foreground" : "sr-only"}>{sending ? "Sending message. You can keep writing your next draft." : ""}</p>
+
+        <Textarea
+          id={`${id}-message`}
+          ref={composerRef}
+          aria-describedby={`${id}-message-help${composerError ? ` ${id}-composer-error` : ""}`}
+          aria-invalid={composerError?.invalid || undefined}
+          placeholder={messagingDisabled ? "Messaging is unavailable" : "Message"}
+          value={messageContent}
+          onChange={handleInputChange}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing && event.nativeEvent.keyCode !== 229) {
+              event.preventDefault();
+              handleSend();
+            }
+          }}
+          rows={2}
+          disabled={messagingDisabled}
+          className="mb-2 max-h-32 min-h-11 min-w-0 resize-none"
+        />
+        <div className="flex flex-wrap items-end gap-2">
           <Button
             type="button"
             size="icon"
@@ -668,6 +784,7 @@ export const MessageThread = ({
             onClick={() => fileInputRef.current?.click()}
             disabled={!isOnline || messagingDisabled || sending}
             aria-label="Attach image or GIF"
+            aria-describedby={composerError?.target === "media" ? `${id}-composer-error` : undefined}
           >
             <Attachment className="h-4 w-4" />
           </Button>
@@ -676,6 +793,7 @@ export const MessageThread = ({
             type="button"
             size="icon"
             variant="outline"
+            ref={gifOpenerRef}
             onClick={() => setGifOpen(true)}
             disabled={!isOnline || messagingDisabled || sending}
             aria-label="Search GIFs"
@@ -707,27 +825,14 @@ export const MessageThread = ({
             </PopoverContent>
           </Popover>
 
-          <Textarea
-            placeholder={messagingDisabled ? "Messaging is unavailable" : "Message"}
-            value={messageContent}
-            onChange={handleInputChange}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.shiftKey) {
-                event.preventDefault();
-                handleSend();
-              }
-            }}
-            rows={1}
-            disabled={messagingDisabled}
-            className="max-h-32 min-h-11 resize-none"
-          />
-
           <Button
             onClick={handleSend}
             disabled={!canSend || sending}
             size="icon"
-            className="h-11 w-11 shrink-0"
+            className="ml-auto h-11 w-11 shrink-0"
             aria-label="Send message"
+            aria-describedby={composerError ? `${id}-composer-error` : undefined}
+            aria-busy={sending}
           >
             <Send className="h-4 w-4" />
           </Button>
@@ -735,38 +840,57 @@ export const MessageThread = ({
       </div>
 
       <Dialog open={Boolean(previewMedia)} onOpenChange={(open) => !open && setPreviewMedia(null)}>
-        <DialogContent className="max-w-3xl p-3">
-          {previewMedia && (
+        <DialogContent className="max-h-[calc(var(--app-viewport-height,100dvh)-2rem)] max-w-3xl overflow-y-auto p-4" onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          if (mediaOpenerRef.current?.isConnected) mediaOpenerRef.current.focus();
+          else composerRef.current?.focus();
+        }}>
+          <DialogHeader className="pr-12 text-left">
+            <DialogTitle>Message media</DialogTitle>
+            <DialogDescription>Full-size media from this conversation.</DialogDescription>
+          </DialogHeader>
+          {previewFailed && <p role="alert" className="text-sm text-destructive">This media could not load. Close the preview and try again.</p>}
+          {previewMedia && !previewFailed && (
             <img
               src={previewMedia}
               alt="Message media preview"
-              className="max-h-[80vh] w-full rounded-md object-contain"
+              onError={() => setPreviewFailed(true)}
+              className="max-h-[65dvh] w-full rounded-md object-contain"
             />
           )}
         </DialogContent>
       </Dialog>
 
-      <Dialog open={gifOpen} onOpenChange={setGifOpen}>
-        <DialogContent className="max-h-[min(42rem,calc(var(--app-viewport-height,100dvh)-2rem))] max-w-2xl overflow-y-auto">
+      <Dialog open={gifOpen} onOpenChange={(open) => { if (!sendingRef.current) setGifOpen(open); }}>
+        <DialogContent className="max-h-[min(42rem,calc(var(--app-viewport-height,100dvh)-2rem))] max-w-2xl overflow-y-auto" onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          if (gifOpenerRef.current?.isConnected) gifOpenerRef.current.focus();
+          else composerRef.current?.focus();
+        }}>
           <DialogHeader>
             <DialogTitle>Search GIFs</DialogTitle>
             <DialogDescription>Powered by Tenor. Choose a lightweight GIF for this chat.</DialogDescription>
           </DialogHeader>
+          {gifError && <p id={`${id}-gif-error`} role="alert" className="text-sm text-destructive">{gifError}</p>}
+          <p role="status" className={sending ? "text-sm text-muted-foreground" : "sr-only"}>{sending ? "Sending GIF. Please wait." : ""}</p>
+          {files.length > 0 && <p className="text-sm text-muted-foreground">Attached images stay in your draft when you send a GIF.</p>}
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 aria-label="Search GIFs"
+                aria-describedby={gifError ? `${id}-gif-error` : undefined}
+                disabled={sending}
                 value={gifQuery}
                 onChange={(event) => setGifQuery(event.target.value)}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter") handleGifSearch();
+                  if (event.key === "Enter" && !event.nativeEvent.isComposing && event.nativeEvent.keyCode !== 229) void handleGifSearch();
                 }}
                 placeholder="Search GIFs"
                 className="pl-9"
               />
             </div>
-            <Button onClick={handleGifSearch} disabled={gifSearching || !gifQuery.trim()}>
+            <Button onClick={handleGifSearch} disabled={gifSearching || sending || !gifQuery.trim()}>
               {gifSearching ? "Searching..." : "Search"}
             </Button>
           </div>
@@ -783,7 +907,10 @@ export const MessageThread = ({
                 <button
                   key={gif.id}
                   type="button"
-                  onClick={() => handleSendGif(gif)}
+                  onClick={() => submitMessage(gif)}
+                  disabled={sending || !isOnline || messagingDisabled}
+                  aria-label={`Send GIF: ${gif.title}`}
+                  aria-describedby={gifError ? `${id}-gif-error` : undefined}
                   className="overflow-hidden rounded-md border border-border bg-muted transition hover:border-primary"
                 >
                   <img src={gif.preview_url} alt={gif.title} className="aspect-video w-full object-cover" />

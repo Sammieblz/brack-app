@@ -2,6 +2,8 @@
 
 Current F07 source contract, based on baseline `f90509d` and the [implementation checkpoint](frontend-renewal/17-back-ownership.md). This describes renderer behavior; synthetic touch events and browser CDP input do not establish physical iOS/Android gesture, predictive Back, or assistive-technology support.
 
+Coverage correction: [RS04](frontend-renewal/coverage-review/03-route-shell-consumers.md) identifies reachable independent swipe consumers outside the original Library-focused pass. [RC-05](frontend-renewal/coverage-review/02-correctness-consumers.md) distinguishes the unwired BookCard/ContextMenuNative branch from live Library behavior. Retired document-edge owners and tested local guards remain valid; application-wide gesture arbitration is still open in [checkpoint20](frontend-renewal/20-coverage-reconciliation.md).
+
 ## System edges and route navigation
 
 The document-wide `useSwipeBack`, `useSwipeToOpenDrawer` and `SwipeBackHandler` are retired. The former route hook was mounted both by App and by detail headers, rebound listeners as swipe distance changed, and scheduled an uncancelled delayed history pop. The drawer hook also claimed the right system edge. Neither implementation represented a verified native route stack; the apparent previous page was a gradient placeholder. F06 deferred the tested Ionic route shell.

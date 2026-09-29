@@ -1,0 +1,2310 @@
+{
+  "source": "test-results/cr01-final-matrix-summary.json",
+  "method": "Duplicate FontFace family/status observations grouped with counts; raw observations remain in the local Playwright report.",
+  "scenarios": [
+    {
+      "project": "chromium",
+      "scenario": "real caller screenshots: narrow",
+      "status": "passed",
+      "screens": [
+        {
+          "screen": "Feed",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "PostDetail",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "UserProfile",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 31
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 10
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 2
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "direct",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "club",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "scenario": "real caller screenshots: compact",
+      "status": "passed",
+      "screens": [
+        {
+          "screen": "Feed",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "PostDetail",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "UserProfile",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 31
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 10
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 2
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "direct",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "club",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "scenario": "real caller screenshots: tablet",
+      "status": "passed",
+      "screens": [
+        {
+          "screen": "Feed",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "PostDetail",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "UserProfile",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 31
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 10
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 2
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "direct",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "club",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "scenario": "real caller screenshots: large-text",
+      "status": "passed",
+      "screens": [
+        {
+          "screen": "Feed",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "PostDetail",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "UserProfile",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 31
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 10
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 2
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "direct",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "club",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "scenario": "real caller screenshots: narrow",
+      "status": "passed",
+      "screens": [
+        {
+          "screen": "Feed",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 30
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 5
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 16
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 9
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 3
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "PostDetail",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "UserProfile",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 31
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 10
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 2
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "direct",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "club",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "scenario": "real caller screenshots: compact",
+      "status": "passed",
+      "screens": [
+        {
+          "screen": "Feed",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 30
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 5
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 16
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 9
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 3
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "PostDetail",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "UserProfile",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 31
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 10
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 2
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "direct",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "club",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "scenario": "real caller screenshots: tablet",
+      "status": "passed",
+      "screens": [
+        {
+          "screen": "Feed",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 30
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 5
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 16
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 9
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 3
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "PostDetail",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "UserProfile",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 31
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 10
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 2
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "direct",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "club",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "scenario": "real caller screenshots: large-text",
+      "status": "passed",
+      "screens": [
+        {
+          "screen": "Feed",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 30
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 5
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 16
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 9
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 3
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "PostDetail",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "UserProfile",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 31
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "Merriweather",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 10
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 2
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "direct",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "club",
+          "faces": [
+            {
+              "family": "Inter",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "Inter",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "Merriweather",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "Playfair Display",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "Playfair Display",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "Inter, system-ui, -apple-system, sans-serif"
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "scenario": "real caller screenshots: narrow",
+      "status": "passed",
+      "screens": [
+        {
+          "screen": "Feed",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "PostDetail",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "UserProfile",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 31
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 10
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 2
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "direct",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "club",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "scenario": "real caller screenshots: compact",
+      "status": "passed",
+      "screens": [
+        {
+          "screen": "Feed",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "PostDetail",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "UserProfile",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 31
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 10
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 2
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "direct",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "club",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "scenario": "real caller screenshots: tablet",
+      "status": "passed",
+      "screens": [
+        {
+          "screen": "Feed",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "PostDetail",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "UserProfile",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 31
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 10
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 2
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "direct",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "club",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "scenario": "real caller screenshots: large-text",
+      "status": "passed",
+      "screens": [
+        {
+          "screen": "Feed",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "PostDetail",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "UserProfile",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 31
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 4
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 19
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "loaded",
+              "count": 1
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 10
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 2
+            }
+          ],
+          "inter": true,
+          "merriweather": true,
+          "playfair": true,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "direct",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        },
+        {
+          "screen": "club",
+          "faces": [
+            {
+              "family": "\"Inter\"",
+              "status": "unloaded",
+              "count": 32
+            },
+            {
+              "family": "\"Inter\"",
+              "status": "loaded",
+              "count": 3
+            },
+            {
+              "family": "\"Merriweather\"",
+              "status": "unloaded",
+              "count": 20
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "unloaded",
+              "count": 11
+            },
+            {
+              "family": "\"Playfair Display\"",
+              "status": "loaded",
+              "count": 1
+            }
+          ],
+          "inter": true,
+          "merriweather": false,
+          "playfair": false,
+          "declaredFamily": "\"Inter\", system-ui, -apple-system, sans-serif"
+        }
+      ]
+    }
+  ]
+}

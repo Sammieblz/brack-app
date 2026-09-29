@@ -1,6 +1,8 @@
 # Current-state fixture observations
 
-F08's active evidence is in [checkpoint18](../18-adaptive-overlays.md), the [adaptive contract](../../ui-adaptive-overlays.md) and [action/Goals audit](f08-action-goals.md). Its new fixture screenshots and final browser traces stay in the local Playwright artifact directories named by the checkpoint; these are synthetic renderer observations, not physical-device captures.
+Current CR01 evidence is in [live composers](cr01-composers/README.md) and [checkpoint21](../21-live-composers.md): actual Feed/PostDetail/UserProfile/Messages/BookClubDetail tasks, retained diagnostic outcomes, source-font screenshots and explicit fixture/device limits. Earlier evidence below is historical and does not supersede the coverage reconciliation.
+
+F08's evidence is in [checkpoint18](../18-adaptive-overlays.md), the [adaptive contract](../../ui-adaptive-overlays.md) and [action/Goals audit](f08-action-goals.md). Its fixture screenshots and final browser traces stay in the local Playwright artifact directories named by the checkpoint; these are synthetic renderer observations, not physical-device captures.
 
 F07 implementation evidence is recorded separately in [navigation ownership](f07-navigation-ownership.md) and [overlay ownership](f07-overlay-ownership.md), with the current results/review stop in [checkpoint 17](../17-back-ownership.md). It preserves the distinction between synthetic browser policy checks and native-device acceptance.
 

@@ -29,6 +29,13 @@ export const useMessages = (conversationId: string | null) => {
   const activeIdentity = useRef(identity);
   activeIdentity.current = identity;
   const request = useRef(0);
+  const mounted = useRef(false);
+  const sendGeneration = useRef(0);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   const fetchMessages = useCallback(async () => {
     if (activeIdentity.current !== identity) return;
@@ -72,7 +79,7 @@ export const useMessages = (conversationId: string | null) => {
     setErrorId(null);
     void fetchMessages();
 
-    if (!identity || !conversationId) return () => { request.current += 1; };
+    if (!identity || !conversationId) return () => { request.current += 1; sendGeneration.current += 1; };
 
     // Only subscribe to real-time updates if page is visible
     // This reduces battery drain when app is in background
@@ -102,13 +109,16 @@ export const useMessages = (conversationId: string | null) => {
 
     return () => {
       request.current += 1;
+      sendGeneration.current += 1;
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       cleanup?.();
     };
   }, [conversationId, identity, fetchMessages]);
 
   const sendMessage = async (contentOrRequest: string | Omit<SendMessageRequest, "conversation_id">) => {
-    if (!identity || !conversationId || activeIdentity.current !== identity) return false;
+    if (!mounted.current || !identity || !conversationId || activeIdentity.current !== identity) return false;
+    const generation = sendGeneration.current;
+    const isCurrent = () => mounted.current && activeIdentity.current === identity && sendGeneration.current === generation;
 
     try {
       const request =
@@ -122,11 +132,14 @@ export const useMessages = (conversationId: string | null) => {
         typeof request === "string" ? conversationId : request,
         typeof request === "string" ? request : undefined
       );
-      if (activeIdentity.current !== identity) return true;
-      setMessages((current) => [...current, message]);
+      if (!isCurrent()) return true;
+      // Realtime can publish the committed message before its send response or
+      // an idempotent retry returns. Keep that existing row and its newer data.
+      setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]);
       window.dispatchEvent(new Event("messages-changed"));
       return true;
     } catch (error: unknown) {
+      if (!isCurrent()) return false;
       console.error("Error sending message:", error);
       toast.error(error instanceof Error ? error.message : "Failed to send message");
       return false;

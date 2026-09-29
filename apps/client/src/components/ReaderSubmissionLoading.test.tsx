@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   addReviewComment: vi.fn(),
   getClubChatHistory: vi.fn(),
   sendClubChatMessage: vi.fn(),
+  uploadClubChatMediaFiles: vi.fn(),
   subscribeToClubChat: vi.fn(),
   setTyping: vi.fn(),
 }));
@@ -30,7 +31,6 @@ vi.mock("@/services/api", () => ({
   markClubChatRead: vi.fn(),
   searchGifs: vi.fn(),
   toggleClubChatReaction: vi.fn(),
-  uploadClubChatMediaFiles: vi.fn(),
 }));
 vi.mock("@/services/api/client", () => ({
   getApiErrorStatus: (error: { status?: number }) => error.status ?? null,
@@ -84,6 +84,11 @@ const deferred = <T,>() => {
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.subscribeToClubChat.mockReturnValue(vi.fn());
+  mocks.uploadClubChatMediaFiles.mockResolvedValue([]);
+  vi.stubGlobal("URL", class extends URL {
+    static createObjectURL = vi.fn(() => "blob:club-attachment");
+    static revokeObjectURL = vi.fn();
+  });
   mocks.fetchReviewDetail.mockResolvedValue({
     review: {
       id: "review",
@@ -109,6 +114,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe("submission during independent thread loading", () => {
@@ -247,5 +253,112 @@ describe("submission during independent thread loading", () => {
       screen.getByRole("button", { name: "Send club message" }),
     ).toBeDisabled();
     expect(screen.queryByText("No club messages yet")).not.toBeInTheDocument();
+  });
+
+  it("serializes a deferred club send and preserves newer same-value typing", async () => {
+    const send = deferred<unknown>();
+    mocks.getClubChatHistory.mockResolvedValue({ messages: [] });
+    mocks.sendClubChatMessage.mockReturnValue(send.promise);
+    render(<ClubChatThread clubId="club" currentUserId="reader" members={[]} />);
+    const composer = screen.getByRole("textbox", { name: "Message the club" });
+    fireEvent.change(composer, { target: { value: "My message" } });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Send club message" })).toBeEnabled());
+    act(() => {
+      fireEvent.keyDown(composer, { key: "Enter" });
+      fireEvent.keyDown(composer, { key: "Enter" });
+    });
+    expect(mocks.sendClubChatMessage).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Sending message…")).toHaveAttribute("role", "status");
+    fireEvent.change(composer, { target: { value: "" } });
+    fireEvent.change(composer, { target: { value: "My message" } });
+    await act(async () => send.resolve({ id: "sent", user_id: "reader", content: "My message", created_at: "2026-09-28T12:00:00Z", media: [] }));
+    expect(composer).toHaveValue("My message");
+    expect(screen.queryByText("Sending message…")).not.toBeInTheDocument();
+  });
+
+  it("does not send during IME confirmation or Shift+Enter", async () => {
+    mocks.getClubChatHistory.mockResolvedValue({ messages: [] });
+    render(<ClubChatThread clubId="club" currentUserId="reader" members={[]} />);
+    const composer = screen.getByRole("textbox", { name: "Message the club" });
+    fireEvent.change(composer, { target: { value: "読書" } });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Send club message" })).toBeEnabled());
+    fireEvent.keyDown(composer, { key: "Enter", isComposing: true });
+    fireEvent.keyDown(composer, { key: "Enter", keyCode: 229 });
+    fireEvent.keyDown(composer, { key: "Enter", shiftKey: true });
+    expect(mocks.sendClubChatMessage).not.toHaveBeenCalled();
+    expect(composer).toHaveValue("読書");
+  });
+
+  it("preserves a rejected upload and newer draft for an explicit retry", async () => {
+    const upload = deferred<unknown>();
+    mocks.getClubChatHistory.mockResolvedValue({ messages: [] });
+    mocks.uploadClubChatMediaFiles.mockReturnValueOnce(upload.promise).mockResolvedValueOnce([{ storage_path: "club/photo.png" }]);
+    mocks.sendClubChatMessage.mockResolvedValue({ id: "sent", user_id: "reader", content: "Newer message", created_at: "2026-09-28T12:00:00Z", media: [] });
+    const { container } = render(<ClubChatThread clubId="club" currentUserId="reader" members={[]} />);
+    const composer = screen.getByRole("textbox", { name: "Message the club" });
+    const file = new File(["image"], "photo.png", { type: "image/png" });
+    fireEvent.change(container.querySelector('input[type="file"]')!, { target: { files: [file] } });
+    fireEvent.change(composer, { target: { value: "First message" } });
+    const submit = screen.getByRole("button", { name: "Send club message" });
+    await waitFor(() => expect(submit).toBeEnabled());
+    fireEvent.click(submit);
+    expect(screen.getByRole("button", { name: "Remove attachments" })).toBeDisabled();
+    fireEvent.change(composer, { target: { value: "Newer message" } });
+    await act(async () => upload.reject(new Error("Upload unavailable")));
+    expect(mocks.sendClubChatMessage).not.toHaveBeenCalled();
+    expect(composer).toHaveValue("Newer message");
+    expect(screen.getByRole("img", { name: "photo.png" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Attach image or GIF" })).toHaveAccessibleDescription("Upload unavailable");
+    fireEvent.click(submit);
+    await waitFor(() => expect(mocks.sendClubChatMessage).toHaveBeenCalledTimes(1));
+    expect(mocks.sendClubChatMessage).toHaveBeenCalledWith(expect.objectContaining({ content: "Newer message", media: [{ storage_path: "club/photo.png" }] }));
+    await waitFor(() => expect(composer).toHaveValue(""));
+    expect(screen.queryByRole("button", { name: "Remove attachments" })).not.toBeInTheDocument();
+  });
+
+  it("does not send into an abandoned club after its upload completes", async () => {
+    const upload = deferred<unknown>();
+    mocks.getClubChatHistory.mockResolvedValue({ messages: [] });
+    mocks.uploadClubChatMediaFiles.mockReturnValueOnce(upload.promise);
+    const { container, rerender } = render(<ClubChatThread clubId="club" currentUserId="reader" members={[]} />);
+    fireEvent.change(container.querySelector('input[type="file"]')!, { target: { files: [new File(["image"], "photo.png", { type: "image/png" })] } });
+    const submit = screen.getByRole("button", { name: "Send club message" });
+    await waitFor(() => expect(submit).toBeEnabled());
+    fireEvent.click(submit);
+    rerender(<ClubChatThread clubId="another-club" currentUserId="reader" members={[]} />);
+    await act(async () => upload.resolve([{ storage_path: "club/photo.png" }]));
+    expect(mocks.sendClubChatMessage).not.toHaveBeenCalled();
+    expect(screen.getByRole("textbox", { name: "Message the club" })).toHaveValue("");
+  });
+
+  it("reuses the uploaded media and client message identity when retrying an unchanged rejected send", async () => {
+    mocks.getClubChatHistory.mockResolvedValue({ messages: [] });
+    mocks.uploadClubChatMediaFiles.mockResolvedValue([{ storage_path: "club/photo.png" }]);
+    mocks.sendClubChatMessage.mockRejectedValueOnce(new Error("Send unavailable")).mockResolvedValueOnce({ id: "sent", user_id: "reader", created_at: "2026-09-28T12:00:00Z", media: [] });
+    const { container } = render(<ClubChatThread clubId="club" currentUserId="reader" members={[]} />);
+    fireEvent.change(container.querySelector('input[type="file"]')!, { target: { files: [new File(["image"], "photo.png", { type: "image/png" })] } });
+    const submit = screen.getByRole("button", { name: "Send club message" });
+    await waitFor(() => expect(submit).toBeEnabled());
+    fireEvent.click(submit);
+    expect(await screen.findByRole("alert")).toHaveTextContent("Send unavailable");
+    const firstRequest = mocks.sendClubChatMessage.mock.calls[0][0];
+    fireEvent.click(submit);
+    await waitFor(() => expect(mocks.sendClubChatMessage).toHaveBeenCalledTimes(2));
+    expect(mocks.uploadClubChatMediaFiles).toHaveBeenCalledTimes(1);
+    expect(mocks.sendClubChatMessage.mock.calls[1][0].client_message_id).toBe(firstRequest.client_message_id);
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Remove attachments" })).not.toBeInTheDocument());
+  });
+
+  it("names failed club media previews and restores the invoking thumbnail on close", async () => {
+    mocks.getClubChatHistory.mockResolvedValue({ messages: [{ id: "image", user_id: "reader", created_at: "2026-09-28T12:00:00Z", media: [{ id: "media", media_type: "image", signed_url: "/missing.png" }] }] });
+    render(<ClubChatThread clubId="club" currentUserId="reader" members={[]} />);
+    const opener = await screen.findByRole("button", { name: "Open club chat media" });
+    opener.focus();
+    fireEvent.click(opener);
+    expect(screen.getByRole("dialog", { name: "Club chat media" })).toHaveAccessibleDescription("Image or GIF shared in this club conversation.");
+    fireEvent.error(screen.getByRole("img", { name: "Club chat media preview" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("This media could not load");
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    await waitFor(() => expect(opener).toHaveFocus());
   });
 });

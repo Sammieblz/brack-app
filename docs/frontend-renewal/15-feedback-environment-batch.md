@@ -2,7 +2,7 @@
 
 ## Historical checkpoint
 
-**Superseded:** F04/F05 are committed at `2ddc1c25c3b453a5b3f923c99f4d3e58b45b7754`. The next authorized batch is the F06 experiment in [16](16-ionic-fit-experiment.md). The completed work and original review stop below are historical.
+**Historical:** F04/F05 are committed at `2ddc1c25c3b453a5b3f923c99f4d3e58b45b7754`. [Checkpoint20](20-coverage-reconciliation.md) owns current caller/adoption coverage corrections after F09. The completed foundation work and original review stop below are scoped historical evidence.
 
 - Baseline: clean worktree at `06d519044155d1cb1d9f6e6ab3a0e23a2397e801` (F02/F03 committed by the preceding review cycle).
 - Selected batch: **F04 action feedback/haptics + F05 runtime/window/capability policy**.

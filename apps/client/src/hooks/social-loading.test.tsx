@@ -1,6 +1,7 @@
 vi.mock("@/services/api/client", () => ({ getApiErrorStatus: (error: { status?: number }) => error?.status ?? null }));
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { toast } from "sonner";
 
 const mocks = vi.hoisted(() => ({
   user: { id: "reader-1" },
@@ -9,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   fetchUserProfileWithStats: vi.fn(),
   fetchConversations: vi.fn(),
   fetchConversationDetail: vi.fn(),
+  sendMessage: vi.fn(),
   markConversationRead: vi.fn(),
   subscribeToMessages: vi.fn(() => vi.fn()),
   subscribeToConversationChanges: vi.fn(() => vi.fn()),
@@ -26,7 +28,7 @@ vi.mock("@/services/api", () => ({
   fetchConversationDetail: mocks.fetchConversationDetail,
   markConversationRead: mocks.markConversationRead,
   subscribeToMessages: mocks.subscribeToMessages,
-  sendMessage: vi.fn(),
+  sendMessage: mocks.sendMessage,
   toggleMessageReaction: vi.fn(),
   deleteMessage: vi.fn(),
 }));
@@ -140,6 +142,81 @@ describe("social request lifecycles", () => {
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBeTruthy();
     log.mockRestore();
+  });
+
+  it("does not duplicate a committed message when refresh precedes an idempotent retry", async () => {
+    mocks.fetchConversationDetail.mockResolvedValueOnce(conversation("thread-a", [{ id: "earlier" }]));
+    const { result } = renderHook(() => useMessages("thread-a"));
+    await waitFor(() => expect(result.current.hasLoaded).toBe(true));
+    const request = { content: "A single message", client_message_id: "attempt-a" };
+    const committed = { id: "committed", content: "A single message", current_user_reaction: null };
+    const refreshed = { ...committed, current_user_reaction: "heart" };
+    mocks.sendMessage.mockRejectedValueOnce(new Error("Response interrupted after commit")).mockResolvedValueOnce(committed);
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      await act(async () => { expect(await result.current.sendMessage(request)).toBe(false); });
+      mocks.fetchConversationDetail.mockResolvedValueOnce(conversation("thread-a", [{ id: "earlier" }, refreshed, { id: "later" }]));
+      await act(async () => { await result.current.refetchMessages(); });
+      await act(async () => { expect(await result.current.sendMessage(request)).toBe(true); });
+      expect(mocks.sendMessage.mock.calls[0][0]).toEqual(mocks.sendMessage.mock.calls[1][0]);
+      expect(mocks.sendMessage.mock.calls[1][0]).toMatchObject({ conversation_id: "thread-a", client_message_id: "attempt-a" });
+      expect(result.current.messages.map((message) => message.id)).toEqual(["earlier", "committed", "later"]);
+      expect(result.current.messages[1]).toBe(refreshed);
+    } finally {
+      log.mockRestore();
+    }
+  });
+
+  it("does not append another row when refresh wins the race with the original send response", async () => {
+    mocks.fetchConversationDetail.mockResolvedValueOnce(conversation("thread-a"));
+    const { result } = renderHook(() => useMessages("thread-a"));
+    await waitFor(() => expect(result.current.hasLoaded).toBe(true));
+    const committed = { id: "committed", content: "Already received through refresh" };
+    const pending = deferred<typeof committed>();
+    mocks.sendMessage.mockReturnValueOnce(pending.promise);
+    let send!: Promise<boolean>;
+    act(() => { send = result.current.sendMessage({ content: committed.content, client_message_id: "attempt-a" }); });
+    mocks.fetchConversationDetail.mockResolvedValueOnce(conversation("thread-a", [committed]));
+    await act(async () => { await result.current.refetchMessages(); });
+    await act(async () => { pending.resolve(committed); expect(await send).toBe(true); });
+    expect(result.current.messages).toEqual([committed]);
+  });
+
+  it.each([
+    ["account", "success"], ["account", "failure"],
+    ["unmount", "success"], ["unmount", "failure"],
+  ])("suppresses obsolete send effects after %s on late %s", async (change, outcome) => {
+    mocks.fetchConversationDetail.mockResolvedValueOnce(conversation("thread-a"));
+    const { result, rerender, unmount } = renderHook(() => useMessages("thread-a"));
+    await waitFor(() => expect(result.current.hasLoaded).toBe(true));
+    const pending = deferred<{ id: string }>();
+    mocks.sendMessage.mockReturnValueOnce(pending.promise);
+    let send!: Promise<boolean>;
+    act(() => { send = result.current.sendMessage({ content: "Old owner's request", client_message_id: "attempt-old" }); });
+    if (change === "account") {
+      mocks.fetchConversationDetail.mockResolvedValueOnce(conversation("thread-a", [{ id: "new-owner-message" }]));
+      mocks.user = { id: "reader-2" };
+      rerender();
+      await waitFor(() => expect(result.current.hasLoaded).toBe(true));
+    } else {
+      unmount();
+    }
+    const dispatch = vi.spyOn(window, "dispatchEvent");
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      await act(async () => {
+        if (outcome === "success") pending.resolve({ id: "old-owner-message" });
+        else pending.reject(new Error("Old owner's send failed"));
+        expect(await send).toBe(outcome === "success");
+      });
+      expect(toast.error).not.toHaveBeenCalled();
+      expect(log).not.toHaveBeenCalled();
+      expect(dispatch.mock.calls.some(([event]) => event.type === "messages-changed")).toBe(false);
+      if (change === "account") expect(result.current.messages.map((message) => message.id)).toEqual(["new-owner-message"]);
+    } finally {
+      dispatch.mockRestore();
+      log.mockRestore();
+    }
   });
 
   it("never reveals the previous profile after a new target returns a transient error", async () => {

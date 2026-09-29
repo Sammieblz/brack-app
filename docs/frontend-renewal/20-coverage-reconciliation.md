@@ -1,0 +1,101 @@
+# F01–F09 coverage reconciliation and corrective delivery
+
+## Current checkpoint
+
+**Continuation:** [Checkpoint21](21-live-composers.md) now records CR01 implemented and verified within its stated scope, stopped for user review without a commit. CR02 is next after authorization. This document remains the coverage correction and batch sequence; its documentation-only review results and original source findings below are historical.
+
+**The user's coverage objection is substantiated.** F01–F09 committed useful repairs, but the accumulated fixture results do not close their cross-application requirements. This review supersedes the “proceed to F10” handoff. Current source baseline is **`db076cf`**, which already commits F09; the previous uncommitted status was stale. The worktree was clean when this review began.
+
+This pass changes the plan, audit artifacts and delivery instructions, not application behavior. It does not claim newly passing Playwright, native, accessibility or performance checks. No commit was made. The next implementation must close an explicitly listed missed consumer group, stop for real-screen Playwright/visual review, update its coverage and wait for the user's checkpoint instruction.
+
+## What went wrong
+
+1. The initial audit enumerated all routes, but did not establish a persistent **route → task → live component → shared contract → evidence** ledger. Naming a page in a plan was mistaken for considering its implementation consequences.
+2. Bounded context retrieval was used as a bounded coverage strategy. It should limit how much source is loaded at once, not which production callers receive a shared requirement.
+3. Fixture totals mixed different claims: primitive behavior, dormant components, mock route receipts, representative real screens and actual production integration. The fixtures remain useful; the broader conclusion was unsupported.
+4. Stable primitives were verified without enough enclosing-parent review. Dashboard Goals and Library search were repaired, while equivalent Feed/club composers, Settings editors, bookshelf selection and messaging owners still switch trees on resize.
+5. Whole-screen visual work was deliberately sequenced later, but that boundary also postponed existing foundation defects: unnamed live controls, pending/dirty dismissal, competing swipe handlers and lost task context. Those are not merely cosmetic F10–F18 work.
+6. F00 never supplied the full visual/performance baseline demanded by the plan. Later changes therefore lacked comparable rendered evidence for the user's central complaints about clutter, native feel and lag. Preserving fallback-font screenshots and documenting their limits is honest; it is not sufficient visual acceptance.
+
+## Evidence packet and scope
+
+| Artifact | Purpose |
+| --- | --- |
+| [Source census](coverage-review/01-source-census.md) | All 39 route paths, 33 screen modules and 309 presentation modules, including 272 component modules (primitives/helpers/component CSS included). Not a count of distinct rendered widgets. |
+| [Machine-readable census](coverage-review/inventory.json) | All 507 client runtime source modules/styles, local imports/reverse imports, JSX tags, possible route reachability, direct test imports and files touched by ticket commits. Filter it; do not paste the whole file into context. |
+| [Census generator](coverage-review/generate-inventory.mjs) | Reproducible TypeScript AST/static-import and Git evidence. No semantic/cloud extraction, no application writes. |
+| [F01–F04 consumers](coverage-review/02-correctness-consumers.md) | Live writing, navigation, feedback and outcome coverage; RC finding IDs. |
+| [Every route and shell consumer](coverage-review/03-route-shell-consumers.md) | All 39 paths/33 screens, alternate state branches, navigation, gestures and responsive ownership; RS IDs. |
+| [Overlays, dates and forms](coverage-review/04-overlay-form-consumers.md) | Actual migrated versus inherited versus omitted consumers; nested tasks and remaining form/field/confirmation obligations; OF IDs. |
+| [Loading, motion and global surfaces](coverage-review/05-loading-motion-and-global-surfaces.md) | Actual app Suspense/route transitions, loaders, rewards, toasts, native wrapper and full screen-family ownership; RM IDs. |
+| [Original requirements and references](coverage-review/06-original-requirements.md) | Reconciles all eleven user requirements, the twenty selected UX principles and refreshed official-source retrieval limits. |
+
+**Inventory is not audit completion.** The 47 presentation modules without an import path from `main.tsx` are investigation candidates, not automatically dead code. Static reachability can overestimate rendering, misses nonliteral runtime registration, does not model state branches or mock aliases, and is not test coverage. In particular, `BookCard`/ContextMenuNative and `ReviewComments` have no verified current product entry; the active paths use LibraryBookCard and CommentThread/inline ReviewDetail. No deletion is authorized by the census.
+
+Graphify was queried first for architecture and relevant symbols; generated Obsidian source notes were read and checked against code. Several graph queries were truncated. Full source/AST consumer discovery therefore supplemented graph neighborhoods. The generated graph is a navigation tool, not the definition of scope.
+
+## Corrected status of earlier tickets
+
+Committed code and recorded passes remain historical facts. “Coverage open” below means the original contract is not fully established across live consumers; it does not mean every previous repair failed.
+
+| Ticket | What remains valid | Unclosed coverage / disposition |
+| --- | --- | --- |
+| F00 | Initial source inventory and limited Library captures | **Baseline incomplete:** no whole-route state/visual matrix, actual-font comparison, cold/warm route traces or physical device/AT baseline. Close the relevant baseline before each corrective change; broader device release gate remains. |
+| F01 | Full/quick journal result, draft and attachment corrections | Named journal slice remains supported. No additional journal editor omission was established. Other editors' failures are not evidence this journal repair regressed. Full journal composition/device acceptance is still open. |
+| F02 | Named UserProfile/ReadingHistory destinations and recovery fixes | **Coverage open:** live Readers card keyboard/link access and Post/Review/Club destination semantics were omitted from the common navigation contract. |
+| F03 | RichTextEditor consumer names and notification states; named profile/club/review fields | **Coverage open:** live post comment/reply and direct-message composer semantics; unnamed media dialogs. An unused ReviewComments repair is not live post-comment coverage. |
+| F04 | AddBook immediate completion and canonical selection/hold-feedback foundation | **Coverage open:** duplicate caller haptics, direct vibration bypass, onboarding completion delay, and an unwired ContextMenuNative path counted too broadly. |
+| F05 | Runtime/window/input environment model and adapters | **Foundation valid; adoption incomplete:** Settings/Messages/headers retain viewport-based task replacement and older dimensions. Every downstream caller needs an explicit migration or preserved-behavior disposition. |
+| F06 | Pinned experiment and documented defer decision | **Experiment complete within its scope.** Failure of the tested router/modal does not waive native interaction/design requirements elsewhere, nor prove every Ionic primitive incompatible. No blanket dependency migration is proposed. |
+| F07 | Coordinator, ancestry, primitive Back integration and tested local gestures | **Coverage open:** reachable messaging/conversation/sheet/overlay swipe handlers, chapter Back, unavailable-route and anonymous-entry branches. Independent native stacks/device gestures were never completed. |
+| F08 | Adaptive boundary, selected modal/date/journal consumers | **Coverage open:** ordinary dialog/sheet/confirmation consumers retain old geometry; parent replacement, pending/dirty ownership, naming and nested-task obligations remain. |
+| F09 | Browser Menu/native-PWA tabs/expanded sidebar, main-chain retention and selected utility placement | **Coverage open:** actual Settings/Messages/social parents, signed-in Support/404 utility visibility, medium header controls, notifications/other fixed surfaces and app-level cold-route fallback. F09 is committed, not globally accepted by the user. |
+
+## Corrective batches before routine F10 progression
+
+The IDs below consolidate overlapping RC/RS/OF/RM findings. **CR01 is implemented and verified within [checkpoint21's scope](21-live-composers.md), awaiting user review; CR02–CR10 remain unimplemented.** Continue with CR02 after authorization. Later batches can be reordered for a concrete blocker, with the reason recorded. Two units may be combined only if every consumer/state and checkpoint can be completed. Do not broaden one unit into an unfinished whole-screen redesign.
+
+| Batch | Complete unit and owners | Exit evidence |
+| --- | --- | --- |
+| **CR01 — Live composers and media semantics** | RC-01/02, OF-03: CommentThread comment/reply, MessageThread main composer, direct/club media dialogs and their real callers. Include correct pending/newer-draft/error ownership where adding labels alone would hide an unsafe submit flow. | Real reachable Feed/PostDetail/UserProfile comment entries, Messages and club chat with names/descriptions, keyboard submit, rejected/deferred writes/uploads, continued typing and retry; one write and preserved newer draft. Media open/close/Back/Escape/refocus. Compact/tablet/large text screenshots. No fixture-only substitute for these consumers. |
+| **CR02 — Post/club responsive task ownership** | RS01, OF-01/02, RC-08: Feed CreatePost plus BookClubs/Readers CreateClub, both responsive headers and pending/dirty dismissal. | Same task node/draft/media/selection across 390→767→768→834→1024→1280→390; actual Close/Cancel/Escape/app Back and rejection/success. One publish/create owner, connected refocus after header replacement. Preserve network-only social semantics. |
+| **CR03 — Settings task continuity** | RS02, OF-01/05: category selection, ProfileSettings/PersonalInfo/ReadingProfileSettings, date/time/image/import owners, Accordion versus panel layout. | At 767/768 and medium/expanded, preserve current section, draft, caret, selected file/import preview and nested date/image task. Test save rejection, closing guards and visible accessible actions. Same content/service ownership; a two-column redesign is optional, retention is required. |
+| **CR04 — Library selection and list outcomes** | OF-01/06, RC-06: bookshelf selection Sheet/Dialog owner, nested membership/delete, AddToList/AddBooksToList, BookListManager hook outcome reporting. | Cross breakpoint with selection and nested task open; reject each lookup/membership/update/delete and show truthful state, no fake success, one mutation per intent, retained selection/draft and retry. Test all actual Library/BookDetail/list entry paths. This is the correctness prerequisite to F10 visual simplification. |
+| **CR05 — Messages layout and gesture ownership** | RS02/04/10 plus any RC-02 work not shared with CR01: Messages compact/list/detail tree, MessageThread replies/files/GIFs, ConversationsList swipe actions; retained SwipeableSheet/OnboardingReadingPractice consumers identified in RS04. | One gesture owner per contact; text selection, vertical scroll, attachments, overlays and system edges cancel incompatible actions. All destructive/secondary actions have visible keyboard alternatives. Preserve conversation, draft/files/reply/focus/scroll across resize; measure pane fit/available height with timer and keyboard. Use child checkpoints if unrelated gesture surfaces cannot be completed together. |
+| **CR06 — Route recovery and complete shell consumers** | RC-03, RS03/05/06/07/08/09/11, RS01's additional header-utility owners and RM07: live Readers/Post/Review/Club destination semantics; signed-out/forbidden/error/empty branches; Support/404 utility policy; medium Library action names; onboarding chapter Back; Dashboard auth-loading Menu; HeaderUtilityActions; route focus/scroll restoration. | Direct/traversed entry and modifier/keyboard links; nested actions remain independent. Actual recovery/focus, one Back action, no blank anonymous route, no lost timer visibility without an explicit product decision, named touch controls and stable open utilities. Include aliases/feature-disabled states. Deliver semantic destinations and shell/recovery as separate complete child checkpoints if needed. |
+| **CR07 — Remaining active overlays/forms** | OF-02/04/05: ProgressLogger, review create/edit, goals create, sync/conflict review, ordinary confirmations and live popover/time/editor controls. RC-08 also requires a named child batch for BookClubDetail discussion/announcement and DiscussionThread nested reply pending/newer-draft/reset ownership (F14). RC-07 progress postcommit outcome handling is a prerequisite for truthful retry. | Enumerate each remaining active row in the overlay matrix; migrate or justify retention with actual consumer evidence. Deferred/failed writes preserve work and block duplicates, including newer text entered while an older club reply submits. 320px/200%, short viewport, focus/refocus, nested Back and keyboard. Split reading capture, reviews/goals, inline club writing and account/sync into complete child batches rather than one giant migration. |
+| **CR08 — Feedback ownership** | RC-04/09, RM03/06: canonical caller haptics, ThemeToggle/scanners/toasts, onboarding readiness, toast swipe axis/placement. | One semantic feedback event per outcome; no waiting for decoration after confirmed work; truthful update/retry status, sound-independent message, stable focus and safe geometry. Test real callers rather than only useHapticFeedback. Native haptic feel remains physical QA. |
+| **CR09 — Actual app loading and route motion** | RM01/02/04/08; incomplete F00 baseline and F19 shared ownership. Actual App providers, lazy route imports, PageTransition, branded/region loader callers. | Cold/warm cached/slow/rejected routes with timer/draft; useful shell remains available; measured trace and actual-font captures before/after; reduced-motion interruption and rapid navigation. No invented latency improvement or artwork sign-off from unit tests. |
+| **CR10 — Visual and native/accessibility acceptance** | Remaining F10–F19 composition, OF-07/08, RM05/09, all S01–S18 and original 07/10 acceptance. | Actual tasks and screen states, not a shell receipt: branded hierarchy, disclosure findability, typography/themes, calendars/charts, tablet/foldable adaptation, reward coordination, actual native/PWA/Electron and real AT. Record missing device access as unverified, never as passing. |
+
+Each batch should start with the smallest relevant source and acceptance baseline. The index/census makes exhaustive consumer discovery cheap; it does not require rerunning every browser suite for a single label fix. Shared changes require the affected real consumers and meaningful existing regressions, followed by the user's review stop.
+
+## Coverage record required for every future implementation
+
+Use one row **per live entry/task/state family**, including branch owners and nested surfaces. Group equivalent aliases only when they invoke the same owner and document which entry was exercised.
+
+| Field | Required content |
+| --- | --- |
+| Identity | Route/alias, state branch, parent owner, nested task and source symbol at current commit |
+| Original obligation | F-ticket + 05 C0/C1/C2 + applicable screen acceptance ID; two or three UX principles only when they explain the actual design |
+| Implementation | Unchanged/inherited with exact provider or primitive; changed; missed; intentionally deferred with owning batch; not applicable with reason |
+| Reachability | Verified production entry chain; source-only/unwired; fixture replacement/alias boundaries |
+| State evidence | Initial/refresh/empty/error/offline, pending/rejected/success, auth/feature transitions, dirty close, resize/background as applicable |
+| Presentation evidence | Mobile browser, native/standalone presentation, medium tablet and expanded; short height/200%/keyboard/focus/reduced motion; actual fonts/theme sample |
+| Results | Exact command/scenario/artifact and outcome, separately for source review, unit, real-consumer browser, visual review, device/AT and performance |
+| Remaining work | Concrete missing behavior, owner and next action. Unknown is neither passed nor not-applicable. |
+
+Do not mark a shared F-ticket generally complete until every discovered consumer has a disposition and its required evidence. Do not claim all 309 presentation rows were deeply audited: the census is complete for its filesystem/static method; the reports focus on shared-contract consumer coverage and enumerate the remaining screen-specific work.
+
+## Changes and validation in this review
+
+- Added the reproducible census, route/consumer reports, original-requirement trace and corrective batch map.
+- Corrected index/ledger/handoff and F09 historical status to the actual committed baseline; reopening coverage preserves prior test history.
+- Added coverage-closing rules to the frontend skills using the skill-creator guidance. No new dependency or application refactor.
+- The census generator executed successfully after excluding nested fixture dependencies/build outputs. Its Git subprocess needed the usual Windows sandbox escalation; no network or mutations are performed by those Git reads. Its initial traversal was interrupted before artifacts because it unnecessarily included fixture node_modules; the corrected generator excludes those folders.
+- Artifact checks passed: 398 local Markdown links, 507 recorded runtime source paths and 39 route declarations; counts reconcile with 33 screen modules and 272 component modules. Independent consumer reviews checked source reachability and corrected mistaken scope/feature claims before closeout.
+- Both changed frontend skill entrypoints passed the skill-creator validator. `git diff --check` passed; Git reported only its configured LF-to-CRLF conversion notices. Changed files are documentation, frontend skill guidance and the local audit generator/artifacts; application code and tests are unchanged.
+- Local `graphify update .`, `graphify cluster-only . --no-label --no-viz`, `graphify export obsidian` and `graphify export html` completed successfully: 9,348 nodes, 21,124 edges and 641 communities; the Obsidian export reports 9,982 notes. Three existing Gradle parse warnings remain. Export pruned 71 obsolete generated notes and preserved seven pre-existing conflicting files rather than overwriting them. The HTML view is aggregated because the graph exceeds 5,000 nodes. This was local AST processing, not semantic indexing of these new Markdown reports; this checkpoint is their authoritative entrypoint.
+- This was a documentation/source audit. At its completion, unchanged application test matrices, Playwright, physical devices and assistive technology had not been rerun or credited as new passes, all CR batches were unimplemented and no commit was made. Later CR01 implementation/evidence belongs to21.
+
+**Continuation:** Read this checkpoint, then the selected CR unit and its source report. The user's complaint is an instruction to reconcile coverage, not approval of F09's appearance or an instruction to ignore these misses and start F10. Preserve the committed repairs; close their missing live consumers with honest evidence.

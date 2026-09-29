@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { usePostComments, type PostComment } from "@/hooks/usePostComments";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,7 @@ import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion"
 
 interface CommentThreadProps {
   postId: string;
+  active?: boolean;
 }
 
 const initials = (name?: string | null) =>
@@ -23,37 +25,93 @@ const initials = (name?: string | null) =>
     .toUpperCase()
     .slice(0, 2);
 
-export const CommentThread = ({ postId }: CommentThreadProps) => {
-  const { user } = useAuth();
-  return <CommentThreadContent key={`${user?.id ?? "guest"}:${postId}`} postId={postId} />;
-};
-
-const CommentThreadContent = ({ postId }: CommentThreadProps) => {
+// A completed request owns only the revision that it sent. Readers may keep
+// writing while it is pending, including replacing it with identical text.
+const useCommentDraft = (
+  addComment: (content: string) => Promise<boolean>,
+  kind: "Comment" | "Reply",
+  onPosted?: (clearedDraft: boolean) => void,
+) => {
   const [content, setContent] = useState("");
-  const { comments, loading, refreshing, hasLoaded, error, refetchComments, hasMore, loadingMore, addComment, deleteComment, loadMore } =
-    usePostComments(postId);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const revision = useRef(0);
+  const submitting = useRef(false);
+  const mounted = useRef(true);
 
-  const submit = async () => {
-    if (!content.trim()) return;
-    const ok = await addComment(content);
-    if (ok) setContent("");
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+
+  const changeContent = (value: string) => {
+    revision.current += 1;
+    setContent(value);
   };
 
+  const submit = async () => {
+    if (submitting.current || !content.trim()) return;
+    submitting.current = true;
+    const submittedRevision = revision.current;
+    setPending(true);
+    setError(null);
+    try {
+      const ok = await addComment(content);
+      if (!mounted.current) return;
+      if (!ok) {
+        setError(`${kind} could not be posted. Your draft is still here. Try again.`);
+        return;
+      }
+      const clearedDraft = revision.current === submittedRevision;
+      if (clearedDraft) setContent("");
+      onPosted?.(clearedDraft);
+    } catch {
+      if (mounted.current) {
+        setError(`${kind} could not be posted. Your draft is still here. Try again.`);
+      }
+    } finally {
+      submitting.current = false;
+      if (mounted.current) setPending(false);
+    }
+  };
+
+  return { content, changeContent, pending, error, submit };
+};
+
+export const CommentThread = ({ postId, active = true }: CommentThreadProps) => {
+  const { user } = useAuth();
+  return <CommentThreadContent key={`${user?.id ?? "guest"}:${postId}`} postId={postId} active={active} />;
+};
+
+const CommentThreadContent = ({ postId, active = true }: CommentThreadProps) => {
+  const composerId = useId();
+  const { comments, loading, refreshing, hasLoaded, error, refetchComments, hasMore, loadingMore, addComment, deleteComment, loadMore } =
+    usePostComments(postId, undefined, active);
+  const draft = useCommentDraft(addComment, "Comment");
+
   return (
-    <div className="space-y-4">
+    <div data-shell-composer-active={active} className="space-y-4">
       <div className="space-y-2">
+        <Label htmlFor={composerId}>Comment</Label>
         <Textarea
-          value={content}
-          onChange={(event) => setContent(event.target.value)}
+          id={composerId}
+          value={draft.content}
+          onChange={(event) => draft.changeContent(event.target.value)}
+          aria-describedby={`${composerId}-help${draft.error ? ` ${composerId}-error` : ""}`}
           rows={3}
           placeholder="Add a thoughtful comment..."
           className="resize-none font-sans"
         />
+        <p id={`${composerId}-help`} className="font-sans text-xs text-muted-foreground">
+          Enter adds a new line. Use the Comment button to post.
+        </p>
+        {draft.error && <p id={`${composerId}-error`} role="alert" className="font-sans text-sm text-destructive">{draft.error}</p>}
         <div className="flex justify-end">
-          <Button size="sm" onClick={submit} disabled={!content.trim()}>
-            Comment
+          <Button type="button" size="sm" onClick={draft.submit} disabled={draft.pending || !draft.content.trim()} aria-describedby={draft.error ? `${composerId}-error` : undefined}>
+            {draft.pending ? "Posting..." : "Comment"}
           </Button>
         </div>
+        <p role="status" className="sr-only">{draft.pending ? "Posting comment" : ""}</p>
       </div>
 
       <LoadingRegion loading={loading} refreshing={refreshing} label="Loading comments">
@@ -76,6 +134,7 @@ const CommentThreadContent = ({ postId }: CommentThreadProps) => {
               key={comment.id}
               comment={comment}
               postId={postId}
+              active={active}
               onDelete={deleteComment}
             />
           ))}
@@ -97,15 +156,21 @@ const CommentNode = ({
   postId,
   onDelete,
   level = 0,
+  active,
 }: {
   comment: PostComment;
   postId: string;
   onDelete: (commentId: string) => void;
   level?: number;
+  active: boolean;
 }) => {
   const { user } = useAuth();
+  const composerId = useId();
+  const repliesId = useId();
+  const replyTriggerRef = useRef<HTMLButtonElement>(null);
+  const replyComposerRef = useRef<HTMLDivElement>(null);
+  const restoreReplyFocus = useRef(false);
   const [replying, setReplying] = useState(false);
-  const [reply, setReply] = useState("");
   const [showReplies, setShowReplies] = useState(false);
   const {
     comments: replies,
@@ -119,17 +184,28 @@ const CommentNode = ({
     addComment,
     deleteComment,
     loadMore,
-  } = usePostComments(postId, comment.id, showReplies);
+  } = usePostComments(postId, comment.id, active && showReplies);
 
-  const submitReply = async () => {
-    if (!reply.trim()) return;
-    const ok = await addComment(reply, comment.id);
-    if (ok) {
-      setReply("");
-      setReplying(false);
+  const draft = useCommentDraft(
+    (content) => addComment(content, comment.id),
+    "Reply",
+    (clearedDraft) => {
+      if (clearedDraft) {
+        // Restore focus only when closing the editor removed its active control.
+        const focusWasInComposer = replyComposerRef.current?.contains(document.activeElement);
+        setReplying(false);
+        restoreReplyFocus.current = Boolean(focusWasInComposer);
+      }
       setShowReplies(true);
+    },
+  );
+
+  useEffect(() => {
+    if (!replying && !draft.pending && restoreReplyFocus.current) {
+      restoreReplyFocus.current = false;
+      replyTriggerRef.current?.focus();
     }
-  };
+  }, [replying, draft.pending]);
 
   const isDeleted = comment.is_deleted || Boolean(comment.deleted_at);
   const maxInlineDepth = 3;
@@ -170,9 +246,16 @@ const CommentNode = ({
           <div className="flex flex-wrap items-center gap-3">
             {!isDeleted && (
               <button
+                ref={replyTriggerRef}
                 type="button"
-                onClick={() => setReplying((value) => !value)}
-                className="font-sans text-xs font-medium text-muted-foreground hover:text-primary"
+                onClick={(event) => {
+                  event.currentTarget.focus();
+                  setReplying((value) => !value);
+                }}
+                disabled={draft.pending}
+                aria-expanded={replying}
+                aria-controls={`${composerId}-region`}
+                className="min-h-11 rounded-sm font-sans text-xs font-medium text-muted-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
               >
                 Reply
               </button>
@@ -180,8 +263,13 @@ const CommentNode = ({
             {comment.reply_count > 0 && (
               <button
                 type="button"
-                onClick={() => setShowReplies((value) => !value)}
-                className="font-sans text-xs font-medium text-primary"
+                onClick={(event) => {
+                  event.currentTarget.focus();
+                  setShowReplies((value) => !value);
+                }}
+                aria-expanded={showReplies}
+                aria-controls={repliesId}
+                className="min-h-11 rounded-sm font-sans text-xs font-medium text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {showReplies ? "Hide replies" : `View ${comment.reply_count} replies`}
               </button>
@@ -199,33 +287,43 @@ const CommentNode = ({
           </div>
 
           {replying && (
-            <div className="space-y-2">
+            <div ref={replyComposerRef} id={`${composerId}-region`} className="space-y-2">
+              <Label htmlFor={composerId}>Reply to {comment.user?.display_name || "Reader"}</Label>
               <Textarea
+                id={composerId}
                 rows={2}
-                value={reply}
-                onChange={(event) => setReply(event.target.value)}
+                value={draft.content}
+                onChange={(event) => draft.changeContent(event.target.value)}
+                aria-describedby={`${composerId}-help${draft.error ? ` ${composerId}-error` : ""}`}
                 placeholder="Write a reply..."
                 className="resize-none text-sm"
               />
+              <p id={`${composerId}-help`} className="font-sans text-xs text-muted-foreground">
+                Enter adds a new line. Use the Reply button to post.
+              </p>
+              {draft.error && <p id={`${composerId}-error`} role="alert" className="font-sans text-sm text-destructive">{draft.error}</p>}
               <div className="flex gap-2">
-                <Button size="sm" onClick={submitReply} disabled={!reply.trim()}>
-                  Reply
+                <Button type="button" size="sm" onClick={draft.submit} disabled={draft.pending || !draft.content.trim()} aria-describedby={draft.error ? `${composerId}-error` : undefined}>
+                  {draft.pending ? "Posting..." : "Reply"}
                 </Button>
                 <Button
+                  type="button"
                   size="sm"
                   variant="outline"
+                  disabled={draft.pending}
                   onClick={() => {
-                    setReply("");
                     setReplying(false);
+                    replyTriggerRef.current?.focus();
                   }}
                 >
                   Cancel
                 </Button>
               </div>
+              <p role="status" className="sr-only">{draft.pending ? "Posting reply" : ""}</p>
             </div>
           )}
 
-          {showReplies && (
+          <div id={repliesId} hidden={!showReplies}>
             <LoadingRegion loading={repliesLoading} refreshing={repliesRefreshing} label="Loading replies" className="space-y-3 pt-1">
               {repliesError && <LoadingError message={repliesError} onRetry={refetchReplies} />}
               {repliesLoading ? (
@@ -242,6 +340,7 @@ const CommentNode = ({
                     postId={postId}
                     onDelete={deleteComment}
                     level={level + 1}
+                    active={active && showReplies}
                   />
                 ))
               )}
@@ -256,7 +355,7 @@ const CommentNode = ({
                 </Button>
               )}
             </LoadingRegion>
-          )}
+          </div>
         </div>
       </div>
     </div>

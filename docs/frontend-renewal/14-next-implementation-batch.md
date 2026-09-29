@@ -2,7 +2,7 @@
 
 ## Historical checkpoint
 
-**Superseded by the next authorized batch:** F02/F03 were committed in `06d5190`. The worktree was clean when the user requested the next implementation. [15-feedback-environment-batch.md](15-feedback-environment-batch.md) now owns F04/F05 and the current review stop. The prior stop/results below are retained as historical evidence.
+**Historical:** F02/F03 were committed in `06d5190`. [Checkpoint20](20-coverage-reconciliation.md) now owns current coverage corrections after F09. The prior stop/results below are retained as scoped historical evidence; missed live composers/navigation counterparts remain open there.
 
 - Baseline: clean worktree at `229dd677e33a8b7c6e81ac31d75b34aa94ea728d`, which includes F01 and its documentation.
 - Active batch: **F02 destination/navigation semantics + F03 notification states and editor labels**.

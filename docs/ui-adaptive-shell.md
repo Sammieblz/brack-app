@@ -2,7 +2,11 @@
 
 F09 implementation; exact validation/release limits live in [checkpoint 19](frontend-renewal/19-adaptive-shell.md). This is shell presentation, not independent native stacks or whole-app retained routing.
 
+Coverage reopened at `db076cf`: [checkpoint20](frontend-renewal/20-coverage-reconciliation.md) and the [route matrix](frontend-renewal/coverage-review/03-route-shell-consumers.md) identify remaining live parents/branches, utility-host gaps and messaging/header assumptions. The contract below describes MobileLayout and its migrated consumers; it does not establish every screen uses them correctly.
+
 ## Presentation and ownership
+
+CR01 adds one narrow utility rule: live comments and chat mark their active task with `data-shell-composer-active`. While present, Scroll to top (`data-shell-scroll-top`) is hidden independently of field focus. Browser traces showed it could otherwise appear over Send between pointer-down and pointer-up after textarea blur. Local comment collapse and Posts/Chat tab visibility update the marker; other floating actions retain their existing policy. [Checkpoint21](frontend-renewal/21-live-composers.md) owns the real-consumer browser evidence and limits.
 
 `lib/shellPresentation.ts` consumes UIEnvironment runtime, display mode and window class. Below 1024 CSS pixels, native iOS/Android and standalone web PWA use labeled bottom destinations. Browser tabs and small Electron windows use Menu. Expanded windows use sidebar. Pointer capability never turns a browser into native. Feature gates and canonical navigation configuration remain authoritative.
 
@@ -16,7 +20,7 @@ Tabs occupy normal flow without ornamental gap/glow/animated scaling. Large text
 
 The shell reuses unscaled visual geometry through `useOverlayViewport`, without another geometry store or keyboard/browser-toolbar inference. Pinch retains layout geometry and browser zoom. Native viewport panning/insets remain device gates.
 
-Editable focus within main hides footer/floating controls. This focus policy includes hardware keyboards; it is not keyboard detection. Read-only and checkbox/button controls do not trigger it. Main takes the safe bottom inset while footer is hidden. Header resize and viewport/footer changes reveal obscured content immediately without refocusing or moving the caret; header controls are excluded. Add/Edit Book actions stay in page flow/sticky regions. Local floating actions use measured chrome clearance and reserve space only when visible.
+Editable focus within main hides footer/floating controls. This focus policy includes hardware keyboards; it is not keyboard detection. Read-only and checkbox/button controls do not trigger it. Main takes the safe bottom inset while footer is hidden. Header resize, viewport/footer changes and keyboard/programmatic focus entry reveal obscured content without refocusing or moving the caret; header controls and focus outside the owned main are excluded. Focus entry during an active pointer contact does not scroll the activation target; the guard clears on pointer-up/cancel/window blur. This also leaves intentional scrolling of a focused editor alone. Pinch retains browser ownership. Add/Edit Book actions stay in page flow/sticky regions. Local floating actions use measured chrome clearance and reserve space only when visible.
 
 ## Utilities
 

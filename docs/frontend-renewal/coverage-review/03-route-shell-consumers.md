@@ -1,0 +1,172 @@
+# Route, shell and navigation coverage reconciliation
+
+Source review: 2026-09-28, HEAD `db076cf` (F09 committed). This review changes no application code and runs no browser/device suites. **Source-verified** below means the current source establishes the stated structure or missing connection; suggested reproductions are not claims that a browser or physical device was exercised today. React subtree replacement is identifiable from source; exact focus, keyboard geometry and native gesture outcomes still need the listed tests.
+
+The original dossier already listed all 39 route paths and 33 screen modules. The failure was not simply a missing route list: the implementation checkpoints treated a few primitive/representative-screen checks as enough to proceed without reconciling every consuming route branch. F09 materially improves shared chrome, but its successful Library fixtures do not establish the shared contract on Messages, Settings, header-owned composers, signed-out recovery or routes without `MobileLayout`.
+
+## Continuation status
+
+This report records the `db076cf` source baseline. [CR01/checkpoint21](../21-live-composers.md) retains actual Feed/Profile Posts and club Chat tasks across local tab changes, and prevents Scroll to top from covering live writing controls. It does not close responsive header/pane replacement, route recovery or other RS findings. Those remain in CR02/CR03/CR05/CR06; distinguish local-tab retention from cross-breakpoint ownership.
+
+## Retrieval and evidence
+
+- Read the delivery and frontend UX skills, the platform/navigation reference, and the Graphify existing-index/query instructions. Queried `App MobileLayout NativeHeader MobileHeader ProtectedRoute Onboarding MessageThread ScanCover` with a 2,200-token bound. The graph had 9,250 nodes; 485 matched and 67 were displayed. This was an entry-point query, **not** exhaustive coverage. `ProtectedRoute` was a search term, not a discovered component.
+- Read generated Obsidian notes `graphify-out/obsidian/App.tsx.md`, `MobileLayout.tsx.md`, and `MessageThread.tsx.md`; followed their `source_file`/import links. These show dependency navigation, not rendered state or acceptance.
+- Reconciled `App.tsx` against the full non-test `screens/*.tsx` list: 39 declared paths, including aliases and `*`; 33 screen implementations; three legacy onboarding routes render `OnboardingEntryRedirect` instead of a screen module. All are accounted for below.
+- Read the relevant content in `02-screen-audit.md`, `03-platform-navigation.md`, `05-screen-specifications.md`, `09-execution-plan.md`, checkpoints 15/17/19, and the current shell/Back contracts. Inspected actual route branches and ownership callers, not just imported primitive names.
+- Inspected `tests/fixtures/adaptive-shell`, `shell-scroll` and `back-ownership` README/entry points. Their scope is recorded below. Existing successful historical results are not rerun or widened by this review.
+
+Source paths below are relative to `apps/client/src`. The current source commit is the durable revision; line numbers are navigation landmarks only.
+
+## Complete route-to-shell matrix
+
+Legend: **M** = `MobileLayout`, whose shared runtime policy selects Menu below 1024 for browser/narrow Electron, bottom destinations for native/standalone PWA, sidebar at expanded width. **H768** = `MobileHeader` below 768 and `NativeHeader` above; the latter now exposes Menu at medium width. **H1024** = custom heading replaced by `MobileHeader` throughout compact/medium; expanded has screen-owned heading/back. **Standalone** = no M, no shell utility slot. A row establishes source routing/chrome ownership, not full UX validation. State branches name what must be verified independently of the loaded screen.
+
+| Exact registered path(s) | Screen / shell and visible return | Branches and coverage reconciliation | Later screen-composition owner |
+| --- | --- | --- | --- |
+| `/` | `Index.tsx`, standalone sticky public header, logo/entry links | Session check returns branded loading; signed-in destination resolves through existing auth resolver. Public landing has its own skip link/body scroll. No native first-run redirect distinction is established by shell tests. No utility host while here. | F18 / S01 |
+| `/support` | `SupportCenter.tsx`, standalone sticky public header; signed-in Settings link or public Home | FAQ search/empty, anchor scroll, contact form and truthful legal placeholders. Accessible signed-in route has no utility slot: active timer/sync presentation disappears (RS03). No shared native/tab chrome. | F18 / S02; RS03 belongs to shell ownership |
+| `/auth` | `Auth.tsx`, standalone responsive branded account layout | Sign-in, onboarding signup, recovery/challenge, branded transition/loading and failure modes use local owners. Deliberate auth boundary; M is not a requirement here. Real keyboard/password-manager/native entry evidence remains separate. | F18 / S03 |
+| `/auth/callback` | `AuthCallback.tsx`, standalone branded loading or alert/recovery button | Callback completion/return-to-request, expired/used/error, guarded redirect and popup close. Global shell fixtures do not cover this boundary. | F18 / S03 |
+| `/auth/reset-password` | `ResetPassword.tsx`, standalone reset form/loading/transition | Invalid/expired authorization, mismatch/validation, pending save, recoverable error. Uses security-specific flow rather than a generic shell Back. | F18 / S03 |
+| `/onboarding` | `Onboarding.tsx`, standalone chapter layout, local Home/Back/Skip/Close | Loading, guest/authenticated/completed edit, chapter navigation, review edits, draft recovery and save. Visible chapter Back is not registered with app/native Back (RS08). Shared viewport exists, but bespoke action dock and scroll require actual keyboard/large-text coverage. | F18 / S04; RS08 is F07 consumer reconciliation |
+| `/app-permissions` | `PostSignupPermissions.tsx`, standalone safe-top/bottom card layout | Auth-loading, anonymous→auth, web→dashboard, native checking/granted/denied/unavailable/error, registration retry, optional continue. No utility slot; decide whether timer omission here is intentional rather than infer it from public auth routes. | F18 / S04 |
+| `/welcome`, `/questionnaire`, `/goals` | `components/OnboardingEntryRedirect.tsx` | Compatibility redirects, not goals-management pages. Shared auth resolver/transition governs return; do not add independent shell history. | F18 / S04 |
+| `/dashboard` | `Dashboard.tsx`, M + H768 once auth resolves | **Auth-loading branch has no header and disables bottom nav**, leaving compact/medium no destination entry (RS09). Loaded/reading empty/cached/error use header and shared shell; nested progress task remains screen-owned. | F13 / S05 |
+| `/my-books`, `/books` | `MyBooks.tsx`, M + H768; no root Back | Real F09 fixture includes all three library views, controls, Quick actions and some resize/focus states. Medium header actions are unnamed icon-only controls (RS07). Selection/reorder app-Back guard exists. Duplicate filters/action density is known F10 work, not fixed by F09. | F10 / S06 |
+| `/analytics` | `Analytics.tsx`, M + H1024; root-style header, no explicit Back | Header remains outside loading/error/cached stats region. Tablet Menu source migration is present. Charts, summaries, error/empty and long content are not covered by the F09 real-screen matrix. | F17 / S13 |
+| `/add-book` | `AddBook.tsx`, M + H1024; `/my-books` fallback | Shared unsaved/pending app-Back guard and sticky Save; real F09 form geometry/draft checks exist. Search/quick-add/manual/OCR entry/scanner/duplicates still need screen workflow acceptance. No claim that scan excursion preserves the Add form merely because resize does. | F12 / S07 |
+| `/book/:id` | `BookDetail.tsx`, M + H768; `/my-books` fallback | Both missing/loading/error branch and loaded branch retain header/Back. Account/book key remount is deliberate identity change. Overview/progress/reviews/journal/logs and their task owners need real consumer coverage; no F09 detail fixture. | F11 / S08, F13 journal |
+| `/book/:id/progress` | `ProgressTracking.tsx`, M + H1024; explicit `to=/book/:id` | Header remains through book/progress loading/error. Source names reading-data safety but geometry/chart/nonexistent-book states are not F09 verified. `to` intentionally differs from history Back. | F11 / S09 |
+| `/edit-book/:id` | `EditBook.tsx`, M + H1024; owning-book fallback/cancel | Loading/unavailable branch has Back; loaded form has unsaved/pending guard. Actual Add/Edit resize/save geometry covered by F09; history and real persistence remain their separate tests. Some interior mobile action layout still changes at 768. | F11 / S08 |
+| `/scan-barcode`, `/scan` | `ScanBarcode.tsx`, M + H1024; `/add-book` fallback | Header surrounds `BarcodeScannerFlow` idle/camera/manual/lookup/result/duplicate/error states. Native camera teardown/return is a hook/device boundary; no actual scanner in F09 browser checks. | F12 / S07 |
+| `/scan-cover` | `ScanCover.tsx`, M + H1024; `/add-book` fallback | Idle/capture/OCR progress/cancel/error/result/edit/search branches all share header. Local extracted fields and cancel-disabled mid-OCR need Back/camera lifecycle verification; no route guard here proves cancellation before leaving. | F12 / S07 |
+| `/history` | `ReadingHistory.tsx`, M + H1024; `/analytics` fallback | Auth redirect; logs/journals query tabs, search, loading/error/empty and semantic record navigation. Header is stable across body states. Journal/editor persistence is F01 evidence, not a full history/tab runtime walkthrough. | F13 / S10 |
+| `/profile` | `Profile.tsx`, M + H1024, no explicit Back | Auth/load/retry and loaded editor retain compact Menu. Local profile fields/avatar picker are not app-Back-guarded. Expanded loading screen lacks the compact title but has sidebar. Shared editor consolidation still F16. | F16 / S16 |
+| `/settings` | `Settings.tsx`, M + H1024; categories use `?section=` | Auth-loading skeleton vs auth redirect; mobile Accordion vs wider panels replaces complete editor subtree at768 (RS02). Mobile accordion does not synchronize section query. Sign-out overlay has its own owner outside branch, which should be preserved. | F16 / S17; RS02 is foundation defect |
+| `/achievements` | `Achievements.tsx`, gamification gate, M + H768 | Gate redirects to dashboard; header remains around preparing/failure/retained snapshot/ready. Historical shell fixture exercises real shell/Journey rail/League; other Journey panels are mocked. All rewards/charts/shop/tasks cannot be counted as F09 covered. | F17 / S13 |
+| `/book-lists`, `/lists` | `BookLists.tsx`, M + H1024 when loading/signed in | Auth loading has header; **resolved anonymous returns null**, no redirect in screen/global guard (RS05). Loaded `BookListManager` owns list tasks. F09 destination receipt is not this component. | F10 / S11 |
+| `/lists/:listId` | `BookListDetail.tsx`, M + H1024; `/lists` fallback | Missing/list/book fetch error and ready branch retain Back. Account/list key controls identity. Filters/list dialogs/cards not covered by F09 destination receipt. | F10 / S11 |
+| `/goals-management` | `GoalsManagement.tsx`, M + H1024 when loading/signed in | Loading skeleton and GoalManager; **resolved anonymous returns null** (RS05). Goal task primitive/date evidence exists from F08, while stacked screen composition remains F13. | F13 / S12 |
+| `/users/:userId` | `UserProfile.tsx`, social gate, M + H1024; contextual profileBackPath | `/users/me` is handled inside the same route. Loading/missing/private/error and ready branches retain Back. Books/posts/clubs whole-content swipe handlers bypass F07 conflict policy (RS04). Compact tab triggers already have aria-labels; do not misreport them as unnamed. | F14/F16 / S16 |
+| `/reviews` | `Reviews.tsx`, social gate, M + H768 | Loading/error/cached/empty/more; Write Review trigger in header but picker/review owner is screen state outside changing header—unlike Feed/Clubs. Preserve that distinction. Date/editor/picker focus still requires consumers' checks. | F14 / S14 |
+| `/reviews/:reviewId` | `ReviewDetail.tsx`, social gate, M + H768; `/reviews` fallback | Header retained during fetch/unavailable/error, review/comments loading/more/failure. Comment draft and pending state need app/native Back treatment; no F09 real screen. | F14 / S14 |
+| `/feed` | `Feed.tsx`, social gate, M + H768 | Posts/activity, loading/error/empty/pagination share shell. `CreatePostDialog` task is inside responsive header action and remounts at768 (RS01), despite stable M. | F14 / S14; RS01 is foundation defect |
+| `/posts/:postId` | `PostDetail.tsx`, social gate, M + H768; `/feed` fallback | Loading/cached/error/private/deleted/missing recovery retains Back. PostCard nested actions/composer ownership not established by a shell import. | F14 / S14 |
+| `/clubs` | `BookClubs.tsx`, social gate, M + H768 | Search/suggested/joined/invites/requests, pending/empty/error; header-owned `CreateClubDialog` remounts at768 (RS01). Membership/admin service rules stay untouched. | F14 / S15 |
+| `/clubs/:clubId` | `BookClubDetail.tsx`, social gate, M + H1024; `/clubs` fallback | Loading and ready have expanded Back; **unavailable/error branch omits it** (RS06). Preview/member/admin/chat/discussion/members/media panels remain separate consumers, not shell acceptance. | F14 / S15 |
+| `/readers` | `Readers.tsx`, social gate, M + H768 | Readers/Clubs, discovery subfilters/search/error/empty. Header-owned CreateClub task remounts at768 (RS01); content-wide swipe bypasses conflict rules (RS04). | F14 / S15 |
+| `/messages` | `Messages.tsx`, social gate, M; compact thread custom Back→inbox; H768 otherwise | Entire compact/split thread ancestor changes; local conversation selection, guessed heights,22rem inbox and swipe exit remain (RS02/RS04/RS10). Conversation list and MessageThread child tasks require their own checks. Feature gate redirect does not make these safe. | F15 / S18; baseline foundation blockers must be addressed sooner |
+| `*` | `NotFound.tsx`, standalone recovery | Safe AppBack hook plus signed-in Library/public Home recovery exists (F02/F07). No shell utility slot for an authenticated invalid route (RS03). ErrorBoundary fallback is a distinct non-route state below. | F18 / S02; RS03 is shell ownership |
+
+## Foundation consumer findings
+
+These findings are not permission to silently expand into a complete social/settings redesign. They are concrete cases where the shared acceptance criteria still fail or have not been connected. Give them explicit correction tickets ahead of further feature polish; retain their later screen-composition owners.
+
+### RS01 — Stable shell did not preserve header-owned writing tasks
+
+**Source-verified, high priority.** `Feed.tsx:41–62` constructs `CreatePostDialog` in `createAction` and places it inside either `MobileHeader` or `NativeHeader`. `BookClubs.tsx:111,150+` and `Readers.tsx:133–148` do the same with `CreateClubDialog`. Those are different ancestor component types at the 768px threshold. React discards their descendants even though M now stays stable. `social/CreatePostDialog.tsx:38–52` owns open, title, rich text, audience/book/club selections and files locally; `clubs/CreateClubDialog.tsx:35–51` owns fields, files, previews and pending state locally. F08/F09 stable-owner guarantees therefore do not cover these actual tasks.
+
+Reproduce without publishing: open each task at390, type/select media, place caret, resize to834 and back. Require same form DOM, fields/file references, focus/selection, pending mutation identity and connected return target. Also resize1023↔1024 while open. Fix ownership before visual redesign; move task state/content outside responsive header, leaving a trigger in the header. The reusable primitive alone cannot solve an ancestor remount.
+
+**Additional owners:** `NativeHeader` removes `HeaderUtilityActions` when expanded becomes medium (`NativeHeader.tsx:295`), destroying local LibrarySearchAction open/query and UserNotificationsPopover open state. Crossing768 removes HeaderTimerWidget's idle picker with the whole NativeHeader. The active session controller is now application-owned and is a successful separate fix; do not conflate it with the still header-owned idle picker/search/notifications.
+
+### RS02 — Settings and Messages still replace responsive task ancestors
+
+**Source-verified, high priority.** `Settings.tsx:203–304` switches Accordion/editor versus panel/editor trees on `useIsMobile`. `settings/ProfileSettings.tsx:36–46` owns editable `formData` and upload/preview/error locally. Resize across768 remounts that form rather than moving presentation. Additionally Accordion uses `defaultValue={activeSection}` and its triggers only emit haptics; they do not call `handleSectionChange` or update the URL. Opening Profile on phone then expanding can select the previous URL/default Account section. External `?section=` changes after mount also do not control Accordion's current value.
+
+`Messages.tsx:103–179` changes the thread's complete ancestor tree from compact thread to split panel at768. `MessageThread.tsx:120–129` owns files/reply/preview/pickers; its conversation effect explicitly resets files/reply. Text has localStorage draft recovery, which is a partial mitigation, not retention of selected media, DOM, caret, reply target or pending state. Do not assert all message text is necessarily lost: the verified loss mechanism concerns local component state/identity.
+
+Reproduce: Settings Profile edit and avatar selection390→834→390; programmatic/query section change while mounted; Messages selected conversation with typed text, attachment and reply at767→768→834→600. Preserve active task identity and file objects, do not send real messages. Tablet/split layout redesign remains F15/F16, but making resize retain unsaved tasks belongs to shared F05/F08/F09 acceptance.
+
+### RS03 — Application-owned utilities have routes with no presentation host
+
+**Source-verified F09 presentation regression risk.** `ShellUtilitiesProvider` always renders into one detached DOM host. `ShellUtilitiesSlot` attaches it only in `MobileLayout`; cleanup removes it on leaving that layout. `SupportCenter` and `NotFound` have no slot. `ReadingSyncIndicator` hides auth/root/onboarding routes, but does **not** hide `/support` or arbitrary unmatched paths. Thus an authenticated reader moving from Library to Help/Support or a bad link retains the timer controller but cannot see its row or sync status there. Continuity of React controllers does not imply visibility/reachability of their controls.
+
+Current living documentation acknowledges detachment generally, but provides no route-level product decision or acceptance for these signed-in destinations. Explicitly decide which standalone routes deliberately suppress utilities and how active-session access remains reachable. Reproduce active timer+offline on Library→Settings Support→Back and Library→invalid path→Library, including open Details and pending Finish. Verify no orphan dialog/focus owner after slot detach, no duplicate host/subscription, no timer reset. Do not invent a requirement to show app tabs on public/auth pages.
+
+### RS04 — F07 gesture arbitration missed reachable handlers outside Library
+
+**Source-verified, high priority; exact conflicting touch outcomes untested.** F07 applied edge/contact/selection/editable/multitouch/overlay cancellation to SwipeableBookCard and PullToRefresh. Four reachable consumers still call bare `react-swipeable`:
+
+- `Messages.tsx:44–53,114`: whole compact thread right swipe clears selected conversation directly, bypassing app Back/overlay priority. The handler can begin over composer/text/media content; no shared exclusion/cancel routine appears.
+- `Readers.tsx:102–116,171,261`: content-wide swipe changes Readers/Clubs.
+- `UserProfile.tsx:100–120,418,466,508`: content-wide swipe changes Books/Posts/Clubs.
+- `messaging/ConversationsList.tsx:80–89`: row swipe reveals actions; no shared contact arbitration. `Card` row is click-only, while inner profile buttons route to the profile. Mark read/mute/hide are rendered only when `isSwiped`; no visible More or keyboard reveal control is present in this row. This is a gesture-only essential-action/accessibility gap in addition to conflict risk.
+
+`SwipeableBookListsCarousel` also contains a swipe recognizer, but import/caller reachability must be established before treating it as an active route defect. An unused component is inventory debt, not equivalent evidence.
+
+Test start on outer edge, diagonal vertical scroll, selected text, focused editor, attachment, nested button, second contact, cancellation, active overlay, browser system swipe and native Back. Every action must have a visible keyboard/touch alternative; native callbacks, UI Back and thread swipe must not resolve different task state. This is part of F07's stated ownership scope, not merely F14/F15 cosmetic work.
+
+### RS05 — Signed-out list/goals direct routes can render a blank application
+
+**Source-verified, high priority.** `BookLists.tsx:26` and `GoalsManagement.tsx:13` return null when auth settles without a user. `App.tsx` does not wrap these routes in an auth redirect. `OnboardingRouteGuard.tsx` returns for anonymous users except `/app-permissions`; `useAuth.ts:90` is a state accessor, not a redirect. The same list implementation serves `/lists` and `/book-lists`.
+
+Reproduce cold signed-out links and session expiration on all three paths. Require explicit sign-in/recovery with correct return intent, a meaningful loading state and no stale account data. The appropriate auth contract must decide destination; do not put new authorization rules into M. Shell/route recovery validation cannot exclude these branches because happy-path fixtures seed a user.
+
+### RS06 — Expanded unavailable club detail loses its contextual Back
+
+**Source-verified.** `BookClubDetail.tsx:163–176` loading and `195–211` ready render expanded AppBackButton. The unavailable/error branch `179–192` renders compact MobileHeader only, then error/retry or “Club not found”; expanded width has sidebar but no contextual Back/Clubs recovery. Sidebar global navigation does not preserve the specified detail return contract. Test direct and previously visited club links at1280 with401/403/404/network failure, and verify explicit Clubs return; compact has Back already.
+
+### RS07 — Medium Library header controls have no accessible names
+
+**Source-verified.** `MyBooks.tsx:1113–1131` renders Book Lists, Analytics and Add Book action buttons through NativeHeader from768 up; their labels are all `hidden lg:inline` and the buttons have no `aria-label`. Iconoir artwork supplies no replacement action name. At768–1023 the rendered labels are hidden. Verify role/name and keyboard/touch activation at834, including 200% text. F09's tablet screenshot does not establish named controls. Preserve visible labels or give clear labelled alternatives while reducing header clutter.
+
+Counterexample checked: `UserProfile` compact Books/Posts/Clubs use icons but their TabsTriggers already carry explicit aria-labels. Do not turn a broad icon search into fabricated defects.
+
+### RS08 — Native Back and onboarding chapter Back have different owners
+
+**Source-verified policy mismatch; physical behavior unverified.** `Onboarding.tsx:414` handleBack decrements a chapter; its visible Button at690 directly calls this function. It is not AppBackButton and does not register a Back control/guard. `getRouteBackPolicy('/onboarding')` is boundary. `AppNavigationProvider` minimizes native app at a root/boundary with no visible registered control. Therefore the app's synthetic Android callback currently selects boundary behavior rather than the visible chapter action. No source here proves the physical OS event sequence or IME precedence.
+
+Define approved behavior for chapter>0, first chapter, review editing, saving, guest versus completed settings edit; register the existing task decision with one coordinator. Preserve the auth boundary/history contract and resumable onboarding draft. Browser Back stays browser-owned under F07; do not claim universal browser interception.
+
+### RS09 — Dashboard auth-loading branch contradicts all-branch Menu availability
+
+**Source-verified coverage gap.** `Dashboard.tsx:216–232` uses `MobileLayout showBottomNav={false}` without either shared header. On compact/medium, M does not itself render a Menu trigger; no destination entry exists until auth resolves. This may be a deliberate security/loading policy, but it is not covered by “all loading/error branches retain Menu.” Record the decision and a slow/stuck auth/recovery test rather than mark every branch migrated. Do not invent network latency or declare this a proven permanent dead end.
+
+### RS10 — Messaging still assumes header/viewport sizes and desktop pane fit
+
+**Source-verified geometry assumptions; clipping requires rendered confirmation.** Compact selected thread height is `calc(var(--app-viewport-height)-3.5rem)` although F09 MobileHeader now wraps and includes safe top. The normal-flow timer/sync footer occupies additional space. Wide branch uses `height: viewport−11rem`, min-height28rem and fixed22rem inbox as soon as768px; it ignores actual content width and composed chrome. Main→thread nested height/scroll composition therefore does not derive from F09 measured available space.
+
+Reproduce at390/767/768/834, portrait/landscape,200% text, timer+offline, long recipient name, composer focus and visual viewport shrink. Check composer/Send, last message, local attachment strips, each pane's scroll ownership and primary navigation clearance. F15 owns durable conversation URL and final split-pane experience, but F09 one-scroller/clearance acceptance remains unproved here. `MessageThread.tsx:166` also smooth-scrolls to bottom on every messages change, with no following-latest/reader-position test in shell fixtures; keep the F15 scroll-anchor requirement active.
+
+### RS11 — Shell focus/scroll claims exceed current route restoration implementation
+
+**Source-verified limitation, not a measured lag diagnosis.** M calls `usePersistentScrollPosition(location.pathname)`. That hook uses `sessionStorage['scroll_'+pathname]`, writes synchronously on every scroll, restores with an untracked0ms timeout, and does not key by account/history entry/query/view/filter. F07 ancestry storage is separately account scoped; it does not fix scroll ownership. Aliases have separate pathname keys; history/log/journal tab search state is not represented by this key. Content readiness, meaningful heading focus and origin-item focus restoration are not implemented by M's focused-field visibility effect.
+
+Document these as unfinished `03` route/focus/performance contracts with an explicit owner, not completed F09 behavior. Test slow loaded content and filter/tab changes, account switch and Book→Back to originating Library/List. Profile actual storage/route costs before optimization. F19 remains measured performance work; incomplete restoration should not be dismissed solely as a performance hypothesis.
+
+## Non-route branches that the route inventory alone misses
+
+| Owner | Coverage obligation |
+| --- | --- |
+| `App` outer `Suspense` above BrowserRouter/AppNavigationProvider/ShellUtilitiesProvider | Lazy route fallback replaces visible app boundary with branded loading. Actual cold/warm route behavior, utility visibility, subscriptions, focus and loading timing require production-like route tests. F09 fixture eagerly imports its three screens and cannot establish this path. No measured latency claim. |
+| Outer `ErrorBoundary` | Fallback removes Router/theme/timer/shell providers; recovery hard-navigates `/`. Confirm error/retry/public vs signed-in context, meaningful landmark and durable reading data; distinguish renderer crash from ordinary resource error. No claim that in-memory state survives an unmounted provider. |
+| `FeatureGate` | Social/gamification-disabled routes replace to Dashboard. Check in-progress task/account changes, route/menu agreement and focused destination after replacement. The existing flag contract is service/product-owned. |
+| `OnboardingRouteGuard` / legacy redirects / `DeepLinkHandler` | Redirects can happen before a screen is usable; auth loading, expired session, completed/incomplete onboarding, direct target and permission return need separate route-state rows. “39 URLs listed” does not validate them. |
+| MobileHeader/NativeHeader notification and idle-timer tasks | Their owners still live inside responsive header families; test768 and1024 boundaries, open query/selected item, external data arrival and trigger disappearance (RS01). |
+| JournalPromptHandler / active timer / offline sync | F09 preserves controllers, but slot availability, open dialog route changes, pending finish, journal handoff and editing-hidden footer are distinct. Explicit routes without slots and detached host behavior must be included (RS03). |
+| Main semantics | M renders a `main`; many screens render another nested `main` (Dashboard, Library, Feed, Messages, club/detail etc.). Determine one main landmark and named pane semantics in an actual accessibility-tree review; source imports alone cannot establish coherent screen-reader traversal. |
+
+## What prior validation proves, and what it does not
+
+| Existing evidence | Actual boundary | Required correction to interpretation |
+| --- | --- | --- |
+| F05 UI environment fixture | Shared runtime/window/visual geometry values and compatibility adapters | Does not migrate every consumer of `useIsMobile`, prove native keyboard behavior or preserve state in all responsive ancestors. The old hook retaining768 semantics was intentional compatibility, not proof all callers are appropriate. |
+| F07 Back fixture | Production coordinator/policy/primitives with synthetic routes/drafts/selection and simulated Capacitor callback | Does not exercise real Onboarding chapter Back, Messages whole-thread gesture, scanner teardown, Settings editor or public utility paths. |
+| F09 adaptive-shell fixture | Actual MyBooks/AddBook/EditBook, shell/nav/menu/utilities, real journal prompt; synthetic note | Every other route is `DestinationScreen`, a receipt. Clicking Settings/Lists and observing its receipt establishes link correctness, not the real Settings/List screen. Header-owned Feed/Club forms, Messages, signed-out branches and App lazy fallback are absent. |
+| Shell-scroll198 distinct scenarios | Actual MyBooks/Achievements, shell/headers/Journey rail/League; minimal sidebar; inactive timer and mocked offline status; other Journey panels mocked | A wide geometry matrix over two screens is not198 separately audited screens/components. It cannot close messaging/settings/layout/failure branch gaps. |
+| F09 screenshots | Library in several runtime/width/text modes plus menu/utilities | Useful shell composition evidence, not full-route visual approval; network fonts are blocked, real devices/AT not exercised. |
+| F08 primitive/Goals/date evidence | Listed real consumers plus focused fixtures | Stable Dialog content cannot preserve a form when its parent header/editor branch unmounts. Consumer ancestry must be checked at every rendering caller. |
+
+## Next correction checkpoint and closure rules
+
+1. Keep the original full program and later screen tickets. Add the findings above to the foundation reconciliation ledger with explicit owners; do not call all of them deferred F10/F14/F15/F16 polish.
+2. First correction slice should preserve task owners across actual Feed/Club/Settings/Messages resize and establish visible timer/sync policy on signed-in standalone routes. This is multiple real consumers of one ownership contract; split further if the complete verification scope cannot fit one checkpoint.
+3. Independently close the small recovery/name defects (RS05/RS06/RS07) with real route/branch fixtures. Keep auth/feature/security boundaries intact.
+4. Enumerate every reachable local gesture and visible Back owner, then integrate or explicitly decline each with reasons (RS04/RS08). Never assume a fixed Library recognizer fixes Readers/Messages.
+5. Track every matrix row as **source reviewed / implementation needed / fixture verified / device verified / visual approved**, each separately. Add subrows for loading/error/anonymous/feature-disabled and important tasks; no inferred status inheritance merely from M/AdaptiveDialog imports.
+6. Tests must mount the actual consumer and its responsive parents. Cover390↔834↔1280,768/1024 boundary crossings, one200%text case, available-height changes, keyboard/focus/draft/file/pending state, browser/native/PWA policy and failed-resource branches. Add meaningful task assertions, not screenshot count alone. Use fixtures/test accounts; do not publish posts/send messages or invitations to real people as a visual test.
+7. Physical browser toolbar/Capacitor IME/safe-area/OS Back/VoiceOver/TalkBack and real-tablet rotation/fold behavior remain device gates. Do not close them using shims or turn this source review into legal-conformance evidence.
+
+No application fix, visual approval, test rerun, deployment or commit is claimed by this document. It is a coverage reconciliation that must change implementation order and future acceptance evidence.

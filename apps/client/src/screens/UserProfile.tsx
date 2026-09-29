@@ -75,6 +75,10 @@ const UserProfileContent = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTab = searchParams.get("tab");
   const activeTab = requestedTab === "posts" || requestedTab === "clubs" ? requestedTab : "books";
+  const [postsVisited, setPostsVisited] = useState(activeTab === "posts");
+  useEffect(() => {
+    if (activeTab === "posts") setPostsVisited(true);
+  }, [activeTab]);
   const setActiveTab = (tab: string) => {
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
@@ -463,7 +467,7 @@ const UserProfileContent = () => {
             </LoadingRegion>
           </TabsContent>
 
-          <TabsContent value="posts" className="space-y-4 mt-6 animate-fade-in" {...swipeHandlers}>
+          <TabsContent value="posts" forceMount={postsVisited || activeTab === "posts" ? true : undefined} hidden={activeTab !== "posts"} className="space-y-4 mt-6 animate-fade-in" {...swipeHandlers}>
             <LoadingRegion loading={dataLoading && !dataLoaded} refreshing={dataLoading && dataLoaded} label="Loading shared posts" className="space-y-4">
             {dataError && <LoadingError message={dataError} onRetry={() => setTabRequest(value => value + 1)} />}
             {dataLoading && !dataLoaded ? (
@@ -483,6 +487,7 @@ const UserProfileContent = () => {
               userPosts.map((post) => (
                 <PostCard
                   key={post.id}
+                  active={activeTab === "posts"}
                   post={{
                     ...post,
                     user: post.profiles ? {

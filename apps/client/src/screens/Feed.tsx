@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ActivityFeed } from "@/components/social/ActivityFeed";
 import { CreatePostDialog } from "@/components/social/CreatePostDialog";
 import { MobileHeader } from "@/components/MobileHeader";
@@ -17,6 +18,7 @@ import { useSocialFeed } from "@/hooks/useSocialFeed";
 import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 
 const Feed = () => {
+  const [activeTab, setActiveTab] = useState("posts");
   const isMobile = useIsMobile();
   const { activities, loading: activityLoading, refetchFeed } = useSocialFeed();
   const {
@@ -78,7 +80,7 @@ const Feed = () => {
                 </CardContent>
               </Card>
 
-              <Tabs defaultValue="posts" className="w-full">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="w-full sm:w-auto">
                   <TabsTrigger value="posts" className="gap-2">
                     Posts
@@ -88,7 +90,7 @@ const Feed = () => {
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="posts" className="mt-4 space-y-3">
+                <TabsContent value="posts" forceMount hidden={activeTab !== "posts"} className="mt-4 space-y-3">
                   <LoadingRegion loading={postsLoading && !postsLoaded} refreshing={postsLoading && postsLoaded} label="Loading posts" className="space-y-3">
                   {postsError && <LoadingError message={postsError} onRetry={retryLastRequest} />}
                   {postsLoading && !postsLoaded ? (
@@ -103,6 +105,7 @@ const Feed = () => {
                       <PostCard
                         key={post.id}
                         post={post}
+                        active={activeTab === "posts"}
                         onLike={toggleLike}
                         onDelete={refetchPosts}
                         onBlocked={refetchPosts}

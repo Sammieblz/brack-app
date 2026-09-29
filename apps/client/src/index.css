@@ -743,6 +743,9 @@ All colors MUST be HSL.
     bottom: calc(var(--app-shell-viewport-bottom, 0px) + var(--app-shell-bottom-height, 0px) + 0.75rem);
   }
   .app-shell[data-shell-editing="true"] [data-shell-float] { display: none; }
+  /* An open writing task owns its actions even after its field blurs. Otherwise
+     this floating button can appear between pointer-down/up over Send. */
+  .app-shell:has([data-shell-composer-active="true"]) [data-shell-scroll-top] { display: none; }
   @media (max-width: 1023px) {
     .app-shell .app-scroll-container:has([data-shell-float="action"]) {
       --app-scroll-bottom-inset: 5.5rem;

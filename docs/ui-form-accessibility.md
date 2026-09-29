@@ -2,6 +2,8 @@
 
 Implemented F03 behavior for the affected profile, club, review, post and journal forms. The [batch checkpoint](frontend-renewal/14-next-implementation-batch.md) owns delivery status and broader verification. This contract does not certify accessibility conformance or native assistive-technology behavior.
 
+Coverage correction at `db076cf`: live CommentThread comment/reply and MessageThread main composer were missed; one repaired ReviewComments component has no verified production importer. [CR01/checkpoint21](frontend-renewal/21-live-composers.md) owns the corrective implementation and current verification. The wider [consumer matrix](frontend-renewal/coverage-review/02-correctness-consumers.md) and [coverage plan](frontend-renewal/20-coverage-reconciliation.md) remain open for their other findings.
+
 ## Native inputs
 
 [Input](../apps/client/src/components/ui/input.tsx) forwards native attributes and its ref. It does **not** manufacture an `aria-label` from a placeholder or use a generic “Input field” label: those fallbacks overrode meaningful visible labels.
@@ -40,6 +42,16 @@ Journal `errorField` distinguishes `content`, `pageReference`, `photo` and a gen
 Review rating uses a named native radio group with `1 star` through `5 stars`, checked state, keyboard operation and a visible focus treatment. The existing rating validation remains intact. Profile helper text, club privacy instructions, search fields and adjacent comment/chat composers also have explicit associations; a shared primitive must not invent their purpose.
 
 ## Verification and limits
+
+### Live comments and chat (CR01)
+
+- CommentThread's actual comment and recursive reply textareas use visible labels, unique IDs, persistent instructions and associated submission errors. Enter remains a newline; keyboard users activate the native Comment/Reply button. Direct and club chat retain Enter-to-send and Shift+Enter newline, excluding IME confirmation. A service rejection does not mark valid writing invalid or steal focus.
+- A synchronous pending guard serializes each composer. Readers may continue typing; a successful response clears only the submitted text revision, including protection for text replaced with the same value. Chat attachment/reply changes are locked during submission. Errors preserve text, files and reply context for retry. Unchanged direct/club retries reuse the existing client message ID and completed upload results; this uses the existing API contract and does not create an offline queue.
+- PostCard lazily mounts its comment thread and retains it on local collapse. Visited Feed/Profile Posts and club Chat panels retain their task owners while hidden; comment and club-message history subscriptions pause. Recursive reply collapse retains descendants and their drafts. Route/account/entity removal still ends in-memory comment/club tasks. Responsive header and Messages pane replacement remain separate CR02/CR05 work.
+- Direct-message text drafts are keyed by reader and conversation. Legacy conversation-only localStorage entries remain untouched but are not loaded: their owner cannot be established. This deliberately avoids showing another reader an unowned legacy draft. Attachments and retry state are in memory only.
+- Media previews in direct and club chat have named headings/descriptions, reachable Close controls, failure feedback and explicit thumbnail focus return for Close/Escape/app Back. GIF errors stay in their open dialog, retain the result/retry target, and pending sends consume dismissal until an outcome arrives. Native hardware behavior still needs device evidence.
+
+Exact current commands/results and the distinction between unit, real-consumer browser, visual and device evidence are recorded in [checkpoint21](frontend-renewal/21-live-composers.md). The F03 results below are historical; they are not new CR01 passes.
 
 The focused command below passed **34 tests across five files** on 2026-09-27:
 

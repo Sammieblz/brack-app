@@ -2,7 +2,7 @@
 
 ## Historical checkpoint
 
-**Superseded:** F01 is committed in `229dd677e33a8b7c6e81ac31d75b34aa94ea728d` ("First front-end renewal pass F01"). F02/F03 are also committed, with historical evidence in [14](14-next-implementation-batch.md). The active batch is **F04 + F05**, tracked in [15-feedback-environment-batch.md](15-feedback-environment-batch.md). The user permits multiple tickets only when each is completed and tested. No commit for the current batch has been requested. The F01 details and original stop below are historical; follow 15 for the current stop/next action.
+**Historical:** F01 is committed in `229dd677e33a8b7c6e81ac31d75b34aa94ea728d`. F01–F09 code is now committed through `db076cf`; [checkpoint20](20-coverage-reconciliation.md) owns current coverage corrections. The F01 details and original stop below preserve that batch's evidence, not the current next action. The user permits multiple tickets only when each is completed, tested and stopped for review.
 
 ## F01 completed checkpoint (historical)
 

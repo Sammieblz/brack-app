@@ -1,12 +1,14 @@
 # F09 adaptive shell checkpoint
 
-## Current state
+## Historical implementation state — coverage reopened
+
+F09 was subsequently committed as `db076cf`. The user's next review identified missing pages/screens/components; [checkpoint20](20-coverage-reconciliation.md) now owns the active work and corrects this batch's coverage claims. The recorded test results below remain scoped historical evidence. They do not close the original application-wide F09 acceptance.
 
 - Baseline: clean `bd342dc` (F08 committed); implementation authorized by the user's request to analyze previous work, then proceed. No commit requested.
 - User correction: recent work delivered too little visible improvement and still looks generic/cluttered. Behavior checks alone are insufficient design acceptance.
-- Scope: **F09 only**, shell implementation and browser verification complete; **awaiting user review, uncommitted**. Adaptive-shell 63/63, all 198 distinct scroll checks across the recorded final runs and Back 42/42 pass. Physical device/AT acceptance remains unverified.
+- Delivered scope: selected F09 shell/utility implementations and their browser fixtures, now committed `db076cf`. Adaptive-shell63, distinct scroll198 and Back42 passed as recorded. Whole-app consumer coverage and physical device/AT acceptance remain open in20.
 - Owners: root — stable layout/runtime policy, headers/nav, dependent positioning, docs; navigation agent — branded destination menu; utilities agent — timer/sync composition; fixture agent — real-shell browser evidence.
-- Next action: **STOP for user review** of this implementation and screenshots. Do not commit or begin F10 without the user's next instruction. No application implementation or browser checks remain running.
+- Next action: follow active20's coverage repair sequence. The earlier review stop below is historical; the user did not accept these results as adequate whole-frontend coverage.
 
 ## Review of F08
 
@@ -98,4 +100,4 @@ F09 addresses shell composition and the native/browser distinction. It does not 
 
 For review, compare the phone browser/native and tablet captures, destination menu, timer/offline composition and large-text cases in [the evidence gallery](evidence/f09-shell/README.md). The most obvious remaining screen debt is duplicated Library filters and per-book action rows. At 200% text the bounded footer scrolls and leaves limited page space; reachability checks pass but usability remains a review concern.
 
-After the user approves, make a commit only if requested. The next implementation candidate is **F10 Library/Lists**: read its ticket and S06/S11 in 05, query the existing graph for affected owners, verify actual controls/data contracts and deliver a coherent decluttering pass. Reuse F09 shell/menu/utility ownership; do not reintroduce viewport-based native inference, remounting responsive ancestors, guessed bottom offsets or route-owned timer/sync controllers.
+The original next candidate was F10 Library/Lists. That sequencing is superseded by active20 after the user's coverage objection. Reuse valid F09 shell/menu/utility ownership while closing its missing consumers; do not reintroduce viewport-based native inference, remounting responsive ancestors, guessed bottom offsets or route-owned timer/sync controllers.

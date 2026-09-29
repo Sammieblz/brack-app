@@ -2,7 +2,11 @@
 
 F08's [checkpoint](frontend-renewal/18-adaptive-overlays.md) owns delivery status and validation. This is the implemented source contract, not a native-device or accessibility-conformance certificate.
 
+Current coverage status is corrected in [checkpoint20](frontend-renewal/20-coverage-reconciliation.md). The [complete consumer review](frontend-renewal/coverage-review/04-overlay-form-consumers.md) distinguishes migrated adaptive tasks from ordinary Dialog/AlertDialog/Sheet consumers, responsive parent replacement and missing feature guards. This contract applies to the listed migrated boundary; inherited Radix/Back behavior is not evidence of universal adaptive geometry or draft safety.
+
 ## Ownership and presentation
+
+CR01 closes the media-name/focus gap for direct-message and club-chat previews: named headings/descriptions, visible Close, failed-image feedback and explicit invoking-thumbnail restoration. Their GIF pickers retain failed-send results and refuse pending dismissal. These remain focused Dialog consumers; this does not migrate every ordinary dialog to AdaptiveDialog. See [checkpoint21](frontend-renewal/21-live-composers.md) for exact checks.
 
 Use `Dialog`/`DialogTrigger` from `components/ui/dialog.tsx` with `AdaptiveDialogContent` from `components/ui/adaptive-dialog.tsx` for migrated modal tasks. It retains Radix Dialog 1.1.2 for the focus scope, background accessibility and scroll lock, and registers the actual content with `useBackLayer`. Do not add another body lock, Escape handler or swipe-dismiss owner.
 

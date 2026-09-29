@@ -1,6 +1,6 @@
 # F07 Back and gesture ownership checkpoint
 
-Historical checkpoint: committed at `83e032bfc77d240b545cbbbc2a091ceac76538b0`. The user approved the next implementation; [checkpoint 18](18-adaptive-overlays.md) now owns active F08 work. The review-stop statements below describe the completed F07 handoff.
+Historical checkpoint: committed at `83e032bfc77d240b545cbbbc2a091ceac76538b0`. [Checkpoint20](20-coverage-reconciliation.md) now owns coverage corrections after F09, including missed live gesture/chapter-Back consumers. The review-stop statements below describe the original F07 handoff, not whole-application acceptance.
 
 ## Current state
 

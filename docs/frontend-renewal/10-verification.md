@@ -4,6 +4,8 @@ This is the future implementation test plan. The current documentation pass insp
 
 ## Risk-based coverage
 
+Coverage correction after F09: [checkpoint20](20-coverage-reconciliation.md) and its complete source/consumer inventory supersede any inference that a representative fixture closes a screen family. Before a shared change, trace all live callers and responsive/state parents. Record which fixture imports real screens, mocks overlays or replaces destinations, and whether a tested component has any production entry. Include actual App/lazy-route ownership when testing route continuity; an eagerly imported shell fixture does not exercise that boundary. Close every affected consumer's required states or leave an explicit unmet disposition.
+
 Use pairwise combinations for routine visual checks, then deliberately test dangerous intersections: small window + large text + keyboard; native edge gesture + open dirty sheet; offline save + background/resume; touch reorder + scroll; long translation + bottom nav; reduced motion + delayed success; theme glass/comic + forced colors; account switch + cached content. Do not claim exhaustive testing merely because a viewport list is long.
 
 | Environment | Representative coverage | Required behavior |

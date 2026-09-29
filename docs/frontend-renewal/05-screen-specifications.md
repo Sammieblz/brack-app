@@ -38,7 +38,7 @@ Default touch controls have at least 44×44 CSS-pixel hit boxes, preferably 48px
 | Auth/feature/visibility change | End loading deterministically; preserve safe drafts within account boundaries; clear inaccessible data and show appropriate recovery. A disabled feature must not leak its content through a drawer or deep link. |
 | Resizing/lifecycle | Rotation, folding, split-window resize, app background and browser history must not duplicate a mutation or discard a draft. |
 
-Every screen ticket must mark each C0 state as implemented, inherited with a concrete component reference, or not applicable with a reason. “Handled by shadcn/Ionic” is insufficient.
+Every screen ticket must mark each C0 state as implemented, inherited with a concrete component reference, or not applicable with a reason. “Handled by shadcn/Ionic” is insufficient. F01–F09 did not consistently maintain this record; [checkpoint20](20-coverage-reconciliation.md) reopens missed live consumers and defines the required route/task/state evidence row. The later placement of a visual screen ticket does not waive this cross-cutting contract.
 
 ### C1 — interaction ownership
 

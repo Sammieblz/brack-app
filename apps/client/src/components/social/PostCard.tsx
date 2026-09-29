@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,7 @@ interface PostCardProps {
   onDelete?: (postId: string) => void;
   onBlocked?: (userId: string) => void;
   compact?: boolean;
+  active?: boolean;
 }
 
 const initials = (name?: string | null) =>
@@ -50,8 +51,10 @@ const formatDate = (dateString: string) => {
   });
 };
 
-export const PostCard = ({ post, onLike, onDelete, onBlocked, compact }: PostCardProps) => {
+export const PostCard = ({ post, onLike, onDelete, onBlocked, compact, active = true }: PostCardProps) => {
   const [showComments, setShowComments] = useState(false);
+  const [commentsVisited, setCommentsVisited] = useState(false);
+  const commentsId = useId();
   const [actionsOpen, setActionsOpen] = useState(false);
   const actionsTriggerRef = useRef<HTMLButtonElement>(null);
   const [shareCount, setShareCount] = useState(post.share_count || 0);
@@ -228,7 +231,14 @@ export const PostCard = ({ post, onLike, onDelete, onBlocked, compact }: PostCar
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowComments((value) => !value)}
+                onClick={(event) => {
+                  event.currentTarget.focus();
+                  setCommentsVisited(true);
+                  setShowComments((value) => !value);
+                }}
+                aria-label={`Comments, ${post.comments_count || 0}`}
+                aria-expanded={showComments}
+                aria-controls={commentsId}
                 className="gap-2 rounded-full"
               >
                 <AppIcon icon={APP_ICONS.common.chat} variant="inline" size="sm" />
@@ -246,9 +256,9 @@ export const PostCard = ({ post, onLike, onDelete, onBlocked, compact }: PostCar
             </div>
           </footer>
 
-          {showComments && (
-            <div className="border-t border-border/70 pt-4">
-              <CommentThread postId={post.id} />
+          {commentsVisited && (
+            <div id={commentsId} hidden={!showComments} className="border-t border-border/70 pt-4">
+              <CommentThread postId={post.id} active={active && showComments} />
             </div>
           )}
         </article>

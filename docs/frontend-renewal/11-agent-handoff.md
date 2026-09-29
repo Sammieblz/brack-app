@@ -17,7 +17,7 @@ The original audit proposed starting at [F00](09-execution-plan.md), with F01–
 - F07 removes duplicate edge navigation and provides [one app Back coordinator](../ui-back-navigation.md) plus [local contact cancellation](../ui-local-gestures.md). Its exact implemented scope and remaining native gates are in checkpoint 17. Preserve F04's [action feedback](../ui-action-feedback.md). Do not infer measured latency improvements from source changes alone.
 - Preserve themes, logos, Inter/Merriweather/Playfair roles, Iconoir, domain language, offline capture, timer reliability and service ownership.
 - Accessibility is default behavior. App settings may reduce effects/haptics; they cannot substitute for semantic access or enable OS screen readers.
-- Ticket progress is recorded in 09 and the linked active checkpoint. F01–F08 are committed; F08 is at `bd342dc`. [19](19-adaptive-shell.md) owns the active F09 batch; [18](18-adaptive-overlays.md) preserves F08 evidence. F10 onward remains future work; real-AT/device evidence remains unverified.
+- Ticket progress is recorded in09 and [active20](20-coverage-reconciliation.md). F01–F09 code is committed through `db076cf`, but shared-contract consumer coverage is reopened. Checkpoints13–19 preserve bounded historical evidence; they do not prove whole-ticket/frontend acceptance. CR01–CR10 own the reconciliation and omitted work before routine F10 progression.
 
 ## Bounded retrieval workflow
 
@@ -64,7 +64,7 @@ Do not duplicate the entire source file, graph report or transcript. Prefer a us
 
 ## Progress checkpoint template
 
-The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). Checkpoints 13–18 preserve committed batches; [19](19-adaptive-shell.md) owns active F09. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate detailed active status across competing records.
+The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). Checkpoints13–19 preserve committed batches;20 owns coverage reconciliation; [21](21-live-composers.md) owns current CR01 delivery. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate detailed active status across competing records.
 
 Update the relevant ticket and append a concise checkpoint when handing off:
 
@@ -85,7 +85,7 @@ An interrupted session should be resumable from this checkpoint without asking t
 
 ## Active implementation checkpoint
 
-**Current:** F01–F08 are committed. F09 is implemented and browser-verified, **uncommitted and stopped for user review**. The user authorized F09 after clarifying that visible progress and generic/cluttered composition were missing the mark. Read [19-adaptive-shell.md](19-adaptive-shell.md) for implementation, exact validation, retained failures, screenshots and the review stop. F06's [defer decision](../ui-ionic-fit.md) still applies. Do not commit or begin F10 without the next user instruction; no physical browser/native/PWA or real-AT acceptance is implied by browser results.
+**Current:** [Checkpoint21](21-live-composers.md) records implemented CR01, scoped verification and the **user review stop; no commit**. CR02 is next only after user continuation. F01–F09 is committed through `db076cf`. The [coverage reconciliation](20-coverage-reconciliation.md) substantiates missing consumers and supersedes the F09-to-F10 handoff. Read its matrices and CR01–CR10 sequence. The documentation audit's results are historical; current application evidence belongs in21. F06's defer decision remains. Preserve prior repairs; do not treat fixture totals, changed files, a route inventory or an unused component test as closure of live product requirements.
 
 Earlier F02/F03 results and their review stop are historical in [14](14-next-implementation-batch.md). Actual native/AT/live-service checks remain release evidence gaps. The original audit above is historical; do not restart completed tickets from its defect list.
 

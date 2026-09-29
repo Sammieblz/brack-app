@@ -2,6 +2,8 @@
 
 ## Historical state — committed in `bd342dc`
 
+[Checkpoint20](20-coverage-reconciliation.md) now owns current coverage corrections after F09. The listed migrations and recorded results below remain valid within their fixture/consumer scope; the complete active overlay/form matrix identifies additional unmet requirements and responsive parents.
+
 - Baseline: clean `83e032bfc77d240b545cbbbc2a091ceac76538b0` (F07 committed by the user).
 - Authorization: proceed with a complete next implementation, keep durable progress, run Playwright and stop for review. No commit requested.
 - Status: **implementation and validation complete for the listed F08 scope; subsequently committed in `bd342dc`.** F09 is not included in this record.

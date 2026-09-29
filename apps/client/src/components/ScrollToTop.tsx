@@ -70,6 +70,7 @@ export const ScrollToTop = ({
     <Button
       type="button"
       data-shell-float
+      data-shell-scroll-top
       onClick={scrollToTop}
       size="icon"
       className={cn(

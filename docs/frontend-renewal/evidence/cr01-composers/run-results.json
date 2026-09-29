@@ -1,0 +1,3473 @@
+{
+  "baseline": "db076cf",
+  "status": "Implemented and verified in stated fixture/unit scope; user review pending, not committed",
+  "note": "Final source composer matrix73/75 followed by6/6 native-caret expectation rerun;75 distinct composer cases verified across those runs. The two keyboard-case titles were clarified to native caret behavior, not added as additional scenarios. Full shared-shell63/63 is separate scope; earlier selected9 are its subset. Historical failures retained, not counted as final passes.",
+  "diagnosticsWithoutFinalJson": [
+    {
+      "path": "test-results/cr01-focus-before",
+      "result": "Two Chromium keyboard-return cases failed on actual header occlusion before repair."
+    },
+    {
+      "path": "test-results/cr01-focus-pointer-diagnostic",
+      "result": "Interrupted matrix after25 Chromium passes and5 reproduced WebKit pointer-activation failures; no finalized JSON report, not acceptance evidence."
+    }
+  ],
+  "runs": [
+    {
+      "run": "chat-diagnostic-1",
+      "localReport": "test-results/cr01-chat-diagnostic-1-summary.json",
+      "stats": {
+        "startTime": "2026-09-28T20:47:37.655Z",
+        "duration": 27420.715,
+        "expected": 9,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "direct: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3228
+            }
+          ]
+        },
+        {
+          "name": "direct: upload and send failures retain attachments and retry one logical request",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1213
+            }
+          ]
+        },
+        {
+          "name": "direct: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1807
+            }
+          ]
+        },
+        {
+          "name": "direct: failed media remains named, dismissible and restores its invoker",
+          "project": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "durationMs": 5996
+            }
+          ]
+        },
+        {
+          "name": "direct: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1848
+            }
+          ]
+        },
+        {
+          "name": "club: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1049
+            }
+          ]
+        },
+        {
+          "name": "club: upload and send failures retain attachments and retry one logical request",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1240
+            }
+          ]
+        },
+        {
+          "name": "club: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2436
+            }
+          ]
+        },
+        {
+          "name": "club: failed media remains named, dismissible and restores its invoker",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1374
+            }
+          ]
+        },
+        {
+          "name": "club: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1670
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": "full-diagnostic-2",
+      "localReport": "test-results/cr01-full-diagnostic-2-summary.json",
+      "stats": {
+        "startTime": "2026-09-28T20:53:26.585Z",
+        "duration": 237509.295,
+        "expected": 64,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "Feed: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3509
+            }
+          ]
+        },
+        {
+          "name": "Feed: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1529
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1216
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1579
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1866
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2149
+            }
+          ]
+        },
+        {
+          "name": "Feed: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1985
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2115
+            }
+          ]
+        },
+        {
+          "name": "direct: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1619
+            }
+          ]
+        },
+        {
+          "name": "direct: upload and send failures retain attachments and retry one logical request",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1178
+            }
+          ]
+        },
+        {
+          "name": "direct: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1821
+            }
+          ]
+        },
+        {
+          "name": "direct: failed media remains named, dismissible and restores its invoker",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1050
+            }
+          ]
+        },
+        {
+          "name": "direct: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1270
+            }
+          ]
+        },
+        {
+          "name": "club: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1056
+            }
+          ]
+        },
+        {
+          "name": "club: upload and send failures retain attachments and retry one logical request",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1337
+            }
+          ]
+        },
+        {
+          "name": "club: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2453
+            }
+          ]
+        },
+        {
+          "name": "club: failed media remains named, dismissible and restores its invoker",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1324
+            }
+          ]
+        },
+        {
+          "name": "club: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1681
+            }
+          ]
+        },
+        {
+          "name": "club: actual Chat and Overview tabs retain pending failure, retry and newer draft",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1795
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: compact",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4188
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: tablet",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4124
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: large-text",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3881
+            }
+          ]
+        },
+        {
+          "name": "Feed: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2598
+            }
+          ]
+        },
+        {
+          "name": "Feed: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2704
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2511
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2728
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2601
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2715
+            }
+          ]
+        },
+        {
+          "name": "Feed: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3310
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3301
+            }
+          ]
+        },
+        {
+          "name": "direct: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2009
+            }
+          ]
+        },
+        {
+          "name": "direct: upload and send failures retain attachments and retry one logical request",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2590
+            }
+          ]
+        },
+        {
+          "name": "direct: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3474
+            }
+          ]
+        },
+        {
+          "name": "direct: failed media remains named, dismissible and restores its invoker",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2023
+            }
+          ]
+        },
+        {
+          "name": "direct: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2793
+            }
+          ]
+        },
+        {
+          "name": "club: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1990
+            }
+          ]
+        },
+        {
+          "name": "club: upload and send failures retain attachments and retry one logical request",
+          "project": "webkit",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "durationMs": 7030
+            }
+          ]
+        },
+        {
+          "name": "club: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4656
+            }
+          ]
+        },
+        {
+          "name": "club: failed media remains named, dismissible and restores its invoker",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2359
+            }
+          ]
+        },
+        {
+          "name": "club: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3051
+            }
+          ]
+        },
+        {
+          "name": "club: actual Chat and Overview tabs retain pending failure, retry and newer draft",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3692
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: compact",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 7867
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: tablet",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 8797
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: large-text",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 7938
+            }
+          ]
+        },
+        {
+          "name": "Feed: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4967
+            }
+          ]
+        },
+        {
+          "name": "Feed: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2956
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2628
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2807
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2647
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2884
+            }
+          ]
+        },
+        {
+          "name": "Feed: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3244
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3299
+            }
+          ]
+        },
+        {
+          "name": "direct: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2538
+            }
+          ]
+        },
+        {
+          "name": "direct: upload and send failures retain attachments and retry one logical request",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4490
+            }
+          ]
+        },
+        {
+          "name": "direct: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4238
+            }
+          ]
+        },
+        {
+          "name": "direct: failed media remains named, dismissible and restores its invoker",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2679
+            }
+          ]
+        },
+        {
+          "name": "direct: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3543
+            }
+          ]
+        },
+        {
+          "name": "club: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2493
+            }
+          ]
+        },
+        {
+          "name": "club: upload and send failures retain attachments and retry one logical request",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2730
+            }
+          ]
+        },
+        {
+          "name": "club: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 5112
+            }
+          ]
+        },
+        {
+          "name": "club: failed media remains named, dismissible and restores its invoker",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3457
+            }
+          ]
+        },
+        {
+          "name": "club: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4903
+            }
+          ]
+        },
+        {
+          "name": "club: actual Chat and Overview tabs retain pending failure, retry and newer draft",
+          "project": "firefox",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "durationMs": 7051
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: compact",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 10924
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: tablet",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 8363
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: large-text",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 8315
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": "full-diagnostic-3",
+      "localReport": "test-results/cr01-full-diagnostic-3-summary.json",
+      "stats": {
+        "startTime": "2026-09-28T21:03:12.886Z",
+        "duration": 268501.54,
+        "expected": 68,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "Feed: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3735
+            }
+          ]
+        },
+        {
+          "name": "Feed: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1463
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1249
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1334
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1304
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1502
+            }
+          ]
+        },
+        {
+          "name": "Feed: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1449
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1567
+            }
+          ]
+        },
+        {
+          "name": "direct: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1067
+            }
+          ]
+        },
+        {
+          "name": "direct: upload and send failures retain attachments and retry one logical request",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1265
+            }
+          ]
+        },
+        {
+          "name": "direct: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1968
+            }
+          ]
+        },
+        {
+          "name": "direct: failed media remains named, dismissible and restores its invoker",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1086
+            }
+          ]
+        },
+        {
+          "name": "direct: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1321
+            }
+          ]
+        },
+        {
+          "name": "club: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1149
+            }
+          ]
+        },
+        {
+          "name": "club: upload and send failures retain attachments and retry one logical request",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1288
+            }
+          ]
+        },
+        {
+          "name": "club: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2153
+            }
+          ]
+        },
+        {
+          "name": "club: failed media remains named, dismissible and restores its invoker",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1470
+            }
+          ]
+        },
+        {
+          "name": "club: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1765
+            }
+          ]
+        },
+        {
+          "name": "club: actual Chat and Overview tabs retain pending failure, retry and newer draft",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2422
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: narrow",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4485
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: compact",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4556
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: tablet",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4667
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: large-text",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4601
+            }
+          ]
+        },
+        {
+          "name": "Feed: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2403
+            }
+          ]
+        },
+        {
+          "name": "Feed: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2908
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2291
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2632
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2429
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2725
+            }
+          ]
+        },
+        {
+          "name": "Feed: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2924
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3223
+            }
+          ]
+        },
+        {
+          "name": "direct: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1849
+            }
+          ]
+        },
+        {
+          "name": "direct: upload and send failures retain attachments and retry one logical request",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2515
+            }
+          ]
+        },
+        {
+          "name": "direct: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3930
+            }
+          ]
+        },
+        {
+          "name": "direct: failed media remains named, dismissible and restores its invoker",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1886
+            }
+          ]
+        },
+        {
+          "name": "direct: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2634
+            }
+          ]
+        },
+        {
+          "name": "club: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2075
+            }
+          ]
+        },
+        {
+          "name": "club: upload and send failures retain attachments and retry one logical request",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2617
+            }
+          ]
+        },
+        {
+          "name": "club: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "webkit",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "durationMs": 7916
+            }
+          ]
+        },
+        {
+          "name": "club: failed media remains named, dismissible and restores its invoker",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2247
+            }
+          ]
+        },
+        {
+          "name": "club: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3078
+            }
+          ]
+        },
+        {
+          "name": "club: actual Chat and Overview tabs retain pending failure, retry and newer draft",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4232
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: narrow",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 9205
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: compact",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 9094
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: tablet",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 12295
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: large-text",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 9844
+            }
+          ]
+        },
+        {
+          "name": "Feed: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4759
+            }
+          ]
+        },
+        {
+          "name": "Feed: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3206
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2648
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3181
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2874
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3007
+            }
+          ]
+        },
+        {
+          "name": "Feed: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3147
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3246
+            }
+          ]
+        },
+        {
+          "name": "direct: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2444
+            }
+          ]
+        },
+        {
+          "name": "direct: upload and send failures retain attachments and retry one logical request",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4628
+            }
+          ]
+        },
+        {
+          "name": "direct: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4042
+            }
+          ]
+        },
+        {
+          "name": "direct: failed media remains named, dismissible and restores its invoker",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2573
+            }
+          ]
+        },
+        {
+          "name": "direct: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3595
+            }
+          ]
+        },
+        {
+          "name": "club: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2653
+            }
+          ]
+        },
+        {
+          "name": "club: upload and send failures retain attachments and retry one logical request",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3303
+            }
+          ]
+        },
+        {
+          "name": "club: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 5263
+            }
+          ]
+        },
+        {
+          "name": "club: failed media remains named, dismissible and restores its invoker",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3229
+            }
+          ]
+        },
+        {
+          "name": "club: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3371
+            }
+          ]
+        },
+        {
+          "name": "club: actual Chat and Overview tabs retain pending failure, retry and newer draft",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4281
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: narrow",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 11754
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: compact",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 10701
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: tablet",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 11368
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: large-text",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 11195
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": "media-readiness-rerun",
+      "localReport": "test-results/cr01-media-readiness-rerun-summary.json",
+      "stats": {
+        "startTime": "2026-09-28T21:11:42.571Z",
+        "duration": 35008.714,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "direct: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 7040
+            }
+          ]
+        },
+        {
+          "name": "club: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2443
+            }
+          ]
+        },
+        {
+          "name": "direct: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3382
+            }
+          ]
+        },
+        {
+          "name": "club: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4134
+            }
+          ]
+        },
+        {
+          "name": "direct: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 5603
+            }
+          ]
+        },
+        {
+          "name": "club: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4927
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": "selected-shell-before-focus-correction",
+      "localReport": "test-results/cr01-shell-regression-summary.json",
+      "stats": {
+        "startTime": "2026-09-28T21:12:57.859Z",
+        "duration": 42485.886,
+        "expected": 9,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "task node, caret and draft survive resizing; editing hides irrelevant footer until focus leaves",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4508
+            }
+          ]
+        },
+        {
+          "name": "active timer and offline status occupy normal flow without covering final content",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1609
+            }
+          ]
+        },
+        {
+          "name": "320px with large text keeps combined utilities and quick-action tasks reachable",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4100
+            }
+          ]
+        },
+        {
+          "name": "task node, caret and draft survive resizing; editing hides irrelevant footer until focus leaves",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2300
+            }
+          ]
+        },
+        {
+          "name": "active timer and offline status occupy normal flow without covering final content",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3107
+            }
+          ]
+        },
+        {
+          "name": "320px with large text keeps combined utilities and quick-action tasks reachable",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 8546
+            }
+          ]
+        },
+        {
+          "name": "task node, caret and draft survive resizing; editing hides irrelevant footer until focus leaves",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4101
+            }
+          ]
+        },
+        {
+          "name": "active timer and offline status occupy normal flow without covering final content",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2470
+            }
+          ]
+        },
+        {
+          "name": "320px with large text keeps combined utilities and quick-action tasks reachable",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4521
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": "final-source-composer-matrix",
+      "localReport": "test-results/cr01-final-matrix-summary.json",
+      "stats": {
+        "startTime": "2026-09-28T21:22:27.185Z",
+        "duration": 263831.159,
+        "expected": 73,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "Feed: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3480
+            }
+          ]
+        },
+        {
+          "name": "Feed: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1436
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1208
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1287
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1288
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1353
+            }
+          ]
+        },
+        {
+          "name": "Feed: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1411
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1380
+            }
+          ]
+        },
+        {
+          "name": "direct: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1001
+            }
+          ]
+        },
+        {
+          "name": "direct: upload and send failures retain attachments and retry one logical request",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1180
+            }
+          ]
+        },
+        {
+          "name": "direct: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1703
+            }
+          ]
+        },
+        {
+          "name": "direct: failed media remains named, dismissible and restores its invoker",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1006
+            }
+          ]
+        },
+        {
+          "name": "direct: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1218
+            }
+          ]
+        },
+        {
+          "name": "club: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1040
+            }
+          ]
+        },
+        {
+          "name": "club: upload and send failures retain attachments and retry one logical request",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1209
+            }
+          ]
+        },
+        {
+          "name": "club: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2284
+            }
+          ]
+        },
+        {
+          "name": "club: failed media remains named, dismissible and restores its invoker",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1504
+            }
+          ]
+        },
+        {
+          "name": "club: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2006
+            }
+          ]
+        },
+        {
+          "name": "club: actual Chat and Overview tabs retain pending failure, retry and newer draft",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2667
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: keyboard return clears the sticky header without changing draft or caret",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1283
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: keyboard return clears the sticky header without changing draft or caret",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1383
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: narrow",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 6672
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: compact",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 5851
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: tablet",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 5189
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: large-text",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 5087
+            }
+          ]
+        },
+        {
+          "name": "Feed: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3267
+            }
+          ]
+        },
+        {
+          "name": "Feed: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3135
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2509
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2688
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2541
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3111
+            }
+          ]
+        },
+        {
+          "name": "Feed: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3137
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3366
+            }
+          ]
+        },
+        {
+          "name": "direct: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1862
+            }
+          ]
+        },
+        {
+          "name": "direct: upload and send failures retain attachments and retry one logical request",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2317
+            }
+          ]
+        },
+        {
+          "name": "direct: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3902
+            }
+          ]
+        },
+        {
+          "name": "direct: failed media remains named, dismissible and restores its invoker",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1939
+            }
+          ]
+        },
+        {
+          "name": "direct: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2495
+            }
+          ]
+        },
+        {
+          "name": "club: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1929
+            }
+          ]
+        },
+        {
+          "name": "club: upload and send failures retain attachments and retry one logical request",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2381
+            }
+          ]
+        },
+        {
+          "name": "club: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3580
+            }
+          ]
+        },
+        {
+          "name": "club: failed media remains named, dismissible and restores its invoker",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2176
+            }
+          ]
+        },
+        {
+          "name": "club: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2871
+            }
+          ]
+        },
+        {
+          "name": "club: actual Chat and Overview tabs retain pending failure, retry and newer draft",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4025
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: keyboard return clears the sticky header without changing draft or caret",
+          "project": "webkit",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "durationMs": 1881
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: keyboard return clears the sticky header without changing draft or caret",
+          "project": "webkit",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "durationMs": 2073
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: narrow",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 8511
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: compact",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 9455
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: tablet",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 10472
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: large-text",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 8610
+            }
+          ]
+        },
+        {
+          "name": "Feed: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 5189
+            }
+          ]
+        },
+        {
+          "name": "Feed: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3558
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2805
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2725
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: live comment keeps a newer draft through pending submission and local collapse",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2660
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: failed comments and replies keep named errors, retry and newer reply text",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2813
+            }
+          ]
+        },
+        {
+          "name": "Feed: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2794
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: actual parent tabs retain the comment owner, pending outcome and newer draft",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2927
+            }
+          ]
+        },
+        {
+          "name": "direct: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2314
+            }
+          ]
+        },
+        {
+          "name": "direct: upload and send failures retain attachments and retry one logical request",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4062
+            }
+          ]
+        },
+        {
+          "name": "direct: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3755
+            }
+          ]
+        },
+        {
+          "name": "direct: failed media remains named, dismissible and restores its invoker",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2390
+            }
+          ]
+        },
+        {
+          "name": "direct: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2860
+            }
+          ]
+        },
+        {
+          "name": "club: real chat supports multiline/IME, serializes Enter and preserves newer typing",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2365
+            }
+          ]
+        },
+        {
+          "name": "club: upload and send failures retain attachments and retry one logical request",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2658
+            }
+          ]
+        },
+        {
+          "name": "club: named media closes by Escape, app Back and close control with exact focus return",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4009
+            }
+          ]
+        },
+        {
+          "name": "club: failed media remains named, dismissible and restores its invoker",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3081
+            }
+          ]
+        },
+        {
+          "name": "club: GIF search/send errors are local and pending sends cannot dismiss or duplicate",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3484
+            }
+          ]
+        },
+        {
+          "name": "club: actual Chat and Overview tabs retain pending failure, retry and newer draft",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 5120
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: keyboard return clears the sticky header without changing draft or caret",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4241
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: keyboard return clears the sticky header without changing draft or caret",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2787
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: narrow",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 8752
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: compact",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 8825
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: tablet",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 8326
+            }
+          ]
+        },
+        {
+          "name": "real caller screenshots: large-text",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 8039
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": "final-keyboard-native-expectation-rerun",
+      "localReport": "test-results/cr01-live-composers-summary.json",
+      "stats": {
+        "startTime": "2026-09-28T21:34:23.773Z",
+        "duration": 26065.845,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "PostDetail: keyboard return clears the sticky header and preserves draft and native caret behavior",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 6246
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: keyboard return clears the sticky header and preserves draft and native caret behavior",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1432
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: keyboard return clears the sticky header and preserves draft and native caret behavior",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2128
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: keyboard return clears the sticky header and preserves draft and native caret behavior",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2096
+            }
+          ]
+        },
+        {
+          "name": "PostDetail: keyboard return clears the sticky header and preserves draft and native caret behavior",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4185
+            }
+          ]
+        },
+        {
+          "name": "UserProfile: keyboard return clears the sticky header and preserves draft and native caret behavior",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2676
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": "final-full-shell",
+      "localReport": "test-results/cr01-shell-final-summary.json",
+      "stats": {
+        "startTime": "2026-09-28T21:29:57.237Z",
+        "duration": 236732.512,
+        "expected": 63,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "phone-browser: real Library has the intended navigation and one unobscured scroller",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 6510
+            }
+          ]
+        },
+        {
+          "name": "phone-android: real Library has the intended navigation and one unobscured scroller",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2987
+            }
+          ]
+        },
+        {
+          "name": "phone-pwa: real Library has the intended navigation and one unobscured scroller",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2718
+            }
+          ]
+        },
+        {
+          "name": "tablet-ios: real Library has the intended navigation and one unobscured scroller",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2824
+            }
+          ]
+        },
+        {
+          "name": "tablet-browser: real Library has the intended navigation and one unobscured scroller",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2510
+            }
+          ]
+        },
+        {
+          "name": "expanded-tablet: real Library has the intended navigation and one unobscured scroller",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2711
+            }
+          ]
+        },
+        {
+          "name": "desktop-browser: real Library has the intended navigation and one unobscured scroller",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3236
+            }
+          ]
+        },
+        {
+          "name": "browser menu exposes destinations, restores focus and closes after real link navigation",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4052
+            }
+          ]
+        },
+        {
+          "name": "social gating removes community destinations from both native tabs and the menu",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3345
+            }
+          ]
+        },
+        {
+          "name": "real Library search draft remains mounted through phone, tablet and sidebar boundaries",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4278
+            }
+          ]
+        },
+        {
+          "name": "task node, caret and draft survive resizing; editing hides irrelevant footer until focus leaves",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1858
+            }
+          ]
+        },
+        {
+          "name": "menu stays mounted through header replacement and Escape restores the current trigger",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4743
+            }
+          ]
+        },
+        {
+          "name": "active timer and offline status occupy normal flow without covering final content",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1612
+            }
+          ]
+        },
+        {
+          "name": "large text retains all tab labels and menu destinations without horizontal overflow",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2775
+            }
+          ]
+        },
+        {
+          "name": "visual viewport shrink reserves available space; pinch does not change shell choice or draft",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1113
+            }
+          ]
+        },
+        {
+          "name": "width-only reflow keeps the focused field clear of the sticky header",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1152
+            }
+          ]
+        },
+        {
+          "name": "/add-book: real form keeps its draft and save action clear of native phone and tablet chrome",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1848
+            }
+          ]
+        },
+        {
+          "name": "/edit-book/fixture-book-0: real form keeps its draft and save action clear of native phone and tablet chrome",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1561
+            }
+          ]
+        },
+        {
+          "name": "timer controls keep their DOM across routes and a finished session gives focus to the real journal prompt",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3527
+            }
+          ]
+        },
+        {
+          "name": "320px with large text keeps combined utilities and quick-action tasks reachable",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4317
+            }
+          ]
+        },
+        {
+          "name": "forced colors and live reduced motion keep visible menu focus without ornamental animation",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3061
+            }
+          ]
+        },
+        {
+          "name": "phone-browser: real Library has the intended navigation and one unobscured scroller",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 5106
+            }
+          ]
+        },
+        {
+          "name": "phone-android: real Library has the intended navigation and one unobscured scroller",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3226
+            }
+          ]
+        },
+        {
+          "name": "phone-pwa: real Library has the intended navigation and one unobscured scroller",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3329
+            }
+          ]
+        },
+        {
+          "name": "tablet-ios: real Library has the intended navigation and one unobscured scroller",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3784
+            }
+          ]
+        },
+        {
+          "name": "tablet-browser: real Library has the intended navigation and one unobscured scroller",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3738
+            }
+          ]
+        },
+        {
+          "name": "expanded-tablet: real Library has the intended navigation and one unobscured scroller",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3769
+            }
+          ]
+        },
+        {
+          "name": "desktop-browser: real Library has the intended navigation and one unobscured scroller",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3496
+            }
+          ]
+        },
+        {
+          "name": "browser menu exposes destinations, restores focus and closes after real link navigation",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4874
+            }
+          ]
+        },
+        {
+          "name": "social gating removes community destinations from both native tabs and the menu",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3980
+            }
+          ]
+        },
+        {
+          "name": "real Library search draft remains mounted through phone, tablet and sidebar boundaries",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4555
+            }
+          ]
+        },
+        {
+          "name": "task node, caret and draft survive resizing; editing hides irrelevant footer until focus leaves",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2269
+            }
+          ]
+        },
+        {
+          "name": "menu stays mounted through header replacement and Escape restores the current trigger",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 6169
+            }
+          ]
+        },
+        {
+          "name": "active timer and offline status occupy normal flow without covering final content",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2265
+            }
+          ]
+        },
+        {
+          "name": "large text retains all tab labels and menu destinations without horizontal overflow",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 5386
+            }
+          ]
+        },
+        {
+          "name": "visual viewport shrink reserves available space; pinch does not change shell choice or draft",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1746
+            }
+          ]
+        },
+        {
+          "name": "width-only reflow keeps the focused field clear of the sticky header",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1715
+            }
+          ]
+        },
+        {
+          "name": "/add-book: real form keeps its draft and save action clear of native phone and tablet chrome",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2538
+            }
+          ]
+        },
+        {
+          "name": "/edit-book/fixture-book-0: real form keeps its draft and save action clear of native phone and tablet chrome",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2251
+            }
+          ]
+        },
+        {
+          "name": "timer controls keep their DOM across routes and a finished session gives focus to the real journal prompt",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3342
+            }
+          ]
+        },
+        {
+          "name": "320px with large text keeps combined utilities and quick-action tasks reachable",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 7161
+            }
+          ]
+        },
+        {
+          "name": "forced colors and live reduced motion keep visible menu focus without ornamental animation",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4025
+            }
+          ]
+        },
+        {
+          "name": "phone-browser: real Library has the intended navigation and one unobscured scroller",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 5782
+            }
+          ]
+        },
+        {
+          "name": "phone-android: real Library has the intended navigation and one unobscured scroller",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 5146
+            }
+          ]
+        },
+        {
+          "name": "phone-pwa: real Library has the intended navigation and one unobscured scroller",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4447
+            }
+          ]
+        },
+        {
+          "name": "tablet-ios: real Library has the intended navigation and one unobscured scroller",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4244
+            }
+          ]
+        },
+        {
+          "name": "tablet-browser: real Library has the intended navigation and one unobscured scroller",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4477
+            }
+          ]
+        },
+        {
+          "name": "expanded-tablet: real Library has the intended navigation and one unobscured scroller",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3650
+            }
+          ]
+        },
+        {
+          "name": "desktop-browser: real Library has the intended navigation and one unobscured scroller",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3779
+            }
+          ]
+        },
+        {
+          "name": "browser menu exposes destinations, restores focus and closes after real link navigation",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4874
+            }
+          ]
+        },
+        {
+          "name": "social gating removes community destinations from both native tabs and the menu",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4043
+            }
+          ]
+        },
+        {
+          "name": "real Library search draft remains mounted through phone, tablet and sidebar boundaries",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 5577
+            }
+          ]
+        },
+        {
+          "name": "task node, caret and draft survive resizing; editing hides irrelevant footer until focus leaves",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2660
+            }
+          ]
+        },
+        {
+          "name": "menu stays mounted through header replacement and Escape restores the current trigger",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4875
+            }
+          ]
+        },
+        {
+          "name": "active timer and offline status occupy normal flow without covering final content",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2480
+            }
+          ]
+        },
+        {
+          "name": "large text retains all tab labels and menu destinations without horizontal overflow",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4486
+            }
+          ]
+        },
+        {
+          "name": "visual viewport shrink reserves available space; pinch does not change shell choice or draft",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2233
+            }
+          ]
+        },
+        {
+          "name": "width-only reflow keeps the focused field clear of the sticky header",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2281
+            }
+          ]
+        },
+        {
+          "name": "/add-book: real form keeps its draft and save action clear of native phone and tablet chrome",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3718
+            }
+          ]
+        },
+        {
+          "name": "/edit-book/fixture-book-0: real form keeps its draft and save action clear of native phone and tablet chrome",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3109
+            }
+          ]
+        },
+        {
+          "name": "timer controls keep their DOM across routes and a finished session gives focus to the real journal prompt",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4321
+            }
+          ]
+        },
+        {
+          "name": "320px with large text keeps combined utilities and quick-action tasks reachable",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 6050
+            }
+          ]
+        },
+        {
+          "name": "forced colors and live reduced motion keep visible menu focus without ornamental animation",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3533
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

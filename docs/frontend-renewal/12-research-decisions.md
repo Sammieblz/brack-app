@@ -31,6 +31,8 @@ F07 source/version follow-up (2026-09-28): [navigation evidence](evidence/f07-na
 
 ## Decisions
 
+2026-09-28 coverage review: [the original-request trace](coverage-review/06-original-requirements.md) revisits the user-linked Ionic/One UI/gesture/UX sources and preserves retrieval limits. [Checkpoint20](20-coverage-reconciliation.md) supersedes implementation completion assumptions; external research and dependency experiments do not close actual route/consumer acceptance.
+
 | ID | Status | Decision and reason | Revisit when |
 | --- | --- | --- | --- |
 | D01 | Fixed direction | Preserve brand assets, font roles, theme IDs and Iconoir. Improve hierarchy/composition rather than rebrand. | Explicit user direction changes identity |

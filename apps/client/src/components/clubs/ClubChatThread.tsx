@@ -47,6 +47,7 @@ import {
   type ClubChatReactionType,
   type ClubGifSearchResult,
   type ClubMember,
+  type SendClubChatMessageRequest,
 } from "@/services/api";
 import { toast } from "sonner";
 import { getApiErrorStatus } from "@/services/api/client";
@@ -56,6 +57,7 @@ interface ClubChatThreadProps {
   members: ClubMember[];
   currentUserId?: string;
   canModerate?: boolean;
+  active?: boolean;
 }
 
 const getInitials = (name?: string | null) => {
@@ -98,6 +100,7 @@ const ClubChatThreadContent = ({
   members,
   currentUserId,
   canModerate = false,
+  active = true,
 }: ClubChatThreadProps) => {
   const id = useId();
   const [composerError, setComposerError] = useState<{ target: "media" | "send"; message: string } | null>(null);
@@ -111,20 +114,41 @@ const ClubChatThreadContent = ({
   const [content, setContent] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
+  const sendingRef = useRef(false);
+  const contentRevision = useRef(0);
+  const mountedRef = useRef(false);
+  const retryRequest = useRef<{
+    content: string;
+    files: File[];
+    replyId: string | null;
+    mentionIds: string[];
+    gifId?: string;
+    request: SendClubChatMessageRequest;
+  } | null>(null);
   const [replyingTo, setReplyingTo] = useState<ClubChatMessage | null>(null);
   const [previewMedia, setPreviewMedia] = useState<string | null>(null);
+  const [previewFailed, setPreviewFailed] = useState(false);
+  const previewTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [gifOpen, setGifOpen] = useState(false);
   const [gifQuery, setGifQuery] = useState("");
   const [gifResults, setGifResults] = useState<ClubGifSearchResult[]>([]);
   const [gifSearching, setGifSearching] = useState(false);
+  const gifSearchingRef = useRef(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [mentionIds, setMentionIds] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const composerRef = useRef<HTMLTextAreaElement | null>(null);
+  const gifTriggerRef = useRef<HTMLButtonElement | null>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
   const isOnline = useNetworkStatus();
   const { profile } = useProfileContext();
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const currentTypingUser = useMemo(
     () =>
@@ -193,16 +217,17 @@ const ClubChatThreadContent = ({
   };
 
   useEffect(() => {
+    if (!active) return;
     setLoading(true);
     void loadMessages();
     const unsubscribe = subscribeToClubChat(clubId, () => void loadMessages());
     return () => { request.current += 1; unsubscribe(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clubId]);
+  }, [clubId, active]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, typingUsers.length]);
+    if (active) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [active, messages, typingUsers.length]);
 
   useEffect(() => {
     return () => {
@@ -210,7 +235,7 @@ const ClubChatThreadContent = ({
       void setTyping(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clubId]);
+  }, [clubId, active]);
 
   const openProfile = (userId?: string | null) => {
     if (userId) navigate(`/users/${userId}`);
@@ -227,6 +252,7 @@ const ClubChatThreadContent = ({
   };
 
   const handleFileChange = (fileList: FileList | null) => {
+    if (sendingRef.current) return;
     try {
       const selected = Array.from(fileList || []);
       validateFiles(selected);
@@ -240,16 +266,20 @@ const ClubChatThreadContent = ({
     }
   };
 
-  const clearComposer = () => {
-    setContent("");
+  const clearSubmittedComposer = (submittedRevision: number) => {
+    // Keep text (including same-value retyping) entered during the request.
+    if (contentRevision.current === submittedRevision) {
+      setContent("");
+      setMentionIds([]);
+      void setTyping(false);
+    }
     setFiles([]);
     setReplyingTo(null);
-    setMentionIds([]);
-    void setTyping(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleContentChange = (value: string) => {
+    contentRevision.current += 1;
     setContent(value);
     void setTyping(Boolean(value.trim()));
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
@@ -259,47 +289,75 @@ const ClubChatThreadContent = ({
   const handleSend = async (gif?: ClubGifSearchResult) => {
     // Enter and GIF selection use this handler without the send button.
     // Wait for a confirmed thread read so a late snapshot cannot erase a send.
-    if (sending || !isOnline || !hasLoaded || loading || refreshing || error) return;
+    if (sendingRef.current || !currentUserId || !isOnline || !hasLoaded || loading || refreshing || error) return;
     if (!content.trim() && files.length === 0 && !gif) return;
+    sendingRef.current = true;
+    const submittedRevision = contentRevision.current;
+    const replyId = replyingTo?.id || null;
+    const previous = retryRequest.current;
+    const attempt = previous && previous.content === content && previous.files === files &&
+      previous.replyId === replyId && previous.mentionIds === mentionIds && previous.gifId === gif?.id
+      ? previous
+      : {
+          content, files, replyId, mentionIds, gifId: gif?.id,
+          request: {
+            club_id: clubId,
+            content: content.trim() ? sanitizeInput(content) : null,
+            gif: gif || null,
+            reply_to_message_id: replyId,
+            mention_ids: mentionIds,
+            client_message_id: crypto.randomUUID(),
+          } as SendClubChatMessageRequest,
+        };
+    retryRequest.current = attempt;
+    let uploading = false;
     try {
       setSending(true);
       setComposerError(null);
-      const media = files.length > 0 ? await uploadClubChatMediaFiles(files, clubId) : [];
-      const message = await sendClubChatMessage({
-        club_id: clubId,
-        content: content.trim() ? sanitizeInput(content) : null,
-        media,
-        gif: gif || null,
-        reply_to_message_id: replyingTo?.id || null,
-        mention_ids: mentionIds,
-      });
+      setGifError(null);
+      if (!attempt.request.media) {
+        uploading = files.length > 0;
+        attempt.request.media = files.length > 0 ? await uploadClubChatMediaFiles(files, clubId) : [];
+        uploading = false;
+      }
+      if (!mountedRef.current) return;
+      const message = await sendClubChatMessage(attempt.request);
+      if (!mountedRef.current) return;
       setMessages((current) => [...current.filter((item) => item.id !== message.id), message]);
-      clearComposer();
+      clearSubmittedComposer(submittedRevision);
+      retryRequest.current = null;
       setGifOpen(false);
       setGifResults([]);
       setGifQuery("");
     } catch (error) {
+      if (!mountedRef.current) return;
       const message = error instanceof Error ? error.message : "Failed to send message";
-      setComposerError({ target: "send", message });
+      setComposerError({ target: uploading ? "media" : "send", message });
+      if (gif) setGifError(message);
       toast.error(message);
     } finally {
-      setSending(false);
+      sendingRef.current = false;
+      if (mountedRef.current) setSending(false);
     }
   };
 
   const handleGifSearch = async () => {
-    if (!gifQuery.trim()) return;
+    if (!gifQuery.trim() || gifSearchingRef.current || sendingRef.current) return;
+    gifSearchingRef.current = true;
     try {
       setGifSearching(true);
       setGifError(null);
       const response = await searchGifs(gifQuery);
+      if (!mountedRef.current) return;
       setGifResults(response.results || []);
     } catch (error) {
+      if (!mountedRef.current) return;
       const message = error instanceof Error ? error.message : "Failed to search GIFs";
       setGifError(message);
       toast.error(message);
     } finally {
-      setGifSearching(false);
+      gifSearchingRef.current = false;
+      if (mountedRef.current) setGifSearching(false);
     }
   };
 
@@ -325,21 +383,23 @@ const ClubChatThreadContent = ({
   };
 
   const insertMention = (member: ClubMember) => {
+    contentRevision.current += 1;
     const displayName = member.user?.display_name || "Reader";
     setContent((value) => value.replace(/(?:^|\s)@([\w\s-]{0,32})$/, ` @${displayName} `));
     setMentionIds((ids) => Array.from(new Set([...ids, member.user_id])));
   };
 
   const handleEmojiClick = (emoji: EmojiClickData) => {
+    contentRevision.current += 1;
     setContent((value) => `${value}${emoji.emoji}`);
     setEmojiOpen(false);
   };
 
   const initialLoading = !hasLoaded && (loading || refreshing);
-  const canSend = isOnline && hasLoaded && !loading && !refreshing && !error && (content.trim().length > 0 || files.length > 0);
+  const canSend = Boolean(currentUserId) && isOnline && hasLoaded && !loading && !refreshing && !error && (content.trim().length > 0 || files.length > 0);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
+    <div data-shell-composer-active={active} className="overflow-hidden rounded-xl border border-border bg-card">
       <div className="border-b border-border/70 px-4 py-3">
         <p className="font-display text-xl font-semibold">Club Chat</p>
         <p className="font-sans text-sm text-muted-foreground">
@@ -449,7 +509,12 @@ const ClubChatThreadContent = ({
                                     <button
                                       key={item.id || item.storage_path || item.provider_id}
                                       type="button"
-                                      onClick={() => setPreviewMedia(url)}
+                                      aria-label={item.media_type === "gif" ? "Open club chat GIF" : "Open club chat media"}
+                                      onClick={(event) => {
+                                        previewTriggerRef.current = event.currentTarget;
+                                        setPreviewFailed(false);
+                                        setPreviewMedia(url);
+                                      }}
                                       className="overflow-hidden rounded-lg border border-current/10 bg-background/10"
                                     >
                                       <img
@@ -489,6 +554,7 @@ const ClubChatThreadContent = ({
                                 type="button"
                                 className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left font-sans text-sm hover:bg-muted"
                                 onClick={() => setReplyingTo(message)}
+                                disabled={sending}
                               >
                                 <ChatBubble className="h-4 w-4" />
                                 Reply
@@ -582,7 +648,7 @@ const ClubChatThreadContent = ({
               <p className="font-sans text-xs font-medium">Replying to</p>
               <p className="truncate font-sans text-sm text-muted-foreground">{previewText(replyingTo)}</p>
             </div>
-            <Button size="icon" variant="ghost" onClick={() => setReplyingTo(null)}>
+            <Button size="icon" variant="ghost" aria-label="Cancel reply" disabled={sending} onClick={() => setReplyingTo(null)}>
               <Xmark className="h-4 w-4" />
             </Button>
           </div>
@@ -600,6 +666,8 @@ const ClubChatThreadContent = ({
               size="icon"
               variant="ghost"
               className="shrink-0"
+              aria-label="Remove attachments"
+              disabled={sending}
               onClick={() => {
                 setFiles([]);
                 if (fileInputRef.current) fileInputRef.current.value = "";
@@ -639,8 +707,25 @@ const ClubChatThreadContent = ({
         />
 
         {composerError && <p id={`${id}-composer-error`} role="alert" className="mb-2 text-sm text-destructive">{composerError.message}</p>}
+        {sending && <p role="status" className="mb-2 text-sm text-muted-foreground">Sending message…</p>}
         <p id={`${id}-message-help`} className="sr-only">Use @ to mention a member. Enter sends; Shift+Enter adds a new line.</p>
-        <div className="flex items-end gap-2">
+        <Textarea
+          ref={composerRef}
+          aria-label="Message the club"
+          aria-describedby={`${id}-message-help${composerError?.target === "send" ? ` ${id}-composer-error` : ""}`}
+          value={content}
+          onChange={(event) => handleContentChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) {
+              event.preventDefault();
+              void handleSend();
+            }
+          }}
+          placeholder="Message the club. Use @ to mention a member."
+          rows={2}
+          className="mb-2 max-h-32 min-h-11 min-w-0 resize-none"
+        />
+        <div className="flex flex-wrap items-end gap-2">
           <Button
             type="button"
             size="icon"
@@ -658,6 +743,7 @@ const ClubChatThreadContent = ({
             variant="outline"
             disabled={!isOnline || sending}
             onClick={() => setGifOpen(true)}
+            ref={gifTriggerRef}
             aria-label="Search GIFs"
           >
             <MediaImage className="h-4 w-4" />
@@ -684,27 +770,12 @@ const ClubChatThreadContent = ({
               />
             </PopoverContent>
           </Popover>
-          <Textarea
-            aria-label="Message the club"
-            aria-describedby={`${id}-message-help${composerError?.target === "send" ? ` ${id}-composer-error` : ""}`}
-            value={content}
-            onChange={(event) => handleContentChange(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.shiftKey) {
-                event.preventDefault();
-                void handleSend();
-              }
-            }}
-            placeholder="Message the club. Use @ to mention a member."
-            rows={1}
-            className="max-h-32 min-h-11 resize-none"
-          />
           <Button
             type="button"
             onClick={() => void handleSend()}
             disabled={!canSend || sending}
             size="icon"
-            className="h-11 w-11 shrink-0"
+            className="ml-auto h-11 w-11 shrink-0"
             aria-label="Send club message"
             aria-describedby={composerError?.target === "send" ? `${id}-composer-error` : undefined}
           >
@@ -714,19 +785,38 @@ const ClubChatThreadContent = ({
       </div>
 
       <Dialog open={Boolean(previewMedia)} onOpenChange={(open) => !open && setPreviewMedia(null)}>
-        <DialogContent className="max-w-3xl p-3">
-          {previewMedia && (
+        <DialogContent
+          className="max-h-[calc(var(--app-viewport-height,100dvh)-2rem)] max-w-3xl overflow-y-auto p-4"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            const target = previewTriggerRef.current?.isConnected ? previewTriggerRef.current : composerRef.current;
+            target?.focus();
+          }}
+        >
+          <DialogHeader className="pr-12 text-left">
+            <DialogTitle>Club chat media</DialogTitle>
+            <DialogDescription>Image or GIF shared in this club conversation.</DialogDescription>
+          </DialogHeader>
+          {previewFailed && <p role="alert" className="text-sm text-destructive">This media could not load. Close the preview and try again.</p>}
+          {previewMedia && !previewFailed && (
             <img
               src={previewMedia}
               alt="Club chat media preview"
-              className="max-h-[80vh] w-full rounded-md object-contain"
+              onError={() => setPreviewFailed(true)}
+              className="max-h-[65dvh] w-full rounded-md object-contain"
             />
           )}
         </DialogContent>
       </Dialog>
 
-      <Dialog open={gifOpen} onOpenChange={setGifOpen}>
-        <DialogContent className="max-h-[min(42rem,calc(var(--app-viewport-height,100dvh)-2rem))] max-w-2xl overflow-y-auto">
+      <Dialog open={gifOpen} onOpenChange={(open) => { if (!sendingRef.current) setGifOpen(open); }}>
+        <DialogContent
+          className="max-h-[min(42rem,calc(var(--app-viewport-height,100dvh)-2rem))] max-w-2xl overflow-y-auto"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            gifTriggerRef.current?.focus();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>Search GIFs</DialogTitle>
             <DialogDescription>Choose a lightweight GIF for club chat.</DialogDescription>
@@ -740,28 +830,32 @@ const ClubChatThreadContent = ({
                 value={gifQuery}
                 onChange={(event) => setGifQuery(event.target.value)}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter") void handleGifSearch();
+                  if (event.key === "Enter" && !event.nativeEvent.isComposing && event.keyCode !== 229) void handleGifSearch();
                 }}
                 placeholder="Search GIFs"
                 className="pl-9"
               />
             </div>
-            <Button onClick={() => void handleGifSearch()} disabled={gifSearching || !gifQuery.trim()}>
+            <Button onClick={() => void handleGifSearch()} disabled={gifSearching || sending || !gifQuery.trim()}>
               {gifSearching ? "Searching..." : "Search"}
             </Button>
           </div>
           {gifError && <p id={`${id}-gif-error`} role="alert" className="text-sm text-destructive">{gifError}</p>}
-          {gifSearching ? <p role="status" className="text-sm text-muted-foreground">Searching...</p> : gifError ? null : gifResults.length === 0 ? (
+          {sending && <p role="status" className="text-sm text-muted-foreground">Sending message…</p>}
+          {gifSearching ? <p role="status" className="text-sm text-muted-foreground">Searching...</p> : gifResults.length === 0 ? (gifError ? null : (
             <div className="flex min-h-40 items-center justify-center rounded-md border border-dashed border-border text-center">
               <p className="font-sans text-sm text-muted-foreground">Search for a reaction, scene, or mood.</p>
             </div>
-          ) : (
+          )) : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {gifResults.map((gif) => (
                 <button
                   key={gif.id}
                   type="button"
                   onClick={() => void handleSend(gif)}
+                  aria-label={`Send GIF: ${gif.title}`}
+                  aria-describedby={gifError ? `${id}-gif-error` : undefined}
+                  disabled={sending || !currentUserId || !isOnline || !hasLoaded || loading || refreshing || error}
                   className="overflow-hidden rounded-md border border-border bg-muted transition hover:border-primary"
                 >
                   <img src={gif.preview_url} alt={gif.title} className="aspect-video w-full object-cover" />
