@@ -11,6 +11,12 @@ site_url = "https://staging.brack-app.com"
 additional_redirect_urls = [
   "https://staging.brack-app.com/auth/callback",
   "https://staging.brack-app.com/auth/reset-password",
+  "http://localhost:8080/auth/callback",
+  "http://localhost:8080/auth/reset-password",
+  "http://127.0.0.1:8080/auth/callback",
+  "http://127.0.0.1:8080/auth/reset-password",
+  "http://127.0.0.1:8081/auth/callback",
+  "http://127.0.0.1:8081/auth/reset-password",
   "brack://auth/callback",
   "brack://auth/reset-password",
 ]

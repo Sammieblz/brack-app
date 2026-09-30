@@ -137,10 +137,11 @@ Adding the Supabase `/auth/v1/callback` to this list does not authorize it at
 Google. A Google `redirect_uri_mismatch` means the callback is missing from
 the **matching Google client**, not that database migrations failed. Keep the
 hosted stage redirect list and `[remotes.test.auth].additional_redirect_urls`
-in `supabase/config.toml` aligned: the checked-in remote override currently
-omits loopback callbacks, while the local `[auth]` block configures only the
-local Supabase stack. Reconcile that drift in a reviewed configuration change
-if local-to-stage OAuth must remain supported after future branch config syncs.
+in `supabase/config.toml` aligned. The checked-in stage override includes the
+exact loopback callbacks used by Brack development so a local client connected
+to the hosted stage backend returns to its own `/auth/callback` route instead
+of falling back to the staging Site URL. Keep those entries when syncing branch
+configuration; the local `[auth]` block configures only the local Supabase stack.
 
 If a Google OAuth client was deleted, check **Google Auth Platform > Deleted
 credentials** first. Google permits restoration for 30 days; restore a shared

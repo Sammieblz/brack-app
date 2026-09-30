@@ -201,7 +201,7 @@ const Index = () => {
               alt=""
               width={1600}
               height={900}
-              fetchPriority="high"
+              {...{ fetchpriority: "high" }}
               decoding="async"
             />
           </picture>
