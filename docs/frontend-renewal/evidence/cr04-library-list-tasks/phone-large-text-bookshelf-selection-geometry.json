@@ -1,0 +1,41 @@
+{
+  "overflow": 0,
+  "bounds": {
+    "x": 0,
+    "y": 16,
+    "width": 390,
+    "height": 828,
+    "top": 16,
+    "right": 390,
+    "bottom": 844,
+    "left": 0
+  },
+  "protrusions": [
+    {
+      "text": "The Left Hand of Darkness",
+      "box": {
+        "x": 40,
+        "y": 56,
+        "width": 420.8125,
+        "height": 48.59375,
+        "top": 56,
+        "right": 460.8125,
+        "bottom": 104.59375,
+        "left": 40
+      }
+    },
+    {
+      "text": "by Ursula K. Le Guin",
+      "box": {
+        "x": 40,
+        "y": 120.59375,
+        "width": 420.8125,
+        "height": 42,
+        "top": 120.59375,
+        "right": 460.8125,
+        "bottom": 162.59375,
+        "left": 40
+      }
+    }
+  ]
+}

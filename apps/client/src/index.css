@@ -746,6 +746,12 @@ All colors MUST be HSL.
   /* An open writing task owns its actions even after its field blurs. Otherwise
      this floating button can appear between pointer-down/up over Send. */
   .app-shell:has([data-shell-composer-active="true"]) [data-shell-scroll-top] { display: none; }
+  /* The floating return action must leave room for the final row and for
+     keyboard focus revelation, including when root text doubles its size. */
+  .app-shell:has([data-shell-scroll-top]:where([aria-hidden="false"])) .app-scroll-container {
+    --app-scroll-bottom-inset: 4.5rem;
+    padding-bottom: var(--app-scroll-bottom-inset);
+  }
   @media (max-width: 1023px) {
     .app-shell .app-scroll-container:has([data-shell-float="action"]) {
       --app-scroll-bottom-inset: 5.5rem;
@@ -1527,6 +1533,21 @@ All colors MUST be HSL.
 
   .library-selected-book-compact .library-selected-book-cover {
     width: min(11rem, 48vw);
+  }
+
+  /* The adaptive preview owns scrolling; changing width never replaces its task. */
+  .adaptive-dialog.library-selected-book-dialog .library-selected-book {
+    min-height: 0;
+    padding: 2rem 0 0;
+  }
+
+  .adaptive-dialog.library-selected-book-dialog .library-selected-book:not(.library-selected-book-compact) {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  }
+
+  .adaptive-dialog.library-selected-book-dialog .library-selected-book-page {
+    max-height: none;
+    overflow: visible;
   }
 
   @media (min-width: 768px) {

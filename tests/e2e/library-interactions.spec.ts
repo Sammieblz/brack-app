@@ -205,7 +205,7 @@ test('nested actions, accordion and portalled deletion never activate their card
     expect(await events(page)).toEqual([]);
     await reset(page);
     await surface.getByRole('button', { name: 'Delete book', exact: true }).click();
-    const confirmation = page.getByRole('alertdialog');
+    const confirmation = page.getByRole('dialog', { name: 'Delete this book?', exact: true });
     await expect(confirmation).toBeVisible();
     expect(await events(page)).toEqual([]);
     if (view === 'carousel') {

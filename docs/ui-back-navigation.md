@@ -29,7 +29,7 @@ Positive router `idx`, non-default key and browser history length are insufficie
 
 - Add Book protects nonempty manual/scanned form values and consumes Back during a pending add.
 - Edit Book protects changed book fields, invalid date input and pending save/image upload. Its Cancel button uses the same discard guard. The unrelated rendering blocker discovered in this path was repaired with a nonempty `none` Select sentinel mapped to a null rating.
-- Library Back exits selection/reorder mode before navigation. Mode guards use priority 100; task guards use the default priority.
+- Library Back exits selection/reorder mode before navigation. Pending removal consumes departure; its active confirmation and nested membership tasks retain the first overlay request. Mode guards use priority 100; task guards use the default priority. [Library/list ownership](ui-library-list-tasks.md) records the CR04 pending, partial-result and focus contracts.
 - Existing journal pending/dirty guards remain owners of journal closure. Confirmation dismissal resolves to Keep editing; discarded route changes invalidate old asynchronous responses.
 - Shared Dialog, AlertDialog, Sheet, Drawer, Popover, Select, menu variants and their direct primitive consumers register content with `useBackLayer`. A new custom overlay must register its actual dismissable content, not infer membership from arbitrary roles or z-index.
 - F08 Goals uses one controlled adaptive Dialog with a visible Close button and a stable Dashboard parent. The obsolete dismissable wrappers and disconnected delayed pull hook remain removed. No drag handle is implied; [adaptive surfaces](ui-adaptive-overlays.md) preserve the same Back registration and primitive Escape policy.

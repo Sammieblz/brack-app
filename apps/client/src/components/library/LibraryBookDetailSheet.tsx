@@ -105,7 +105,7 @@ export const LibraryBookDetailSheet = ({
                 userId={userId}
                 onView={onView}
                 onEdit={onEdit}
-                onDelete={onDelete}
+                onDelete={async id => { await onDelete(id); onOpenChange(false); }}
               />
             </div>
           </div>

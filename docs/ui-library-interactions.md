@@ -7,7 +7,7 @@ Implements [issue #69](https://github.com/Sammieblz/brack-app/issues/69). Keep t
 | Representation | Normal activation | Selection mode | Reorder mode |
 | --- | --- | --- | --- |
 | Flat cards (responsive list/grid) | Open `/book/:id`, including cover, title, metadata and surrounding space | Toggle that book once; never navigate | Not applicable |
-| Bookshelf | Open the existing desktop book dialog or phone sheet | Toggle that book once; never open the preview | Native primary button becomes the dnd-kit activator; moving/dropping never opens a book |
+| Bookshelf | Open one adaptive book preview, presented for the current window/input | Toggle that book once; never open the preview | Native primary button becomes the dnd-kit activator; moving/dropping never opens a book |
 | Carousel | Open the existing detail sheet | Toggle that book once; never open the sheet | Carousel dragging changes slides, not selection or navigation |
 
 The explicit **View details** action in previews and action rows still opens the full book route. Flat covers now share the book's primary action instead of launching a separate image lightbox. Edit, Log progress, Add to list, Delete/confirmation, accordion, and carousel navigation retain their separate actions.
@@ -19,7 +19,11 @@ The explicit **View details** action in previews and action rows still opens the
 - Flat/carousel content sits above the primary button so text can still be selected. `activateLibraryBookSurface` delegates only unclaimed, primary-pointer clicks. It excludes links, native/ARIA controls, labels, editable content, explicitly marked `data-library-book-control` areas, cancelled events, and portal targets outside the actual card. Keep this guard when adding new controls.
 - Do not stop pointer-down events on the card: Embla needs them to distinguish a drag from a click. Its cancelled drag click must not activate the primary action. `SwipeableBookCard` owns touch direction locking and capture-phase suppression of clicks following movement/cancellation; vertical scrolling stays native.
 - Shelf drag attributes/listeners apply only in reorder mode. The normal/selection button does not expose dormant sortable semantics. Pointer activation requires the existing six-pixel threshold; the existing keyboard sensor supports Space, arrows, Space to drop, Escape to cancel.
-- Programmatically opened previews explicitly restore focus to their originating button on dismissal, including Safari pointer activation. Do not restore to a disconnected button or steal focus during a responsive dialog/sheet switch. Escape dismisses the innermost open layer (for example an action tooltip before the preview).
+- Programmatically opened previews explicitly restore focus to their originating button on dismissal, including Safari pointer activation. Bookshelf row regrouping resolves that book's replacement button without replacing the open preview. Confirmed deletion restores focus through the surviving screen owner. Escape dismisses the innermost open layer (for example an action tooltip before the preview).
+
+CR04 keeps the flat card's swipe wrapper mounted through responsive changes and changes only whether swiping is enabled. Portaled dialog/backdrop events are excluded from both card activation and the swipe click-suppression path by actual DOM containment. The carousel's existing Sheet retains its own single primitive as its side changes; this is distinct from the bookshelf's adaptive Dialog migration.
+
+Book removal uses an owned asynchronous confirmation. Pending closes and duplicate submission are refused, rejection retains the task, and bulk retry keeps only failed books selected. Membership/list mutations follow [Library list tasks](ui-library-list-tasks.md); [checkpoint24](frontend-renewal/24-library-list-tasks.md) records exact current verification and limits. This corrective work does not close the remaining F10 composition, performance or physical-device acceptance.
 
 This follows the native activation and focus expectations in the [WAI button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/button/). The reorder-only touch policy follows the installed legacy [dnd-kit pointer sensor guidance](https://dndkit.com/legacy/api-documentation/sensors/pointer/).
 

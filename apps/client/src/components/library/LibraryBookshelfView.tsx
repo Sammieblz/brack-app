@@ -1,4 +1,4 @@
-import { type CSSProperties, type MouseEvent, useMemo, useRef, useState } from "react";
+import { type CSSProperties, type MouseEvent, type RefObject, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   closestCenter,
@@ -35,6 +35,7 @@ interface LibraryBookshelfViewProps {
   onView: (bookId: string) => void;
   onEdit: (bookId: string) => void;
   onDelete: (bookId: string) => Promise<void> | void;
+  focusFallbackRef?: RefObject<HTMLElement | null>;
   reorderMode?: boolean;
   onReorder?: (books: Book[]) => Promise<void> | void;
   selectMode?: boolean;
@@ -124,6 +125,7 @@ const SortableShelfBook = ({
         ref={setActivatorNodeRef}
         type="button"
         className="library-shelf-primary"
+        data-library-book-id={book.id}
         {...(reorderMode ? attributes : {})}
         {...(reorderMode ? listeners : {})}
         onClick={handleActivate}
@@ -185,6 +187,7 @@ export const LibraryBookshelfView = ({
   onView,
   onEdit,
   onDelete,
+  focusFallbackRef,
   reorderMode = false,
   onReorder,
   selectMode = false,
@@ -195,6 +198,8 @@ export const LibraryBookshelfView = ({
   const { width } = useBreakpoint();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const selectedBookTrigger = useRef<HTMLButtonElement | null>(null);
+  const selectedTriggerId = useRef<string | null>(null);
+  const shelfRef = useRef<HTMLElement | null>(null);
   const selectionOpen = useRef(false);
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -228,6 +233,7 @@ export const LibraryBookshelfView = ({
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={bookIds} strategy={rectSortingStrategy}>
           <section
+            ref={shelfRef}
             className={cn("library-bookshelf space-y-6", reorderMode && "library-bookshelf-reordering")}
             aria-label="Interactive bookshelf"
           >
@@ -247,6 +253,7 @@ export const LibraryBookshelfView = ({
                       selected={selectedBookIdSet.has(book.id)}
                       onSelect={(book, trigger) => {
                         selectedBookTrigger.current = trigger;
+                        selectedTriggerId.current = book.id;
                         selectionOpen.current = true;
                         setSelectedBook(book);
                       }}
@@ -287,12 +294,17 @@ export const LibraryBookshelfView = ({
         }}
         onCloseAutoFocus={(event) => {
           // This is a programmatically opened preview, so Radix has no
-          // DialogTrigger to restore. Do not steal focus during a responsive
-          // dialog/sheet switch or after navigating away from the shelf.
+          // DialogTrigger to restore. Row regrouping can replace its button
+          // while the task stays open; resolve that book's current control.
           event.preventDefault();
-          if (!selectionOpen.current && selectedBookTrigger.current?.isConnected) {
-            selectedBookTrigger.current.focus({ preventScroll: true });
+          if (!selectionOpen.current) {
+            const trigger = selectedBookTrigger.current?.isConnected ? selectedBookTrigger.current
+              : [...(shelfRef.current?.querySelectorAll<HTMLButtonElement>("[data-library-book-id]") ?? [])]
+                .find(button => button.dataset.libraryBookId === selectedTriggerId.current);
+            const destination = trigger ?? focusFallbackRef?.current;
+            if (destination?.isConnected) destination.focus({ preventScroll: true });
             selectedBookTrigger.current = null;
+            selectedTriggerId.current = null;
           }
         }}
         onView={onView}

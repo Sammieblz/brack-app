@@ -1,0 +1,3176 @@
+{
+  "checkpoint": "CR04 Library selection and list outcomes",
+  "status": "Implemented and verified within unit/browser scope; stopped for user review; uncommitted",
+  "generated_utc": "2026-09-30T19:12:04.824390+00:00",
+  "baseline_commit": "74ed7d7f3f6509f31906625d07ccacb9e53e9590",
+  "counting": "Latest per-case outcomes deduplicated from primary reports. Original full32-scenario/96scheduled report has92passes,2failed focus cases and2skips; later focus followup fixes those and adds flat inline deletion, giving33 distinct scenarios. No full99 rerun claimed. Diagnostics and targeted reruns overlap. Browser skipped cases remain separate.",
+  "distinct_accepted": {
+    "unit_tests": 117,
+    "unit_files": 9,
+    "browser_passed": 151,
+    "browser_skipped": 8
+  },
+  "primary_reports": [
+    {
+      "path": "test-results/cr04-unit-final-summary.json",
+      "bytes": 42292,
+      "sha256": "20f334ab21ff59b649f0db07a6d2e67e761fc3ee1a8284543ffca9c91c2ecc9a",
+      "kind": "unit",
+      "passed": 116,
+      "failed": 0,
+      "skipped": 0,
+      "files": 9
+    },
+    {
+      "path": "test-results/cr04-focus-unit-summary.json",
+      "bytes": 16368,
+      "sha256": "1d0a276367912fdee23ea895fdd156c7b40282a6cfba4ce16d928bf699b2dd31",
+      "kind": "unit",
+      "passed": 46,
+      "failed": 0,
+      "skipped": 0,
+      "files": 3
+    },
+    {
+      "path": "test-results/cr04-full-1-summary.json",
+      "bytes": 1215107,
+      "sha256": "b2fb5f6b387e730ac19f34e71fe7bf31b24fe7502dafef09b38296be1a4718d3",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T18:55:26.367Z",
+        "duration": 404856.194,
+        "expected": 92,
+        "skipped": 2,
+        "unexpected": 2,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr04-focus-final-summary.json",
+      "bytes": 90364,
+      "sha256": "d22827b6f112f1f53bef701ba337c76ce5e71c613aed2710da9fed8a4562f717",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T19:04:43.153Z",
+        "duration": 85695.865,
+        "expected": 16,
+        "skipped": 2,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr04-library-regression-summary.json",
+      "bytes": 56262,
+      "sha256": "a669083778a72740ac34c6d71820070867dd504cef6016aa990876864b3b3f85",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T19:06:48.407Z",
+        "duration": 131960.943,
+        "expected": 33,
+        "skipped": 6,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr04-shell-regression-summary.json",
+      "bytes": 26304,
+      "sha256": "ce17773e73f5aef7092d34f5bd23eebea36860b160f0500bf2da2cb71e9bdbd3",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T19:09:30.176Z",
+        "duration": 68261.095,
+        "expected": 21,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  ],
+  "unit_cases": [
+    {
+      "file": "apps/client/src/components/BookListManager.loading.test.tsx",
+      "title": "Book List manager loading presentation preserves the card and search input during refresh",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/BookListManager.loading.test.tsx",
+      "title": "Book List manager loading presentation keeps a confirmed empty collection visible while refreshing",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/BookListManager.loading.test.tsx",
+      "title": "Book List manager loading presentation has one owning busy status during a cold load and no false empty message",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/BookListManager.loading.test.tsx",
+      "title": "Book List manager loading presentation renders retry rather than an empty collection after a cold failure",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/BookListManager.tasks.test.tsx",
+      "title": "BookListManager task ownership create serializes submits and retains failed fields until a successful retry",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/BookListManager.tasks.test.tsx",
+      "title": "BookListManager task ownership edit serializes submits and retains failed fields until a successful retry",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/BookListManager.tasks.test.tsx",
+      "title": "BookListManager task ownership keeps a dirty editor through cancellation and explicitly discards before an ordinary clean reopen",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/BookListManager.tasks.test.tsx",
+      "title": "BookListManager task ownership preserves the same editor fields when the list collection refreshes",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/BookListManager.tasks.test.tsx",
+      "title": "BookListManager task ownership retains a rejected delete confirmation, blocks duplicate/dismissal and allows one explicit retry",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/BookListManager.tasks.test.tsx",
+      "title": "BookListManager task ownership reports incomplete duplication without claiming success or automatically retrying it",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/BookListManager.tasks.test.tsx",
+      "title": "BookListManager task ownership ignores late create feedback after account replacement",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/BookListManager.tasks.test.tsx",
+      "title": "BookListManager task ownership ignores late edit feedback after account replacement",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/BookListManager.tasks.test.tsx",
+      "title": "BookListManager task ownership ignores late delete feedback after account replacement",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/BookListManager.tasks.test.tsx",
+      "title": "BookListManager task ownership ignores late duplicate feedback after account replacement",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "single-book list membership does not present unknown membership as unchecked and retries a failed lookup",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "single-book list membership serializes a membership update to true, refuses pending dismissal, retains rejection and confirms retry",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "single-book list membership serializes a membership update to false, refuses pending dismissal, retains rejection and confirms retry",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "single-book list membership ignores a previous opening's lookup after close and reopen",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "single-book list membership withdraws the old task after book changes and ignores its late write",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "single-book list membership withdraws the old task after account changes and ignores its late write",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "single-book list membership withdraws the old task after auth loading changes and ignores its late write",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "single-book list membership keeps catalog failure distinct from an empty catalog and uses internal Create a List navigation",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "adding selected books to a list requires successful membership lookup and exposes retry instead of a false empty list",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "adding selected books to a list retains only unconfirmed selection after partial failure and retries without replaying a confirmed add",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "adding selected books to a list notifies the parent about a partial commit even if refresh rejects, retaining the remaining selection",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "adding selected books to a list retains selection when dirty dismissal is declined and clears it only after explicit discard",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "adding selected books to a list stops an abandoned sequential add before sending the next book or reporting success",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "adding selected books to a list closes controlled ownership on list change and ignores its previous lookup",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "adding selected books to a list does not report failed membership when the parent refresh rejects after confirmed additions",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "adding selected books to a list isolates a reopened task from a forced-closed pending write and preserves the new submit lock",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "adding selected books to a list ignores a previous closed opening's membership lookup after a fresh selection",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "title": "adding selected books to a list keeps a failed initial library read distinct from an empty library and offers retry",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation opens once on a normal tap, without the wrapper duplicating the card action",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation follows horizontal swipes directly, then suppresses the synthesized child click",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation also suppresses a click after a short swipe that snaps closed",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation keeps vertical scrolling native and does not open a book after it",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation allows a fresh tap and keyboard activation after a swipe",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation keeps a deliberate action tap separate from opening the book",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation keeps status changes and confirmed deletion separate from opening",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation retains the card and open removal when swipe presentation is disabled, then focuses the surviving book control",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation never treats a portaled backdrop click as a card activation or a cancelled swipe click",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation restores the resting offset and suppresses activation after a cancelled gesture",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation closes an open tray with a right swipe without jumping at gesture start",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation has no decorative release transition with reduced motion",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation leaves the system edge at x=2 unclaimed",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation leaves the system edge at x=24 unclaimed",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation leaves the system edge at x=1022 unclaimed",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation leaves the system edge at x=1000 unclaimed",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation does not claim a gesture on More actions",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation does not claim a gesture on Reading note",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation does not claim a gesture on Selectable annotation",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation cancels on blur without reviving on a late touchend",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation cancels on pagehide without reviving on a late touchend",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation cancels on scroll without reviving on a late touchend",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation cancels on contextmenu without reviving on a late touchend",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation cancels for a second touch anywhere, leaving pinch default behavior available",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation cancels when the tracked finger is replaced",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation does not start on selected text and cancels when a selection appears mid-contact",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation cancels an active contact when the document becomes hidden",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation yields to an overlay opened before start without dismissing it",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation yields to an overlay opened before release without dismissing it",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "title": "Swipeable book gesture isolation does not install contact listeners while idle and removes them on end or unmount",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/libraryLoading.test.tsx",
+      "title": "Library retained loading reveals local books before a delayed sync and waits for refresh completion",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/libraryLoading.test.tsx",
+      "title": "Library retained loading retains a loaded empty library during refresh and reports failures separately",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/libraryLoading.test.tsx",
+      "title": "Library retained loading does not carry books or delayed errors across user identities",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/libraryLoading.test.tsx",
+      "title": "Library retained loading settles local storage failures instead of remaining busy",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/libraryLoading.test.tsx",
+      "title": "Book list retained loading retains populated lists during refresh and appends load-more results",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/libraryLoading.test.tsx",
+      "title": "Book list retained loading preserves an empty successful result and clears an error on retry",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/libraryLoading.test.tsx",
+      "title": "Book list retained loading ignores a previous user's delayed list response",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/libraryLoading.test.tsx",
+      "title": "Book list retained loading does not retain remote-confirmed inaccessible lists after 401",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/libraryLoading.test.tsx",
+      "title": "Book list retained loading does not retain remote-confirmed inaccessible lists after 403",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/libraryLoading.test.tsx",
+      "title": "Book list retained loading does not retain remote-confirmed inaccessible lists after 404",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/libraryLoading.test.tsx",
+      "title": "List detail retained loading does not replace a loaded empty list on refresh",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/libraryLoading.test.tsx",
+      "title": "List detail retained loading rejects a delayed result after the list identity changes",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/libraryLoading.test.tsx",
+      "title": "List detail retained loading distinguishes a failed cold load from an empty successful list",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/libraryLoading.test.tsx",
+      "title": "List detail retained loading removes retained list content on a confirmed permission failure",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "title": "book-list confirmed mutation outcomes 'create' rejects its primary failure without replacing the read outcome",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "title": "book-list confirmed mutation outcomes 'update' rejects its primary failure without replacing the read outcome",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "title": "book-list confirmed mutation outcomes 'remove' rejects its primary failure without replacing the read outcome",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "title": "book-list confirmed mutation outcomes 'addBook' rejects its primary failure without replacing the read outcome",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "title": "book-list confirmed mutation outcomes 'removeBook' rejects its primary failure without replacing the read outcome",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "title": "book-list confirmed mutation outcomes 'reorder' rejects its primary failure without replacing the read outcome",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "title": "book-list confirmed mutation outcomes 'duplicate' rejects its primary failure without replacing the read outcome",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "title": "book-list confirmed mutation outcomes 'create' resolves confirmed work while its refresh remains pending, then retains success if the read fails",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "title": "book-list confirmed mutation outcomes 'update' resolves confirmed work while its refresh remains pending, then retains success if the read fails",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "title": "book-list confirmed mutation outcomes 'duplicate' resolves confirmed work while its refresh remains pending, then retains success if the read fails",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "title": "book-list confirmed mutation outcomes refreshes a partially created duplicate without inventing a successful copy",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "title": "book-list confirmed mutation outcomes suppresses a confirmed write's refresh after account abandonment",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "title": "book-list confirmed mutation outcomes suppresses a confirmed write's refresh after unmount abandonment",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "title": "book-list confirmed mutation outcomes rejects a mutation called through an obsolete account closure before invoking the service",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/screens/BookListDetail.tasks.test.tsx",
+      "title": "BookListDetail removal ownership retains one pending removal through list refresh and dismissal, then keeps rejection for explicit retry",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/screens/BookListDetail.tasks.test.tsx",
+      "title": "BookListDetail removal ownership keeps confirmed removal separate from refresh failure and retries the read without deleting twice",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/screens/BookListDetail.tasks.test.tsx",
+      "title": "BookListDetail removal ownership returns focus to the surviving page control when the last row is removed",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/screens/BookListDetail.tasks.test.tsx",
+      "title": "BookListDetail removal ownership suppresses obsolete removal feedback and refresh after account abandonment",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/screens/BookListDetail.tasks.test.tsx",
+      "title": "BookListDetail removal ownership suppresses obsolete removal feedback and refresh after unmount abandonment",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/screens/BookListDetail.tasks.test.tsx",
+      "title": "BookListDetail removal ownership allows a later authoritative read to show a legitimately re-added book after removal was acknowledged",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/screens/BookListDetail.tasks.test.tsx",
+      "title": "BookListDetail paginated list lookup retains the live selected-books task while a known later page reloads, fails and is refreshed again",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/screens/BookListDetail.tasks.test.tsx",
+      "title": "BookListDetail paginated list lookup abandons retained metadata and its task after a confirmed missing result",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/screens/BookListDetail.tasks.test.tsx",
+      "title": "BookListDetail paginated list lookup abandons retained metadata and its task after a confirmed permission result",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/screens/BookListDetail.tasks.test.tsx",
+      "title": "BookListDetail paginated list lookup finds a real list beyond the first page without reporting a missing list",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/screens/BookListDetail.tasks.test.tsx",
+      "title": "BookListDetail paginated list lookup stops a failed later-page lookup and resumes only after an explicit retry",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
+      "title": "Library bookshelf primary interaction has one native activation surface per book, without nested controls or dormant drag semantics",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
+      "title": "Library bookshelf primary interaction opens the existing preview before navigating to details",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
+      "title": "Library bookshelf primary interaction opens with native {Enter} activation and keeps the book in one tab stop",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
+      "title": "Library bookshelf primary interaction opens with native   activation and keeps the book in one tab stop",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
+      "title": "Library bookshelf primary interaction restores the native trigger after dismissing the real preview at 390px",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
+      "title": "Library bookshelf primary interaction restores the native trigger after dismissing the real preview at 1024px",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
+      "title": "Library bookshelf primary interaction keeps the same preview and returns to the current book button after rows regroup",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
+      "title": "Library bookshelf primary interaction toggles exactly once with {Enter} in selection mode without opening",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
+      "title": "Library bookshelf primary interaction toggles exactly once with   in selection mode without opening",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
+      "title": "Library bookshelf primary interaction keeps hover and focus off the sortable wrapper transform",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
+      "title": "Library bookshelf primary interaction uses the native button as the keyboard drag activator and never opens a preview",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
+      "title": "Library bookshelf primary interaction never selects or opens if reorder and selection flags briefly overlap",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryRemoveDialog.test.tsx",
+      "title": "owned Library removal keeps the pending task open, blocks duplicate intent and retains a rejected removal for retry",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryRemoveDialog.test.tsx",
+      "title": "owned Library removal an obsolete completion cannot close a replacement opening",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryRemoveDialog.test.tsx",
+      "title": "owned Library removal unmount withdraws the removal outcome",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
+      "title": "Library bookshelf primary interaction restores the surviving page after the selected book trigger is removed",
+      "outcome": "passed"
+    }
+  ],
+  "browser_cases": [
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "flat: membership lookup and failed writes stay truthful and retry once",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "flat: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "bookshelf: membership lookup and failed writes stay truthful and retry once",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "bookshelf: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel: membership lookup and failed writes stay truthful and retry once",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel-preview: membership lookup and failed writes stay truthful and retry once",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel-preview: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "BookDetail: membership lookup and failed writes stay truthful and retry once",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "BookDetail: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List create: stable draft and caret, dirty dismissal, pending rejection, confirmed write despite refresh failure",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List edit: stable draft and caret, dirty dismissal, pending rejection, confirmed write despite refresh failure",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List delete: failure keeps target, pending consumes every dismissal and retry deletes once",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List duplicate: pending serializes and failed copy is explicit before successful retry",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List header action: membership lookup failure blocks unverified choices and retry restores actual options",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List header action: selected node survives every breakpoint, Keep selecting and explicit discard",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List header action: pending partial add retains failed selection through parent refresh and retries only remaining books",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Empty list action: membership lookup failure blocks unverified choices and retry restores actual options",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Empty list action: selected node survives every breakpoint, Keep selecting and explicit discard",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Empty list action: pending partial add retains failed selection through parent refresh and retries only remaining books",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "bookshelf: nested delete preserves selection on rejection and removes only after confirmation",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel-preview: nested delete preserves selection on rejection and removes only after confirmation",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List removal: rejected task retains book, successful retry preserves Library and focuses connected owner",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Library bulk delete: partial failure keeps only failed selection and retry never repeats confirmed removals",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Account replacement drops the obsolete pending membership UI and cannot affect the next account",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Route abandonment during sequential add stops unsubmitted later books and stale success feedback",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Later-page list metadata: pending selected task survives catalog reset, page-two failure and successful retry",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Flat touch swipe delete: revealed real action retains pending target, rejection and successful retry",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Visual phone-320: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Visual phone-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Visual tablet-touch-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Visual short-height: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "flat: membership lookup and failed writes stay truthful and retry once",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "flat: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "bookshelf: membership lookup and failed writes stay truthful and retry once",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "bookshelf: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel: membership lookup and failed writes stay truthful and retry once",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel-preview: membership lookup and failed writes stay truthful and retry once",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel-preview: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "BookDetail: membership lookup and failed writes stay truthful and retry once",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "BookDetail: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List create: stable draft and caret, dirty dismissal, pending rejection, confirmed write despite refresh failure",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List edit: stable draft and caret, dirty dismissal, pending rejection, confirmed write despite refresh failure",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List delete: failure keeps target, pending consumes every dismissal and retry deletes once",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List duplicate: pending serializes and failed copy is explicit before successful retry",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List header action: membership lookup failure blocks unverified choices and retry restores actual options",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List header action: selected node survives every breakpoint, Keep selecting and explicit discard",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List header action: pending partial add retains failed selection through parent refresh and retries only remaining books",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Empty list action: membership lookup failure blocks unverified choices and retry restores actual options",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Empty list action: selected node survives every breakpoint, Keep selecting and explicit discard",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Empty list action: pending partial add retains failed selection through parent refresh and retries only remaining books",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "bookshelf: nested delete preserves selection on rejection and removes only after confirmation",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel-preview: nested delete preserves selection on rejection and removes only after confirmation",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List removal: rejected task retains book, successful retry preserves Library and focuses connected owner",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Library bulk delete: partial failure keeps only failed selection and retry never repeats confirmed removals",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Account replacement drops the obsolete pending membership UI and cannot affect the next account",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Route abandonment during sequential add stops unsubmitted later books and stale success feedback",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Later-page list metadata: pending selected task survives catalog reset, page-two failure and successful retry",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Flat touch swipe delete: revealed real action retains pending target, rejection and successful retry",
+      "engine": "webkit",
+      "outcome": "skipped",
+      "results": [
+        "skipped"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Visual phone-320: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Visual phone-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Visual tablet-touch-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Visual short-height: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "flat: membership lookup and failed writes stay truthful and retry once",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "flat: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "bookshelf: membership lookup and failed writes stay truthful and retry once",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "bookshelf: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel: membership lookup and failed writes stay truthful and retry once",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel-preview: membership lookup and failed writes stay truthful and retry once",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel-preview: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "BookDetail: membership lookup and failed writes stay truthful and retry once",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "BookDetail: same membership node and parent selection survive every breakpoint and nested Back",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List create: stable draft and caret, dirty dismissal, pending rejection, confirmed write despite refresh failure",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List edit: stable draft and caret, dirty dismissal, pending rejection, confirmed write despite refresh failure",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List delete: failure keeps target, pending consumes every dismissal and retry deletes once",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List duplicate: pending serializes and failed copy is explicit before successful retry",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List header action: membership lookup failure blocks unverified choices and retry restores actual options",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List header action: selected node survives every breakpoint, Keep selecting and explicit discard",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List header action: pending partial add retains failed selection through parent refresh and retries only remaining books",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Empty list action: membership lookup failure blocks unverified choices and retry restores actual options",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Empty list action: selected node survives every breakpoint, Keep selecting and explicit discard",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Empty list action: pending partial add retains failed selection through parent refresh and retries only remaining books",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "bookshelf: nested delete preserves selection on rejection and removes only after confirmation",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "carousel-preview: nested delete preserves selection on rejection and removes only after confirmation",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "List removal: rejected task retains book, successful retry preserves Library and focuses connected owner",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Library bulk delete: partial failure keeps only failed selection and retry never repeats confirmed removals",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Account replacement drops the obsolete pending membership UI and cannot affect the next account",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Route abandonment during sequential add stops unsubmitted later books and stale success feedback",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Later-page list metadata: pending selected task survives catalog reset, page-two failure and successful retry",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Flat touch swipe delete: revealed real action retains pending target, rejection and successful retry",
+      "engine": "firefox",
+      "outcome": "skipped",
+      "results": [
+        "skipped"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Visual phone-320: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Visual phone-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Visual tablet-touch-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "Visual short-height: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "flat: inline delete preserves selection on rejection and removes only after confirmation",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "flat: inline delete preserves selection on rejection and removes only after confirmation",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-tasks.spec.ts",
+      "title": "flat: inline delete preserves selection on rejection and removes only after confirmation",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "flat: cover, title, metadata, progress and padding activate the current book once",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "flat: native Enter/Space activation and predictable focus restoration",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "bookshelf: cover, title, metadata, progress and padding activate the current book once",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "bookshelf: native Enter/Space activation and predictable focus restoration",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "carousel: cover, title, metadata, progress and padding activate the current book once",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "carousel: native Enter/Space activation and predictable focus restoration",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "nested actions, accordion and portalled deletion never activate their card",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "shelf keyboard reorder preserves sortable behavior and never opens a book",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "shelf pointer reorder keeps the whole book draggable without opening",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "dragging a carousel cover changes slides without opening the card",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "touch swipe reveals actions without opening and a later tap remains usable",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "interrupted row swipe (touchcancel) restores the card and permits a fresh tap",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "interrupted row swipe (second-finger) restores the card and permits a fresh tap",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "flat: cover, title, metadata, progress and padding activate the current book once",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "flat: native Enter/Space activation and predictable focus restoration",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "bookshelf: cover, title, metadata, progress and padding activate the current book once",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "bookshelf: native Enter/Space activation and predictable focus restoration",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "carousel: cover, title, metadata, progress and padding activate the current book once",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "carousel: native Enter/Space activation and predictable focus restoration",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "nested actions, accordion and portalled deletion never activate their card",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "shelf keyboard reorder preserves sortable behavior and never opens a book",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "shelf pointer reorder keeps the whole book draggable without opening",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "dragging a carousel cover changes slides without opening the card",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "touch swipe reveals actions without opening and a later tap remains usable",
+      "engine": "webkit",
+      "outcome": "skipped",
+      "results": [
+        "skipped"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "interrupted row swipe (touchcancel) restores the card and permits a fresh tap",
+      "engine": "webkit",
+      "outcome": "skipped",
+      "results": [
+        "skipped"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "interrupted row swipe (second-finger) restores the card and permits a fresh tap",
+      "engine": "webkit",
+      "outcome": "skipped",
+      "results": [
+        "skipped"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "flat: cover, title, metadata, progress and padding activate the current book once",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "flat: native Enter/Space activation and predictable focus restoration",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "bookshelf: cover, title, metadata, progress and padding activate the current book once",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "bookshelf: native Enter/Space activation and predictable focus restoration",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "carousel: cover, title, metadata, progress and padding activate the current book once",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "carousel: native Enter/Space activation and predictable focus restoration",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "nested actions, accordion and portalled deletion never activate their card",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "shelf keyboard reorder preserves sortable behavior and never opens a book",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "shelf pointer reorder keeps the whole book draggable without opening",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "dragging a carousel cover changes slides without opening the card",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "touch swipe reveals actions without opening and a later tap remains usable",
+      "engine": "firefox",
+      "outcome": "skipped",
+      "results": [
+        "skipped"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "interrupted row swipe (touchcancel) restores the card and permits a fresh tap",
+      "engine": "firefox",
+      "outcome": "skipped",
+      "results": [
+        "skipped"
+      ]
+    },
+    {
+      "file": "library-interactions.spec.ts",
+      "title": "interrupted row swipe (second-finger) restores the card and permits a fresh tap",
+      "engine": "firefox",
+      "outcome": "skipped",
+      "results": [
+        "skipped"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "task node, caret and draft survive resizing; editing hides irrelevant footer until focus leaves",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "active timer and offline status occupy normal flow without covering final content",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "large text retains all tab labels and menu destinations without horizontal overflow",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "width-only reflow keeps the focused field clear of the sticky header",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "/add-book: real form keeps its draft and save action clear of native phone and tablet chrome",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "/edit-book/fixture-book-0: real form keeps its draft and save action clear of native phone and tablet chrome",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "320px with large text keeps combined utilities and quick-action tasks reachable",
+      "engine": "chromium",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "task node, caret and draft survive resizing; editing hides irrelevant footer until focus leaves",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "active timer and offline status occupy normal flow without covering final content",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "large text retains all tab labels and menu destinations without horizontal overflow",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "width-only reflow keeps the focused field clear of the sticky header",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "/add-book: real form keeps its draft and save action clear of native phone and tablet chrome",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "/edit-book/fixture-book-0: real form keeps its draft and save action clear of native phone and tablet chrome",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "320px with large text keeps combined utilities and quick-action tasks reachable",
+      "engine": "webkit",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "task node, caret and draft survive resizing; editing hides irrelevant footer until focus leaves",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "active timer and offline status occupy normal flow without covering final content",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "large text retains all tab labels and menu destinations without horizontal overflow",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "width-only reflow keeps the focused field clear of the sticky header",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "/add-book: real form keeps its draft and save action clear of native phone and tablet chrome",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "/edit-book/fixture-book-0: real form keeps its draft and save action clear of native phone and tablet chrome",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    },
+    {
+      "file": "adaptive-shell.spec.ts",
+      "title": "320px with large text keeps combined utilities and quick-action tasks reachable",
+      "engine": "firefox",
+      "outcome": "expected",
+      "results": [
+        "passed"
+      ]
+    }
+  ],
+  "historical_reports": [
+    {
+      "path": "test-results/cr04-back-diagnostic-summary.json",
+      "bytes": 27582,
+      "sha256": "45ed36e81dfddd3473725e94786cdb118369cb6273daee295364ace72f1666bf",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T18:47:10.294Z",
+        "duration": 22920.759000000002,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr04-chromium-1-summary.json",
+      "bytes": 392713,
+      "sha256": "a09ce159fd0c1e79e815d650d7f19b7a98ffb2915de364148533fe6c425b3773",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T18:41:49.957Z",
+        "duration": 151218.848,
+        "expected": 26,
+        "skipped": 0,
+        "unexpected": 5,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr04-chromium-2-summary.json",
+      "bytes": 273616,
+      "sha256": "9d4b655acbf4a95c77c0ea300abb56c2917340ff506a486ae61bfad01feeee65",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T18:45:22.647Z",
+        "duration": 59499.417,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 4,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr04-chromium-3-summary.json",
+      "bytes": 267255,
+      "sha256": "6ead8c4cccbd8214b8d7b037ada1cc41555676c9903a98cfd790513eeaf36fe2",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T18:49:16.436Z",
+        "duration": 43207.299,
+        "expected": 7,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr04-focus-diagnostic-summary.json",
+      "bytes": 24281,
+      "sha256": "8b23edd64d7240f1f8157a757c83d0fdbc5d3682d602981de4f314aefa44d2c1",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T19:02:33.453Z",
+        "duration": 28449.036999999997,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr04-later-page-summary.json",
+      "bytes": 9526,
+      "sha256": "278bd405aa1fc614f582bba443837b2a9e92202582b0837a0f4acc537c886c11",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T18:51:30.358Z",
+        "duration": 8325.246000000001,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr04-library-unit-1-summary.json",
+      "bytes": 15219,
+      "sha256": "f4761e630e4f2f9969ab1fb110f47a83637758ffc9b3cbe64aa0c11c3048c8c3",
+      "kind": "unit",
+      "passed": 43,
+      "failed": 0,
+      "skipped": 0,
+      "files": 3
+    },
+    {
+      "path": "test-results/cr04-library-unit-2-summary.json",
+      "bytes": 15215,
+      "sha256": "c6fb15d357676f84557c9b92646b8c25eee1975a64ee37095059ba5578775807",
+      "kind": "unit",
+      "passed": 43,
+      "failed": 0,
+      "skipped": 0,
+      "files": 3
+    },
+    {
+      "path": "test-results/cr04-library-unit-3-summary.json",
+      "bytes": 19176,
+      "sha256": "efbeb2b465fa7272d7e921b181dedce4791d34d68ab4c5767be3a8815f1c61df",
+      "kind": "unit",
+      "passed": 43,
+      "failed": 1,
+      "skipped": 0,
+      "files": 3
+    },
+    {
+      "path": "test-results/cr04-library-unit-4-summary.json",
+      "bytes": 15641,
+      "sha256": "12b1ea90b3e66e896ed57e3e0d63a5990870e2a3f22eb6926afa6406f45394dc",
+      "kind": "unit",
+      "passed": 44,
+      "failed": 0,
+      "skipped": 0,
+      "files": 3
+    },
+    {
+      "path": "test-results/cr04-portal-unit-summary.json",
+      "bytes": 10438,
+      "sha256": "8156e6e4ce98e747cbe772cbb06ea4340c62b350678d46166fd59b5ee335a11b",
+      "kind": "unit",
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "files": 1
+    },
+    {
+      "path": "test-results/cr04-smoke-1-summary.json",
+      "bytes": 21221,
+      "sha256": "365ea8e9f49fe11a8dd93325204217cfe015c50073fd8574c43f9b5e79325be1",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T18:35:53.751Z",
+        "duration": 22495.052,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr04-smoke-2-summary.json",
+      "bytes": 34935,
+      "sha256": "993d8919eb52311130580ea7c33e294a1094adbc190f3f59b1abd1075b4c8e01",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T18:38:22.494Z",
+        "duration": 44924.301,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 3,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr04-unit-summary.json",
+      "bytes": 40797,
+      "sha256": "d7f626729de92ca71384c0d98f3e730514e6b93828376df3c6311e82bc795091",
+      "kind": "unit",
+      "passed": 112,
+      "failed": 0,
+      "skipped": 0,
+      "files": 9
+    },
+    {
+      "path": "test-results/cr04-visual-final-summary.json",
+      "bytes": 255009,
+      "sha256": "fcd680c3f4db8ffeae50028bdf9c1522416c1aeea8c359cd8b970ea3b8918222",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T18:54:03.800Z",
+        "duration": 34194.417,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  ],
+  "changed_source_and_fixture_hashes": [
+    {
+      "path": "apps/client/src/components/AddBooksToListDialog.tsx",
+      "bytes": 11797,
+      "sha256": "35eaf78bccedc8aab4c6174703bdc7a75b097dc16bce3b079c7c18466951d277"
+    },
+    {
+      "path": "apps/client/src/components/AddToListDialog.tsx",
+      "bytes": 8367,
+      "sha256": "06d6d76fa548177f95444932c83b623cda26186d2841855dc4352b6af4732cd3"
+    },
+    {
+      "path": "apps/client/src/components/BookListManager.tasks.test.tsx",
+      "bytes": 9006,
+      "sha256": "4b936992b322ae69df76a089789732df46abddd629414582f7965b5d93766186"
+    },
+    {
+      "path": "apps/client/src/components/BookListManager.tsx",
+      "bytes": 26086,
+      "sha256": "a0f966141f556bd43c4313f7db66cde920fb4efd4bd66199c672d3079db41814"
+    },
+    {
+      "path": "apps/client/src/components/SwipeableBookCard.test.tsx",
+      "bytes": 15770,
+      "sha256": "140fa91e6a297ace4aa294eaab7ea2a3d46757db69b3b11b798bb31e3d2021e1"
+    },
+    {
+      "path": "apps/client/src/components/SwipeableBookCard.tsx",
+      "bytes": 9215,
+      "sha256": "a6de5e76fa1822012c59722dbc03f22ca83f95cbddf0fcd3a42897a5d00f7f78"
+    },
+    {
+      "path": "apps/client/src/components/library/LibraryBookActions.tsx",
+      "bytes": 4894,
+      "sha256": "e9811fe3b683a094f36e04e95d5340882e3eb9c3821232126bf82c498f0fe058"
+    },
+    {
+      "path": "apps/client/src/components/library/LibraryBookDetailSheet.tsx",
+      "bytes": 4904,
+      "sha256": "c32e086255e17c8e6fa9423d13d2041e326b8b45f601cf29dac7ea5f2cdc9aca"
+    },
+    {
+      "path": "apps/client/src/components/library/LibraryBookshelfSelection.tsx",
+      "bytes": 6257,
+      "sha256": "efabe77baa6aae3e977d4752940490a40e7b54dcce86a75ffaa6c5caa8392516"
+    },
+    {
+      "path": "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
+      "bytes": 9773,
+      "sha256": "68442e37b0935d27af2786b687608624c23a515a1169b5c89cbfad61a4e9a8da"
+    },
+    {
+      "path": "apps/client/src/components/library/LibraryBookshelfView.tsx",
+      "bytes": 12161,
+      "sha256": "b41e3f8a49db6ada930035394580a1b2127164b8ad303f23875ee1d579cd5dde"
+    },
+    {
+      "path": "apps/client/src/components/library/LibraryCarouselView.tsx",
+      "bytes": 9806,
+      "sha256": "830e970782b05bd6a089c449af18694e05e5ec1c7afffb9a0207f3cbb16b00f0"
+    },
+    {
+      "path": "apps/client/src/components/library/LibraryRemoveDialog.test.tsx",
+      "bytes": 3368,
+      "sha256": "2fc3cc0dbeb87c516459e9b3cf990ca6b9b7d4d5c0ff962c3cdf7ab329aceed6"
+    },
+    {
+      "path": "apps/client/src/components/library/LibraryRemoveDialog.tsx",
+      "bytes": 2409,
+      "sha256": "d4db7bc5a8ec621217beafc2f63ee13a3e5c724b110f360ebcfb96b5d495f354"
+    },
+    {
+      "path": "apps/client/src/components/list-membership-dialogs.test.tsx",
+      "bytes": 18545,
+      "sha256": "871453e2ede4b2cac79cca758c5b10fb7d5d425fcefb2af958ca8ad6ea189cbb"
+    },
+    {
+      "path": "apps/client/src/hooks/useBookLists.mutations.test.tsx",
+      "bytes": 6055,
+      "sha256": "4132926c150a7046b5307fab31c5e2fda5e1fc49e94fc9daf903f49f3824a2d8"
+    },
+    {
+      "path": "apps/client/src/hooks/useBookLists.ts",
+      "bytes": 6362,
+      "sha256": "f0238fa11240192b2cb974b93fc287c5e6e34e4d101515bdab896360114432f1"
+    },
+    {
+      "path": "apps/client/src/index.css",
+      "bytes": 65697,
+      "sha256": "350b5d738be9e58b73ec6455bfa6efeba085ccaac62e9ceda9110e6745c01c21"
+    },
+    {
+      "path": "apps/client/src/screens/BookListDetail.tasks.test.tsx",
+      "bytes": 15225,
+      "sha256": "fb4b0feab98857bb8cf9c4518c21cc3e01acfa97f0c933523ede698aa49b80a8"
+    },
+    {
+      "path": "apps/client/src/screens/BookListDetail.tsx",
+      "bytes": 20117,
+      "sha256": "f73a934e23fef0f091db0f276ef3c120a743ea866a63f5ca7b6f0424e2553029"
+    },
+    {
+      "path": "apps/client/src/screens/MyBooks.tsx",
+      "bytes": 41237,
+      "sha256": "9d72cf210933cf6fe3c6d25314632f2efde91e4c714271d328685fda89a6904a"
+    },
+    {
+      "path": "tests/e2e/library-interactions.spec.ts",
+      "bytes": 18648,
+      "sha256": "fc1630da3d9fc263863c403d954803cadfe20875a2da3904fbac750e06a27068"
+    },
+    {
+      "path": "tests/e2e/library-tasks.spec.ts",
+      "bytes": 42037,
+      "sha256": "0e429772405f8b024dc4752e95389020f187009eb0e1644df86ca08fb2ceddfd"
+    },
+    {
+      "path": "tests/fixtures/library-tasks/api.ts",
+      "bytes": 8897,
+      "sha256": "a0f259df90b5d18a3545383cf137193c20c00f633b6b63ebb9f7674476682d1f"
+    },
+    {
+      "path": "tests/fixtures/library-tasks/data.ts",
+      "bytes": 574,
+      "sha256": "320cee9da46a1903f50b20fa87d090be39f50d6eb5e30c6dde7cd659c619ead6"
+    },
+    {
+      "path": "tests/fixtures/library-tasks/devices.ts",
+      "bytes": 141,
+      "sha256": "dfd62ed4a0bf0bb2706fac43a45d812b71f8842cacb00aca6c379b3213088f7a"
+    },
+    {
+      "path": "tests/fixtures/library-tasks/index.html",
+      "bytes": 487,
+      "sha256": "666280a665f7bd21bb6c547803f42041eb68b5575f5ff82ca1aeb359836049e5"
+    },
+    {
+      "path": "tests/fixtures/library-tasks/main.tsx",
+      "bytes": 3033,
+      "sha256": "55a7c2faade1393e12493eec80341c2fb01555c3cce6b92ee3cfbc46d63a76d7"
+    },
+    {
+      "path": "tests/fixtures/library-tasks/state.ts",
+      "bytes": 2100,
+      "sha256": "08098e1de0744af39bc8f32bf6e5817bdc76afcb975383b9684045993e36459f"
+    },
+    {
+      "path": "tests/fixtures/library-tasks/vite.config.ts",
+      "bytes": 2191,
+      "sha256": "0c6eac88cf6c9827f44c7023c74c12a5b04f11284f0bb656b6372a490f5259be"
+    },
+    {
+      "path": "tests/playwright/library-tasks.config.ts",
+      "bytes": 1001,
+      "sha256": "91b40133bf95acf0a7c35e2672476e1cb5cce2b5b16032043e9269bcdf310c07"
+    }
+  ],
+  "retained_artifacts": [
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/capture-provenance.json",
+      "bytes": 13176,
+      "sha256": "40562dd2f3d099cea0723717fbf45adac8028378e7fbac371382dec904ac97b4"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-add-books-fonts.json",
+      "bytes": 4921,
+      "sha256": "c0748e5a8b12a831812558f1511cdbf5a60b09b879c42ebf8b9004176e84472f"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-add-books-geometry.json",
+      "bytes": 208,
+      "sha256": "b2f40ad5aca34551b0daad1f75c5257da2fc1a8420ebe6bd6ef3c62f386c62f8"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-add-books.png",
+      "bytes": 47520,
+      "sha256": "44540bb4ad77f14d0f36173db7da6fd82dfb88ee17f851cb4c14cca5684c0167"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-bookshelf-selection-fonts.json",
+      "bytes": 4917,
+      "sha256": "bb9eef7423834805d9bbfc7a21c6bf6b00dd56063c3a4fbc28f905872d97869b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-bookshelf-selection-geometry.json",
+      "bytes": 185,
+      "sha256": "7e3925cefbb553bb4475b64b917001ef712ee07d14f0b6044f68483f3d0f4070"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-bookshelf-selection.png",
+      "bytes": 85808,
+      "sha256": "5836a7728083af58621ac71bbba0c2c83fa598d07c6618055a14075334533af3"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-create-list-fonts.json",
+      "bytes": 4919,
+      "sha256": "2b34b7c36d088a7ff8148da63b4b2f1e6dfabc93d98750f3f6b1cf673418be5b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-create-list-geometry.json",
+      "bytes": 210,
+      "sha256": "f27586bde9e2250fe616324380c1c9e8e76988c836eb441fb8e72c2da9f69962"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-create-list.png",
+      "bytes": 41923,
+      "sha256": "29648b70ef5cf15d742191862bd9819c46de18a1712e414ebee7a557868271d1"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-delete-list-fonts.json",
+      "bytes": 4919,
+      "sha256": "2b34b7c36d088a7ff8148da63b4b2f1e6dfabc93d98750f3f6b1cf673418be5b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-delete-list-geometry.json",
+      "bytes": 210,
+      "sha256": "36298194ab1f90d0efd7d66910a1f00a5b408be6cc49cf0503ab9118e1d5492a"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-delete-list.png",
+      "bytes": 41678,
+      "sha256": "26ba2c432b20d2435d88d050f20860342725d541205b58d908bb1769bb1763ef"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-edit-list-fonts.json",
+      "bytes": 4919,
+      "sha256": "2b34b7c36d088a7ff8148da63b4b2f1e6dfabc93d98750f3f6b1cf673418be5b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-edit-list-geometry.json",
+      "bytes": 210,
+      "sha256": "051aba1a86c8c4abd00d7d2ddfb57911915fe1f16c34899e80f9fe852732f0c9"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-edit-list.png",
+      "bytes": 41446,
+      "sha256": "8b0d9974ec1866a72ac74e3ad1583bad2e5763456c7c5ad2d0c1d8e8c70c31a1"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-list-row-geometry.json",
+      "bytes": 193,
+      "sha256": "3190c262696915a6f3d8df9e2c84ce091b098b800aa83ccad424d6ec0eddba5e"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-list-row.png",
+      "bytes": 45496,
+      "sha256": "7aed3e34f447ab3d003ad4ab0d9dcf97de47eca6bed4caae105ae600d3ebc25d"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-nested-membership-fonts.json",
+      "bytes": 4917,
+      "sha256": "bb9eef7423834805d9bbfc7a21c6bf6b00dd56063c3a4fbc28f905872d97869b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-nested-membership-geometry.json",
+      "bytes": 210,
+      "sha256": "2bded44cb6bbb54b16d1b80c071048f5954ae403bcc4e897e0380fdc04d833b0"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-nested-membership.png",
+      "bytes": 64840,
+      "sha256": "eaa5ba3a96e5c0a8b06f6e4ff6dbe5ccbce49ee6e5bd698b926c77727ca389e0"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-remove-from-list-fonts.json",
+      "bytes": 4917,
+      "sha256": "bb9eef7423834805d9bbfc7a21c6bf6b00dd56063c3a4fbc28f905872d97869b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-remove-from-list-geometry.json",
+      "bytes": 210,
+      "sha256": "36298194ab1f90d0efd7d66910a1f00a5b408be6cc49cf0503ab9118e1d5492a"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-320-remove-from-list.png",
+      "bytes": 44933,
+      "sha256": "a18c009537373e6070c695345904219959272860a03e88c3f51cdbc0ea328fe5"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-add-books-fonts.json",
+      "bytes": 4921,
+      "sha256": "c0748e5a8b12a831812558f1511cdbf5a60b09b879c42ebf8b9004176e84472f"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-add-books-geometry.json",
+      "bytes": 187,
+      "sha256": "886ad1d1bc8eb28d24deb9394ee22f5260aa9ed6e4a18b5b2275c5382b86f06c"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-add-books.png",
+      "bytes": 35018,
+      "sha256": "6da706fa3039d5d17c11277385c244336e79c06149ba702f99f91bf054b2e01d"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-bookshelf-selection-fonts.json",
+      "bytes": 4917,
+      "sha256": "bb9eef7423834805d9bbfc7a21c6bf6b00dd56063c3a4fbc28f905872d97869b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-bookshelf-selection-geometry.json",
+      "bytes": 716,
+      "sha256": "f90dcff850e14b2b6884e92f30ecb408370e022acf1e97971c1fac3b363fe95a"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-bookshelf-selection.png",
+      "bytes": 72307,
+      "sha256": "2024eefc2d797215f28a16860a1530e89eadeccad4762bdf678c6b5c2fb6ddd1"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-create-list-fonts.json",
+      "bytes": 4919,
+      "sha256": "2b34b7c36d088a7ff8148da63b4b2f1e6dfabc93d98750f3f6b1cf673418be5b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-create-list-geometry.json",
+      "bytes": 187,
+      "sha256": "886ad1d1bc8eb28d24deb9394ee22f5260aa9ed6e4a18b5b2275c5382b86f06c"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-create-list.png",
+      "bytes": 52039,
+      "sha256": "e2d72d09f3beaf513e2f0b07da074378a0a6746cb9c902e6852e29ead2c5cf1a"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-delete-list-fonts.json",
+      "bytes": 4919,
+      "sha256": "2b34b7c36d088a7ff8148da63b4b2f1e6dfabc93d98750f3f6b1cf673418be5b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-delete-list-geometry.json",
+      "bytes": 207,
+      "sha256": "4561360c90bd5b9446ad20ac35e4aa31ec634aef22791fb90606f3008c7ba79a"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-delete-list.png",
+      "bytes": 43256,
+      "sha256": "217a79dd3b8fd5f3b8f9bddf81a85f844afc3f81639b890b1ea599dbb346f08f"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-edit-list-fonts.json",
+      "bytes": 4919,
+      "sha256": "2b34b7c36d088a7ff8148da63b4b2f1e6dfabc93d98750f3f6b1cf673418be5b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-edit-list-geometry.json",
+      "bytes": 187,
+      "sha256": "886ad1d1bc8eb28d24deb9394ee22f5260aa9ed6e4a18b5b2275c5382b86f06c"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-edit-list.png",
+      "bytes": 43978,
+      "sha256": "f1dc9979d13c787461079b33dd809dfffebf2868b10e15e69198d5b49de69dcd"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-list-row-geometry.json",
+      "bytes": 194,
+      "sha256": "fa1d61aa332c3fdc6e84cd2d4e95a0326301efafa74acc3fced57dcc63cb6983"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-list-row.png",
+      "bytes": 39835,
+      "sha256": "da55c7c62751f29fa1c1e61cd5b511caad37bf82751a450a5dc9a19f7675e6f8"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-nested-membership-fonts.json",
+      "bytes": 4917,
+      "sha256": "bb9eef7423834805d9bbfc7a21c6bf6b00dd56063c3a4fbc28f905872d97869b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-nested-membership-geometry.json",
+      "bytes": 187,
+      "sha256": "886ad1d1bc8eb28d24deb9394ee22f5260aa9ed6e4a18b5b2275c5382b86f06c"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-nested-membership.png",
+      "bytes": 38015,
+      "sha256": "6a1bfe56828b9193c3cdbaf35e3a9ac6f6299a4090b85c1b57cd647792b0574c"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-remove-from-list-fonts.json",
+      "bytes": 4917,
+      "sha256": "bb9eef7423834805d9bbfc7a21c6bf6b00dd56063c3a4fbc28f905872d97869b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-remove-from-list-geometry.json",
+      "bytes": 204,
+      "sha256": "5dc57f8da01679888724d6c482c80b32496df79f11f7ba4014948663e62b9f55"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/phone-large-text-remove-from-list.png",
+      "bytes": 48930,
+      "sha256": "51d7f9c4d349806572f0c41dfe62b3088004d1f020f2d51add061584a1154956"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/README.md",
+      "bytes": 5112,
+      "sha256": "91a027144571347694d0266dc5e8593da80431d1f0753af1cc0f90ff2518285d"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-add-books-fonts.json",
+      "bytes": 4921,
+      "sha256": "c0748e5a8b12a831812558f1511cdbf5a60b09b879c42ebf8b9004176e84472f"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-add-books-geometry.json",
+      "bytes": 185,
+      "sha256": "f87de1ae93f56a61832dd62042d3b3a6e9e36830c92683b268b6ff7f8a65e37a"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-add-books.png",
+      "bytes": 35713,
+      "sha256": "34e452f5e997999c27104319c2278e62fd754430a708be4677ad8e8b0ab8e3fa"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-bookshelf-selection-fonts.json",
+      "bytes": 4917,
+      "sha256": "bb9eef7423834805d9bbfc7a21c6bf6b00dd56063c3a4fbc28f905872d97869b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-bookshelf-selection-geometry.json",
+      "bytes": 185,
+      "sha256": "f87de1ae93f56a61832dd62042d3b3a6e9e36830c92683b268b6ff7f8a65e37a"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-bookshelf-selection.png",
+      "bytes": 56673,
+      "sha256": "21d74c474d67a0c3b724bbf9e937c81950e58256a442d8d22f733ef70d1a3976"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-create-list-fonts.json",
+      "bytes": 4919,
+      "sha256": "2b34b7c36d088a7ff8148da63b4b2f1e6dfabc93d98750f3f6b1cf673418be5b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-create-list-geometry.json",
+      "bytes": 208,
+      "sha256": "e1a39a403feec8fe10730079d4d704fe251f707fff84d44effc76b00cc433a33"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-create-list.png",
+      "bytes": 30246,
+      "sha256": "74fcb158d9d2816747373c039a8ae6d52b52b5a95ee805f36ee8a3ca64d03154"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-delete-list-fonts.json",
+      "bytes": 4919,
+      "sha256": "2b34b7c36d088a7ff8148da63b4b2f1e6dfabc93d98750f3f6b1cf673418be5b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-delete-list-geometry.json",
+      "bytes": 210,
+      "sha256": "b5b2b28922d1ec78c43a58bfd8c6d901d0a7dd19c4969685c0d2386e1ca43369"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-delete-list.png",
+      "bytes": 29299,
+      "sha256": "48c375e0ee5506608340b26293cbc770a1f87fc2b28d9223991ad1276bb36443"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-edit-list-fonts.json",
+      "bytes": 4919,
+      "sha256": "2b34b7c36d088a7ff8148da63b4b2f1e6dfabc93d98750f3f6b1cf673418be5b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-edit-list-geometry.json",
+      "bytes": 208,
+      "sha256": "e1a39a403feec8fe10730079d4d704fe251f707fff84d44effc76b00cc433a33"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-edit-list.png",
+      "bytes": 26742,
+      "sha256": "4c1eb1a08786d4902bbca940cfbbcba92ad637ff24a0d1409d3366737c75a452"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-list-row-geometry.json",
+      "bytes": 188,
+      "sha256": "3841811256c6e75212f998c6352793c17423a7e8522158ed2762c5e153a6da63"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-list-row.png",
+      "bytes": 37954,
+      "sha256": "7e04ba84cbb0d6f5515eee951d74c9d9740151b4149cca0c311502b402c1b9ea"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-nested-membership-fonts.json",
+      "bytes": 4917,
+      "sha256": "bb9eef7423834805d9bbfc7a21c6bf6b00dd56063c3a4fbc28f905872d97869b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-nested-membership-geometry.json",
+      "bytes": 208,
+      "sha256": "63f31587a42d83b149128cf0ee95f331193f91da0fa6ae284b472d81b6b12a98"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-nested-membership.png",
+      "bytes": 30325,
+      "sha256": "f2689cc7f46677debcd3ea6367ba0df1a2c23cd6c12a84ef408db7a2fd79b380"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-remove-from-list-fonts.json",
+      "bytes": 4917,
+      "sha256": "bb9eef7423834805d9bbfc7a21c6bf6b00dd56063c3a4fbc28f905872d97869b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-remove-from-list-geometry.json",
+      "bytes": 210,
+      "sha256": "b5b2b28922d1ec78c43a58bfd8c6d901d0a7dd19c4969685c0d2386e1ca43369"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/short-height-remove-from-list.png",
+      "bytes": 38355,
+      "sha256": "52ca9e31731e1943338e0625782e79133fc463cf55eb0a59c859c0a83977fd15"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-add-books-fonts.json",
+      "bytes": 4921,
+      "sha256": "c0748e5a8b12a831812558f1511cdbf5a60b09b879c42ebf8b9004176e84472f"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-add-books-geometry.json",
+      "bytes": 207,
+      "sha256": "12c25fed7d1864ed09f17a6ab5632ae30d37131a9201d3e75cc32b6459ea93ee"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-add-books.png",
+      "bytes": 107864,
+      "sha256": "0171da59c1634363190971e8cbfc362b2a97d61d2df498dc3839d09e94ce2f75"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-bookshelf-selection-fonts.json",
+      "bytes": 4917,
+      "sha256": "bb9eef7423834805d9bbfc7a21c6bf6b00dd56063c3a4fbc28f905872d97869b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-bookshelf-selection-geometry.json",
+      "bytes": 189,
+      "sha256": "f7dda85f13a9f2063d0f78118731ec72c64d7eac05623591660e61090481018d"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-bookshelf-selection.png",
+      "bytes": 177307,
+      "sha256": "9f3b15c8e6cda2bbc631121f059f14bda469be7f5bd13ff182a12486ebe8f5c5"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-create-list-fonts.json",
+      "bytes": 4919,
+      "sha256": "2b34b7c36d088a7ff8148da63b4b2f1e6dfabc93d98750f3f6b1cf673418be5b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-create-list-geometry.json",
+      "bytes": 208,
+      "sha256": "bbad31237a7f800657225e1fd89c1d0246830a486268fb327dba81ebdfb37ffb"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-create-list.png",
+      "bytes": 76090,
+      "sha256": "a3313ea2a95f5cacd60c115d16a3e3858b992458ea9b28781e0d5e3b5268dda6"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-delete-list-fonts.json",
+      "bytes": 4919,
+      "sha256": "2b34b7c36d088a7ff8148da63b4b2f1e6dfabc93d98750f3f6b1cf673418be5b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-delete-list-geometry.json",
+      "bytes": 208,
+      "sha256": "655c4e45a06323cd4865e4317454d593e9590e3699660dc976e9cc8ff592814c"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-delete-list.png",
+      "bytes": 86504,
+      "sha256": "22c288f351a9d50d3ee9d5e55c17bbfea6e99b9d1c09e180df4ac8475ea85272"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-edit-list-fonts.json",
+      "bytes": 4919,
+      "sha256": "2b34b7c36d088a7ff8148da63b4b2f1e6dfabc93d98750f3f6b1cf673418be5b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-edit-list-geometry.json",
+      "bytes": 208,
+      "sha256": "bbad31237a7f800657225e1fd89c1d0246830a486268fb327dba81ebdfb37ffb"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-edit-list.png",
+      "bytes": 79865,
+      "sha256": "b7c0cdf11ff892d022e9c42f2a06475cb25a9e4c3ba773d7754daedb0165e9fe"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-list-row-geometry.json",
+      "bytes": 186,
+      "sha256": "e304112b899d26ebf90b82b5130adfac9d2ac5fcd6841d30e37cbee6679976a6"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-list-row.png",
+      "bytes": 99667,
+      "sha256": "64485140716e1b4c8cda4309f42ae3ae2d09172d8abbac3d6c0e5975248aef19"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-nested-membership-fonts.json",
+      "bytes": 4917,
+      "sha256": "bb9eef7423834805d9bbfc7a21c6bf6b00dd56063c3a4fbc28f905872d97869b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-nested-membership-geometry.json",
+      "bytes": 208,
+      "sha256": "d06701989d663aded5f29f51fe6edc256f16945b56150fd495c813dd6ae4209d"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-nested-membership.png",
+      "bytes": 105240,
+      "sha256": "b875ff3382567d60c8eba6e2bf92690f054b0f655d618b0a6fa97636c44fcfdc"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-remove-from-list-fonts.json",
+      "bytes": 4917,
+      "sha256": "bb9eef7423834805d9bbfc7a21c6bf6b00dd56063c3a4fbc28f905872d97869b"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-remove-from-list-geometry.json",
+      "bytes": 208,
+      "sha256": "655c4e45a06323cd4865e4317454d593e9590e3699660dc976e9cc8ff592814c"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr04-library-list-tasks/tablet-touch-large-text-remove-from-list.png",
+      "bytes": 101671,
+      "sha256": "e14e17eb4fc316380baeab0878c05e2b677e6ec817862f702a8f43564d1a9e1c"
+    }
+  ],
+  "local_log_hashes": [
+    {
+      "path": "test-results/cr04-back-diagnostic-console.log",
+      "bytes": 15498,
+      "sha256": "6d22ebbf8311a02ebbb60bad13304ae6695c61c36135040b998c0a683172d9bd"
+    },
+    {
+      "path": "test-results/cr04-build-1.log",
+      "bytes": 28032,
+      "sha256": "556733d23acf8cc4e9eff4e03294f10645f581e19c60a3d75774525a23a1593d"
+    },
+    {
+      "path": "test-results/cr04-build-complete.log",
+      "bytes": 28032,
+      "sha256": "3bbafd248494d1245dc68dc365f2ee6d862a4913996777fc4a3cef1b541620fc"
+    },
+    {
+      "path": "test-results/cr04-build-final.log",
+      "bytes": 28032,
+      "sha256": "83d35a77198120b846e3540e4013acbdb2120ee0c6a0ace643c659829b1b9376"
+    },
+    {
+      "path": "test-results/cr04-build-final2.log",
+      "bytes": 28032,
+      "sha256": "9efbc36c3e04bc8e674d973f664a2cba5a6fedd5b4129e57a6f04dff34f49a1e"
+    },
+    {
+      "path": "test-results/cr04-census-final.log",
+      "bytes": 228,
+      "sha256": "d6aae16dcbb33ccd4697d8f6cb3eed263e2a452509a8abb71939a63a0928a877"
+    },
+    {
+      "path": "test-results/cr04-census.log",
+      "bytes": 228,
+      "sha256": "d6aae16dcbb33ccd4697d8f6cb3eed263e2a452509a8abb71939a63a0928a877"
+    },
+    {
+      "path": "test-results/cr04-chromium-1-console.log",
+      "bytes": 48906,
+      "sha256": "e11adab2773ea2830220e5d64655cd79c25bff01f485805c9e18e4d5a653ceaa"
+    },
+    {
+      "path": "test-results/cr04-chromium-2-console.log",
+      "bytes": 40006,
+      "sha256": "895f43f8b8cbf4f62aaac31fd539f4c9390f9f4b150a837d6d7df4d350d6d516"
+    },
+    {
+      "path": "test-results/cr04-chromium-3-console.log",
+      "bytes": 17218,
+      "sha256": "e3f772f668f02465ed497c67e21b66f17b268a4c634881a4912e7fbc56481a7a"
+    },
+    {
+      "path": "test-results/cr04-client-types-complete.log",
+      "bytes": 230,
+      "sha256": "bb631d2709a19aa869af67234a0c6f41ec667f518d693e5ce3fd5815b5e020bf"
+    },
+    {
+      "path": "test-results/cr04-client-types-final.log",
+      "bytes": 230,
+      "sha256": "bb631d2709a19aa869af67234a0c6f41ec667f518d693e5ce3fd5815b5e020bf"
+    },
+    {
+      "path": "test-results/cr04-client-types-final2.log",
+      "bytes": 230,
+      "sha256": "bb631d2709a19aa869af67234a0c6f41ec667f518d693e5ce3fd5815b5e020bf"
+    },
+    {
+      "path": "test-results/cr04-eslint-1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr04-eslint-complete.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr04-eslint-final.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr04-eslint-final2.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr04-fixture-types-final.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr04-focus-diagnostic-console.log",
+      "bytes": 15512,
+      "sha256": "b8faa333fadb933b0c4c729c4c4a0c624f4e97a5b4b59f1952a6358a5892accd"
+    },
+    {
+      "path": "test-results/cr04-focus-final-console.log",
+      "bytes": 10814,
+      "sha256": "95e390533c18f6b8a5bf1a473276e5975b2f731daf554778ec1806993807fdcf"
+    },
+    {
+      "path": "test-results/cr04-focus-unit-console.log",
+      "bytes": 4778,
+      "sha256": "ffcc9b27ca827a17be4bdab410f36913f8645d01e9ac5f4fd8461da27a9e1055"
+    },
+    {
+      "path": "test-results/cr04-full-1-console.log",
+      "bytes": 46250,
+      "sha256": "ba0df17c6d9cdb17767b431cdc6aaf84cdac60cfb5443510221f58000ec403b8"
+    },
+    {
+      "path": "test-results/cr04-graph-cluster.log",
+      "bytes": 470,
+      "sha256": "41d869cfa761fd0c317b3fc43d7199f81c41a4d4ac1cc8e93c85d425fcca320b"
+    },
+    {
+      "path": "test-results/cr04-graph-final-cluster.log",
+      "bytes": 470,
+      "sha256": "f831c3ee315e06b88ee26320dc0b7c94758af310d2f52dec750e2e6c3000d0c7"
+    },
+    {
+      "path": "test-results/cr04-graph-final-html.log",
+      "bytes": 434,
+      "sha256": "1b78b60c7a5ea2511417b51457624466b157d58e87a0e8a07a09955709790b05"
+    },
+    {
+      "path": "test-results/cr04-graph-final-update.log",
+      "bytes": 4244,
+      "sha256": "01e3db3bef18d26d779172615e3029c81c1c21bb30baab863250d80c9063383f"
+    },
+    {
+      "path": "test-results/cr04-graph-html.log",
+      "bytes": 434,
+      "sha256": "9e75304203fbda867f50a89c1b5e0a74b74b2a6363758e9a827d678721b955ac"
+    },
+    {
+      "path": "test-results/cr04-graph-update.log",
+      "bytes": 4098,
+      "sha256": "aa910fb22a9388a383a80b9594b95f929555d6beda34f99cf4e277f376727537"
+    },
+    {
+      "path": "test-results/cr04-later-page-console.log",
+      "bytes": 4466,
+      "sha256": "7a635f7c9d2e3e9d6458985b8c749c9ea07b1d395fe946c5fdbf6cecb01c3264"
+    },
+    {
+      "path": "test-results/cr04-library-regression-console.log",
+      "bytes": 16488,
+      "sha256": "5e4554268845cb696ef614cb65cf15ad760059f706ef26726fa9db636170bc7f"
+    },
+    {
+      "path": "test-results/cr04-library-unit-1-console.log",
+      "bytes": 4784,
+      "sha256": "a74284954d48f980277ac27ca237a8c5ec6f38a751fed017375263fa8223a346"
+    },
+    {
+      "path": "test-results/cr04-library-unit-2-console.log",
+      "bytes": 4784,
+      "sha256": "4e2f6866cc5ba36d9b6b161e33bf9171d65771a7133855708a21c4a0e1cee39e"
+    },
+    {
+      "path": "test-results/cr04-library-unit-3-console.log",
+      "bytes": 15292,
+      "sha256": "6a6c6af26bbf20e7fb3c244f2b9ed3bc8c37b12d7eac05da97c60e987e7073f5"
+    },
+    {
+      "path": "test-results/cr04-library-unit-4-console.log",
+      "bytes": 5006,
+      "sha256": "d0397b8c3b10be4043916e632293bc77fbc40b6ce7dd988900908dc65ef5da6d"
+    },
+    {
+      "path": "test-results/cr04-obsidian-export.log",
+      "bytes": 1608,
+      "sha256": "1e088292492c9c1932a8df345bc3becfd17416b74638abcfe6b5acd1e320289d"
+    },
+    {
+      "path": "test-results/cr04-obsidian-final-export.log",
+      "bytes": 1656,
+      "sha256": "17efb3df9ececf38cbabce5d5885e2b431e3d5ec45089234bf8bd5448096c41f"
+    },
+    {
+      "path": "test-results/cr04-portal-unit-console.log",
+      "bytes": 2986,
+      "sha256": "e912f81e07238a574a5b8584488155bf8a836b3a98c027b262a2b4fdaf0b3381"
+    },
+    {
+      "path": "test-results/cr04-shell-regression-console.log",
+      "bytes": 11356,
+      "sha256": "b4784e5deb6836d72c518ad9a9e65f77c1fbfde8434ee66ea01cef151ca8676c"
+    },
+    {
+      "path": "test-results/cr04-smoke-1-console.log",
+      "bytes": 15330,
+      "sha256": "80f3d4f5c6075fe5ee6b9cad3c5464b1da19316485338e2b7e2ef7b790ade169"
+    },
+    {
+      "path": "test-results/cr04-smoke-2-console.log",
+      "bytes": 20920,
+      "sha256": "368b868facf7e84673cbe6932c5bbfd78ebbb53cc2133c1cf26f5631adfcd287"
+    },
+    {
+      "path": "test-results/cr04-types-1.log",
+      "bytes": 8778,
+      "sha256": "8f53015d583981e13f3bed585ddc22b4dae79efc6dbc2e8c172ffe486aa42184"
+    },
+    {
+      "path": "test-results/cr04-types-2.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr04-unit-console.log",
+      "bytes": 56332,
+      "sha256": "fddd0be7ecfae2819da3307d8040a33288089a8063f34eba015d716d40de7a14"
+    },
+    {
+      "path": "test-results/cr04-unit-final-console.log",
+      "bytes": 56346,
+      "sha256": "9fdde16db3beaf34ca76b89b1f961177f92a53acbfe0695f384c38ff14973dad"
+    },
+    {
+      "path": "test-results/cr04-visual-final-console.log",
+      "bytes": 5940,
+      "sha256": "ac62d61cc7d16fff9dd9b5130e968501a64d232d7c6be0dc34015d8bd7f4a5f4"
+    }
+  ],
+  "graph": {
+    "nodes": 9978,
+    "edges": 22340,
+    "communities": 686,
+    "obsidian_notes": 10660,
+    "mode": "Local AST update and no-label clustering, then Obsidian/HTML export. Four existing note conflicts preserved."
+  },
+  "census": {
+    "routes": 39,
+    "runtime_modules_styles": 511,
+    "presentation_modules": 310,
+    "components": 273,
+    "screens": 33,
+    "presentation_without_source_path": 47
+  },
+  "limits": [
+    "Controlled API/auth/local-repository/sync/device boundaries; no live backend persistence or server idempotency claim.",
+    "Emulated runtime/coarse pointer and Chromium CDP touch are not physical iOS/Android/tablet, browser toolbar, OS keyboard or assistive-technology evidence.",
+    "200% root text is not every OS accessibility/zoom behavior. Existing fonts/themes/icons retained; full theme contrast matrix and performance remain open.",
+    "CR04 is Library/list task correctness before F10 composition; CR05-CR10 and remaining main tickets remain open and overlap."
+  ]
+}

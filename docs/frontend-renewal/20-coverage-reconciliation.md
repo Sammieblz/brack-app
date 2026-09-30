@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-**Continuation:** CR01 is committed in `93b63bc` and CR02 in `4dadc37`. Their review stops are historical. [Checkpoint23](23-settings-continuity.md) records CR03 as implemented and verified within browser/unit scope, uncommitted and awaiting user review: 95 distinct unit tests across 12 files, 87 distinct Settings browser cases through the full run and passing follow-ups, shared shell21/21 and overlay15/15, client/fixture types, changed-file lint, final build and local graph/Obsidian export. This document remains the coverage and corrective sequence authority. After review, CR04 Library/list correctness precedes main F10 work. CR04-CR10 and remaining main-ticket acceptance stay open; those programs overlap and must not be counted twice. F16 visual work and broader device/AT/performance acceptance remain open.
+**Review stop:** CR03 is committed in `74ed7d7`; [checkpoint24](24-library-list-tasks.md) records completed, uncommitted CR04 Library/list correctness and its exact source/unit/browser evidence. CR05 Messages is next after user continuation. CR05-CR10 and remaining main-ticket acceptance stay open and overlap. Preserve scoped evidence without treating it as full visual/device/AT/performance acceptance.
 
 **The user's coverage objection is substantiated.** F01–F09 committed useful repairs, but the accumulated fixture results do not close their cross-application requirements. This review supersedes the “proceed to F10” handoff. Current source baseline is **`db076cf`**, which already commits F09; the previous uncommitted status was stale. The worktree was clean when this review began.
 
@@ -53,7 +53,7 @@ Committed code and recorded passes remain historical facts. “Coverage open” 
 
 ## Corrective batches before routine F10 progression
 
-The IDs below consolidate overlapping RC/RS/OF/RM findings. **CR01 is committed in `93b63bc`, with bounded evidence in [checkpoint21](21-live-composers.md). CR02 is committed in `4dadc37`, with bounded evidence in [checkpoint22](22-responsive-composers.md). CR03 is implemented and verified within browser/unit scope, awaiting user review in [checkpoint23](23-settings-continuity.md); CR04-CR10 remain unimplemented.** CR04 Library/list correctness is next before main F10 work. Later batches can be reordered for a concrete blocker, with the reason recorded. Two units may be combined only if every consumer/state and checkpoint can be completed. Do not broaden one unit into an unfinished whole-screen redesign.
+The IDs below consolidate overlapping RC/RS/OF/RM findings. **CR01 is committed in `93b63bc`, with bounded evidence in [checkpoint21](21-live-composers.md). CR02 is committed in `4dadc37`, with bounded evidence in [checkpoint22](22-responsive-composers.md). CR03 is committed in `74ed7d7`, with scoped evidence in [checkpoint23](23-settings-continuity.md). CR04 is implemented and verified within the scope recorded in [checkpoint24](24-library-list-tasks.md), uncommitted and stopped for review; CR05-CR10 remain unimplemented.** CR05 Messages is next after authorized continuation; main F10 visual work remains open. Later batches can be reordered for a concrete blocker, with the reason recorded. Two units may be combined only if every consumer/state and checkpoint can be completed. Do not broaden one unit into an unfinished whole-screen redesign.
 
 | Batch | Complete unit and owners | Exit evidence |
 | --- | --- | --- |

@@ -1,0 +1,285 @@
+[
+  {
+    "family": "Inter",
+    "faces": [
+      {
+        "status": "unloaded",
+        "weight": "300"
+      },
+      {
+        "status": "unloaded",
+        "weight": "300"
+      },
+      {
+        "status": "unloaded",
+        "weight": "300"
+      },
+      {
+        "status": "unloaded",
+        "weight": "300"
+      },
+      {
+        "status": "unloaded",
+        "weight": "300"
+      },
+      {
+        "status": "unloaded",
+        "weight": "300"
+      },
+      {
+        "status": "unloaded",
+        "weight": "300"
+      },
+      {
+        "status": "unloaded",
+        "weight": "400"
+      },
+      {
+        "status": "unloaded",
+        "weight": "400"
+      },
+      {
+        "status": "unloaded",
+        "weight": "400"
+      },
+      {
+        "status": "unloaded",
+        "weight": "400"
+      },
+      {
+        "status": "unloaded",
+        "weight": "400"
+      },
+      {
+        "status": "unloaded",
+        "weight": "400"
+      },
+      {
+        "status": "loaded",
+        "weight": "400"
+      },
+      {
+        "status": "unloaded",
+        "weight": "500"
+      },
+      {
+        "status": "unloaded",
+        "weight": "500"
+      },
+      {
+        "status": "unloaded",
+        "weight": "500"
+      },
+      {
+        "status": "unloaded",
+        "weight": "500"
+      },
+      {
+        "status": "unloaded",
+        "weight": "500"
+      },
+      {
+        "status": "unloaded",
+        "weight": "500"
+      },
+      {
+        "status": "loaded",
+        "weight": "500"
+      },
+      {
+        "status": "unloaded",
+        "weight": "600"
+      },
+      {
+        "status": "unloaded",
+        "weight": "600"
+      },
+      {
+        "status": "unloaded",
+        "weight": "600"
+      },
+      {
+        "status": "unloaded",
+        "weight": "600"
+      },
+      {
+        "status": "unloaded",
+        "weight": "600"
+      },
+      {
+        "status": "unloaded",
+        "weight": "600"
+      },
+      {
+        "status": "loaded",
+        "weight": "600"
+      },
+      {
+        "status": "unloaded",
+        "weight": "700"
+      },
+      {
+        "status": "unloaded",
+        "weight": "700"
+      },
+      {
+        "status": "unloaded",
+        "weight": "700"
+      },
+      {
+        "status": "unloaded",
+        "weight": "700"
+      },
+      {
+        "status": "unloaded",
+        "weight": "700"
+      },
+      {
+        "status": "unloaded",
+        "weight": "700"
+      },
+      {
+        "status": "loaded",
+        "weight": "700"
+      }
+    ]
+  },
+  {
+    "family": "Merriweather",
+    "faces": [
+      {
+        "status": "unloaded",
+        "weight": "300"
+      },
+      {
+        "status": "unloaded",
+        "weight": "300"
+      },
+      {
+        "status": "unloaded",
+        "weight": "300"
+      },
+      {
+        "status": "unloaded",
+        "weight": "300"
+      },
+      {
+        "status": "unloaded",
+        "weight": "300"
+      },
+      {
+        "status": "unloaded",
+        "weight": "400"
+      },
+      {
+        "status": "unloaded",
+        "weight": "400"
+      },
+      {
+        "status": "unloaded",
+        "weight": "400"
+      },
+      {
+        "status": "unloaded",
+        "weight": "400"
+      },
+      {
+        "status": "loaded",
+        "weight": "400"
+      },
+      {
+        "status": "unloaded",
+        "weight": "700"
+      },
+      {
+        "status": "unloaded",
+        "weight": "700"
+      },
+      {
+        "status": "unloaded",
+        "weight": "700"
+      },
+      {
+        "status": "unloaded",
+        "weight": "700"
+      },
+      {
+        "status": "loaded",
+        "weight": "700"
+      },
+      {
+        "status": "unloaded",
+        "weight": "900"
+      },
+      {
+        "status": "unloaded",
+        "weight": "900"
+      },
+      {
+        "status": "unloaded",
+        "weight": "900"
+      },
+      {
+        "status": "unloaded",
+        "weight": "900"
+      },
+      {
+        "status": "unloaded",
+        "weight": "900"
+      }
+    ]
+  },
+  {
+    "family": "Playfair Display",
+    "faces": [
+      {
+        "status": "unloaded",
+        "weight": "400"
+      },
+      {
+        "status": "unloaded",
+        "weight": "400"
+      },
+      {
+        "status": "unloaded",
+        "weight": "400"
+      },
+      {
+        "status": "loaded",
+        "weight": "400"
+      },
+      {
+        "status": "unloaded",
+        "weight": "700"
+      },
+      {
+        "status": "unloaded",
+        "weight": "700"
+      },
+      {
+        "status": "unloaded",
+        "weight": "700"
+      },
+      {
+        "status": "loaded",
+        "weight": "700"
+      },
+      {
+        "status": "unloaded",
+        "weight": "900"
+      },
+      {
+        "status": "unloaded",
+        "weight": "900"
+      },
+      {
+        "status": "unloaded",
+        "weight": "900"
+      },
+      {
+        "status": "unloaded",
+        "weight": "900"
+      }
+    ]
+  }
+]

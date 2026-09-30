@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { createRef } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import type { Book } from "@/types";
@@ -104,19 +105,40 @@ describe("Library bookshelf primary interaction", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("keeps focus inside an open preview when it changes between dialog and phone sheet", async () => {
+  it("keeps the same preview and returns to the current book button after rows regroup", async () => {
     Object.defineProperty(window, "innerWidth", { configurable: true, value: 1024 });
     const user = userEvent.setup();
-    renderShelf();
-    const button = screen.getByRole("button", { name: `Open ${book.title}` });
+    const books = Array.from({ length: 5 }, (_, index) => ({ ...book, id: `book-${index}`, title: `Book ${index}` }));
+    renderShelf({ books });
+    const button = screen.getByRole("button", { name: "Open Book 4" });
     await user.click(button);
+    const preview = screen.getByRole("dialog", { name: "Book 4" });
     Object.defineProperty(window, "innerWidth", { configurable: true, value: 390 });
     fireEvent(window, new Event("resize"));
-    await waitFor(() => expect(screen.getByRole("dialog", { name: book.title }))
+    await waitFor(() => expect(screen.getByRole("dialog", { name: "Book 4" }))
       .toContainElement(document.activeElement as HTMLElement));
+    expect(screen.getByRole("dialog", { name: "Book 4" })).toBe(preview);
     expect(button).not.toHaveFocus();
     await user.keyboard("{Escape}");
-    await waitFor(() => expect(button).toHaveFocus());
+    await waitFor(() => expect(screen.getByRole("button", { name: "Open Book 4" })).toHaveFocus());
+  });
+
+  it("restores the surviving page after the selected book trigger is removed", async () => {
+    const user = userEvent.setup();
+    const fallback = createRef<HTMLElement>();
+    const content = (books: Book[]) => <MemoryRouter>
+      <main ref={fallback} tabIndex={-1} aria-label="Library books">
+        <LibraryBookshelfView books={books} focusFallbackRef={fallback}
+          onView={vi.fn()} onEdit={vi.fn()} onDelete={vi.fn()} />
+      </main>
+    </MemoryRouter>;
+    const { rerender } = render(content([book, secondBook]));
+    await user.click(screen.getByRole("button", { name: `Open ${book.title}` }));
+    const preview = screen.getByRole("dialog", { name: book.title });
+    rerender(content([secondBook]));
+    expect(screen.getByRole("dialog", { name: book.title })).toBe(preview);
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.getByRole("main", { name: "Library books" })).toHaveFocus());
   });
 
   it.each(["{Enter}", " "])("toggles exactly once with %s in selection mode without opening", async (key) => {

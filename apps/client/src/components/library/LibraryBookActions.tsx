@@ -1,20 +1,10 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AddToListDialog } from "@/components/AddToListDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { LibraryRemoveDialog } from "./LibraryRemoveDialog";
 import { APP_ICONS } from "@/config/iconography";
 import { AppIcon } from "@/components/ui/app-icon";
 import { cn } from "@/lib/utils";
@@ -56,7 +46,7 @@ interface LibraryBookActionsProps {
   className?: string;
 }
 
-export const LibraryBookActions = ({
+const LibraryBookActionsContent = ({
   book,
   userId,
   onView,
@@ -67,10 +57,7 @@ export const LibraryBookActions = ({
   const navigate = useNavigate();
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const handleDelete = async () => {
-    setDeleteOpen(false);
-    await onDelete(book.id);
-  };
+  const deleteTrigger = useRef<HTMLButtonElement>(null);
 
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
@@ -105,47 +92,26 @@ export const LibraryBookActions = ({
           }
         />
       )}
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogTrigger asChild>
-          <span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  aria-label="Delete book"
-                  title="Delete book"
-                  className="h-11 w-11 rounded-full border-destructive/50 text-destructive transition-[background-color,border-color,color,box-shadow] hover:translate-y-0 hover:bg-destructive hover:text-destructive-foreground"
-                >
-                  <AppIcon icon={APP_ICONS.common.delete} variant="action" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Delete book</TooltipContent>
-            </Tooltip>
-          </span>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this book?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This removes "{book.title}" from your library. You can re-add it later.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Keep book</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button ref={deleteTrigger} type="button" variant="outline" size="icon"
+            aria-label="Delete book" title="Delete book" aria-haspopup="dialog" aria-expanded={deleteOpen}
+            onClick={() => setDeleteOpen(true)}
+            className="h-11 w-11 rounded-full border-destructive/50 text-destructive hover:bg-destructive/10">
+            <AppIcon icon={APP_ICONS.common.delete} variant="action" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Delete book</TooltipContent>
+      </Tooltip>
+      <LibraryRemoveDialog open={deleteOpen} onOpenChange={setDeleteOpen} returnFocusRef={deleteTrigger}
+        title="Delete this book?" description={`This removes "${book.title}" from your library. You can re-add it later.`}
+        onConfirm={() => onDelete(book.id)} />
     </div>
   );
 };
+
+export const LibraryBookActions = (props: LibraryBookActionsProps) =>
+  <LibraryBookActionsContent key={`${props.userId ?? ""}:${props.book.id}`} {...props} />;
 
 export const LibraryStatusBadge = ({ status }: { status: string }) => (
   <Badge

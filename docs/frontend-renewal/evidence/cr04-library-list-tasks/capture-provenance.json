@@ -1,0 +1,165 @@
+{
+  "report": "test-results\\cr04-visual-final-summary.json",
+  "captures": [
+    {
+      "name": "phone-320-bookshelf-selection.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-874b8-reachable-with-loaded-fonts-chromium/attachments/phone-320-bookshelf-selection-7d6658ab3591c25af16b816ea88d7deec66f814a.png",
+      "test": "Visual phone-320: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-320-nested-membership.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-874b8-reachable-with-loaded-fonts-chromium/attachments/phone-320-nested-membership-9ff51c0155f65f065d6462616d2956fce6b3be07.png",
+      "test": "Visual phone-320: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-320-create-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-874b8-reachable-with-loaded-fonts-chromium/attachments/phone-320-create-list-7ea8f16bd4525834db259633e4742e098249519b.png",
+      "test": "Visual phone-320: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-320-edit-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-874b8-reachable-with-loaded-fonts-chromium/attachments/phone-320-edit-list-dd6301840ff71006df2dbdf8355f3bb10c541dfd.png",
+      "test": "Visual phone-320: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-320-delete-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-874b8-reachable-with-loaded-fonts-chromium/attachments/phone-320-delete-list-048d71a946762ef3feb6e452d30c21bc872ff186.png",
+      "test": "Visual phone-320: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-320-add-books.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-874b8-reachable-with-loaded-fonts-chromium/attachments/phone-320-add-books-f4e3be63b14c19530898c05828638678fddcf7f4.png",
+      "test": "Visual phone-320: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-320-list-row.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-874b8-reachable-with-loaded-fonts-chromium/attachments/phone-320-list-row-2fe4b23da3c2ea9d632e30eb6504c5c31cbb8c52.png",
+      "test": "Visual phone-320: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-320-remove-from-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-874b8-reachable-with-loaded-fonts-chromium/attachments/phone-320-remove-from-list-c3f68259b135622cacdc206bd91be78d6edf7ce6.png",
+      "test": "Visual phone-320: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-large-text-bookshelf-selection.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-a9e7d-reachable-with-loaded-fonts-chromium/attachments/phone-large-text-bookshelf-selection-367a450504df195c6de92965b90e76170fc45b62.png",
+      "test": "Visual phone-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-large-text-nested-membership.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-a9e7d-reachable-with-loaded-fonts-chromium/attachments/phone-large-text-nested-membership-46311422d155940cd78c960ead17776a0424c1bc.png",
+      "test": "Visual phone-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-large-text-create-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-a9e7d-reachable-with-loaded-fonts-chromium/attachments/phone-large-text-create-list-31ebfe7ef42740d619ad1508deea4f1fc2f1c151.png",
+      "test": "Visual phone-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-large-text-edit-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-a9e7d-reachable-with-loaded-fonts-chromium/attachments/phone-large-text-edit-list-29695fdf7d49ebe995bd8227476297e5fc2c7e27.png",
+      "test": "Visual phone-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-large-text-delete-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-a9e7d-reachable-with-loaded-fonts-chromium/attachments/phone-large-text-delete-list-c3cd83318eeb03ee45604b1d9d4182bfa062819a.png",
+      "test": "Visual phone-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-large-text-add-books.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-a9e7d-reachable-with-loaded-fonts-chromium/attachments/phone-large-text-add-books-6b784ca8d5cc1590c4d60efb6cb98aeaf33ea13b.png",
+      "test": "Visual phone-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-large-text-list-row.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-a9e7d-reachable-with-loaded-fonts-chromium/attachments/phone-large-text-list-row-ff9d05bcff09927387c7db449aa22e82bd1bc839.png",
+      "test": "Visual phone-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "phone-large-text-remove-from-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-phone-a9e7d-reachable-with-loaded-fonts-chromium/attachments/phone-large-text-remove-from-list-dbf03de2cc3217694d64397ece8426d39633165a.png",
+      "test": "Visual phone-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "tablet-touch-large-text-bookshelf-selection.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-table-5679e-reachable-with-loaded-fonts-chromium/attachments/tablet-touch-large-text-bookshelf-selection-5a03b2bdb88da6849647216e264f769fdda3acff.png",
+      "test": "Visual tablet-touch-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "tablet-touch-large-text-nested-membership.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-table-5679e-reachable-with-loaded-fonts-chromium/attachments/tablet-touch-large-text-nested-membership-7a2d94ea50f357191d29bf6bb711c4d2dcdbccbb.png",
+      "test": "Visual tablet-touch-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "tablet-touch-large-text-create-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-table-5679e-reachable-with-loaded-fonts-chromium/attachments/tablet-touch-large-text-create-list-bd5586124a27983094016b4c54dccb5694846f7e.png",
+      "test": "Visual tablet-touch-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "tablet-touch-large-text-edit-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-table-5679e-reachable-with-loaded-fonts-chromium/attachments/tablet-touch-large-text-edit-list-83ec25644c5558b99c3e0503d7f0ffd9d4a9f76c.png",
+      "test": "Visual tablet-touch-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "tablet-touch-large-text-delete-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-table-5679e-reachable-with-loaded-fonts-chromium/attachments/tablet-touch-large-text-delete-list-f68f5f84f3d58e625a9fe64bf15d1c3486d14230.png",
+      "test": "Visual tablet-touch-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "tablet-touch-large-text-add-books.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-table-5679e-reachable-with-loaded-fonts-chromium/attachments/tablet-touch-large-text-add-books-38a69129bb7fb33cf8f9689288a1cf0203064915.png",
+      "test": "Visual tablet-touch-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "tablet-touch-large-text-list-row.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-table-5679e-reachable-with-loaded-fonts-chromium/attachments/tablet-touch-large-text-list-row-d719f85a4b38cfc24aea2f234f687cf581c3e943.png",
+      "test": "Visual tablet-touch-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "tablet-touch-large-text-remove-from-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-table-5679e-reachable-with-loaded-fonts-chromium/attachments/tablet-touch-large-text-remove-from-list-b77673e11ed7254d04e24e101f9b631288ebdeee.png",
+      "test": "Visual tablet-touch-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "short-height-bookshelf-selection.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-short-0860f-reachable-with-loaded-fonts-chromium/attachments/short-height-bookshelf-selection-bacbc6d999329005916b762cd7a18375ac03a0d6.png",
+      "test": "Visual short-height: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "short-height-nested-membership.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-short-0860f-reachable-with-loaded-fonts-chromium/attachments/short-height-nested-membership-29402f6ab2d841355fbb8f1e4b3f72ef67298680.png",
+      "test": "Visual short-height: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "short-height-create-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-short-0860f-reachable-with-loaded-fonts-chromium/attachments/short-height-create-list-9f78da5ede736a072e8b8e58fbde4ae2ffeb4def.png",
+      "test": "Visual short-height: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "short-height-edit-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-short-0860f-reachable-with-loaded-fonts-chromium/attachments/short-height-edit-list-3a6a63c55a507e47bc30d25ee3c11d4317147714.png",
+      "test": "Visual short-height: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "short-height-delete-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-short-0860f-reachable-with-loaded-fonts-chromium/attachments/short-height-delete-list-88a7d623b82ed915dd4ec54dbcc3a2eae06ebcb5.png",
+      "test": "Visual short-height: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "short-height-add-books.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-short-0860f-reachable-with-loaded-fonts-chromium/attachments/short-height-add-books-385cb7bf9f2fb421818fbf3975889b0adebbd288.png",
+      "test": "Visual short-height: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "short-height-list-row.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-short-0860f-reachable-with-loaded-fonts-chromium/attachments/short-height-list-row-d9c483d39dd7c38b30d81cc97dfa4cc0a4cf8977.png",
+      "test": "Visual short-height: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    },
+    {
+      "name": "short-height-remove-from-list.png",
+      "source": "test-results/cr04-visual-final/library-tasks-Visual-short-0860f-reachable-with-loaded-fonts-chromium/attachments/short-height-remove-from-list-d750c5c29892464c84516187bd32ad8e845ce7b6.png",
+      "test": "Visual short-height: real selection, nested membership, list editor and removal remain reachable with loaded fonts"
+    }
+  ]
+}

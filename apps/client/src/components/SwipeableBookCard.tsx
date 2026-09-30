@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSwipeable } from "react-swipeable";
 import { Trash, CheckCircle, EditPencil } from "iconoir-react";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
-import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
+import { LibraryRemoveDialog } from "@/components/library/LibraryRemoveDialog";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { Book } from "@/types";
 import { getLocalGestureTouch, observeTouchCancellation } from "@/utils/touchGesture";
@@ -12,8 +12,9 @@ interface SwipeableBookCardProps {
   children: ReactNode;
   onView?: (bookId: string) => void;
   onEdit?: (bookId: string) => void;
-  onDelete?: (bookId: string) => void;
+  onDelete?: (bookId: string) => Promise<void> | void;
   onStatusChange?: (bookId: string, status: string) => void;
+  enabled?: boolean;
 }
 
 export const SwipeableBookCard = ({
@@ -23,6 +24,7 @@ export const SwipeableBookCard = ({
   onEdit,
   onDelete,
   onStatusChange,
+  enabled = true,
 }: SwipeableBookCardProps) => {
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
@@ -33,7 +35,12 @@ export const SwipeableBookCard = ({
   const removeContactListeners = useRef<() => void>();
   const prefersReducedMotion = useReducedMotion();
   const { triggerHaptic } = useHapticFeedback();
-  const confirmDialog = useConfirmDialog();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const deleteTrigger = useRef<HTMLButtonElement>(null);
+  const container = useRef<HTMLDivElement | null>(null);
+  const returnFocus = useMemo(() => ({ get current() {
+    return deleteTrigger.current?.isConnected ? deleteTrigger.current : container.current?.querySelector<HTMLElement>(".library-book-primary") ?? null;
+  } }), []);
 
   const SWIPE_THRESHOLD = 100;
   const MAX_SWIPE = 200;
@@ -54,10 +61,14 @@ export const SwipeableBookCard = ({
   }, [endContact]);
 
   useEffect(() => () => endContact(), [endContact, book.id]);
+  useEffect(() => {
+    if (!enabled) { endContact(); suppressNextClick.current = false; setSwipeOffset(0); setIsSwiping(false); }
+  }, [enabled, endContact]);
 
   const handlers = useSwipeable({
     onTouchStartOrOnMouseDown: ({ event }) => {
       endContact();
+      if (!enabled) return;
       swipeDirection.current = null;
       swipeStartOffset.current = swipeOffset;
       suppressNextClick.current = false;
@@ -102,23 +113,19 @@ export const SwipeableBookCard = ({
     touchEventOptions: { passive: false },
   });
 
-  const showActions = swipeOffset <= -SWIPE_THRESHOLD / 2;
+  const swipeRef = handlers.ref;
+  const setContainer = useCallback((element: HTMLDivElement | null) => {
+    container.current = element;
+    swipeRef(element);
+  }, [swipeRef]);
+
+  const showActions = enabled && swipeOffset <= -SWIPE_THRESHOLD / 2;
   const isCompleted = book.status === 'completed';
 
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDelete = (event: React.MouseEvent) => {
+    event.stopPropagation();
     triggerHaptic('medium');
-    const confirmed = await confirmDialog({
-      title: "Delete Book?",
-      description: `Are you sure you want to delete "${book.title}"? This action cannot be undone.`,
-      confirmText: "Delete",
-      cancelText: "Cancel",
-      variant: "destructive",
-    });
-    if (confirmed) {
-      onDelete?.(book.id);
-      setSwipeOffset(0);
-    }
+    setDeleteOpen(true);
   };
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -140,22 +147,27 @@ export const SwipeableBookCard = ({
   };
 
   const handleCardClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!enabled) return;
     const target = event.target as HTMLElement | null;
-    if (event.defaultPrevented || target?.closest(
+    if (!target || !event.currentTarget.contains(target) || event.defaultPrevented || target.closest(
       ".library-book-surface,button,a,input,select,textarea,[role='button'],[role='checkbox'],[contenteditable]"
     )) return;
     onView?.(book.id);
   };
 
   return (
+    <>
     <div
       className="relative overflow-hidden"
       {...handlers}
+      ref={setContainer}
       onPointerDownCapture={(event) => {
+        if (!event.currentTarget.contains(event.target as Node)) return;
         if (event.isPrimary !== false) suppressNextClick.current = false;
       }}
       onTouchCancel={cancelSwipe}
       onClickCapture={(event) => {
+        if (!event.currentTarget.contains(event.target as Node)) return;
         // Capture runs before the card's native primary button. A completed or
         // cancelled swipe must not also open/select the book underneath it.
         // Keyboard activation has detail=0 and remains independent of touch.
@@ -192,6 +204,7 @@ export const SwipeableBookCard = ({
             {onDelete && (
               <button
                 type="button"
+                ref={deleteTrigger}
                 onClick={handleDelete}
                 className="w-12 h-12 rounded-full bg-destructive flex items-center justify-center text-white shadow-lg active:scale-95 transition-transform"
                 aria-label="Delete book"
@@ -215,5 +228,9 @@ export const SwipeableBookCard = ({
         {children}
       </div>
     </div>
+    <LibraryRemoveDialog open={deleteOpen} onOpenChange={setDeleteOpen} returnFocusRef={returnFocus}
+      title="Delete this book?" description={`This removes "${book.title}" from your library. You can re-add it later.`}
+      onConfirm={async () => { await onDelete?.(book.id); setSwipeOffset(0); }} />
+    </>
   );
 };

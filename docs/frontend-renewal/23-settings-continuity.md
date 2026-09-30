@@ -1,6 +1,6 @@
 # CR03 — Settings task continuity
 
-Status: **Implemented and verified within the scoped unit/browser checks; awaiting user review.** Baseline CR02 is committed in `4dadc37`; this checkpoint is uncommitted. Starting worktree was clean. No CR04 implementation or commit performed.
+Status: **Committed in `74ed7d7`, with the scoped unit/browser verification below.** The user authorized continuation to [CR04/checkpoint24](24-library-list-tasks.md). This checkpoint's review stop is historical; its implementation baseline remains `4dadc37`.
 
 ## Scope and ownership
 

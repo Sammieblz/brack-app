@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type RefObject, useEffect, useMemo, useRef, useState } from "react";
 import { LIBRARY_CAROUSEL_ITEM } from "./libraryLayout";
 import {
   Carousel,
@@ -30,6 +30,7 @@ interface LibraryCarouselViewProps {
   onView: (bookId: string) => void;
   onEdit: (bookId: string) => void;
   onDelete: (bookId: string) => Promise<void> | void;
+  focusFallbackRef?: RefObject<HTMLElement | null>;
   selectMode?: boolean;
   selectedBookIds?: string[];
   onToggleSelect?: (bookId: string) => void;
@@ -42,6 +43,7 @@ export const LibraryCarouselView = ({
   onView,
   onEdit,
   onDelete,
+  focusFallbackRef,
   selectMode = false,
   selectedBookIds = [],
   onToggleSelect,
@@ -217,6 +219,7 @@ export const LibraryCarouselView = ({
         onDelete={onDelete}
         onCloseAutoFocus={() => {
           if (returnFocus.current?.isConnected) returnFocus.current.focus({ preventScroll: true });
+          if (focusFallbackRef?.current?.isConnected) focusFallbackRef.current.focus({ preventScroll: true });
         }}
       />
     </>

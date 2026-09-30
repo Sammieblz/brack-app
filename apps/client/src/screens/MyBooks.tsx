@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavArrowDown } from "iconoir-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ import { MobileLayout } from "@/components/MobileLayout";
 import { NativeHeader } from "@/components/NativeHeader";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { SwipeableBookCard } from "@/components/SwipeableBookCard";
-import { MobileAlertDialog } from "@/components/ui/mobile-dialog";
+import { LibraryRemoveDialog } from "@/components/library/LibraryRemoveDialog";
 import { AppIcon } from "@/components/ui/app-icon";
 import { useAuth } from "@/hooks/useAuth";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
@@ -109,7 +109,7 @@ const sortBooks = (books: Book[], sortKey: SortKey) => {
   return next;
 };
 
-const MyBooks = () => {
+const MyBooksContent = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { width } = useBreakpoint();
@@ -140,7 +140,22 @@ const MyBooks = () => {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedBookIds, setSelectedBookIds] = useState<string[]>([]);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const removalPending = useRef(false);
+  const mounted = useRef(false);
+  useLayoutEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
   const bulkDeleteTriggerRef = useRef<HTMLButtonElement>(null);
+  const libraryContent = useRef<HTMLElement>(null);
+  const [removalFocus, setRemovalFocus] = useState(0);
+  useLayoutEffect(() => {
+    if (removalFocus) libraryContent.current?.focus({ preventScroll: true });
+  }, [removalFocus]);
+  const bulkReturnFocus = useMemo(() => ({ get current() {
+    return bulkDeleteTriggerRef.current?.isConnected && !bulkDeleteTriggerRef.current.disabled
+      ? bulkDeleteTriggerRef.current : libraryContent.current;
+  } }), []);
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
 
   const loadMoreRef = useInfiniteScroll({
@@ -273,22 +288,26 @@ const MyBooks = () => {
   }, [canReorderShelf]);
 
   useEffect(() => {
+    if (removalPending.current) return;
     const availableBookIds = new Set(books.map((book) => book.id));
     setSelectedBookIds((current) => current.filter((bookId) => availableBookIds.has(bookId)));
   }, [books]);
 
   useEffect(() => {
+    if (removalPending.current) return;
     if (selectMode && selectedBookIds.length === 0) {
       setBulkDeleteOpen(false);
     }
   }, [selectMode, selectedBookIds.length]);
 
   const exitSelectMode = () => {
+    if (removalPending.current) return;
     setSelectMode(false);
     setSelectedBookIds([]);
     setBulkDeleteOpen(false);
   };
   useAppBackGuard(selectMode || reorderMode, () => {
+    if (removalPending.current) return false;
     exitSelectMode();
     setReorderMode(false);
     return false;
@@ -328,79 +347,38 @@ const MyBooks = () => {
   const handleEditBook = (bookId: string) => navigate(`/edit-book/${bookId}`);
 
   const handleDeleteBook = async (bookId: string) => {
-    const rollback = removeBookLocally(bookId);
-
+    if (removalPending.current) throw new Error("Another removal is still being saved. Please wait.");
+    removalPending.current = true;
     try {
       await bookOperations.delete(bookId);
+      if (!mounted.current) return;
+      removeBookLocally(bookId);
+      setRemovalFocus(current => current + 1);
       toast.success("Book removed");
-    } catch (err: unknown) {
-      rollback();
-      console.error("Error deleting book:", err);
-      toast.error(err instanceof Error ? err.message : "Failed to delete book");
-    }
+    } finally { removalPending.current = false; }
   };
 
   const handleBulkDeleteBooks = async () => {
+    if (removalPending.current) return;
     const selectedIds = selectedBookIds.filter((bookId) => books.some((book) => book.id === bookId));
     if (selectedIds.length === 0) return;
-
-    setBulkDeleteOpen(false);
-
-    const selectedIdSet = new Set(selectedIds);
-    const originalBooks = books;
-
-    updateBooksLocally((currentBooks) =>
-      currentBooks.filter((book) => !selectedIdSet.has(book.id))
-    );
-
-    const results = await Promise.allSettled(
-      selectedIds.map(async (bookId) => {
-        await bookOperations.delete(bookId);
-        return bookId;
-      })
-    );
-
-    const failedIds = results.flatMap((result, index) =>
-      result.status === "rejected" ? [selectedIds[index]] : []
-    );
-
-    if (failedIds.length === 0) {
-      exitSelectMode();
+    removalPending.current = true;
+    try {
+      const results = await Promise.allSettled(selectedIds.map(bookId => bookOperations.delete(bookId)));
+      if (!mounted.current) return;
+      const failedIds = selectedIds.filter((_, index) => results[index].status === "rejected");
+      const removedIds = new Set(selectedIds.filter((_, index) => results[index].status === "fulfilled"));
+      updateBooksLocally(current => current.filter(book => !removedIds.has(book.id)));
+      setSelectedBookIds(failedIds);
+      if (failedIds.length) {
+        throw new Error(removedIds.size
+          ? `Removed ${removedIds.size}. ${failedIds.length} could not be removed. Retry keeps only those books selected.`
+          : "Couldn't remove the selected books. Your selection is kept; please try again.");
+      }
+      setSelectMode(false);
+      setRemovalFocus(current => current + 1);
       toast.success(`Removed ${selectedIds.length} ${selectedIds.length === 1 ? "book" : "books"}`);
-      return;
-    }
-
-    const failedIdSet = new Set(failedIds);
-    updateBooksLocally((currentBooks) => {
-      const currentIds = new Set(currentBooks.map((book) => book.id));
-      const nextBooks = [...currentBooks];
-
-      originalBooks
-        .filter((book) => failedIdSet.has(book.id) && !currentIds.has(book.id))
-        .forEach((book) => {
-          const originalIndex = originalBooks.findIndex((item) => item.id === book.id);
-          const insertIndex = nextBooks.findIndex((item) => {
-            const itemOriginalIndex = originalBooks.findIndex((original) => original.id === item.id);
-            return itemOriginalIndex > originalIndex;
-          });
-
-          if (insertIndex === -1) {
-            nextBooks.push(book);
-          } else {
-            nextBooks.splice(insertIndex, 0, book);
-          }
-        });
-
-      return nextBooks;
-    });
-
-    setSelectMode(true);
-    setSelectedBookIds(failedIds);
-    toast.error(
-      failedIds.length === selectedIds.length
-        ? "Failed to remove selected books"
-        : `${failedIds.length} ${failedIds.length === 1 ? "book" : "books"} could not be removed`
-    );
+    } finally { removalPending.current = false; }
   };
 
   const handleStatusChange = async (bookId: string, status: string) => {
@@ -1022,6 +1000,7 @@ const MyBooks = () => {
         <>
           <LibraryBookshelfView
             books={filteredBooks}
+            focusFallbackRef={libraryContent}
             userId={user?.id}
             highlightedBookId={highlightBookId}
             onView={handleBookClick}
@@ -1043,6 +1022,7 @@ const MyBooks = () => {
         <>
           <LibraryCarouselView
             books={filteredBooks}
+            focusFallbackRef={libraryContent}
             userId={user?.id}
             highlightedBookId={highlightBookId}
             onView={handleBookClick}
@@ -1076,11 +1056,10 @@ const MyBooks = () => {
               />
             );
 
-            if (!isMobile || selectMode) return card;
-
             return (
               <SwipeableBookCard
                 key={book.id}
+                enabled={isMobile && !selectMode}
                 book={book}
                 onView={handleBookClick}
                 onEdit={handleEditBook}
@@ -1133,7 +1112,7 @@ const MyBooks = () => {
           />
         )}
 
-        <main id="library-scroll" className="app-page space-y-4 md:space-y-6">
+        <main ref={libraryContent} tabIndex={-1} aria-label="Library books" id="library-scroll" className="app-page space-y-4 md:space-y-6">
           {renderSummaryChips()}
           {renderToolbar()}
           {renderBulkSelectionBar()}
@@ -1144,21 +1123,25 @@ const MyBooks = () => {
         </main>
       </PullToRefresh>
 
-      <MobileAlertDialog
-        returnFocusRef={bulkDeleteTriggerRef}
+      <LibraryRemoveDialog
+        returnFocusRef={bulkReturnFocus}
         open={bulkDeleteOpen}
         onOpenChange={setBulkDeleteOpen}
         title={`Delete ${selectedBookIds.length} selected books?`}
         description="This removes the selected books from your library. You can re-add them later."
         cancelText="Keep books"
         confirmText="Delete"
-        variant="destructive"
         onConfirm={handleBulkDeleteBooks}
       />
 
       <FloatingActionButton />
     </MobileLayout>
   );
+};
+
+const MyBooks = () => {
+  const { user, loading } = useAuth();
+  return <MyBooksContent key={`${user?.id ?? ""}:${loading ? "resolving" : "ready"}`} />;
 };
 
 export default MyBooks;

@@ -1,17 +1,16 @@
-import { createEvent, fireEvent, render, screen } from "@testing-library/react";
+import { createEvent, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { createPortal } from "react-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Book } from "@/types";
 import { SwipeableBookCard } from "./SwipeableBookCard";
 import { registerBackLayer } from "@/lib/backLayers";
 
 const mocks = vi.hoisted(() => ({
-  confirm: vi.fn().mockResolvedValue(true),
   haptic: vi.fn(),
   reducedMotion: false,
 }));
 
-vi.mock("@/contexts/ConfirmDialogContext", () => ({ useConfirmDialog: () => mocks.confirm }));
 vi.mock("@/hooks/useHapticFeedback", () => ({ useHapticFeedback: () => ({ triggerHaptic: mocks.haptic }) }));
 vi.mock("@/hooks/useReducedMotion", () => ({ useReducedMotion: () => mocks.reducedMotion }));
 
@@ -69,7 +68,6 @@ describe("Swipeable book gesture isolation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.reducedMotion = false;
-    mocks.confirm.mockResolvedValue(true);
   });
 
   it("opens once on a normal tap, without the wrapper duplicating the card action", () => {
@@ -150,8 +148,50 @@ describe("Swipeable book gesture isolation", () => {
     expect(status).toHaveBeenCalledExactlyOnceWith(book.id, "completed");
     swipeLeft(primary);
     await user.click(screen.getByRole("button", { name: "Delete book" }));
-    expect(mocks.confirm).toHaveBeenCalledOnce();
+    expect(remove).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Delete" }));
     expect(remove).toHaveBeenCalledExactlyOnceWith(book.id);
+    expect(open).not.toHaveBeenCalled();
+  });
+
+  it("retains the card and open removal when swipe presentation is disabled, then focuses the surviving book control", async () => {
+    const remove = vi.fn();
+    const card = (enabled: boolean) => <SwipeableBookCard book={book} enabled={enabled} onDelete={remove}>
+      <article className="library-book-surface"><button className="library-book-primary">Open Orlando</button><input aria-label="Reading note" /></article>
+    </SwipeableBookCard>;
+    const view = render(card(true));
+    const primary = screen.getByRole("button", { name: "Open Orlando" });
+    const input = screen.getByRole("textbox", { name: "Reading note" });
+    fireEvent.change(input, { target: { value: "Keep this note" } });
+    swipeLeft(primary);
+    fireEvent.click(screen.getByRole("button", { name: "Delete book" }));
+    const dialog = screen.getByRole("dialog", { name: "Delete this book?" });
+    view.rerender(card(false));
+    expect(screen.getByRole("dialog", { name: "Delete this book?" })).toBe(dialog);
+    expect(input).toHaveValue("Keep this note");
+    expect(input.isConnected).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Keep book" }));
+    await waitFor(() => expect(primary).toHaveFocus());
+    swipeLeft(primary);
+    expect(screen.queryByRole("button", { name: "Delete book" })).not.toBeInTheDocument();
+    expect(remove).not.toHaveBeenCalled();
+  });
+
+  it("never treats a portaled backdrop click as a card activation or a cancelled swipe click", () => {
+    const open = vi.fn();
+    const portalClick = vi.fn();
+    render(<SwipeableBookCard book={book} onView={open}>
+      <article className="library-book-surface"><button className="library-book-primary">Open Orlando</button>
+        {createPortal(<div data-testid="nested-backdrop" onClick={portalClick} />, document.body)}
+      </article>
+    </SwipeableBookCard>);
+    const backdrop = screen.getByTestId("nested-backdrop");
+    fireEvent.click(backdrop, { detail: 1 });
+    expect(open).not.toHaveBeenCalled();
+    const primary = screen.getByRole("button", { name: "Open Orlando" });
+    swipeLeft(primary);
+    fireEvent.click(backdrop, { detail: 1 });
+    expect(portalClick).toHaveBeenCalledTimes(2);
     expect(open).not.toHaveBeenCalled();
   });
 

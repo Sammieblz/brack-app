@@ -30,11 +30,13 @@ export const useBookLists = (userId?: string) => {
   const activeUser = useRef(userId);
   activeUser.current = userId;
   const requestId = useRef(0);
+  const mounted = useRef(false);
+  const generation = useRef(0);
 
   const fetchLists = useCallback(async (isInitial = true, requestedOffset = 0) => {
-    if (!userId || activeUser.current !== userId) return;
+    if (!mounted.current || !userId || activeUser.current !== userId) return;
     const request = ++requestId.current;
-    const isCurrent = () => activeUser.current === userId && request === requestId.current;
+    const isCurrent = () => mounted.current && activeUser.current === userId && request === requestId.current;
     
     try {
       if (isInitial) {
@@ -80,6 +82,8 @@ export const useBookLists = (userId?: string) => {
   }, [userId]);
 
   useEffect(() => {
+    mounted.current = true;
+    generation.current += 1;
     setOwner(userId);
     setLists([]);
     setHasLoaded(false);
@@ -89,7 +93,7 @@ export const useBookLists = (userId?: string) => {
     setOffset(0);
     setError(null);
     void fetchLists(true);
-    return () => { requestId.current += 1; };
+    return () => { mounted.current = false; generation.current += 1; requestId.current += 1; };
   }, [fetchLists, userId]);
 
   useEffect(() => {
@@ -112,76 +116,39 @@ export const useBookLists = (userId?: string) => {
     }
   }, [fetchLists, loading, loadingMore, hasMore, offset]);
 
-  const createList = async (name: string, description?: string) => {
-    if (!userId) return null;
-    
+  // A confirmed local/outbox write is complete even if its later read is slow
+  // or fails. Consumers own mutation errors; `error` describes collection reads.
+  const mutate = async <T,>(write: () => Promise<T>, refreshOnFailure = false): Promise<T> => {
+    if (!userId || !mounted.current || activeUser.current !== userId) {
+      throw new Error("This list task is no longer active. Sign in and try again.");
+    }
+    const ownerGeneration = generation.current;
+    const isCurrent = () => mounted.current && activeUser.current === userId && generation.current === ownerGeneration;
     try {
-      const data = await createBookList(userId, name, description);
-      await fetchLists(true);
-      return data;
-    } catch {
-      if (activeUser.current === userId) setError("We couldn't update your book lists. Please try again.");
-      return null;
+      const result = await write();
+      if (isCurrent()) void fetchLists(true);
+      return result;
+    } catch (error) {
+      // Duplication can commit its new list before a later item fails. Expose
+      // that partial copy through the normal read without claiming success.
+      if (refreshOnFailure && isCurrent()) void fetchLists(true);
+      throw error;
     }
   };
 
-  const updateList = async (listId: string, updates: Partial<BookList>) => {
-    try {
-      await updateBookList(listId, updates);
-      await fetchLists(true);
-    } catch {
-      if (activeUser.current === userId) setError("We couldn't update your book lists. Please try again.");
-    }
-  };
-
-  const deleteList = async (listId: string) => {
-    try {
-      await deleteBookList(listId);
-      await fetchLists(true);
-    } catch {
-      if (activeUser.current === userId) setError("We couldn't update your book lists. Please try again.");
-    }
-  };
-
-  const addBookToList = async (listId: string, bookId: string) => {
-    try {
-      await addBookToListApi(listId, bookId);
-      await fetchLists(true);
-    } catch {
-      if (activeUser.current === userId) setError("We couldn't update your book lists. Please try again.");
-    }
-  };
-
-  const removeBookFromList = async (listId: string, bookId: string) => {
-    try {
-      await removeBookFromListApi(listId, bookId);
-      await fetchLists(true);
-    } catch {
-      if (activeUser.current === userId) setError("We couldn't update your book lists. Please try again.");
-    }
-  };
-
-  const reorderBooks = async (listId: string, items: { book_id: string; position: number }[]) => {
-    try {
-      await reorderBookListItems(listId, items);
-      await fetchLists(true);
-    } catch {
-      if (activeUser.current === userId) setError("We couldn't update your book lists. Please try again.");
-    }
-  };
-
-  const duplicateList = async (listId: string) => {
-    if (!userId) return null;
-    
-    try {
-      const newList = await duplicateBookList(userId, listId);
-      await fetchLists(true);
-      return newList;
-    } catch {
-      if (activeUser.current === userId) setError("We couldn't update your book lists. Please try again.");
-      return null;
-    }
-  };
+  const createList = (name: string, description?: string): Promise<BookList> =>
+    mutate(() => createBookList(userId!, name, description));
+  const updateList = (listId: string, updates: Partial<BookList>): Promise<void> =>
+    mutate(() => updateBookList(listId, updates));
+  const deleteList = (listId: string): Promise<void> => mutate(() => deleteBookList(listId));
+  const addBookToList = (listId: string, bookId: string): Promise<void> =>
+    mutate(() => addBookToListApi(listId, bookId));
+  const removeBookFromList = (listId: string, bookId: string): Promise<void> =>
+    mutate(() => removeBookFromListApi(listId, bookId));
+  const reorderBooks = (listId: string, items: { book_id: string; position: number }[]): Promise<void> =>
+    mutate(() => reorderBookListItems(listId, items));
+  const duplicateList = (listId: string): Promise<BookList> =>
+    mutate(() => duplicateBookList(userId!, listId), true);
 
   return {
     lists: owner === userId ? lists : [],

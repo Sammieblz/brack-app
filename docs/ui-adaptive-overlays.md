@@ -53,6 +53,10 @@ Account changes, unresolved authentication and unmount invalidate task outcomes:
 
 [Checkpoint22](frontend-renewal/22-responsive-composers.md) owns the CR02 verification status, exact commands and evidence. Source implementation is not a claim that every form/header task is migrated or that native devices and assistive technology have passed. Other header utilities and Messages pane ownership retain their separate coverage findings.
 
+## Library and list tasks
+
+CR04's Library bookshelf preview keeps one AdaptiveDialog and nested membership/removal owners through width changes. AddToList and AddBooks use the same existing adaptive primitives, with lookup failures distinguished from empty membership, serialized writes and explicit dirty multi-selection dismissal. BookListDetail's header and empty-state invokers share one AddBooks owner. LibraryRemoveDialog composes MobileDialog with pending/refusal/error/retry behavior for Library and list-membership deletion; it does not replace the application's other confirmations. The existing carousel preview remains one Sheet with a changing side. See [Library/list task contracts](ui-library-list-tasks.md) and [checkpoint24](frontend-renewal/24-library-list-tasks.md) for live consumer dispositions and measured acceptance.
+
 ## Shared description and select geometry corrections
 
 MobileDialog and MobileAlertDialog leave a present description's ID and `aria-describedby` relationship to the installed Radix Dialog context. When no description is supplied, the wrapper explicitly passes `aria-describedby={undefined}`. Do not replace both IDs with an independent `useId`: the description may appear associated to assistive technology while Radix's context-ID check reports a missing description. Regression checks cover the actual referenced element, optional and changing descriptions, and the absence of that warning; they do not suppress console warnings globally.

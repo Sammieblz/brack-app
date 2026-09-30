@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Current checkpoint: **[CR03 - Settings continuity](23-settings-continuity.md), implemented and verified within browser/unit scope; awaiting user review.** CR03 is uncommitted on baseline `4dadc37`, which contains CR02. Evidence covers 95 distinct unit tests across 12 files, 87 distinct Settings browser cases through the preserved full run and passing follow-ups, 21 shared shell and 15 overlay regressions, client/fixture types, changed-file lint, final build and local graph/export checks. [Checkpoint20](20-coverage-reconciliation.md) remains the corrective sequence authority. After review, the next batch is CR04 Library/list correctness before main F10 work. CR04-CR10 remain open; F10-F21 overlap that program and must not be counted twice. F16 visual work and broader physical-device/AT/performance acceptance remain open. No commit was made for CR03.
+Current checkpoint: **[CR04 - Library selection and list outcomes](24-library-list-tasks.md), implemented and verified within its documented scope; stop for user review.** Baseline `74ed7d7`; CR04 is uncommitted. Evidence:117 distinct units,97 actual-task browser passes plus two declared skips,33 Library regression passes plus six declared skips,21 shared-shell passes; types/lint/build and final local graph/Obsidian export passed. Original failures and corrected follow-ups are preserved in24. Next unit after user continuation: CR05 Messages layout and gesture ownership. CR05-CR10 and remaining main tickets overlap; F10 composition and native/AT/performance acceptance remain open.
 
 ## Outcome
 
@@ -47,6 +47,7 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [21 — CR01 live composers](21-live-composers.md) | Historical committed CR01: comment/message ownership, media semantics and scoped evidence |
 | [22 — CR02 responsive creation](22-responsive-composers.md) | Historical committed CR02: real Feed/BookClubs/Readers creation tasks, retention and guarded outcomes |
 | [23 - CR03 Settings continuity](23-settings-continuity.md) | Awaiting review: category navigation, stable editors and protected Settings tasks verified within browser/unit scope |
+| [24 - CR04 Library/list tasks](24-library-list-tasks.md) | Implemented/verified: stable tasks, truthful outcomes, large-text/focus corrections; review stop |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability

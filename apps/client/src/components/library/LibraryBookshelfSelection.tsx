@@ -4,23 +4,11 @@ import {
   LibraryBookDateLine,
   LibraryStatusBadge,
 } from "@/components/library/LibraryBookActions";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
+import { AdaptiveDialogContent, AdaptiveDialogHeader, AdaptiveDialogTitle, AdaptiveDialogDescription } from "@/components/ui/adaptive-dialog";
 import { Progress } from "@/components/ui/progress";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { APP_ICONS } from "@/config/iconography";
-import { useBreakpoint } from "@/hooks/useBreakpoint";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 import { cn } from "@/lib/utils";
 import { getProgressPercentage } from "@/utils/bookProgress";
 import type { Book } from "@/types";
@@ -168,59 +156,18 @@ export const LibraryBookshelfSelection = ({
   onEdit,
   onDelete,
 }: LibraryBookshelfSelectionProps) => {
-  const { isPhone } = useBreakpoint();
-
+  const compact = useUIEnvironmentValue(environment => environment.windowClass !== "expanded");
   if (!book) return null;
-
-  if (isPhone) {
-    return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent
-          side="bottom"
-          className="library-selected-book-sheet max-h-[90vh] overflow-y-auto rounded-t-3xl p-4"
-          onCloseAutoFocus={onCloseAutoFocus}
-        >
-          <SheetHeader className="sr-only">
-            <SheetTitle>{book.title}</SheetTitle>
-            <SheetDescription>
-              {book.author ? `by ${book.author}` : "Selected library book"}
-            </SheetDescription>
-          </SheetHeader>
-          <SelectionContent
-            book={book}
-            userId={userId}
-            onView={onView}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            close={() => onOpenChange(false)}
-            compact
-          />
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="library-selected-book-dialog max-h-[88vh] max-w-5xl overflow-hidden p-0"
-        onCloseAutoFocus={onCloseAutoFocus}
-      >
-        <DialogHeader className="sr-only">
-          <DialogTitle>{book.title}</DialogTitle>
-          <DialogDescription>
-            {book.author ? `by ${book.author}` : "Selected library book"}
-          </DialogDescription>
-        </DialogHeader>
-        <SelectionContent
-          book={book}
-          userId={userId}
-          onView={onView}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          close={() => onOpenChange(false)}
-        />
-      </DialogContent>
+      <AdaptiveDialogContent size="wide" className="library-selected-book-dialog" onCloseAutoFocus={onCloseAutoFocus}>
+        <AdaptiveDialogHeader className="sr-only">
+          <AdaptiveDialogTitle>{book.title}</AdaptiveDialogTitle>
+          <AdaptiveDialogDescription>{book.author ? `by ${book.author}` : "Selected library book"}</AdaptiveDialogDescription>
+        </AdaptiveDialogHeader>
+        <SelectionContent book={book} userId={userId} onView={onView} onEdit={onEdit} onDelete={onDelete}
+          close={() => onOpenChange(false)} compact={compact} />
+      </AdaptiveDialogContent>
     </Dialog>
   );
 };
