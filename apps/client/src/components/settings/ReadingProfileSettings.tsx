@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ReadingHabitsSection } from "@/components/ReadingHabitsSection";
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus";
 import { needsSetupPrompt } from "@/services/onboarding";
+import { useSettingsLeave } from "@/contexts/SettingsTaskContext";
 
 interface ReadingProfileSettingsProps {
   user: { id: string };
@@ -11,6 +12,7 @@ interface ReadingProfileSettingsProps {
 
 export const ReadingProfileSettings = ({ user }: ReadingProfileSettingsProps) => {
   const navigate = useNavigate();
+  const leave = useSettingsLeave();
   const { status } = useOnboardingStatus(user.id);
   const shouldPrompt = needsSetupPrompt(status?.onboarding_status);
 
@@ -27,7 +29,7 @@ export const ReadingProfileSettings = ({ user }: ReadingProfileSettingsProps) =>
                 </p>
               </div>
             </div>
-            <Button onClick={() => navigate("/onboarding?from=settings")}>Resume setup</Button>
+            <Button onClick={() => void leave(() => navigate("/onboarding?from=settings"))}>Resume setup</Button>
           </CardContent>
         </Card>
       )}

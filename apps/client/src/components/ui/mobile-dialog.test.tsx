@@ -46,6 +46,47 @@ describe("adaptive task descriptions", () => {
 });
 
 describe("adaptive confirmation focus", () => {
+  it("honors Escape as soon as the safe action receives initial focus", async () => {
+    const close = vi.fn();
+    const confirm = vi.fn();
+    const immediateEscape = (event: FocusEvent) => {
+      if (event.target instanceof HTMLButtonElement && event.target.textContent === "Keep editing") {
+        event.target.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+      }
+    };
+    document.addEventListener("focusin", immediateEscape);
+    try {
+      function Confirmation() {
+        const [open, setOpen] = useState(true);
+        return <MobileAlertDialog open={open} onOpenChange={next => { close(next); setOpen(next); }}
+          title="Discard this draft?" cancelText="Keep editing" onConfirm={confirm} />;
+      }
+      render(<Confirmation />);
+      await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+      expect(close).toHaveBeenCalledExactlyOnceWith(false);
+      expect(confirm).not.toHaveBeenCalled();
+    } finally { document.removeEventListener("focusin", immediateEscape); }
+  });
+
+  it("Escape dismisses only the nested dialog and leaves its confirmation open", async () => {
+    const close = vi.fn();
+    function Confirmation() {
+      const [nested, setNested] = useState(false);
+      return <MobileAlertDialog open onOpenChange={close} title="Discard this draft?" onConfirm={() => undefined}>
+        <button onClick={() => setNested(true)}>Inspect details</button>
+        <MobileDialog open={nested} onOpenChange={setNested} title="Draft details"><button>Review details</button></MobileDialog>
+      </MobileAlertDialog>;
+    }
+    render(<Confirmation />);
+    fireEvent.click(screen.getByRole("button", { name: "Inspect details" }));
+    const nestedAction = screen.getByRole("button", { name: "Review details" });
+    nestedAction.focus();
+    fireEvent.keyDown(nestedAction, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Draft details" })).not.toBeInTheDocument());
+    expect(screen.getByRole("dialog", { name: "Discard this draft?" })).toBeInTheDocument();
+    expect(close).not.toHaveBeenCalled();
+  });
+
   it.each(["Cancel", "Close", "Escape"])("returns %s dismissal to the actual external invoker without confirming", async (method) => {
     const confirm = vi.fn();
     function Confirmation() {

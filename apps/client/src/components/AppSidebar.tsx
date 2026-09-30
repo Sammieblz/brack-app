@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import type { MouseEventHandler } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { AppIcon } from "@/components/ui/app-icon";
@@ -26,8 +27,10 @@ import { NAV_GROUPS, getNavItemsBySection, isNavItemActive, type NavItem } from 
 import { APP_ICONS } from "@/config/iconography";
 import { useHapticFeedback } from "@/hooks/useHapticFeedback";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { useSettingsLinkNavigation } from "@/hooks/useSettingsLinkNavigation";
+import { useSettingsSignOut } from "@/contexts/SettingsTaskContext";
 
-const renderNavGroup = (label: string, items: NavItem[], pathname: string) => (
+const renderNavGroup = (label: string, items: NavItem[], pathname: string, onLinkClick: MouseEventHandler<HTMLAnchorElement>) => (
   <SidebarGroup className="px-2 py-1.5 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
     <SidebarGroupLabel>{label}</SidebarGroupLabel>
     <SidebarGroupContent>
@@ -39,7 +42,7 @@ const renderNavGroup = (label: string, items: NavItem[], pathname: string) => (
           return (
             <SidebarMenuItem key={item.path}>
               <SidebarMenuButton asChild isActive={active} tooltip={item.label}>
-                <Link to={item.path} aria-current={active ? "page" : undefined}>
+                <Link to={item.path} onClick={onLinkClick} aria-current={active ? "page" : undefined}>
                   <Icon className="h-4 w-4" />
                   <span>{item.label}</span>
                 </Link>
@@ -61,6 +64,8 @@ export const AppSidebar = () => {
   const { triggerHaptic } = useHapticFeedback();
   const { socialEnabled } = useFeatureFlags();
   const { setOpen } = useSidebar();
+  const handleSettingsLink = useSettingsLinkNavigation();
+  const settingsSignOut = useSettingsSignOut();
   const isDarkMode = resolvedTheme === "dark";
 
   const displayName =
@@ -72,6 +77,7 @@ export const AppSidebar = () => {
 
   const handleSignOut = async () => {
     triggerHaptic("medium");
+    if (settingsSignOut) { await settingsSignOut(); return; }
     await signOut();
     navigate("/");
   };
@@ -91,7 +97,7 @@ export const AppSidebar = () => {
             tooltip="Dashboard"
             className="min-w-0 flex-1 rounded-lg group-data-[collapsible=icon]:hidden"
           >
-            <Link to="/dashboard" className="min-w-0">
+            <Link to="/dashboard" onClick={event => handleSettingsLink(event)} className="min-w-0">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md p-1.5 text-primary">
                 <ThemeAwareLogo
                   variant="icon"
@@ -131,6 +137,7 @@ export const AppSidebar = () => {
               group.label,
               getNavItemsBySection(group.section, socialEnabled),
               location.pathname,
+              event => { handleSettingsLink(event); },
             )}
           </div>
         ))}
@@ -140,7 +147,7 @@ export const AppSidebar = () => {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Profile" isActive={location.pathname === "/profile"}>
-              <Link to="/profile">
+              <Link to="/profile" onClick={event => handleSettingsLink(event)}>
                 <Avatar className="h-6 w-6">
                   <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
                   <AvatarFallback name={displayName} className="text-[10px]">
@@ -161,7 +168,7 @@ export const AppSidebar = () => {
                   tooltip={item.label}
                   isActive={isNavItemActive(location.pathname, item)}
                 >
-                  <Link to={item.path} aria-current={isNavItemActive(location.pathname, item) ? "page" : undefined}>
+                  <Link to={item.path} onClick={event => handleSettingsLink(event)} aria-current={isNavItemActive(location.pathname, item) ? "page" : undefined}>
                     <Icon className="h-4 w-4" />
                     <span>{item.label}</span>
                   </Link>

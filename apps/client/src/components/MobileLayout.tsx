@@ -30,9 +30,22 @@ export const MobileLayout = ({ children, showBottomNav = true, showTopNav = true
 
   useEffect(() => {
     let frame = 0;
-    const update = () => setEditing(Boolean(scrollRef.current?.contains(document.activeElement)) &&
-      isShellEditingTarget(document.activeElement));
+    const contacts = new Set<number>();
+    const update = () => {
+      // Focusing an action blurs the editor during pointerdown. Restoring the
+      // footer here can cover that same action before pointerup/click arrives.
+      if (contacts.size > 0) return;
+      setEditing(Boolean(scrollRef.current?.contains(document.activeElement)) &&
+        isShellEditingTarget(document.activeElement));
+    };
     const afterFocus = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); };
+    const pointerDown = (event: PointerEvent) => { contacts.add(event.pointerId); };
+    const pointerEnd = (event: PointerEvent) => { contacts.delete(event.pointerId); afterFocus(); };
+    const blur = () => { contacts.clear(); afterFocus(); };
+    document.addEventListener("pointerdown", pointerDown, true);
+    window.addEventListener("pointerup", pointerEnd, true);
+    window.addEventListener("pointercancel", pointerEnd, true);
+    window.addEventListener("blur", blur);
     document.addEventListener("focusin", update);
     document.addEventListener("focusout", afterFocus);
     update();
@@ -40,6 +53,10 @@ export const MobileLayout = ({ children, showBottomNav = true, showTopNav = true
       cancelAnimationFrame(frame);
       document.removeEventListener("focusin", update);
       document.removeEventListener("focusout", afterFocus);
+      document.removeEventListener("pointerdown", pointerDown, true);
+      window.removeEventListener("pointerup", pointerEnd, true);
+      window.removeEventListener("pointercancel", pointerEnd, true);
+      window.removeEventListener("blur", blur);
     };
   }, [scrollRef]);
 

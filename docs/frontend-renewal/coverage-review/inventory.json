@@ -1,9 +1,9 @@
 {
-  "baseline": "3e11d31fab205306f0167a217ab7e8452588a001",
+  "baseline": "4dadc372ad056055400d8fbf3baf08ef20e07e77",
   "method": "TypeScript AST static local import/literal dynamic-import reachability, JSX Route declarations, git commit file lists. No runtime, branches, feature-gate, tree-shaking, fixture alias/mock or per-export analysis. Declaration-level type-only imports are excluded; inline named type imports can still contribute edges. Import references and changed files do not establish review, runtime execution or passing tests. Unreachable means no source import path from main.tsx; verify before deletion. routeImportReachability follows route JSX owners, not their App-owned global ancestors: an empty route list does not exclude global rendering (e.g. Toaster, JournalPromptHandler, JourneyLevelUpObserver).",
   "counts": {
     "routes": 39,
-    "modules": 507,
+    "modules": 510,
     "presentation": 309,
     "screens": 33,
     "components": 272,
@@ -1024,10 +1024,12 @@
         "apps/client/src/config/iconography.ts",
         "apps/client/src/config/navigation.ts",
         "apps/client/src/contexts/ProfileContext.tsx",
+        "apps/client/src/contexts/SettingsTaskContext.ts",
         "apps/client/src/contexts/ThemeContext.tsx",
         "apps/client/src/hooks/useAuth.ts",
         "apps/client/src/hooks/useFeatureFlags.ts",
         "apps/client/src/hooks/useHapticFeedback.ts",
+        "apps/client/src/hooks/useSettingsLinkNavigation.ts",
         "apps/client/src/lib/avatarUtils.ts"
       ],
       "importedBy": [
@@ -1058,7 +1060,9 @@
         "div",
         "span"
       ],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "apps/client/src/components/settings-shell-navigation.test.tsx"
+      ],
       "changedIn": [
         "F09"
       ],
@@ -2995,7 +2999,7 @@
       "role": "component",
       "imports": [
         "apps/client/src/components/ui/button.tsx",
-        "apps/client/src/components/ui/dialog.tsx",
+        "apps/client/src/components/ui/mobile-dialog.tsx",
         "apps/client/src/hooks/useImagePicker.ts"
       ],
       "importedBy": [
@@ -3007,17 +3011,15 @@
       "jsx": [
         "Button",
         "Camera",
-        "Dialog",
-        "DialogContent",
-        "DialogDescription",
-        "DialogHeader",
-        "DialogTitle",
         "MediaImage",
+        "MobileDialog",
         "div",
         "p",
         "span"
       ],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "apps/client/src/components/ImagePickerDialog.test.tsx"
+      ],
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
@@ -4664,7 +4666,8 @@
       "imports": [
         "apps/client/src/config/navigation.ts",
         "apps/client/src/hooks/useFeatureFlags.ts",
-        "apps/client/src/hooks/useHapticFeedback.ts"
+        "apps/client/src/hooks/useHapticFeedback.ts",
+        "apps/client/src/hooks/useSettingsLinkNavigation.ts"
       ],
       "importedBy": [
         "apps/client/src/components/MobileLayout.tsx"
@@ -4675,7 +4678,9 @@
         "nav",
         "span"
       ],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "apps/client/src/components/settings-shell-navigation.test.tsx"
+      ],
       "changedIn": [
         "F09"
       ],
@@ -5384,11 +5389,13 @@
         "apps/client/src/components/ui/skeleton.tsx",
         "apps/client/src/config/navigation.ts",
         "apps/client/src/contexts/ProfileContext.tsx",
+        "apps/client/src/contexts/SettingsTaskContext.ts",
         "apps/client/src/hooks/useAuth.ts",
         "apps/client/src/hooks/useConversations.ts",
         "apps/client/src/hooks/useFeatureFlags.ts",
         "apps/client/src/hooks/useFollowing.ts",
         "apps/client/src/hooks/useHapticFeedback.ts",
+        "apps/client/src/hooks/useSettingsLinkNavigation.ts",
         "apps/client/src/lib/avatarUtils.ts",
         "apps/client/src/lib/utils.ts"
       ],
@@ -5423,7 +5430,8 @@
         "span"
       ],
       "directTestImporters": [
-        "apps/client/src/components/ShellNavigation.test.tsx"
+        "apps/client/src/components/ShellNavigation.test.tsx",
+        "apps/client/src/components/settings-shell-navigation.test.tsx"
       ],
       "changedIn": [
         "F09"
@@ -5786,6 +5794,7 @@
         "apps/client/src/components/ui/label.tsx",
         "apps/client/src/components/ui/select.tsx",
         "apps/client/src/components/ui/skeleton.tsx",
+        "apps/client/src/contexts/SettingsTaskContext.ts",
         "apps/client/src/hooks/use-toast.ts",
         "apps/client/src/services/api/client.ts",
         "apps/client/src/services/api/index.ts"
@@ -5817,10 +5826,13 @@
         "Skeleton",
         "Xmark",
         "div",
+        "fieldset",
+        "legend",
         "p"
       ],
       "directTestImporters": [
-        "apps/client/src/components/settings/settings-loading.test.tsx"
+        "apps/client/src/components/settings/settings-loading.test.tsx",
+        "apps/client/src/components/settings/settings-task-forms.test.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -6120,6 +6132,7 @@
         "apps/client/src/components/ui/input.tsx",
         "apps/client/src/components/ui/label.tsx",
         "apps/client/src/components/ui/skeleton.tsx",
+        "apps/client/src/contexts/SettingsTaskContext.ts",
         "apps/client/src/hooks/use-toast.ts",
         "apps/client/src/services/api/client.ts",
         "apps/client/src/services/api/index.ts",
@@ -6131,6 +6144,7 @@
         "apps/client/src/screens/Settings.tsx"
       ],
       "jsx": [
+        "AccountSettingsContent",
         "AuthTurnstile",
         "Button",
         "Card",
@@ -6145,12 +6159,15 @@
         "Skeleton",
         "a",
         "div",
+        "fieldset",
         "form",
         "h2",
+        "legend",
         "p"
       ],
       "directTestImporters": [
-        "apps/client/src/components/settings/AccountSettings.test.tsx"
+        "apps/client/src/components/settings/AccountSettings.test.tsx",
+        "apps/client/src/components/settings/settings-write-ownership.test.tsx"
       ],
       "changedIn": [
         "F02/F03"
@@ -6204,6 +6221,7 @@
         "apps/client/src/components/ui/input.tsx",
         "apps/client/src/components/ui/label.tsx",
         "apps/client/src/config/iconography.ts",
+        "apps/client/src/contexts/SettingsTaskContext.ts",
         "apps/client/src/hooks/use-toast.ts",
         "apps/client/src/services/dataPortability.ts"
       ],
@@ -6220,19 +6238,24 @@
         "CardHeader",
         "CardTitle",
         "Checkbox",
+        "DataBackupSettingsContent",
         "Input",
         "Label",
         "dd",
         "div",
         "dl",
         "dt",
+        "fieldset",
         "h2",
         "h3",
         "label",
+        "legend",
         "p",
         "span"
       ],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "apps/client/src/components/settings/settings-write-ownership.test.tsx"
+      ],
       "changedIn": [
         "F02/F03"
       ],
@@ -6253,6 +6276,7 @@
         "apps/client/src/components/ui/label.tsx",
         "apps/client/src/components/ui/skeleton.tsx",
         "apps/client/src/components/ui/switch.tsx",
+        "apps/client/src/contexts/SettingsTaskContext.ts",
         "apps/client/src/hooks/use-toast.ts",
         "apps/client/src/hooks/usePushNotifications.ts",
         "apps/client/src/services/api/client.ts",
@@ -6276,11 +6300,14 @@
         "Skeleton",
         "Switch",
         "div",
+        "fieldset",
         "h2",
+        "legend",
         "p"
       ],
       "directTestImporters": [
-        "apps/client/src/components/settings/settings-loading.test.tsx"
+        "apps/client/src/components/settings/settings-loading.test.tsx",
+        "apps/client/src/components/settings/settings-write-ownership.test.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -6299,6 +6326,7 @@
         "apps/client/src/components/ui/date-picker.tsx",
         "apps/client/src/components/ui/input.tsx",
         "apps/client/src/components/ui/label.tsx",
+        "apps/client/src/contexts/SettingsTaskContext.ts",
         "apps/client/src/hooks/use-toast.ts",
         "apps/client/src/lib/dateOnly.ts",
         "apps/client/src/services/api/client.ts",
@@ -6323,13 +6351,16 @@
         "PersonalInfoContent",
         "PersonalInfoSkeleton",
         "div",
+        "fieldset",
         "h2",
+        "legend",
         "p",
         "strong"
       ],
       "directTestImporters": [
         "apps/client/src/components/dateFieldContexts.test.tsx",
-        "apps/client/src/components/settings/settings-loading.test.tsx"
+        "apps/client/src/components/settings/settings-loading.test.tsx",
+        "apps/client/src/components/settings/settings-task-forms.test.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -6350,6 +6381,7 @@
         "apps/client/src/components/ui/select.tsx",
         "apps/client/src/components/ui/skeleton.tsx",
         "apps/client/src/components/ui/switch.tsx",
+        "apps/client/src/contexts/SettingsTaskContext.ts",
         "apps/client/src/integrations/supabase/client.ts",
         "apps/client/src/lib/dashboardQueries.ts",
         "apps/client/src/services/api/client.ts",
@@ -6381,11 +6413,14 @@
         "SupportPageLink",
         "Switch",
         "div",
+        "fieldset",
         "h2",
+        "legend",
         "p"
       ],
       "directTestImporters": [
-        "apps/client/src/components/settings/settings-loading.test.tsx"
+        "apps/client/src/components/settings/settings-loading.test.tsx",
+        "apps/client/src/components/settings/settings-write-ownership.test.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -6408,6 +6443,7 @@
         "apps/client/src/components/ui/label.tsx",
         "apps/client/src/components/ui/textarea.tsx",
         "apps/client/src/config/iconography.ts",
+        "apps/client/src/contexts/SettingsTaskContext.ts",
         "apps/client/src/hooks/use-toast.ts",
         "apps/client/src/hooks/useFollowing.ts",
         "apps/client/src/lib/avatarUtils.ts",
@@ -6438,13 +6474,16 @@
         "Textarea",
         "button",
         "div",
+        "fieldset",
         "h3",
+        "legend",
         "p",
         "span"
       ],
       "directTestImporters": [
         "apps/client/src/components/FrontendFormAccessibility.test.tsx",
-        "apps/client/src/components/settings/settings-loading.test.tsx"
+        "apps/client/src/components/settings/settings-loading.test.tsx",
+        "apps/client/src/components/settings/settings-task-forms.test.tsx"
       ],
       "changedIn": [
         "F02/F03"
@@ -6461,6 +6500,7 @@
         "apps/client/src/components/ReadingHabitsSection.tsx",
         "apps/client/src/components/ui/button.tsx",
         "apps/client/src/components/ui/card.tsx",
+        "apps/client/src/contexts/SettingsTaskContext.ts",
         "apps/client/src/hooks/useOnboardingStatus.ts",
         "apps/client/src/services/onboarding.ts"
       ],
@@ -6622,7 +6662,8 @@
         "apps/client/src/components/ShellUtilities.test.tsx",
         "tests/fixtures/adaptive-shell/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
-        "tests/fixtures/responsive-composers/main.tsx"
+        "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/settings-continuity/main.tsx"
       ],
       "changedIn": [
         "F09"
@@ -8239,8 +8280,7 @@
         "apps/client/src/lib/utils.ts"
       ],
       "importedBy": [
-        "apps/client/src/components/LibraryBookCard.tsx",
-        "apps/client/src/screens/Settings.tsx"
+        "apps/client/src/components/LibraryBookCard.tsx"
       ],
       "jsx": [
         "AccordionPrimitive.Content",
@@ -8255,8 +8295,7 @@
       "sourceReachable": true,
       "routeImportReachability": [
         "/books",
-        "/my-books",
-        "/settings"
+        "/my-books"
       ]
     },
     {
@@ -9503,7 +9542,6 @@
         "apps/client/src/components/FloatingTimerWidget.tsx",
         "apps/client/src/components/GoalManager.tsx",
         "apps/client/src/components/GoalsSheet.tsx",
-        "apps/client/src/components/ImagePickerDialog.tsx",
         "apps/client/src/components/JournalEntryDialog.tsx",
         "apps/client/src/components/JourneyLevelUpObserver.tsx",
         "apps/client/src/components/ProfileDrawer.tsx",
@@ -10017,9 +10055,11 @@
         "apps/client/src/components/ui/dialog.tsx"
       ],
       "importedBy": [
+        "apps/client/src/components/ImagePickerDialog.tsx",
         "apps/client/src/components/clubs/CreateClubDialog.tsx",
         "apps/client/src/components/social/CreatePostDialog.tsx",
         "apps/client/src/contexts/ConfirmDialogContext.tsx",
+        "apps/client/src/contexts/SettingsTaskProvider.tsx",
         "apps/client/src/contexts/TimerContext.tsx",
         "apps/client/src/screens/MyBooks.tsx",
         "apps/client/src/screens/Settings.tsx"
@@ -10588,6 +10628,7 @@
         "ul"
       ],
       "directTestImporters": [
+        "apps/client/src/components/settings-shell-navigation.test.tsx",
         "tests/fixtures/shell-scroll/mocks.tsx"
       ],
       "changedIn": [
@@ -10792,7 +10833,8 @@
       ],
       "directTestImporters": [
         "tests/fixtures/live-composers/main.tsx",
-        "tests/fixtures/responsive-composers/main.tsx"
+        "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/settings-continuity/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -11021,7 +11063,8 @@
       "directTestImporters": [
         "tests/fixtures/action-feedback/main.tsx",
         "tests/fixtures/frontend-semantics/main.tsx",
-        "tests/fixtures/journal-save/main.tsx"
+        "tests/fixtures/journal-save/main.tsx",
+        "tests/fixtures/settings-continuity/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -11095,6 +11138,7 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/loading/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx"
       ],
       "changedIn": [],
@@ -11622,7 +11666,8 @@
         "tests/fixtures/back-ownership/main.tsx",
         "tests/fixtures/frontend-semantics/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
-        "tests/fixtures/responsive-composers/main.tsx"
+        "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/settings-continuity/main.tsx"
       ],
       "changedIn": [
         "F07"
@@ -11680,6 +11725,7 @@
         "tests/fixtures/library-interactions/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx"
       ],
       "changedIn": [],
@@ -11733,7 +11779,9 @@
       "jsx": [
         "ProfileContext.Provider"
       ],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "tests/fixtures/settings-continuity/main.tsx"
+      ],
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
@@ -11799,6 +11847,89 @@
       ]
     },
     {
+      "path": "apps/client/src/contexts/SettingsTaskContext.ts",
+      "role": "context",
+      "imports": [],
+      "importedBy": [
+        "apps/client/src/components/AppSidebar.tsx",
+        "apps/client/src/components/ProfileDrawer.tsx",
+        "apps/client/src/components/ReadingHabitsSection.tsx",
+        "apps/client/src/components/settings/AccountSettings.tsx",
+        "apps/client/src/components/settings/DataBackupSettings.tsx",
+        "apps/client/src/components/settings/NotificationSettings.tsx",
+        "apps/client/src/components/settings/PersonalInfo.tsx",
+        "apps/client/src/components/settings/PrivacySettings.tsx",
+        "apps/client/src/components/settings/ProfileSettings.tsx",
+        "apps/client/src/components/settings/ReadingProfileSettings.tsx",
+        "apps/client/src/contexts/SettingsTaskProvider.tsx",
+        "apps/client/src/hooks/useSettingsLinkNavigation.ts",
+        "apps/client/src/screens/Settings.tsx"
+      ],
+      "jsx": [],
+      "directTestImporters": [
+        "apps/client/src/components/settings-shell-navigation.test.tsx",
+        "apps/client/src/contexts/SettingsTaskContext.test.tsx"
+      ],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/achievements",
+        "/add-book",
+        "/analytics",
+        "/book-lists",
+        "/book/:id",
+        "/book/:id/progress",
+        "/books",
+        "/clubs",
+        "/clubs/:clubId",
+        "/dashboard",
+        "/edit-book/:id",
+        "/feed",
+        "/goals-management",
+        "/history",
+        "/lists",
+        "/lists/:listId",
+        "/messages",
+        "/my-books",
+        "/posts/:postId",
+        "/profile",
+        "/readers",
+        "/reviews",
+        "/reviews/:reviewId",
+        "/scan",
+        "/scan-barcode",
+        "/scan-cover",
+        "/settings",
+        "/users/:userId"
+      ]
+    },
+    {
+      "path": "apps/client/src/contexts/SettingsTaskProvider.tsx",
+      "role": "context",
+      "imports": [
+        "apps/client/src/components/ui/mobile-dialog.tsx",
+        "apps/client/src/contexts/SettingsTaskContext.ts",
+        "apps/client/src/hooks/useAppBackGuard.ts"
+      ],
+      "importedBy": [
+        "apps/client/src/screens/Settings.tsx"
+      ],
+      "jsx": [
+        "MobileAlertDialog",
+        "SettingsTaskContext.Provider"
+      ],
+      "directTestImporters": [
+        "apps/client/src/components/settings-shell-navigation.test.tsx",
+        "apps/client/src/components/settings/settings-task-forms.test.tsx",
+        "apps/client/src/contexts/SettingsTaskContext.test.tsx"
+      ],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/settings"
+      ]
+    },
+    {
       "path": "apps/client/src/contexts/ThemeContext.tsx",
       "role": "context",
       "imports": [
@@ -11823,7 +11954,8 @@
       ],
       "directTestImporters": [
         "apps/client/src/contexts/ThemeContext.guestPalette.test.tsx",
-        "apps/client/src/contexts/ThemeContext.test.tsx"
+        "apps/client/src/contexts/ThemeContext.test.tsx",
+        "tests/fixtures/settings-continuity/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -11959,7 +12091,6 @@
         "apps/client/src/screens/Readers.tsx",
         "apps/client/src/screens/ReviewDetail.tsx",
         "apps/client/src/screens/Reviews.tsx",
-        "apps/client/src/screens/Settings.tsx",
         "apps/client/src/screens/UserProfile.tsx"
       ],
       "jsx": [],
@@ -12141,6 +12272,7 @@
         "apps/client/src/contexts/appNavigation.ts"
       ],
       "importedBy": [
+        "apps/client/src/contexts/SettingsTaskProvider.tsx",
         "apps/client/src/hooks/useUnsavedAppBack.ts",
         "apps/client/src/screens/MyBooks.tsx"
       ],
@@ -12156,7 +12288,8 @@
         "/add-book",
         "/books",
         "/edit-book/:id",
-        "/my-books"
+        "/my-books",
+        "/settings"
       ]
     },
     {
@@ -12221,6 +12354,7 @@
         "tests/fixtures/adaptive-shell/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx",
         "tests/fixtures/ui-environment/main.tsx"
       ],
@@ -13121,7 +13255,10 @@
         "apps/client/src/screens/Profile.tsx"
       ],
       "jsx": [],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "apps/client/src/components/settings/settings-task-forms.test.tsx",
+        "apps/client/src/hooks/useImagePicker.test.ts"
+      ],
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
@@ -13792,6 +13929,54 @@
       ]
     },
     {
+      "path": "apps/client/src/hooks/useSettingsLinkNavigation.ts",
+      "role": "hook",
+      "imports": [
+        "apps/client/src/contexts/SettingsTaskContext.ts"
+      ],
+      "importedBy": [
+        "apps/client/src/components/AppSidebar.tsx",
+        "apps/client/src/components/MobileBottomNav.tsx",
+        "apps/client/src/components/ProfileDrawer.tsx"
+      ],
+      "jsx": [],
+      "directTestImporters": [
+        "apps/client/src/components/settings-shell-navigation.test.tsx"
+      ],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/achievements",
+        "/add-book",
+        "/analytics",
+        "/book-lists",
+        "/book/:id",
+        "/book/:id/progress",
+        "/books",
+        "/clubs",
+        "/clubs/:clubId",
+        "/dashboard",
+        "/edit-book/:id",
+        "/feed",
+        "/goals-management",
+        "/history",
+        "/lists",
+        "/lists/:listId",
+        "/messages",
+        "/my-books",
+        "/posts/:postId",
+        "/profile",
+        "/readers",
+        "/reviews",
+        "/reviews/:reviewId",
+        "/scan",
+        "/scan-barcode",
+        "/scan-cover",
+        "/settings",
+        "/users/:userId"
+      ]
+    },
+    {
       "path": "apps/client/src/hooks/useSocialFeed.ts",
       "role": "hook",
       "imports": [
@@ -14131,6 +14316,7 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/loading/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx",
         "tests/fixtures/ui-environment/main.tsx"
       ],
@@ -17211,14 +17397,14 @@
         "apps/client/src/components/settings/ProfileSettings.tsx",
         "apps/client/src/components/settings/ReadingProfileSettings.tsx",
         "apps/client/src/components/skeletons/SettingsSkeleton.tsx",
-        "apps/client/src/components/ui/accordion.tsx",
         "apps/client/src/components/ui/app-icon.tsx",
         "apps/client/src/components/ui/button.tsx",
         "apps/client/src/components/ui/card.tsx",
         "apps/client/src/components/ui/mobile-dialog.tsx",
         "apps/client/src/components/ui/skeleton.tsx",
         "apps/client/src/config/iconography.ts",
-        "apps/client/src/hooks/use-mobile.tsx",
+        "apps/client/src/contexts/SettingsTaskContext.ts",
+        "apps/client/src/contexts/SettingsTaskProvider.tsx",
         "apps/client/src/hooks/use-toast.ts",
         "apps/client/src/hooks/useAuth.ts",
         "apps/client/src/hooks/useHapticFeedback.ts",
@@ -17229,10 +17415,6 @@
         "apps/client/src/App.tsx"
       ],
       "jsx": [
-        "Accordion",
-        "AccordionContent",
-        "AccordionItem",
-        "AccordionTrigger",
         "AccountSettings",
         "AccountSettingsSkeleton",
         "AppIcon",
@@ -17242,7 +17424,7 @@
         "CardContent",
         "DataBackupSettings",
         "LoadingRegion",
-        "MobileAlertDialog",
+        "MobileDialog",
         "MobileHeader",
         "MobileLayout",
         "NotificationSettings",
@@ -17255,6 +17437,8 @@
         "React.Fragment",
         "ReadingHabitsSkeleton",
         "ReadingProfileSettings",
+        "SettingsContent",
+        "SettingsTaskProvider",
         "Skeleton",
         "SupportPageLink",
         "button",
@@ -17264,9 +17448,12 @@
         "h3",
         "nav",
         "p",
+        "section",
         "span"
       ],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "tests/fixtures/settings-continuity/main.tsx"
+      ],
       "changedIn": [
         "F08",
         "F09"
@@ -18492,7 +18679,9 @@
         "apps/client/src/services/api/index.ts"
       ],
       "jsx": [],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "tests/fixtures/settings-continuity/api.ts"
+      ],
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
@@ -19568,7 +19757,8 @@
       ],
       "jsx": [],
       "directTestImporters": [
-        "apps/client/src/services/dataPortability.test.ts"
+        "apps/client/src/services/dataPortability.test.ts",
+        "tests/fixtures/settings-continuity/portability.ts"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -20622,6 +20812,7 @@
         "apps/client/src/components/library/LibraryBookPrimaryAction.test.tsx",
         "apps/client/src/components/library/LibraryBookshelfView.test.tsx",
         "apps/client/src/components/settings/AccountSettings.test.tsx",
+        "apps/client/src/components/settings/settings-write-ownership.test.tsx",
         "apps/client/src/contexts/TimerContext.test.tsx",
         "apps/client/src/hooks/libraryLoading.test.tsx",
         "apps/client/src/lib/badgeImages.test.ts",
@@ -20644,6 +20835,8 @@
         "tests/fixtures/library-interactions/main.tsx",
         "tests/fixtures/loading/library-cases.tsx",
         "tests/fixtures/loading/main.tsx",
+        "tests/fixtures/settings-continuity/api.ts",
+        "tests/fixtures/settings-continuity/portability.ts",
         "tests/fixtures/shell-scroll/data.ts"
       ],
       "changedIn": [],

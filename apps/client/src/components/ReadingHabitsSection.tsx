@@ -2,7 +2,8 @@ import { getApiErrorStatus } from "@/services/api/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 import { ReadingHabitsSkeleton } from "@/components/skeletons/SettingsSkeleton";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback, useId } from "react";
+import { useSettingsLeave, useSettingsTask } from "@/contexts/SettingsTaskContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,12 +26,20 @@ interface ReadingHabitsSectionProps {
 }
 
 const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
-  const [habits, setHabits] = useState<ReadingHabits | null>(null);
+  const [habits, setHabits] = useState<Omit<ReadingHabits, "id" | "created_at" | "updated_at"> | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const mounted = useRef(false);
+  const pending = useRef(false);
+  const readRequest = useRef(0);
+  const editRef = useRef<HTMLButtonElement>(null);
+  const returnToEdit = useRef(false);
+  const id = useId();
+  const leave = useSettingsLeave();
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
@@ -46,21 +55,21 @@ const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
     motivation: "",
     book_format: "",
   });
+  const [baseline, setBaseline] = useState(formData);
+  useSettingsTask({ dirty: isEditing && JSON.stringify(formData) !== JSON.stringify(baseline), pending: saving });
 
-  useEffect(() => {
-    loadHabits();
-  }, [userId]);
-
-  const loadHabits = async () => {
+  const loadHabits = useCallback(async () => {
+    const request = ++readRequest.current;
     try {
       setLoading(true);
       setLoadError(null);
       const { habits: data } = await fetchReadingProfile(userId);
+      if (!mounted.current || request !== readRequest.current) return;
       setHasLoaded(true);
 
       if (data) {
         setHabits(data as ReadingHabits);
-        setFormData({
+        const draft = {
           avg_time_per_book: data.avg_time_per_book?.toString() || "",
           avg_length: data.avg_length?.toString() || "",
           books_6mo: data.books_6mo?.toString() || "",
@@ -72,19 +81,35 @@ const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
           reading_frequency: data.reading_frequency || "",
           motivation: data.motivation || "",
           book_format: data.book_format || "",
-        });
+        };
+        setFormData(draft);
+        setBaseline(draft);
       }
     } catch (error: unknown) {
+      if (!mounted.current || request !== readRequest.current) return;
       if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setHasLoaded(false); setHabits(null); }
       console.error('Error loading reading habits:', error);
       setLoadError("We couldn't load your reading habits. Please try again.");
     } finally {
-      setLoading(false);
+      if (mounted.current && request === readRequest.current) setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    mounted.current = true;
+    void loadHabits();
+    return () => { mounted.current = false; readRequest.current += 1; };
+  }, [loadHabits]);
+  useEffect(() => {
+    if (!isEditing && returnToEdit.current) { returnToEdit.current = false; editRef.current?.focus(); }
+  }, [isEditing]);
 
   const handleSave = async () => {
+    if (!mounted.current || pending.current) return;
+    pending.current = true;
+    const submitted = { ...formData, genres: [...formData.genres] };
     setSaving(true);
+    setSaveError(null);
     try {
       const updateData = {
         user_id: userId,
@@ -102,23 +127,29 @@ const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
       };
 
       await upsertReadingHabits(updateData);
+      if (!mounted.current) return;
+      setBaseline(submitted);
+      setHabits(updateData);
 
       toast({
         title: "Reading habits updated",
         description: "Your reading preferences have been saved successfully",
       });
       
+      returnToEdit.current = true;
       setIsEditing(false);
-      loadHabits();
     } catch (error: unknown) {
+      if (!mounted.current) return;
       console.error('Error updating reading habits:', error);
+      setSaveError(error instanceof Error ? error.message : "Failed to update reading habits");
       toast({
         variant: "destructive",
         title: "Error updating reading habits",
         description: error instanceof Error ? error.message : "Failed to update reading habits",
       });
     } finally {
-      setSaving(false);
+      pending.current = false;
+      if (mounted.current) setSaving(false);
     }
   };
 
@@ -133,7 +164,7 @@ const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
 
   if (!hasLoaded) {
     return <LoadingRegion loading={loading} label="Loading reading habits"><Card>
-      <CardHeader><div className="flex items-center justify-between"><CardTitle className="font-display flex items-center"><Book className="h-5 w-5 mr-2" />Reading Habits</CardTitle>{loading && <Skeleton className="h-10 min-h-11 w-20" />}</div></CardHeader>
+      <CardHeader><div className="flex flex-wrap items-center justify-between gap-3"><CardTitle className="font-display flex min-w-0 items-center"><Book className="h-5 w-5 shrink-0 mr-2" />Reading Habits</CardTitle>{loading && <Skeleton className="h-10 min-h-11 w-20" />}</div></CardHeader>
       <CardContent className="space-y-6">{loadError && <LoadingError message={loadError} onRetry={loadHabits} />}{loading && <ReadingHabitsSkeleton />}</CardContent>
     </Card></LoadingRegion>;
   }
@@ -143,29 +174,32 @@ const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
     {loadError && <LoadingError message={loadError} onRetry={loadHabits} />}
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="font-display flex items-center">
-            <Book className="h-5 w-5 mr-2" />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <CardTitle className="font-display flex min-w-0 items-center">
+            <Book className="h-5 w-5 shrink-0 mr-2" />
             Reading Habits
           </CardTitle>
           {!isEditing ? (
             <Button
+              ref={editRef}
               variant="outline"
               size="sm"
-              onClick={() => setIsEditing(true)}
+              onClick={() => { setSaveError(null); setIsEditing(true); }}
             >
               <EditPencil className="h-4 w-4 mr-2" />
               Edit
             </Button>
           ) : (
-            <div className="flex gap-2">
+            <div className="flex max-w-full flex-wrap gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  setIsEditing(false);
-                  loadHabits();
-                }}
+                disabled={saving}
+                onClick={() => { if (!pending.current) void leave(() => {
+                  if (!mounted.current) return;
+                  setFormData({ ...baseline, genres: [...baseline.genres] }); setSaveError(null);
+                  returnToEdit.current = true; setIsEditing(false);
+                }); }}
               >
                 <Xmark className="h-4 w-4 mr-2" />
                 Cancel
@@ -174,6 +208,7 @@ const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
                 size="sm"
                 onClick={handleSave}
                 disabled={saving}
+                aria-describedby={saveError ? `${id}-save-error` : undefined}
               >
                 <FloppyDisk className="h-4 w-4 mr-2" />
                 {saving ? "Saving..." : "Save"}
@@ -183,6 +218,8 @@ const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
+        {saving && <p role="status" className="text-sm text-muted-foreground">Saving your reading habits…</p>}
+        {saveError && <p id={`${id}-save-error`} role="alert" className="text-sm text-destructive">{saveError}</p>}
         {!habits && !isEditing ? (
           <div className="text-center py-8">
             <p className="font-sans text-muted-foreground mb-4">
@@ -193,7 +230,8 @@ const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
             </Button>
           </div>
         ) : isEditing ? (
-          <div className="space-y-4">
+          <fieldset disabled={saving} className="min-w-0 space-y-4">
+            <legend className="sr-only">Reading habits</legend>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="avg_time">Average days per book</Label>
@@ -241,20 +279,22 @@ const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label>Favorite Genres</Label>
+              <Label id={`${id}-genres-label`}>Favorite Genres</Label>
               <p className="font-sans text-sm text-muted-foreground mb-2">
                 Select all genres you enjoy reading
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div role="group" aria-labelledby={`${id}-genres-label`} className="flex flex-wrap gap-2">
                 {GENRES.map((genre) => (
-                  <Badge
+                  <Button
+                    type="button"
                     key={genre}
                     variant={formData.genres.includes(genre) ? "default" : "outline"}
-                    className="cursor-pointer"
+                    aria-pressed={formData.genres.includes(genre)}
+                    size="sm"
                     onClick={() => toggleGenre(genre)}
                   >
                     {genre}
-                  </Badge>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -262,10 +302,11 @@ const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
             <div className="space-y-2">
               <Label htmlFor="longest_genre">Which genre takes longest to read?</Label>
               <Select
+                disabled={saving}
                 value={formData.longest_genre}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, longest_genre: value }))}
               >
-                <SelectTrigger>
+                <SelectTrigger id="longest_genre">
                   <SelectValue placeholder="Select a genre" />
                 </SelectTrigger>
                 <SelectContent>
@@ -292,6 +333,7 @@ const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
               <div className="space-y-2">
                 <Label htmlFor="preferred_time">Preferred reading time</Label>
                 <Select
+                  disabled={saving}
                   value={formData.preferred_reading_time}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, preferred_reading_time: value }))}
                 >
@@ -313,6 +355,7 @@ const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
               <div className="space-y-2">
                 <Label htmlFor="reading_frequency">Reading frequency</Label>
                 <Select
+                  disabled={saving}
                   value={formData.reading_frequency}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, reading_frequency: value }))}
                 >
@@ -331,6 +374,7 @@ const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
               <div className="space-y-2">
                 <Label htmlFor="book_format">Preferred format</Label>
                 <Select
+                  disabled={saving}
                   value={formData.book_format}
                   onValueChange={(value) => setFormData(prev => ({ ...prev, book_format: value }))}
                 >
@@ -356,7 +400,7 @@ const ReadingHabitsContent = ({ userId }: ReadingHabitsSectionProps) => {
                 placeholder="Learning, focus, joy, school, career..."
               />
             </div>
-          </div>
+          </fieldset>
         ) : (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Camera, CameraResultType, CameraSource, Photo } from "@capacitor/camera";
 import { Capacitor } from "@capacitor/core";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,11 @@ export interface PickedImage {
 export const useImagePicker = () => {
   const [picking, setPicking] = useState(false);
   const { toast } = useToast();
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   const pickImage = async (options: ImagePickerOptions = {}): Promise<PickedImage | null> => {
     setPicking(true);
@@ -47,6 +52,7 @@ export const useImagePicker = () => {
           width: options.width,
           height: options.height,
         });
+        if (!mounted.current) return null;
 
         if (!photo.dataUrl) {
           throw new Error('No image data received');
@@ -64,13 +70,14 @@ export const useImagePicker = () => {
         };
       } else {
         // Web fallback using file input
-        return new Promise((resolve) => {
+        return await new Promise((resolve) => {
           const input = document.createElement('input');
           input.type = 'file';
           input.accept = 'image/*';
           input.style.display = 'none';
           
           input.onchange = (e) => {
+            if (!mounted.current) { resolve(null); return; }
             const file = (e.target as HTMLInputElement).files?.[0];
             if (!file) {
               resolve(null);
@@ -101,6 +108,7 @@ export const useImagePicker = () => {
 
             const reader = new FileReader();
             reader.onload = (event) => {
+              if (!mounted.current) { resolve(null); return; }
               const dataUrl = event.target?.result as string;
               const format = file.type.split('/')[1] || 'jpeg';
               
@@ -111,6 +119,7 @@ export const useImagePicker = () => {
               });
             };
             reader.onerror = () => {
+              if (!mounted.current) { resolve(null); return; }
               toast({
                 variant: 'destructive',
                 title: 'Error',
@@ -131,6 +140,7 @@ export const useImagePicker = () => {
         });
       }
     } catch (error: unknown) {
+      if (!mounted.current) return null;
       console.error('Error picking image:', error);
       
       // Handle permission denied
@@ -150,7 +160,7 @@ export const useImagePicker = () => {
       
       return null;
     } finally {
-      setPicking(false);
+      if (mounted.current) setPicking(false);
     }
   };
 

@@ -1,7 +1,7 @@
 import { getApiErrorStatus } from "@/services/api/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { SupportPageLink } from "@/components/SupportPageLink";
 import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,6 +28,7 @@ import {
 import type { User } from "@/types";
 import { invalidateDashboardHomeQueries } from "@/lib/dashboardQueries";
 import { toast } from "sonner";
+import { useSettingsLeave, useSettingsTask } from "@/contexts/SettingsTaskContext";
 
 interface PrivacySettingsProps {
   user: User;
@@ -42,6 +43,8 @@ const initials = (name?: string | null) =>
     .slice(0, 2);
 
 const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
+  const id = useId();
+  const leave = useSettingsLeave();
   const queryClient = useQueryClient();
   const [publicProfile, setPublicProfile] = useState(true);
   const [showReadingActivity, setShowReadingActivity] = useState(true);
@@ -55,8 +58,17 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
   const [loading, setLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+  const [mutationError, setMutationError] = useState<string | null>(null);
+  const pendingRef = useRef(false);
+  const mounted = useRef(false);
+  const readRequest = useRef(0);
+  useSettingsTask({ dirty: false, pending });
 
   const loadPrivacy = useCallback(async () => {
+    if (!mounted.current || pendingRef.current) return;
+    const request = ++readRequest.current;
+    const isCurrent = () => mounted.current && readRequest.current === request;
     try {
       setLoading(true);
       setLoadError(null);
@@ -68,6 +80,7 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
           .maybeSingle(),
         getBlockedUsers(),
       ]);
+      if (!isCurrent()) return;
       if (error) throw error;
 
       setPublicProfile((profile?.profile_visibility || "public") === "public");
@@ -81,18 +94,43 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
       setBlockedUsers(blocks);
       setHasLoaded(true);
     } catch (error) {
+      if (!isCurrent()) return;
       if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setHasLoaded(false); setBlockedUsers([]); }
       console.error("Failed to load privacy settings", error);
       toast.error("Failed to load privacy settings");
       setLoadError("We couldn't load privacy settings. Please try again.");
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   }, [user.id]);
 
   useEffect(() => {
-    loadPrivacy();
+    mounted.current = true;
+    void loadPrivacy();
+    return () => { mounted.current = false; readRequest.current += 1; };
   }, [loadPrivacy]);
+
+  const updateSetting = async <T,>({ apply, save, rollback, success, failure }: {
+    apply: () => void;
+    save: () => Promise<T>;
+    rollback: () => void;
+    success?: (result: T) => void | Promise<void>;
+    failure: string;
+  }) => {
+    if (pendingRef.current || !mounted.current || !hasLoaded || loading) return;
+    pendingRef.current = true;
+    setPending(true); setMutationError(null);
+    apply();
+    try {
+      const result = await save();
+      if (mounted.current) await success?.(result);
+    } catch {
+      if (!mounted.current) return;
+      rollback(); setMutationError(failure); toast.error(failure);
+    } finally {
+      if (mounted.current) { pendingRef.current = false; setPending(false); }
+    }
+  };
 
   const updateProfilePrivacy = async (updates: Record<string, unknown>) => {
     const { error } = await supabase
@@ -104,78 +142,59 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
 
   const togglePublicProfile = async (checked: boolean) => {
     const previous = publicProfile;
-    setPublicProfile(checked);
-    try {
-      await updateProfilePrivacy({ profile_visibility: checked ? "public" : "private" });
-    } catch (error) {
-      setPublicProfile(previous);
-      toast.error("Failed to update profile visibility");
-    }
+    await updateSetting({ apply: () => setPublicProfile(checked), save: () => updateProfilePrivacy({ profile_visibility: checked ? "public" : "private" }), rollback: () => setPublicProfile(previous), failure: "Failed to update profile visibility" });
   };
 
   const toggleReadingActivity = async (checked: boolean) => {
     const previous = showReadingActivity;
-    setShowReadingActivity(checked);
-    try {
-      await updateProfilePrivacy({ show_reading_activity: checked });
-      toast.success(checked ? "Activity sharing enabled" : "Activity sharing disabled");
-    } catch (error) {
-      setShowReadingActivity(previous);
-      toast.error("Failed to update activity privacy");
-    }
+    await updateSetting({ apply: () => setShowReadingActivity(checked), save: () => updateProfilePrivacy({ show_reading_activity: checked }), rollback: () => setShowReadingActivity(previous), success: () => { toast.success(checked ? "Activity sharing enabled" : "Activity sharing disabled"); }, failure: "Failed to update activity privacy" });
   };
 
   const toggleOnlineStatus = async (checked: boolean) => {
     const previous = showOnlineStatus;
-    setShowOnlineStatus(checked);
-    try {
-      await updateProfilePrivacy({
+    await updateSetting({
+      apply: () => setShowOnlineStatus(checked),
+      save: () => updateProfilePrivacy({
         show_online_status: checked,
         last_seen_at: checked ? new Date().toISOString() : null,
-      });
-      if (checked) {
-        await updatePresence();
-      }
-      toast.success(checked ? "Online status enabled" : "Online status hidden");
-    } catch (error) {
-      setShowOnlineStatus(previous);
-      toast.error("Failed to update online status");
-    }
+      }),
+      rollback: () => setShowOnlineStatus(previous),
+      success: async () => {
+        if (checked) {
+          try { await updatePresence(); }
+          catch {
+            if (mounted.current) {
+              const message = "Online status preference saved, but your current presence could not refresh.";
+              setMutationError(message); toast.error(message);
+            }
+            return;
+          }
+        }
+        if (mounted.current) toast.success(checked ? "Online status enabled" : "Online status hidden");
+      },
+      failure: "Failed to update online status",
+    });
   };
 
   const updateReaderStatus = async (value: ReaderStatusBadge) => {
     const previous = readerStatus;
-    setReaderStatus(value);
-    try {
-      await updatePresence(value);
-      toast.success("Reader status updated");
-    } catch (error) {
-      setReaderStatus(previous);
-      toast.error("Failed to update reader status");
-    }
+    await updateSetting({ apply: () => setReaderStatus(value), save: () => updatePresence(value), rollback: () => setReaderStatus(previous), success: () => { toast.success("Reader status updated"); }, failure: "Failed to update reader status" });
   };
 
   const toggleLocation = async (checked: boolean) => {
     const previous = showLocation;
-    setShowLocation(checked);
-    try {
-      await updateProfilePrivacy({ show_location: checked });
+    await updateSetting({ apply: () => setShowLocation(checked), save: () => updateProfilePrivacy({ show_location: checked }), rollback: () => setShowLocation(previous), success: () => {
       if (checked && !hasSavedLocation) {
         toast.info("Add your city or current location from Personal Info to appear nearby.");
       } else {
         toast.success(checked ? "Nearby discovery enabled" : "Nearby discovery hidden");
       }
-    } catch (error) {
-      setShowLocation(previous);
-      toast.error("Failed to update location privacy");
-    }
+    }, failure: "Failed to update location privacy" });
   };
 
   const toggleLeaderboard = async (checked: boolean) => {
     const previous = leaderboardOptIn;
-    setLeaderboardOptIn(checked);
-    try {
-      const response = await updateGamificationSettings({ leaderboard_opt_in: checked });
+    await updateSetting({ apply: () => setLeaderboardOptIn(checked), save: () => updateGamificationSettings({ leaderboard_opt_in: checked }), rollback: () => setLeaderboardOptIn(previous), success: (response) => {
       void invalidateDashboardHomeQueries(queryClient, user.id);
       toast.success(
         checked
@@ -186,35 +205,20 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
             : "Reader Leagues enabled"
           : "Reader Leagues disabled",
       );
-    } catch {
-      setLeaderboardOptIn(previous);
-      toast.error("Failed to update Reader League participation");
-    }
+    }, failure: "Failed to update Reader League participation" });
   };
 
   const toggleGamificationVisibility = async (checked: boolean) => {
     const previous = gamificationProfileVisible;
-    setGamificationProfileVisible(checked);
-    try {
-      await updateGamificationSettings({ gamification_profile_visible: checked });
+    await updateSetting({ apply: () => setGamificationProfileVisible(checked), save: () => updateGamificationSettings({ gamification_profile_visible: checked }), rollback: () => setGamificationProfileVisible(previous), success: () => {
       void invalidateDashboardHomeQueries(queryClient, user.id);
       toast.success(checked ? "Journey details are visible" : "Journey details are private");
-    } catch {
-      setGamificationProfileVisible(previous);
-      toast.error("Failed to update Journey visibility");
-    }
+    }, failure: "Failed to update Journey visibility" });
   };
 
   const handleUnblock = async (userId: string) => {
     const previous = blockedUsers;
-    setBlockedUsers((current) => current.filter((blocked) => blocked.user_id !== userId));
-    try {
-      await unblockUser(userId);
-      toast.success("Reader unblocked");
-    } catch (error) {
-      setBlockedUsers(previous);
-      toast.error("Failed to unblock reader");
-    }
+    await updateSetting({ apply: () => setBlockedUsers(current => current.filter(blocked => blocked.user_id !== userId)), save: () => unblockUser(userId), rollback: () => setBlockedUsers(previous), success: () => { toast.success("Reader unblocked"); }, failure: "Failed to unblock reader" });
   };
 
   return (
@@ -224,11 +228,14 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
         <p className="font-sans text-muted-foreground mt-1">
           Control who can see you, your activity, and your social interactions.
         </p>
-        <SupportPageLink section="privacy" className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-primary underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring">Privacy information and support</SupportPageLink>
+        <SupportPageLink section="privacy" beforeNavigate={leave} className="mt-2 inline-flex min-h-11 items-center text-sm font-medium text-primary underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring">Privacy information and support</SupportPageLink>
       </div>
 
       {loadError && <LoadingError message={loadError} onRetry={loadPrivacy} />}
-      {(!loadError || hasLoaded) && <>
+      {mutationError && <p id={`${id}-error`} role="alert" className="text-sm text-destructive">{mutationError}</p>}
+      {pending && <p role="status" className="text-sm text-muted-foreground">Saving your privacy preference…</p>}
+      {(!loadError || hasLoaded) && <fieldset disabled={pending} aria-busy={pending} aria-describedby={mutationError ? `${id}-error` : undefined} className="min-w-0 space-y-6">
+      <legend className="sr-only">Privacy and discovery controls</legend>
       <Card>
         <CardHeader>
           <CardTitle>Profile Visibility</CardTitle>
@@ -239,12 +246,13 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <Label>Public Profile</Label>
+              <Label htmlFor={`${id}-public`}>Public Profile</Label>
               <p className="font-sans text-sm text-muted-foreground">
                 Allow readers to find and view your profile.
               </p>
             </div>
             {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
+              id={`${id}-public`}
               checked={publicProfile}
               disabled={loading}
               onCheckedChange={togglePublicProfile}
@@ -253,12 +261,13 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
 
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <Label>Show Reading Activity</Label>
+              <Label htmlFor={`${id}-activity`}>Show Reading Activity</Label>
               <p className="font-sans text-sm text-muted-foreground">
                 Include your reading updates in mutual-friend Activity feeds.
               </p>
             </div>
             {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
+              id={`${id}-activity`}
               checked={showReadingActivity}
               disabled={loading}
               onCheckedChange={toggleReadingActivity}
@@ -267,7 +276,7 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
 
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <Label>Show Location</Label>
+              <Label htmlFor={`${id}-location`}>Show Location</Label>
               <p className="font-sans text-sm text-muted-foreground">
                 Allow your saved location to be used for nearby reader discovery.
               </p>
@@ -277,7 +286,7 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
                 </p>
               )}
             </div>
-            {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch checked={showLocation} disabled={loading} onCheckedChange={toggleLocation} />)}
+            {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch id={`${id}-location`} checked={showLocation} disabled={loading} onCheckedChange={toggleLocation} />)}
           </div>
         </CardContent>
       </Card>
@@ -292,12 +301,13 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <Label>Join Reader Leagues</Label>
+              <Label htmlFor={`${id}-leagues`}>Join Reader Leagues</Label>
               <p className="font-sans text-sm text-muted-foreground">
                 Enter optional weekly leagues using qualifying reading activity. New opt-ins start next week.
               </p>
             </div>
             {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
+              id={`${id}-leagues`}
               checked={leaderboardOptIn}
               disabled={loading}
               onCheckedChange={toggleLeaderboard}
@@ -305,12 +315,13 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
           </div>
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <Label>Show Journey on Profile</Label>
+              <Label htmlFor={`${id}-journey`}>Show Journey on Profile</Label>
               <p className="font-sans text-sm text-muted-foreground">
                 Let eligible readers see your level and league rank.
               </p>
             </div>
             {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
+              id={`${id}-journey`}
               checked={gamificationProfileVisible}
               disabled={loading}
               onCheckedChange={toggleGamificationVisibility}
@@ -329,12 +340,13 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <Label>Show Online Status</Label>
+              <Label htmlFor={`${id}-online`}>Show Online Status</Label>
               <p className="font-sans text-sm text-muted-foreground">
                 Let mutual friends see when you are active in Brack.
               </p>
             </div>
             {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
+              id={`${id}-online`}
               checked={showOnlineStatus}
               disabled={loading}
               onCheckedChange={toggleOnlineStatus}
@@ -342,13 +354,13 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
           </div>
 
           <div className="grid gap-2">
-            <Label>Reader Status Badge</Label>
+            <Label htmlFor={`${id}-status`}>Reader Status Badge</Label>
             {!hasLoaded ? <Skeleton className="h-10 min-h-[44px] w-full max-w-md" /> : (<Select
               value={readerStatus}
               onValueChange={(value) => updateReaderStatus(value as ReaderStatusBadge)}
-              disabled={loading}
+              disabled={loading || pending}
             >
-              <SelectTrigger className="max-w-md">
+              <SelectTrigger id={`${id}-status`} className="max-w-md">
                 <SelectValue placeholder="Choose a reader status" />
               </SelectTrigger>
               <SelectContent>
@@ -402,7 +414,7 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
                     </p>
                   </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => handleUnblock(blocked.user_id)}>
+                <Button variant="outline" size="sm" aria-label={`Unblock ${blocked.user?.display_name || "reader"}`} onClick={() => handleUnblock(blocked.user_id)}>
                   Unblock
                 </Button>
               </div>
@@ -410,7 +422,7 @@ const PrivacySettingsContent = ({ user }: PrivacySettingsProps) => {
           )}
         </CardContent>
       </Card>
-      </>}
+      </fieldset>}
     </LoadingRegion>
   );
 };

@@ -74,7 +74,7 @@ export const ScrollToTop = ({
       onClick={scrollToTop}
       size="icon"
       className={cn(
-        "fixed z-[55] h-11 w-11 rounded-full border border-primary/30 bg-primary text-primary-foreground shadow-[0_18px_42px_rgba(0,0,0,0.35)] shadow-primary/20 ring-1 ring-primary/20 transition-all duration-200 hover:bg-primary/90 hover:shadow-[0_22px_50px_rgba(0,0,0,0.42)] focus-visible:ring-primary/50",
+        "fixed z-40 h-11 w-11 rounded-full border border-primary/30 bg-primary text-primary-foreground shadow-[0_18px_42px_rgba(0,0,0,0.35)] shadow-primary/20 ring-1 ring-primary/20 transition-all duration-200 hover:bg-primary/90 hover:shadow-[0_22px_50px_rgba(0,0,0,0.42)] focus-visible:ring-primary/50",
         "bottom-[calc(env(safe-area-inset-bottom)+1rem)] right-4 md:bottom-6 md:right-6",
         isVisible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0",
         className

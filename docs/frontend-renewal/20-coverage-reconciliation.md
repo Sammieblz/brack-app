@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-**Continuation:** CR01 is committed in `93b63bc`; [checkpoint21](21-live-composers.md) preserves its scoped evidence. CR02 is implemented and verified within [checkpoint22's scope](22-responsive-composers.md), awaiting user review without a commit, baseline `3e11d31`. This document remains the coverage correction and batch sequence; its documentation-only review results and original source findings below are historical. CR03–CR10 remain open.
+**Continuation:** CR01 is committed in `93b63bc` and CR02 in `4dadc37`. Their review stops are historical. [Checkpoint23](23-settings-continuity.md) records CR03 as implemented and verified within browser/unit scope, uncommitted and awaiting user review: 95 distinct unit tests across 12 files, 87 distinct Settings browser cases through the full run and passing follow-ups, shared shell21/21 and overlay15/15, client/fixture types, changed-file lint, final build and local graph/Obsidian export. This document remains the coverage and corrective sequence authority. After review, CR04 Library/list correctness precedes main F10 work. CR04-CR10 and remaining main-ticket acceptance stay open; those programs overlap and must not be counted twice. F16 visual work and broader device/AT/performance acceptance remain open.
 
 **The user's coverage objection is substantiated.** F01–F09 committed useful repairs, but the accumulated fixture results do not close their cross-application requirements. This review supersedes the “proceed to F10” handoff. Current source baseline is **`db076cf`**, which already commits F09; the previous uncommitted status was stale. The worktree was clean when this review began.
 
@@ -22,7 +22,7 @@ This pass changes the plan, audit artifacts and delivery instructions, not appli
 | Artifact | Purpose |
 | --- | --- |
 | [Source census](coverage-review/01-source-census.md) | All 39 route paths, 33 screen modules and 309 presentation modules, including 272 component modules (primitives/helpers/component CSS included). Not a count of distinct rendered widgets. |
-| [Machine-readable census](coverage-review/inventory.json) | All 507 client runtime source modules/styles, local imports/reverse imports, JSX tags, possible route reachability, direct test imports and files touched by ticket commits. Filter it; do not paste the whole file into context. |
+| [Machine-readable census](coverage-review/inventory.json) | All 510 client runtime source modules/styles after CR03, local imports/reverse imports, JSX tags, possible route reachability, direct test imports and files touched by ticket commits. Filter it; do not paste the whole file into context. |
 | [Census generator](coverage-review/generate-inventory.mjs) | Reproducible TypeScript AST/static-import and Git evidence. No semantic/cloud extraction, no application writes. |
 | [F01–F04 consumers](coverage-review/02-correctness-consumers.md) | Live writing, navigation, feedback and outcome coverage; RC finding IDs. |
 | [Every route and shell consumer](coverage-review/03-route-shell-consumers.md) | All 39 paths/33 screens, alternate state branches, navigation, gestures and responsive ownership; RS IDs. |
@@ -53,7 +53,7 @@ Committed code and recorded passes remain historical facts. “Coverage open” 
 
 ## Corrective batches before routine F10 progression
 
-The IDs below consolidate overlapping RC/RS/OF/RM findings. **CR01 is committed in `93b63bc`, with bounded evidence in [checkpoint21](21-live-composers.md). CR02 is authorized and tracked in [checkpoint22](22-responsive-composers.md); CR03–CR10 remain unimplemented.** Later batches can be reordered for a concrete blocker, with the reason recorded. Two units may be combined only if every consumer/state and checkpoint can be completed. Do not broaden one unit into an unfinished whole-screen redesign.
+The IDs below consolidate overlapping RC/RS/OF/RM findings. **CR01 is committed in `93b63bc`, with bounded evidence in [checkpoint21](21-live-composers.md). CR02 is committed in `4dadc37`, with bounded evidence in [checkpoint22](22-responsive-composers.md). CR03 is implemented and verified within browser/unit scope, awaiting user review in [checkpoint23](23-settings-continuity.md); CR04-CR10 remain unimplemented.** CR04 Library/list correctness is next before main F10 work. Later batches can be reordered for a concrete blocker, with the reason recorded. Two units may be combined only if every consumer/state and checkpoint can be completed. Do not broaden one unit into an unfinished whole-screen redesign.
 
 | Batch | Complete unit and owners | Exit evidence |
 | --- | --- | --- |

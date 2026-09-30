@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,13 +18,15 @@ import {
 import type { ImportPreview } from "@/types";
 import { APP_ICONS } from "@/config/iconography";
 import { AppIcon } from "@/components/ui/app-icon";
+import { useSettingsTask } from "@/contexts/SettingsTaskContext";
 
 interface DataBackupSettingsProps {
   user: { id: string };
 }
 
-export const DataBackupSettings = ({ user }: DataBackupSettingsProps) => {
+const DataBackupSettingsContent = ({ user }: DataBackupSettingsProps) => {
   const { toast } = useToast();
+  const id = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [includeMedia, setIncludeMedia] = useState(true);
   const [encrypt, setEncrypt] = useState(false);
@@ -34,13 +36,31 @@ export const DataBackupSettings = ({ user }: DataBackupSettingsProps) => {
   const [parsedImport, setParsedImport] = useState<ParsedReadingImport | null>(null);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [working, setWorking] = useState(false);
+  const [operation, setOperation] = useState<"export" | "preview" | "import" | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const pending = useRef(false);
+  const mounted = useRef(false);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useSettingsTask({ dirty: Boolean(selectedFile || parsedImport || preview || passphrase || importPassphrase), pending: working });
+
+  const begin = (next: NonNullable<typeof operation>) => {
+    if (pending.current || !mounted.current) return false;
+    pending.current = true;
+    setWorking(true); setOperation(next); setError(null);
+    return true;
+  };
+  const finish = () => {
+    if (!mounted.current) return;
+    pending.current = false; setWorking(false); setOperation(null);
+  };
 
   const exportDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
   const handleExport = async (format: "archive" | "csv") => {
-    setWorking(true);
+    if (!begin("export")) return;
     try {
       const backup = await collectReadingBackup(user.id, { includeMedia });
+      if (!mounted.current) return;
       if (format === "csv") {
         await saveExportFile(
           new TextEncoder().encode(backup.csv),
@@ -51,50 +71,56 @@ export const DataBackupSettings = ({ user }: DataBackupSettingsProps) => {
         const archive = encrypt
           ? await encryptBackup(backup.archive, passphrase)
           : backup.archive;
+        if (!mounted.current) return;
         await saveExportFile(
           archive,
           `brack-reading-backup-${exportDate}.${encrypt ? "brack" : "zip"}`,
           encrypt ? "application/octet-stream" : "application/zip"
         );
       }
-      toast({ title: "Backup ready", description: "Your reading data was exported." });
+      if (mounted.current) toast({ title: "Backup ready", description: "Your reading data was exported." });
     } catch (error) {
+      if (!mounted.current) return;
+      setError(error instanceof Error ? error.message : "Could not export reading data");
       toast({
         title: "Export failed",
         description: error instanceof Error ? error.message : "Could not export reading data",
         variant: "destructive",
       });
     } finally {
-      setWorking(false);
+      finish();
     }
   };
 
   const handlePreview = async () => {
-    if (!selectedFile) return;
-    setWorking(true);
+    if (!selectedFile || !begin("preview")) return;
     try {
       const parsed = await parseReadingImport(selectedFile, importPassphrase || undefined);
+      if (!mounted.current) return;
       const nextPreview = await previewReadingImport(user.id, parsed);
+      if (!mounted.current) return;
       setParsedImport(parsed);
       setPreview(nextPreview);
     } catch (error) {
+      if (!mounted.current) return;
       setParsedImport(null);
       setPreview(null);
+      setError(error instanceof Error ? error.message : "Invalid backup file");
       toast({
         title: "Import could not be read",
         description: error instanceof Error ? error.message : "Invalid backup file",
         variant: "destructive",
       });
     } finally {
-      setWorking(false);
+      finish();
     }
   };
 
   const handleCommit = async () => {
-    if (!parsedImport || !preview) return;
-    setWorking(true);
+    if (!parsedImport || !preview || !begin("import")) return;
     try {
       const result = await commitReadingImport(user.id, parsedImport, preview);
+      if (!mounted.current) return;
       toast({
         title: "Import complete",
         description: `${result.created} added, ${result.merged} merged, ${result.failed} failed.`,
@@ -105,18 +131,20 @@ export const DataBackupSettings = ({ user }: DataBackupSettingsProps) => {
       setImportPassphrase("");
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
+      if (!mounted.current) return;
+      setError(error instanceof Error ? error.message : "Could not import reading data");
       toast({
         title: "Import failed",
         description: error instanceof Error ? error.message : "Could not import reading data",
         variant: "destructive",
       });
     } finally {
-      setWorking(false);
+      finish();
     }
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" aria-busy={working}>
       <div>
         <h2 className="font-display text-2xl font-semibold">Data & Backup</h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -124,6 +152,8 @@ export const DataBackupSettings = ({ user }: DataBackupSettingsProps) => {
         </p>
       </div>
 
+      <fieldset disabled={working} aria-describedby={error ? `${id}-error` : undefined} className="min-w-0 space-y-5">
+      <legend className="sr-only">Reading data backup and import</legend>
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Export reading data</CardTitle>
@@ -166,15 +196,16 @@ export const DataBackupSettings = ({ user }: DataBackupSettingsProps) => {
               />
             </div>
           )}
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Button
+              className="h-auto max-w-full whitespace-normal"
               onClick={() => void handleExport("archive")}
               disabled={working || (encrypt && passphrase.length < 8)}
             >
               <AppIcon icon={APP_ICONS.common.download} variant="action" className="mr-2" />
               Export full backup
             </Button>
-            <Button variant="outline" onClick={() => void handleExport("csv")} disabled={working}>
+            <Button className="h-auto max-w-full whitespace-normal" variant="outline" onClick={() => void handleExport("csv")} disabled={working}>
               Export library CSV
             </Button>
           </div>
@@ -197,9 +228,11 @@ export const DataBackupSettings = ({ user }: DataBackupSettingsProps) => {
             type="file"
             accept=".zip,.brack,.json,.csv,application/zip,application/json,text/csv"
             onChange={(event) => {
+              if (pending.current) return;
               setSelectedFile(event.target.files?.[0] ?? null);
               setPreview(null);
               setParsedImport(null);
+              setError(null);
             }}
           />
           {selectedFile?.name.toLowerCase().endsWith(".brack") && (
@@ -225,7 +258,7 @@ export const DataBackupSettings = ({ user }: DataBackupSettingsProps) => {
           {preview && (
             <div className="rounded-md border border-border p-4">
               <h3 className="font-medium">Import preview</h3>
-              <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-5">
+              <dl className="mt-3 grid gap-3 text-sm" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 6rem), 1fr))" }}>
                 <div><dt className="text-muted-foreground">Valid</dt><dd>{preview.valid}</dd></div>
                 <div><dt className="text-muted-foreground">New</dt><dd>{preview.valid - preview.mergeable}</dd></div>
                 <div><dt className="text-muted-foreground">Merge</dt><dd>{preview.mergeable}</dd></div>
@@ -239,6 +272,11 @@ export const DataBackupSettings = ({ user }: DataBackupSettingsProps) => {
           )}
         </CardContent>
       </Card>
+      </fieldset>
+      {working && <p role="status" className="text-sm text-muted-foreground">{operation === "export" ? "Preparing your export…" : operation === "preview" ? "Preparing your import preview…" : "Importing your reading data…"}</p>}
+      {error && <p id={`${id}-error`} role="alert" className="text-sm text-destructive">{error}</p>}
     </div>
   );
 };
+
+export const DataBackupSettings = ({ user }: DataBackupSettingsProps) => <DataBackupSettingsContent key={user.id} user={user} />;

@@ -1,0 +1,2895 @@
+{
+  "checkpoint": "CR03 Settings task continuity",
+  "status": "Implemented and verified within unit/browser scope; awaiting user review; uncommitted",
+  "generated_utc": "2026-09-30T18:10:29.790147+00:00",
+  "baseline_commit": "4dadc372ad056055400d8fbf3baf08ef20e07e77",
+  "counting": "Latest relevant outcomes are deduplicated by source test file, full title and browser engine. Repeated runs are not additional coverage. The original full browser matrix remains 83/87, followed by localized corrections, not a rerun of all 87.",
+  "distinct_accepted": {
+    "unit_tests": 95,
+    "unit_files": 12,
+    "settings_browser_cases": 87,
+    "shared_shell_cases": 21,
+    "shared_overlay_cases": 15,
+    "browser_cases_total": 123
+  },
+  "unit_reports": [
+    {
+      "name": "cr03-unit",
+      "path": "test-results/cr03-unit-summary.json",
+      "bytes": 32801,
+      "sha256": "7dd6d6349590cc6e8d20696dc43fe1997cc091c937ac3599ef10676cf4c2ece1",
+      "passed": 89,
+      "failed": 0,
+      "files": 11
+    },
+    {
+      "name": "cr03-form-accessibility",
+      "path": "test-results/cr03-form-accessibility-summary.json",
+      "bytes": 2241,
+      "sha256": "b52d3a431001943c2eca552e5f75a0d8772b4303d31abc0f5ae857941a54d2fd",
+      "passed": 4,
+      "failed": 0,
+      "files": 1
+    },
+    {
+      "name": "cr03-escape-unit",
+      "path": "test-results/cr03-escape-unit-summary.json",
+      "bytes": 5209,
+      "sha256": "81d3a7c8d69806cca5f94ceab0429881916369a8aced9024691a10cf57a3f7b6",
+      "passed": 13,
+      "failed": 0,
+      "files": 2
+    }
+  ],
+  "unit_cases": [
+    {
+      "file": "apps/client/src/components/FrontendFormAccessibility.test.tsx",
+      "title": "profile, clubs and review form accessibility associates page profile labels, descriptions and save failure without losing edits",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/FrontendFormAccessibility.test.tsx",
+      "title": "profile, clubs and review form accessibility associates settings profile labels, descriptions and save failure without losing edits",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/FrontendFormAccessibility.test.tsx",
+      "title": "profile, clubs and review form accessibility keeps a failed review comment editable and associates its retry feedback",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/FrontendFormAccessibility.test.tsx",
+      "title": "profile, clubs and review form accessibility names club controls and describes privacy and creation errors at their controls",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ImagePickerDialog.test.tsx",
+      "title": "shared image source task does not let an old selection unlock or overwrite a newer opening's selection",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ImagePickerDialog.test.tsx",
+      "title": "shared image source task ignores a selection that outlives its opening",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ImagePickerDialog.test.tsx",
+      "title": "shared image source task keeps the dialog open after source cancellation and unlocks another selection",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ImagePickerDialog.test.tsx",
+      "title": "shared image source task serializes selection and refuses Escape while the source is unresolved",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SupportPageLink.test.tsx",
+      "title": "SupportPageLink does not open multiple browser windows on rapid repeat clicks",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SupportPageLink.test.tsx",
+      "title": "SupportPageLink leaves a web ctrlKey click browser-owned without departure protection",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SupportPageLink.test.tsx",
+      "title": "SupportPageLink leaves a web metaKey click browser-owned without departure protection",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SupportPageLink.test.tsx",
+      "title": "SupportPageLink navigates within web and PWA",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SupportPageLink.test.tsx",
+      "title": "SupportPageLink opens installed-app support in a browser without navigating the app",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SupportPageLink.test.tsx",
+      "title": "SupportPageLink opens the local support page if the installed-app browser fails",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SupportPageLink.test.tsx",
+      "title": "SupportPageLink respects a caller preventing navigation before consulting the departure guard",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/SupportPageLink.test.tsx",
+      "title": "SupportPageLink runs Settings departure protection before opening support",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "title": "Settings shell departure drawer cannot abandon a pending Settings write",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "title": "Settings shell departure drawer delegates sign-out to Settings only after its pending/dirty guard",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "title": "Settings shell departure drawer keeps a declined draft, then navigates once after accepted discard",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "title": "Settings shell departure drawer keeps its existing sign-out service outside Settings",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "title": "Settings shell departure drawer keeps normal link navigation outside Settings",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "title": "Settings shell departure retains browser modifier/target behavior and captures the complete link before awaiting",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "title": "Settings shell departure sidebar cannot abandon a pending Settings write",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "title": "Settings shell departure sidebar delegates sign-out to Settings only after its pending/dirty guard",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "title": "Settings shell departure sidebar keeps a declined draft, then navigates once after accepted discard",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "title": "Settings shell departure sidebar keeps its existing sign-out service outside Settings",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "title": "Settings shell departure sidebar keeps normal link navigation outside Settings",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "title": "Settings shell departure tabs cannot abandon a pending Settings write",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "title": "Settings shell departure tabs keeps a declined draft, then navigates once after accepted discard",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "title": "Settings shell departure tabs keeps normal link navigation outside Settings",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/AccountSettings.test.tsx",
+      "title": "AccountSettings password identities adds password sign-in to the authenticated Google account",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/AccountSettings.test.tsx",
+      "title": "AccountSettings password identities does not reset password input when retrying unrelated account metadata",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/AccountSettings.test.tsx",
+      "title": "AccountSettings password identities does not update when the current password cannot be verified",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/AccountSettings.test.tsx",
+      "title": "AccountSettings password identities offers forgotten-password recovery without sending mail from settings",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/AccountSettings.test.tsx",
+      "title": "AccountSettings password identities reauthenticates and changes a linked password in the current context",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/AccountSettings.test.tsx",
+      "title": "AccountSettings password identities validates a new password before changing the authenticated account",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-loading.test.tsx",
+      "title": "settings loading contracts does not claim the blocked-reader list is empty before it loads",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-loading.test.tsx",
+      "title": "settings loading contracts does not display a prior reader's form after an identity change",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-loading.test.tsx",
+      "title": "settings loading contracts keeps known empty reading habits during a cancel-triggered refresh",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-loading.test.tsx",
+      "title": "settings loading contracts keeps notification labels but does not expose unknown switches",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-loading.test.tsx",
+      "title": "settings loading contracts reserves the four profile cards without mounting editable controls",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-loading.test.tsx",
+      "title": "settings loading contracts uses a retry state, not editable defaults, for a failed personal-info request",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task does not advance an abandoned native location task after permission lookup",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task does not advance an abandoned native location task after permission prompt",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task does not delete old storage when avatar removal fails",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task does not reload or replace profile drafts for a same-reader auth object refresh",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task ignores a late habits save result after account replacement",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task ignores a late personal save result after account replacement",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task ignores a late profile save result after account replacement",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task ignores abandoned geolocation before geocode or autosave",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task ignores an abandoned upload before any avatar update or cleanup",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task keeps the previous avatar and unrelated basics until profile URL commit, then cleans storage only after success",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task locks every personal field across location and autosave, preserving its submitted details",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task provides keyboard genre selection, named selects, pending Cancel protection and truthful retry",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task renders confirmed profile basics when the initial profile record was empty",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task restores the saved habits baseline only after explicit discard, without a reload",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task retains personal save rejection as an associated inline retry without refetching",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "title": "Settings forms retain one current task serializes profile save, preserves rejection and saves without a destructive refresh",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-write-ownership.test.tsx",
+      "title": "Settings write ownership does not invoke a download after export collection outlives its task",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-write-ownership.test.tsx",
+      "title": "Settings write ownership does not preview a previous reader's file after account replacement",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-write-ownership.test.tsx",
+      "title": "Settings write ownership does not register the previous reader's device after a late preference save",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-write-ownership.test.tsx",
+      "title": "Settings write ownership does not roll back confirmed online visibility when presence refresh fails",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-write-ownership.test.tsx",
+      "title": "Settings write ownership does not update a password after reauthentication outlives its reader",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-write-ownership.test.tsx",
+      "title": "Settings write ownership keeps confirmed notification preferences clean when subsequent device registration rejects",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-write-ownership.test.tsx",
+      "title": "Settings write ownership locks an immediate device push change and retains its unsaved preference after completion",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-write-ownership.test.tsx",
+      "title": "Settings write ownership names privacy controls, serializes optimistic writes and restores a rejected preference",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-write-ownership.test.tsx",
+      "title": "Settings write ownership preserves password fields on same-reader identity refresh and serializes reauthentication and update",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-write-ownership.test.tsx",
+      "title": "Settings write ownership retains quiet-hour drafts through same-reader refresh and failed save, then marks confirmed save clean",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-write-ownership.test.tsx",
+      "title": "Settings write ownership retains the selected import file after parsing fails and allows retry",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-write-ownership.test.tsx",
+      "title": "Settings write ownership serializes import preview, locks its source and preserves preview/file on rejected commit",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/settings/settings-write-ownership.test.tsx",
+      "title": "Settings write ownership suppresses obsolete privacy feedback and downstream presence after reader replacement",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/date-picker.test.tsx",
+      "title": "DatePicker's editable date contract associates generated labels, format hints and validation errors without emitting invalid values",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/date-picker.test.tsx",
+      "title": "DatePicker's editable date contract cannot silently save a previous value after emptying a non-clearable field",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/date-picker.test.tsx",
+      "title": "DatePicker's editable date contract clears optional dates to null but keeps required drafts invalid without erasing a committed value",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/date-picker.test.tsx",
+      "title": "DatePicker's editable date contract keeps the typed representation and caret until blur, then formats the canonical date",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/date-picker.test.tsx",
+      "title": "DatePicker's editable date contract preserves an invalid draft, browsing state and focus when an open picker resizes from 1280px",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/date-picker.test.tsx",
+      "title": "DatePicker's editable date contract preserves an invalid draft, browsing state and focus when an open picker resizes from 390px",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/date-picker.test.tsx",
+      "title": "DatePicker's editable date contract preserves selected values while browsing and commits when reselecting the same day",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/date-picker.test.tsx",
+      "title": "DatePicker's editable date contract revalidates changed paired bounds without modifying the selected date",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/date-picker.test.tsx",
+      "title": "DatePicker's editable date contract updates externally supplied values and locale without shifting legacy timestamp dates",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/mobile-dialog.test.tsx",
+      "title": "adaptive confirmation focus Escape dismisses only the nested dialog and leaves its confirmation open",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/mobile-dialog.test.tsx",
+      "title": "adaptive confirmation focus honors Escape as soon as the safe action receives initial focus",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/mobile-dialog.test.tsx",
+      "title": "adaptive confirmation focus returns Cancel dismissal to the actual external invoker without confirming",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/mobile-dialog.test.tsx",
+      "title": "adaptive confirmation focus returns Close dismissal to the actual external invoker without confirming",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/mobile-dialog.test.tsx",
+      "title": "adaptive confirmation focus returns Escape dismissal to the actual external invoker without confirming",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/mobile-dialog.test.tsx",
+      "title": "adaptive task descriptions confirmation omits the description relationship when no description is supplied",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/mobile-dialog.test.tsx",
+      "title": "adaptive task descriptions confirmation uses the real Radix description relationship without a missing-description warning",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/mobile-dialog.test.tsx",
+      "title": "adaptive task descriptions task omits the description relationship when no description is supplied",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/components/ui/mobile-dialog.test.tsx",
+      "title": "adaptive task descriptions task uses the real Radix description relationship without a missing-description warning",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/contexts/SettingsTaskContext.test.tsx",
+      "title": "Settings task departure invalidates a deferred acceptance after route changes",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/contexts/SettingsTaskContext.test.tsx",
+      "title": "Settings task departure invalidates a deferred acceptance after unmount changes",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/contexts/SettingsTaskContext.test.tsx",
+      "title": "Settings task departure leaves a clean editor and consumes departure during a pending write",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/contexts/SettingsTaskContext.test.tsx",
+      "title": "Settings task departure retains declined drafts and serializes a deferred confirmation",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useImagePicker.test.ts",
+      "title": "web image source pending lifetime ignores a device failure after its owning editor unmounts",
+      "outcome": "passed"
+    },
+    {
+      "file": "apps/client/src/hooks/useImagePicker.test.ts",
+      "title": "web image source pending lifetime stays pending until the browser chooser returns or cancels",
+      "outcome": "passed"
+    }
+  ],
+  "browser_reports": [
+    {
+      "name": "cr03-full-2",
+      "path": "test-results/cr03-full-2-summary.json",
+      "bytes": 612577,
+      "sha256": "8a8e834f89e67856eb45915999949d678784ea6d7a875e4e6a48ea5944b0ffef",
+      "stats": {
+        "startTime": "2026-09-30T17:44:13.987Z",
+        "duration": 392699.049,
+        "expected": 83,
+        "skipped": 0,
+        "unexpected": 4,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings categories open an explicit account/editor URL and return focus to the current category",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal Info: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Reading Profile: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Notifications: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data & Backup: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Account: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile: deferred save blocks duplicates and leaving; rejection retains the draft and retry completes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal Info: deferred save blocks duplicates and leaving; rejection retains the draft and retry completes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Reading Profile: deferred save blocks duplicates and leaving; rejection retains the draft and retry completes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Notifications: deferred save blocks duplicates and leaving; rejection retains the draft and retry completes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile image chooser remains the same task on resize and a rejected upload keeps the image plus text draft",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile browser file chooser uses the actual web fallback and uploads one selected file",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal date text and the open calendar retain node, selection and Back ownership across resize",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data import preview and file survive rejected commit and cannot be replaced while importing",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Privacy pending immediate save blocks leaving and restores the previous value after rejection",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Account replacement invalidates a pending photo selection before it can upload for the next reader",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Changing accounts closes an obsolete dirty confirmation without transferring its draft",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Sign out stays visible during pending work and supports an explicit retry after rejection",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal location keeps fields locked through its existing automatic save and rejected writes keep the coordinates",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Menu: shell departure respects the actual Settings draft and pending save",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Sidebar: shell departure respects the actual Settings draft and pending save",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Native tabs: shell departure respects the actual Settings draft and pending save",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Menu: shell sign out uses the Settings discard and sign-out tasks",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Sidebar: shell sign out uses the Settings discard and sign-out tasks",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: narrow",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: tablet-large-text",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: tablet-touch-large-text",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: short-height",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings categories open an explicit account/editor URL and return focus to the current category",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('dialog', { name: 'Discard unsaved changes?', exact: true })\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m1\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" getByRole('dialog', { name: 'Discard unsaved changes?', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Discard unsaved changes?', exact: true })\u001b[22m\n\u001b[2m    14 × locator resolved to 1 element\u001b[22m\n\u001b[2m       - unexpected value \"1\"\u001b[22m\n"
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal Info: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('dialog', { name: 'Discard unsaved changes?', exact: true })\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m1\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" getByRole('dialog', { name: 'Discard unsaved changes?', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Discard unsaved changes?', exact: true })\u001b[22m\n\u001b[2m    14 × locator resolved to 1 element\u001b[22m\n\u001b[2m       - unexpected value \"1\"\u001b[22m\n"
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Reading Profile: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Notifications: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('dialog', { name: 'Discard unsaved changes?', exact: true })\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m1\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" getByRole('dialog', { name: 'Discard unsaved changes?', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Discard unsaved changes?', exact: true })\u001b[22m\n\u001b[2m    14 × locator resolved to 1 element\u001b[22m\n\u001b[2m       - unexpected value \"1\"\u001b[22m\n"
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data & Backup: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Account: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('dialog', { name: 'Discard unsaved changes?', exact: true })\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m1\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" getByRole('dialog', { name: 'Discard unsaved changes?', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Discard unsaved changes?', exact: true })\u001b[22m\n\u001b[2m    14 × locator resolved to 1 element\u001b[22m\n\u001b[2m       - unexpected value \"1\"\u001b[22m\n"
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile: deferred save blocks duplicates and leaving; rejection retains the draft and retry completes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal Info: deferred save blocks duplicates and leaving; rejection retains the draft and retry completes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Reading Profile: deferred save blocks duplicates and leaving; rejection retains the draft and retry completes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Notifications: deferred save blocks duplicates and leaving; rejection retains the draft and retry completes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile image chooser remains the same task on resize and a rejected upload keeps the image plus text draft",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile browser file chooser uses the actual web fallback and uploads one selected file",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal date text and the open calendar retain node, selection and Back ownership across resize",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data import preview and file survive rejected commit and cannot be replaced while importing",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Privacy pending immediate save blocks leaving and restores the previous value after rejection",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Account replacement invalidates a pending photo selection before it can upload for the next reader",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Changing accounts closes an obsolete dirty confirmation without transferring its draft",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Sign out stays visible during pending work and supports an explicit retry after rejection",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal location keeps fields locked through its existing automatic save and rejected writes keep the coordinates",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Menu: shell departure respects the actual Settings draft and pending save",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Sidebar: shell departure respects the actual Settings draft and pending save",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Native tabs: shell departure respects the actual Settings draft and pending save",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Menu: shell sign out uses the Settings discard and sign-out tasks",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Sidebar: shell sign out uses the Settings discard and sign-out tasks",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: narrow",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: tablet-large-text",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: tablet-touch-large-text",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: short-height",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings categories open an explicit account/editor URL and return focus to the current category",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal Info: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Reading Profile: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Notifications: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data & Backup: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Account: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile: deferred save blocks duplicates and leaving; rejection retains the draft and retry completes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal Info: deferred save blocks duplicates and leaving; rejection retains the draft and retry completes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Reading Profile: deferred save blocks duplicates and leaving; rejection retains the draft and retry completes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Notifications: deferred save blocks duplicates and leaving; rejection retains the draft and retry completes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile image chooser remains the same task on resize and a rejected upload keeps the image plus text draft",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile browser file chooser uses the actual web fallback and uploads one selected file",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal date text and the open calendar retain node, selection and Back ownership across resize",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data import preview and file survive rejected commit and cannot be replaced while importing",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Privacy pending immediate save blocks leaving and restores the previous value after rejection",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Account replacement invalidates a pending photo selection before it can upload for the next reader",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Changing accounts closes an obsolete dirty confirmation without transferring its draft",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Sign out stays visible during pending work and supports an explicit retry after rejection",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal location keeps fields locked through its existing automatic save and rejected writes keep the coordinates",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Menu: shell departure respects the actual Settings draft and pending save",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Sidebar: shell departure respects the actual Settings draft and pending save",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Native tabs: shell departure respects the actual Settings draft and pending save",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Menu: shell sign out uses the Settings discard and sign-out tasks",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Sidebar: shell sign out uses the Settings discard and sign-out tasks",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: narrow",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: tablet-large-text",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: tablet-touch-large-text",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: short-height",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cr03-continuity-fixed",
+      "path": "test-results/cr03-continuity-fixed-summary.json",
+      "bytes": 84836,
+      "sha256": "f85f498d104a33deb1e4f5fd79aabb1e6a170f537dfb6181f57a3aa8f75193e1",
+      "stats": {
+        "startTime": "2026-09-30T17:58:15.758Z",
+        "duration": 106853.208,
+        "expected": 18,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal Info: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Reading Profile: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Notifications: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data & Backup: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Account: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal Info: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Reading Profile: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Notifications: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data & Backup: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Account: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Personal Info: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Reading Profile: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Notifications: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data & Backup: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Account: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cr03-escape-fixed-repeat",
+      "path": "test-results/cr03-escape-fixed-repeat-summary.json",
+      "bytes": 59153,
+      "sha256": "9e63434146f8d34985a6e4bf9b7072df605c80a8eebb254f784a53246f78250d",
+      "stats": {
+        "startTime": "2026-09-30T18:00:19.173Z",
+        "duration": 27831.965,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data & Backup: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data & Backup: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data & Backup: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cr03-shell-regression",
+      "path": "test-results/cr03-shell-regression-summary.json",
+      "bytes": 26381,
+      "sha256": "1411b448f681765fc81e240c5ec10c8dae5087c5d16591182d154d53e5530358",
+      "stats": {
+        "startTime": "2026-09-30T17:53:30.531Z",
+        "duration": 68213.98400000001,
+        "expected": 21,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "browser menu exposes destinations, restores focus and closes after real link navigation",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "task node, caret and draft survive resizing; editing hides irrelevant footer until focus leaves",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "width-only reflow keeps the focused field clear of the sticky header",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "/add-book: real form keeps its draft and save action clear of native phone and tablet chrome",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "/edit-book/fixture-book-0: real form keeps its draft and save action clear of native phone and tablet chrome",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "timer controls keep their DOM across routes and a finished session gives focus to the real journal prompt",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "320px with large text keeps combined utilities and quick-action tasks reachable",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "browser menu exposes destinations, restores focus and closes after real link navigation",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "task node, caret and draft survive resizing; editing hides irrelevant footer until focus leaves",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "width-only reflow keeps the focused field clear of the sticky header",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "/add-book: real form keeps its draft and save action clear of native phone and tablet chrome",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "/edit-book/fixture-book-0: real form keeps its draft and save action clear of native phone and tablet chrome",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "timer controls keep their DOM across routes and a finished session gives focus to the real journal prompt",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "320px with large text keeps combined utilities and quick-action tasks reachable",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "browser menu exposes destinations, restores focus and closes after real link navigation",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "task node, caret and draft survive resizing; editing hides irrelevant footer until focus leaves",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "width-only reflow keeps the focused field clear of the sticky header",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "/add-book: real form keeps its draft and save action clear of native phone and tablet chrome",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "/edit-book/fixture-book-0: real form keeps its draft and save action clear of native phone and tablet chrome",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "timer controls keep their DOM across routes and a finished session gives focus to the real journal prompt",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-shell.spec.ts",
+          "title": "320px with large text keeps combined utilities and quick-action tasks reachable",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cr03-overlay-regression",
+      "path": "test-results/cr03-overlay-regression-summary.json",
+      "bytes": 19793,
+      "sha256": "87f1cdcb7ec73ed621f589c690ce82faef7e61b1aea1dff0b741e450057a8715",
+      "stats": {
+        "startTime": "2026-09-30T18:01:40.628Z",
+        "duration": 39005.35,
+        "expected": 15,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "Escape requests one guarded dismissal and nested cancellation restores the invoker and draft",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "Close requests one guarded dismissal and nested cancellation restores the invoker and draft",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "outside requests one guarded dismissal and nested cancellation restores the invoker and draft",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "pending dismissal is consumed and repeated requests leave the same draft mounted",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "real Goals create form and nested calendar retain their drafts through window changes",
+          "engine": "chromium",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "Escape requests one guarded dismissal and nested cancellation restores the invoker and draft",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "Close requests one guarded dismissal and nested cancellation restores the invoker and draft",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "outside requests one guarded dismissal and nested cancellation restores the invoker and draft",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "pending dismissal is consumed and repeated requests leave the same draft mounted",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "real Goals create form and nested calendar retain their drafts through window changes",
+          "engine": "webkit",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "Escape requests one guarded dismissal and nested cancellation restores the invoker and draft",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "Close requests one guarded dismissal and nested cancellation restores the invoker and draft",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "outside requests one guarded dismissal and nested cancellation restores the invoker and draft",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "pending dismissal is consumed and repeated requests leave the same draft mounted",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        },
+        {
+          "file": "adaptive-overlays.spec.ts",
+          "title": "real Goals create form and nested calendar retain their drafts through window changes",
+          "engine": "firefox",
+          "outcome": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    }
+  ],
+  "diagnostic_browser_reports": [
+    {
+      "name": "cr03-smoke-1",
+      "path": "test-results/cr03-smoke-1-summary.json",
+      "bytes": 35991,
+      "sha256": "742b1df1261ee3bbd961b6f52b2d77ff4f7a68aedaeb84223a657b3ede08ce05",
+      "stats": {
+        "startTime": "2026-09-30T17:31:31.796Z",
+        "duration": 33786.502,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 3,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Profile: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#settings-editor-title')\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" locator('#settings-editor-title') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#settings-editor-title')\u001b[22m\n\u001b[2m    14 × locator resolved to <h2 tabindex=\"-1\" id=\"settings-editor-title\" class=\"min-w-0 font-display text-xl font-semibold focus:outline-none\">Personal Info</h2>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n"
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Reading Profile: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#settings-editor-title')\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" locator('#settings-editor-title') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#settings-editor-title')\u001b[22m\n\u001b[2m    14 × locator resolved to <h2 tabindex=\"-1\" id=\"settings-editor-title\" class=\"min-w-0 font-display text-xl font-semibold focus:outline-none\">Profile</h2>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n"
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: narrow",
+          "engine": "chromium",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: Reading Profile must not overflow horizontally\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m69\u001b[39m"
+        }
+      ]
+    },
+    {
+      "name": "cr03-chromium-1",
+      "path": "test-results/cr03-chromium-1-summary.json",
+      "bytes": 176244,
+      "sha256": "4d31fa1a4e6d8808a354540be5b942b6a0327ff63066420e8b8e5c9e648d0fcd",
+      "stats": {
+        "startTime": "2026-09-30T17:34:32.474Z",
+        "duration": 131006.526,
+        "expected": 22,
+        "skipped": 0,
+        "unexpected": 7,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data & Backup: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('region', { name: 'Data & Backup', exact: true }).getByRole('heading', { name: 'Import preview', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('region', { name: 'Data & Backup', exact: true }).getByRole('heading', { name: 'Import preview', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('region', { name: 'Data & Backup', exact: true }).getByRole('heading', { name: 'Import preview', exact: true })\u001b[22m\n"
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data import preview and file survive rejected commit and cannot be replaced while importing",
+          "engine": "chromium",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('region', { name: 'Data & Backup', exact: true }).getByRole('heading', { name: 'Import preview', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('region', { name: 'Data & Backup', exact: true }).getByRole('heading', { name: 'Import preview', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('region', { name: 'Data & Backup', exact: true }).getByRole('heading', { name: 'Import preview', exact: true })\u001b[22m\n"
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Native tabs: shell departure respects the actual Settings draft and pending save",
+          "engine": "chromium",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('navigation', { name: 'Primary navigation', exact: true }).getByRole('link', { name: 'Library', exact: true })\u001b[22m\n"
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: narrow",
+          "engine": "chromium",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: The visible control must receive pointer input across its height\n\nThe visible control must receive pointer input across its height\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 3\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[32m-   true,\u001b[39m\n\u001b[32m-   true,\u001b[39m\n\u001b[32m-   true,\u001b[39m\n\u001b[31m+   false,\u001b[39m\n\u001b[31m+   false,\u001b[39m\n\u001b[31m+   false,\u001b[39m\n\u001b[2m  ]\u001b[22m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate"
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: tablet-large-text",
+          "engine": "chromium",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: Data & Backup must not overflow horizontally\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m31\u001b[39m"
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: tablet-touch-large-text",
+          "engine": "chromium",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "TimeoutError: locator.evaluate: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Choose date: Date of Birth', exact: true }).getByRole('button', { name: 'Close', exact: true })\u001b[22m\n"
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Settings actual forms and actions remain reachable: short-height",
+          "engine": "chromium",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: The visible control must receive pointer input across its height\n\nThe visible control must receive pointer input across its height\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 3\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[32m-   true,\u001b[39m\n\u001b[32m-   true,\u001b[39m\n\u001b[32m-   true,\u001b[39m\n\u001b[31m+   false,\u001b[39m\n\u001b[31m+   false,\u001b[39m\n\u001b[31m+   false,\u001b[39m\n\u001b[2m  ]\u001b[22m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate"
+        }
+      ]
+    },
+    {
+      "name": "cr03-data-pointer-2",
+      "path": "test-results/cr03-data-pointer-2-summary.json",
+      "bytes": 24468,
+      "sha256": "e6fe58cb667e888a04338f571fda3d92d4fda1e1f633b580ddcf9b2757c7d2b4",
+      "stats": {
+        "startTime": "2026-09-30T17:38:24.800Z",
+        "duration": 19399.922,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data & Backup: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "chromium",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('region', { name: 'Data & Backup', exact: true }).getByRole('heading', { name: 'Import preview', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('region', { name: 'Data & Backup', exact: true }).getByRole('heading', { name: 'Import preview', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('region', { name: 'Data & Backup', exact: true }).getByRole('heading', { name: 'Import preview', exact: true })\u001b[22m\n"
+        },
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data import preview and file survive rejected commit and cannot be replaced while importing",
+          "engine": "chromium",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('region', { name: 'Data & Backup', exact: true }).getByRole('heading', { name: 'Import preview', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('region', { name: 'Data & Backup', exact: true }).getByRole('heading', { name: 'Import preview', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('region', { name: 'Data & Backup', exact: true }).getByRole('heading', { name: 'Import preview', exact: true })\u001b[22m\n"
+        }
+      ]
+    },
+    {
+      "name": "cr03-data-fixed",
+      "path": "test-results/cr03-data-fixed-summary.json",
+      "bytes": 20822,
+      "sha256": "3dc417498dddfdd4eaee2388388750d75c208f331abe14cd940f59990cb2619a",
+      "stats": {
+        "startTime": "2026-09-30T17:40:04.091Z",
+        "duration": 10961.026,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": []
+    },
+    {
+      "name": "cr03-visual-1",
+      "path": "test-results/cr03-visual-1-summary.json",
+      "bytes": 100831,
+      "sha256": "5710983a5eb74fd60624be32d3105044902813914cd0b492e1b10a609855599b",
+      "stats": {
+        "startTime": "2026-09-30T17:43:12.967Z",
+        "duration": 33115.723,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": []
+    },
+    {
+      "name": "cr03-continuity-final",
+      "path": "test-results/cr03-continuity-final-summary.json",
+      "bytes": 87897,
+      "sha256": "7c607decaf8e354b4f2e48707cbb2143286a04cd394cbe9f89d2101847d5c263",
+      "stats": {
+        "startTime": "2026-09-30T17:51:04.577Z",
+        "duration": 96192.20400000001,
+        "expected": 17,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "settings-continuity.spec.ts",
+          "title": "Data & Backup: same editor, draft and caret survive all boundaries and guarded section changes",
+          "engine": "webkit",
+          "outcome": "unexpected",
+          "attempts": [
+            "failed"
+          ],
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('dialog', { name: 'Discard unsaved changes?', exact: true })\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m1\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" getByRole('dialog', { name: 'Discard unsaved changes?', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Discard unsaved changes?', exact: true })\u001b[22m\n\u001b[2m    14 × locator resolved to 1 element\u001b[22m\n\u001b[2m       - unexpected value \"1\"\u001b[22m\n"
+        }
+      ]
+    },
+    {
+      "name": "cr03-escape-diagnostic",
+      "path": "test-results/cr03-escape-diagnostic-summary.json",
+      "bytes": 59470,
+      "sha256": "98c10e8a62008356a0a0a05de2f61d85ef953e941e4d319d1de721e17130ab7d",
+      "stats": {
+        "startTime": "2026-09-30T17:55:29.642Z",
+        "duration": 27560.168999999998,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": []
+    }
+  ],
+  "interrupted_or_empty_runs": [
+    {
+      "name": "cr03-data-pointer",
+      "note": "Incorrect anchored title filter selected zero tests; no acceptance evidence."
+    },
+    {
+      "name": "cr03-full-1",
+      "note": "Interrupted after Chromium27/29; two Account200% overflow failures. No final JSON; console/traces/screenshots retained. No completed WebKit evidence claimed."
+    }
+  ],
+  "escape_control": {
+    "note": "Test-only transform removes the new fallback from loaded code without mutating application source. Immediate-safe-focus regression fails1/1 with8 other cases filtered/skipped. Current-source dialog/provider run passes13/13. Exact original WebKit internal event timing remains inferred.",
+    "artifacts": [
+      {
+        "path": "test-results/cr03-escape-control.config.ts",
+        "bytes": 832,
+        "sha256": "cc4b013beb6b1cea7348d8d7244c2db1c357c1ccd4d30ca179fc691bf4112696"
+      },
+      {
+        "path": "test-results/cr03-escape-control-summary.json",
+        "bytes": 14059,
+        "sha256": "5867875a8addbf5886ce09787154199c006afd54f0b0753a1c8473f6a05d13bd"
+      },
+      {
+        "path": "test-results/cr03-escape-control-console.log",
+        "bytes": 22128,
+        "sha256": "98d85a2e4707a81dfb0153b3f8a2704aa07bdf995642433e79d576c0afbbb905"
+      }
+    ]
+  },
+  "static_and_build": {
+    "status": "passed",
+    "logs": [
+      {
+        "path": "test-results/cr03-client-types-complete.log",
+        "bytes": 230,
+        "sha256": "bb631d2709a19aa869af67234a0c6f41ec667f518d693e5ce3fd5815b5e020bf"
+      },
+      {
+        "path": "test-results/cr03-eslint-complete.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "test-results/cr03-eslint-complete-files.txt",
+        "bytes": 1994,
+        "sha256": "963a077b1e63924ecbb7259ed1c59892da989eb659ecaeeab1fae03f59897b0a"
+      },
+      {
+        "path": "test-results/cr03-build-complete.log",
+        "bytes": 28032,
+        "sha256": "5aad50042eec3691ef9b813a47d7b2c67115c4310e5827b88315d63ebf28eafc"
+      }
+    ],
+    "fixture_checks": "Fixture TypeScript and scoped ESLint passed after final spec change; owner recorded them in checkpoint23.",
+    "build": {
+      "modules": 4300,
+      "duration_seconds": 24.53,
+      "precache_entries": 124
+    },
+    "warnings": [
+      "Existing Browserslist/baseline age",
+      "Existing ambiguous Tailwind easing utilities",
+      "Existing dynamic/static import warning",
+      "Existing large-chunk warning"
+    ]
+  },
+  "graph": {
+    "nodes": 9808,
+    "edges": 22029,
+    "communities": 661,
+    "obsidian_notes": 10460,
+    "mode": "local AST update; cluster without labels; Obsidian and HTML exports; no API/cloud/watchers",
+    "limits": "Three existing Android Gradle extraction warnings; nine pre-existing Obsidian conflicting notes preserved. Bounded query truncation is not coverage.",
+    "logs": [
+      {
+        "path": "test-results/cr03-graph-complete-update.log",
+        "bytes": 4080,
+        "sha256": "c952c1f46b70ebc8a2e9db7b1c3f9bf0b8df1397aae23afbf2c0006ea9b9bfa0"
+      },
+      {
+        "path": "test-results/cr03-graph-complete-cluster.log",
+        "bytes": 470,
+        "sha256": "4c26f5ef4cd5380a97d5ccbcb86246e7e55406f8cb1108b0c6c6e70b89395386"
+      },
+      {
+        "path": "test-results/cr03-obsidian-complete-export.log",
+        "bytes": 1682,
+        "sha256": "5af68715a55b9a85ff3814f4c81dc908cf4602653ef05d895829addacd719212"
+      },
+      {
+        "path": "test-results/cr03-graph-complete-html.log",
+        "bytes": 434,
+        "sha256": "c7bcfa19734682cc5b5352cc295099c32da7e825508c0d097649dedd3e4a899f"
+      }
+    ]
+  },
+  "census": {
+    "routes": 39,
+    "runtime_modules_and_styles": 510,
+    "presentation_modules": 309,
+    "components": 272,
+    "screens": 33,
+    "unreachable_presentation_candidates": 47,
+    "note": "Static discovery, not acceptance."
+  },
+  "source_and_fixture_files": [
+    {
+      "path": "apps/client/src/components/AppSidebar.tsx",
+      "bytes": 8390,
+      "sha256": "fb02e486068098b231a060f711a83955b7add9209ee4f4daacd177e4f3e9cd8e"
+    },
+    {
+      "path": "apps/client/src/components/DarkModeToggle.tsx",
+      "bytes": 1965,
+      "sha256": "9683b79db63b97569d9520344d926f85c1d377df1fa0e42bbe2b9b85bcb78899"
+    },
+    {
+      "path": "apps/client/src/components/ImagePickerDialog.test.tsx",
+      "bytes": 4875,
+      "sha256": "0e02646c665573f430c899e1b9a205d034e5b524e945ad0c31dc2b131109648e"
+    },
+    {
+      "path": "apps/client/src/components/ImagePickerDialog.tsx",
+      "bytes": 2750,
+      "sha256": "3af6d658a3badfad9f5f5f9c969f9fcb0f1dbd3e4180b2f962e902d5fdbb05a1"
+    },
+    {
+      "path": "apps/client/src/components/MobileBottomNav.tsx",
+      "bytes": 1209,
+      "sha256": "0ec2dfca4ff73baa90075f5abd332ac9fa7dd54c51e05e28240579cc2c97928a"
+    },
+    {
+      "path": "apps/client/src/components/MobileLayout.tsx",
+      "bytes": 7226,
+      "sha256": "c2f207ad8dbb90b477fdb1f67726e465b3c3e81580112845a5f2dcd765ac95d9"
+    },
+    {
+      "path": "apps/client/src/components/ProfileDrawer.tsx",
+      "bytes": 9856,
+      "sha256": "40147d3c4a1af4470a66304db78b7056f85d3fd5e1bc861e7074cf444ffa00f0"
+    },
+    {
+      "path": "apps/client/src/components/ReadingHabitsSection.tsx",
+      "bytes": 21500,
+      "sha256": "6cec1c27f3852614ece51eba583b1cea6bd35349d5643c263b146424f43ea4cd"
+    },
+    {
+      "path": "apps/client/src/components/ScrollToTop.tsx",
+      "bytes": 2688,
+      "sha256": "e6be101b9fd00d1a662c8a70d07474b094905496e78d324a5fd2035ce86dd873"
+    },
+    {
+      "path": "apps/client/src/components/SupportPageLink.test.tsx",
+      "bytes": 5098,
+      "sha256": "a2ecc2ea0e488cbd7160731f9682494383d262677f5d9b372b75c268d4b2bd16"
+    },
+    {
+      "path": "apps/client/src/components/SupportPageLink.tsx",
+      "bytes": 1482,
+      "sha256": "1f6a737b0c99420731a4b07257585909e6d192375385b7d2bc09a7165cbe9103"
+    },
+    {
+      "path": "apps/client/src/components/settings-shell-navigation.test.tsx",
+      "bytes": 8611,
+      "sha256": "67932c57158fa11126dd8b01bdd0300d86858f684478f2d5d44835ebba507466"
+    },
+    {
+      "path": "apps/client/src/components/settings/AccountSettings.tsx",
+      "bytes": 16572,
+      "sha256": "d842951aed10243ffe72ad5570b89ed5c5a12998fbfaaf6f4a5088f867af3249"
+    },
+    {
+      "path": "apps/client/src/components/settings/DataBackupSettings.tsx",
+      "bytes": 11741,
+      "sha256": "3d72e876617137f391267e66072bad1aba434278ee1b89935056d18af7207189"
+    },
+    {
+      "path": "apps/client/src/components/settings/NotificationSettings.tsx",
+      "bytes": 19411,
+      "sha256": "2139db05fde290e57155ce0d6c9fe9c7968914fe8b498cc342d1152a23a74708"
+    },
+    {
+      "path": "apps/client/src/components/settings/PersonalInfo.tsx",
+      "bytes": 17601,
+      "sha256": "38221ea9a26db8f0f1afbdc73eb76312d3aaab79dd8093c5d5db56e6e56268f9"
+    },
+    {
+      "path": "apps/client/src/components/settings/PrivacySettings.tsx",
+      "bytes": 20762,
+      "sha256": "c33b8df36f72ee7c274a6a91a7d72fcca95f5f646e08ce3acf2818c922fbe68c"
+    },
+    {
+      "path": "apps/client/src/components/settings/ProfileSettings.tsx",
+      "bytes": 16837,
+      "sha256": "777a51615348b925263a52950d0c61801338c42e2723c713cc9abcb87ec7b3ef"
+    },
+    {
+      "path": "apps/client/src/components/settings/ReadingProfileSettings.tsx",
+      "bytes": 1670,
+      "sha256": "02259962af341b969fd245acedd2b8f86580f7a6d0893f551a1c4b6e86f5475d"
+    },
+    {
+      "path": "apps/client/src/components/settings/settings-task-forms.test.tsx",
+      "bytes": 18578,
+      "sha256": "1048e255e21b1b165407364a7e82d2e7fe7f7a859bd1c8913916912ce3d7d156"
+    },
+    {
+      "path": "apps/client/src/components/settings/settings-write-ownership.test.tsx",
+      "bytes": 18202,
+      "sha256": "69ab0d19b04ad4a54d1326da2511efaf7d8fc4cf2a91b5122715e6d6d557b7af"
+    },
+    {
+      "path": "apps/client/src/components/ui/mobile-dialog.test.tsx",
+      "bytes": 6169,
+      "sha256": "8874bde3853cd1521f013e23d550205df862d604fb1fa26aaef81ca12e3f4372"
+    },
+    {
+      "path": "apps/client/src/components/ui/mobile-dialog.tsx",
+      "bytes": 4775,
+      "sha256": "bf09893394d1e6d42b5818aca18e1a4048defeba4dc446441224e4a34d822bd8"
+    },
+    {
+      "path": "apps/client/src/contexts/SettingsTaskContext.test.tsx",
+      "bytes": 2818,
+      "sha256": "b25bd6a6939efe9a39f3ecc612ed356520736bd7d86a2913c00693f2779f02e0"
+    },
+    {
+      "path": "apps/client/src/contexts/SettingsTaskContext.ts",
+      "bytes": 1535,
+      "sha256": "456c90ff1f6f4c7d9f36134b8b7c2cdb103eca047f319fda0155dad978602d79"
+    },
+    {
+      "path": "apps/client/src/contexts/SettingsTaskProvider.tsx",
+      "bytes": 3577,
+      "sha256": "d9ad3f1e068c1b91dfc985d7ea408e32b9d3b2fb175335f58414a4e1b53c36e5"
+    },
+    {
+      "path": "apps/client/src/hooks/useImagePicker.test.ts",
+      "bytes": 2084,
+      "sha256": "a7264a93b8000b4716af6ab8281390e4760eb4c6d94791eb0aa3d0f1b58b27bd"
+    },
+    {
+      "path": "apps/client/src/hooks/useImagePicker.ts",
+      "bytes": 5600,
+      "sha256": "3e5f6fabe72adb866fe67095dfa1e1010e0161a4d8cab1c62231d4b2d4df2292"
+    },
+    {
+      "path": "apps/client/src/hooks/useSettingsLinkNavigation.ts",
+      "bytes": 1100,
+      "sha256": "e09e87e3333c9434ce8913eeffb33b2ef93e57da38c35800cc1bdd8b6bc24aad"
+    },
+    {
+      "path": "apps/client/src/screens/Settings.tsx",
+      "bytes": 15447,
+      "sha256": "d19677fbdd14328a77534e59fedb83918e70d6fe0f8789fd42025da06378b082"
+    },
+    {
+      "path": "tests/e2e/settings-continuity.spec.ts",
+      "bytes": 36556,
+      "sha256": "29a8aab4e0f3e0f29bd5877141c53690d023d0aac6038ca3bb9e55c19e190472"
+    },
+    {
+      "path": "tests/fixtures/settings-continuity/README.md",
+      "bytes": 9812,
+      "sha256": "b89e0c71434c92553d53d630f4313c9ecfe0553b3da9782cffa0600e2dc09339"
+    },
+    {
+      "path": "tests/fixtures/settings-continuity/api.ts",
+      "bytes": 5697,
+      "sha256": "00ba37705f051ef5b2be73adc096bd8e56732c0f606496f7e4106b668dd92795"
+    },
+    {
+      "path": "tests/fixtures/settings-continuity/data.ts",
+      "bytes": 739,
+      "sha256": "927e45efb631308e86c940ea2bceb355dd5b0e69f4fe9adda356a330f7492cd2"
+    },
+    {
+      "path": "tests/fixtures/settings-continuity/devices.ts",
+      "bytes": 1004,
+      "sha256": "e8a9537edbc51d662fa3808dd30de83c05e75c29d3507bf6db048b797a2ec4c9"
+    },
+    {
+      "path": "tests/fixtures/settings-continuity/index.html",
+      "bytes": 493,
+      "sha256": "072ee025ce16a8ce913e2973187cc62878c3d5db795c1b91c87a4c454ad0232e"
+    },
+    {
+      "path": "tests/fixtures/settings-continuity/main.tsx",
+      "bytes": 2980,
+      "sha256": "e86a1542e666ed967872b1f5245fdd81b8eb09de89f85ed3c397f1ad516923d4"
+    },
+    {
+      "path": "tests/fixtures/settings-continuity/portability.ts",
+      "bytes": 2266,
+      "sha256": "f20bdb8a59e1de7ed0a84d0d4e1886fe3858c1dd0a3e45a18ff390026be8a600"
+    },
+    {
+      "path": "tests/fixtures/settings-continuity/state.ts",
+      "bytes": 2194,
+      "sha256": "4d30da6f33d2b177a613f33a112c4abe76abde32b3a93fdb87d232ca19c94cad"
+    },
+    {
+      "path": "tests/fixtures/settings-continuity/vite.config.ts",
+      "bytes": 2438,
+      "sha256": "2f9a9bd6136c8a1d47c66c20704763705daceeecfca9230461b6dd05f0de588e"
+    },
+    {
+      "path": "tests/playwright/settings-continuity.config.ts",
+      "bytes": 1029,
+      "sha256": "12d0cc53f3111998d733ec153d56f4e2620cdf3867e60b3a2712fa63c2059326"
+    },
+    {
+      "path": "tests/playwright/tsconfig.settings-continuity.json",
+      "bytes": 342,
+      "sha256": "112f7553337fa97402ac87fbf784f94a3f91943fb562bf426f440e22feefe544"
+    }
+  ],
+  "retained_screenshots": [
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/narrow-account-actions.png",
+      "bytes": 43232,
+      "sha256": "2d713b2dc3af8560bacc4f646229ac0ae0c3c30dbcaa2e80cbd223b76f260bf6"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/narrow-app-writing.png",
+      "bytes": 54786,
+      "sha256": "d06b193cbe35c6149a20def83c4f96eb77fd67eb5b84699715e7f4a6dcbb11c5"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/narrow-data-actions.png",
+      "bytes": 36264,
+      "sha256": "398c3dd8dc7ccbc257378adebe5f3a5bced33bce088d84667a20253eaa7c59a5"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/narrow-notifications-actions.png",
+      "bytes": 43948,
+      "sha256": "82fb5bc937daf3004c662c8b0b2c3672c57b195ddf7ba12f664c35bc159c22bb"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/narrow-personal-writing.png",
+      "bytes": 39381,
+      "sha256": "2732d3e573aef93b64283ed4a20875a4d41229917d85a46668524bc68dd76714"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/narrow-privacy-actions.png",
+      "bytes": 53905,
+      "sha256": "0cab89e0ccb43beacc3b7a7cb65296fa48a2e9106e55dd936a80a3bc68ffa3b1"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/narrow-profile-writing.png",
+      "bytes": 38378,
+      "sha256": "ae7c43c6b06a8901942f52e2faa5f3f63b86e98a954886136c3fc769fbb155b1"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/narrow-reading-actions.png",
+      "bytes": 41250,
+      "sha256": "333184c12481e94f54875dc7dd82dfc0e596b467bdb60bea6b610e4cc2b59455"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/short-height-notifications-actions.png",
+      "bytes": 25791,
+      "sha256": "60cd454dded334dccec872aa202d26b76d1f24330f82c61bb2e349cdab9aadde"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/short-height-profile-actions.png",
+      "bytes": 20919,
+      "sha256": "9311684fd1e7365d09ba397d1dbaeca34aaf9fee765de346f5e63e5bb4d5ba3d"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/tablet-large-text-account-actions.png",
+      "bytes": 70663,
+      "sha256": "9f0cde1433ce0210f4ae1e26c3aad6ac5758bdf5e58c9acebcd7059e58ae42e2"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/tablet-large-text-data-actions.png",
+      "bytes": 68272,
+      "sha256": "8d05a5c9bfbdfee38bade572e303c27e6a597fe153772f21de32d992107c4cd7"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/tablet-large-text-privacy-actions.png",
+      "bytes": 103126,
+      "sha256": "04ce47dc15708023c7d82067d55ec88b75ff40e8d680b07bfdd8814da25c7dc9"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/tablet-large-text-reading-writing.png",
+      "bytes": 78692,
+      "sha256": "f9a9f780f0498efdfb34b383f7127c7473e0adb06abc762f111e26aa35f909b9"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/tablet-touch-large-text-personal-nested.png",
+      "bytes": 70786,
+      "sha256": "c0a707426b87aa1ae0a49f31005dfb3b0fbefeca4b04ee34a8dd3ec002b46c67"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr03-settings-continuity/tablet-touch-large-text-profile-nested.png",
+      "bytes": 67692,
+      "sha256": "a65b9548cf69ef6f99d40770928c0f0a2d94dce7c529d30879481f0cc47df709"
+    }
+  ],
+  "visual_review": {
+    "run": "cr03-visual-1",
+    "scenarios_passed": 4,
+    "screenshots_local": 66,
+    "font_records_local": 32,
+    "geometry_records_local": 32,
+    "retained_screenshots": 16,
+    "profiles": [
+      "320x844",
+      "834x1112 with200% root text",
+      "834x1112 with200% root text and synthetic coarse pointer",
+      "390x480"
+    ],
+    "fonts": [
+      "Inter",
+      "Merriweather",
+      "Playfair Display"
+    ],
+    "theme": "existing light palette",
+    "records": [
+      {
+        "path": "test-results/cr03-visual-review/narrow-account-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-account-geometry.json",
+        "bytes": 55,
+        "sha256": "13659635f7c59523107d6aa0e0da43d2cfdfe99cbe3a36bc4a60896d06c12aa7"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-app-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-app-geometry.json",
+        "bytes": 2102,
+        "sha256": "74971fe5a4e582df22f30182b3196ea70358d598cf07d3c5584b2319249fac99"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-data-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-data-geometry.json",
+        "bytes": 55,
+        "sha256": "13659635f7c59523107d6aa0e0da43d2cfdfe99cbe3a36bc4a60896d06c12aa7"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-notifications-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-notifications-geometry.json",
+        "bytes": 55,
+        "sha256": "13659635f7c59523107d6aa0e0da43d2cfdfe99cbe3a36bc4a60896d06c12aa7"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-personal-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-personal-geometry.json",
+        "bytes": 55,
+        "sha256": "13659635f7c59523107d6aa0e0da43d2cfdfe99cbe3a36bc4a60896d06c12aa7"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-privacy-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-privacy-geometry.json",
+        "bytes": 55,
+        "sha256": "13659635f7c59523107d6aa0e0da43d2cfdfe99cbe3a36bc4a60896d06c12aa7"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-profile-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-profile-geometry.json",
+        "bytes": 55,
+        "sha256": "13659635f7c59523107d6aa0e0da43d2cfdfe99cbe3a36bc4a60896d06c12aa7"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-reading-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/narrow-reading-geometry.json",
+        "bytes": 55,
+        "sha256": "13659635f7c59523107d6aa0e0da43d2cfdfe99cbe3a36bc4a60896d06c12aa7"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-account-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-account-geometry.json",
+        "bytes": 55,
+        "sha256": "07d7d71c81789f15d5b8594ab146ed827791822137f651b279be64132c09d710"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-app-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-app-geometry.json",
+        "bytes": 2041,
+        "sha256": "f61fa3d0b8d941975b09b7a8858f2ddb317cc3132210850b99aa324e3f160dc2"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-data-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-data-geometry.json",
+        "bytes": 55,
+        "sha256": "07d7d71c81789f15d5b8594ab146ed827791822137f651b279be64132c09d710"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-notifications-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-notifications-geometry.json",
+        "bytes": 55,
+        "sha256": "07d7d71c81789f15d5b8594ab146ed827791822137f651b279be64132c09d710"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-personal-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-personal-geometry.json",
+        "bytes": 55,
+        "sha256": "07d7d71c81789f15d5b8594ab146ed827791822137f651b279be64132c09d710"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-privacy-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-privacy-geometry.json",
+        "bytes": 55,
+        "sha256": "07d7d71c81789f15d5b8594ab146ed827791822137f651b279be64132c09d710"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-profile-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-profile-geometry.json",
+        "bytes": 55,
+        "sha256": "07d7d71c81789f15d5b8594ab146ed827791822137f651b279be64132c09d710"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-reading-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/short-height-reading-geometry.json",
+        "bytes": 55,
+        "sha256": "07d7d71c81789f15d5b8594ab146ed827791822137f651b279be64132c09d710"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-account-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-account-geometry.json",
+        "bytes": 55,
+        "sha256": "6f77e7d601af19aeb702711a86f3f9b208040fdf7740c5e2a3ffc6ec7b2f2e01"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-app-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-app-geometry.json",
+        "bytes": 1853,
+        "sha256": "f65a081ed2934051a6e30cfb025968ff396a2ce031dde0331ed58a65f781f2db"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-data-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-data-geometry.json",
+        "bytes": 55,
+        "sha256": "6f77e7d601af19aeb702711a86f3f9b208040fdf7740c5e2a3ffc6ec7b2f2e01"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-notifications-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-notifications-geometry.json",
+        "bytes": 55,
+        "sha256": "6f77e7d601af19aeb702711a86f3f9b208040fdf7740c5e2a3ffc6ec7b2f2e01"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-personal-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-personal-geometry.json",
+        "bytes": 55,
+        "sha256": "6f77e7d601af19aeb702711a86f3f9b208040fdf7740c5e2a3ffc6ec7b2f2e01"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-privacy-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-privacy-geometry.json",
+        "bytes": 55,
+        "sha256": "6f77e7d601af19aeb702711a86f3f9b208040fdf7740c5e2a3ffc6ec7b2f2e01"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-profile-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-profile-geometry.json",
+        "bytes": 55,
+        "sha256": "6f77e7d601af19aeb702711a86f3f9b208040fdf7740c5e2a3ffc6ec7b2f2e01"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-reading-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-large-text-reading-geometry.json",
+        "bytes": 55,
+        "sha256": "6f77e7d601af19aeb702711a86f3f9b208040fdf7740c5e2a3ffc6ec7b2f2e01"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-account-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-account-geometry.json",
+        "bytes": 55,
+        "sha256": "6f77e7d601af19aeb702711a86f3f9b208040fdf7740c5e2a3ffc6ec7b2f2e01"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-app-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-app-geometry.json",
+        "bytes": 1853,
+        "sha256": "f65a081ed2934051a6e30cfb025968ff396a2ce031dde0331ed58a65f781f2db"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-data-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-data-geometry.json",
+        "bytes": 55,
+        "sha256": "6f77e7d601af19aeb702711a86f3f9b208040fdf7740c5e2a3ffc6ec7b2f2e01"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-notifications-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-notifications-geometry.json",
+        "bytes": 55,
+        "sha256": "6f77e7d601af19aeb702711a86f3f9b208040fdf7740c5e2a3ffc6ec7b2f2e01"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-personal-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-personal-geometry.json",
+        "bytes": 55,
+        "sha256": "6f77e7d601af19aeb702711a86f3f9b208040fdf7740c5e2a3ffc6ec7b2f2e01"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-privacy-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-privacy-geometry.json",
+        "bytes": 55,
+        "sha256": "6f77e7d601af19aeb702711a86f3f9b208040fdf7740c5e2a3ffc6ec7b2f2e01"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-profile-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-profile-geometry.json",
+        "bytes": 55,
+        "sha256": "6f77e7d601af19aeb702711a86f3f9b208040fdf7740c5e2a3ffc6ec7b2f2e01"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-reading-fonts.json",
+        "bytes": 109,
+        "sha256": "654a805167c022a2f58146b44e6f682bb839bab4b9619bae3766b00e9d65d155"
+      },
+      {
+        "path": "test-results/cr03-visual-review/tablet-touch-large-text-reading-geometry.json",
+        "bytes": 55,
+        "sha256": "6f77e7d601af19aeb702711a86f3f9b208040fdf7740c5e2a3ffc6ec7b2f2e01"
+      }
+    ]
+  },
+  "unverified": [
+    "Physical iOS/Android/tablets/foldables",
+    "Actual browser toolbars and native keyboards/permission sheets",
+    "Assistive technology and full theme/contrast matrix",
+    "External CAPTCHA and actual password update",
+    "Backend storage, import algorithms and live persistence",
+    "Cold-route performance and full F16 visual composition"
+  ],
+  "next": "Stop for user review. CR04 Library selection/list correctness precedes F10 visual work. No commit performed."
+}

@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-**Implemented and verified within the scope below; stopped for user review. Not committed.** The user authorized continuation on 2026-09-30. Baseline HEAD remains `3e11d31`; the worktree was initially clean. CR01 and coverage reconciliation are committed in `93b63bc`. CR02 has passing evidence for 84 unit tests and 123 distinct browser cases, with the original failures and overlapping reruns recorded below. CR03 has not started.
+**Historical checkpoint: implemented and subsequently committed in `4dadc37`. The user authorized continuation to [CR03/checkpoint23](23-settings-continuity.md).** The user authorized continuation on 2026-09-30. Baseline HEAD remains `3e11d31`; the worktree was initially clean. CR01 and coverage reconciliation are committed in `93b63bc`. CR02 has passing evidence for 84 unit tests and 123 distinct browser cases, with the original failures and overlapping reruns recorded below. CR03 status now belongs to checkpoint23.
 
 ## Scope and actual consumers
 
@@ -104,4 +104,4 @@ Social writes remain network-only. Service interfaces do not cancel issued uploa
 
 Physical iOS/Android, OS keyboard/gesture behavior, VoiceOver/TalkBack, all-theme contrast and legal accessibility conformance remain unverified. F14 still owns dense club setup, optional-field grouping, large image areas and whole social-screen composition. Other corrective consumers remain assigned in checkpoint20; no whole F01–F09 or frontend-complete claim follows from this batch.
 
-**Stop here for the user's requested review. No commit or CR03 work was performed.** After the user's next approval, review/commit this complete diff and follow checkpoint20's CR03 scope. Check HEAD/worktree first; do not reopen CR01 or advance to F10 merely from test totals. The README, ledger, coverage continuation notes, source census, living contracts and evidence index now point to this completed batch.
+**Historical CR02 review stop, superseded by commit `4dadc37` and authorized CR03 continuation.** After the user's next approval, review/commit this complete diff and follow checkpoint20's CR03 scope. Check HEAD/worktree first; do not reopen CR01 or advance to F10 merely from test totals. The README, ledger, coverage continuation notes, source census, living contracts and evidence index now point to this completed batch.

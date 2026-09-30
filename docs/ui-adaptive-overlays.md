@@ -63,6 +63,10 @@ These shared corrections affect more than CR02: description wrappers also serve 
 
 ## Dates and intentional nesting
 
+CR03 migrates ImagePickerDialog to the adaptive task surface and adds per-opening selection ownership. The web picker awaits selection/cancellation before clearing pending. Obsolete device/reader callbacks are ignored after unmount. [Settings tasks](ui-settings-tasks.md) describes actual ProfileSettings upload and focus handoff; other consumers retain their own upload/save ownership. MobileDialog supports an explicit connected return-focus ref, and MobileAlertDialog can suppress restoration after an accepted Settings departure so it does not steal destination focus.
+
+MobileAlertDialog also handles an otherwise unconsumed Escape bubbling from its own content. Radix's document-capture handler remains first; default-prevented events, composing input and nested dialog/menu/listbox targets are excluded. The fallback requests the existing `onOpenChange(false)` and respects the caller's refusal. It never confirms a destructive action or adds another document listener. This closes the immediate-safe-focus dismissal gap reproduced in CR03; the exact internal timing of the original intermittent WebKit failure remains inferred. A test-only control without the fallback fails the immediate-focus regression, while the corrected unit and three-engine browser checks pass.
+
 The date picker chooses its primitive family on opening and keeps it until closed; a resize cannot replace its calendar/focus scope. The next opening reevaluates current space/input. Dialog presentation may adapt sheet/center geometry while retaining that family. Its accessible name is consistently `Choose date: <field label>` (localized prefix).
 
 Date header/actions stay visible with one calendar-body scroller when they fit. A ResizeObserver measures actual header/footer occupation; if less than a 44px row remains, the whole panel becomes the only scroller so every control stays reachable. This observes element fit, not native keyboard state. Keep the existing localized Close/Cancel rather than adding another generic Close.

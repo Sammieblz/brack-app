@@ -6,6 +6,8 @@ Coverage correction at `db076cf`: live CommentThread comment/reply and MessageTh
 
 ## Native inputs
 
+Settings category/task continuity, pending fieldsets, baseline ownership, named privacy controls and keyboard-operable reading genres follow [Settings tasks](ui-settings-tasks.md). The shared primitives do not infer dirty state or prevent an enclosing responsive owner from unmounting a form; the screen must keep one task owner.
+
 [Input](../apps/client/src/components/ui/input.tsx) forwards native attributes and its ref. It does **not** manufacture an `aria-label` from a placeholder or use a generic “Input field” label: those fallbacks overrode meaningful visible labels.
 
 Use a visible `Label` with matching `htmlFor`/`id`, or an explicit purpose-specific `aria-label`/`aria-labelledby` when there is no visible label. Keep placeholders as examples or hints. Forward `FormControl` attributes unchanged so its description, validation message and invalid state reach the input. Existing helper text needs an ID referenced by `aria-describedby`. Give repeated component instances distinct field IDs.

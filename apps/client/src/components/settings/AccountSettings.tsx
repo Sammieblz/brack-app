@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useId } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +17,7 @@ import type { User, Profile } from "@/types";
 import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getApiErrorStatus } from "@/services/api/client";
+import { useSettingsLeave, useSettingsTask } from "@/contexts/SettingsTaskContext";
 
 interface AccountSettingsProps {
   user: User;
@@ -43,8 +44,10 @@ const isGoogleOnlyAccount = (user: User): boolean => {
   return providers.has("google") && !providers.has("email");
 };
 
-export const AccountSettings = ({ user }: AccountSettingsProps) => {
+const AccountSettingsContent = ({ user }: AccountSettingsProps) => {
   const { toast } = useToast();
+  const leave = useSettingsLeave();
+  const errorId = useId();
   const [email, setEmail] = useState(user?.email || "");
   const [changingPassword, setChangingPassword] = useState(false);
   const [addingPassword, setAddingPassword] = useState(false);
@@ -58,14 +61,17 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileError, setProfileError] = useState(false);
   const [profileRequest, setProfileRequest] = useState(0);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const pending = useRef(false);
+  const mounted = useRef(false);
+  const googleOnly = isGoogleOnlyAccount(user);
+  useSettingsTask({ dirty: Boolean(currentPassword || newPassword || confirmPassword), pending: changingPassword || addingPassword });
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
 
   useEffect(() => {
     setEmail(user?.email || "");
-    setNeedsPassword(isGoogleOnlyAccount(user));
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-  }, [user]);
+  }, [user.email]);
+  useEffect(() => { setNeedsPassword(googleOnly); }, [googleOnly]);
 
   useEffect(() => {
     let active = true;
@@ -89,6 +95,7 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
 
   const validateNewPassword = (): boolean => {
     if (newPassword !== confirmPassword) {
+      setPasswordError("Enter the same password in both fields.");
       toast({
         variant: "destructive",
         title: "Passwords do not match",
@@ -99,6 +106,7 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
 
     const passwordValidation = validatePassword(newPassword);
     if (!passwordValidation.valid) {
+      setPasswordError(passwordValidation.error ?? "Choose a valid password.");
       toast({
         variant: "destructive",
         title: "Invalid password",
@@ -112,9 +120,11 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
 
   const handleChangePassword = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
+    if (pending.current || !mounted.current) return;
+    setPasswordError(null);
     if (!user.email || !validateNewPassword()) return;
     if (!isValidTurnstileToken(captchaToken)) {
+      setPasswordError("Wait for the security check to finish, then try again.");
       toast({
         variant: "destructive",
         title: "Security check needed",
@@ -125,6 +135,7 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
 
     const requestCaptchaToken = captchaToken;
 
+    pending.current = true;
     setChangingPassword(true);
     try {
       try {
@@ -134,9 +145,11 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
           captchaToken: requestCaptchaToken,
         });
       } catch (error: unknown) {
+        if (!mounted.current) return;
         const invalidCurrentPassword =
           isAuthError(error) && error.code === "invalid_credentials";
         const failure = presentAuthFailure(error, "sign_in");
+        setPasswordError(invalidCurrentPassword ? "Check your current password and try again. If you have forgotten it, use the reset option below." : failure.description);
         toast({
           variant: "destructive",
           title: invalidCurrentPassword
@@ -149,7 +162,9 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
         return;
       }
 
+      if (!mounted.current) return;
       await updatePassword(newPassword);
+      if (!mounted.current) return;
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -158,25 +173,33 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
         description: "Your new password is ready to use on this account.",
       });
     } catch {
+      if (!mounted.current) return;
+      setPasswordError("Your current password was verified, but Brack could not save the new one. Try again.");
       toast({
         variant: "destructive",
         title: "Password could not be updated",
         description: "Your current password was verified, but Brack could not save the new one. Try again.",
       });
     } finally {
-      setChangingPassword(false);
-      captchaRef.current?.reset();
+      if (mounted.current) {
+        pending.current = false;
+        setChangingPassword(false);
+        captchaRef.current?.reset();
+      }
     }
   };
 
   const handleAddPassword = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
+    if (pending.current || !mounted.current) return;
+    setPasswordError(null);
     if (!validateNewPassword()) return;
 
+    pending.current = true;
     setAddingPassword(true);
     try {
       await updatePassword(newPassword);
+      if (!mounted.current) return;
       setNeedsPassword(false);
       setNewPassword("");
       setConfirmPassword("");
@@ -185,13 +208,15 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
         description: "You can now sign in with Google or your email and password. Your account and profile stay the same.",
       });
     } catch {
+      if (!mounted.current) return;
+      setPasswordError("Sign in with Google again, then return here and retry.");
       toast({
         variant: "destructive",
         title: "Password could not be added",
         description: "Sign in with Google again, then return here and retry.",
       });
     } finally {
-      setAddingPassword(false);
+      if (mounted.current) { pending.current = false; setAddingPassword(false); }
     }
   };
 
@@ -238,6 +263,8 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <fieldset disabled={changingPassword || addingPassword} className="min-w-0" aria-describedby={passwordError ? errorId : undefined} aria-busy={changingPassword || addingPassword}>
+          <legend className="sr-only">Account password</legend>
           {needsPassword ? (
             <form className="space-y-4" onSubmit={handleAddPassword}>
               <div className="space-y-2">
@@ -327,19 +354,26 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
                 disabled={changingPassword}
               />
 
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                 <Button
                   type="submit"
+                  className="h-auto max-w-full whitespace-normal"
                   disabled={changingPassword || !isValidTurnstileToken(captchaToken)}
                 >
                   {changingPassword ? "Updating password..." : "Update password"}
                 </Button>
-                <Button asChild type="button" variant="ghost">
-                  <a href="/auth?mode=reset">Forgot current password?</a>
+                <Button asChild type="button" variant="ghost" className="h-auto max-w-full whitespace-normal">
+                  <a href="/auth?mode=reset" onClick={(event) => {
+                    event.preventDefault();
+                    if (!pending.current) void leave(() => window.location.assign("/auth?mode=reset"));
+                  }}>Forgot current password?</a>
                 </Button>
               </div>
             </form>
           )}
+          </fieldset>
+          {(changingPassword || addingPassword) && <p role="status" className="mt-3 text-sm text-muted-foreground">Updating your account password…</p>}
+          {passwordError && <p id={errorId} role="alert" className="mt-3 text-sm text-destructive">{passwordError}</p>}
         </CardContent>
       </Card>
 
@@ -381,3 +415,5 @@ export const AccountSettings = ({ user }: AccountSettingsProps) => {
     </div>
   );
 };
+
+export const AccountSettings = ({ user }: AccountSettingsProps) => <AccountSettingsContent key={user.id} user={user} />;

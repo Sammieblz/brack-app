@@ -14,6 +14,8 @@ CR01 adds one narrow utility rule: live comments and chat mark their active task
 
 Custom-heading screens and loading/error branches also need Menu below 1024. The legacy 768px `useIsMobile` check remains for unmigrated screen content, not global navigation availability.
 
+Within Settings, the optional [Settings task context](ui-settings-tasks.md) protects ordinary Menu/sidebar/tab destinations and delegates shell Sign out to the Settings confirmation/transaction owner. Modified/new-tab links remain browser-owned. This is a scoped consumer correction, not a new global browser-history blocker or a claim that other editor routes have the same policy.
+
 Tabs occupy normal flow without ornamental gap/glow/animated scaling. Large text can wrap into rows. Labels and selected shape supplement color. Footer owns bottom safe padding and publishes its measured full height as `--app-shell-bottom-height` for local floating controls. Main adds no second tab estimate. At extreme text/short heights the footer can scroll as a chrome region. The one-scroll-owner invariant means one vertical page scroller, not a prohibition on bounded chrome or horizontal rails scrolling separately.
 
 ## Editing and viewport
@@ -23,6 +25,8 @@ The shell reuses unscaled visual geometry through `useOverlayViewport`, without 
 Editable focus within main hides footer/floating controls. This focus policy includes hardware keyboards; it is not keyboard detection. Read-only and checkbox/button controls do not trigger it. Main takes the safe bottom inset while footer is hidden. Header resize, viewport/footer changes and keyboard/programmatic focus entry reveal obscured content without refocusing or moving the caret; header controls and focus outside the owned main are excluded. Focus entry during an active pointer contact does not scroll the activation target; the guard clears on pointer-up/cancel/window blur. This also leaves intentional scrolling of a focused editor alone. Pinch retains browser ownership. Add/Edit Book actions stay in page flow/sticky regions. Local floating actions use measured chrome clearance and reserve space only when visible.
 
 ## Utilities
+
+CR03's actual Settings Preview action exposed a second contact hazard: focusing a button blurred the editor and restored the footer between pointerdown and pointerup, covering that button before click. Footer editing-state changes now wait until all active pointer contacts end, then update on the next animation frame. Keyboard focus still updates immediately. This does not infer keyboard visibility or interfere with gestures. The retained pointer trail and normal single-click regression belong to checkpoint23. ScrollToTop sits below modal/backdrop layers (`z-40`) so it cannot cover a nested task's actions.
 
 `ShellUtilitiesProvider` keeps one portal host and application-owned timer/sync controllers across routes. Each layout attaches that host through `ShellUtilitiesSlot`; moving presentation does not restart sync subscriptions or reset pending Finish. TimerContext, sync engine, persistence, cancellation confirmation and journal prompting keep their domain ownership.
 

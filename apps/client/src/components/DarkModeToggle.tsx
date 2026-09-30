@@ -47,6 +47,7 @@ export const DarkModeToggle = () => {
                   onClick={() => setThemeMode(value)}
                   className="transition-all duration-200"
                   aria-label={label}
+                  aria-pressed={isActive}
                 >
                   <Icon className="h-4 w-4" />
                 </Button>

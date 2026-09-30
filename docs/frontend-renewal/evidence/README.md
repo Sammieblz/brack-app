@@ -1,5 +1,7 @@
 # Current-state fixture observations
 
+CR03 Settings evidence is in [Settings continuity](cr03-settings-continuity/README.md) and [checkpoint23](../23-settings-continuity.md): all eight actual categories, failure/pending/resize and shell-escape checks, retained original failures, 16 selected screenshots and explicit native/AT/CAPTCHA limits. CR02 is recorded in [responsive composers](cr02-responsive-composers/README.md). These scoped corrections do not close the remaining whole-frontend visual program.
+
 Current CR01 evidence is in [live composers](cr01-composers/README.md) and [checkpoint21](../21-live-composers.md): actual Feed/PostDetail/UserProfile/Messages/BookClubDetail tasks, retained diagnostic outcomes, source-font screenshots and explicit fixture/device limits. Earlier evidence below is historical and does not supersede the coverage reconciliation.
 
 F08's evidence is in [checkpoint18](../18-adaptive-overlays.md), the [adaptive contract](../../ui-adaptive-overlays.md) and [action/Goals audit](f08-action-goals.md). Its fixture screenshots and final browser traces stay in the local Playwright artifact directories named by the checkpoint; these are synthetic renderer observations, not physical-device captures.

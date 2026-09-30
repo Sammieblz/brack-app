@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Status: **CR02 implemented and verified within [checkpoint22's scope](22-responsive-composers.md), awaiting user review; no commit.** CR01 is committed in `93b63bc`; baseline remains `3e11d31`. CR02 records 84 unit tests, passing evidence for 123 distinct browser cases and original failures/corrections. [Checkpoint20](20-coverage-reconciliation.md) orders the remaining corrective work before routine F10 progression. Earlier checkpoints preserve scoped evidence, not whole-frontend acceptance. F06's [Ionic decision](../ui-ionic-fit.md) still applies. Device/AT, full visual and performance acceptance remain open.
+Current checkpoint: **[CR03 - Settings continuity](23-settings-continuity.md), implemented and verified within browser/unit scope; awaiting user review.** CR03 is uncommitted on baseline `4dadc37`, which contains CR02. Evidence covers 95 distinct unit tests across 12 files, 87 distinct Settings browser cases through the preserved full run and passing follow-ups, 21 shared shell and 15 overlay regressions, client/fixture types, changed-file lint, final build and local graph/export checks. [Checkpoint20](20-coverage-reconciliation.md) remains the corrective sequence authority. After review, the next batch is CR04 Library/list correctness before main F10 work. CR04-CR10 remain open; F10-F21 overlap that program and must not be counted twice. F16 visual work and broader physical-device/AT/performance acceptance remain open. No commit was made for CR03.
 
 ## Outcome
 
@@ -45,7 +45,8 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [19 — F09 adaptive shell](19-adaptive-shell.md) | Historical F09 implementation and scoped validation; committed `db076cf`, coverage reopened |
 | [20 — Coverage reconciliation](20-coverage-reconciliation.md) | Active correction: source census, live consumer matrices, missed requirements and corrective batches |
 | [21 — CR01 live composers](21-live-composers.md) | Historical committed CR01: comment/message ownership, media semantics and scoped evidence |
-| [22 — CR02 responsive creation](22-responsive-composers.md) | Current implementation: real Feed/BookClubs/Readers creation tasks, retention and guarded outcomes |
+| [22 — CR02 responsive creation](22-responsive-composers.md) | Historical committed CR02: real Feed/BookClubs/Readers creation tasks, retention and guarded outcomes |
+| [23 - CR03 Settings continuity](23-settings-continuity.md) | Awaiting review: category navigation, stable editors and protected Settings tasks verified within browser/unit scope |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability

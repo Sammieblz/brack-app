@@ -1,5 +1,5 @@
 import { getApiErrorStatus } from "@/services/api/client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback, useId } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 import { CurrencyIcon } from "@/components/CurrencyIcon";
+import { useSettingsTask } from "@/contexts/SettingsTaskContext";
 import type { User } from "@/types";
 import {
   DEFAULT_NOTIFICATION_PREFERENCES,
@@ -28,50 +29,89 @@ const NotificationSettingsContent = ({ user }: NotificationSettingsProps) => {
   const [hasLoaded, setHasLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [notificationPrefs, setNotificationPrefs] = useState(DEFAULT_NOTIFICATION_PREFERENCES);
+  const [savedPreferences, setSavedPreferences] = useState<typeof DEFAULT_NOTIFICATION_PREFERENCES | null>(null);
+  const [pending, setPending] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const pendingRef = useRef(false);
+  const mounted = useRef(false);
+  const readRequest = useRef(0);
+  const errorId = useId();
+  useSettingsTask({ dirty: savedPreferences !== null && JSON.stringify(notificationPrefs) !== JSON.stringify(savedPreferences), pending });
 
-  useEffect(() => {
-    loadNotificationPreferences();
-  }, [user]);
-
-  const loadNotificationPreferences = async () => {
-    if (!user) return;
+  const loadNotificationPreferences = useCallback(async () => {
+    if (!mounted.current || pendingRef.current) return;
+    const request = ++readRequest.current;
+    const isCurrent = () => mounted.current && readRequest.current === request;
     
     try {
       setLoadingPrefs(true);
       setLoadError(null);
-      setNotificationPrefs(await fetchNotificationPreferences(user.id));
+      const preferences = await fetchNotificationPreferences(user.id);
+      if (!isCurrent()) return;
+      setNotificationPrefs(preferences);
+      setSavedPreferences(preferences);
       setHasLoaded(true);
     } catch (error: unknown) {
+      if (!isCurrent()) return;
       if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setHasLoaded(false); }
       console.error("Error loading notification preferences:", error);
       setLoadError("We couldn't load notification preferences. Please try again.");
     } finally {
-      setLoadingPrefs(false);
+      if (isCurrent()) setLoadingPrefs(false);
+    }
+  }, [user.id]);
+
+  useEffect(() => {
+    mounted.current = true;
+    void loadNotificationPreferences();
+    return () => { mounted.current = false; readRequest.current += 1; };
+  }, [loadNotificationPreferences]);
+
+  const changePushEnabled = async (checked: boolean) => {
+    if (pendingRef.current) return;
+    setNotificationPrefs(previous => ({ ...previous, push_enabled: checked }));
+    if (checked === isRegistered) return;
+    pendingRef.current = true;
+    setPending(true); setSaveError(null);
+    try {
+      await (checked ? register() : unregister());
+    } catch (error) {
+      if (mounted.current) setSaveError(error instanceof Error ? error.message : "Could not update device notifications");
+    } finally {
+      if (mounted.current) { pendingRef.current = false; setPending(false); }
     }
   };
 
   const saveNotificationPreferences = async () => {
-    if (!user) return;
+    if (!mounted.current || pendingRef.current || loadingPrefs || !hasLoaded) return;
+    pendingRef.current = true;
+    setPending(true); setSaveError(null);
+    const submitted = { ...notificationPrefs };
+    let confirmed = false;
 
     try {
-      await saveNotificationPreferencesApi(user.id, notificationPrefs);
+      await saveNotificationPreferencesApi(user.id, submitted);
+      if (!mounted.current) return;
+      confirmed = true;
+      setSavedPreferences(submitted);
 
       toast({
         title: "Success",
         description: "Notification preferences saved",
       });
 
-      if (notificationPrefs.push_enabled && !isRegistered) {
+      if (submitted.push_enabled && !isRegistered) {
         await register();
-      } else if (!notificationPrefs.push_enabled && isRegistered) {
+      } else if (!submitted.push_enabled && isRegistered) {
         await unregister();
       }
     } catch (error: unknown) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to save notification preferences",
-      });
+      if (!mounted.current) return;
+      const message = confirmed ? "Preferences saved, but device notifications could not be updated." : "Failed to save notification preferences";
+      setSaveError(message);
+      toast({ variant: "destructive", title: confirmed ? "Device notification issue" : "Error", description: message });
+    } finally {
+      if (mounted.current) { pendingRef.current = false; setPending(false); }
     }
   };
 
@@ -91,7 +131,8 @@ const NotificationSettingsContent = ({ user }: NotificationSettingsProps) => {
         <CardContent className="space-y-6">
           {loadError && <LoadingError message={loadError} onRetry={loadNotificationPreferences} />}
           {(!loadError || hasLoaded) && (
-            <>
+            <fieldset disabled={pending || loadingPrefs} className="min-w-0 space-y-6" aria-busy={pending}>
+              <legend className="sr-only">Notification delivery preferences</legend>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
@@ -103,14 +144,7 @@ const NotificationSettingsContent = ({ user }: NotificationSettingsProps) => {
                   {!hasLoaded ? <Skeleton className="h-6 w-11 shrink-0 rounded-full" /> : (<Switch
                     id="push_enabled"
                     checked={notificationPrefs.push_enabled}
-                    onCheckedChange={(checked) => {
-                      setNotificationPrefs(prev => ({ ...prev, push_enabled: checked }));
-                      if (checked && !isRegistered) {
-                        register().catch(console.error);
-                      } else if (!checked && isRegistered) {
-                        unregister().catch(console.error);
-                      }
-                    }}
+                    onCheckedChange={(checked) => void changePushEnabled(checked)}
                   />)}
                 </div>
 
@@ -307,7 +341,7 @@ const NotificationSettingsContent = ({ user }: NotificationSettingsProps) => {
 
               <div className="pt-4 border-t">
                 <Label className="mb-3 block">Quiet Hours</Label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="quiet_hours_start">Start</Label>
                     {!hasLoaded ? <Skeleton className="h-11 min-h-[44px] w-full" /> : (<Input
@@ -339,22 +373,26 @@ const NotificationSettingsContent = ({ user }: NotificationSettingsProps) => {
               </div>
 
               {pushError && (
-                <div className="font-sans bg-destructive/10 text-destructive text-sm p-3 rounded-lg">
+                <div role="alert" className="font-sans bg-destructive/10 text-destructive text-sm p-3 rounded-lg">
                   {pushError}
                 </div>
               )}
 
               {!hasLoaded ? <Skeleton className="h-11 min-h-[44px] w-full" /> : <Button
                 onClick={saveNotificationPreferences}
+                disabled={pending || loadingPrefs}
+                aria-describedby={saveError ? errorId : undefined}
                 className="w-full"
                 variant="outline"
               >
                 Save Notification Preferences
               </Button>}
-            </>
+            </fieldset>
           )}
         </CardContent>
       </Card>
+      {pending && <p role="status" className="text-sm text-muted-foreground">Updating your notification preferences…</p>}
+      {saveError && <p id={errorId} role="alert" className="text-sm text-destructive">{saveError}</p>}
     </LoadingRegion>
   );
 };

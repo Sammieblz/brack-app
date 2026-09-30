@@ -1,0 +1,5 @@
+{
+  "extends": "../../apps/client/tsconfig.app.json",
+  "compilerOptions": { "noEmit": true, "types": ["node", "vite/client"] },
+  "include": ["settings-continuity.config.ts", "../e2e/settings-continuity.spec.ts", "../fixtures/settings-continuity/**/*.ts", "../fixtures/settings-continuity/**/*.tsx", "../../apps/client/src/vite-env.d.ts"]
+}

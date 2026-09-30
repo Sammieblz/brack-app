@@ -22,6 +22,8 @@ import { ThemeAwareLogo } from "@/components/ThemeAwareLogo";
 import { cn } from "@/lib/utils";
 import { getMobileNavItems, getNavItemsBySection, isNavItemActive, type NavItem } from "@/config/navigation";
 import { useFeatureFlags } from "@/hooks/useFeatureFlags";
+import { useSettingsLinkNavigation } from "@/hooks/useSettingsLinkNavigation";
+import { useSettingsSignOut } from "@/contexts/SettingsTaskContext";
 
 interface ProfileDrawerProps {
   open: boolean;
@@ -41,6 +43,8 @@ export const ProfileDrawer = ({ open, onOpenChange, returnFocusRef }: ProfileDra
   const { conversations } = useConversations();
   const { triggerHaptic } = useHapticFeedback();
   const { socialEnabled } = useFeatureFlags();
+  const handleSettingsLink = useSettingsLinkNavigation();
+  const settingsSignOut = useSettingsSignOut();
   const navigated = useRef(false);
   const openedLocation = useRef(location.key);
   const unreadCount = conversations.reduce((sum, conversation) => sum + (conversation.unread_count || 0), 0);
@@ -64,6 +68,11 @@ export const ProfileDrawer = ({ open, onOpenChange, returnFocusRef }: ProfileDra
   const handleDestination = (event: MouseEvent<HTMLAnchorElement>) => {
     // Keep native link behavior and the current menu for modifier/new-tab actions.
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (handleSettingsLink(event, () => {
+      navigated.current = true;
+      triggerHaptic("selection");
+      onOpenChange(false);
+    })) return;
     navigated.current = true;
     triggerHaptic("selection");
     onOpenChange(false);
@@ -71,6 +80,10 @@ export const ProfileDrawer = ({ open, onOpenChange, returnFocusRef }: ProfileDra
 
   const handleSignOut = async () => {
     triggerHaptic("medium");
+    if (settingsSignOut) {
+      await settingsSignOut(() => { navigated.current = true; onOpenChange(false); });
+      return;
+    }
     await signOut();
     navigated.current = true;
     navigate("/");

@@ -1,7 +1,8 @@
 import { getApiErrorStatus } from "@/services/api/client";
 import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
 import { PersonalInfoSkeleton } from "@/components/skeletons/SettingsSkeleton";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback, useId } from "react";
+import { useSettingsTask } from "@/contexts/SettingsTaskContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,12 @@ const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [locationAccuracy, setLocationAccuracy] = useState<number | null>(null);
   const [birthDateValid, setBirthDateValid] = useState(true);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const id = useId();
+  const pending = useRef(false);
+  const mounted = useRef(false);
+  const readRequest = useRef(0);
+  const geocodeController = useRef<AbortController | null>(null);
   
   const [formData, setFormData] = useState({
     first_name: "",
@@ -40,6 +47,9 @@ const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
     latitude: "",
     longitude: "",
   });
+  const [baseline, setBaseline] = useState(formData);
+  const busy = locating || saving;
+  useSettingsTask({ dirty: JSON.stringify(formData) !== JSON.stringify(baseline) || !birthDateValid, pending: busy });
 
   const locationIsHidden = profile?.show_location === false;
 
@@ -66,6 +76,7 @@ const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
 
   const reverseGeocode = async (latitude: number, longitude: number) => {
     const controller = new AbortController();
+    geocodeController.current = controller;
     const timeoutId = window.setTimeout(() => controller.abort(), 7000);
 
     try {
@@ -100,12 +111,14 @@ const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
       return {};
     } finally {
       window.clearTimeout(timeoutId);
+      if (geocodeController.current === controller) geocodeController.current = null;
     }
   };
 
   const getCurrentPosition = async () => {
     if (Capacitor.isNativePlatform()) {
       let permission = await Geolocation.checkPermissions();
+      if (!mounted.current) throw new Error("The location task was closed.");
       if (
         permission.location === "prompt" ||
         permission.location === "prompt-with-rationale"
@@ -113,6 +126,7 @@ const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
         permission = await Geolocation.requestPermissions({
           permissions: ["location"],
         });
+        if (!mounted.current) throw new Error("The location task was closed.");
       }
       if (permission.location !== "granted") {
         throw new Error(
@@ -143,44 +157,27 @@ const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
       description: "Your personal information has been saved.",
     }
   ): Promise<boolean> => {
-    if (!user) return false;
-    if (!birthDateValid) return false;
-
-    setSaving(true);
-    try {
-      await upsertPersonalInfo(user.id, buildPayload(data));
-
-      toast(success);
-
-      loadProfile();
-      return true;
-    } catch (error: unknown) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update personal information",
-      });
-      return false;
-    } finally {
-      setSaving(false);
-    }
+    if (!mounted.current) return false;
+    const payload = buildPayload(data);
+    await upsertPersonalInfo(user.id, payload);
+    if (!mounted.current) return false;
+    setBaseline({ ...data });
+    setProfile((previous) => previous ? { ...previous, ...payload } : previous);
+    toast(success);
+    return true;
   };
 
-  useEffect(() => {
-    loadProfile();
-  }, [user]);
-
-  const loadProfile = async () => {
-    if (!user) return;
-    
+  const loadProfile = useCallback(async () => {
+    const request = ++readRequest.current;
     try {
       setLoading(true);
       setLoadError(null);
       const data = await fetchProfile(user.id);
+      if (!mounted.current || request !== readRequest.current) return;
       setHasLoaded(true);
       if (data) {
         setProfile(data);
-        setFormData({
+        const draft = {
           first_name: data.first_name || "",
           last_name: data.last_name || "",
           phone_number: data.phone_number || "",
@@ -189,31 +186,49 @@ const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
           country: data.country || "",
           latitude: data.latitude?.toString() || "",
           longitude: data.longitude?.toString() || "",
-        });
+        };
+        setFormData(draft);
+        setBaseline(draft);
       }
     } catch (error) {
+      if (!mounted.current || request !== readRequest.current) return;
       if ([401, 403, 404].includes(getApiErrorStatus(error) ?? 0)) { setHasLoaded(false); setProfile(null); }
       console.error('Error loading profile:', error);
       setLoadError("We couldn't load your personal information. Please try again.");
     } finally {
-      setLoading(false);
+      if (mounted.current && request === readRequest.current) setLoading(false);
     }
-  };
+  }, [user.id]);
+
+  useEffect(() => {
+    mounted.current = true;
+    void loadProfile();
+    return () => { mounted.current = false; readRequest.current += 1; geocodeController.current?.abort(); };
+  }, [loadProfile]);
 
   const handleSave = async () => {
-    await savePersonalInfo();
+    if (!mounted.current || pending.current || !birthDateValid) return;
+    pending.current = true;
+    setSaving(true);
+    setSaveError(null);
+    try { await savePersonalInfo({ ...formData }); }
+    catch (error) {
+      if (mounted.current) setSaveError(error instanceof Error ? error.message : "Failed to update personal information");
+    } finally {
+      pending.current = false;
+      if (mounted.current) setSaving(false);
+    }
   };
 
   const handleGetCurrentLocation = async () => {
+    if (!mounted.current || pending.current || !birthDateValid) return;
     if (!Capacitor.isNativePlatform() && !navigator.geolocation) {
-      toast({
-        variant: "destructive",
-        title: "Geolocation not supported",
-        description: "Your browser doesn't support geolocation",
-      });
+      setSaveError("Your browser doesn't support geolocation. Enter your location manually.");
       return;
     }
 
+    pending.current = true;
+    setSaveError(null);
     setLocating(true);
     try {
       toast({
@@ -222,9 +237,11 @@ const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
       });
 
       const position = await getCurrentPosition();
+      if (!mounted.current) return;
       const latitude = position.coords.latitude;
       const longitude = position.coords.longitude;
       const resolvedLocation = await reverseGeocode(latitude, longitude);
+      if (!mounted.current) return;
       const nextFormData = {
         ...formData,
         latitude: latitude.toFixed(6),
@@ -235,7 +252,7 @@ const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
 
       setLocationAccuracy(position.coords.accuracy ?? null);
       setFormData(nextFormData);
-
+      setSaving(true);
       await savePersonalInfo(nextFormData, {
         title: "Location updated",
         description: resolvedLocation.city
@@ -243,19 +260,17 @@ const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
           : "Saved your current coordinates for nearby reader discovery.",
       });
     } catch (error: unknown) {
+      if (!mounted.current) return;
       const message =
         error instanceof Error
           ? error.message
           : typeof error === "object" && error !== null && "message" in error
             ? String(error.message)
             : "Could not get your location.";
-      toast({
-        variant: "destructive",
-        title: "Location error",
-        description: message,
-      });
+      setSaveError(message);
     } finally {
-      setLocating(false);
+      pending.current = false;
+      if (mounted.current) { setLocating(false); setSaving(false); }
     }
   };
 
@@ -266,6 +281,8 @@ const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
   return (
     <LoadingRegion loading={false} refreshing={loading} label="Loading personal information" className="space-y-6">
       {loadError && <LoadingError message={loadError} onRetry={loadProfile} />}
+      <fieldset disabled={busy} className="min-w-0 space-y-6">
+      <legend className="sr-only">Personal information</legend>
       <div>
         <h2 className="font-display text-2xl font-bold">Personal Information</h2>
         <p className="font-sans text-muted-foreground mt-1">
@@ -397,6 +414,7 @@ const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
             variant="outline"
             onClick={handleGetCurrentLocation}
             disabled={locating || saving || !birthDateValid}
+            aria-describedby={saveError ? `${id}-save-error` : `${id}-location-help`}
             className="flex items-center gap-2"
           >
             <MapPin className="h-4 w-4" />
@@ -404,6 +422,7 @@ const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
           </Button>
 
           <div className="bg-muted/50 p-3 rounded-lg space-y-1">
+            <p id={`${id}-location-help`} className="font-sans text-xs text-muted-foreground">Use Current Location saves these personal details along with your detected location. Fields remain locked until it finishes.</p>
             <p className="font-sans text-xs text-muted-foreground">
               <strong>Privacy Note:</strong> Brack asks for location only after you choose Use Current Location. Your saved area is used for reader discovery features.
             </p>
@@ -417,11 +436,14 @@ const PersonalInfoContent = ({ user }: PersonalInfoProps) => {
       </Card>
 
       {/* Save Button */}
+      {saveError && <p id={`${id}-save-error`} role="alert" className="text-sm text-destructive">{saveError}</p>}
       <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={locating || saving || !birthDateValid}>
+        <Button onClick={handleSave} disabled={locating || saving || !birthDateValid} aria-describedby={saveError ? `${id}-save-error` : undefined}>
           {saving ? "Saving..." : "Save Changes"}
         </Button>
       </div>
+      </fieldset>
+      {busy && <p role="status" className="text-sm text-muted-foreground">{saving ? "Saving your personal information…" : "Getting your current location…"}</p>}
     </LoadingRegion>
   );
 };
