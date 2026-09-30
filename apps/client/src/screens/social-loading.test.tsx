@@ -22,7 +22,7 @@ vi.mock("@/components/MobileLayout", () => ({ MobileLayout: ({ children }: { chi
 vi.mock("@/components/NativeHeader", () => ({ NativeHeader: ({ title }: { title: string }) => <h1>{title}</h1> }));
 vi.mock("@/components/MobileHeader", () => ({ MobileHeader: () => null }));
 vi.mock("@/components/PullToRefresh", () => ({ PullToRefresh: ({ children }: { children: ReactNode }) => <>{children}</> }));
-vi.mock("@/components/social/CreatePostDialog", () => ({ CreatePostDialog: () => null }));
+vi.mock("@/components/social/CreatePostDialog", () => ({ CreatePostDialog: () => null, CreatePostDialogTrigger: () => null }));
 vi.mock("@/components/social/PostCard", () => ({ PostCard: () => <article>Loaded post</article> }));
 vi.mock("@/components/social/FeedItem", () => ({ FeedItem: () => <article>Loaded activity</article> }));
 vi.mock("@/components/messaging/ConversationsList", () => ({ ConversationsList: ({ onSelectConversation }: { onSelectConversation: (id: string) => void }) => <div>Loaded inbox<button onClick={() => onSelectConversation("thread-1")}>Open thread</button></div> }));

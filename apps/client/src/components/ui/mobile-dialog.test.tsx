@@ -1,10 +1,49 @@
 import { useRef, useState } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MobileAlertDialog } from "./mobile-dialog";
+import { MobileAlertDialog, MobileDialog } from "./mobile-dialog";
 
 vi.mock("@/hooks/useHapticFeedback", () => ({ useHapticFeedback: () => ({ triggerHaptic: vi.fn() }) }));
-afterEach(cleanup);
+afterEach(() => { cleanup(); vi.restoreAllMocks(); });
+
+describe("adaptive task descriptions", () => {
+  for (const kind of ["task", "confirmation"] as const) {
+    const surface = (description?: string) => kind === "task"
+      ? <MobileDialog open onOpenChange={() => undefined} title="Reading task" description={description}><p>Task content</p></MobileDialog>
+      : <MobileAlertDialog open onOpenChange={() => undefined} title="Reading task" description={description} onConfirm={() => undefined} />;
+
+    it(`${kind} uses the real Radix description relationship without a missing-description warning`, () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const view = render(surface("Keep your reading work."));
+      const dialog = screen.getByRole("dialog", { name: "Reading task" });
+      const descriptionId = dialog.getAttribute("aria-describedby");
+      expect(descriptionId).toBeTruthy();
+      expect(document.getElementById(descriptionId!)).toBe(screen.getByText("Keep your reading work."));
+      expect(dialog).toHaveAccessibleDescription("Keep your reading work.");
+      expect(warn).not.toHaveBeenCalled();
+
+      view.rerender(surface());
+      expect(dialog).not.toHaveAttribute("aria-describedby");
+      expect(dialog).toHaveAccessibleDescription("");
+      expect(document.getElementById(descriptionId!)).toBeNull();
+      expect(warn).not.toHaveBeenCalled();
+
+      view.rerender(surface("Updated reading instructions."));
+      expect(dialog).toHaveAccessibleDescription("Updated reading instructions.");
+      expect(document.getElementById(dialog.getAttribute("aria-describedby")!)).toBe(screen.getByText("Updated reading instructions."));
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it(`${kind} omits the description relationship when no description is supplied`, () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      render(surface());
+      const dialog = screen.getByRole("dialog", { name: "Reading task" });
+      expect(dialog).not.toHaveAttribute("aria-describedby");
+      expect(dialog).toHaveAccessibleDescription("");
+      expect(warn).not.toHaveBeenCalled();
+    });
+  }
+});
 
 describe("adaptive confirmation focus", () => {
   it.each(["Cancel", "Close", "Escape"])("returns %s dismissal to the actual external invoker without confirming", async (method) => {

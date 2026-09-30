@@ -1,0 +1,176 @@
+{
+  "recorded_utc": "2026-09-30T17:04:46.623419+00:00",
+  "baseline_head": "3e11d31fab205306f0167a217ab7e8452588a001",
+  "state": "uncommitted CR02 working tree; user review stop",
+  "unique_browser_cases_verified": 123,
+  "browser_accounting": "78 CR02 cases via 76/78 main + 9/9 overlapping follow-up; 45 separate shared-consumer cases. Smoke and geometry runs overlap; do not sum all executions.",
+  "unit_tests": {
+    "passed": 84,
+    "files": 10,
+    "local_log": "test-results/cr02-unit-final.log"
+  },
+  "types_lint_build": "passed; commands and warnings in checkpoint22",
+  "interrupted_run": "cr02-full-1: observed 16 passed / 5 failed; reporter did not flush; no total inferred",
+  "runs": [
+    {
+      "run": "cr02-smoke-1",
+      "local_report": "test-results/cr02-smoke-1-summary.json",
+      "stats": {
+        "startTime": "2026-09-30T16:32:51.466Z",
+        "duration": 22896.927,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr02-full-2",
+      "local_report": "test-results/cr02-full-2-summary.json",
+      "stats": {
+        "startTime": "2026-09-30T16:48:41.221Z",
+        "duration": 403625.76,
+        "expected": 76,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr02-visual-1",
+      "local_report": "test-results/cr02-visual-1-summary.json",
+      "stats": {
+        "startTime": "2026-09-30T16:37:49.403Z",
+        "duration": 328229.251,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr02-visual-2",
+      "local_report": "test-results/cr02-visual-2-summary.json",
+      "stats": {
+        "startTime": "2026-09-30T16:44:35.654Z",
+        "duration": 43761.801,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 7,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr02-visual-3",
+      "local_report": "test-results/cr02-visual-3-summary.json",
+      "stats": {
+        "startTime": "2026-09-30T16:47:07.528Z",
+        "duration": 50622.551,
+        "expected": 8,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr02-endpoint-unchanged",
+      "local_report": "test-results/cr02-endpoint-unchanged-summary.json",
+      "stats": {
+        "startTime": "2026-09-30T16:56:26.848Z",
+        "duration": 25755.701999999997,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr02-endpoint-final",
+      "local_report": "test-results/cr02-endpoint-final-summary.json",
+      "stats": {
+        "startTime": "2026-09-30T16:58:26.034Z",
+        "duration": 63048.307,
+        "expected": 9,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr02-adaptive-regression",
+      "local_report": "test-results/cr02-adaptive-regression-summary.json",
+      "stats": {
+        "startTime": "2026-09-30T17:00:06.858Z",
+        "duration": 51078.377,
+        "expected": 27,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr02-back-regression-final",
+      "local_report": "test-results/cr02-back-regression-final-summary.json",
+      "stats": {
+        "startTime": "2026-09-30T17:01:46.317Z",
+        "duration": 18295.773,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr02-journal-regression",
+      "local_report": "test-results/cr02-journal-regression-summary.json",
+      "stats": {
+        "startTime": "2026-09-30T17:02:19.845Z",
+        "duration": 26000.118000000002,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr02-feed-regression",
+      "local_report": "test-results/cr02-feed-regression-summary.json",
+      "stats": {
+        "startTime": "2026-09-30T17:02:58.225Z",
+        "duration": 35823.557,
+        "expected": 9,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  ],
+  "sha256": {
+    "apps/client/src/components/clubs/CreateClubDialog.tsx": "a8b0499787407e3784c32900be9d6c728f36d66b964473f553be19796f2fd38c",
+    "apps/client/src/components/clubs/CreateClubDialog.test.tsx": "358c9e5fb5642f484bdb92368d518abbab51372501b2987ff1e21bdff604fb17",
+    "apps/client/src/components/social/CreatePostDialog.tsx": "df878ec8abc717edcfa91bee03f1a808c27738f0c8cda6000ffe42fa52756ee4",
+    "apps/client/src/components/social/CreatePostDialog.test.tsx": "9bb9d1e2b1b543d48fa8ea009eacb484a454e520f75961734a06be0524d15a70",
+    "apps/client/src/components/ui/mobile-dialog.tsx": "d42feca9ac901c737da2040479f0d57f5754c0c1f965574a473e6ff6426cbccb",
+    "apps/client/src/components/ui/mobile-dialog.test.tsx": "e6afed801606eb2805317d78b33cd3ed2651ac6a66a18741416ee03e717fa571",
+    "apps/client/src/components/ui/select.tsx": "a29b47bc8300a0cb8c2f3f94e8a4d33bd668b21308e91617561ae4ab259211ab",
+    "apps/client/src/hooks/useBookClubs.ts": "e829b8adf85a41d2f9d3740453f67c87bc1aaf57536a18190f68ecc04658b5be",
+    "apps/client/src/hooks/useBookClubs.test.tsx": "2429ecf755d2ff36144a066ea2aeb3cbf78dbfd668120a5a07179293f2f97846",
+    "apps/client/src/screens/BookClubs.tsx": "9cb4f0d2388544348876993c53c2ff0759b17bfd6cc8404342a171f7797c5c33",
+    "apps/client/src/screens/Feed.tsx": "facde48611b14cfe992fdaa14a1794914f7f3859d95e89b1353d6e384ecfa09d",
+    "apps/client/src/screens/Readers.tsx": "74dc243c6163b7302723dc0c15df917529091f69de8cb0e53fd7c56d462425f9",
+    "apps/client/src/screens/social-loading.test.tsx": "bafd1d446d1f5727d0eed267dd066d1b90e9429b5527e647988275c188563f7e",
+    "tests/e2e/responsive-composers.spec.ts": "e22c80c1e7bd502574a152d746ad7c6a26d0b909f7e7a2b4c9b4e7ce663f24f5",
+    "tests/playwright/responsive-composers.config.ts": "556e24d157734ad65ee271c4949c21009b9a667c40febd66d9202cf12e8b7cc2",
+    "tests/playwright/tsconfig.responsive-composers.json": "2f367ace6ab2ffaaf1302fee8f12485fa3231231132f015a2c653409375f6fa7",
+    "tests/fixtures/responsive-composers/api.ts": "0f54ae34558ccd1ba50ddc3c76e9a4f7d2847641a8acd7ba784b74ded9169ae5",
+    "tests/fixtures/responsive-composers/data.ts": "3efba22bf3c17855dae1dc7ac16240610b71c448bb667c20d66114ce4081d18b",
+    "tests/fixtures/responsive-composers/index.html": "7e17e24cf939cdaef92e114259e1159dd6f6ea9c113cebc703bf110e58dd1a71",
+    "tests/fixtures/responsive-composers/main.tsx": "5bb7e8fb7b972a736e4ab2c6d694c468c7f9d217a55188ae29876f358389bda2",
+    "tests/fixtures/responsive-composers/state.ts": "e346e85c79440304367ad0f24d3498fe7fce647e60c2538ae83747ed83b98b66",
+    "tests/fixtures/responsive-composers/vite.config.ts": "20a1bf83e2c4f912806efb2991a60bb56af8c9c883c114180fa54200a42747d8"
+  },
+  "limits": [
+    "Browser fixtures replace service/account/device boundaries.",
+    "No native hardware, screen-reader, all-theme contrast or whole-frontend acceptance."
+  ]
+}

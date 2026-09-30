@@ -1,4 +1,4 @@
-import { type ComponentType, useMemo, useState } from "react";
+import { type ComponentType, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSwipeable } from "react-swipeable";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { BookClubCard } from "@/components/clubs/BookClubCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CreateClubDialog } from "@/components/clubs/CreateClubDialog";
+import { CreateClubDialog, CreateClubDialogTrigger } from "@/components/clubs/CreateClubDialog";
 import { FollowButton } from "@/components/social/FollowButton";
 import { Input } from "@/components/ui/input";
 import { LoadingRegion, LoadingError } from "@/components/loading/LoadingRegion";
@@ -96,6 +96,8 @@ export default function Readers() {
   const { clubs, loading: clubsLoading, refreshing: clubsRefreshing, error: clubsError, hasLoaded: clubsLoaded, fetchClubs, createClub, joinClub, leaveClub } = useBookClubs();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [createOpen, setCreateOpen] = useState(false);
+  const createTriggerRef = useRef<HTMLButtonElement>(null);
   const { triggerHaptic } = useHapticFeedback();
   const hasSearch = searchQuery.trim().length > 0;
 
@@ -131,10 +133,12 @@ export default function Readers() {
   };
 
   const createClubAction =
-    activeTab === "clubs" ? <CreateClubDialog compact={isMobile} onCreateClub={createClub} /> : undefined;
+    activeTab === "clubs" ? <CreateClubDialogTrigger ref={createTriggerRef} compact={isMobile} onClick={() => setCreateOpen(true)} /> : undefined;
 
   return (
     <MobileLayout>
+      <CreateClubDialog open={createOpen} onOpenChange={setCreateOpen} trigger={null}
+        returnFocusRef={createTriggerRef} onCreateClub={createClub} />
       {isMobile ? (
         <MobileHeader title="Discover" action={createClubAction} />
       ) : (

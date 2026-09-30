@@ -1,5 +1,5 @@
 {
-  "baseline": "db076cf7d99d60c01fdf4310dc5e5348d7335992",
+  "baseline": "3e11d31fab205306f0167a217ab7e8452588a001",
   "method": "TypeScript AST static local import/literal dynamic-import reachability, JSX Route declarations, git commit file lists. No runtime, branches, feature-gate, tree-shaking, fixture alias/mock or per-export analysis. Declaration-level type-only imports are excluded; inline named type imports can still contribute edges. Import references and changed files do not establish review, runtime execution or passing tests. Unreachable means no source import path from main.tsx; verify before deletion. routeImportReachability follows route JSX owners, not their App-owned global ancestors: an empty route list does not exclude global rendering (e.g. Toaster, JournalPromptHandler, JourneyLevelUpObserver).",
   "counts": {
     "routes": 39,
@@ -2046,12 +2046,15 @@
       "path": "apps/client/src/components/clubs/CreateClubDialog.tsx",
       "role": "component",
       "imports": [
+        "apps/client/src/components/ui/adaptive-dialog.tsx",
         "apps/client/src/components/ui/button.tsx",
         "apps/client/src/components/ui/dialog.tsx",
         "apps/client/src/components/ui/input.tsx",
         "apps/client/src/components/ui/label.tsx",
+        "apps/client/src/components/ui/mobile-dialog.tsx",
         "apps/client/src/components/ui/switch.tsx",
         "apps/client/src/components/ui/textarea.tsx",
+        "apps/client/src/hooks/useAuth.ts",
         "apps/client/src/services/api/clubs.ts"
       ],
       "importedBy": [
@@ -2059,29 +2062,34 @@
         "apps/client/src/screens/Readers.tsx"
       ],
       "jsx": [
+        "AdaptiveDialogContent",
+        "AdaptiveDialogDescription",
+        "AdaptiveDialogFooter",
+        "AdaptiveDialogHeader",
+        "AdaptiveDialogTitle",
         "Button",
+        "CreateClubDialogTrigger",
         "Dialog",
-        "DialogContent",
-        "DialogDescription",
-        "DialogFooter",
-        "DialogHeader",
-        "DialogTitle",
         "DialogTrigger",
         "Input",
         "Label",
         "MediaImage",
+        "MobileAlertDialog",
         "Plus",
         "Switch",
         "Textarea",
         "div",
+        "fieldset",
         "form",
         "img",
+        "input",
         "label",
         "p",
         "span"
       ],
       "directTestImporters": [
-        "apps/client/src/components/FrontendFormAccessibility.test.tsx"
+        "apps/client/src/components/FrontendFormAccessibility.test.tsx",
+        "apps/client/src/components/clubs/CreateClubDialog.test.tsx"
       ],
       "changedIn": [
         "F02/F03"
@@ -5944,7 +5952,8 @@
         "legend"
       ],
       "directTestImporters": [
-        "apps/client/src/components/rich-text/RichTextEditor.test.tsx"
+        "apps/client/src/components/rich-text/RichTextEditor.test.tsx",
+        "apps/client/src/components/social/CreatePostDialog.test.tsx"
       ],
       "changedIn": [
         "F01",
@@ -6612,7 +6621,8 @@
       "directTestImporters": [
         "apps/client/src/components/ShellUtilities.test.tsx",
         "tests/fixtures/adaptive-shell/main.tsx",
-        "tests/fixtures/live-composers/main.tsx"
+        "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/responsive-composers/main.tsx"
       ],
       "changedIn": [
         "F09"
@@ -7266,11 +7276,13 @@
       "role": "component",
       "imports": [
         "apps/client/src/components/rich-text/RichTextEditor.tsx",
+        "apps/client/src/components/ui/adaptive-dialog.tsx",
         "apps/client/src/components/ui/badge.tsx",
         "apps/client/src/components/ui/button.tsx",
         "apps/client/src/components/ui/dialog.tsx",
         "apps/client/src/components/ui/input.tsx",
         "apps/client/src/components/ui/label.tsx",
+        "apps/client/src/components/ui/mobile-dialog.tsx",
         "apps/client/src/components/ui/select.tsx",
         "apps/client/src/constants/index.ts",
         "apps/client/src/hooks/useAuth.ts",
@@ -7285,18 +7297,22 @@
         "apps/client/src/screens/Feed.tsx"
       ],
       "jsx": [
+        "AdaptiveDialogContent",
+        "AdaptiveDialogDescription",
+        "AdaptiveDialogFooter",
+        "AdaptiveDialogHeader",
+        "AdaptiveDialogTitle",
         "Badge",
         "Button",
+        "CreatePostDialogTrigger",
+        "CreatePostTask",
         "Dialog",
-        "DialogContent",
-        "DialogDescription",
-        "DialogHeader",
-        "DialogTitle",
         "DialogTrigger",
         "EditPencil",
         "Input",
         "Label",
         "MediaImage",
+        "MobileAlertDialog",
         "RichTextEditor",
         "Select",
         "SelectContent",
@@ -7306,12 +7322,16 @@
         "Trash",
         "aside",
         "div",
+        "fieldset",
         "img",
         "input",
+        "legend",
         "p",
         "video"
       ],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "apps/client/src/components/social/CreatePostDialog.test.tsx"
+      ],
       "changedIn": [
         "F02/F03"
       ],
@@ -8350,6 +8370,8 @@
         "apps/client/src/components/JournalEntryDialog.tsx",
         "apps/client/src/components/ProfileDrawer.tsx",
         "apps/client/src/components/QuickJournalEntryDialog.tsx",
+        "apps/client/src/components/clubs/CreateClubDialog.tsx",
+        "apps/client/src/components/social/CreatePostDialog.tsx",
         "apps/client/src/components/ui/action-sheet.tsx",
         "apps/client/src/components/ui/date-picker.tsx",
         "apps/client/src/components/ui/mobile-dialog.tsx"
@@ -9995,6 +10017,8 @@
         "apps/client/src/components/ui/dialog.tsx"
       ],
       "importedBy": [
+        "apps/client/src/components/clubs/CreateClubDialog.tsx",
+        "apps/client/src/components/social/CreatePostDialog.tsx",
         "apps/client/src/contexts/ConfirmDialogContext.tsx",
         "apps/client/src/contexts/TimerContext.tsx",
         "apps/client/src/screens/MyBooks.tsx",
@@ -10767,7 +10791,8 @@
         "Sonner"
       ],
       "directTestImporters": [
-        "tests/fixtures/live-composers/main.tsx"
+        "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/responsive-composers/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -11069,6 +11094,7 @@
         "tests/fixtures/library-interactions/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/loading/main.tsx",
+        "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx"
       ],
       "changedIn": [],
@@ -11595,7 +11621,8 @@
         "tests/fixtures/adaptive-shell/main.tsx",
         "tests/fixtures/back-ownership/main.tsx",
         "tests/fixtures/frontend-semantics/main.tsx",
-        "tests/fixtures/live-composers/main.tsx"
+        "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/responsive-composers/main.tsx"
       ],
       "changedIn": [
         "F07"
@@ -11652,6 +11679,7 @@
         "tests/fixtures/journal-save/main.tsx",
         "tests/fixtures/library-interactions/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx"
       ],
       "changedIn": [],
@@ -12192,6 +12220,7 @@
         "tests/fixtures/adaptive-overlays/main.tsx",
         "tests/fixtures/adaptive-shell/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx",
         "tests/fixtures/ui-environment/main.tsx"
       ],
@@ -12226,6 +12255,7 @@
         "apps/client/src/components/QuickJournalEntryDialog.tsx",
         "apps/client/src/components/ReadingSyncIndicator.tsx",
         "apps/client/src/components/SwipeableBookListsCarousel.tsx",
+        "apps/client/src/components/clubs/CreateClubDialog.tsx",
         "apps/client/src/components/settings/SupportContact.tsx",
         "apps/client/src/components/social/CommentThread.tsx",
         "apps/client/src/components/social/CreatePostDialog.tsx",
@@ -12451,6 +12481,7 @@
       ],
       "jsx": [],
       "directTestImporters": [
+        "apps/client/src/hooks/useBookClubs.test.tsx",
         "apps/client/src/hooks/useDiscoveryLoading.test.ts"
       ],
       "changedIn": [],
@@ -14099,6 +14130,7 @@
         "tests/fixtures/library-interactions/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/loading/main.tsx",
+        "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx",
         "tests/fixtures/ui-environment/main.tsx"
       ],
@@ -14325,7 +14357,9 @@
         "apps/client/src/components/PullToRefresh.test.tsx",
         "apps/client/src/components/ShellNavigation.test.tsx",
         "apps/client/src/components/SwipeableBookCard.test.tsx",
+        "apps/client/src/components/clubs/CreateClubDialog.test.tsx",
         "apps/client/src/components/messaging/MessageThread.test.tsx",
+        "apps/client/src/components/social/CreatePostDialog.test.tsx",
         "apps/client/src/components/ui/action-sheet.test.tsx",
         "apps/client/src/components/ui/back-layers.test.tsx",
         "apps/client/src/lib/backLayers.test.ts",
@@ -14759,7 +14793,8 @@
       ],
       "jsx": [],
       "directTestImporters": [
-        "apps/client/src/components/rich-text/RichTextEditor.test.tsx"
+        "apps/client/src/components/rich-text/RichTextEditor.test.tsx",
+        "apps/client/src/components/social/CreatePostDialog.test.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -15605,6 +15640,7 @@
         "ClubGrid",
         "ClubGridSkeleton",
         "CreateClubDialog",
+        "CreateClubDialogTrigger",
         "Icon",
         "Input",
         "LoadingError",
@@ -15622,7 +15658,9 @@
         "p",
         "section"
       ],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "tests/fixtures/responsive-composers/main.tsx"
+      ],
       "changedIn": [
         "F02/F03"
       ],
@@ -16075,6 +16113,7 @@
         "Card",
         "CardContent",
         "CreatePostDialog",
+        "CreatePostDialogTrigger",
         "EmptyFeedState",
         "FeedPaginationState",
         "LoadingError",
@@ -16101,7 +16140,8 @@
       ],
       "directTestImporters": [
         "apps/client/src/screens/social-loading.test.tsx",
-        "tests/fixtures/live-composers/main.tsx"
+        "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/responsive-composers/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -16764,6 +16804,7 @@
         "CardContent",
         "ClubGridSkeleton",
         "CreateClubDialog",
+        "CreateClubDialogTrigger",
         "EmptyDiscoverState",
         "FollowButton",
         "Icon",
@@ -16792,7 +16833,9 @@
         "p",
         "span"
       ],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "tests/fixtures/responsive-composers/main.tsx"
+      ],
       "changedIn": [
         "F02/F03"
       ],
@@ -17856,7 +17899,8 @@
       "jsx": [],
       "directTestImporters": [
         "apps/client/src/services/api/uploadMediaNormalization.test.ts",
-        "tests/fixtures/live-composers/api.ts"
+        "tests/fixtures/live-composers/api.ts",
+        "tests/fixtures/responsive-composers/api.ts"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -18913,7 +18957,8 @@
       "jsx": [],
       "directTestImporters": [
         "apps/client/src/services/api/uploadMediaNormalization.test.ts",
-        "tests/fixtures/live-composers/api.ts"
+        "tests/fixtures/live-composers/api.ts",
+        "tests/fixtures/responsive-composers/api.ts"
       ],
       "changedIn": [],
       "sourceReachable": true,

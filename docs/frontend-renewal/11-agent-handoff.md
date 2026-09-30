@@ -64,7 +64,7 @@ Do not duplicate the entire source file, graph report or transcript. Prefer a us
 
 ## Progress checkpoint template
 
-The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). Checkpoints13–19 preserve committed batches;20 owns coverage reconciliation; [21](21-live-composers.md) owns current CR01 delivery. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate detailed active status across competing records.
+The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). Checkpoints13–19 preserve committed batches;20 owns coverage reconciliation;21 preserves committed CR01 evidence; [22](22-responsive-composers.md) owns current CR02 delivery. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate detailed active status across competing records.
 
 Update the relevant ticket and append a concise checkpoint when handing off:
 
@@ -85,7 +85,7 @@ An interrupted session should be resumable from this checkpoint without asking t
 
 ## Active implementation checkpoint
 
-**Current:** [Checkpoint21](21-live-composers.md) records implemented CR01, scoped verification and the **user review stop; no commit**. CR02 is next only after user continuation. F01–F09 is committed through `db076cf`. The [coverage reconciliation](20-coverage-reconciliation.md) substantiates missing consumers and supersedes the F09-to-F10 handoff. Read its matrices and CR01–CR10 sequence. The documentation audit's results are historical; current application evidence belongs in21. F06's defer decision remains. Preserve prior repairs; do not treat fixture totals, changed files, a route inventory or an unused component test as closure of live product requirements.
+**Current:** [Checkpoint22](22-responsive-composers.md) owns completed CR02 and the user's review stop. It records 84 unit tests, passing evidence for 123 distinct browser cases, all original failures/corrections, screenshots and a source-hash verification record. No commit or CR03 work was performed. CR01 is committed in `93b63bc`; its review stop in21 is historical. Baseline remains `3e11d31`; inspect HEAD/worktree before resuming. The [coverage reconciliation](20-coverage-reconciliation.md) and CR01–CR10 sequence supersede routine F09-to-F10 progression. F06's defer decision remains. Other consumers, physical devices/AT and whole-screen composition are still open; do not infer closure from totals or primitive-only fixtures.
 
 Earlier F02/F03 results and their review stop are historical in [14](14-next-implementation-batch.md). Actual native/AT/live-service checks remain release evidence gaps. The original audit above is historical; do not restart completed tickets from its defect list.
 

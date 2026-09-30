@@ -1,0 +1,5 @@
+{
+  "extends": "../../apps/client/tsconfig.app.json",
+  "compilerOptions": { "noEmit": true, "types": ["node", "vite/client"] },
+  "include": ["responsive-composers.config.ts", "../e2e/responsive-composers.spec.ts", "../fixtures/responsive-composers/**/*.ts", "../fixtures/responsive-composers/**/*.tsx", "../../apps/client/src/vite-env.d.ts"]
+}

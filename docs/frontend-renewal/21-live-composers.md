@@ -2,6 +2,8 @@
 
 ## Current checkpoint
 
+**Historical continuation:** CR01 and this record were committed in `93b63bc`. The user authorized CR02 on2026-09-30; [checkpoint22](22-responsive-composers.md) is now current, at baseline `3e11d31`. Results below preserve CR01's actual review-stop evidence.
+
 **Implemented and verified in the stated unit/browser scope; stopped for user review, not committed.** All 75 distinct CR01 browser cases have passing evidence: the final-source matrix passed 73/75, then all six affected keyboard cases passed after correcting the independently verified WebKit caret expectation. All 63 shared-shell regressions and 73 focused unit tests pass, as do client/fixture types, scoped lint and the production build. This is not a single clean 75-case run; diagnostics are preserved below. Baseline HEAD: `db076cf`; previous documentation/skill/census changes are preserved. **CR02 and later work are not started. No commit was made.**
 
 ## Scope and consumer coverage

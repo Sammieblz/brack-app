@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRetainedReaderResource } from "@/hooks/useRetainedReaderResource";
 import { toast } from "sonner";
@@ -60,6 +60,16 @@ const uniqueById = (items: BookClub[]) => {
 
 export const useBookClubs = (filters: { searchQuery?: string } = {}) => {
   const { user, loading: authLoading } = useAuth();
+  const readerId = authLoading ? undefined : user?.id;
+  const readerScope = useMemo(() => ({ readerId }), [readerId]);
+  const activeScope = useRef(readerScope);
+  activeScope.current = readerScope;
+  const mounted = useRef(false);
+  const createGeneration = useRef(0);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; createGeneration.current += 1; };
+  }, [readerId]);
   const searchQuery = filters.searchQuery ?? "";
   const read = useCallback(() => getClubsHome({ searchQuery }), [searchQuery]);
   const resource = useRetainedReaderResource(user ? JSON.stringify([user.id, searchQuery]) : undefined, read);
@@ -69,18 +79,32 @@ export const useBookClubs = (filters: { searchQuery?: string } = {}) => {
     ...home.newest, ...home.invites, ...home.pendingRequests, ...home.searchResults,
   ]), [home]);
   const refresh = resource.refetch;
+  const currentRefresh = useRef(refresh);
+  currentRefresh.current = refresh;
 
   const createClub = async (clubData: CreateBookClubRequest) => {
+    if (!readerId || !mounted.current || activeScope.current !== readerScope) {
+      throw new Error("Your session changed. Reopen the club form to continue.");
+    }
+    const generation = createGeneration.current;
+    const isCurrent = () => mounted.current && activeScope.current === readerScope && createGeneration.current === generation;
+    let data: Awaited<ReturnType<typeof createBookClub>>;
     try {
-      const data = await createBookClub(clubData);
-      toast.success("Book club created");
-      await refresh();
-      return data;
+      data = await createBookClub(clubData);
     } catch (error: unknown) {
-      console.error("Error creating club:", error);
-      toast.error("Failed to create book club");
+      if (isCurrent()) {
+        console.error("Error creating club:", error);
+        toast.error("Failed to create book club");
+      }
       throw error;
     }
+    if (isCurrent()) {
+      toast.success("Book club created");
+      // Creation is already confirmed. A slower or failed list read has its
+      // own retained-resource state and must not hold or fail this task.
+      void currentRefresh.current();
+    }
+    return data;
   };
 
   const joinClub = async (clubId: string) => {

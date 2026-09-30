@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-**Continuation:** [Checkpoint21](21-live-composers.md) now records CR01 implemented and verified within its stated scope, stopped for user review without a commit. CR02 is next after authorization. This document remains the coverage correction and batch sequence; its documentation-only review results and original source findings below are historical.
+**Continuation:** CR01 is committed in `93b63bc`; [checkpoint21](21-live-composers.md) preserves its scoped evidence. CR02 is implemented and verified within [checkpoint22's scope](22-responsive-composers.md), awaiting user review without a commit, baseline `3e11d31`. This document remains the coverage correction and batch sequence; its documentation-only review results and original source findings below are historical. CR03–CR10 remain open.
 
 **The user's coverage objection is substantiated.** F01–F09 committed useful repairs, but the accumulated fixture results do not close their cross-application requirements. This review supersedes the “proceed to F10” handoff. Current source baseline is **`db076cf`**, which already commits F09; the previous uncommitted status was stale. The worktree was clean when this review began.
 
@@ -53,7 +53,7 @@ Committed code and recorded passes remain historical facts. “Coverage open” 
 
 ## Corrective batches before routine F10 progression
 
-The IDs below consolidate overlapping RC/RS/OF/RM findings. **CR01 is implemented and verified within [checkpoint21's scope](21-live-composers.md), awaiting user review; CR02–CR10 remain unimplemented.** Continue with CR02 after authorization. Later batches can be reordered for a concrete blocker, with the reason recorded. Two units may be combined only if every consumer/state and checkpoint can be completed. Do not broaden one unit into an unfinished whole-screen redesign.
+The IDs below consolidate overlapping RC/RS/OF/RM findings. **CR01 is committed in `93b63bc`, with bounded evidence in [checkpoint21](21-live-composers.md). CR02 is authorized and tracked in [checkpoint22](22-responsive-composers.md); CR03–CR10 remain unimplemented.** Later batches can be reordered for a concrete blocker, with the reason recorded. Two units may be combined only if every consumer/state and checkpoint can be completed. Do not broaden one unit into an unfinished whole-screen redesign.
 
 | Batch | Complete unit and owners | Exit evidence |
 | --- | --- | --- |

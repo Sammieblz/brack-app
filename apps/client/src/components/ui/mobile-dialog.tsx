@@ -18,14 +18,13 @@ interface MobileDialogProps {
 
 export const MobileDialog = ({ open, onOpenChange, trigger, title = "Reading task", description,
   children, footer, className, contentClassName, showClose = true }: MobileDialogProps) => {
-  const descriptionId = React.useId();
   return <Dialog open={open} onOpenChange={onOpenChange}>
     {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
     <AdaptiveDialogContent size="compact" className={contentClassName} showClose={showClose}
-      aria-describedby={description ? descriptionId : undefined}>
+      {...(!description ? { "aria-describedby": undefined } : {})}>
       <AdaptiveDialogHeader>
         <AdaptiveDialogTitle>{title}</AdaptiveDialogTitle>
-        {description && <AdaptiveDialogDescription id={descriptionId}>{description}</AdaptiveDialogDescription>}
+        {description && <AdaptiveDialogDescription>{description}</AdaptiveDialogDescription>}
       </AdaptiveDialogHeader>
       <AdaptiveDialogBody className={className}>{children}</AdaptiveDialogBody>
       {footer && <AdaptiveDialogFooter>{footer}</AdaptiveDialogFooter>}
@@ -51,9 +50,8 @@ export const MobileAlertDialog = ({ open, onOpenChange, title, description, canc
   confirmText = "Confirm", onConfirm, onCancel, variant = "default", children, returnFocusRef }: MobileAlertDialogProps) => {
   const cancelRef = React.useRef<HTMLButtonElement>(null);
   const returnFocus = React.useRef<HTMLElement | null>(null);
-  const descriptionId = React.useId();
   return <Dialog open={open} onOpenChange={onOpenChange}>
-    <AdaptiveDialogContent size="compact" aria-describedby={description ? descriptionId : undefined}
+    <AdaptiveDialogContent size="compact" {...(!description ? { "aria-describedby": undefined } : {})}
       onOpenAutoFocus={(event) => {
         returnFocus.current = document.activeElement as HTMLElement | null;
         event.preventDefault();
@@ -68,7 +66,7 @@ export const MobileAlertDialog = ({ open, onOpenChange, title, description, canc
       }}>
       <AdaptiveDialogHeader>
         <AdaptiveDialogTitle>{title}</AdaptiveDialogTitle>
-        {description && <AdaptiveDialogDescription id={descriptionId}>{description}</AdaptiveDialogDescription>}
+        {description && <AdaptiveDialogDescription>{description}</AdaptiveDialogDescription>}
       </AdaptiveDialogHeader>
       {children && <AdaptiveDialogBody>{children}</AdaptiveDialogBody>}
       <AdaptiveDialogFooter>

@@ -6,7 +6,9 @@ The early tickets repaired several real defects, but their completion records ar
 
 ## Continuation status
 
-This report records the `db076cf` source baseline. [CR01/checkpoint21](../21-live-composers.md) implements and verifies the live CommentThread/MessageThread/ClubChatThread writing and media repair in the working tree, including real local-tab owners, stale completion guards and retry semantics. Its exact browser/unit limits supersede RC-01/02's original missing-implementation status for that bounded scope. Responsive Messages replacement/gestures and other RC findings remain assigned to their later corrective batches; do not repeat CR01 or infer whole-screen acceptance from it.
+CR01 is now committed in `93b63bc`. [CR02/checkpoint22](../22-responsive-composers.md) owns the RC-08 post/club creation subset: stable actual Feed/BookClubs/Readers tasks, upload/write pending locks, retained rejection drafts, explicit discard, account/unmount invalidation and separate confirmed-write/read-refresh outcomes. Consult22 for completed checks and evidence limits. ReviewForm, BookClubDetail discussion/announcement and DiscussionThread reply ownership remain open; this does not close all RC-08 or F14 work. The baseline rows below are historical findings, not current claims that these two creation components are unchanged.
+
+This report records the `db076cf` source baseline. [CR01/checkpoint21](../21-live-composers.md) preserves committed live CommentThread/MessageThread/ClubChatThread writing and media repairs, including real local-tab owners, stale completion guards and retry semantics. Its exact browser/unit limits supersede RC-01/02's original missing-implementation status for that bounded scope. Responsive Messages replacement/gestures and other RC findings remain assigned to their later corrective batches; do not repeat CR01 or infer whole-screen acceptance from it.
 
 ## Evidence and method
 

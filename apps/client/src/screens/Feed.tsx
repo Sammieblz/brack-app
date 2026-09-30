@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ActivityFeed } from "@/components/social/ActivityFeed";
-import { CreatePostDialog } from "@/components/social/CreatePostDialog";
+import { CreatePostDialog, CreatePostDialogTrigger } from "@/components/social/CreatePostDialog";
 import { MobileHeader } from "@/components/MobileHeader";
 import { MobileLayout } from "@/components/MobileLayout";
 import { NativeHeader } from "@/components/NativeHeader";
@@ -19,6 +19,8 @@ import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion"
 
 const Feed = () => {
   const [activeTab, setActiveTab] = useState("posts");
+  const [createOpen, setCreateOpen] = useState(false);
+  const createTriggerRef = useRef<HTMLButtonElement>(null);
   const isMobile = useIsMobile();
   const { activities, loading: activityLoading, refetchFeed } = useSocialFeed();
   const {
@@ -41,13 +43,7 @@ const Feed = () => {
   };
 
   const createAction = (
-    <CreatePostDialog
-      compact={isMobile}
-      onPostCreated={() => {
-        refetchFeed();
-        refetchPosts();
-      }}
-    />
+    <CreatePostDialogTrigger ref={createTriggerRef} compact={isMobile} onClick={() => setCreateOpen(true)} />
   );
 
   return (
@@ -62,6 +58,8 @@ const Feed = () => {
           showUtilityActions
         />
       )}
+      <CreatePostDialog open={createOpen} onOpenChange={setCreateOpen} trigger={null} returnFocusRef={createTriggerRef}
+        onPostCreated={() => { void refetchFeed(); void refetchPosts(); }} />
 
       <PullToRefresh onRefresh={handleRefresh}>
         <main className="app-page">

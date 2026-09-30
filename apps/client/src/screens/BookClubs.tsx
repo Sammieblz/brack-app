@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import { BookClubCard } from "@/components/clubs/BookClubCard";
-import { CreateClubDialog } from "@/components/clubs/CreateClubDialog";
+import { CreateClubDialog, CreateClubDialogTrigger } from "@/components/clubs/CreateClubDialog";
 import { LoadingRegion, LoadingError } from "@/components/loading/LoadingRegion";
 import { ClubGridSkeleton } from "@/components/skeletons/DiscoverySkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -87,6 +87,8 @@ const BookClubs = () => {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [activeSection, setActiveSection] = useState<SectionKey>("suggested");
   const isMobile = useIsMobile();
+  const [createOpen, setCreateOpen] = useState(false);
+  const createTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setDebouncedQuery(query.trim()), 250);
@@ -108,7 +110,7 @@ const BookClubs = () => {
     fetchClubs,
   } = useBookClubs({ searchQuery: debouncedQuery });
 
-  const createAction = <CreateClubDialog compact={isMobile} onCreateClub={createClub} />;
+  const createAction = <CreateClubDialogTrigger ref={createTriggerRef} compact={isMobile} onClick={() => setCreateOpen(true)} />;
   const showingSearch = debouncedQuery.length > 0;
   const activeItems = showingSearch ? home.searchResults : sections[activeSection];
   const activeMeta = showingSearch
@@ -148,6 +150,8 @@ const BookClubs = () => {
 
   return (
     <MobileLayout>
+      <CreateClubDialog open={createOpen} onOpenChange={setCreateOpen} trigger={null}
+        returnFocusRef={createTriggerRef} onCreateClub={createClub} />
       {isMobile ? (
         <MobileHeader title="Book Clubs" action={createAction} />
       ) : (

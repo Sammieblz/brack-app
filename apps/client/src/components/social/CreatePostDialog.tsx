@@ -1,13 +1,11 @@
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useId, useMemo, useRef, useState, type ComponentPropsWithoutRef, type ReactNode, type RefObject } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { AdaptiveDialogContent, AdaptiveDialogDescription, AdaptiveDialogHeader, AdaptiveDialogTitle, AdaptiveDialogFooter } from "@/components/ui/adaptive-dialog";
+import { MobileAlertDialog } from "@/components/ui/mobile-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -28,18 +26,58 @@ import { cn } from "@/lib/utils";
 interface CreatePostDialogProps {
   onPostCreated?: () => void;
   compact?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Use null when the trigger is owned by a responsive header. */
+  trigger?: ReactNode;
+  returnFocusRef?: RefObject<HTMLElement | null>;
 }
+
+export const CreatePostDialogTrigger = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef<typeof Button> & { compact?: boolean }>(
+  ({ compact = false, ...props }, ref) => <Button ref={ref} size={compact ? "icon" : "default"} aria-label="Create post" {...props}>
+    <EditPencil className={compact ? "h-4 w-4" : "mr-2 h-4 w-4"} aria-hidden="true" />
+    {!compact && "Create Post"}
+  </Button>,
+);
+CreatePostDialogTrigger.displayName = "CreatePostDialogTrigger";
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 60 * 1024 * 1024;
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const VIDEO_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime"]);
 
-export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostDialogProps) => {
+export const CreatePostDialog = (props: CreatePostDialogProps) => {
+  const { user, loading } = useAuth();
+  const scope = loading ? null : user?.id ?? null;
+  const { onOpenChange } = props;
+  const previousScope = useRef(scope);
+  const scopeChanged = previousScope.current !== scope;
+  useEffect(() => {
+    if (previousScope.current !== scope) {
+      previousScope.current = scope;
+      onOpenChange?.(false);
+    }
+  }, [scope, onOpenChange]);
+  // A new reader must never inherit another reader's in-memory draft or upload.
+  return scope ? <CreatePostTask key={scope} {...props} open={scopeChanged && props.open !== undefined ? false : props.open} userId={scope} /> : null;
+};
+
+const CreatePostTask = ({ onPostCreated, compact = false, open: controlledOpen, onOpenChange, trigger, returnFocusRef, userId }: CreatePostDialogProps & { userId: string }) => {
   const id = useId();
   const [error, setError] = useState<{ target: "required" | "book" | "club" | "media" | "submit"; message: string } | null>(null);
   const clearError = (target: NonNullable<typeof error>["target"]) => setError((previous) => previous?.target === target ? null : previous);
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = (nextOpen: boolean) => {
+    if (controlledOpen === undefined) setInternalOpen(nextOpen);
+    onOpenChange?.(nextOpen);
+  };
+  const [discardRequested, setDiscardRequested] = useState(false);
+  const discardInvoker = useRef<HTMLElement | null>(null);
+  const pendingRef = useRef(false);
+  const mounted = useRef(false);
+  const uploaded = useRef<{ files: File[]; media: Awaited<ReturnType<typeof uploadPostMediaFiles>> } | null>(null);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const [title, setTitle] = useState("");
   const [richText, setRichText] = useState<RichTextPayload>(() => toPlainRichTextPayload(""));
   const [genre, setGenre] = useState<string>("none");
@@ -51,8 +89,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { triggerHaptic } = useHapticFeedback();
-  const { user } = useAuth();
-  const { books } = useBooks(user?.id);
+  const { books } = useBooks(userId);
   const { clubs } = useBookClubs();
 
   const previews = useMemo(
@@ -69,6 +106,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
   }, [previews]);
 
   const reset = () => {
+    uploaded.current = null;
     setError(null);
     setTitle("");
     setRichText(toPlainRichTextPayload(""));
@@ -79,6 +117,19 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
     setClubId("none");
     setFiles([]);
     if (inputRef.current) inputRef.current.value = "";
+  };
+
+  const dirty = title !== "" || richText.content !== "" || genre !== "none" || postType !== "text"
+    || visibility !== "public" || bookId !== "none" || clubId !== "none" || files.length > 0;
+  const requestOpenChange = (nextOpen: boolean) => {
+    if (pendingRef.current) return;
+    if (!nextOpen && dirty) {
+      if (!discardRequested) discardInvoker.current = document.activeElement as HTMLElement | null;
+      setDiscardRequested(true);
+      return;
+    }
+    if (!nextOpen) reset();
+    setOpen(nextOpen);
   };
 
   const validateFiles = (selected: File[]) => {
@@ -103,10 +154,12 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
   };
 
   const handleFileChange = (fileList: FileList | null) => {
+    if (pendingRef.current) return;
     try {
       const selected = Array.from(fileList || []);
       validateFiles(selected);
       setFiles(selected);
+      uploaded.current = null;
       clearError("media");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Invalid media";
@@ -117,6 +170,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
   };
 
   const handleSubmit = async () => {
+    if (pendingRef.current || discardRequested) return;
     if (!title.trim() || !richText.content.trim()) {
       setError({ target: "required", message: "Please fill in all required fields" });
       triggerHaptic("error");
@@ -136,10 +190,14 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
       return;
     }
 
+    pendingRef.current = true;
     try {
       setLoading(true);
       setError(null);
-      const media = files.length > 0 ? await uploadPostMediaFiles(files) : [];
+      const media = uploaded.current?.files === files ? uploaded.current.media
+        : files.length > 0 ? await uploadPostMediaFiles(files) : [];
+      if (!mounted.current) return;
+      uploaded.current = { files, media };
       await createPost({
         title,
         content: richText.content,
@@ -154,44 +212,48 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
         media,
       });
 
-      triggerHaptic("success");
-      toast.success("Post published");
-      reset();
-      setOpen(false);
-      onPostCreated?.();
     } catch (error: unknown) {
+      if (!mounted.current) return;
       console.error("Error creating post:", error);
       triggerHaptic("error");
       const message = error instanceof Error ? error.message : "Failed to create post";
       setError({ target: "submit", message });
       toast.error(message);
+      return;
     } finally {
-      setLoading(false);
+      pendingRef.current = false;
+      if (mounted.current) setLoading(false);
     }
+    if (!mounted.current) return;
+    triggerHaptic("success");
+    toast.success("Post published");
+    reset();
+    setOpen(false);
+    // Refresh is separate from the confirmed write; a refresh failure must not
+    // invite a duplicate publish of a post that already exists.
+    try { await onPostCreated?.(); } catch (error) { console.error("Error refreshing after post creation:", error); }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size={compact ? "icon" : "default"} aria-label="Create post">
-          <EditPencil className={compact ? "h-4 w-4" : "mr-2 h-4 w-4"} />
-          {!compact && "Create Post"}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-h-[min(46rem,calc(var(--app-viewport-height,100dvh)-2rem))] max-w-3xl overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="font-display">Create a Post</DialogTitle>
-          <DialogDescription className="font-sans">
+    <Dialog open={open} onOpenChange={requestOpenChange}>
+      {trigger !== null && <DialogTrigger asChild>{trigger ?? <CreatePostDialogTrigger compact={compact} />}</DialogTrigger>}
+      <AdaptiveDialogContent size="wide" onCloseAutoFocus={(event) => {
+        if (returnFocusRef?.current?.isConnected) { event.preventDefault(); returnFocusRef.current.focus(); }
+      }}>
+        <AdaptiveDialogHeader>
+          <AdaptiveDialogTitle className="font-display">Create a Post</AdaptiveDialogTitle>
+          <AdaptiveDialogDescription className="font-sans">
             Share an update, book note, club prompt, image, or short video.
-          </DialogDescription>
-        </DialogHeader>
+          </AdaptiveDialogDescription>
+        </AdaptiveDialogHeader>
 
-        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_16rem]">
-          <div className="space-y-4">
+        <fieldset disabled={loading || discardRequested} className="flex min-w-0 flex-wrap gap-4">
+          <legend className="sr-only">Post details</legend>
+          <div className="min-w-0 flex-[2_1_22rem] space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor={`${id}-type`}>Post Type</Label>
-                <Select value={postType} onValueChange={(value) => setPostType(value as PostType)}>
+                <Select disabled={loading || discardRequested} value={postType} onValueChange={(value) => setPostType(value as PostType)}>
                   <SelectTrigger id={`${id}-type`}>
                     <SelectValue />
                   </SelectTrigger>
@@ -206,6 +268,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
               <div className="space-y-2">
                 <Label htmlFor={`${id}-visibility`}>Visibility</Label>
                 <Select
+                  disabled={loading || discardRequested}
                   value={visibility}
                   onValueChange={(value) => setVisibility(value as PostVisibility)}
                 >
@@ -224,7 +287,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
             {postType === "book" && (
               <div className="space-y-2">
                 <Label htmlFor={`${id}-book`}>Book</Label>
-                <Select value={bookId} onValueChange={(value) => { setBookId(value); clearError("book"); }}>
+                <Select disabled={loading || discardRequested} value={bookId} onValueChange={(value) => { setBookId(value); clearError("book"); }}>
                   <SelectTrigger id={`${id}-book`} aria-invalid={error?.target === "book"} aria-describedby={error?.target === "book" ? `${id}-error` : undefined}>
                     <SelectValue placeholder="Choose a book" />
                   </SelectTrigger>
@@ -243,7 +306,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
             {postType === "club" && (
               <div className="space-y-2">
                 <Label htmlFor={`${id}-club`}>Book Club</Label>
-                <Select value={clubId} onValueChange={(value) => { setClubId(value); clearError("club"); }}>
+                <Select disabled={loading || discardRequested} value={clubId} onValueChange={(value) => { setClubId(value); clearError("club"); }}>
                   <SelectTrigger id={`${id}-club`} aria-invalid={error?.target === "club"} aria-describedby={error?.target === "club" ? `${id}-error` : undefined}>
                     <SelectValue placeholder="Choose a club" />
                   </SelectTrigger>
@@ -274,7 +337,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
 
             <div className="space-y-2">
               <Label htmlFor={`${id}-genre`}>Genre/Theme</Label>
-              <Select value={genre} onValueChange={setGenre}>
+              <Select disabled={loading || discardRequested} value={genre} onValueChange={setGenre}>
                 <SelectTrigger id={`${id}-genre`}>
                   <SelectValue placeholder="Select a genre or theme" />
                 </SelectTrigger>
@@ -292,6 +355,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
             <div className="space-y-2">
               <Label id={`${id}-content-label`} htmlFor={`${id}-content`}>Content *</Label>
               <RichTextEditor
+                disabled={loading || discardRequested}
                 id={`${id}-content`} labelledBy={`${id}-content-label`} aria-required="true"
                 aria-invalid={error?.target === "required" && !richText.content.trim()}
                 aria-describedby={error?.target === "required" && !richText.content.trim() ? `${id}-error` : undefined}
@@ -303,7 +367,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
             </div>
           </div>
 
-          <aside className="space-y-3 rounded-md border border-border/70 bg-muted/20 p-3">
+          <aside className="min-w-0 flex-[1_1_14rem] space-y-3 rounded-md border border-border/70 bg-muted/20 p-3">
             <div className="space-y-1">
               <Label htmlFor={`${id}-media`}>Media</Label>
               <p id={`${id}-media-help`} className="font-sans text-xs text-muted-foreground">
@@ -365,6 +429,7 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
                 className="w-full gap-2 text-destructive hover:text-destructive"
                 onClick={() => {
                   setFiles([]);
+                  uploaded.current = null;
                   if (inputRef.current) inputRef.current.value = "";
                 }}
               >
@@ -389,18 +454,23 @@ export const CreatePostDialog = ({ onPostCreated, compact = false }: CreatePostD
               </div>
             </div>
           </aside>
-        </div>
+        </fieldset>
 
-        {error && <p id={`${id}-error`} role="alert" className="text-sm text-destructive">{error.message}</p>}
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button variant="outline" onClick={() => setOpen(false)}>
+        {loading && <p role="status" className="mt-4 text-sm text-muted-foreground">Publishing your post. Keep this task open until it finishes.</p>}
+        {error && <p id={`${id}-error`} role="alert" className="mt-4 text-sm text-destructive">{error.message}</p>}
+        <AdaptiveDialogFooter>
+          <Button variant="outline" disabled={loading || discardRequested} onClick={() => requestOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} aria-describedby={error?.target === "submit" ? `${id}-error` : undefined} disabled={loading || !title.trim() || !richText.content.trim()}>
+          <Button onClick={handleSubmit} aria-describedby={error?.target === "submit" ? `${id}-error` : undefined} disabled={loading || discardRequested || !title.trim() || !richText.content.trim()}>
             {loading ? "Publishing..." : "Publish Post"}
           </Button>
-        </div>
-      </DialogContent>
+        </AdaptiveDialogFooter>
+        <MobileAlertDialog open={discardRequested} onOpenChange={setDiscardRequested}
+          title="Discard post draft?" description="Your unpublished text, selections and media will be removed."
+          cancelText="Keep editing" confirmText="Discard draft" variant="destructive" returnFocusRef={discardInvoker}
+          onConfirm={() => { reset(); setOpen(false); }} />
+      </AdaptiveDialogContent>
     </Dialog>
   );
 };

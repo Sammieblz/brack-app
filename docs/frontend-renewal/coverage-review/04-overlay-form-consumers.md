@@ -6,6 +6,8 @@ The original F08 ticket promised a shared adaptive overlay/form/date contract. T
 
 ## Continuation status
 
+[CR02/checkpoint22](../22-responsive-composers.md) now implements the OF-01/02 post/club creation subset in all three actual callers (Feed, BookClubs, Readers). Both tasks use AdaptiveDialog with stable controlled ownership, dirty confirmation, pending guards, upload retry retention and current-trigger return focus. Consult22 for measured browser/visual results and limits. The remaining ProgressLogger/list/Goals/review/Settings/Library tasks below keep their owners and acceptance requirements; neither whole OF finding is closed. Original source anchors describe the baseline rather than the new creation implementation.
+
 This report records the `db076cf` source baseline. [CR01/checkpoint21](../21-live-composers.md) repairs OF-03's direct/club media names, descriptions, load failures and exact focus return, with actual GIF/emoji/media layering and Close/Escape/app-Back evidence. This is a semantics/lifecycle repair using the existing primitive, not a universal AdaptiveDialog migration. Other geometry, responsive ownership and form/confirmation rows retain their assigned corrective batches.
 
 ## Method and evidence limits

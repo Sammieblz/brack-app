@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Status: **CR01 implemented and verified within its recorded scope; awaiting user review, not committed: [checkpoint21](21-live-composers.md)**. CR02 is next after review/authorization. F01–F09 code is committed through `db076cf`; [checkpoint20](20-coverage-reconciliation.md) reconciles reopened coverage and orders corrective work before routine F10 progression. Earlier checkpoints preserve scoped implementation/test evidence, not whole-frontend acceptance. F06's [Ionic decision](../ui-ionic-fit.md) still applies. Device/AT, full visual and performance acceptance remain unverified except for explicitly recorded observations.
+Status: **CR02 implemented and verified within [checkpoint22's scope](22-responsive-composers.md), awaiting user review; no commit.** CR01 is committed in `93b63bc`; baseline remains `3e11d31`. CR02 records 84 unit tests, passing evidence for 123 distinct browser cases and original failures/corrections. [Checkpoint20](20-coverage-reconciliation.md) orders the remaining corrective work before routine F10 progression. Earlier checkpoints preserve scoped evidence, not whole-frontend acceptance. F06's [Ionic decision](../ui-ionic-fit.md) still applies. Device/AT, full visual and performance acceptance remain open.
 
 ## Outcome
 
@@ -44,7 +44,8 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [18 — F08 adaptive overlays](18-adaptive-overlays.md) | Historical stable modal, action, form and date implementation evidence; committed `bd342dc` |
 | [19 — F09 adaptive shell](19-adaptive-shell.md) | Historical F09 implementation and scoped validation; committed `db076cf`, coverage reopened |
 | [20 — Coverage reconciliation](20-coverage-reconciliation.md) | Active correction: source census, live consumer matrices, missed requirements and corrective batches |
-| [21 — CR01 live composers](21-live-composers.md) | Current implementation: comment/message ownership and media semantics; checks and review stop |
+| [21 — CR01 live composers](21-live-composers.md) | Historical committed CR01: comment/message ownership, media semantics and scoped evidence |
+| [22 — CR02 responsive creation](22-responsive-composers.md) | Current implementation: real Feed/BookClubs/Readers creation tasks, retention and guarded outcomes |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability
