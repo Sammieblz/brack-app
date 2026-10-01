@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type RefObject } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -22,6 +22,7 @@ interface ProgressLoggerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  returnFocusRef?: RefObject<HTMLElement | null>;
 }
 
 export const ProgressLogger = ({ 
@@ -30,7 +31,8 @@ export const ProgressLogger = ({
   currentPage = 0,
   open, 
   onOpenChange,
-  onSuccess 
+  onSuccess,
+  returnFocusRef,
 }: ProgressLoggerProps) => {
   const [pageNumber, setPageNumber] = useState(currentPage || 0);
   const [chapterNumber, setChapterNumber] = useState<number | undefined>();
@@ -182,7 +184,10 @@ export const ProgressLogger = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px]" onCloseAutoFocus={event => {
+        const invoker = returnFocusRef?.current;
+        if (invoker?.isConnected) { event.preventDefault(); invoker.focus(); }
+      }}>
         <DialogHeader>
           <DialogTitle className="font-display">Log Reading Progress</DialogTitle>
           <DialogDescription className="font-sans">

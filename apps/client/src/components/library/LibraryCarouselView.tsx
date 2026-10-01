@@ -18,12 +18,17 @@ import { LibraryBookPrimaryAction } from "./LibraryBookPrimaryAction";
 import { activateLibraryBookSurface } from "./activateLibraryBookSurface";
 import { AppIcon } from "@/components/ui/app-icon";
 import { APP_ICONS } from "@/config/iconography";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { getProgressPercentage } from "@/utils/bookProgress";
 import type { Book } from "@/types";
 
+// Bounded, in-memory book IDs only. Entries cannot leak into another account/history entry.
+const returnBooks = new Map<string, string>();
+
 interface LibraryCarouselViewProps {
+  contextKey?: string;
   books: Book[];
   userId?: string;
   highlightedBookId?: string;
@@ -38,6 +43,7 @@ interface LibraryCarouselViewProps {
 
 export const LibraryCarouselView = ({
   books,
+  contextKey,
   userId,
   highlightedBookId,
   onView,
@@ -48,8 +54,10 @@ export const LibraryCarouselView = ({
   selectedBookIds = [],
   onToggleSelect,
 }: LibraryCarouselViewProps) => {
+  const reducedMotion = useReducedMotion();
+  const [startIndex] = useState(() => Math.max(0, books.findIndex(book => book.id === (contextKey ? returnBooks.get(contextKey) : undefined))));
   const [api, setApi] = useState<CarouselApi>();
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(startIndex);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
   const selectedBookIdSet = useMemo(() => new Set(selectedBookIds), [selectedBookIds]);
@@ -57,7 +65,15 @@ export const LibraryCarouselView = ({
   useEffect(() => {
     if (!api) return;
 
-    const updateSelected = () => setSelectedIndex(api.selectedScrollSnap());
+    const updateSelected = () => {
+      const index = api.selectedScrollSnap();
+      setSelectedIndex(index);
+      if (contextKey && books[index]) {
+        returnBooks.delete(contextKey);
+        returnBooks.set(contextKey, books[index].id);
+        if (returnBooks.size > 40) returnBooks.delete(returnBooks.keys().next().value!);
+      }
+    };
     updateSelected();
     api.on("select", updateSelected);
     api.on("reInit", updateSelected);
@@ -66,18 +82,39 @@ export const LibraryCarouselView = ({
       api.off("select", updateSelected);
       api.off("reInit", updateSelected);
     };
-  }, [api]);
+  }, [api, books, contextKey]);
 
   return (
     <>
-      <section className="library-carousel rounded-xl border border-border/60 bg-card/55 p-3 sm:p-4">
+      <section className="library-carousel">
         <Carousel
           setApi={setApi}
-          opts={{ align: "start", containScroll: "trimSnaps" }}
+          opts={{ align: "start", containScroll: false, startIndex, duration: 25,
+            breakpoints: { "(prefers-reduced-motion: reduce)": { duration: 0 } } }}
           className="min-w-0"
           aria-label="Library carousel"
+          onKeyDownCapture={event => {
+            if (event.defaultPrevented || !(event.target instanceof HTMLElement) || !event.currentTarget.contains(event.target)
+              || event.target.closest('input, textarea, select, [contenteditable="true"], [role="slider"], [role="combobox"], [role="listbox"], [role="menu"], [role="tablist"]')) return;
+            if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+              event.preventDefault();
+              if (event.key === "ArrowLeft") api?.scrollPrev(true); else api?.scrollNext(true);
+            }
+          }}
         >
-          <CarouselContent className="-ml-3 py-1">
+          <div className="library-carousel-navigation">
+            <CarouselPrevious className="static h-11 w-11 translate-y-0 hover:translate-y-0" onClick={event => api?.scrollPrev(reducedMotion || event.detail === 0)} />
+            <div className="library-carousel-position min-w-0">
+              <label className="sr-only" htmlFor="library-carousel-chooser">Choose a book</label>
+              <select id="library-carousel-chooser" className="library-carousel-chooser" value={books[selectedIndex]?.id ?? books[0]?.id}
+                onChange={event => api?.scrollTo(books.findIndex(book => book.id === event.target.value), true)}>
+                {books.map(book => <option key={book.id} value={book.id}>{book.title}</option>)}
+              </select>
+              <p className="mt-1 text-center font-sans text-xs text-muted-foreground" aria-live="polite" aria-atomic="true">{Math.min(selectedIndex + 1, books.length)} of {books.length}</p>
+            </div>
+            <CarouselNext className="static h-11 w-11 translate-y-0 hover:translate-y-0" onClick={event => api?.scrollNext(reducedMotion || event.detail === 0)} />
+          </div>
+          <CarouselContent className="-ml-4 py-1">
             {books.map((book, index) => {
               const progress = getProgressPercentage(book);
               const isSelected = index === selectedIndex;
@@ -99,12 +136,14 @@ export const LibraryCarouselView = ({
                 >
                   <article
                     className={cn(
-                      "library-book-surface library-carousel-card relative flex h-full min-h-[24rem] flex-col rounded-xl border border-border/70 bg-background/80 p-4 shadow-sm transition-[border-color,box-shadow] duration-150",
-                      isSelected && "border-primary/55 shadow-medium",
+                      "library-book-surface library-carousel-card",
                       highlighted && "ring-2 ring-primary/70 shadow-glow",
                       selectMode && "cursor-pointer",
                       selectedForBulk && "border-primary/70 ring-2 ring-primary/65"
                     )}
+                    aria-current={isSelected ? "true" : undefined}
+                    data-selected={selectedForBulk}
+                    data-library-book-id={book.id}
                     onClick={(event) => activateLibraryBookSurface(event, activate)}
                   >
                     <LibraryBookPrimaryAction title={book.title} selectMode={selectMode} selected={selectedForBulk} opensDialog onActivate={activate} />
@@ -137,11 +176,11 @@ export const LibraryCarouselView = ({
                         )}
                       </span>
 
-                      <h3 className="mt-3 line-clamp-2 font-serif text-lg font-semibold leading-snug text-foreground">
+                      <h3 className="mt-3 font-serif text-lg font-semibold leading-snug text-foreground">
                         {book.title}
                       </h3>
                       {book.author && (
-                        <p className="mt-1 line-clamp-1 font-serif text-sm text-muted-foreground">
+                        <p className="mt-1 font-serif text-sm text-muted-foreground">
                           by {book.author}
                         </p>
                       )}
@@ -153,7 +192,7 @@ export const LibraryCarouselView = ({
 
                       {book.status === "reading" && Boolean(book.pages) && (
                         <div className="mt-3 space-y-1.5">
-                          <Progress value={progress} className="h-1.5" />
+                          <Progress value={progress} aria-label={`Reading progress for ${book.title}`} className="h-1.5" />
                           <p className="font-sans text-xs text-muted-foreground">
                             {book.current_page || 0} / {book.pages} pages ({Math.round(progress)}%)
                           </p>
@@ -179,31 +218,6 @@ export const LibraryCarouselView = ({
             })}
           </CarouselContent>
 
-          <div className="mt-4 flex items-center justify-between gap-3">
-            <CarouselPrevious className="static h-11 w-11 translate-y-0 hover:translate-y-0" />
-            <div className="min-w-0 flex-1 text-center">
-              <div className="max-w-full overflow-x-auto">
-                <div className="flex w-max min-w-full justify-center px-1">
-                  {books.map((book, index) => (
-                    <button
-                      key={book.id}
-                      type="button"
-                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
-                      aria-label={`Go to ${book.title}`}
-                      aria-current={selectedIndex === index ? "true" : undefined}
-                      onClick={() => api?.scrollTo(index)}
-                    >
-                      <span aria-hidden="true" className={cn("h-1.5 rounded-full", selectedIndex === index ? "w-6 bg-primary" : "w-1.5 bg-muted-foreground/35")} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <p className="font-sans text-xs text-muted-foreground">
-                {selectedIndex + 1} of {books.length}
-              </p>
-            </div>
-            <CarouselNext className="static h-11 w-11 translate-y-0 hover:translate-y-0" />
-          </div>
         </Carousel>
       </section>
 

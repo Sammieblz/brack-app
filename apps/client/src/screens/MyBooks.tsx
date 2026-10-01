@@ -136,6 +136,17 @@ const MyBooksContent = () => {
   const setGenreFilters = (value: string[] | ((previous: string[]) => string[])) => setFilter("genre", typeof value === "function" ? value(genreFilters) : value);
   const setSortKey = (value: SortKey) => setFilter("sort", value === defaultSortKey ? [] : [value]);
   const [reorderMode, setReorderMode] = useState(false);
+  const [reorderPending, setReorderPending] = useState(false);
+  const [reorderError, setReorderError] = useState<string | null>(null);
+  const reorderLock = useRef(false);
+  const reorderEpoch = useRef(0);
+  useLayoutEffect(() => {
+    const epoch = ++reorderEpoch.current;
+    reorderLock.current = false;
+    setReorderPending(false);
+    setReorderError(null);
+    return () => { reorderEpoch.current = epoch + 1; };
+  }, [user?.id]);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedBookIds, setSelectedBookIds] = useState<string[]>([]);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
@@ -292,7 +303,7 @@ const MyBooksContent = () => {
     setBulkDeleteOpen(false);
   };
   useAppBackGuard(selectMode || reorderMode, () => {
-    if (removalPending.current) return false;
+    if (removalPending.current || reorderLock.current) return false;
     exitSelectMode();
     setReorderMode(false);
     return false;
@@ -316,6 +327,7 @@ const MyBooksContent = () => {
   };
 
   const handleSelectModeToggle = () => {
+    if (reorderLock.current) return;
     if (selectMode) {
       exitSelectMode();
       return;
@@ -393,7 +405,7 @@ const MyBooksContent = () => {
   };
 
   const handleViewModeChange = (mode: LibraryViewMode) => {
-    if (mode === viewMode) return;
+    if (mode === viewMode || reorderLock.current) return;
 
     clearSelectionForContextChange();
 
@@ -413,11 +425,16 @@ const MyBooksContent = () => {
   };
 
   const handleShelfReorder = async (nextOrder: Book[]) => {
-    if (!user?.id) return;
-
+    if (!user?.id || !canReorderShelf || reorderLock.current) return;
+    reorderLock.current = true;
+    setReorderPending(true);
+    setReorderError(null);
+    const epoch = reorderEpoch.current;
+    const isCurrent = () => mounted.current && epoch === reorderEpoch.current;
+    const previous = new Map(books.map(book => [book.id, book]));
     const timestamp = new Date().toISOString();
     const nextPositions = new Map(nextOrder.map((book, index) => [book.id, index + 1]));
-    const rollback = updateBooksLocally((currentBooks) =>
+    updateBooksLocally((currentBooks) =>
       currentBooks.map((book) => {
         const shelfPosition = nextPositions.get(book.id);
         if (!shelfPosition) return book;
@@ -437,15 +454,25 @@ const MyBooksContent = () => {
           updated_at: timestamp,
         }))
       );
+      if (!isCurrent()) return;
       toast.success(
         isConnectivityAvailable()
           ? "Shelf order updated"
           : "Shelf order saved offline",
       );
     } catch (error: unknown) {
-      rollback();
+      if (!isCurrent()) return;
+      // Restore only the optimistic fields; preserve concurrent removals/progress changes.
+      updateBooksLocally(current => current.map(book => {
+        const original = previous.get(book.id);
+        return original && book.shelf_position === nextPositions.get(book.id)
+          ? { ...book, shelf_position: original.shelf_position, updated_at: book.updated_at === timestamp ? original.updated_at : book.updated_at }
+          : book;
+      }));
+      setReorderError("Couldn't save shelf order. Please try moving the book again.");
       console.error("Failed to reorder shelf:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to update shelf order");
+    } finally {
+      if (isCurrent()) { reorderLock.current = false; setReorderPending(false); }
     }
   };
 
@@ -466,7 +493,7 @@ const MyBooksContent = () => {
               type="button"
               size="sm"
               variant={reorderMode ? "default" : "outline"}
-              disabled={!canReorderShelf}
+              disabled={!canReorderShelf || reorderPending}
               onClick={() => {
                 if (!reorderMode) exitSelectMode();
                 setReorderMode((current) => !current);
@@ -495,7 +522,7 @@ const MyBooksContent = () => {
               type="button"
               size="sm"
               variant={selectMode ? "default" : "outline"}
-              disabled={disabled}
+              disabled={disabled || reorderPending}
               onClick={() => { handleSelectModeToggle(); setAdvancedFiltersOpen(false); }}
               className="rounded-full"
             >
@@ -505,7 +532,7 @@ const MyBooksContent = () => {
           </span>
         </TooltipTrigger>
         <TooltipContent>
-          {disabled ? "No visible books to select" : selectMode ? "Finish selecting" : "Select multiple books"}
+          {reorderPending ? "Saving shelf order" : disabled ? "No visible books to select" : selectMode ? "Finish selecting" : "Select multiple books"}
         </TooltipContent>
       </Tooltip>
     );
@@ -529,6 +556,7 @@ const MyBooksContent = () => {
                 size="icon"
                 variant={active ? "default" : "ghost"}
                 aria-label={option.label}
+                disabled={reorderPending}
                 className={cn(
                   "h-9 w-9 rounded-full",
                   active ? "shadow-sm" : "text-muted-foreground hover:text-foreground"
@@ -708,6 +736,7 @@ const MyBooksContent = () => {
             onEdit={handleEditBook}
             onDelete={handleDeleteBook}
             reorderMode={reorderMode}
+            reorderPending={reorderPending}
             onReorder={handleShelfReorder}
             selectMode={selectMode}
             selectedBookIds={selectedBookIds}
@@ -722,6 +751,8 @@ const MyBooksContent = () => {
       return (
         <>
           <LibraryCarouselView
+            key={`${user?.id}:${location.key}`}
+            contextKey={`${user?.id}:${location.key}`}
             books={filteredBooks}
             focusFallbackRef={libraryContent}
             userId={user?.id}
@@ -806,7 +837,9 @@ const MyBooksContent = () => {
         <main ref={libraryContent} tabIndex={-1} aria-label="Library books" id="library-scroll" className="app-page space-y-4 md:space-y-6">
           {renderToolbar()}
           {renderBulkSelectionBar()}
-          {reorderMode && <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3"><p className="font-sans text-sm">Reorder your shelf using the handles or keyboard.</p>{renderReorderControl()}</div>}
+          {reorderPending && <p role="status" className="font-sans text-sm text-muted-foreground">Saving shelf order...</p>}
+          {reorderError && <p role="alert" className="font-sans text-sm text-destructive">{reorderError}</p>}
+          {reorderMode && <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3"><p className="font-sans text-sm">Reorder your shelf using the handles, keyboard, or Earlier and Later buttons.</p>{renderReorderControl()}</div>}
           <LoadingRegion loading={loading} refreshing={refreshing} label={loading ? "Loading your library" : "Refreshing your library"}>
             {error && <LoadingError message={error} onRetry={() => void refetchBooks()} className="mb-4" />}
             {renderBooksList()}

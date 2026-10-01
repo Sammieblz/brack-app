@@ -1,0 +1,3997 @@
+{
+  "baseline": "b97119dbbd422683d29850c7a1c2895bbedd70ad",
+  "status": "Implemented and verified within scope; review stop; unstaged/uncommitted",
+  "runs": [
+    {
+      "report": "test-results/f10c-before.json",
+      "stats": {
+        "startTime": "2026-10-01T19:43:51.961Z",
+        "duration": 44144.244,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "composition bookshelf 390",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf 834",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel 390",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "TimeoutError: locator.click: Timeout 12000ms exceeded.\n"
+            }
+          ]
+        },
+        {
+          "name": "composition carousel 834",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "TimeoutError: locator.click: Timeout 12000ms exceeded.\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f10c-first.json",
+      "stats": {
+        "startTime": "2026-10-01T19:51:53.214Z",
+        "duration": 111201.007,
+        "expected": 19,
+        "skipped": 0,
+        "unexpected": 5,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "composition bookshelf phone",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf tablet",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf desktop",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf compact200",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf tablet200",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf dark",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf paper",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: preview DOM, disclosure and focus survive resizing",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: selection toggles once without opening a preview",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel phone",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel tablet",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel desktop",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel compact200",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate"
+            }
+          ]
+        },
+        {
+          "name": "composition carousel tablet200",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel dark",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel paper",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: preview DOM, disclosure and focus survive resizing",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: selection toggles once without opening a preview",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /my-books",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "TimeoutError: locator.click: Timeout 12000ms exceeded.\n"
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /books",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "TimeoutError: locator.click: Timeout 12000ms exceeded.\n"
+            }
+          ]
+        },
+        {
+          "name": "carousel: bounded navigation, final book and account-scoped context",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: visible move serializes saves, rolls back failure and retries across row boundaries",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate"
+            }
+          ]
+        },
+        {
+          "name": "shelf: late failed reorder cannot change a replacement account",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "TimeoutError: locator.click: Timeout 12000ms exceeded.\n"
+            }
+          ]
+        },
+        {
+          "name": "shelf: live text resizing reduces density in the same pane",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f10c-corrections.json",
+      "stats": {
+        "startTime": "2026-10-01T19:54:23.963Z",
+        "duration": 15907.073,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "composition bookshelf compact200",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel compact200",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /my-books",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /books",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: visible move serializes saves, rolls back failure and retries across row boundaries",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: late failed reorder cannot change a replacement account",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f10c-matrix.json",
+      "stats": {
+        "startTime": "2026-10-01T19:56:12.193Z",
+        "duration": 217963.556,
+        "expected": 72,
+        "skipped": 0,
+        "unexpected": 3,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "composition bookshelf phone",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf tablet",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf desktop",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf compact200",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf tablet200",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf dark",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf paper",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: preview DOM, disclosure and focus survive resizing",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: selection toggles once without opening a preview",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel phone",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel tablet",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel desktop",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel compact200",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel tablet200",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel dark",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel paper",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: preview DOM, disclosure and focus survive resizing",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: selection toggles once without opening a preview",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /my-books",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /books",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: bounded navigation, final book and account-scoped context",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: visible move serializes saves, rolls back failure and retries across row boundaries",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: late failed reorder cannot change a replacement account",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: live text resizing reduces density in the same pane",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: current book survives resize and live reduced-motion changes",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('combobox', { name: 'Choose a book' })\nExpected: \u001b[32m\"book-\u001b[7m2\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"book-\u001b[7m1\u001b[27m\"\u001b[39m\nTimeout:  5000ms\n\n"
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf phone",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf tablet",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf desktop",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf compact200",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf tablet200",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf dark",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf paper",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: preview DOM, disclosure and focus survive resizing",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: selection toggles once without opening a preview",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel phone",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel tablet",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel desktop",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel compact200",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel tablet200",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel dark",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel paper",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: preview DOM, disclosure and focus survive resizing",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: selection toggles once without opening a preview",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /my-books",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /books",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: bounded navigation, final book and account-scoped context",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: visible move serializes saves, rolls back failure and retries across row boundaries",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: late failed reorder cannot change a replacement account",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: live text resizing reduces density in the same pane",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: current book survives resize and live reduced-motion changes",
+          "engine": "webkit",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('combobox', { name: 'Choose a book' })\nExpected: \u001b[32m\"book-\u001b[7m2\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"book-\u001b[7m1\u001b[27m\"\u001b[39m\nTimeout:  5000ms\n\n"
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf phone",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf tablet",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf desktop",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf compact200",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf tablet200",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf dark",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf paper",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: preview DOM, disclosure and focus survive resizing",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: selection toggles once without opening a preview",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel phone",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel tablet",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel desktop",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel compact200",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel tablet200",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel dark",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel paper",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: preview DOM, disclosure and focus survive resizing",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: selection toggles once without opening a preview",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /my-books",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /books",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: bounded navigation, final book and account-scoped context",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: visible move serializes saves, rolls back failure and retries across row boundaries",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: late failed reorder cannot change a replacement account",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: live text resizing reduces density in the same pane",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: current book survives resize and live reduced-motion changes",
+          "engine": "firefox",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('combobox', { name: 'Choose a book' })\nExpected: \u001b[32m\"book-\u001b[7m2\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"book-\u001b[7m1\u001b[27m\"\u001b[39m\nTimeout:  5000ms\n\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f10c-motion-fix.json",
+      "stats": {
+        "startTime": "2026-10-01T20:00:01.623Z",
+        "duration": 16894.947,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "carousel: current book survives resize and live reduced-motion changes",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: current book survives resize and live reduced-motion changes",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: current book survives resize and live reduced-motion changes",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f10c-final.json",
+      "stats": {
+        "startTime": "2026-10-01T20:10:13.323Z",
+        "duration": 234819.84900000002,
+        "expected": 84,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "composition bookshelf phone",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf tablet",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf desktop",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf compact200",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf tablet200",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf dark",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf paper",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: preview DOM, disclosure and focus survive resizing",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: selection toggles once without opening a preview",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel phone",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel tablet",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel desktop",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel compact200",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel tablet200",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel dark",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel paper",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: preview DOM, disclosure and focus survive resizing",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: selection toggles once without opening a preview",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /my-books",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /books",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: bounded navigation, final book and account-scoped context",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: visible move serializes saves, rolls back failure and retries across row boundaries",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: late failed reorder cannot change a replacement account",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: live text resizing reduces density in the same pane",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: current book survives resize and live reduced-motion changes",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: large-text movement alternatives stay reachable",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: reading metadata loads without a large layout jump at 390",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: reading metadata loads without a large layout jump at 834",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf phone",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf tablet",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf desktop",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf compact200",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf tablet200",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf dark",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf paper",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: preview DOM, disclosure and focus survive resizing",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: selection toggles once without opening a preview",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel phone",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel tablet",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel desktop",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel compact200",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel tablet200",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel dark",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel paper",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: preview DOM, disclosure and focus survive resizing",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: selection toggles once without opening a preview",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /my-books",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /books",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: bounded navigation, final book and account-scoped context",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: visible move serializes saves, rolls back failure and retries across row boundaries",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: late failed reorder cannot change a replacement account",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: live text resizing reduces density in the same pane",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: current book survives resize and live reduced-motion changes",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: large-text movement alternatives stay reachable",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: reading metadata loads without a large layout jump at 390",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: reading metadata loads without a large layout jump at 834",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf phone",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf tablet",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf desktop",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf compact200",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf tablet200",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf dark",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition bookshelf paper",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: preview DOM, disclosure and focus survive resizing",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: selection toggles once without opening a preview",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel phone",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel tablet",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel desktop",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel compact200",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel tablet200",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel dark",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "composition carousel paper",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: preview DOM, disclosure and focus survive resizing",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: selection toggles once without opening a preview",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /my-books",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: real BookDetail return retains selected book /books",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: bounded navigation, final book and account-scoped context",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: visible move serializes saves, rolls back failure and retries across row boundaries",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: late failed reorder cannot change a replacement account",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: live text resizing reduces density in the same pane",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: current book survives resize and live reduced-motion changes",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf: large-text movement alternatives stay reachable",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: reading metadata loads without a large layout jump at 390",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: reading metadata loads without a large layout jump at 834",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f10c-interactions-final.json",
+      "stats": {
+        "startTime": "2026-10-01T20:03:19.908Z",
+        "duration": 246148.31999999998,
+        "expected": 48,
+        "skipped": 6,
+        "unexpected": 3,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "flat: cover, title, metadata, progress and padding activate the current book once",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "flat: native Enter/Space activation and predictable focus restoration",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "flat: selection uses one control and does not navigate or open",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "flat: target bounds stay fixed at pointer edges, across widths and themes",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: cover, title, metadata, progress and padding activate the current book once",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: native Enter/Space activation and predictable focus restoration",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: selection uses one control and does not navigate or open",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: target bounds stay fixed at pointer edges, across widths and themes",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: cover, title, metadata, progress and padding activate the current book once",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: native Enter/Space activation and predictable focus restoration",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('button', { name: 'Open Open Water', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\n"
+            }
+          ]
+        },
+        {
+          "name": "carousel: selection uses one control and does not navigate or open",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: target bounds stay fixed at pointer edges, across widths and themes",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "nested actions, disclosure and portalled deletion never activate their card",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf keyboard reorder preserves sortable behavior and never opens a book",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf pointer reorder keeps the whole book draggable without opening",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "dragging a carousel cover changes slides without opening the card",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "touch swipe reveals actions without opening and a later tap remains usable",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "interrupted row swipe (touchcancel) restores the card and permits a fresh tap",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "interrupted row swipe (second-finger) restores the card and permits a fresh tap",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "flat: cover, title, metadata, progress and padding activate the current book once",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "flat: native Enter/Space activation and predictable focus restoration",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "flat: selection uses one control and does not navigate or open",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "flat: target bounds stay fixed at pointer edges, across widths and themes",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: cover, title, metadata, progress and padding activate the current book once",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: native Enter/Space activation and predictable focus restoration",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: selection uses one control and does not navigate or open",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: target bounds stay fixed at pointer edges, across widths and themes",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: cover, title, metadata, progress and padding activate the current book once",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: native Enter/Space activation and predictable focus restoration",
+          "engine": "webkit",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('button', { name: 'Open Open Water', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\n"
+            }
+          ]
+        },
+        {
+          "name": "carousel: selection uses one control and does not navigate or open",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: target bounds stay fixed at pointer edges, across widths and themes",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "nested actions, disclosure and portalled deletion never activate their card",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf keyboard reorder preserves sortable behavior and never opens a book",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf pointer reorder keeps the whole book draggable without opening",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "dragging a carousel cover changes slides without opening the card",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "touch swipe reveals actions without opening and a later tap remains usable",
+          "engine": "webkit",
+          "status": "skipped",
+          "results": [
+            {
+              "status": "skipped",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "interrupted row swipe (touchcancel) restores the card and permits a fresh tap",
+          "engine": "webkit",
+          "status": "skipped",
+          "results": [
+            {
+              "status": "skipped",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "interrupted row swipe (second-finger) restores the card and permits a fresh tap",
+          "engine": "webkit",
+          "status": "skipped",
+          "results": [
+            {
+              "status": "skipped",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "flat: cover, title, metadata, progress and padding activate the current book once",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "flat: native Enter/Space activation and predictable focus restoration",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "flat: selection uses one control and does not navigate or open",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "flat: target bounds stay fixed at pointer edges, across widths and themes",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: cover, title, metadata, progress and padding activate the current book once",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: native Enter/Space activation and predictable focus restoration",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: selection uses one control and does not navigate or open",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: target bounds stay fixed at pointer edges, across widths and themes",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: cover, title, metadata, progress and padding activate the current book once",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: native Enter/Space activation and predictable focus restoration",
+          "engine": "firefox",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  getByRole('button', { name: 'Open Open Water', exact: true })\nExpected: focused\nReceived: inactive\nTimeout:  5000ms\n\n"
+            }
+          ]
+        },
+        {
+          "name": "carousel: selection uses one control and does not navigate or open",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: target bounds stay fixed at pointer edges, across widths and themes",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "nested actions, disclosure and portalled deletion never activate their card",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf keyboard reorder preserves sortable behavior and never opens a book",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "shelf pointer reorder keeps the whole book draggable without opening",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "dragging a carousel cover changes slides without opening the card",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "touch swipe reveals actions without opening and a later tap remains usable",
+          "engine": "firefox",
+          "status": "skipped",
+          "results": [
+            {
+              "status": "skipped",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "interrupted row swipe (touchcancel) restores the card and permits a fresh tap",
+          "engine": "firefox",
+          "status": "skipped",
+          "results": [
+            {
+              "status": "skipped",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "interrupted row swipe (second-finger) restores the card and permits a fresh tap",
+          "engine": "firefox",
+          "status": "skipped",
+          "results": [
+            {
+              "status": "skipped",
+              "error": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f10c-interactions-keyboard.json",
+      "stats": {
+        "startTime": "2026-10-01T20:09:27.924Z",
+        "duration": 16491.602,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "carousel: native Enter/Space activation and predictable focus restoration",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: native Enter/Space activation and predictable focus restoration",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: native Enter/Space activation and predictable focus restoration",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f10c-loading-geometry.json",
+      "stats": {
+        "startTime": "2026-10-01T20:02:41.261Z",
+        "duration": 23755.001,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 6,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "bookshelf loading geometry and refresh at 320px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 320px",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m48\u001b[39m\nReceived:    \u001b[31m59.453125\u001b[39m"
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 390px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 390px",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m48\u001b[39m\nReceived:    \u001b[31m59.453125\u001b[39m"
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 768px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 768px",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m48\u001b[39m\nReceived:    \u001b[31m59.453125\u001b[39m"
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 834px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 834px",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m48\u001b[39m\nReceived:    \u001b[31m59.453125\u001b[39m"
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 1024px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 1024px",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m48\u001b[39m\nReceived:    \u001b[31m59.453125\u001b[39m"
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 1440px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 1440px",
+          "engine": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m48\u001b[39m\nReceived:    \u001b[31m59.453125\u001b[39m"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f10c-loading-complete.json",
+      "stats": {
+        "startTime": "2026-10-01T20:08:09.864Z",
+        "duration": 61384.234000000004,
+        "expected": 36,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "bookshelf loading geometry and refresh at 320px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 320px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 390px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 390px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 768px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 768px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 834px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 834px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 1024px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 1024px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 1440px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 1440px",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 320px",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 320px",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 390px",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 390px",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 768px",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 768px",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 834px",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 834px",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 1024px",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 1024px",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 1440px",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 1440px",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 320px",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 320px",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 390px",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 390px",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 768px",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 768px",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 834px",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 834px",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 1024px",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 1024px",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf loading geometry and refresh at 1440px",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel loading geometry and refresh at 1440px",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f10c-tasks-complete.json",
+      "stats": {
+        "startTime": "2026-10-01T20:15:34.509Z",
+        "duration": 202113.332,
+        "expected": 36,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "bookshelf: membership lookup and failed writes stay truthful and retry once",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: same membership node and parent selection survive every breakpoint and nested Back",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: membership lookup and failed writes stay truthful and retry once",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: same membership node and parent selection survive every breakpoint and nested Back",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel-preview: membership lookup and failed writes stay truthful and retry once",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel-preview: same membership node and parent selection survive every breakpoint and nested Back",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: nested delete preserves selection on rejection and removes only after confirmation",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel-preview: nested delete preserves selection on rejection and removes only after confirmation",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "Visual phone-320: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "Visual phone-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "Visual tablet-touch-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "Visual short-height: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+          "engine": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: membership lookup and failed writes stay truthful and retry once",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: same membership node and parent selection survive every breakpoint and nested Back",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: membership lookup and failed writes stay truthful and retry once",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: same membership node and parent selection survive every breakpoint and nested Back",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel-preview: membership lookup and failed writes stay truthful and retry once",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel-preview: same membership node and parent selection survive every breakpoint and nested Back",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: nested delete preserves selection on rejection and removes only after confirmation",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel-preview: nested delete preserves selection on rejection and removes only after confirmation",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "Visual phone-320: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "Visual phone-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "Visual tablet-touch-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "Visual short-height: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+          "engine": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: membership lookup and failed writes stay truthful and retry once",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: same membership node and parent selection survive every breakpoint and nested Back",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: membership lookup and failed writes stay truthful and retry once",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel: same membership node and parent selection survive every breakpoint and nested Back",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel-preview: membership lookup and failed writes stay truthful and retry once",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel-preview: same membership node and parent selection survive every breakpoint and nested Back",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "bookshelf: nested delete preserves selection on rejection and removes only after confirmation",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "carousel-preview: nested delete preserves selection on rejection and removes only after confirmation",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "Visual phone-320: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "Visual phone-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "Visual tablet-touch-large-text: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        },
+        {
+          "name": "Visual short-height: real selection, nested membership, list editor and removal remain reachable with loaded fonts",
+          "engine": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "error": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results\\f10-f10c-view-smoke.json",
+      "stats": {
+        "startTime": "2026-10-01T20:19:38.491Z",
+        "duration": 24303.141,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  ],
+  "productionFileSha256": {
+    "apps/client/src/components/library/LibraryBookActions.tsx": "9e78ac0c966b3a4b7ba85273a5a11871124bbbeae0322458a124826bb703b37b",
+    "apps/client/src/components/library/LibraryBookDetailSheet.tsx": "a32ecb9ee3f16417ce2661c55bf71eecc8b12a40cee11e27575e52ce2649679a",
+    "apps/client/src/components/library/LibraryBookshelfSelection.tsx": "e42f818beeff94ab1c829b208028e8abe86aebe7ed6088fd22c49816e7796e26",
+    "apps/client/src/components/library/LibraryBookshelfView.tsx": "fa3645c9ef436dd5a8c4c903951555f18948748ada81e5eaa99e4b7ce46e664e",
+    "apps/client/src/components/library/LibraryCarouselView.tsx": "3a608c44ccae71860db794f6e6725119c29ee04216f25faf2dfb41ccc99c3a14",
+    "apps/client/src/components/library/LibraryBookPreview.tsx": "5555ec89b65d45f7d4aefd4d87fde1cf252de8169b82ba044988b78d20d1f73a",
+    "apps/client/src/components/library/useShelfColumns.ts": "a2232b201da4014d717db411aff298e6d1be64d3ac6e6fdeda5c4af01008b5a0",
+    "apps/client/src/components/library/libraryLayout.ts": "5e48f5238beda79854fba1ea2fe4346afbe6b80c926086d59ed15b400a9ad8ff",
+    "apps/client/src/components/library/library-modes.css": "a6d8a8112dc1278a8602efc7da05eefe058c44e7358c70ed6d0ec35f35e6a1fb",
+    "apps/client/src/screens/MyBooks.tsx": "19b514b5f0ae5acb5b08cf69b39dc7b35fb1e42908dbc06f58fe51bdb1e33c8e",
+    "apps/client/src/components/skeletons/LibraryViewSkeleton.tsx": "9f1abad45ed7d2e52ec0d6ccb8c91f708e1deffd48e6b34bbe14e0e1dc7c20fe"
+  },
+  "checks": {
+    "units": {
+      "command": "npx vitest run src/components/library/LibraryBookshelfView.test.tsx src/components/library/LibraryBookPrimaryAction.test.tsx src/components/library/LibraryRemoveDialog.test.tsx src/components/skeletons/LibraryLoading.test.tsx src/hooks/libraryLoading.test.tsx",
+      "cwd": "apps/client",
+      "passed": 53,
+      "files": 5
+    },
+    "clientTypes": "npm --workspace @brack/client run check-types: exit0",
+    "fixtureTypes": "npx tsc -p tests/playwright/tsconfig.library-modes.json --noEmit: exit0",
+    "lint": "Changed TS/TSX files, --max-warnings=0: exit0",
+    "build": "npm --workspace @brack/client run build: exit0;4308 modules; existing chunk/sync import and tool-data warnings",
+    "diffCheck": "git diff --check: exit0",
+    "taskFixtureTypes": "npx tsc -p tests/playwright/tsconfig.library-tasks.json --noEmit: exit0"
+  },
+  "census": {
+    "routes": 39,
+    "screens": 33,
+    "components": 280,
+    "totalModulesAndStyles": 520
+  },
+  "screenshots": {
+    "before": 6,
+    "after": 29,
+    "path": "docs/frontend-renewal/evidence/f10c",
+    "engines": "All three checked; PNG artifacts are Chromium"
+  },
+  "interruptedRuns": [
+    {
+      "path": "test-results/f10c-loading",
+      "reason": "Repeated redundant idle aria-busy selector ambiguity and carousel skeleton estimate failures; no completed report"
+    },
+    {
+      "path": "test-results/f10c-loading-final",
+      "reason": "Interrupted repeated carousel layout estimate failures; no completed report"
+    },
+    {
+      "path": "test-results/f10c-tasks-final",
+      "reason": "Native option matched stale generic text readiness selector; no completed report"
+    }
+  ],
+  "limits": [
+    "Physical native hardware/IME and OS assistive technology",
+    "Whole-theme contrast and full legal conformance",
+    "Live service/offline synchronization and partial local-write failure",
+    "Global delayed-load scroll restoration and tablet split panes",
+    "1000-book performance and measured navigation latency",
+    "Remaining F10 and other main/corrective tickets"
+  ],
+  "acceptance": {
+    "newBrowserCases": 84,
+    "existingInteractionCases": 51,
+    "existingInteractionCapabilitySkips": 6,
+    "loadingCases": 36,
+    "liveTaskCases": 36,
+    "viewPreferenceCases": 3,
+    "distinctBrowserPasses": 210,
+    "unitPasses": 53,
+    "note": "Interaction coverage is48 broad passes plus3 corrected keyboard-order cases. Counts exclude intermediate retries and baseline captures."
+  },
+  "graph": {
+    "nodes": 10391,
+    "edges": 23031,
+    "communities": 705,
+    "obsidianNotes": 11088,
+    "mode": "Local AST; no semantic/cloud extraction or model labeling",
+    "log": "test-results/f10c-graphify-final.log",
+    "commands": [
+      "graphify update .",
+      "graphify cluster-only . --no-label --no-viz",
+      "graphify export obsidian",
+      "graphify export html"
+    ],
+    "allExitCodes": 0,
+    "limits": "Three existing Android Gradle parse warnings; generated community names are hub-based. Graph is navigation evidence, not test coverage.",
+    "protectedNotesSkipped": 8,
+    "protectedNamesPrinted": [
+      "Task().md",
+      "task()_1.md",
+      "Dashboard.md",
+      "libraryLoading.test.tsx.md",
+      "Native.md"
+    ],
+    "protectedNamesNotPrinted": 3
+  }
+}

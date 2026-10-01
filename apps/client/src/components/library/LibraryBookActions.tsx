@@ -53,7 +53,7 @@ export const LibraryBookActions = (props: LibraryBookActionsProps) =>
 export const LibraryStatusBadge = ({ status }: { status: string }) => (
   <Badge
     className={cn(
-      "px-2 py-0.5 text-[11px] capitalize",
+      "px-2 py-0.5 text-[0.6875rem] capitalize",
       statusStyles[status] || "bg-muted text-muted-foreground"
     )}
   >

@@ -132,7 +132,7 @@ test('view choices preserve modes, selection and a reachable reorder exit', asyn
   await expect(controls(page).getByRole('combobox', { name: 'Sort books' })).toHaveText('Shelf order');
   await controls(page).getByRole('button', { name: 'Reorder', exact: true }).click();
   await expect(controls(page)).toHaveCount(0);
-  await expect(page.getByText('Reorder your shelf using the handles or keyboard.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Reorder your shelf using the handles, keyboard, or Earlier and Later buttons.', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Done', exact: true }).click();
   await trigger.click(); await controls(page).getByRole('button', { name: 'Carousel view', exact: true }).click();
   await expect(controls(page).getByRole('combobox', { name: 'Sort books' })).toHaveText('Recently updated');

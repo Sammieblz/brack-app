@@ -1,4 +1,4 @@
-import { type CSSProperties, type MouseEvent, type RefObject, useMemo, useRef, useState } from "react";
+import { type CSSProperties, type MouseEvent, type RefObject, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   closestCenter,
@@ -22,8 +22,7 @@ import { LibraryBookshelfSelection } from "@/components/library/LibraryBookshelf
 import { LibraryStatusBadge } from "@/components/library/LibraryBookActions";
 import { AppIcon } from "@/components/ui/app-icon";
 import { APP_ICONS } from "@/config/iconography";
-import { useBreakpoint } from "@/hooks/useBreakpoint";
-import { getShelfRowSize } from "./libraryLayout";
+import { useShelfColumns } from "./useShelfColumns";
 import { cn } from "@/lib/utils";
 import { getProgressPercentage } from "@/utils/bookProgress";
 import type { Book } from "@/types";
@@ -37,6 +36,7 @@ interface LibraryBookshelfViewProps {
   onDelete: (bookId: string) => Promise<void> | void;
   focusFallbackRef?: RefObject<HTMLElement | null>;
   reorderMode?: boolean;
+  reorderPending?: boolean;
   onReorder?: (books: Book[]) => Promise<void> | void;
   selectMode?: boolean;
   selectedBookIds?: string[];
@@ -57,6 +57,10 @@ interface SortableShelfBookProps {
   rowIndex: number;
   highlighted: boolean;
   reorderMode: boolean;
+  reorderPending: boolean;
+  position: number;
+  total: number;
+  onMove: (id: string, direction: number) => void;
   selectMode: boolean;
   selected: boolean;
   onSelect: (book: Book, trigger: HTMLButtonElement) => void;
@@ -69,6 +73,7 @@ const SortableShelfBook = ({
   rowIndex,
   highlighted,
   reorderMode,
+  reorderPending, position, total, onMove,
   selectMode,
   selected,
   onSelect,
@@ -82,7 +87,7 @@ const SortableShelfBook = ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: book.id, disabled: !reorderMode });
+  } = useSortable({ id: book.id, disabled: !reorderMode || reorderPending });
   const progress = getProgressPercentage(book);
   const lean = ((rowIndex + bookIndex) % 5) - 2;
   const depth = 8 + ((rowIndex + bookIndex) % 4) * 2;
@@ -129,6 +134,7 @@ const SortableShelfBook = ({
         {...(reorderMode ? attributes : {})}
         {...(reorderMode ? listeners : {})}
         onClick={handleActivate}
+        aria-disabled={reorderMode && reorderPending ? true : undefined}
         aria-label={reorderMode ? `Move ${book.title}` : selectMode ? `Select ${book.title}` : `Open ${book.title}`}
         aria-pressed={reorderMode ? attributes["aria-pressed"] : selectMode ? selected : undefined}
         aria-haspopup={!reorderMode && !selectMode ? "dialog" : undefined}
@@ -173,9 +179,21 @@ const SortableShelfBook = ({
           )}
         </span>
       </span>
-      <span className="library-shelf-title mt-2 line-clamp-2 font-serif text-xs font-semibold text-foreground" aria-hidden="true">
+      <span className="library-shelf-title">
         {book.title}
       </span>
+      {book.author && <span className="library-shelf-author">{book.author}</span>}
+      <span className="library-shelf-caption"><LibraryStatusBadge status={book.status} />
+        {book.status === "reading" && Boolean(book.pages) && <span>{Math.round(progress)}% read</span>}
+      </span>
+      {reorderMode && <div className="library-shelf-moves" role="group" aria-label={`Position ${position + 1} of ${total} for ${book.title}`}>
+        {[-1, 1].map(direction => <button key={direction} type="button" className="library-text-control"
+          data-shelf-move={`${book.id}:${direction}`} aria-label={`Move ${book.title} ${direction < 0 ? "earlier" : "later"}`}
+          aria-disabled={reorderPending || position + direction < 0 || position + direction >= total}
+          onClick={() => { if (!reorderPending && position + direction >= 0 && position + direction < total) onMove(book.id, direction); }}>
+          {direction < 0 ? "Earlier" : "Later"}
+        </button>)}
+      </div>}
     </div>
   );
 };
@@ -189,17 +207,29 @@ export const LibraryBookshelfView = ({
   onDelete,
   focusFallbackRef,
   reorderMode = false,
+  reorderPending = false,
   onReorder,
   selectMode = false,
   selectedBookIds = [],
   onToggleSelect,
 }: LibraryBookshelfViewProps) => {
   const navigate = useNavigate();
-  const { width } = useBreakpoint();
+  const { shelfRef, columns: rowSize } = useShelfColumns();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const selectedBookTrigger = useRef<HTMLButtonElement | null>(null);
   const selectedTriggerId = useRef<string | null>(null);
-  const shelfRef = useRef<HTMLElement | null>(null);
+  const [moveFocus, setMoveFocus] = useState<string | null>(null);
+  const moveOwner = useRef<object | null>(null);
+  useLayoutEffect(() => {
+    moveOwner.current = {};
+    return () => { moveOwner.current = null; };
+  }, [userId]);
+  useLayoutEffect(() => {
+    if (!moveFocus) return;
+    const target = [...(shelfRef.current?.querySelectorAll<HTMLButtonElement>("[data-shelf-move]") ?? [])].find(node => node.dataset.shelfMove === moveFocus);
+    target?.focus({ preventScroll: true });
+    setMoveFocus(null);
+  }, [books, moveFocus, shelfRef]);
   const selectionOpen = useRef(false);
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -210,13 +240,12 @@ export const LibraryBookshelfView = ({
     })
   );
 
-  const rowSize = getShelfRowSize(width);
   const rows = useMemo(() => chunkBooks(books, rowSize), [books, rowSize]);
   const bookIds = useMemo(() => books.map((book) => book.id), [books]);
   const selectedBookIdSet = useMemo(() => new Set(selectedBookIds), [selectedBookIds]);
 
   const handleDragEnd = (event: DragEndEvent) => {
-    if (!reorderMode || !onReorder) return;
+    if (!reorderMode || reorderPending || !onReorder) return;
 
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -236,7 +265,9 @@ export const LibraryBookshelfView = ({
             ref={shelfRef}
             className={cn("library-bookshelf space-y-6", reorderMode && "library-bookshelf-reordering")}
             aria-label="Interactive bookshelf"
+            aria-busy={reorderPending || undefined}
           >
+            <span className="library-shelf-measure" data-shelf-measure aria-hidden="true" />
             {rows.map((row, rowIndex) => (
               <div key={`shelf-${rowIndex}`} className="library-shelf-row">
                 <span className="library-shelf-wall-shadow" aria-hidden="true" />
@@ -249,6 +280,19 @@ export const LibraryBookshelfView = ({
                       rowIndex={rowIndex}
                       highlighted={book.id === highlightedBookId}
                       reorderMode={reorderMode}
+                      reorderPending={reorderPending}
+                      position={rowIndex * rowSize + bookIndex} total={books.length}
+                      onMove={(id, direction) => {
+                        if (!onReorder || reorderPending) return;
+                        const index = books.findIndex(item => item.id === id);
+                        const owner = moveOwner.current;
+                        setMoveFocus(`${id}:${direction}`);
+                        // A failed save can regroup rows again. Restore the same
+                        // visible alternative after either committed order or rollback.
+                        void Promise.resolve(onReorder(arrayMove(books, index, index + direction))).finally(() => {
+                          if (owner && moveOwner.current === owner) setMoveFocus(`${id}:${direction}`);
+                        });
+                      }}
                       selectMode={selectMode}
                       selected={selectedBookIdSet.has(book.id)}
                       onSelect={(book, trigger) => {

@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { LibraryViewSkeleton } from "./LibraryViewSkeleton";
 import { BookListGridSkeleton } from "./BookListCardSkeleton";
 import { BookListDetailSkeleton } from "./BookDetailSkeleton";
@@ -7,6 +7,7 @@ import { DashboardCardSkeleton } from "./DashboardCardSkeleton";
 import { getShelfRowSize, LIBRARY_FLAT_GRID, LIBRARY_CAROUSEL_ITEM } from "@/components/library/libraryLayout";
 
 describe("Library loading geometry and cardinality", () => {
+  afterEach(() => vi.restoreAllMocks());
   it.each(["flat", "bookshelf", "carousel"] as const)("does not invent books for a known empty %s view", (viewMode) => {
     const { container } = render(<LibraryViewSkeleton viewMode={viewMode} count={0} />);
     expect(container).toBeEmptyDOMElement();
@@ -19,12 +20,20 @@ describe("Library loading geometry and cardinality", () => {
     expect(container.querySelector("button, [tabindex]:not([tabindex='-1']), [role='status']")).toBeNull();
   });
 
-  it.each([[320, 3], [390, 3], [768, 5], [834, 5], [1024, 7], [1440, 9]])("reserves one shelf row at %ipx", (width, count) => {
-    Object.defineProperty(window, "innerWidth", { configurable: true, value: width });
+  it.each([[280, 1], [343, 2], [720, 4], [780, 4], [1000, 6], [1440, 8]])("reserves one shelf row for a measured %ipx pane", (width, count) => {
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(width);
     const { container } = render(<LibraryViewSkeleton viewMode="bookshelf" />);
     expect(getShelfRowSize(width)).toBe(count);
     expect(container.querySelectorAll('[data-skeleton="shelf-book"]')).toHaveLength(count);
     expect(container.querySelector(".library-shelf-books")).toHaveStyle({ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` });
+  });
+
+  it("measures when a delayed view preference changes a mounted skeleton to shelf", () => {
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(780);
+    const { container, rerender } = render(<LibraryViewSkeleton viewMode="flat" />);
+    rerender(<LibraryViewSkeleton viewMode="bookshelf" />);
+    expect(container.querySelectorAll('[data-skeleton="shelf-book"]')).toHaveLength(4);
+    expect(getShelfRowSize(780, 32)).toBe(2);
   });
 
   it("shares flat and carousel breakpoints with the loaded views", () => {

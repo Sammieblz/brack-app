@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Current checkpoint: **[F10b - Lists reconstruction](29-lists-reconstruction.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `8c01615` commits F10a. Manager/detail composition, accessible reorder and exact evidence belong to29. No staging/commit. Next on authorized continuation: F10c bookshelf/carousel presentation and return context, then F11. Remaining F10/native/AT/performance acceptance, CR06c/remaining CR06, CR07-CR10 and other main tickets stay open.
+Current checkpoint: **[F11a - Book Detail reconstruction](31-book-detail.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `b97119d`; inherited F10c and this slice remain unstaged. 81 distinct Playwright cases and 19 unit tests pass; type/lint/build checks and local Graphify/Obsidian refresh completed. Next: **F11b progress capture and correction**, then F11c timer/session and S08 editing. Global scroll restoration and the corrective/native/AT gates remain open; full F11 is not complete.
 
 ## Outcome
 
@@ -52,7 +52,9 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [26 - CR06a Social destinations](26-social-destinations.md) | Committed historical child: actual social links/actions, readable large-text card intros, verified callers and explicit browser limitations |
 | [27 - CR06b Route recovery](27-route-recovery.md) | Committed `d944fef`: Lists/Goals sign-in return, club Back, named Library links; exact evidence and remaining shell child |
 | [28 - F10a Library reconstruction](28-library-reconstruction.md) | Committed `8c01615`: actual Library hierarchy, flat book rows, shared action disclosure, evidence and bounded continuation |
-| [29 - F10b Lists reconstruction](29-lists-reconstruction.md) | Current review stop: collection/detail rows, filter context, accessible reorder, actual task regressions and continuation |
+| [29 - F10b Lists reconstruction](29-lists-reconstruction.md) | Committed `b97119d`: collection/detail rows, filter context, accessible reorder, actual task regressions and continuation |
+| [30 - F10c Bookshelf and carousel](30-library-modes.md) | Verified preceding slice, still uncommitted: shelf/carousel/previews and retained book context |
+| [31 - F11a Book Detail](31-book-detail.md) | Current review checkpoint: early reading controls, custom composition, stable tasks and complete evidence |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability

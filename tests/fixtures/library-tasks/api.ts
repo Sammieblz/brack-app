@@ -20,6 +20,9 @@ function store(id = readAccount() ?? 'signed-out') {
       cover_url: '/brack-mark.webp', created_at: stamp, updated_at: stamp,
     }));
     if (new URLSearchParams(location.search).has('oneBook')) books.splice(1);
+    if (new URLSearchParams(location.search).has('manyBooks')) {
+      books.push(...Array.from({ length: 27 }, (_, index) => ({ ...books[index % 3], id: `book-${index + 4}`, title: `Reading journey ${index + 4}`, shelf_position: index + 3 })));
+    }
     const lists: BookList[] = ['Weekend reading', 'Thoughtful journeys', 'Empty collection'].map((name, index) => ({
       id: `list-${index + 1}`, user_id: id, name, description: ['Books for a quiet weekend.', 'Stories to carry with you.', 'A new collection.'][index],
       created_at: stamp, updated_at: stamp, deleted_at: null, is_public: false, order_version: 1, book_count: index === 0 ? 1 : 0,
@@ -129,3 +132,10 @@ export const checkBookReviewLiked = async () => false;
 export const addReviewComment = unsupported, createBookReview = unsupported, deleteBookReview = unsupported,
   deleteReviewComment = unsupported, likeBookReview = unsupported, toggleBookReviewLike = unsupported,
   unlikeBookReview = unsupported, updateBookReview = unsupported;
+
+export async function reorderLibraryShelf(books: Book[]) {
+  const owner = readAccount()!;
+  await request('shelf-reorder', { books });
+  const next = new Map(books.map(book => [book.id, book]));
+  store(owner).books = store(owner).books.map(book => next.get(book.id) ?? book);
+}

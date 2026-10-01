@@ -1,0 +1,193 @@
+{
+  "checkpoint": "F11a",
+  "date": "2026-10-01",
+  "head": "b97119d",
+  "inherited_work": "F10c working tree, unstaged/uncommitted",
+  "final_distinct_playwright_passes": 81,
+  "unit_tests": {
+    "files": 2,
+    "passed": 19
+  },
+  "reports": [
+    {
+      "report": "test-results/f11a-baseline.json",
+      "stats": {
+        "startTime": "2026-10-01T20:27:52.282Z",
+        "duration": 14980.061,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "sha256": "5beb72d35bf0b7035186fefbe4b903cb7aa6c9fe305ff8767c4d40f3876f7b9b"
+    },
+    {
+      "report": "test-results/f11a-visual.json",
+      "stats": {
+        "startTime": "2026-10-01T20:32:55.870Z",
+        "duration": 15512.342999999999,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "sha256": "0ecedecc6c64dddd86d07053ffdcad4ebd997c009b692e54d18a9613b20eb8d0"
+    },
+    {
+      "report": "test-results/f11a-behavior.json",
+      "stats": {
+        "startTime": "2026-10-01T20:35:51.852Z",
+        "duration": 82743.476,
+        "expected": 20,
+        "skipped": 0,
+        "unexpected": 4,
+        "flaky": 0
+      },
+      "sha256": "09bd72c9940b31cf0d9bb58b62273e005a36100635e2cbac224df79d007a27de"
+    },
+    {
+      "report": "test-results/f11a-final.json",
+      "stats": {
+        "startTime": "2026-10-01T20:37:58.011Z",
+        "duration": 188173.784,
+        "expected": 69,
+        "skipped": 0,
+        "unexpected": 3,
+        "flaky": 0
+      },
+      "sha256": "bf7aa90af541561aeac2e028a8ab560ff4d446606891f9b048a483ab8a028cda"
+    },
+    {
+      "report": "test-results/f11a-focus.json",
+      "stats": {
+        "startTime": "2026-10-01T20:41:40.159Z",
+        "duration": 17479.262,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "sha256": "6ad8d44f7d2824ef20152f534e2bcd0fad4778eb42c16e8c71c083552e34447e"
+    },
+    {
+      "report": "test-results/f11a-populated.json",
+      "stats": {
+        "startTime": "2026-10-01T20:44:03.360Z",
+        "duration": 16918.532000000003,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "sha256": "2e93c409c3292a5d56a8c4117ad49d4d902f85de5ad40537bee488085144b5c7"
+    },
+    {
+      "report": "test-results/f11a-membership.json",
+      "stats": {
+        "startTime": "2026-10-01T20:42:25.453Z",
+        "duration": 27691.039,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "sha256": "2d777a74cceb449a376ad8ed92b7cfa1c2dd9cc643dd274f8a5d7af5ebcf334c"
+    }
+  ],
+  "source_sha256": {
+    "apps/client/src/screens/BookDetail.tsx": "010e8fc04e8abc4a19c6f4b544f930449a2a157eba1139716d6e417c204fb7bf",
+    "apps/client/src/components/book-detail/BookReadingHeader.tsx": "72e76cd5e815c737e9ce0dcd7383eb3c445f9afc6765c0e58497d47cb44dcd2c",
+    "apps/client/src/components/book-detail/book-detail.css": "a1aa1eec91571cab8c21730e8643580f177a72658dfa2d2b6142c0273b298b59",
+    "apps/client/src/components/skeletons/BookDetailSkeleton.tsx": "09d045478be1fc20ae9b8d2cf3a9a3dcbb25c43d6641ffcfcc16d3d8ea6d68da",
+    "apps/client/src/components/ProgressLogger.tsx": "814e1a5ad8e07d16bfd8511f5393c2bef5c1050fd4e3748cd3a949f41b5051f4",
+    "tests/e2e/book-detail.spec.ts": "25a61c7b0e33b75bd1bc7842aa8827093209105f740cd9b7b8bd79df41db4502",
+    "tests/e2e/library-tasks.spec.ts": "799245b4e0a87e3d03f569ee547a04caac9f620ad2ce9b6cbb7518e67603d746",
+    "tests/fixtures/book-detail/api.ts": "b1cb2de4cc8f13fc5bd958cd0d0058d9cb13193b1b3017a696c217715552f6b9",
+    "tests/fixtures/book-detail/timer.ts": "b500327f65738b3e26080d4eec5dca78dc7c1e68d16e958a2e8492708b303996",
+    "tests/fixtures/book-detail/vite.config.ts": "cfbe9b38f2d5258c0fc7a5785753124e8f63e0a7231c907f1c8e3533856f1f07",
+    "tests/playwright/book-detail.config.ts": "a55713329bf78ec90e4ec9c98ede1dc6a1aae3a580b68c4b9b8ed7dfa4c93190",
+    "tests/playwright/book-detail-regressions.config.ts": "6de96e86d72525433281dd2b08899eae015202c24774179c91ab2f16897ae872"
+  },
+  "gallery": {
+    "before": 6,
+    "after": 21,
+    "images": [
+      "after-android-composition.png",
+      "after-android-reading-controls.png",
+      "after-compact200-composition.png",
+      "after-compact200-reading-controls.png",
+      "after-dark-composition.png",
+      "after-dark-reading-controls.png",
+      "after-desktop-composition.png",
+      "after-desktop-reading-controls.png",
+      "after-landscape-composition.png",
+      "after-landscape-reading-controls.png",
+      "after-paper-composition.png",
+      "after-paper-reading-controls.png",
+      "after-phone-composition.png",
+      "after-phone-reading-controls.png",
+      "after-phone320-composition.png",
+      "after-phone320-reading-controls.png",
+      "after-populated-progress.png",
+      "after-tablet-composition.png",
+      "after-tablet-reading-controls.png",
+      "after-tablet200-composition.png",
+      "after-tablet200-reading-controls.png",
+      "before-compact200.png",
+      "before-dark.png",
+      "before-desktop.png",
+      "before-paper.png",
+      "before-phone.png",
+      "before-tablet.png"
+    ]
+  },
+  "checks": {
+    "client_types": "passed",
+    "fixture_types": "passed",
+    "scoped_lint": "passed with max-warnings=0",
+    "build": "passed, 4310 modules; existing warnings retained",
+    "diff_check": "passed",
+    "census": {
+      "modules": 522,
+      "routes": 39,
+      "screens": 33,
+      "components": 282
+    },
+    "graphify": "all four commands exit 0; test-results/f11a-graphify.log"
+  },
+  "failures_resolved": [
+    "Initial TS target did not support replaceAll; replaced with regex.",
+    "Initial compact 200% long-title layout was too narrow; stacked identity.",
+    "Behavior run: four incorrect alertdialog test locators; existing primitive renders dialog.",
+    "Main matrix: three actual missing Log progress focus-return failures; additive optional invoker ref, three focused reruns pass.",
+    "Initial census sandbox could not spawn git; approved elevated rerun passed."
+  ],
+  "limits": [
+    "Timer and service boundaries controlled; not production timer, outbox or native lifecycle evidence.",
+    "Native/AT/legal/performance acceptance remains open.",
+    "F11b capture and correction, F11c session, S08 EditBook remain open."
+  ],
+  "graphify": {
+    "nodes": 10444,
+    "edges": 23085,
+    "communities": 720,
+    "obsidian_notes": 11160,
+    "commands": [
+      "update .",
+      "cluster-only . --no-label --no-viz",
+      "export obsidian",
+      "export html"
+    ],
+    "exit_codes": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "limits": [
+      "3 existing Gradle parser warnings",
+      "4 pre-existing notes preserved: Supabase_1.md, supabase_3.md, Data_3.md, data_4.md",
+      "AST-only; no cloud semantic extraction, watcher, hooks or database introspection"
+    ]
+  }
+}

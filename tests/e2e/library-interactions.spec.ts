@@ -91,10 +91,16 @@ for (const view of views) {
         overflowY: getComputedStyle(active).overflowY, scrollHeight: active.scrollHeight, clientHeight: active.clientHeight };
     });
     // Firefox includes this real scrolling surface in its native Tab order.
-    // Permit that one named container, then require the first book immediately.
+    // Permit that one named container, then require the visible navigation/book order.
     if (firstTab.id === 'root') {
       expect(firstTab.overflowY).toMatch(/^(auto|scroll)$/);
       expect(firstTab.scrollHeight).toBeGreaterThan(firstTab.clientHeight);
+      await page.keyboard.press('Tab');
+    }
+    if (view === 'carousel') {
+      await expect(page.getByRole('combobox', { name: 'Choose a book' })).toBeFocused();
+      await page.keyboard.press('Tab');
+      await expect(page.getByRole('button', { name: 'Next slide' })).toBeFocused();
       await page.keyboard.press('Tab');
     }
     await test.info().attach('initial-tab-focus', {
@@ -212,7 +218,7 @@ test('nested actions, disclosure and portalled deletion never activate their car
       // to the confirmation, never to the carousel underneath it.
       await confirmation.getByRole('button', { name: 'Keep book', exact: true }).press('ArrowRight');
       await confirmation.getByRole('button', { name: 'Keep book', exact: true }).press('ArrowLeft');
-      await expect(page.getByRole('button', { name: `Go to ${title}`, exact: true, includeHidden: true })).toHaveAttribute('aria-current', 'true');
+      await expect(page.locator('.library-carousel-card').first()).toHaveAttribute('aria-current', 'true');
       await expect(page.getByText('1 of 8', { exact: true })).toBeVisible();
       expect(await events(page)).toEqual([]);
     }

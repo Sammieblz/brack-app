@@ -1,5 +1,5 @@
 export type Operation = 'catalog' | 'books' | 'book-membership' | 'list-membership' | 'list-books' |
-  'list-create' | 'list-update' | 'list-delete' | 'list-duplicate' | 'membership-add' | 'membership-remove' | 'book-delete' | 'list-reorder';
+  'list-create' | 'list-update' | 'list-delete' | 'list-duplicate' | 'membership-add' | 'membership-remove' | 'book-delete' | 'list-reorder' | 'shelf-reorder';
 export type Mode = 'resolve' | 'reject' | 'defer';
 const modes = new Map<string, Mode>();
 const calls: Array<{ operation: Operation; payload: unknown; accountId: string | null; key: string }> = [];

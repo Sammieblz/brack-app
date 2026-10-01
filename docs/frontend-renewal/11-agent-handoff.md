@@ -64,7 +64,7 @@ Do not duplicate the entire source file, graph report or transcript. Prefer a us
 
 ## Progress checkpoint template
 
-The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). Checkpoints13–19 preserve committed batches;20 owns coverage reconciliation;21–25 preserve CR01–CR05 evidence; [26](26-social-destinations.md) preserves committed CR06a; [27](27-route-recovery.md) preserves committed CR06b (`d944fef`); [28](28-library-reconstruction.md) preserves committed F10a (`8c01615`); [29](29-lists-reconstruction.md) owns the current F10b Lists reconstruction. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate detailed active status across competing records.
+The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). Checkpoints13–19 preserve committed batches;20 owns coverage reconciliation;21–25 preserve CR01–CR05 evidence; [26](26-social-destinations.md) preserves committed CR06a; [27](27-route-recovery.md) preserves committed CR06b (`d944fef`); [28](28-library-reconstruction.md) preserves committed F10a (`8c01615`); [29](29-lists-reconstruction.md) preserves committed F10b (`b97119d`); [30](30-library-modes.md) owns the current F10c bookshelf/carousel reconstruction. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate detailed active status across competing records.
 
 Update the relevant ticket and append a concise checkpoint when handing off:
 
@@ -85,7 +85,7 @@ An interrupted session should be resumable from this checkpoint without asking t
 
 ## Active implementation checkpoint
 
-Current checkpoint: **[F10b - Lists reconstruction](29-lists-reconstruction.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `8c01615` commits F10a. Manager/detail composition, accessible reorder and exact evidence belong to29. No staging/commit. Next on authorized continuation: F10c bookshelf/carousel presentation and return context, then F11. Remaining F10/native/AT/performance acceptance, CR06c/remaining CR06, CR07-CR10 and other main tickets stay open.
+Current checkpoint: **[F11a - Book Detail reconstruction](31-book-detail.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `b97119d`; inherited F10c and this slice remain unstaged. 81 distinct Playwright cases and 19 unit tests pass; type/lint/build checks and local Graphify/Obsidian refresh completed. Next: **F11b progress capture and correction**, then F11c timer/session and S08 editing. Global scroll restoration and the corrective/native/AT gates remain open; full F11 is not complete.
 
 Preserve checkpoint23's failure history: the complete Settings matrix passed83/87, followed by17/18 continuity,18/18 after correction and3/3 repeated WebKit checks. These overlap;95 units across12 files and shared shell21/21/overlay15/15 are historical evidence. CR03 is committed in 74ed7d7,CR04 in ef5b2f9 and CR05 in a610871. Preserve their verified contracts; resume from checkpoint26, not their old review stops or historical Graphify counts.
 

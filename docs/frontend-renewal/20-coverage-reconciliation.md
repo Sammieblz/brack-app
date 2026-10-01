@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-Current checkpoint: **[F10b - Lists reconstruction](29-lists-reconstruction.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `8c01615` commits F10a. Manager/detail composition, accessible reorder and exact evidence belong to29. No staging/commit. Next on authorized continuation: F10c bookshelf/carousel presentation and return context, then F11. Remaining F10/native/AT/performance acceptance, CR06c/remaining CR06, CR07-CR10 and other main tickets stay open.
+Current checkpoint: **[F11a - Book Detail reconstruction](31-book-detail.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `b97119d`; inherited F10c and this slice remain unstaged. 81 distinct Playwright cases and 19 unit tests pass; type/lint/build checks and local Graphify/Obsidian refresh completed. Next: **F11b progress capture and correction**, then F11c timer/session and S08 editing. Global scroll restoration and the corrective/native/AT gates remain open; full F11 is not complete.
 
 **The user's coverage objection is substantiated.** F01–F09 committed useful repairs, but the accumulated fixture results do not close their cross-application requirements. This review supersedes the “proceed to F10” handoff. The original reconciliation baseline was **`db076cf`**, which already committed F09; the previous uncommitted status was stale. The worktree was clean when that review began. Later implementation checkpoints above supersede its baseline defect status only within their named scope.
 

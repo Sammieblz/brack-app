@@ -1,6 +1,6 @@
 # F10b — Lists and list detail reconstruction
 
-Implemented and verified within scope; review stop, 2026-10-01. Baseline `8c01615` (F10a committed); worktree clean at entry. F10 remains open. No commit is authorized by this pass.
+Historical checkpoint; committed as `b97119d` before F10c. The original implementation/review evidence below remains scoped to F10b (2026-10-01). Baseline `8c01615` (F10a committed); worktree clean at entry. F10 remains open. No commit is authorized by this pass.
 
 ## Scope and source evidence
 
@@ -84,3 +84,5 @@ After final code/test edits, `graphify update .`, `graphify cluster-only . --no-
 Census:39 routes,33 screen modules,277 component modules,517 total modules/styles. Counts are discovery inventory, not whole-app acceptance. README/09/11/20 now point here;28 is historical at committed `8c01615`. Living Lists/Library/task/Ionic contracts and the evidence index/manifest are updated. No skill file required a new rule; existing delivery/UX/animation/Graphify skills were followed, and their existing task-contract link leads to the new presentation contract.
 
 Work remains uncommitted and unstaged. Resume from this checkpoint and its explicit next slice after user review.
+
+Continuation: the later user-authorized pass is [F10c/checkpoint30](30-library-modes.md). Historical uncommitted/no-staging notes above describe the earlier review stop, not current HEAD.

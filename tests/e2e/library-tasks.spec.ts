@@ -63,7 +63,9 @@ const entries: Entry[] = ['flat', 'bookshelf', 'carousel', 'carousel-preview', '
 async function entry(page: Page, name: Entry, query = '', viewport?: { width: number; height: number }) {
   const view = name === 'carousel-preview' ? 'carousel' : name;
   await open(page, name === 'BookDetail' ? '/book/book-1' : '/my-books', `view=${view}${query ? `&${query}` : ''}`, viewport);
-  await expect(page.getByText(title, { exact: true }).first()).toBeVisible();
+  await expect(name === 'BookDetail'
+    ? page.getByRole('heading', { name: title, exact: true }).first()
+    : page.getByRole('button', { name: `Open ${title}`, exact: true })).toBeVisible();
   let scope: Page | Locator = page;
   if (name === 'bookshelf' || name === 'carousel-preview') {
     if (name === 'carousel-preview') await page.locator('.library-carousel-card').first().getByRole('heading', { name: title, exact: true }).click();
@@ -72,7 +74,7 @@ async function entry(page: Page, name: Entry, query = '', viewport?: { width: nu
     await expect(scope).toBeVisible();
   } else if (name === 'flat') scope = page.locator('.library-book-surface').first();
   else if (name === 'carousel') scope = page.locator('.library-carousel-card').first();
-  if (name !== 'BookDetail') {
+  {
     const more = scope.getByRole('button', { name: `More actions for ${title}`, exact: true });
     await more.click();
   }
