@@ -1,0 +1,758 @@
+{
+  "baseline": "ef5b2f9",
+  "scope": "CR05 Messages browser evidence; final affected cases use cr05-final-geometry; unchanged cases use cr05-full-1. Not a new clean63-case final rerun.",
+  "reports": [
+    {
+      "run": "cr05-full-1",
+      "path": "test-results/cr05-full-1-summary.json",
+      "sha256": "8245446ed6bd8d2472ade87e75be877896d817a4a872060e99041e6e9fd29b5d",
+      "stats": {
+        "startTime": "2026-09-30T19:48:38.362Z",
+        "duration": 217499.06100000002,
+        "expected": 59,
+        "skipped": 4,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr05-final-geometry",
+      "path": "test-results/cr05-final-geometry-summary.json",
+      "sha256": "6e0ba2dc31cd6b5977df0e83e8b302facb89eaff781b2602fbda1513f1160266",
+      "stats": {
+        "startTime": "2026-09-30T19:53:31.879Z",
+        "duration": 135447.106,
+        "expected": 30,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  ],
+  "latestDistinctCounts": {
+    "passed": 59,
+    "failed": 0,
+    "skipped": 4
+  },
+  "sourceHashes": [
+    {
+      "path": "apps/client/src/screens/Messages.tsx",
+      "sha256": "f2809da02118dd94d7cdb8969930c0f2a92848770c0bb959debaba3d58d8dfbb"
+    },
+    {
+      "path": "apps/client/src/components/messaging/ConversationsList.tsx",
+      "sha256": "57eed4b938b08b014d6d83159f9376d8bce6fbba7f7ebe6374a203239736cb7a"
+    },
+    {
+      "path": "apps/client/src/components/messaging/MessageThread.tsx",
+      "sha256": "8f78bbd7969f3d9f7df6402f9c1984d1ef13eb95a1249b38e714dabbba9dbab2"
+    },
+    {
+      "path": "apps/client/src/hooks/useConversations.ts",
+      "sha256": "6509b9fb191ccdb6e6540efbb6ea1a66cd1c1616414c10d07d16e47cdeebd32f"
+    },
+    {
+      "path": "apps/client/src/hooks/useMessages.ts",
+      "sha256": "9b87419132db37fe66d14a33ff1b5adb6605b36fdb8f661ebdbfade84ec1fd98"
+    },
+    {
+      "path": "apps/client/src/services/api/messaging.ts",
+      "sha256": "75f3104189f0c9d70386de194ca957544e9b763fece51f4d6e41088e4d94ea96"
+    },
+    {
+      "path": "tests/e2e/messages-layout.spec.ts",
+      "sha256": "08afbc3827c4f467b4bfaef5ca38557ee9bdab1022e146045a7979e78801e0f9"
+    },
+    {
+      "path": "tests/playwright/messages-layout.config.ts",
+      "sha256": "f78adaa5e6570a7b88b044e8194258f0c644f6997d6fb644d824e0bb074f2485"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/api.ts",
+      "sha256": "541f0e80d1cb3f7937cd0ca71a4ad9e3a040530618d248bb75adb530864735f5"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/data.ts",
+      "sha256": "9a6cec8008de512cbba49209d754dd870bd941c738d642e8c01de105c3fbca06"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/index.html",
+      "sha256": "059509452ba50579da019620a88acd449653c3b1aa15788968d630a627a887ee"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/main.tsx",
+      "sha256": "1b95704c5e228e4bcecba28e60d9bdef5d6564425248b2d8aed8189ebb701750"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/reading-media.svg",
+      "sha256": "335eb482d942dd4093241dbabf3471d2fe2e8dab8a9cc9c2a9501665eea90bdd"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/state.ts",
+      "sha256": "f3e40b8420e00d79c759e165417565dcaec8d5463599ff162559e0c51e652600"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/vite.config.ts",
+      "sha256": "a7c60034babdfc0ca5eb1eb24d7d29fab20d725f06cde185b522daab583428a5"
+    }
+  ],
+  "images": [
+    {
+      "file": "chromium-compact320-gif.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-com-0de27-ntent-and-actions-reachable-chromium/compact320-gif.png",
+      "kind": "final",
+      "bytes": 34268,
+      "sha256": "0e19a0ea5d57760b7a4b3894a51168dd15394fd239b82991979512727daec160"
+    },
+    {
+      "file": "chromium-compact320-inbox.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-com-0de27-ntent-and-actions-reachable-chromium/compact320-inbox.png",
+      "kind": "final",
+      "bytes": 31474,
+      "sha256": "a9adccde9b6132dbfa2b176b567f28d36e769470d38b704cb26ea4aa76120ba4"
+    },
+    {
+      "file": "chromium-compact320-row-actions.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-com-0de27-ntent-and-actions-reachable-chromium/compact320-row-actions.png",
+      "kind": "final",
+      "bytes": 39165,
+      "sha256": "20da441dfbc9f397fa02596c00b1b35e60c9298fb1ff31f12e336f81196891ad"
+    },
+    {
+      "file": "chromium-compact320-thread.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-com-0de27-ntent-and-actions-reachable-chromium/compact320-thread.png",
+      "kind": "final",
+      "bytes": 39880,
+      "sha256": "948e5edc9d63c0c6231d1acf179afa9f96824e97295ea0e7943a91b43b1bd346"
+    },
+    {
+      "file": "chromium-expanded1280-gif.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-exp-84379-ntent-and-actions-reachable-chromium/expanded1280-gif.png",
+      "kind": "final",
+      "bytes": 97673,
+      "sha256": "a4e4ddd6914d057e5b6d885935343070f456a0bb124d8b3c87b8fa53a93324b8"
+    },
+    {
+      "file": "chromium-expanded1280-inbox.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-exp-84379-ntent-and-actions-reachable-chromium/expanded1280-inbox.png",
+      "kind": "final",
+      "bytes": 140211,
+      "sha256": "0c2b53caf95be13f73c899b6ca37e8f7a1c79e4a247266c3a4aa0636936eace2"
+    },
+    {
+      "file": "chromium-expanded1280-row-actions.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-exp-84379-ntent-and-actions-reachable-chromium/expanded1280-row-actions.png",
+      "kind": "final",
+      "bytes": 148139,
+      "sha256": "f5622bf18ad5c0ee50bba36597c27c4eaf3284146fce569abd8014bfd19f57ce"
+    },
+    {
+      "file": "chromium-expanded1280-thread.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-exp-84379-ntent-and-actions-reachable-chromium/expanded1280-thread.png",
+      "kind": "final",
+      "bytes": 146247,
+      "sha256": "1755ba90db6c2235f2268cc2c650febcecc00e1ff622f42472ccd52d1e03adb1"
+    },
+    {
+      "file": "chromium-phone200-gif.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-pho-62c1b-ntent-and-actions-reachable-chromium/phone200-gif.png",
+      "kind": "final",
+      "bytes": 40017,
+      "sha256": "84efc3584dd025a5cf6738a0499342a7763187bbb1ac9eb090f74f327c067477"
+    },
+    {
+      "file": "chromium-phone200-inbox.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-pho-62c1b-ntent-and-actions-reachable-chromium/phone200-inbox.png",
+      "kind": "final",
+      "bytes": 37797,
+      "sha256": "f7c2e4c8d2be1e2b3072520b076325d829272d0caf17e63d93cc040cad81cb83"
+    },
+    {
+      "file": "chromium-phone200-reply-file.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-pho-62c1b-ntent-and-actions-reachable-chromium/phone200-reply-file.png",
+      "kind": "final",
+      "bytes": 36529,
+      "sha256": "f9044407ec158659e216b435011eb211412ddd78e7733caed1638d70db419bb0"
+    },
+    {
+      "file": "chromium-phone200-row-actions.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-pho-62c1b-ntent-and-actions-reachable-chromium/phone200-row-actions.png",
+      "kind": "final",
+      "bytes": 37146,
+      "sha256": "a5f1fe23cd2b7841bd77af1f186b5d65be068a71f9551b2d2bb4e67eb75bb417"
+    },
+    {
+      "file": "chromium-phone200-thread.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-pho-62c1b-ntent-and-actions-reachable-chromium/phone200-thread.png",
+      "kind": "final",
+      "bytes": 40743,
+      "sha256": "9a15ec82b869a8e56ac54e83b2c1c1af8acba940cad67e4765066df04dcc9f55"
+    },
+    {
+      "file": "firefox-phone200-row-actions.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-pho-62c1b-ntent-and-actions-reachable-firefox/phone200-row-actions.png",
+      "kind": "final",
+      "bytes": 35716,
+      "sha256": "7e17d3f10592ddce16ee793ea901c6f08c994616dbf65c744a1eea58a3e917b4"
+    },
+    {
+      "file": "firefox-phone200-thread.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-pho-62c1b-ntent-and-actions-reachable-firefox/phone200-thread.png",
+      "kind": "final",
+      "bytes": 37745,
+      "sha256": "9a072e407e76acaa1d0793f59e7186418c6080baa50b22489d61c37b4d65f745"
+    },
+    {
+      "file": "webkit-phone200-row-actions.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-pho-62c1b-ntent-and-actions-reachable-webkit/phone200-row-actions.png",
+      "kind": "final",
+      "bytes": 31877,
+      "sha256": "f9243a73f740a66bd2dfa4db4866bfaa608c558e81cd64facbcddf8900825fbc"
+    },
+    {
+      "file": "webkit-phone200-thread.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-pho-62c1b-ntent-and-actions-reachable-webkit/phone200-thread.png",
+      "kind": "final",
+      "bytes": 36435,
+      "sha256": "81b67034f52abc25c2e797b0cdee1d04f92c2782b5dcce148a8ca613dc6fcc02"
+    },
+    {
+      "file": "chromium-short390-gif.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-sho-9a2bc-ntent-and-actions-reachable-chromium/short390-gif.png",
+      "kind": "final",
+      "bytes": 26258,
+      "sha256": "c83ff746ef32ea10836247050ce4c52522762f1873b27ec560a528916c7756db"
+    },
+    {
+      "file": "chromium-short390-inbox.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-sho-9a2bc-ntent-and-actions-reachable-chromium/short390-inbox.png",
+      "kind": "final",
+      "bytes": 33494,
+      "sha256": "75c608b12ad520ffe098146c0ba4d9e6ee781bba3d46e3b9619a9b80e7925b69"
+    },
+    {
+      "file": "chromium-short390-reply-file.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-sho-9a2bc-ntent-and-actions-reachable-chromium/short390-reply-file.png",
+      "kind": "final",
+      "bytes": 24993,
+      "sha256": "9051c21ebad18ba50f22e6a0e004d81e345ea4983c1490d69980e7d5ac04c6cb"
+    },
+    {
+      "file": "chromium-short390-row-actions.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-sho-9a2bc-ntent-and-actions-reachable-chromium/short390-row-actions.png",
+      "kind": "final",
+      "bytes": 28569,
+      "sha256": "8c76e28efa8b462065288f352f283f021733865800d5ea469d209d88580b9bb9"
+    },
+    {
+      "file": "chromium-short390-thread.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-sho-9a2bc-ntent-and-actions-reachable-chromium/short390-thread.png",
+      "kind": "final",
+      "bytes": 24821,
+      "sha256": "1fa2f956ae430d4b243445f4a579f59bcd1ad633d07ee889637be65ef58acadc"
+    },
+    {
+      "file": "chromium-tablet200-gif.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-tab-b2826-ntent-and-actions-reachable-chromium/tablet200-gif.png",
+      "kind": "final",
+      "bytes": 67069,
+      "sha256": "b6439ed6ad8f33a73b397f45263bacb3863d2213857c9af1054685e6eb4e3d97"
+    },
+    {
+      "file": "chromium-tablet200-inbox.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-tab-b2826-ntent-and-actions-reachable-chromium/tablet200-inbox.png",
+      "kind": "final",
+      "bytes": 74890,
+      "sha256": "9bdcdfd54c12d06db39b077a68b976ee624d9c65a5ba45671ccdc6d19e1ac7b6"
+    },
+    {
+      "file": "chromium-tablet200-row-actions.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-tab-b2826-ntent-and-actions-reachable-chromium/tablet200-row-actions.png",
+      "kind": "final",
+      "bytes": 78739,
+      "sha256": "915155ad9ce6c598f5a4c29388a6b36ea623a3cfbd9f44c55e1753fd685914d0"
+    },
+    {
+      "file": "chromium-tablet200-thread.png",
+      "source": "test-results/cr05-final-geometry/messages-layout-Visual-tab-b2826-ntent-and-actions-reachable-chromium/tablet200-thread.png",
+      "kind": "final",
+      "bytes": 59155,
+      "sha256": "8e6da8f85c700834906b26a21bf41d010587e63ad637a33a5b3b2b7c70d7a66e"
+    },
+    {
+      "file": "diagnostic-remounted-composer.png",
+      "source": "test-results/cr05-baseline-1/messages-layout-composer-s-d973a-h-its-actual-node-and-draft-chromium/test-failed-1.png",
+      "kind": "initial-failure",
+      "bytes": 57003,
+      "sha256": "07d6a39323af66ddd92d09ee393d47920873281c455cd9e98633b44b0a737323"
+    },
+    {
+      "file": "diagnostic-tablet-fixed-inbox.png",
+      "source": "test-results/cr05-baseline-1/messages-layout-tablet-com-088ea-ort-at200percent-with-timer-chromium/tablet-message.png",
+      "kind": "initial-failure",
+      "bytes": 50108,
+      "sha256": "5eff2dfaf34724397742b621091663e70caa2c0ccdf3bddc9e5ed7fd38e14357"
+    },
+    {
+      "file": "diagnostic-history-composer-overlap.png",
+      "source": "test-results/cr05-smoke-1/messages-layout-Visual-pho-62c1b-ntent-and-actions-reachable-chromium/phone200-thread.png",
+      "kind": "visual-failure",
+      "bytes": 37995,
+      "sha256": "ebced0eae5f5409ea766f36733b7050d67668202bfb5ce9d35b13c1b1064ded9"
+    },
+    {
+      "file": "diagnostic-clipped-row-action.png",
+      "source": "test-results/cr05-full-1/messages-layout-Visual-pho-62c1b-ntent-and-actions-reachable-webkit/phone200-row-actions.png",
+      "kind": "visual-failure",
+      "bytes": 32031,
+      "sha256": "e094ca781cfc5b4601eb80e753e34f9769e82c40e1ebed0facbdba207c25e5c6"
+    }
+  ],
+  "latestScenarioResults": [
+    {
+      "scenario": "composer survives the compact split-pane breakpoint with its actual node and draft",
+      "engine": "chromium",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 4837
+    },
+    {
+      "scenario": "route entry retries a rejected reader lookup and a late result cannot replace a manual conversation choice",
+      "engine": "chromium",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 5923
+    },
+    {
+      "scenario": "actual inbox and thread read errors recover without replacing an already loaded draft",
+      "engine": "chromium",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 2744
+    },
+    {
+      "scenario": "offline writing stays available while sending and media are disabled; online reentry restores the written draft",
+      "engine": "chromium",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 1600
+    },
+    {
+      "scenario": "tablet composer clears the shell and viewport at200percent with timer",
+      "engine": "chromium",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 1204
+    },
+    {
+      "scenario": "GIF task retains search node and query across pane reflow and Back returns to its opener",
+      "engine": "chromium",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 2030
+    },
+    {
+      "scenario": "pending upload and send retain ownership through resize and app Back; failure retries one request",
+      "engine": "chromium",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 3060
+    },
+    {
+      "scenario": "reading older messages keeps scroll through refresh and incoming content until Latest messages",
+      "engine": "chromium",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 1749
+    },
+    {
+      "scenario": "conversation actions are keyboard reachable and retain pending and rejected outcomes across reflow",
+      "engine": "chromium",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 1669
+    },
+    {
+      "scenario": "Back keeps or explicitly discards transient reply and files, restores row focus and keeps text per conversation",
+      "engine": "chromium",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 2795
+    },
+    {
+      "scenario": "split-pane profile departure respects transient drafts and pending send ownership",
+      "engine": "chromium",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 2322
+    },
+    {
+      "scenario": "message deletion keeps its confirmation pending, retries rejection and returns to a surviving composer",
+      "engine": "chromium",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 2460
+    },
+    {
+      "scenario": "compact conversation options expose a real block confirmation and failed writes stay retryable",
+      "engine": "chromium",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 2101
+    },
+    {
+      "scenario": "visual viewport contraction keeps the same composer above the simulated keyboard and timer",
+      "engine": "chromium",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 1208
+    },
+    {
+      "scenario": "touch row swipe reveals its visible actions and canceled contacts preserve navigation",
+      "engine": "chromium",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 1131
+    },
+    {
+      "scenario": "touch reply owns only its interior horizontal contact and never leaves the conversation",
+      "engine": "chromium",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 1402
+    },
+    {
+      "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "chromium",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 2512
+    },
+    {
+      "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "chromium",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 3167
+    },
+    {
+      "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "chromium",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 2828
+    },
+    {
+      "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "chromium",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 3384
+    },
+    {
+      "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "chromium",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 3672
+    },
+    {
+      "scenario": "composer survives the compact split-pane breakpoint with its actual node and draft",
+      "engine": "webkit",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 5255
+    },
+    {
+      "scenario": "route entry retries a rejected reader lookup and a late result cannot replace a manual conversation choice",
+      "engine": "webkit",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 3202
+    },
+    {
+      "scenario": "actual inbox and thread read errors recover without replacing an already loaded draft",
+      "engine": "webkit",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 2780
+    },
+    {
+      "scenario": "offline writing stays available while sending and media are disabled; online reentry restores the written draft",
+      "engine": "webkit",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 4219
+    },
+    {
+      "scenario": "tablet composer clears the shell and viewport at200percent with timer",
+      "engine": "webkit",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 2968
+    },
+    {
+      "scenario": "GIF task retains search node and query across pane reflow and Back returns to its opener",
+      "engine": "webkit",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 3421
+    },
+    {
+      "scenario": "pending upload and send retain ownership through resize and app Back; failure retries one request",
+      "engine": "webkit",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 3790
+    },
+    {
+      "scenario": "reading older messages keeps scroll through refresh and incoming content until Latest messages",
+      "engine": "webkit",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 2392
+    },
+    {
+      "scenario": "conversation actions are keyboard reachable and retain pending and rejected outcomes across reflow",
+      "engine": "webkit",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 4525
+    },
+    {
+      "scenario": "Back keeps or explicitly discards transient reply and files, restores row focus and keeps text per conversation",
+      "engine": "webkit",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 4384
+    },
+    {
+      "scenario": "split-pane profile departure respects transient drafts and pending send ownership",
+      "engine": "webkit",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 4239
+    },
+    {
+      "scenario": "message deletion keeps its confirmation pending, retries rejection and returns to a surviving composer",
+      "engine": "webkit",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 6893
+    },
+    {
+      "scenario": "compact conversation options expose a real block confirmation and failed writes stay retryable",
+      "engine": "webkit",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 4522
+    },
+    {
+      "scenario": "visual viewport contraction keeps the same composer above the simulated keyboard and timer",
+      "engine": "webkit",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 2564
+    },
+    {
+      "scenario": "touch row swipe reveals its visible actions and canceled contacts preserve navigation",
+      "engine": "webkit",
+      "run": "cr05-full-1",
+      "status": "skipped",
+      "durationMs": 217
+    },
+    {
+      "scenario": "touch reply owns only its interior horizontal contact and never leaves the conversation",
+      "engine": "webkit",
+      "run": "cr05-full-1",
+      "status": "skipped",
+      "durationMs": 227
+    },
+    {
+      "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "webkit",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 5630
+    },
+    {
+      "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "webkit",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 7465
+    },
+    {
+      "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "webkit",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 6792
+    },
+    {
+      "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "webkit",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 6937
+    },
+    {
+      "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "webkit",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 7476
+    },
+    {
+      "scenario": "composer survives the compact split-pane breakpoint with its actual node and draft",
+      "engine": "firefox",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 9009
+    },
+    {
+      "scenario": "route entry retries a rejected reader lookup and a late result cannot replace a manual conversation choice",
+      "engine": "firefox",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 5557
+    },
+    {
+      "scenario": "actual inbox and thread read errors recover without replacing an already loaded draft",
+      "engine": "firefox",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 3401
+    },
+    {
+      "scenario": "offline writing stays available while sending and media are disabled; online reentry restores the written draft",
+      "engine": "firefox",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 3321
+    },
+    {
+      "scenario": "tablet composer clears the shell and viewport at200percent with timer",
+      "engine": "firefox",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 2183
+    },
+    {
+      "scenario": "GIF task retains search node and query across pane reflow and Back returns to its opener",
+      "engine": "firefox",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 3198
+    },
+    {
+      "scenario": "pending upload and send retain ownership through resize and app Back; failure retries one request",
+      "engine": "firefox",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 3465
+    },
+    {
+      "scenario": "reading older messages keeps scroll through refresh and incoming content until Latest messages",
+      "engine": "firefox",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 2547
+    },
+    {
+      "scenario": "conversation actions are keyboard reachable and retain pending and rejected outcomes across reflow",
+      "engine": "firefox",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 3041
+    },
+    {
+      "scenario": "Back keeps or explicitly discards transient reply and files, restores row focus and keeps text per conversation",
+      "engine": "firefox",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 5132
+    },
+    {
+      "scenario": "split-pane profile departure respects transient drafts and pending send ownership",
+      "engine": "firefox",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 3379
+    },
+    {
+      "scenario": "message deletion keeps its confirmation pending, retries rejection and returns to a surviving composer",
+      "engine": "firefox",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 4040
+    },
+    {
+      "scenario": "compact conversation options expose a real block confirmation and failed writes stay retryable",
+      "engine": "firefox",
+      "run": "cr05-full-1",
+      "status": "passed",
+      "durationMs": 5025
+    },
+    {
+      "scenario": "visual viewport contraction keeps the same composer above the simulated keyboard and timer",
+      "engine": "firefox",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 2292
+    },
+    {
+      "scenario": "touch row swipe reveals its visible actions and canceled contacts preserve navigation",
+      "engine": "firefox",
+      "run": "cr05-full-1",
+      "status": "skipped",
+      "durationMs": 377
+    },
+    {
+      "scenario": "touch reply owns only its interior horizontal contact and never leaves the conversation",
+      "engine": "firefox",
+      "run": "cr05-full-1",
+      "status": "skipped",
+      "durationMs": 344
+    },
+    {
+      "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "firefox",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 3870
+    },
+    {
+      "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "firefox",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 4747
+    },
+    {
+      "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "firefox",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 5217
+    },
+    {
+      "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "firefox",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 4627
+    },
+    {
+      "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+      "engine": "firefox",
+      "run": "cr05-final-geometry",
+      "status": "passed",
+      "durationMs": 5571
+    }
+  ],
+  "observationCounts": {
+    "fontRecords": 15,
+    "geometryRecords": 66
+  }
+}

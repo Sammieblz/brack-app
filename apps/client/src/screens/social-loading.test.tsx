@@ -18,6 +18,7 @@ vi.mock("@/hooks/useMessages", () => ({ useMessages: () => mocks.thread }));
 vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: mocks.user }) }));
 vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => false }));
 vi.mock("@/hooks/useHapticFeedback", () => ({ useHapticFeedback: () => ({ triggerHaptic: vi.fn() }) }));
+vi.mock("@/contexts/ConfirmDialogContext", () => ({ useConfirmDialog: () => vi.fn().mockResolvedValue(false) }));
 vi.mock("@/components/MobileLayout", () => ({ MobileLayout: ({ children }: { children: ReactNode }) => <div>{children}</div> }));
 vi.mock("@/components/NativeHeader", () => ({ NativeHeader: ({ title }: { title: string }) => <h1>{title}</h1> }));
 vi.mock("@/components/MobileHeader", () => ({ MobileHeader: () => null }));
@@ -107,13 +108,13 @@ describe("social loading contracts", () => {
     expect(container.querySelector('[data-skeleton="conversation"]')).toBeNull();
   });
 
-  it("resets the selected private conversation when the signed-in reader changes", () => {
+  it("resets the selected private conversation when the signed-in reader changes", async () => {
     Object.assign(mocks.inbox, { hasLoaded: true, loading: false });
     Object.assign(mocks.thread, { hasLoaded: true, loading: false });
     const view = () => <MemoryRouter><Messages /></MemoryRouter>;
     const { rerender } = render(view());
     fireEvent.click(screen.getByRole("button", { name: "Open thread" }));
-    expect(screen.getByRole("textbox", { name: "Message draft" })).toBeInTheDocument();
+    expect(await screen.findByRole("textbox", { name: "Message draft" })).toBeInTheDocument();
     mocks.user = { id: "reader-2" };
     rerender(view());
     expect(screen.queryByRole("textbox", { name: "Message draft" })).not.toBeInTheDocument();

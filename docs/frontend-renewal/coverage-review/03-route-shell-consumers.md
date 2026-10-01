@@ -6,6 +6,8 @@ The original dossier already listed all 39 route paths and 33 screen modules. Th
 
 ## Continuation status
 
+[CR05/checkpoint25](../25-messages-layout-gestures.md) owns the Messages RS02/04/10 correction in the working tree: one mounted pane/task owner, measured text-aware pane fit, guarded visible Back/profile actions, inline inbox action groups and local reply gestures. The [living contract](../../ui-messages.md) maps the real entries and state owners. Its checkpoint supplies verification status; the historical findings below remain traceable. Source recheck finds no current SwipeableSheet implementation/import and no swipe recognizer in OnboardingReadingPractice. Readers/UserProfile's separate page gestures and broader F15 URL/notification/native acceptance remain open.
+
 [CR02/checkpoint22](../22-responsive-composers.md) now owns the RS01 creation subset in the working tree: Feed's post task and both BookClubs/Readers club tasks are stable siblings of switching headers. Only their triggers move; current-trigger refs provide focus return. See22 for actual-consumer resize/draft/selection/file and outcome evidence. Header search/notification/timer ownership, Settings/Messages replacement and other route states remain CR03/CR05/CR06 work. The route rows below retain the original baseline findings for traceability.
 
 This report records the `db076cf` source baseline. [CR01/checkpoint21](../21-live-composers.md) retains actual Feed/Profile Posts and club Chat tasks across local tab changes, and prevents Scroll to top from covering live writing controls. It does not close responsive header/pane replacement, route recovery or other RS findings. Those remain in CR02/CR03/CR05/CR06; distinguish local-tab retention from cross-breakpoint ownership.

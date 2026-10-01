@@ -147,14 +147,18 @@ export const useMessages = (conversationId: string | null) => {
   };
 
   const toggleReaction = async (messageId: string, reactionType: MessageReactionType) => {
+    if (!mounted.current || !identity || activeIdentity.current !== identity) return false;
+    const generation = sendGeneration.current;
+    const isCurrent = () => mounted.current && activeIdentity.current === identity && sendGeneration.current === generation;
     try {
       const result = await toggleMessageReactionApi(messageId, reactionType);
-      if (activeIdentity.current !== identity) return true;
+      if (!isCurrent()) return true;
       setMessages((current) =>
         current.map((message) => (message.id === messageId ? result.message : message))
       );
       return true;
     } catch (error) {
+      if (!isCurrent()) return false;
       console.error("Error reacting to message:", error);
       toast.error("Failed to update reaction");
       return false;
@@ -162,9 +166,12 @@ export const useMessages = (conversationId: string | null) => {
   };
 
   const deleteMessage = async (messageId: string) => {
+    if (!mounted.current || !identity || activeIdentity.current !== identity) return false;
+    const generation = sendGeneration.current;
+    const isCurrent = () => mounted.current && activeIdentity.current === identity && sendGeneration.current === generation;
     try {
       await deleteMessageApi(messageId);
-      if (activeIdentity.current !== identity) return true;
+      if (!isCurrent()) return true;
       setMessages((current) =>
         current.map((message) =>
           message.id === messageId
@@ -175,6 +182,7 @@ export const useMessages = (conversationId: string | null) => {
       window.dispatchEvent(new Event("messages-changed"));
       return true;
     } catch (error) {
+      if (!isCurrent()) return false;
       console.error("Error deleting message:", error);
       toast.error("Failed to delete message");
       return false;

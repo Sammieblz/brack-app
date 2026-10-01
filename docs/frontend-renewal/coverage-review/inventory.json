@@ -1,5 +1,5 @@
 {
-  "baseline": "74ed7d7f3f6509f31906625d07ccacb9e53e9590",
+  "baseline": "ef5b2f9047cbd2ae6c30b756a15b9b021bd3be94",
   "method": "TypeScript AST static local import/literal dynamic-import reachability, JSX Route declarations, git commit file lists. No runtime, branches, feature-gate, tree-shaking, fixture alias/mock or per-export analysis. Declaration-level type-only imports are excluded; inline named type imports can still contribute edges. Import references and changed files do not establish review, runtime execution or passing tests. Unreachable means no source import path from main.tsx; verify before deletion. routeImportReachability follows route JSX owners, not their App-owned global ancestors: an empty route list does not exclude global rendering (e.g. Toaster, JournalPromptHandler, JourneyLevelUpObserver).",
   "counts": {
     "routes": 39,
@@ -4358,12 +4358,14 @@
         "apps/client/src/components/ui/button.tsx",
         "apps/client/src/components/ui/card.tsx",
         "apps/client/src/components/ui/input.tsx",
+        "apps/client/src/hooks/useAppBackGuard.ts",
         "apps/client/src/hooks/useConversations.ts",
         "apps/client/src/hooks/useHapticFeedback.ts",
         "apps/client/src/lib/utils.ts",
         "apps/client/src/services/api/index.ts",
         "apps/client/src/utils/hapticToast.ts",
-        "apps/client/src/utils/sanitize.ts"
+        "apps/client/src/utils/sanitize.ts",
+        "apps/client/src/utils/touchGesture.ts"
       ],
       "importedBy": [
         "apps/client/src/screens/Messages.tsx"
@@ -4372,14 +4374,14 @@
         "Avatar",
         "AvatarFallback",
         "AvatarImage",
-        "Badge",
         "Button",
         "Card",
         "ConversationItem",
+        "ConversationsListContent",
         "EmptyMessages",
         "Eye",
-        "EyeClosed",
         "Input",
+        "MoreHoriz",
         "PremiumEmptyState",
         "Search",
         "Trash",
@@ -4389,6 +4391,7 @@
         "span"
       ],
       "directTestImporters": [
+        "apps/client/src/components/messaging/ConversationsList.test.tsx",
         "tests/fixtures/loading/main.tsx"
       ],
       "changedIn": [
@@ -4409,6 +4412,7 @@
         "apps/client/src/components/ui/button.tsx",
         "apps/client/src/components/ui/dialog.tsx",
         "apps/client/src/components/ui/input.tsx",
+        "apps/client/src/components/ui/mobile-dialog.tsx",
         "apps/client/src/components/ui/popover.tsx",
         "apps/client/src/components/ui/textarea.tsx",
         "apps/client/src/contexts/ProfileContext.tsx",
@@ -4416,9 +4420,11 @@
         "apps/client/src/hooks/useHapticFeedback.ts",
         "apps/client/src/hooks/useNetworkStatus.ts",
         "apps/client/src/hooks/useTypingIndicator.ts",
+        "apps/client/src/lib/backLayers.ts",
         "apps/client/src/lib/utils.ts",
         "apps/client/src/services/api/index.ts",
-        "apps/client/src/utils/sanitize.ts"
+        "apps/client/src/utils/sanitize.ts",
+        "apps/client/src/utils/touchGesture.ts"
       ],
       "importedBy": [
         "apps/client/src/screens/Messages.tsx"
@@ -4440,19 +4446,22 @@
         "EmojiPicker",
         "Input",
         "MediaImage",
+        "MobileDialog",
+        "MoreHoriz",
         "Popover",
         "PopoverContent",
         "PopoverTrigger",
         "ReactionBar",
+        "ReplyGesture",
         "Search",
         "Send",
         "Textarea",
         "Trash",
         "TypingIndicator",
-        "WarningTriangle",
         "Xmark",
         "button",
         "div",
+        "fieldset",
         "img",
         "input",
         "label",
@@ -4460,7 +4469,8 @@
         "span"
       ],
       "directTestImporters": [
-        "apps/client/src/components/messaging/MessageThread.test.tsx"
+        "apps/client/src/components/messaging/MessageThread.test.tsx",
+        "apps/client/src/screens/Messages.tasks.test.tsx"
       ],
       "changedIn": [
         "F02/F03"
@@ -6693,6 +6703,7 @@
         "tests/fixtures/adaptive-shell/main.tsx",
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx"
       ],
@@ -9010,6 +9021,7 @@
         "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/Feed.tsx",
         "apps/client/src/screens/Index.tsx",
+        "apps/client/src/screens/Messages.tsx",
         "apps/client/src/screens/MyBooks.tsx",
         "apps/client/src/screens/NotFound.tsx",
         "apps/client/src/screens/Onboarding.tsx",
@@ -9167,7 +9179,6 @@
         "apps/client/src/screens/Dashboard.tsx",
         "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/Feed.tsx",
-        "apps/client/src/screens/Messages.tsx",
         "apps/client/src/screens/MyBooks.tsx",
         "apps/client/src/screens/PostDetail.tsx",
         "apps/client/src/screens/PostSignupPermissions.tsx",
@@ -10092,6 +10103,7 @@
         "apps/client/src/components/ImagePickerDialog.tsx",
         "apps/client/src/components/clubs/CreateClubDialog.tsx",
         "apps/client/src/components/library/LibraryRemoveDialog.tsx",
+        "apps/client/src/components/messaging/MessageThread.tsx",
         "apps/client/src/components/social/CreatePostDialog.tsx",
         "apps/client/src/contexts/ConfirmDialogContext.tsx",
         "apps/client/src/contexts/SettingsTaskProvider.tsx",
@@ -10866,6 +10878,7 @@
       "directTestImporters": [
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx"
       ],
@@ -11173,6 +11186,7 @@
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/loading/main.tsx",
+        "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx"
@@ -11638,6 +11652,7 @@
       ],
       "jsx": [],
       "directTestImporters": [
+        "apps/client/src/components/messaging/ConversationsList.test.tsx",
         "apps/client/src/contexts/AppNavigationProvider.test.tsx",
         "tests/fixtures/back-ownership/main.tsx"
       ],
@@ -11703,6 +11718,7 @@
         "tests/fixtures/frontend-semantics/main.tsx",
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx"
       ],
@@ -11745,6 +11761,7 @@
         "apps/client/src/contexts/TimerContext.tsx",
         "apps/client/src/hooks/useUnsavedAppBack.ts",
         "apps/client/src/screens/BookClubDetail.tsx",
+        "apps/client/src/screens/Messages.tsx",
         "apps/client/src/screens/ReviewDetail.tsx"
       ],
       "jsx": [
@@ -11761,6 +11778,7 @@
         "tests/fixtures/library-interactions/main.tsx",
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx"
@@ -12122,7 +12140,6 @@
         "apps/client/src/screens/Dashboard.tsx",
         "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/Feed.tsx",
-        "apps/client/src/screens/Messages.tsx",
         "apps/client/src/screens/MyBooks.tsx",
         "apps/client/src/screens/PostDetail.tsx",
         "apps/client/src/screens/Readers.tsx",
@@ -12310,9 +12327,11 @@
       ],
       "importedBy": [
         "apps/client/src/components/BookListManager.tsx",
+        "apps/client/src/components/messaging/ConversationsList.tsx",
         "apps/client/src/contexts/SettingsTaskProvider.tsx",
         "apps/client/src/hooks/useUnsavedAppBack.ts",
         "apps/client/src/screens/BookListDetail.tsx",
+        "apps/client/src/screens/Messages.tsx",
         "apps/client/src/screens/MyBooks.tsx"
       ],
       "jsx": [],
@@ -12330,6 +12349,7 @@
         "/edit-book/:id",
         "/lists",
         "/lists/:listId",
+        "/messages",
         "/my-books",
         "/settings"
       ]
@@ -12396,6 +12416,7 @@
         "tests/fixtures/adaptive-shell/main.tsx",
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx",
@@ -12905,6 +12926,7 @@
       ],
       "jsx": [],
       "directTestImporters": [
+        "apps/client/src/components/messaging/ConversationsList.test.tsx",
         "apps/client/src/hooks/social-loading.test.tsx"
       ],
       "changedIn": [],
@@ -13232,7 +13254,6 @@
         "apps/client/src/hooks/useCoverScanner.ts",
         "apps/client/src/hooks/useLongPress.ts",
         "apps/client/src/hooks/useTapFeedback.ts",
-        "apps/client/src/screens/Messages.tsx",
         "apps/client/src/screens/Readers.tsx",
         "apps/client/src/screens/ScanCover.tsx",
         "apps/client/src/screens/Settings.tsx",
@@ -14161,6 +14182,7 @@
         "apps/client/src/screens/BookLists.tsx",
         "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/GoalsManagement.tsx",
+        "apps/client/src/screens/Messages.tsx",
         "apps/client/src/screens/Profile.tsx",
         "apps/client/src/screens/ProgressTracking.tsx",
         "apps/client/src/screens/ReadingHistory.tsx",
@@ -14362,6 +14384,7 @@
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/loading/main.tsx",
+        "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx",
@@ -14579,6 +14602,7 @@
       "role": "support",
       "imports": [],
       "importedBy": [
+        "apps/client/src/components/messaging/MessageThread.tsx",
         "apps/client/src/contexts/AppNavigationProvider.tsx",
         "apps/client/src/hooks/useAppBack.ts",
         "apps/client/src/hooks/useBackLayer.ts",
@@ -14592,6 +14616,7 @@
         "apps/client/src/components/ShellNavigation.test.tsx",
         "apps/client/src/components/SwipeableBookCard.test.tsx",
         "apps/client/src/components/clubs/CreateClubDialog.test.tsx",
+        "apps/client/src/components/messaging/ConversationsList.test.tsx",
         "apps/client/src/components/messaging/MessageThread.test.tsx",
         "apps/client/src/components/social/CreatePostDialog.test.tsx",
         "apps/client/src/components/ui/action-sheet.test.tsx",
@@ -16495,19 +16520,19 @@
         "apps/client/src/components/messaging/ConversationsList.tsx",
         "apps/client/src/components/messaging/MessageThread.tsx",
         "apps/client/src/components/skeletons/MessagesSkeleton.tsx",
-        "apps/client/src/components/ui/card.tsx",
-        "apps/client/src/hooks/use-mobile.tsx",
+        "apps/client/src/components/ui/button.tsx",
+        "apps/client/src/contexts/ConfirmDialogContext.tsx",
+        "apps/client/src/hooks/useAppBackGuard.ts",
         "apps/client/src/hooks/useAuth.ts",
         "apps/client/src/hooks/useConversations.ts",
-        "apps/client/src/hooks/useHapticFeedback.ts",
-        "apps/client/src/hooks/useMessages.ts"
+        "apps/client/src/hooks/useMessages.ts",
+        "apps/client/src/hooks/useUIEnvironment.ts"
       ],
       "importedBy": [
         "apps/client/src/App.tsx"
       ],
       "jsx": [
-        "Card",
-        "CardContent",
+        "Button",
         "ConversationsList",
         "ConversationsSkeleton",
         "LoadingError",
@@ -16523,11 +16548,15 @@
         "div",
         "h2",
         "main",
-        "p"
+        "p",
+        "section",
+        "span"
       ],
       "directTestImporters": [
+        "apps/client/src/screens/Messages.tasks.test.tsx",
         "apps/client/src/screens/social-loading.test.tsx",
-        "tests/fixtures/live-composers/main.tsx"
+        "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/messages-layout/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -18670,9 +18699,11 @@
       ],
       "jsx": [],
       "directTestImporters": [
+        "apps/client/src/services/api/messaging.read-receipt.test.ts",
         "apps/client/src/services/api/social-read-access.test.ts",
         "apps/client/src/services/api/uploadMediaNormalization.test.ts",
-        "tests/fixtures/live-composers/api.ts"
+        "tests/fixtures/live-composers/api.ts",
+        "tests/fixtures/messages-layout/api.ts"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -21566,7 +21597,9 @@
       ],
       "importedBy": [
         "apps/client/src/components/PullToRefresh.tsx",
-        "apps/client/src/components/SwipeableBookCard.tsx"
+        "apps/client/src/components/SwipeableBookCard.tsx",
+        "apps/client/src/components/messaging/ConversationsList.tsx",
+        "apps/client/src/components/messaging/MessageThread.tsx"
       ],
       "jsx": [],
       "directTestImporters": [],

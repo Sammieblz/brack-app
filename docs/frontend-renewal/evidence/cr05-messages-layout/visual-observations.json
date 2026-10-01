@@ -1,0 +1,6710 @@
+[
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 2512,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 2512,
+    "observation": "compact320-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 320,
+        "height": 740,
+        "visualHeight": 740
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 320
+    }
+  },
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 2512,
+    "observation": "compact320-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 320,
+        "height": 740,
+        "visualHeight": 740
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 320
+    }
+  },
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 2512,
+    "observation": "compact320-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 320,
+        "height": 740,
+        "visualHeight": 740
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 287,
+        "height": 486,
+        "scrollHeight": 3943,
+        "scrollTop": 3457
+      },
+      "composer": {
+        "x": 21,
+        "y": 595,
+        "width": 263,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 240,
+        "y": 663,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 320
+    }
+  },
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 2512,
+    "observation": "compact320-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 320,
+        "height": 740,
+        "visualHeight": 740
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 287,
+        "height": 498,
+        "scrollHeight": 3943,
+        "scrollTop": 3445
+      },
+      "composer": {
+        "x": 21,
+        "y": 607,
+        "width": 263,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 240,
+        "y": 675,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 0,
+        "y": 210.71875,
+        "width": 320,
+        "height": 318.5625,
+        "scrollHeight": 317,
+        "scrollTop": 0
+      },
+      "documentWidth": 320
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3167,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3167,
+    "observation": "phone200-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3167,
+    "observation": "phone200-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3167,
+    "observation": "phone200-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 17,
+        "y": 234,
+        "width": 341,
+        "height": 254,
+        "scrollHeight": 12845,
+        "scrollTop": 12591
+      },
+      "composer": {
+        "x": 41,
+        "y": 601,
+        "width": 293,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 290,
+        "y": 735,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3167,
+    "observation": "phone200-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 17,
+        "y": 234,
+        "width": 341,
+        "height": 48,
+        "scrollHeight": 12845,
+        "scrollTop": 12797
+      },
+      "composer": {
+        "x": 41,
+        "y": 369,
+        "width": 293,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 290,
+        "y": 503,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 0,
+        "y": 118.75,
+        "width": 390,
+        "height": 606.5,
+        "scrollHeight": 605,
+        "scrollTop": 0
+      },
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3167,
+    "observation": "phone200-reply-file-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 17,
+        "y": 148,
+        "width": 341,
+        "height": 48,
+        "scrollHeight": 12845,
+        "scrollTop": 12716
+      },
+      "composer": {
+        "x": 41,
+        "y": 601,
+        "width": 293,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 290,
+        "y": 735,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 2828,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 2828,
+    "observation": "tablet200-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 834,
+        "height": 1112,
+        "visualHeight": 1112
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 834
+    }
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 2828,
+    "observation": "tablet200-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 834,
+        "height": 1112,
+        "visualHeight": 1112
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 834
+    }
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 2828,
+    "observation": "tablet200-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 834,
+        "height": 1112,
+        "visualHeight": 1112
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 25,
+        "y": 146,
+        "width": 769,
+        "height": 622,
+        "scrollHeight": 6933,
+        "scrollTop": 6311
+      },
+      "composer": {
+        "x": 57,
+        "y": 853,
+        "width": 705,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 718,
+        "y": 987,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 834
+    }
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 2828,
+    "observation": "tablet200-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 834,
+        "height": 1112,
+        "visualHeight": 1112
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 25,
+        "y": 146,
+        "width": 769,
+        "height": 526,
+        "scrollHeight": 6933,
+        "scrollTop": 6407
+      },
+      "composer": {
+        "x": 57,
+        "y": 757,
+        "width": 705,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 718,
+        "y": 891,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 0,
+        "y": 298.5703125,
+        "width": 834,
+        "height": 514.859375,
+        "scrollHeight": 513,
+        "scrollTop": 0
+      },
+      "documentWidth": 834
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3384,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3384,
+    "observation": "short390-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3384,
+    "observation": "short390-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3384,
+    "observation": "short390-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 357,
+        "height": 226,
+        "scrollHeight": 3486,
+        "scrollTop": 3260
+      },
+      "composer": {
+        "x": 21,
+        "y": 335,
+        "width": 333,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 310,
+        "y": 403,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3384,
+    "observation": "short390-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 357,
+        "height": 178,
+        "scrollHeight": 3486,
+        "scrollTop": 3308
+      },
+      "composer": {
+        "x": 21,
+        "y": 287,
+        "width": 333,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 310,
+        "y": 355,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 0,
+        "y": 96.875,
+        "width": 390,
+        "height": 286.25,
+        "scrollHeight": 284,
+        "scrollTop": 0
+      },
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3384,
+    "observation": "short390-reply-file-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 357,
+        "height": 50,
+        "scrollHeight": 3486,
+        "scrollTop": 3378
+      },
+      "composer": {
+        "x": 21,
+        "y": 335,
+        "width": 333,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 310,
+        "y": 403,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3672,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3672,
+    "observation": "expanded1280-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 1280,
+        "height": 900,
+        "visualHeight": 900
+      },
+      "rootText": "16px",
+      "layout": "split",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 1280
+    }
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3672,
+    "observation": "expanded1280-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 1280,
+        "height": 900,
+        "visualHeight": 900
+      },
+      "rootText": "16px",
+      "layout": "split",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 1280
+    }
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3672,
+    "observation": "expanded1280-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 1280,
+        "height": 900,
+        "visualHeight": 900
+      },
+      "rootText": "16px",
+      "layout": "split",
+      "history": {
+        "x": 585,
+        "y": 204,
+        "width": 667,
+        "height": 500,
+        "scrollHeight": 3106,
+        "scrollTop": 2606
+      },
+      "composer": {
+        "x": 601,
+        "y": 747,
+        "width": 635,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 1192,
+        "y": 815,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 1280
+    }
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "chromium",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3672,
+    "observation": "expanded1280-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 1280,
+        "height": 900,
+        "visualHeight": 900
+      },
+      "rootText": "16px",
+      "layout": "split",
+      "history": {
+        "x": 585,
+        "y": 204,
+        "width": 667,
+        "height": 452,
+        "scrollHeight": 3106,
+        "scrollTop": 2654
+      },
+      "composer": {
+        "x": 601,
+        "y": 699,
+        "width": 635,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 1192,
+        "y": 767,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 304,
+        "y": 307.25,
+        "width": 672,
+        "height": 285.5,
+        "scrollHeight": 284,
+        "scrollTop": 0
+      },
+      "documentWidth": 1280
+    }
+  },
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5630,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "loaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "loaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "loaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "loaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5630,
+    "observation": "compact320-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 320,
+        "height": 740,
+        "visualHeight": 740
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 320
+    }
+  },
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5630,
+    "observation": "compact320-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 320,
+        "height": 740,
+        "visualHeight": 740
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 320
+    }
+  },
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5630,
+    "observation": "compact320-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 320,
+        "height": 740,
+        "visualHeight": 740
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 302,
+        "height": 486,
+        "scrollHeight": 3451,
+        "scrollTop": 2965
+      },
+      "composer": {
+        "x": 21,
+        "y": 595,
+        "width": 278,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 255,
+        "y": 663,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 320
+    }
+  },
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5630,
+    "observation": "compact320-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 320,
+        "height": 740,
+        "visualHeight": 740
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 302,
+        "height": 498,
+        "scrollHeight": 3451,
+        "scrollTop": 2953
+      },
+      "composer": {
+        "x": 21,
+        "y": 607,
+        "width": 278,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 255,
+        "y": 675,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 0,
+        "y": 210.5,
+        "width": 320,
+        "height": 318.5625,
+        "scrollHeight": 317,
+        "scrollTop": 0
+      },
+      "documentWidth": 320
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 7465,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "loaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "loaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "loaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "loaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 7465,
+    "observation": "phone200-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 7465,
+    "observation": "phone200-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 7465,
+    "observation": "phone200-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 17,
+        "y": 234,
+        "width": 356,
+        "height": 254,
+        "scrollHeight": 12854,
+        "scrollTop": 12600
+      },
+      "composer": {
+        "x": 41,
+        "y": 601,
+        "width": 308,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 305,
+        "y": 735,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 7465,
+    "observation": "phone200-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 17,
+        "y": 234,
+        "width": 356,
+        "height": 48,
+        "scrollHeight": 12854,
+        "scrollTop": 12806
+      },
+      "composer": {
+        "x": 41,
+        "y": 369,
+        "width": 308,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 305,
+        "y": 503,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 0,
+        "y": 118.5,
+        "width": 390,
+        "height": 606.5,
+        "scrollHeight": 605,
+        "scrollTop": 0
+      },
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 7465,
+    "observation": "phone200-reply-file-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 17,
+        "y": 124,
+        "width": 356,
+        "height": 48,
+        "scrollHeight": 12854,
+        "scrollTop": 12723
+      },
+      "composer": {
+        "x": 41,
+        "y": 601,
+        "width": 308,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 305,
+        "y": 735,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 6792,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "loaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "loaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "loaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "loaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 6792,
+    "observation": "tablet200-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 834,
+        "height": 1112,
+        "visualHeight": 1112
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 834
+    }
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 6792,
+    "observation": "tablet200-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 834,
+        "height": 1112,
+        "visualHeight": 1112
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 834
+    }
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 6792,
+    "observation": "tablet200-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 834,
+        "height": 1112,
+        "visualHeight": 1112
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 25,
+        "y": 146,
+        "width": 784,
+        "height": 622,
+        "scrollHeight": 6486,
+        "scrollTop": 5673
+      },
+      "composer": {
+        "x": 57,
+        "y": 853,
+        "width": 720,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 733,
+        "y": 987,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 834
+    }
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 6792,
+    "observation": "tablet200-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 834,
+        "height": 1112,
+        "visualHeight": 1112
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 25,
+        "y": 146,
+        "width": 784,
+        "height": 526,
+        "scrollHeight": 6486,
+        "scrollTop": 5673
+      },
+      "composer": {
+        "x": 57,
+        "y": 757,
+        "width": 720,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 733,
+        "y": 891,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 0,
+        "y": 298.5,
+        "width": 834,
+        "height": 514.859375,
+        "scrollHeight": 513,
+        "scrollTop": 0
+      },
+      "documentWidth": 834
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 6937,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "loaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "loaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "loaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "loaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 6937,
+    "observation": "short390-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 6937,
+    "observation": "short390-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 6937,
+    "observation": "short390-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 372,
+        "height": 226,
+        "scrollHeight": 3495,
+        "scrollTop": 3180
+      },
+      "composer": {
+        "x": 21,
+        "y": 335,
+        "width": 348,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 325,
+        "y": 403,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 6937,
+    "observation": "short390-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 372,
+        "height": 178,
+        "scrollHeight": 3495,
+        "scrollTop": 3180
+      },
+      "composer": {
+        "x": 21,
+        "y": 287,
+        "width": 348,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 325,
+        "y": 355,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 0,
+        "y": 97,
+        "width": 390,
+        "height": 286.25,
+        "scrollHeight": 284,
+        "scrollTop": 0
+      },
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 6937,
+    "observation": "short390-reply-file-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 372,
+        "height": 50,
+        "scrollHeight": 3495,
+        "scrollTop": 3445
+      },
+      "composer": {
+        "x": 21,
+        "y": 335,
+        "width": 348,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 325,
+        "y": 403,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 7476,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "loaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "loaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "loaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "loaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 7476,
+    "observation": "expanded1280-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 1280,
+        "height": 900,
+        "visualHeight": 900
+      },
+      "rootText": "16px",
+      "layout": "split",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 1280
+    }
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 7476,
+    "observation": "expanded1280-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 1280,
+        "height": 900,
+        "visualHeight": 900
+      },
+      "rootText": "16px",
+      "layout": "split",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 1280
+    }
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 7476,
+    "observation": "expanded1280-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 1280,
+        "height": 900,
+        "visualHeight": 900
+      },
+      "rootText": "16px",
+      "layout": "split",
+      "history": {
+        "x": 585,
+        "y": 204,
+        "width": 682,
+        "height": 500,
+        "scrollHeight": 2716,
+        "scrollTop": 2008
+      },
+      "composer": {
+        "x": 601,
+        "y": 747,
+        "width": 650,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 1207,
+        "y": 815,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 1280
+    }
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "webkit",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 7476,
+    "observation": "expanded1280-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 1280,
+        "height": 900,
+        "visualHeight": 900
+      },
+      "rootText": "16px",
+      "layout": "split",
+      "history": {
+        "x": 585,
+        "y": 204,
+        "width": 682,
+        "height": 452,
+        "scrollHeight": 2716,
+        "scrollTop": 2008
+      },
+      "composer": {
+        "x": 601,
+        "y": 699,
+        "width": 650,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 1207,
+        "y": 767,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 304,
+        "y": 307,
+        "width": 672,
+        "height": 285.5,
+        "scrollHeight": 284,
+        "scrollTop": 0
+      },
+      "documentWidth": 1280
+    }
+  },
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3870,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3870,
+    "observation": "compact320-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 320,
+        "height": 740,
+        "visualHeight": 740
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 320
+    }
+  },
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3870,
+    "observation": "compact320-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 320,
+        "height": 740,
+        "visualHeight": 740
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 320
+    }
+  },
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3870,
+    "observation": "compact320-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 320,
+        "height": 740,
+        "visualHeight": 740
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 302,
+        "height": 486,
+        "scrollHeight": 3452,
+        "scrollTop": 2966
+      },
+      "composer": {
+        "x": 21,
+        "y": 595,
+        "width": 278,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 255,
+        "y": 663,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 320
+    }
+  },
+  {
+    "scenario": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 3870,
+    "observation": "compact320-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 320,
+        "height": 740,
+        "visualHeight": 740
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 302,
+        "height": 498,
+        "scrollHeight": 3452,
+        "scrollTop": 2954
+      },
+      "composer": {
+        "x": 21,
+        "y": 607,
+        "width": 278,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 255,
+        "y": 675,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 0,
+        "y": 210.71665954589844,
+        "width": 320,
+        "height": 318.5666809082031,
+        "scrollHeight": 317,
+        "scrollTop": 0
+      },
+      "documentWidth": 320
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 4747,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 4747,
+    "observation": "phone200-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 4747,
+    "observation": "phone200-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 4747,
+    "observation": "phone200-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 17,
+        "y": 234,
+        "width": 356,
+        "height": 254,
+        "scrollHeight": 12855,
+        "scrollTop": 12601
+      },
+      "composer": {
+        "x": 41,
+        "y": 601,
+        "width": 308,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 305,
+        "y": 735,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 4747,
+    "observation": "phone200-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 17,
+        "y": 234,
+        "width": 356,
+        "height": 48,
+        "scrollHeight": 12855,
+        "scrollTop": 12807
+      },
+      "composer": {
+        "x": 41,
+        "y": 369,
+        "width": 308,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 305,
+        "y": 503,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 0,
+        "y": 118.75,
+        "width": 390,
+        "height": 606.5,
+        "scrollHeight": 605,
+        "scrollTop": 0
+      },
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 4747,
+    "observation": "phone200-reply-file-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "visualHeight": 844
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 17,
+        "y": 150,
+        "width": 356,
+        "height": 48,
+        "scrollHeight": 12855,
+        "scrollTop": 12725
+      },
+      "composer": {
+        "x": 41,
+        "y": 601,
+        "width": 308,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 305,
+        "y": 735,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5217,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5217,
+    "observation": "tablet200-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 834,
+        "height": 1112,
+        "visualHeight": 1112
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 834
+    }
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5217,
+    "observation": "tablet200-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 834,
+        "height": 1112,
+        "visualHeight": 1112
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 834
+    }
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5217,
+    "observation": "tablet200-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 834,
+        "height": 1112,
+        "visualHeight": 1112
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 25,
+        "y": 146,
+        "width": 784,
+        "height": 622,
+        "scrollHeight": 6486,
+        "scrollTop": 5864
+      },
+      "composer": {
+        "x": 57,
+        "y": 853,
+        "width": 720,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 733,
+        "y": 987,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 834
+    }
+  },
+  {
+    "scenario": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5217,
+    "observation": "tablet200-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 834,
+        "height": 1112,
+        "visualHeight": 1112
+      },
+      "rootText": "32px",
+      "layout": "single",
+      "history": {
+        "x": 25,
+        "y": 146,
+        "width": 784,
+        "height": 526,
+        "scrollHeight": 6486,
+        "scrollTop": 5960
+      },
+      "composer": {
+        "x": 57,
+        "y": 757,
+        "width": 720,
+        "height": 118,
+        "scrollHeight": 116,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 733,
+        "y": 891,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 0,
+        "y": 298.566650390625,
+        "width": 834,
+        "height": 514.88330078125,
+        "scrollHeight": 513,
+        "scrollTop": 0
+      },
+      "documentWidth": 834
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 4627,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 4627,
+    "observation": "short390-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 4627,
+    "observation": "short390-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 4627,
+    "observation": "short390-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 372,
+        "height": 226,
+        "scrollHeight": 3495,
+        "scrollTop": 3269
+      },
+      "composer": {
+        "x": 21,
+        "y": 335,
+        "width": 348,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 325,
+        "y": 403,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 4627,
+    "observation": "short390-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 372,
+        "height": 178,
+        "scrollHeight": 3495,
+        "scrollTop": 3317
+      },
+      "composer": {
+        "x": 21,
+        "y": 287,
+        "width": 348,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 325,
+        "y": 355,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 0,
+        "y": 96.88333129882812,
+        "width": 390,
+        "height": 286.25,
+        "scrollHeight": 284,
+        "scrollTop": 0
+      },
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 4627,
+    "observation": "short390-reply-file-geometry",
+    "value": {
+      "viewport": {
+        "width": 390,
+        "height": 480,
+        "visualHeight": 480
+      },
+      "rootText": "16px",
+      "layout": "single",
+      "history": {
+        "x": 9,
+        "y": 70,
+        "width": 372,
+        "height": 50,
+        "scrollHeight": 3495,
+        "scrollTop": 3445
+      },
+      "composer": {
+        "x": 21,
+        "y": 335,
+        "width": 348,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 325,
+        "y": 403,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 390
+    }
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5571,
+    "observation": "font-evidence",
+    "value": [
+      {
+        "family": "Inter",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "500"
+          },
+          {
+            "status": "loaded",
+            "weight": "500"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "600"
+          },
+          {
+            "status": "loaded",
+            "weight": "600"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          }
+        ]
+      },
+      {
+        "family": "Merriweather",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "300"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      },
+      {
+        "family": "Playfair Display",
+        "faces": [
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "400"
+          },
+          {
+            "status": "loaded",
+            "weight": "400"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "700"
+          },
+          {
+            "status": "loaded",
+            "weight": "700"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          },
+          {
+            "status": "unloaded",
+            "weight": "900"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5571,
+    "observation": "expanded1280-inbox-geometry",
+    "value": {
+      "viewport": {
+        "width": 1280,
+        "height": 900,
+        "visualHeight": 900
+      },
+      "rootText": "16px",
+      "layout": "split",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 1280
+    }
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5571,
+    "observation": "expanded1280-row-actions-geometry",
+    "value": {
+      "viewport": {
+        "width": 1280,
+        "height": 900,
+        "visualHeight": 900
+      },
+      "rootText": "16px",
+      "layout": "split",
+      "history": null,
+      "composer": null,
+      "send": null,
+      "dialog": null,
+      "documentWidth": 1280
+    }
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5571,
+    "observation": "expanded1280-thread-geometry",
+    "value": {
+      "viewport": {
+        "width": 1280,
+        "height": 900,
+        "visualHeight": 900
+      },
+      "rootText": "16px",
+      "layout": "split",
+      "history": {
+        "x": 585,
+        "y": 204,
+        "width": 682,
+        "height": 500,
+        "scrollHeight": 2717,
+        "scrollTop": 2217
+      },
+      "composer": {
+        "x": 601,
+        "y": 747,
+        "width": 650,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 1207,
+        "y": 815,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": null,
+      "documentWidth": 1280
+    }
+  },
+  {
+    "scenario": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+    "engine": "firefox",
+    "run": "cr05-final-geometry",
+    "status": "passed",
+    "durationMs": 5571,
+    "observation": "expanded1280-gif-geometry",
+    "value": {
+      "viewport": {
+        "width": 1280,
+        "height": 900,
+        "visualHeight": 900
+      },
+      "rootText": "16px",
+      "layout": "split",
+      "history": {
+        "x": 585,
+        "y": 204,
+        "width": 682,
+        "height": 452,
+        "scrollHeight": 2717,
+        "scrollTop": 2265
+      },
+      "composer": {
+        "x": 601,
+        "y": 699,
+        "width": 650,
+        "height": 60,
+        "scrollHeight": 58,
+        "scrollTop": 0
+      },
+      "send": {
+        "x": 1207,
+        "y": 767,
+        "width": 44,
+        "height": 44,
+        "scrollHeight": 44,
+        "scrollTop": 0
+      },
+      "dialog": {
+        "x": 304,
+        "y": 307.25,
+        "width": 672,
+        "height": 285.5,
+        "scrollHeight": 284,
+        "scrollTop": 0
+      },
+      "documentWidth": 1280
+    }
+  }
+]

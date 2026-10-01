@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Current checkpoint: **[CR04 - Library selection and list outcomes](24-library-list-tasks.md), implemented and verified within its documented scope; stop for user review.** Baseline `74ed7d7`; CR04 is uncommitted. Evidence:117 distinct units,97 actual-task browser passes plus two declared skips,33 Library regression passes plus six declared skips,21 shared-shell passes; types/lint/build and final local graph/Obsidian export passed. Original failures and corrected follow-ups are preserved in24. Next unit after user continuation: CR05 Messages layout and gesture ownership. CR05-CR10 and remaining main tickets overlap; F10 composition and native/AT/performance acceptance remain open.
+Current checkpoint: **[CR05 - Messages layout and gesture ownership](25-messages-layout-gestures.md), implemented and verified within scope; stopped for user review.** CR04 is committed in `ef5b2f9`; CR05 remains unstaged/uncommitted. Actual Messages task retention, measured panes, visible actions, gesture conflicts and guarded outcomes now have138 passing units and59 distinct browser passes (four declared CDP skips). Final screenshots and Graphify/Obsidian are refreshed. Next is a bounded CR06 route-destination child after user continuation; CR06-CR10 and remaining main-ticket visual/native/AT/performance acceptance stay open and overlap.
 
 ## Outcome
 
@@ -46,8 +46,9 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [20 — Coverage reconciliation](20-coverage-reconciliation.md) | Active correction: source census, live consumer matrices, missed requirements and corrective batches |
 | [21 — CR01 live composers](21-live-composers.md) | Historical committed CR01: comment/message ownership, media semantics and scoped evidence |
 | [22 — CR02 responsive creation](22-responsive-composers.md) | Historical committed CR02: real Feed/BookClubs/Readers creation tasks, retention and guarded outcomes |
-| [23 - CR03 Settings continuity](23-settings-continuity.md) | Awaiting review: category navigation, stable editors and protected Settings tasks verified within browser/unit scope |
-| [24 - CR04 Library/list tasks](24-library-list-tasks.md) | Implemented/verified: stable tasks, truthful outcomes, large-text/focus corrections; review stop |
+| [23 - CR03 Settings continuity](23-settings-continuity.md) | Historical committed CR03: category navigation, stable editors and protected Settings tasks |
+| [24 - CR04 Library/list tasks](24-library-list-tasks.md) | Historical committed CR04: stable tasks, truthful outcomes and large-text/focus corrections |
+| [25 - CR05 Messages layout and gestures](25-messages-layout-gestures.md) | Active Messages delivery: measured panes, retained task ownership, visible actions and guarded local gestures |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability

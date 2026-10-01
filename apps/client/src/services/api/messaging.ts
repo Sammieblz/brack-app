@@ -493,12 +493,13 @@ export const markConversationRead = async (
     if (!user) throw error;
 
     console.warn("mark-conversation-read unavailable; falling back to legacy read flag", error);
-    await supabase
+    const { error: fallbackError } = await supabase
       .from("messages")
       .update({ is_read: true })
       .eq("conversation_id", conversationId)
       .neq("sender_id", user.id)
       .eq("is_read", false);
+    if (fallbackError) throw fallbackError;
   }
 };
 

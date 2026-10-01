@@ -1,12 +1,12 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Conversation } from "@/hooks/useConversations";
-import { Eye, EyeClosed, Search, Trash } from "iconoir-react";
+import { Eye, MoreHoriz, Search, Trash } from "iconoir-react";
 import { EmptyMessages } from "@/components/empty/EmptyMessages";
 import { PremiumEmptyState } from "@/components/empty/PremiumEmptyState";
 import { useSwipeable } from "react-swipeable";
@@ -15,12 +15,15 @@ import { hapticToast } from "@/utils/hapticToast";
 import { sanitizeText } from "@/utils/sanitize";
 import { deleteConversation, markConversationRead, updateConversationSettings } from "@/services/api";
 import { cn } from "@/lib/utils";
+import { getLocalGestureTouch, observeTouchCancellation } from "@/utils/touchGesture";
+import { useAppBackGuard } from "@/hooks/useAppBackGuard";
 
 interface ConversationsListProps {
   conversations: Conversation[];
   selectedConversationId: string | null;
   onSelectConversation: (conversationId: string) => void;
   currentUserId?: string;
+  onBeforeLeave?: () => Promise<boolean>;
 }
 
 const getInitials = (name?: string | null) => {
@@ -63,7 +66,7 @@ const previewMessage = (conv: Conversation, currentUserId?: string) => {
 // Keep the row component identity stable through background refreshes.
 const ConversationItem = ({
   conv, isSwiped, isSelected, currentUserId, onSelectConversation,
-  setSwipedId, handleHide, handleMarkRead, handleMuteToggle,
+  setSwipedId, onAction, pending, error, onBeforeLeave,
 }: {
   conv: Conversation;
   isSwiped: boolean;
@@ -71,203 +74,310 @@ const ConversationItem = ({
   currentUserId?: string;
   onSelectConversation: (id: string) => void;
   setSwipedId: (id: string | null) => void;
-  handleHide: (id: string, event: React.MouseEvent) => Promise<void>;
-  handleMarkRead: (id: string, event: React.MouseEvent) => Promise<void>;
-  handleMuteToggle: (conversation: Conversation, event: React.MouseEvent) => Promise<void>;
+  onAction: (conversation: Conversation, action: ConversationAction) => Promise<void>;
+  pending: PendingAction | null;
+  error?: string;
+  onBeforeLeave?: () => Promise<boolean>;
 }) => {
   const { triggerHaptic } = useHapticFeedback();
   const navigate = useNavigate();
+  const actionsId = useId();
+  const actionsTrigger = useRef<HTMLButtonElement>(null);
+  const actions = useRef<HTMLDivElement>(null);
+  const contact = useRef<number | null>(null);
+  const axis = useRef<"horizontal" | "vertical" | null>(null);
+  const suppressClick = useRef(false);
+  const removeListeners = useRef<() => void>();
+  const mounted = useRef(true);
+  const profileDeparture = useRef(false);
+  const [leavingProfile, setLeavingProfile] = useState(false);
+  const currentPending = useRef(pending);
+  currentPending.current = pending;
+  const endContact = useCallback(() => {
+    contact.current = null;
+    removeListeners.current?.();
+    removeListeners.current = undefined;
+  }, []);
+  const cancelContact = useCallback(() => {
+    if (contact.current === null) return;
+    suppressClick.current = true;
+    endContact();
+  }, [endContact]);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; endContact(); };
+  }, [endContact]);
+  useEffect(() => { if (pending) cancelContact(); }, [pending, cancelContact]);
+
+  const closeActions = () => {
+    if (pending) return;
+    if (actions.current?.contains(document.activeElement)) actionsTrigger.current?.focus();
+    setSwipedId(null);
+  };
   const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => {
-      triggerHaptic("light");
-      setSwipedId(conv.id);
+    onTouchStartOrOnMouseDown: ({ event }) => {
+      endContact();
+      axis.current = null;
+      suppressClick.current = false;
+      if (pending || !("touches" in event)) return;
+      const touch = getLocalGestureTouch(event, ".conversation-open");
+      if (!touch) return;
+      contact.current = touch.identifier;
+      removeListeners.current = observeTouchCancellation(touch.identifier, cancelContact);
     },
-    onSwipedRight: () => {
-      triggerHaptic("light");
-      setSwipedId(null);
+    onSwiping: ({ absX, absY, event }) => {
+      suppressClick.current = true;
+      if (contact.current === null) return;
+      axis.current ??= absX > absY ? "horizontal" : "vertical";
+      if (axis.current === "horizontal" && event.cancelable) event.preventDefault();
     },
+    onSwiped: ({ deltaX, absX }) => {
+      if (contact.current === null || axis.current !== "horizontal" || absX < 48) return;
+      triggerHaptic("light");
+      if (deltaX < 0) setSwipedId(conv.id);
+      else closeActions();
+    },
+    onTouchEndOrOnMouseUp: endContact,
     trackMouse: false,
+    preventScrollOnSwipe: false,
+    touchEventOptions: { passive: false },
   });
 
   const unreadCount = conv.unread_count || 0;
+  const name = conv.other_user?.display_name || "Unknown Reader";
+  const rowPending = pending?.id === conv.id;
+  const openProfile = async () => {
+    const userId = conv.other_user?.id;
+    if (!userId || currentPending.current || profileDeparture.current) return;
+    profileDeparture.current = true;
+    setLeavingProfile(true);
+    try {
+      const allowed = onBeforeLeave ? await onBeforeLeave() : true;
+      if (allowed && mounted.current && !currentPending.current) navigate(`/users/${userId}`);
+    } finally {
+      profileDeparture.current = false;
+      if (mounted.current) setLeavingProfile(false);
+    }
+  };
 
   return (
-    <div {...swipeHandlers} className="relative overflow-hidden rounded-lg">
+    <div {...swipeHandlers} className="min-w-0 rounded-lg" style={{ touchAction: "pan-y pinch-zoom" }}
+      onTouchCancel={cancelContact}
+      onPointerDownCapture={(event) => {
+        if (event.currentTarget.contains(event.target as Node) && event.isPrimary !== false) suppressClick.current = false;
+      }}
+      onClickCapture={(event) => {
+        if (!event.currentTarget.contains(event.target as Node) || !suppressClick.current || event.detail === 0) return;
+        event.preventDefault();
+        event.stopPropagation();
+        suppressClick.current = false;
+      }}>
       <Card
         className={cn(
-          "cursor-pointer border-border/70 p-3 transition-all hover:border-primary/40",
+          "min-w-0 border-border/70 p-3",
           isSelected && "border-primary bg-primary/10",
-          unreadCount > 0 && "border-primary/60",
-          isSwiped && "-translate-x-[8.25rem]",
-          "duration-300"
+          unreadCount > 0 && "border-primary/60"
         )}
-        onClick={() => {
-          triggerHaptic("selection");
-          onSelectConversation(conv.id);
-        }}
+        aria-busy={rowPending || undefined}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-2">
           <button
             type="button"
-            className="shrink-0 rounded-full"
-            onClick={(event) => {
-              event.stopPropagation();
-              if (conv.other_user?.id) navigate(`/users/${conv.other_user.id}`);
-            }}
-            aria-label={`Open ${conv.other_user?.display_name || "reader"} profile`}
+            className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+            disabled={Boolean(pending) || leavingProfile || !conv.other_user?.id}
+            onClick={() => void openProfile()}
+            aria-label={`Open ${name} profile`}
           >
-            <Avatar className="h-12 w-12 border border-border/70">
+            <Avatar className="h-[44px] w-[44px] border border-border/70">
               <AvatarImage src={conv.other_user?.avatar_url || undefined} />
               <AvatarFallback>{getInitials(conv.other_user?.display_name)}</AvatarFallback>
             </Avatar>
           </button>
 
-          <div className="min-w-0 flex-1">
-            <div className="mb-1 flex items-center gap-2">
-              <button
-                type="button"
-                className="min-w-0 truncate text-left font-sans font-semibold hover:text-primary"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  if (conv.other_user?.id) navigate(`/users/${conv.other_user.id}`);
-                }}
-              >
-                {conv.other_user?.display_name || "Unknown Reader"}
-              </button>
+          <button type="button" className="conversation-open min-h-[44px] min-w-0 flex-1 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+            data-conversation-id={conv.id}
+            aria-label={`Open conversation with ${name}`}
+            aria-describedby={`${actionsId}-preview ${actionsId}-summary`}
+            aria-current={isSelected ? "true" : undefined}
+            disabled={Boolean(pending)}
+            onClick={() => {
+              if (window.getSelection()?.toString()) return;
+              triggerHaptic("selection");
+              onSelectConversation(conv.id);
+            }}>
+            <span className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="min-w-0 break-words font-sans font-semibold [overflow-wrap:anywhere]">{name}</span>
               {conv.is_blocked && (
-                <Badge variant="outline" className="shrink-0 text-[10px]">
+                <span className={cn(badgeVariants({ variant: "outline" }), "shrink-0 text-xs")}>
                   blocked
-                </Badge>
+                </span>
               )}
               {conv.settings?.is_muted && (
-                <Badge variant="secondary" className="shrink-0 text-[10px]">
+                <span className={cn(badgeVariants({ variant: "secondary" }), "shrink-0 text-xs")}>
                   muted
-                </Badge>
+                </span>
               )}
-            </div>
-            <p
+            </span>
+            <span
+              id={`${actionsId}-preview`}
               className={cn(
-                "truncate font-sans text-sm",
+                "block line-clamp-2 break-words font-sans text-sm [overflow-wrap:anywhere]",
                 unreadCount > 0 ? "font-medium text-foreground" : "text-muted-foreground"
               )}
             >
               {previewMessage(conv, currentUserId)}
-            </p>
-          </div>
-
-          <div className="flex shrink-0 flex-col items-end gap-2">
+            </span>
+            <span id={`${actionsId}-summary`} className="mt-1 flex flex-wrap items-center gap-2">
             {conv.last_message && (
               <span className="font-sans text-xs text-muted-foreground">
                 {formatDate(conv.last_message.created_at)}
               </span>
             )}
             {unreadCount > 0 ? (
-              <Badge className="min-w-6 justify-center rounded-full px-2">
-                {unreadCount}
-              </Badge>
-            ) : (
-              <span className="h-6" />
-            )}
-          </div>
+              <span className={cn(badgeVariants(), "min-w-6 justify-center rounded-full px-2")}>
+                {unreadCount}<span className="sr-only"> unread messages</span>
+              </span>
+            ) : null}
+            </span>
+          </button>
+          <Button ref={actionsTrigger} type="button" size="icon" variant="ghost" className="h-[44px] w-[44px] shrink-0"
+            aria-label={`Actions for conversation with ${name}`} aria-expanded={isSwiped} aria-controls={actionsId}
+            disabled={Boolean(pending)}
+            onClick={() => isSwiped ? closeActions() : setSwipedId(conv.id)}>
+            <MoreHoriz className="h-5 w-5" aria-hidden="true" />
+          </Button>
         </div>
-      </Card>
-
       {isSwiped && (
-        <div className="absolute right-0 top-0 flex h-full items-center gap-2 pr-2">
+        <div id={actionsId} ref={actions} role="group" aria-label={`Conversation actions for ${name}`} className="mt-3 grid grid-cols-[repeat(auto-fit,minmax(min(100%,9rem),1fr))] gap-2 border-t border-border/70 pt-3">
           <Button
             type="button"
-            size="icon"
             variant="outline"
-            onClick={(event) => handleMarkRead(conv.id, event)}
-            aria-label="Mark as read"
+            className="h-auto min-h-[44px] min-w-0 whitespace-normal text-left"
+            disabled={Boolean(pending) || unreadCount === 0}
+            onClick={() => void onAction(conv, "read")}
           >
-            {conv.unread_count ? <Eye className="h-4 w-4" /> : <EyeClosed className="h-4 w-4" />}
+            <Eye className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="min-w-0 [overflow-wrap:anywhere]">{rowPending && pending.action === "read" ? "Marking as read…" : "Mark as read"}</span>
           </Button>
           <Button
             type="button"
-            size="icon"
             variant="outline"
-            onClick={(event) => handleMuteToggle(conv, event)}
-            aria-label={conv.settings?.is_muted ? "Unmute" : "Mute"}
+            className="h-auto min-h-[44px] min-w-0 whitespace-normal text-left"
+            disabled={Boolean(pending)}
+            onClick={() => void onAction(conv, "mute")}
           >
-            <span className="font-sans text-xs">{conv.settings?.is_muted ? "On" : "Off"}</span>
+            <span className="min-w-0 [overflow-wrap:anywhere]">{rowPending && pending.action === "mute" ? "Updating…" : conv.settings?.is_muted ? "Unmute" : "Mute"}</span>
           </Button>
           <Button
             type="button"
-            size="icon"
-            variant="destructive"
-            onClick={(event) => handleHide(conv.id, event)}
-            aria-label="Hide conversation"
+            variant="outline"
+            className="h-auto min-h-[44px] min-w-0 whitespace-normal text-left text-destructive"
+            disabled={Boolean(pending)}
+            onClick={() => void onAction(conv, "hide")}
           >
-            <Trash className="h-4 w-4" />
+            <Trash className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="min-w-0 [overflow-wrap:anywhere]">{rowPending && pending.action === "hide" ? "Hiding…" : "Hide conversation"}</span>
           </Button>
         </div>
       )}
+      {error && <p role="alert" className="mt-2 break-words font-sans text-sm text-destructive">{error}</p>}
+      </Card>
     </div>
   );
 };
 
 
-export const ConversationsList = ({
+type ConversationAction = "read" | "mute" | "hide";
+type PendingAction = { id: string; action: ConversationAction };
+type ConfirmedState = { hidden?: boolean; muted?: boolean; readMessageId?: string | null };
+
+const ConversationsListContent = ({
   conversations,
   selectedConversationId,
   onSelectConversation,
   currentUserId,
+  onBeforeLeave,
 }: ConversationsListProps) => {
-  const { triggerHaptic } = useHapticFeedback();
   const [swipedId, setSwipedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const search = useRef<HTMLInputElement>(null);
+  const mounted = useRef(true);
+  const focusSearch = useRef(false);
+  const pendingRef = useRef<PendingAction | null>(null);
+  const [pending, setPending] = useState<PendingAction | null>(null);
+  const [error, setError] = useState<{ id: string; message: string } | null>(null);
+  const [confirmed, setConfirmed] = useState<Record<string, ConfirmedState>>({});
+  const [status, setStatus] = useState("");
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useEffect(() => {
+    if (!pending && focusSearch.current) { focusSearch.current = false; search.current?.focus(); }
+  }, [pending]);
+  useAppBackGuard(Boolean(pending), () => !pendingRef.current);
+
+  // Retain acknowledged writes through a failed/stale refresh. Once the server
+  // catches up, release the projection so later messages/settings stay live.
+  useEffect(() => {
+    setConfirmed((current) => {
+      const next = { ...current };
+      for (const [id, value] of Object.entries(next)) {
+        const conversation = conversations.find((item) => item.id === id);
+        if (!conversation) { delete next[id]; continue; }
+        const remaining = { ...value };
+        if (value.muted === Boolean(conversation.settings?.is_muted)) delete remaining.muted;
+        if ("readMessageId" in value && (!conversation.unread_count || (conversation.last_message?.id ?? null) !== value.readMessageId)) delete remaining.readMessageId;
+        if (Object.keys(remaining).length) next[id] = remaining;
+        else delete next[id];
+      }
+      return next;
+    });
+  }, [conversations]);
+
+  const visibleConversations = useMemo(() => conversations.flatMap((conversation) => {
+    const value = confirmed[conversation.id];
+    if (value?.hidden) return [];
+    return [{ ...conversation,
+      unread_count: value && "readMessageId" in value && (conversation.last_message?.id ?? null) === value.readMessageId ? 0 : conversation.unread_count,
+      settings: value?.muted === undefined ? conversation.settings : {
+        conversation_id: conversation.id, user_id: currentUserId || "", is_pinned: false, is_archived: false,
+        ...conversation.settings, is_muted: value.muted,
+      },
+    }];
+  }), [conversations, confirmed, currentUserId]);
 
   const filteredConversations = useMemo(() => {
     const normalized = query.trim().toLowerCase();
-    if (!normalized) return conversations;
-    return conversations.filter((conv) =>
+    if (!normalized) return visibleConversations;
+    return visibleConversations.filter((conv) =>
       (conv.other_user?.display_name || "").toLowerCase().includes(normalized)
     );
-  }, [conversations, query]);
+  }, [visibleConversations, query]);
 
-  if (conversations.length === 0) {
-    return <EmptyMessages />;
-  }
-
-  const handleHide = async (conversationId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    triggerHaptic("medium");
-
+  const handleAction = async (conv: Conversation, action: ConversationAction) => {
+    if (pendingRef.current) return;
+    const task = { id: conv.id, action };
+    pendingRef.current = task;
+    setPending(task);
+    setError(null);
+    setStatus("");
     try {
-      await deleteConversation(conversationId);
-      hapticToast.success("Conversation hidden");
-      setSwipedId(null);
+      const muted = !conv.settings?.is_muted;
+      if (action === "hide") await deleteConversation(conv.id);
+      else if (action === "read") await markConversationRead(conv.id);
+      else await updateConversationSettings(conv.id, { is_muted: muted });
+      if (!mounted.current) return;
+      setConfirmed((current) => ({ ...current, [conv.id]: { ...current[conv.id],
+        ...(action === "hide" ? { hidden: true } : action === "mute" ? { muted } : { readMessageId: conv.last_message?.id ?? null }),
+      } }));
+      const message = action === "hide" ? "Conversation hidden" : action === "read" ? "Marked as read" : muted ? "Conversation muted" : "Conversation unmuted";
+      setStatus(message);
+      hapticToast.success(message);
+      if (action === "hide") { setSwipedId(null); focusSearch.current = true; }
       window.dispatchEvent(new Event("messages-changed"));
     } catch {
-      hapticToast.error("Failed to hide conversation");
-    }
-  };
-
-  const handleMarkRead = async (conversationId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    triggerHaptic("light");
-
-    try {
-      await markConversationRead(conversationId);
-      hapticToast.success("Marked as read");
-      setSwipedId(null);
-      window.dispatchEvent(new Event("messages-changed"));
-    } catch {
-      hapticToast.error("Failed to update");
-    }
-  };
-
-  const handleMuteToggle = async (conv: Conversation, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      await updateConversationSettings(conv.id, {
-        is_muted: !conv.settings?.is_muted,
-      });
-      hapticToast.success(conv.settings?.is_muted ? "Conversation unmuted" : "Conversation muted");
-      window.dispatchEvent(new Event("messages-changed"));
-    } catch {
-      hapticToast.error("Failed to update conversation");
+      if (mounted.current) setError({ id: conv.id, message: `${action === "hide" ? "Could not hide this conversation" : action === "read" ? "Could not mark this conversation as read" : "Could not change notifications"}. Try again.` });
+    } finally {
+      pendingRef.current = null;
+      if (mounted.current) setPending(null);
     }
   };
 
@@ -276,7 +386,9 @@ export const ConversationsList = ({
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
+          ref={search}
           aria-label="Search messages"
+          disabled={Boolean(pending)}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search messages"
@@ -284,7 +396,8 @@ export const ConversationsList = ({
         />
       </div>
 
-      {filteredConversations.length === 0 ? (
+      <p role="status" className="sr-only">{pending ? "Updating conversation…" : status}</p>
+      {visibleConversations.length === 0 ? <EmptyMessages /> : filteredConversations.length === 0 ? (
         <PremiumEmptyState
           asset="noResults"
           title="No matching conversations"
@@ -304,9 +417,10 @@ export const ConversationsList = ({
               currentUserId={currentUserId}
               onSelectConversation={onSelectConversation}
               setSwipedId={setSwipedId}
-              handleHide={handleHide}
-              handleMarkRead={handleMarkRead}
-              handleMuteToggle={handleMuteToggle}
+              onAction={handleAction}
+              pending={pending}
+              error={error?.id === conv.id ? error.message : undefined}
+              onBeforeLeave={onBeforeLeave}
             />
           ))}
         </div>
@@ -314,3 +428,5 @@ export const ConversationsList = ({
     </div>
   );
 };
+
+export const ConversationsList = (props: ConversationsListProps) => <ConversationsListContent key={props.currentUserId ?? "anonymous"} {...props} />;

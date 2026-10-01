@@ -1,0 +1,2058 @@
+{
+  "checkpoint": "CR05 Messages layout and gesture ownership",
+  "status": "Implemented and verified within source/unit/browser scope; stopped for user review; uncommitted",
+  "generated_utc": "2026-09-30T19:59:06.744469+00:00",
+  "baseline_commit": "ef5b2f9047cbd2ae6c30b756a15b9b021bd3be94",
+  "counting": "Latest per-case outcomes deduplicated from primary reports. Full matrix passed59 with4 declared CDP skips; final targeted30-case pass overlaps the full run after the parent clipping/copy/dependency and obsolete hook-outcome corrections. No complete63-case rerun on final source is claimed. Intermediate smoke and unit runs are historical, not additional passes.",
+  "distinct_accepted": {
+    "unit_tests": 138,
+    "unit_files": 7,
+    "browser_passed": 59,
+    "browser_skipped": 4
+  },
+  "primary_reports": [
+    {
+      "path": "test-results/cr05-unit-final-2-summary.json",
+      "bytes": 48891,
+      "sha256": "d9add7923516dddb07057b0a5babd4de94674839ba1d5d312cb29f800072e75e",
+      "kind": "unit",
+      "passed": 138,
+      "failed": 0,
+      "skipped": 0,
+      "files": 7
+    },
+    {
+      "path": "test-results/cr05-full-1-summary.json",
+      "bytes": 350327,
+      "sha256": "8245446ed6bd8d2472ade87e75be877896d817a4a872060e99041e6e9fd29b5d",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T19:48:38.362Z",
+        "duration": 217499.06100000002,
+        "expected": 59,
+        "skipped": 4,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr05-final-geometry-summary.json",
+      "bytes": 249830,
+      "sha256": "6e0ba2dc31cd6b5977df0e83e8b302facb89eaff781b2602fbda1513f1160266",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T19:53:31.879Z",
+        "duration": 135447.106,
+        "expected": 30,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  ],
+  "unit_cases": [
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles distinguishes initial load from refresh of a successfully empty feed",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles clears a previous reader's feed before the next reader's request resolves",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles retains an empty inbox and stable navigation callback during refresh",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles ignores a late response from the previous conversation",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles retains a loaded empty thread during realtime refresh",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles discards retained private messages when refreshed access is forbidden",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles does not duplicate a committed message when refresh precedes an idempotent retry",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles does not append another row when refresh wins the race with the original send response",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles suppresses obsolete send effects after account on late success",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles suppresses obsolete send effects after account on late failure",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles suppresses obsolete send effects after unmount on late success",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles suppresses obsolete send effects after unmount on late failure",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles suppresses obsolete reaction feedback after account on late success",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles suppresses obsolete reaction feedback after account on late failure",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles suppresses obsolete reaction feedback after unmount on late success",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles suppresses obsolete reaction feedback after unmount on late failure",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles suppresses obsolete delete feedback after account on late success",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles suppresses obsolete delete feedback after account on late failure",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles suppresses obsolete delete feedback after unmount on late success",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles suppresses obsolete delete feedback after unmount on late failure",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles preserves current-owner reaction success outcomes",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles preserves current-owner reaction failure outcomes",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles preserves current-owner delete success outcomes",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles preserves current-owner delete failure outcomes",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles does not revive an old deletion after leaving and reopening the same conversation",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles never reveals the previous profile after a new target returns a transient error",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles masks and refetches the same profile when the viewer changes",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles preserves only the same viewer's same profile on transient refresh failure",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles masks the same conversation and ignores the previous viewer's late refresh",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles does not paginate posts while the first page is refreshing",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles does not paginate activity while the first page is refreshing",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles retries the failed posts cursor without replacing retained pages",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/hooks/social-loading.test.tsx",
+      "title": "social request lifecycles retries the failed activity cursor without replacing retained pages",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/screens/Messages.tasks.test.tsx",
+      "title": "Messages parent task ownership keeps the same task, caret and draft through content fit and live text-scale changes",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/screens/Messages.tasks.test.tsx",
+      "title": "Messages parent task ownership keeps transient work on refused departure then changes once after accepted discard",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/screens/Messages.tasks.test.tsx",
+      "title": "Messages parent task ownership refuses both row switches and contextual Back while the thread is pending",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/screens/Messages.tasks.test.tsx",
+      "title": "Messages parent task ownership returns from the single thread to its surviving inbox control",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/screens/Messages.tasks.test.tsx",
+      "title": "Messages parent task ownership shares a StrictMode entry request and does not let its late result replace an explicit selection",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/screens/Messages.tasks.test.tsx",
+      "title": "Messages parent task ownership offers a real entry retry without recreating an existing conversation ID",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/screens/Messages.tasks.test.tsx",
+      "title": "Messages parent task ownership withdraws the old task during auth loading and ignores its unresolved discard",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/screens/social-loading.test.tsx",
+      "title": "social loading contracts keeps feed chrome and two inert initial-viewport post cards",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/screens/social-loading.test.tsx",
+      "title": "social loading contracts keeps posts and a loaded empty feed during refresh",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/screens/social-loading.test.tsx",
+      "title": "social loading contracts does not turn a failed initial feed request into an empty success",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/screens/social-loading.test.tsx",
+      "title": "social loading contracts uses an activity toolbar and three bounded rows, then keeps loaded emptiness",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/screens/social-loading.test.tsx",
+      "title": "social loading contracts preserves the desktop inbox shell while five rows load",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/screens/social-loading.test.tsx",
+      "title": "social loading contracts does not unmount the composer during conversation or message refresh",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/screens/social-loading.test.tsx",
+      "title": "social loading contracts resets the selected private conversation when the signed-in reader changes",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation list accessible actions and outcomes opens the conversation with keyboard and keeps profile navigation independent",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation list accessible actions and outcomes provides all row actions from a visible keyboard control",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation list accessible actions and outcomes preserves a guarded thread on Keep and navigates to the profile only after Leave",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation list accessible actions and outcomes deduplicates profile departure and respects a parent's pending refusal",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation list accessible actions and outcomes does not follow a stale approved profile departure after account",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation list accessible actions and outcomes does not follow a stale approved profile departure after row removal",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation list accessible actions and outcomes serializes pending writes, rejects pending departure, and keeps errors for explicit retry",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation list accessible actions and outcomes keeps confirmed mute state through stale refresh then permits a genuine later update",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation list accessible actions and outcomes marks the current unread message once without masking a new unread message",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation list accessible actions and outcomes keeps a failed hide visible, retries once, and focuses search after confirmed removal",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation list accessible actions and outcomes does not publish obsolete outcomes after account abandonment",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation list accessible actions and outcomes does not publish obsolete outcomes after unmount abandonment",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation list accessible actions and outcomes retains the real input and row across refresh and filters by reader name",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration reveals with a local left swipe, closes with right swipe, and does not also open the thread",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration keeps short and vertical contacts native and restores independent tap/keyboard action",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration never claims the system edge at 2",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration never claims the system edge at 24",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration never claims the system edge at 1022",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration never claims the system edge at 1000",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration leaves native control Open Ada Reader profile independent",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration leaves native control Actions for conversation with Ada Reader independent",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration cancels an active contact on scroll",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration cancels an active contact on blur",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration cancels an active contact on pagehide",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration cancels an active contact on contextmenu",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration cancels for second contact",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration cancels for replacement contact",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration cancels for touchcancel",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration cancels for hidden page",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration protects selected text before start",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration protects selected text during contact",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration yields to a registered overlay opened before start",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration yields to a registered overlay opened before release",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "title": "Conversation row contact arbitration attaches observers only to eligible active contacts and removes them after unmount",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "the live direct-message composer keeps a persistent name and help, ignores IME/Shift+Enter, and serializes pending sends",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "the live direct-message composer retains text, files and reply after rejection and retries the same uploaded request once",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "the live direct-message composer handles upload rejection without sending, keeps files and newer text, then allows retry",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "the live direct-message composer validates content and media inline and retains an editable offline draft",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "the live direct-message composer does not clear another conversation or send after its upload owner is replaced",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "the live direct-message composer announces a thrown send failure without stealing focus from another action",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "the live direct-message composer scopes saved drafts and late outcomes to the reader and never imports an unowned legacy draft",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "the live direct-message composer does not start a message write when an upload finishes after unmount",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "the live direct-message composer preserves attachments through GIF sending, prevents pending dismissal and retries rejection",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "direct-message media dialog keeps failed media dismissible and retries loading on the next opening",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "direct-message media dialog has a name and description and restores its opener after close",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "direct-message media dialog has a name and description and restores its opener after Escape",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "direct-message media dialog has a name and description and restores its opener after app Back",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership keeps a visible named action and native text context menu, then returns Reply focus to the composer",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership replies once from an interior right swipe and restores its translated bubble",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership cancels a reply after vertical and leaves the next independent swipe usable",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership cancels a reply after left and leaves the next independent swipe usable",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership cancels a reply after edge and leaves the next independent swipe usable",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership cancels a reply after second finger and leaves the next independent swipe usable",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership cancels a reply after replacement contact and leaves the next independent swipe usable",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership cancels a reply after scroll and leaves the next independent swipe usable",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership cancels a reply after cancel and leaves the next independent swipe usable",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership cancels a reply after context menu and leaves the next independent swipe usable",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership cancels a reply after selection and leaves the next independent swipe usable",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership cancels a reply after blur and leaves the next independent swipe usable",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership cancels a reply after overlay and leaves the next independent swipe usable",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership rejects selected text, attachment controls, open overlays and a pending composer as gesture origins",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership retains the history reading position on refresh and offers an explicit latest-message action",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership reports transient draft and pending ownership, and emits one initiation haptic per send",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership keeps block confirmation pending through Back, preserves failure, and confirms only after retry",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership confirms own-message deletion, keeps failure retryable, then focuses the surviving composer",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership serializes reaction taps and retains truthful inline rejection",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread local actions and gesture ownership uses the parent departure guard for profile navigation and discards a replaced owner's approval",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread mutation exclusion refuses conflicting writes during a send while leaving its next text draft editable",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread mutation exclusion refuses Send during a reaction and ignores an obsolete block failure after owner replacement",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread responsive action focus keeps the Block dialog through participant-header reflow from true and focuses its current alternative",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "title": "MessageThread responsive action focus keeps the Block dialog through participant-header reflow from false and focuses its current alternative",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/messaging.read-receipt.test.ts",
+      "title": "read receipt fallback outcomes keeps the confirmed primary result without a second write",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/messaging.read-receipt.test.ts",
+      "title": "read receipt fallback outcomes propagates the actual legacy outcome null",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/messaging.read-receipt.test.ts",
+      "title": "read receipt fallback outcomes propagates the actual legacy outcome {\"message\":\"Read receipt unavailable\",\"code\":\"42501\"}",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/messaging.read-receipt.test.ts",
+      "title": "read receipt fallback outcomes preserves primary failure when no account can own the fallback",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata marks a confirmed profile block as forbidden",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata preserves a profile read's HTTP 401 metadata",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata preserves a profile read's HTTP 403 metadata",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata preserves a profile read's HTTP 404 metadata",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata does not fall back to legacy thread reads after HTTP 401",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata does not fall back to legacy thread reads after HTTP 403",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata does not fall back to legacy inbox reads after HTTP 401",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata does not fall back to legacy inbox reads after HTTP 403",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata never bypasses an Edge rejection with direct conversation creation",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata never bypasses an Edge rejection with a direct message insert",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata marks a legacy 'missing conversation' without losing compatibility fallback",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata marks a legacy 'nonparticipant' without losing compatibility fallback",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata marks a legacy 'RLS denial' without losing compatibility fallback",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata marks a legacy thread read after sign-out as unauthorized",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata preserves denied legacy profile response metadata",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    },
+    {
+      "file": "apps/client/src/services/api/social-read-access.test.ts",
+      "title": "social read access error metadata preserves denied legacy messages response metadata",
+      "status": "passed",
+      "report": "test-results/cr05-unit-final-2-summary.json"
+    }
+  ],
+  "browser_cases": [
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "composer survives the compact split-pane breakpoint with its actual node and draft",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "route entry retries a rejected reader lookup and a late result cannot replace a manual conversation choice",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "actual inbox and thread read errors recover without replacing an already loaded draft",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "offline writing stays available while sending and media are disabled; online reentry restores the written draft",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "tablet composer clears the shell and viewport at200percent with timer",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "GIF task retains search node and query across pane reflow and Back returns to its opener",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "pending upload and send retain ownership through resize and app Back; failure retries one request",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "reading older messages keeps scroll through refresh and incoming content until Latest messages",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "conversation actions are keyboard reachable and retain pending and rejected outcomes across reflow",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "Back keeps or explicitly discards transient reply and files, restores row focus and keeps text per conversation",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "split-pane profile departure respects transient drafts and pending send ownership",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "message deletion keeps its confirmation pending, retries rejection and returns to a surviving composer",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "compact conversation options expose a real block confirmation and failed writes stay retryable",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "visual viewport contraction keeps the same composer above the simulated keyboard and timer",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "touch row swipe reveals its visible actions and canceled contacts preserve navigation",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "touch reply owns only its interior horizontal contact and never leaves the conversation",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "chromium",
+      "title": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "composer survives the compact split-pane breakpoint with its actual node and draft",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "route entry retries a rejected reader lookup and a late result cannot replace a manual conversation choice",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "actual inbox and thread read errors recover without replacing an already loaded draft",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "offline writing stays available while sending and media are disabled; online reentry restores the written draft",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "tablet composer clears the shell and viewport at200percent with timer",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "GIF task retains search node and query across pane reflow and Back returns to its opener",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "pending upload and send retain ownership through resize and app Back; failure retries one request",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "reading older messages keeps scroll through refresh and incoming content until Latest messages",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "conversation actions are keyboard reachable and retain pending and rejected outcomes across reflow",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "Back keeps or explicitly discards transient reply and files, restores row focus and keeps text per conversation",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "split-pane profile departure respects transient drafts and pending send ownership",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "message deletion keeps its confirmation pending, retries rejection and returns to a surviving composer",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "compact conversation options expose a real block confirmation and failed writes stay retryable",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "visual viewport contraction keeps the same composer above the simulated keyboard and timer",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "touch row swipe reveals its visible actions and canceled contacts preserve navigation",
+      "status": "skipped",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "touch reply owns only its interior horizontal contact and never leaves the conversation",
+      "status": "skipped",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "webkit",
+      "title": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "composer survives the compact split-pane breakpoint with its actual node and draft",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "route entry retries a rejected reader lookup and a late result cannot replace a manual conversation choice",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "actual inbox and thread read errors recover without replacing an already loaded draft",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "offline writing stays available while sending and media are disabled; online reentry restores the written draft",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "tablet composer clears the shell and viewport at200percent with timer",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "GIF task retains search node and query across pane reflow and Back returns to its opener",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "pending upload and send retain ownership through resize and app Back; failure retries one request",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "reading older messages keeps scroll through refresh and incoming content until Latest messages",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "conversation actions are keyboard reachable and retain pending and rejected outcomes across reflow",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "Back keeps or explicitly discards transient reply and files, restores row focus and keeps text per conversation",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "split-pane profile departure respects transient drafts and pending send ownership",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "message deletion keeps its confirmation pending, retries rejection and returns to a surviving composer",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "compact conversation options expose a real block confirmation and failed writes stay retryable",
+      "status": "passed",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "visual viewport contraction keeps the same composer above the simulated keyboard and timer",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "touch row swipe reveals its visible actions and canceled contacts preserve navigation",
+      "status": "skipped",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "touch reply owns only its interior horizontal contact and never leaves the conversation",
+      "status": "skipped",
+      "report": "test-results/cr05-full-1-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "Visual compact320: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "Visual phone200: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "Visual tablet200: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "Visual short390: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    },
+    {
+      "file": "messages-layout.spec.ts",
+      "project": "firefox",
+      "title": "Visual expanded1280: inbox, thread and GIF task keep content and actions reachable",
+      "status": "passed",
+      "report": "test-results/cr05-final-geometry-summary.json"
+    }
+  ],
+  "historical_reports": [
+    {
+      "path": "test-results/cr05-baseline-1-summary.json",
+      "bytes": 12860,
+      "sha256": "aaa86fa6b577a6b6f4caadc31b4d692b7d771e8b6339c6c1501237bc4a4de464",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T19:28:13.630Z",
+        "duration": 14897.853,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr05-behavior-1-summary.json",
+      "bytes": 41038,
+      "sha256": "f1b958d8d7446c9d6ebdbe9d254b7c4ac745a282c6e417a7966aaa831b97d2fd",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T19:37:02.151Z",
+        "duration": 27256.127,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 4,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr05-behavior-2-summary.json",
+      "bytes": 17478,
+      "sha256": "246dc1f855ea8e81da8b473767731d1548d973c461fa04ca3d3278619cd40199",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T19:38:12.865Z",
+        "duration": 13708.901,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr05-conversations-unit-1.json",
+      "bytes": 10463,
+      "sha256": "13f88fc8d0e3991463af7632dc415254d4cf1340b15b261858ce9c0bf78c6b45",
+      "kind": "unit",
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "files": 1
+    },
+    {
+      "path": "test-results/cr05-conversations-unit-2.json",
+      "bytes": 10468,
+      "sha256": "fef0ad883ed75dc0c1ae7a6392b956b4aaa8417f4454fab012561720a1e18a1b",
+      "kind": "unit",
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0,
+      "files": 1
+    },
+    {
+      "path": "test-results/cr05-conversations-unit-3.json",
+      "bytes": 11973,
+      "sha256": "0fba00212c742dc481a1f6880ad9dc441ca82dd6bc90d88da2fe15e6c5bdd585",
+      "kind": "unit",
+      "passed": 34,
+      "failed": 0,
+      "skipped": 0,
+      "files": 1
+    },
+    {
+      "path": "test-results/cr05-entry-smoke-summary.json",
+      "bytes": 21311,
+      "sha256": "ad66ba8f462fa0dbffe0195e529d67fed53b38a977739da6a58023774d6ed013",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T19:47:26.951Z",
+        "duration": 16369.535000000002,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr05-messages-summary.json",
+      "bytes": 37456,
+      "sha256": "3a28ffe349d06efcb347b70fc2d68f6e35e8e6ebef6357d575c5f348f398a958",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T19:42:08.252Z",
+        "duration": 220.899,
+        "expected": 0,
+        "skipped": 54,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr05-parent-unit-1-summary.json",
+      "bytes": 22538,
+      "sha256": "269f1204eecb139f8d3a3aff7cf595174adf4845e841a140e1c7e95b76c9027c",
+      "kind": "unit",
+      "passed": 33,
+      "failed": 1,
+      "skipped": 0,
+      "files": 4
+    },
+    {
+      "path": "test-results/cr05-parent-unit-2-summary.json",
+      "bytes": 12350,
+      "sha256": "918f143a32aa41b78a9b83eb4473381ad41c77c19cfb8dd3fa1008ba67fe1e1a",
+      "kind": "unit",
+      "passed": 34,
+      "failed": 0,
+      "skipped": 0,
+      "files": 4
+    },
+    {
+      "path": "test-results/cr05-smoke-1-summary.json",
+      "bytes": 55962,
+      "sha256": "04ad9fbc7bfe594fe93d8d327fd0eb4a44f1d393ed9e2d7144d84139c4b0afb9",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T19:34:18.911Z",
+        "duration": 25030.652,
+        "expected": 7,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr05-smoke-2-summary.json",
+      "bytes": 65367,
+      "sha256": "62b74f08e15804af129a865f721ce58c03e66d697e4abeceecddc94657a2ced9",
+      "kind": "browser",
+      "stats": {
+        "startTime": "2026-09-30T19:40:05.250Z",
+        "duration": 32224.929000000004,
+        "expected": 7,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      }
+    },
+    {
+      "path": "test-results/cr05-social-lifecycle-unit-1.json",
+      "bytes": 11166,
+      "sha256": "103ec40adbac12d465892cf303fccc962b72d90caebef2c98ee1809de0897a8a",
+      "kind": "unit",
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0,
+      "files": 1
+    },
+    {
+      "path": "test-results/cr05-thread-unit-1-summary.json",
+      "bytes": 5286,
+      "sha256": "2ba4368211e013835c50167cf8731487202a1f706092ce51293851ddeee15466",
+      "kind": "unit",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0,
+      "files": 1
+    },
+    {
+      "path": "test-results/cr05-thread-unit-2-summary.json",
+      "bytes": 15166,
+      "sha256": "8a7892943f0e7f9abb7aea97500298ef69821107f71da8fc51185e2690492cf4",
+      "kind": "unit",
+      "passed": 32,
+      "failed": 1,
+      "skipped": 0,
+      "files": 1
+    },
+    {
+      "path": "test-results/cr05-thread-unit-3-summary.json",
+      "bytes": 13264,
+      "sha256": "c078e496e16cb0f62f4b9648dc7a0a8d9d0f3682dcc3528ef46b9f064574fc32",
+      "kind": "unit",
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0,
+      "files": 1
+    },
+    {
+      "path": "test-results/cr05-thread-unit-4-summary.json",
+      "bytes": 14015,
+      "sha256": "6cdc2a85b28728679b2be09a7dd07c9b8627f5b85dc4c817c69842123b4306cd",
+      "kind": "unit",
+      "passed": 35,
+      "failed": 0,
+      "skipped": 0,
+      "files": 1
+    },
+    {
+      "path": "test-results/cr05-thread-unit-5-summary.json",
+      "bytes": 14852,
+      "sha256": "789c86b807bedfae7efe335a79258f9e1cd40f16282fd859c01b85f30d02a31f",
+      "kind": "unit",
+      "passed": 37,
+      "failed": 0,
+      "skipped": 0,
+      "files": 1
+    },
+    {
+      "path": "test-results/cr05-unit-final-summary.json",
+      "bytes": 44823,
+      "sha256": "8f1d27cba4d523d757ae97e8e95d38eb68fb3ced2d761c30c74e70cdc87c5f8b",
+      "kind": "unit",
+      "passed": 125,
+      "failed": 0,
+      "skipped": 0,
+      "files": 7
+    }
+  ],
+  "changed_source_and_fixture_hashes": [
+    {
+      "path": "apps/client/src/components/messaging/ConversationsList.test.tsx",
+      "bytes": 19122,
+      "sha256": "bed3263967df6e0cc18f81a70e41610d67e1a9b1db4872c0bf046e4dffb59eb2"
+    },
+    {
+      "path": "apps/client/src/components/messaging/ConversationsList.tsx",
+      "bytes": 19083,
+      "sha256": "57eed4b938b08b014d6d83159f9376d8bce6fbba7f7ebe6374a203239736cb7a"
+    },
+    {
+      "path": "apps/client/src/components/messaging/MessageThread.test.tsx",
+      "bytes": 36086,
+      "sha256": "395103594deb45a186e4b425865a1162a3b9a21bcf86b602efb3c850cbf8645c"
+    },
+    {
+      "path": "apps/client/src/components/messaging/MessageThread.tsx",
+      "bytes": 55027,
+      "sha256": "8f78bbd7969f3d9f7df6402f9c1984d1ef13eb95a1249b38e714dabbba9dbab2"
+    },
+    {
+      "path": "apps/client/src/hooks/social-loading.test.tsx",
+      "bytes": 24403,
+      "sha256": "26618212a2589756973df96bc2919504d1cb6498b64c6f0a9d13be57e0fa52d8"
+    },
+    {
+      "path": "apps/client/src/hooks/useMessages.ts",
+      "bytes": 7922,
+      "sha256": "9b87419132db37fe66d14a33ff1b5adb6605b36fdb8f661ebdbfade84ec1fd98"
+    },
+    {
+      "path": "apps/client/src/screens/Messages.tasks.test.tsx",
+      "bytes": 9103,
+      "sha256": "c61ff954d0e9dfef384d6b06bea3d191823d3520ba0b9a9278a0df416c687ff8"
+    },
+    {
+      "path": "apps/client/src/screens/Messages.tsx",
+      "bytes": 13958,
+      "sha256": "f2809da02118dd94d7cdb8969930c0f2a92848770c0bb959debaba3d58d8dfbb"
+    },
+    {
+      "path": "apps/client/src/screens/social-loading.test.tsx",
+      "bytes": 8374,
+      "sha256": "6c21467efe3964b46daeb7e490ed64768daf172b0b5b301b9d4bd9caf922c8e3"
+    },
+    {
+      "path": "apps/client/src/services/api/messaging.read-receipt.test.ts",
+      "bytes": 2535,
+      "sha256": "8e4132f4ba19c6542eafb851eba6bd40685db878fe60ce0bed5079aeb1cc03b1"
+    },
+    {
+      "path": "apps/client/src/services/api/messaging.ts",
+      "bytes": 20809,
+      "sha256": "75f3104189f0c9d70386de194ca957544e9b763fece51f4d6e41088e4d94ea96"
+    },
+    {
+      "path": "tests/e2e/messages-layout.spec.ts",
+      "bytes": 34817,
+      "sha256": "08afbc3827c4f467b4bfaef5ca38557ee9bdab1022e146045a7979e78801e0f9"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/README.md",
+      "bytes": 7769,
+      "sha256": "e8af7fc6c030f09c2dbb763e3c5720f839535c8bfea838ec027bc2ea3e11f48b"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/api.ts",
+      "bytes": 6098,
+      "sha256": "541f0e80d1cb3f7937cd0ca71a4ad9e3a040530618d248bb75adb530864735f5"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/data.ts",
+      "bytes": 473,
+      "sha256": "9a6cec8008de512cbba49209d754dd870bd941c738d642e8c01de105c3fbca06"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/index.html",
+      "bytes": 491,
+      "sha256": "059509452ba50579da019620a88acd449653c3b1aa15788968d630a627a887ee"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/main.tsx",
+      "bytes": 2553,
+      "sha256": "1b95704c5e228e4bcecba28e60d9bdef5d6564425248b2d8aed8189ebb701750"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/reading-media.svg",
+      "bytes": 448,
+      "sha256": "335eb482d942dd4093241dbabf3471d2fe2e8dab8a9cc9c2a9501665eea90bdd"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/state.ts",
+      "bytes": 1960,
+      "sha256": "f3e40b8420e00d79c759e165417565dcaec8d5463599ff162559e0c51e652600"
+    },
+    {
+      "path": "tests/fixtures/messages-layout/vite.config.ts",
+      "bytes": 2199,
+      "sha256": "a7c60034babdfc0ca5eb1eb24d7d29fab20d725f06cde185b522daab583428a5"
+    },
+    {
+      "path": "tests/playwright/messages-layout.config.ts",
+      "bytes": 1052,
+      "sha256": "f78adaa5e6570a7b88b044e8194258f0c644f6997d6fb644d824e0bb074f2485"
+    },
+    {
+      "path": "tests/playwright/tsconfig.messages-layout.json",
+      "bytes": 326,
+      "sha256": "7ac9df38e21b380bbdbff64f138c2754f8c9dc6656752cad0fb3f5a23d8477b0"
+    }
+  ],
+  "retained_artifacts": [
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/artifact-manifest.json",
+      "bytes": 29077,
+      "sha256": "3030d0d46ba64f905f771c431fc6dbdfd262795af1e49a9cb5d5f90aec6056e7"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-compact320-gif.png",
+      "bytes": 34268,
+      "sha256": "0e19a0ea5d57760b7a4b3894a51168dd15394fd239b82991979512727daec160"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-compact320-inbox.png",
+      "bytes": 31474,
+      "sha256": "a9adccde9b6132dbfa2b176b567f28d36e769470d38b704cb26ea4aa76120ba4"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-compact320-row-actions.png",
+      "bytes": 39165,
+      "sha256": "20da441dfbc9f397fa02596c00b1b35e60c9298fb1ff31f12e336f81196891ad"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-compact320-thread.png",
+      "bytes": 39880,
+      "sha256": "948e5edc9d63c0c6231d1acf179afa9f96824e97295ea0e7943a91b43b1bd346"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-expanded1280-gif.png",
+      "bytes": 97673,
+      "sha256": "a4e4ddd6914d057e5b6d885935343070f456a0bb124d8b3c87b8fa53a93324b8"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-expanded1280-inbox.png",
+      "bytes": 140211,
+      "sha256": "0c2b53caf95be13f73c899b6ca37e8f7a1c79e4a247266c3a4aa0636936eace2"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-expanded1280-row-actions.png",
+      "bytes": 148139,
+      "sha256": "f5622bf18ad5c0ee50bba36597c27c4eaf3284146fce569abd8014bfd19f57ce"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-expanded1280-thread.png",
+      "bytes": 146247,
+      "sha256": "1755ba90db6c2235f2268cc2c650febcecc00e1ff622f42472ccd52d1e03adb1"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-phone200-gif.png",
+      "bytes": 40017,
+      "sha256": "84efc3584dd025a5cf6738a0499342a7763187bbb1ac9eb090f74f327c067477"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-phone200-inbox.png",
+      "bytes": 37797,
+      "sha256": "f7c2e4c8d2be1e2b3072520b076325d829272d0caf17e63d93cc040cad81cb83"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-phone200-reply-file.png",
+      "bytes": 36529,
+      "sha256": "f9044407ec158659e216b435011eb211412ddd78e7733caed1638d70db419bb0"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-phone200-row-actions.png",
+      "bytes": 37146,
+      "sha256": "a5f1fe23cd2b7841bd77af1f186b5d65be068a71f9551b2d2bb4e67eb75bb417"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-phone200-thread.png",
+      "bytes": 40743,
+      "sha256": "9a15ec82b869a8e56ac54e83b2c1c1af8acba940cad67e4765066df04dcc9f55"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-short390-gif.png",
+      "bytes": 26258,
+      "sha256": "c83ff746ef32ea10836247050ce4c52522762f1873b27ec560a528916c7756db"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-short390-inbox.png",
+      "bytes": 33494,
+      "sha256": "75c608b12ad520ffe098146c0ba4d9e6ee781bba3d46e3b9619a9b80e7925b69"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-short390-reply-file.png",
+      "bytes": 24993,
+      "sha256": "9051c21ebad18ba50f22e6a0e004d81e345ea4983c1490d69980e7d5ac04c6cb"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-short390-row-actions.png",
+      "bytes": 28569,
+      "sha256": "8c76e28efa8b462065288f352f283f021733865800d5ea469d209d88580b9bb9"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-short390-thread.png",
+      "bytes": 24821,
+      "sha256": "1fa2f956ae430d4b243445f4a579f59bcd1ad633d07ee889637be65ef58acadc"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-tablet200-gif.png",
+      "bytes": 67069,
+      "sha256": "b6439ed6ad8f33a73b397f45263bacb3863d2213857c9af1054685e6eb4e3d97"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-tablet200-inbox.png",
+      "bytes": 74890,
+      "sha256": "9bdcdfd54c12d06db39b077a68b976ee624d9c65a5ba45671ccdc6d19e1ac7b6"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-tablet200-row-actions.png",
+      "bytes": 78739,
+      "sha256": "915155ad9ce6c598f5a4c29388a6b36ea623a3cfbd9f44c55e1753fd685914d0"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/chromium-tablet200-thread.png",
+      "bytes": 59155,
+      "sha256": "8e6da8f85c700834906b26a21bf41d010587e63ad637a33a5b3b2b7c70d7a66e"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/diagnostic-clipped-row-action.png",
+      "bytes": 32031,
+      "sha256": "e094ca781cfc5b4601eb80e753e34f9769e82c40e1ebed0facbdba207c25e5c6"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/diagnostic-history-composer-overlap.png",
+      "bytes": 37995,
+      "sha256": "ebced0eae5f5409ea766f36733b7050d67668202bfb5ce9d35b13c1b1064ded9"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/diagnostic-remounted-composer.png",
+      "bytes": 57003,
+      "sha256": "07d6a39323af66ddd92d09ee393d47920873281c455cd9e98633b44b0a737323"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/diagnostic-tablet-fixed-inbox.png",
+      "bytes": 50108,
+      "sha256": "5eff2dfaf34724397742b621091663e70caa2c0ccdf3bddc9e5ed7fd38e14357"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/firefox-phone200-row-actions.png",
+      "bytes": 35716,
+      "sha256": "7e17d3f10592ddce16ee793ea901c6f08c994616dbf65c744a1eea58a3e917b4"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/firefox-phone200-thread.png",
+      "bytes": 37745,
+      "sha256": "9a072e407e76acaa1d0793f59e7186418c6080baa50b22489d61c37b4d65f745"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/README.md",
+      "bytes": 4920,
+      "sha256": "462a9cedd90a1c4fc39c03f3475dd30d9a0cada829b8eb47d5b168187fa0c543"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/visual-observations.json",
+      "bytes": 155164,
+      "sha256": "4ca30ca86a3bce72d007cdd6c883ab7a790134569e50ef78bd04fd81b1eac720"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/webkit-phone200-row-actions.png",
+      "bytes": 31877,
+      "sha256": "f9243a73f740a66bd2dfa4db4866bfaa608c558e81cd64facbcddf8900825fbc"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr05-messages-layout/webkit-phone200-thread.png",
+      "bytes": 36435,
+      "sha256": "81b67034f52abc25c2e797b0cdee1d04f92c2782b5dcce148a8ca613dc6fcc02"
+    }
+  ],
+  "local_log_hashes": [
+    {
+      "path": "test-results/cr05-baseline-1-console.log",
+      "bytes": 11940,
+      "sha256": "e0ef3c2b757e46a4121aff166fc71646762797618749e7f4b140fd654d2ccc56"
+    },
+    {
+      "path": "test-results/cr05-behavior-1-console.log",
+      "bytes": 26276,
+      "sha256": "2efb16dd7e0ab6dffb4b8a7cb4ce1f0ba58a93a59348281e81539c1ea3cbfe66"
+    },
+    {
+      "path": "test-results/cr05-behavior-2-console.log",
+      "bytes": 5764,
+      "sha256": "c97d75ee8fe30f7112d46b54e37f86bc6dc5dc83ba8e36935c298f222b8275ea"
+    },
+    {
+      "path": "test-results/cr05-browser-eslint-1.log",
+      "bytes": 1308,
+      "sha256": "2041e96ae8c2c54fa1312100332f87e4ae2edcd3dcc5edb9280a8b5085600c10"
+    },
+    {
+      "path": "test-results/cr05-browser-eslint-3.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr05-browser-eslint-final-2.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr05-browser-eslint-final.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr05-browser-types-1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr05-browser-types-2.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr05-browser-types-3.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr05-browser-types-final-2.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr05-browser-types-final.log",
+      "bytes": 844,
+      "sha256": "d0f1ec08d828d70b2954747cf5495294814c70919d98d191fb6e716d1fc72e39"
+    },
+    {
+      "path": "test-results/cr05-build-final.log",
+      "bytes": 28032,
+      "sha256": "b2fdc97104648bb4d9bd12584f35162f6ec6245f5af0fa80f008e631df6663ca"
+    },
+    {
+      "path": "test-results/cr05-census-final.log",
+      "bytes": 228,
+      "sha256": "d6aae16dcbb33ccd4697d8f6cb3eed263e2a452509a8abb71939a63a0928a877"
+    },
+    {
+      "path": "test-results/cr05-census.log",
+      "bytes": 228,
+      "sha256": "d6aae16dcbb33ccd4697d8f6cb3eed263e2a452509a8abb71939a63a0928a877"
+    },
+    {
+      "path": "test-results/cr05-conversations-types-1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr05-conversations-unit-1.log",
+      "bytes": 4108,
+      "sha256": "0d972f184395f768b4a392b9b66a123892af04e6ca5ed53e76436d792362bbbe"
+    },
+    {
+      "path": "test-results/cr05-conversations-unit-2.log",
+      "bytes": 4108,
+      "sha256": "bcfe01aecc68739c31b77f3425b016639b1be2bcd1136a0df0f7dbed2537eb97"
+    },
+    {
+      "path": "test-results/cr05-conversations-unit-3.log",
+      "bytes": 4108,
+      "sha256": "ee6ea0495885356c97b76d45284ab5335086e7981c5d28bb34dae97a44564c60"
+    },
+    {
+      "path": "test-results/cr05-entry-smoke-console.log",
+      "bytes": 5472,
+      "sha256": "75bce94d98160aa804b8db4fa3f3c7cfdbde70486f0878c7891e19e83df62138"
+    },
+    {
+      "path": "test-results/cr05-eslint-final-2.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr05-eslint-final-3.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr05-eslint-final.log",
+      "bytes": 1330,
+      "sha256": "920447b0315bcd2aef0033abf0795f83dfffc0bd3e3635cf175e7621332a5664"
+    },
+    {
+      "path": "test-results/cr05-final-geometry-console.log",
+      "bytes": 14300,
+      "sha256": "184f6e260b4af594b2f03a8bc01ce877984acae118cc0709a0d6081520f15039"
+    },
+    {
+      "path": "test-results/cr05-fixture-types-final.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "test-results/cr05-full-1-console.log",
+      "bytes": 24946,
+      "sha256": "09779e0ab052a5c0e37cde1f096bf72cf95b1f7d511ff34a893d10101599a925"
+    },
+    {
+      "path": "test-results/cr05-graph-cluster.log",
+      "bytes": 472,
+      "sha256": "2874122873eb828853afe4d30ac08559c38892643afbc5915ae3e6e5097e656b"
+    },
+    {
+      "path": "test-results/cr05-graph-html-export.log",
+      "bytes": 436,
+      "sha256": "4f1fd4615f06ff894deacf4267d46a7aaf1190d750679dea0c20a630ced96221"
+    },
+    {
+      "path": "test-results/cr05-graph-query-final.log",
+      "bytes": 9432,
+      "sha256": "8675976ba4d293f69c3f4668c652495f6629114d420ecccf3ec350dd149a3cbf"
+    },
+    {
+      "path": "test-results/cr05-graph-update-final.log",
+      "bytes": 4370,
+      "sha256": "32608ac4fcf18d5aec4f04cc7de66dd3885c1c89325d7b7b6653fc083bb86b0f"
+    },
+    {
+      "path": "test-results/cr05-graph-update.log",
+      "bytes": 4248,
+      "sha256": "86a22cebfb9bb27f0b51efed5568bd426e7f4c4cc06377cfe3c1f1bd98fc5b7a"
+    },
+    {
+      "path": "test-results/cr05-obsidian-export.log",
+      "bytes": 1608,
+      "sha256": "add5cf396035acd15e027260e061a3f285fd828dca940054f56d41b03821b81b"
+    },
+    {
+      "path": "test-results/cr05-parent-unit-1-console.log",
+      "bytes": 28544,
+      "sha256": "839ddfcdb5c64aa1a9fbc3d07014a195a36a1ae4be5db230b88fe9ef00d9c1e0"
+    },
+    {
+      "path": "test-results/cr05-parent-unit-2-console.log",
+      "bytes": 6152,
+      "sha256": "b876643d912065c8068733985b37fb8d6eab7a7269aebd568f522057f0773bd8"
+    },
+    {
+      "path": "test-results/cr05-smoke-1-console.log",
+      "bytes": 6238,
+      "sha256": "7a748869fe8895b5892aa752fc41b0423e84e6500761b2d1a6c1eff1e0e91441"
+    },
+    {
+      "path": "test-results/cr05-smoke-2-console.log",
+      "bytes": 12130,
+      "sha256": "2693634980ffcfe7fa89362605fe558f73798cddb8013a7fe3ab588a27622e50"
+    },
+    {
+      "path": "test-results/cr05-social-lifecycle-unit-1.log",
+      "bytes": 2590,
+      "sha256": "227184d750252177d1cc172c8a9dad36d14dd8c89b2d4482e4c74d84d100bf8d"
+    },
+    {
+      "path": "test-results/cr05-types-1.log",
+      "bytes": 230,
+      "sha256": "bb631d2709a19aa869af67234a0c6f41ec667f518d693e5ce3fd5815b5e020bf"
+    },
+    {
+      "path": "test-results/cr05-types-final-2.log",
+      "bytes": 230,
+      "sha256": "bb631d2709a19aa869af67234a0c6f41ec667f518d693e5ce3fd5815b5e020bf"
+    },
+    {
+      "path": "test-results/cr05-types-final.log",
+      "bytes": 230,
+      "sha256": "bb631d2709a19aa869af67234a0c6f41ec667f518d693e5ce3fd5815b5e020bf"
+    },
+    {
+      "path": "test-results/cr05-unit-final-2-console.log",
+      "bytes": 8444,
+      "sha256": "5c27283b07d9de2e24c90ed857c10c98a7491296c3ffb718bbbdfceae18038d3"
+    },
+    {
+      "path": "test-results/cr05-unit-final-console.log",
+      "bytes": 8438,
+      "sha256": "dc7845edcc89ae306b4d8dea1d8adbeccbf51cfb53e3e717edded7ddaa0fe948"
+    }
+  ],
+  "graph": {
+    "nodes": 10104,
+    "edges": 22580,
+    "metadata": {},
+    "built_at_commit": "ef5b2f9047cbd2ae6c30b756a15b9b021bd3be94",
+    "method": "Local AST update, clustering without model labels, Obsidian and HTML export; current checkpoint documents export conflicts and warnings."
+  },
+  "census": {
+    "routes": 39,
+    "modules": 511,
+    "presentation": 310,
+    "screens": 33,
+    "components": 273,
+    "presentationWithoutSourcePath": 47
+  },
+  "limits": [
+    "Real components/hooks and shell with explicitly controlled auth/API/network/device boundaries; no live database write.",
+    "CDP touch and synthetic visual viewport/runtime callbacks do not establish physical native keyboard/gesture/AT behavior.",
+    "Main F15 URL/notification/composition, shared large-text chrome density and whole theme/contrast/device/performance acceptance remain open.",
+    "Generated Graphify notes guide navigation; source and checkpoint evidence remain authoritative."
+  ]
+}

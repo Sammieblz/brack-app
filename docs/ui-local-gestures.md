@@ -28,6 +28,8 @@ Removing an intercepting recognizer does **not** provide native iOS swipe-to-bac
 
 ## Evidence and regression entrypoints
 
+CR05 adds the actual Messages consumers to this policy. ConversationsList uses local left/right swipes to reveal/close its visible named action group; MessageThread uses an interior right swipe for Reply with an equivalent visible keyboard action. The whole-thread swipe-to-leave handler is retired. Native text selection/context menus, media controls, vertical scrolling and system edges keep ownership. See the [Messages contract](ui-messages.md) and [checkpoint25](frontend-renewal/25-messages-layout-gestures.md) for source, cancellation and actual-screen evidence. The earlier RS04 `SwipeableSheet` candidate has no current source definition/import; OnboardingReadingPractice has no swipe recognizer. Neither is claimed as a newly repaired gesture consumer.
+
 Source: `components/MobileHeader.tsx`, `components/SwipeableBookCard.tsx`, `components/PullToRefresh.tsx`, `utils/touchGesture.ts`, and their focused tests. The F05 environment fixture no longer imports deleted edge hooks; it still verifies that synthetic browser-edge events remain unprevented and do not change its current route. The F07 navigation fixture owns integrated Back/overlay behavior. The shell-scroll fixture retains geometry coverage.
 
 Focused command:

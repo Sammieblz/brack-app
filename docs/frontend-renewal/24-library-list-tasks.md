@@ -1,6 +1,6 @@
 # CR04 - Library selection and list outcomes
 
-Status: **Implemented and verified within the source/unit/browser scope below. Stop for user review; uncommitted.** The user authorized continuation after CR03. During startup the user committed CR03 as `74ed7d7`; the worktree was then clean. That is this checkpoint's source baseline. No commit requested for CR04.
+Status: **Committed in `ef5b2f9`; historical source/unit/browser evidence below.** The user authorized [CR05 continuation](25-messages-layout-gestures.md); the older review stop is superseded. The user authorized continuation after CR03. During startup the user committed CR03 as `74ed7d7`; the worktree was then clean. That is this checkpoint's source baseline. No commit requested for CR04.
 
 ## Complete scope
 

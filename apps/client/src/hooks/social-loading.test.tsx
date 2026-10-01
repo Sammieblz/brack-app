@@ -11,6 +11,8 @@ const mocks = vi.hoisted(() => ({
   fetchConversations: vi.fn(),
   fetchConversationDetail: vi.fn(),
   sendMessage: vi.fn(),
+  toggleMessageReaction: vi.fn(),
+  deleteMessage: vi.fn(),
   markConversationRead: vi.fn(),
   subscribeToMessages: vi.fn(() => vi.fn()),
   subscribeToConversationChanges: vi.fn(() => vi.fn()),
@@ -29,8 +31,8 @@ vi.mock("@/services/api", () => ({
   markConversationRead: mocks.markConversationRead,
   subscribeToMessages: mocks.subscribeToMessages,
   sendMessage: mocks.sendMessage,
-  toggleMessageReaction: vi.fn(),
-  deleteMessage: vi.fn(),
+  toggleMessageReaction: mocks.toggleMessageReaction,
+  deleteMessage: mocks.deleteMessage,
 }));
 
 import { usePosts } from "./usePosts";
@@ -217,6 +219,94 @@ describe("social request lifecycles", () => {
       dispatch.mockRestore();
       log.mockRestore();
     }
+  });
+
+  it.each([
+    ["reaction", "account", "success"], ["reaction", "account", "failure"],
+    ["reaction", "unmount", "success"], ["reaction", "unmount", "failure"],
+    ["delete", "account", "success"], ["delete", "account", "failure"],
+    ["delete", "unmount", "success"], ["delete", "unmount", "failure"],
+  ])("suppresses obsolete %s feedback after %s on late %s", async (action, change, outcome) => {
+    mocks.fetchConversationDetail.mockResolvedValueOnce(conversation("thread-a", [{ id: "target" }]));
+    const { result, rerender, unmount } = renderHook(() => useMessages("thread-a"));
+    await waitFor(() => expect(result.current.hasLoaded).toBe(true));
+    const pending = deferred<{ message: { id: string; current_user_reaction: string } }>();
+    const api = action === "reaction" ? mocks.toggleMessageReaction : mocks.deleteMessage;
+    api.mockReturnValueOnce(pending.promise);
+    let mutation!: Promise<boolean>;
+    act(() => { mutation = action === "reaction" ? result.current.toggleReaction("target", "heart") : result.current.deleteMessage("target"); });
+    if (change === "account") {
+      mocks.fetchConversationDetail.mockResolvedValueOnce(conversation("thread-a", [{ id: "new-owner-message" }]));
+      mocks.user = { id: "reader-2" };
+      rerender();
+      await waitFor(() => expect(result.current.hasLoaded).toBe(true));
+    } else unmount();
+    const dispatch = vi.spyOn(window, "dispatchEvent");
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      await act(async () => {
+        if (outcome === "success") pending.resolve({ message: { id: "target", current_user_reaction: "heart" } });
+        else pending.reject(new Error("Old owner's action failed"));
+        expect(await mutation).toBe(outcome === "success");
+      });
+      expect(toast.error).not.toHaveBeenCalled();
+      expect(log).not.toHaveBeenCalled();
+      expect(dispatch.mock.calls.some(([event]) => event.type === "messages-changed")).toBe(false);
+      if (change === "account") expect(result.current.messages.map(message => message.id)).toEqual(["new-owner-message"]);
+    } finally { dispatch.mockRestore(); log.mockRestore(); }
+  });
+
+  it.each([
+    ["reaction", "success"], ["reaction", "failure"], ["delete", "success"], ["delete", "failure"],
+  ])("preserves current-owner %s %s outcomes", async (action, outcome) => {
+    mocks.fetchConversationDetail.mockResolvedValueOnce(conversation("thread-a", [{ id: "target" }]));
+    const { result } = renderHook(() => useMessages("thread-a"));
+    await waitFor(() => expect(result.current.hasLoaded).toBe(true));
+    const api = action === "reaction" ? mocks.toggleMessageReaction : mocks.deleteMessage;
+    if (outcome === "success") api.mockResolvedValueOnce({ message: { id: "target", current_user_reaction: "heart" } });
+    else api.mockRejectedValueOnce(new Error("Current action failed"));
+    const dispatch = vi.spyOn(window, "dispatchEvent");
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      await act(async () => {
+        const resultValue = action === "reaction" ? await result.current.toggleReaction("target", "heart") : await result.current.deleteMessage("target");
+        expect(resultValue).toBe(outcome === "success");
+      });
+      if (outcome === "failure") {
+        expect(toast.error).toHaveBeenCalledWith(action === "reaction" ? "Failed to update reaction" : "Failed to delete message");
+        expect(result.current.messages).toEqual([{ id: "target" }]);
+        expect(dispatch.mock.calls.some(([event]) => event.type === "messages-changed")).toBe(false);
+      } else {
+        expect(toast.error).not.toHaveBeenCalled();
+        if (action === "reaction") expect(result.current.messages[0].current_user_reaction).toBe("heart");
+        else {
+          expect(result.current.messages[0].deleted_at).toEqual(expect.any(String));
+          expect(dispatch.mock.calls.some(([event]) => event.type === "messages-changed")).toBe(true);
+        }
+      }
+    } finally { dispatch.mockRestore(); log.mockRestore(); }
+  });
+
+  it("does not revive an old deletion after leaving and reopening the same conversation", async () => {
+    mocks.fetchConversationDetail.mockResolvedValueOnce(conversation("thread-a", [{ id: "target" }]));
+    const { result, rerender } = renderHook(({ id }) => useMessages(id), { initialProps: { id: "thread-a" } });
+    await waitFor(() => expect(result.current.hasLoaded).toBe(true));
+    const pending = deferred<void>();
+    mocks.deleteMessage.mockReturnValueOnce(pending.promise);
+    let mutation!: Promise<boolean>;
+    act(() => { mutation = result.current.deleteMessage("target"); });
+    mocks.fetchConversationDetail.mockResolvedValueOnce(conversation("thread-b"));
+    rerender({ id: "thread-b" });
+    await waitFor(() => expect(result.current.hasLoaded).toBe(true));
+    mocks.fetchConversationDetail.mockResolvedValueOnce(conversation("thread-a", [{ id: "target" }]));
+    rerender({ id: "thread-a" });
+    await waitFor(() => expect(result.current.hasLoaded).toBe(true));
+    const dispatch = vi.spyOn(window, "dispatchEvent");
+    try {
+      await act(async () => { pending.resolve(); expect(await mutation).toBe(true); });
+      expect(result.current.messages).toEqual([{ id: "target" }]);
+      expect(dispatch.mock.calls.some(([event]) => event.type === "messages-changed")).toBe(false);
+    } finally { dispatch.mockRestore(); }
   });
 
   it("never reveals the previous profile after a new target returns a transient error", async () => {
