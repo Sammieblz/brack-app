@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { ChatBubble, Heart, ShareIos, Star, Trash } from "iconoir-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -268,7 +268,12 @@ const ReviewDetailContent = () => {
       )}
 
       <main className="app-page">
-        {error && <LoadingError className="mb-4" message="Review could not load. Check your connection or return to Reviews." onRetry={() => void loadReview()} />}
+        {error && (
+          <div className="mb-4 space-y-3">
+            <LoadingError message="Review could not load. Check your connection or return to Reviews." onRetry={() => void loadReview()} />
+            {!review && <Button asChild variant="outline"><Link to="/reviews">Back to Reviews</Link></Button>}
+          </div>
+        )}
         <LoadingRegion loading={loading && !review} refreshing={loading && Boolean(review)} label="Loading review">
         {loading && !review ? (
           <ReviewDetailSkeleton />
@@ -313,18 +318,12 @@ const ReviewDetailContent = () => {
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                      <Button
-                        onClick={() =>
-                          navigate(
-                            review.viewer_book_id
-                              ? `/book/${review.viewer_book_id}`
-                              : `/add-book?query=${encodeURIComponent(
-                                  [book.title, book.author].filter(Boolean).join(" ")
-                                )}`
-                          )
-                        }
-                      >
+                      <Button asChild>
+                        <Link to={review.viewer_book_id
+                          ? `/book/${review.viewer_book_id}`
+                          : `/add-book?query=${encodeURIComponent([book.title, book.author].filter(Boolean).join(" "))}`}>
                         {review.viewer_book_id ? "Open my copy" : "Add or find this book"}
+                        </Link>
                       </Button>
                       <Button variant="outline" onClick={handleShare}>
                         <ShareIos className="mr-2 h-4 w-4" />
@@ -338,25 +337,24 @@ const ReviewDetailContent = () => {
               <Card>
                 <CardContent className="space-y-5 p-4 sm:p-5">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <Avatar
-                        className="h-11 w-11 cursor-pointer"
-                        onClick={() => navigate(`/users/${review.user_id}`)}
-                      >
+                    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                      <Link to={`/users/${review.user_id}`} aria-label={`Open ${reviewer?.display_name || "Anonymous reader"} profile`}
+                        className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                      <Avatar className="h-[36px] w-[36px]">
                         <AvatarImage
                           src={reviewer?.avatar_url || undefined}
                           alt={reviewer?.display_name || "Reader"}
                         />
                         <AvatarFallback>{getInitials(reviewer?.display_name)}</AvatarFallback>
                       </Avatar>
-                      <div className="min-w-0">
-                        <button
-                          type="button"
-                          onClick={() => navigate(`/users/${review.user_id}`)}
-                          className="block max-w-full truncate text-left font-sans font-semibold hover:underline"
+                      </Link>
+                      <div className="min-w-0 flex-[1_1_8rem]">
+                        <Link
+                          to={`/users/${review.user_id}`}
+                          className="flex min-h-[44px] max-w-full items-center rounded-sm text-left font-sans font-semibold [overflow-wrap:anywhere] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           {reviewer?.display_name || "Anonymous reader"}
-                        </button>
+                        </Link>
                         <div className="mt-1 flex flex-wrap items-center gap-2">
                           <StarRating rating={review.rating} />
                           <span className="font-sans text-xs text-muted-foreground">
@@ -517,7 +515,7 @@ const ReviewDetailContent = () => {
             asset="emptyReviews"
             title="Review unavailable"
             description="This review may have been deleted, made private, or hidden by privacy settings."
-            action={<Button onClick={() => navigate("/reviews")}>Back to Reviews</Button>}
+            action={<Button asChild><Link to="/reviews">Back to Reviews</Link></Button>}
           />
         )}
         </LoadingRegion>

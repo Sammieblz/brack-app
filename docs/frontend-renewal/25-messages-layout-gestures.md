@@ -1,6 +1,6 @@
 # CR05 - Messages layout and gesture ownership
 
-Status: **Implemented and verified within this bounded source/unit/browser scope; stopped for user review.** Baseline `ef5b2f9`, clean worktree at startup; CR04 is committed. CR05 remains uncommitted; nothing staged. The final verification and next bounded action are below.
+Status: **Committed in `a610871`; historical implementation and evidence below.** The user authorized [CR06a continuation](26-social-destinations.md); the older review stop below is superseded.
 
 ## Scope and owners
 

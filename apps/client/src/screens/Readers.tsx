@@ -1,5 +1,5 @@
 import { type ComponentType, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useSwipeable } from "react-swipeable";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -94,7 +94,6 @@ export default function Readers() {
   const [readerSection, setReaderSection] = useState<ReaderSection>("suggestions");
   const { results, loading, refreshing, error, refetch, hasLoaded } = useUserSearch(searchQuery);
   const { clubs, loading: clubsLoading, refreshing: clubsRefreshing, error: clubsError, hasLoaded: clubsLoaded, fetchClubs, createClub, joinClub, leaveClub } = useBookClubs();
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [createOpen, setCreateOpen] = useState(false);
   const createTriggerRef = useRef<HTMLButtonElement>(null);
@@ -254,7 +253,6 @@ export default function Readers() {
                     <ReaderCard
                       key={user.id}
                       user={user}
-                      onOpen={() => navigate(`/users/${user.id}`)}
                     />
                   ))}
                 </div>
@@ -328,29 +326,32 @@ const getInitials = (name: string | null) => {
     .slice(0, 2);
 };
 
-const ReaderCard = ({ user, onOpen }: { user: UserSearchResult; onOpen: () => void }) => {
+const ReaderCard = ({ user }: { user: UserSearchResult }) => {
   const visibleBadges = user.badges.slice(0, 4);
 
   return (
-    <Card className="cursor-pointer overflow-hidden transition-colors hover:border-primary/45" onClick={onOpen}>
+    <Card className="overflow-hidden transition-colors hover:border-primary/45">
       <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          <div className="relative shrink-0">
-            <Avatar className="h-12 w-12 md:h-14 md:w-14">
+        <div className="flex flex-wrap items-start gap-3">
+          <Link to={`/users/${user.id}`} aria-label={`Open ${user.display_name || "Anonymous Reader"} profile`}
+            className="relative shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <Avatar className="h-[48px] w-[48px] md:h-[56px] md:w-[56px]">
               <AvatarImage src={user.avatar_url || ""} />
               <AvatarFallback>{getInitials(user.display_name)}</AvatarFallback>
             </Avatar>
             {user.is_online && (
               <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2 border-card bg-emerald-500" />
             )}
-          </div>
+          </Link>
 
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-[1_1_10rem]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="truncate font-sans text-base font-semibold">
-                    {user.display_name || "Anonymous Reader"}
+                  <h3 className="min-w-0 font-sans text-base font-semibold">
+                    <Link to={`/users/${user.id}`} className="flex min-h-[44px] items-center rounded-sm [overflow-wrap:anywhere] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                      {user.display_name || "Anonymous Reader"}
+                    </Link>
                   </h3>
                   <StatusBadge status={user.status_badge} />
                 </div>
@@ -360,7 +361,7 @@ const ReaderCard = ({ user, onOpen }: { user: UserSearchResult; onOpen: () => vo
                   </p>
                 )}
               </div>
-              <div className="shrink-0" onClick={(event) => event.stopPropagation()}>
+              <div className="shrink-0">
                 <FollowButton userId={user.id} size="sm" />
               </div>
             </div>

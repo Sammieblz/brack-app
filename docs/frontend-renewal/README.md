@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Current checkpoint: **[CR05 - Messages layout and gesture ownership](25-messages-layout-gestures.md), implemented and verified within scope; stopped for user review.** CR04 is committed in `ef5b2f9`; CR05 remains unstaged/uncommitted. Actual Messages task retention, measured panes, visible actions, gesture conflicts and guarded outcomes now have138 passing units and59 distinct browser passes (four declared CDP skips). Final screenshots and Graphify/Obsidian are refreshed. Next is a bounded CR06 route-destination child after user continuation; CR06-CR10 and remaining main-ticket visual/native/AT/performance acceptance stay open and overlap.
+Current checkpoint: **[CR06a - Social destination semantics](26-social-destinations.md), implemented and browser-verified within scope; stopped for review, uncommitted.** CR05 is committed in `a610871`. Actual Readers/Post/Review/Club destinations and independent actions have 67 distinct browser passes/two documented Windows WebKit skips,32 regression passes, passing types/lint/build and retained visual evidence. Next: CR06b recovery/name branches (RS05/06/07). Other CR06 consumers and CR07–CR10/main-ticket acceptance remain open. No commit made.
 
 ## Outcome
 
@@ -48,7 +48,8 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [22 — CR02 responsive creation](22-responsive-composers.md) | Historical committed CR02: real Feed/BookClubs/Readers creation tasks, retention and guarded outcomes |
 | [23 - CR03 Settings continuity](23-settings-continuity.md) | Historical committed CR03: category navigation, stable editors and protected Settings tasks |
 | [24 - CR04 Library/list tasks](24-library-list-tasks.md) | Historical committed CR04: stable tasks, truthful outcomes and large-text/focus corrections |
-| [25 - CR05 Messages layout and gestures](25-messages-layout-gestures.md) | Active Messages delivery: measured panes, retained task ownership, visible actions and guarded local gestures |
+| [25 - CR05 Messages layout and gestures](25-messages-layout-gestures.md) | Historical committed CR05: measured panes, retained task ownership, visible actions and guarded local gestures |
+| [26 - CR06a Social destinations](26-social-destinations.md) | Current review stop: actual social links/actions, readable large-text card intros, verified callers and explicit browser limitations |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability

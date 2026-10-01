@@ -1,5 +1,5 @@
 {
-  "baseline": "ef5b2f9047cbd2ae6c30b756a15b9b021bd3be94",
+  "baseline": "a61087173b436a4bf0c4e517a5dc31024564d57f",
   "method": "TypeScript AST static local import/literal dynamic-import reachability, JSX Route declarations, git commit file lists. No runtime, branches, feature-gate, tree-shaking, fixture alias/mock or per-export analysis. Declaration-level type-only imports are excluded; inline named type imports can still contribute edges. Import references and changed files do not establish review, runtime execution or passing tests. Unreachable means no source import path from main.tsx; verify before deletion. routeImportReachability follows route JSX owners, not their App-owned global ancestors: an empty route list does not exclude global rendering (e.g. Toaster, JournalPromptHandler, JourneyLevelUpObserver).",
   "counts": {
     "routes": 39,
@@ -1961,12 +1961,13 @@
         "CalendarCheck",
         "Card",
         "CardContent",
+        "ClubDestination",
+        "Link",
         "Lock",
         "MapPin",
         "NavArrowRight",
         "Textarea",
         "UserBadgeCheck",
-        "button",
         "div",
         "h3",
         "img",
@@ -2597,7 +2598,8 @@
       ],
       "directTestImporters": [
         "apps/client/src/screens/navigation-recovery.test.tsx",
-        "tests/fixtures/frontend-semantics/main.tsx"
+        "tests/fixtures/frontend-semantics/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -6705,7 +6707,8 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
-        "tests/fixtures/settings-continuity/main.tsx"
+        "tests/fixtures/settings-continuity/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [
         "F09"
@@ -7541,11 +7544,11 @@
         "Card",
         "CommentThread",
         "HeartLike",
+        "Link",
         "PostAttachment",
         "PostMediaGrid",
         "RichTextRenderer",
         "article",
-        "button",
         "div",
         "footer",
         "h2",
@@ -7605,12 +7608,12 @@
         "Eye",
         "EyeClosed",
         "Heart",
+        "Link",
         "MoreHoriz",
         "RichTextRenderer",
         "ShareIos",
         "Star",
         "Trash",
-        "button",
         "div",
         "h3",
         "h4",
@@ -10880,7 +10883,8 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
-        "tests/fixtures/settings-continuity/main.tsx"
+        "tests/fixtures/settings-continuity/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -11189,7 +11193,8 @@
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
-        "tests/fixtures/shell-scroll/main.tsx"
+        "tests/fixtures/shell-scroll/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -11720,7 +11725,8 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
-        "tests/fixtures/settings-continuity/main.tsx"
+        "tests/fixtures/settings-continuity/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [
         "F07"
@@ -11781,7 +11787,8 @@
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
-        "tests/fixtures/shell-scroll/main.tsx"
+        "tests/fixtures/shell-scroll/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -12420,6 +12427,7 @@
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx",
         "tests/fixtures/ui-environment/main.tsx"
       ],
       "changedIn": [
@@ -14388,6 +14396,7 @@
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx",
         "tests/fixtures/ui-environment/main.tsx"
       ],
       "changedIn": [
@@ -15851,7 +15860,8 @@
         "span"
       ],
       "directTestImporters": [
-        "tests/fixtures/live-composers/main.tsx"
+        "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [
         "F02/F03",
@@ -15919,7 +15929,8 @@
         "section"
       ],
       "directTestImporters": [
-        "tests/fixtures/responsive-composers/main.tsx"
+        "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [
         "F02/F03"
@@ -16025,7 +16036,8 @@
         "span"
       ],
       "directTestImporters": [
-        "tests/fixtures/library-tasks/main.tsx"
+        "tests/fixtures/library-tasks/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -16401,7 +16413,8 @@
       "directTestImporters": [
         "apps/client/src/screens/social-loading.test.tsx",
         "tests/fixtures/live-composers/main.tsx",
-        "tests/fixtures/responsive-composers/main.tsx"
+        "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -16840,7 +16853,8 @@
         "p"
       ],
       "directTestImporters": [
-        "tests/fixtures/live-composers/main.tsx"
+        "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -17075,6 +17089,7 @@
         "FollowButton",
         "Icon",
         "Input",
+        "Link",
         "LoadingError",
         "LoadingRegion",
         "MobileHeader",
@@ -17100,7 +17115,8 @@
         "span"
       ],
       "directTestImporters": [
-        "tests/fixtures/responsive-composers/main.tsx"
+        "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [
         "F02/F03"
@@ -17259,6 +17275,7 @@
         "ChatBubble",
         "DetailFact",
         "Heart",
+        "Link",
         "LoadingError",
         "LoadingRegion",
         "MobileHeader",
@@ -17277,7 +17294,6 @@
         "Textarea",
         "Trash",
         "aside",
-        "button",
         "div",
         "h1",
         "h2",
@@ -17288,7 +17304,8 @@
         "span"
       ],
       "directTestImporters": [
-        "apps/client/src/components/ReaderSubmissionLoading.test.tsx"
+        "apps/client/src/components/ReaderSubmissionLoading.test.tsx",
+        "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [
         "F02/F03"
@@ -17336,6 +17353,7 @@
         "DialogHeader",
         "DialogTitle",
         "Input",
+        "Link",
         "LoadingError",
         "LoadingRegion",
         "MobileHeader",
@@ -17366,7 +17384,9 @@
         "section",
         "span"
       ],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "tests/fixtures/social-destinations/main.tsx"
+      ],
       "changedIn": [
         "F02/F03"
       ],
@@ -17665,7 +17685,8 @@
       "directTestImporters": [
         "apps/client/src/screens/navigation-recovery.test.tsx",
         "tests/fixtures/frontend-semantics/main.tsx",
-        "tests/fixtures/live-composers/main.tsx"
+        "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [
         "F02/F03",
@@ -18167,7 +18188,8 @@
       "directTestImporters": [
         "apps/client/src/services/api/uploadMediaNormalization.test.ts",
         "tests/fixtures/live-composers/api.ts",
-        "tests/fixtures/responsive-composers/api.ts"
+        "tests/fixtures/responsive-composers/api.ts",
+        "tests/fixtures/social-destinations/api.ts"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -18997,7 +19019,9 @@
         "apps/client/src/services/api/index.ts"
       ],
       "jsx": [],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "tests/fixtures/social-destinations/api.ts"
+      ],
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
@@ -19167,7 +19191,9 @@
         "apps/client/src/services/api/index.ts"
       ],
       "jsx": [],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "tests/fixtures/social-destinations/api.ts"
+      ],
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
@@ -19229,7 +19255,8 @@
       "directTestImporters": [
         "apps/client/src/services/api/uploadMediaNormalization.test.ts",
         "tests/fixtures/live-composers/api.ts",
-        "tests/fixtures/responsive-composers/api.ts"
+        "tests/fixtures/responsive-composers/api.ts",
+        "tests/fixtures/social-destinations/api.ts"
       ],
       "changedIn": [],
       "sourceReachable": true,

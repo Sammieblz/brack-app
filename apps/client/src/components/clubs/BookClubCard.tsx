@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import {
   CalendarCheck,
   Lock,
@@ -27,6 +27,14 @@ interface BookClubCardProps {
   onDeclineInvite?: (inviteId: string) => Promise<void> | void;
 }
 
+// Preview-only clubs expose information and membership actions, never a fake
+// disabled link. Public/member destinations retain native browser behavior.
+const ClubDestination = ({ to, children, className, label }: {
+  to?: string; children: ReactNode; className: string; label?: string;
+}) => to ? <Link to={to} aria-label={label}
+  className={cn(className, "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring")}>{children}</Link>
+  : <div className={className}>{children}</div>;
+
 export const BookClubCard = ({
   club,
   variant = "default",
@@ -36,13 +44,13 @@ export const BookClubCard = ({
   onAcceptInvite,
   onDeclineInvite,
 }: BookClubCardProps) => {
-  const navigate = useNavigate();
   const [requestOpen, setRequestOpen] = useState(false);
   const [requestMessage, setRequestMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
   const isMember = Boolean(club.user_role);
   const canOpen = !club.preview_only || isMember;
+  const destination = canOpen ? `/clubs/${club.id}` : undefined;
   const region = [club.city, club.country].filter(Boolean).join(", ");
   const lastActive = club.last_activity_at
     ? formatDistanceToNow(new Date(club.last_activity_at), { addSuffix: true })
@@ -66,40 +74,37 @@ export const BookClubCard = ({
       )}
     >
       {(club.banner_image_url || club.cover_image_url) && (
-        <button
-          type="button"
-          onClick={() => canOpen && navigate(`/clubs/${club.id}`)}
+        <ClubDestination
+          to={destination}
           className={cn("block h-24 w-full overflow-hidden bg-primary/10", canOpen && "cursor-pointer")}
-          disabled={!canOpen}
-          aria-label={canOpen ? `Open ${club.name}` : `${club.name} preview`}
+          label={`Open ${club.name}`}
         >
           <img
             src={club.banner_image_url || club.cover_image_url || ""}
             alt=""
             className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
           />
-        </button>
+        </ClubDestination>
       )}
       <CardContent className="flex h-full flex-col gap-4 p-4">
-        <div className="flex items-start gap-4">
-          <button
-            type="button"
-            onClick={() => canOpen && navigate(`/clubs/${club.id}`)}
+        <div className="flex flex-wrap items-start gap-4">
+          <ClubDestination
+            to={destination}
             className={cn(
-              "-mt-1 flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted/45 text-muted-foreground shadow-sm",
+              "-mt-1 flex h-[64px] w-[64px] shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted/45 text-muted-foreground shadow-sm",
               (club.banner_image_url || club.cover_image_url) && "-mt-10 ring-4 ring-card",
               canOpen && "transition group-hover:scale-[1.02]",
             )}
-            aria-label={canOpen ? `Open ${club.name}` : `${club.name} preview`}
+            label={`Open ${club.name}`}
           >
             {club.avatar_image_url || club.cover_image_url ? (
               <img src={club.avatar_image_url || club.cover_image_url || ""} alt="" className="h-full w-full object-cover" />
             ) : (
               <AppIcon icon={APP_ICONS.readers.clubs} variant="empty" size="lg" />
             )}
-          </button>
+          </ClubDestination>
 
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-[1_1_10rem]">
             <div className="mb-2 flex flex-wrap items-center gap-2">
               {club.is_private && (
                 <Badge variant="outline" className="gap-1">
@@ -117,16 +122,11 @@ export const BookClubCard = ({
               {club.join_status === "invited" && <Badge className="gap-1">Invite</Badge>}
             </div>
 
-            <button
-              type="button"
-              onClick={() => canOpen && navigate(`/clubs/${club.id}`)}
-              className="block text-left"
-              disabled={!canOpen}
-            >
-              <h3 className="line-clamp-2 font-display text-lg font-semibold leading-tight text-foreground transition group-hover:text-primary">
+            <h3 className="font-display text-lg font-semibold leading-tight text-foreground transition group-hover:text-primary">
+              <ClubDestination to={destination} className="flex min-h-[44px] items-center rounded-sm text-left [overflow-wrap:anywhere]">
                 {club.name}
-              </h3>
-            </button>
+              </ClubDestination>
+            </h3>
             <p className="mt-1 line-clamp-2 font-sans text-sm text-muted-foreground">
               {club.description || "A reading group looking for its next chapter."}
             </p>
@@ -229,13 +229,15 @@ export const BookClubCard = ({
         <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-border/60 pt-3">
           {canOpen && (
             <Button
+              asChild
               variant={isMember ? "default" : "outline"}
               size="sm"
               className="gap-2"
-              onClick={() => navigate(`/clubs/${club.id}`)}
             >
+              <Link to={destination!} aria-label={`View ${club.name}`}>
               View Club
               <NavArrowRight className="h-4 w-4" />
+              </Link>
             </Button>
           )}
           {!isMember && club.join_status === "invited" && (

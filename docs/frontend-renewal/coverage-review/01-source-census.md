@@ -1,6 +1,6 @@
 # Frontend source census
 
-Baseline: `ef5b2f9047cbd2ae6c30b756a15b9b021bd3be94`. Regenerate with `node docs/frontend-renewal/coverage-review/generate-inventory.mjs`.
+Baseline: `a61087173b436a4bf0c4e517a5dc31024564d57f`. Regenerate with `node docs/frontend-renewal/coverage-review/generate-inventory.mjs`.
 
 TypeScript AST static local import/literal dynamic-import reachability, JSX Route declarations, git commit file lists. No runtime, branches, feature-gate, tree-shaking, fixture alias/mock or per-export analysis. Declaration-level type-only imports are excluded; inline named type imports can still contribute edges. Import references and changed files do not establish review, runtime execution or passing tests. Unreachable means no source import path from main.tsx; verify before deletion. routeImportReachability follows route JSX owners, not their App-owned global ancestors: an empty route list does not exclude global rendering (e.g. Toaster, JournalPromptHandler, JourneyLevelUpObserver).
 

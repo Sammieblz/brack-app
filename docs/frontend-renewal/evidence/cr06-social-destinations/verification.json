@@ -1,0 +1,2138 @@
+{
+  "baseline": "a610871",
+  "scope": "CR06a RC-03; actual social destination consumers, not whole F02/F14 acceptance",
+  "counts": {
+    "passed": 67,
+    "skipped": 2
+  },
+  "combination": "cr06-final retains unchanged cases; cr06-keyboard-final supersedes the combined activation test and traversal cases with independently reported checks. No new clean69-case run is claimed.",
+  "reports": [
+    {
+      "run": "cr06-baseline-1",
+      "path": "test-results/cr06-baseline-1-summary.json",
+      "sha256": "f1ee29eac6c12e77f05112d312c60658e6b9cbb049b589839ac00ab150d68815",
+      "stats": {
+        "startTime": "2026-10-01T15:17:42.490Z",
+        "duration": 24713.756,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr06-baseline-2",
+      "path": "test-results/cr06-baseline-2-summary.json",
+      "sha256": "a6ea8747ac12e662bfd2ec14652f1ee480b4e133263521f89e6e3de1b18b5604",
+      "stats": {
+        "startTime": "2026-10-01T15:19:17.661Z",
+        "duration": 21041.982,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr06-baseline-3",
+      "path": "test-results/cr06-baseline-3-summary.json",
+      "sha256": "1e1a691ca9141db70f241e67ae9ed0af35b3d32af495f3005f074f4ef29a2f4c",
+      "stats": {
+        "startTime": "2026-10-01T15:20:26.085Z",
+        "duration": 19646.727,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr06-smoke-1",
+      "path": "test-results/cr06-smoke-1-summary.json",
+      "sha256": "81c01012d26084e350838e20dcb33f65c4fcfbb4a94e5b81d288420403f62c74",
+      "stats": {
+        "startTime": "2026-10-01T15:23:14.798Z",
+        "duration": 10002.624,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr06-chromium-1",
+      "path": "test-results/cr06-chromium-1-summary.json",
+      "sha256": "88737361282ec46f493e5e8778960692dc725ebb4d4f75f15ecc9e474ebe4c8a",
+      "stats": {
+        "startTime": "2026-10-01T15:25:56.810Z",
+        "duration": 158888.261,
+        "expected": 8,
+        "skipped": 0,
+        "unexpected": 8,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr06-chromium-2",
+      "path": "test-results/cr06-chromium-2-summary.json",
+      "sha256": "8d5c622b54c005cefa67c8974a4d8d61211058b48af93d22a4a9435487a328a2",
+      "stats": {
+        "startTime": "2026-10-01T15:39:07.164Z",
+        "duration": 39764.053,
+        "expected": 16,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr06-matrix-1",
+      "path": "test-results/cr06-matrix-1-summary.json",
+      "sha256": "c34a52f24f2d80935b72c799bdaded7c112fac25959989763abb0219370ca7af",
+      "stats": {
+        "startTime": "2026-10-01T15:43:00.487Z",
+        "duration": 235330.71399999998,
+        "expected": 56,
+        "skipped": 0,
+        "unexpected": 4,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr06-correction-1",
+      "path": "test-results/cr06-correction-1-summary.json",
+      "sha256": "231302fed52b0b8d9c4f7a6b9b2b581004c85d96c89887c7ed3250408aa1c6f5",
+      "stats": {
+        "startTime": "2026-10-01T15:48:06.591Z",
+        "duration": 29479.714,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr06-final",
+      "path": "test-results/cr06-final-summary.json",
+      "sha256": "02f2a9b9a054d4cf90af8175e428b12343ad51cbbe3303384c26c22e6d15cc5f",
+      "stats": {
+        "startTime": "2026-10-01T15:52:00.569Z",
+        "duration": 333869.76,
+        "expected": 64,
+        "skipped": 1,
+        "unexpected": 1,
+        "flaky": 0
+      }
+    },
+    {
+      "run": "cr06-keyboard-final",
+      "path": "test-results/cr06-keyboard-final-summary.json",
+      "sha256": "d1a972611a7d38683f81128483e70f4e034489ef3d576dcfe8e977208e3095af",
+      "stats": {
+        "startTime": "2026-10-01T15:58:11.899Z",
+        "duration": 34516.575,
+        "expected": 7,
+        "skipped": 2,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  ],
+  "finalCases": [
+    {
+      "title": "Readers exposes a native profile destination without enclosing Follow",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Review author avatar is a named link",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "review copy and catalog destinations preserve the book query",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "unavailable review has a link back to the actual Reviews screen",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Reviews trending and empty-library picker expose catalog links",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "social-disabled routes retain the production FeatureGate",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "PostCard destinations and independent comments at /feed",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "PostCard destinations and independent comments at /posts/post-reading",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "PostCard destinations and independent comments at /users/reader-one?tab=posts",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "post club attachment arrives at the actual club",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "ReviewCard destinations and spoiler ownership at /reviews",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "ReviewCard destinations and spoiler ownership at /book/book-one",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "ReviewCard destinations and spoiler ownership at /reviews/review-one",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "club previews do not gain links and membership actions do not navigate",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Readers club tabs retain member and discovery destinations",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations phone",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations compact200",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations tablet200",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations desktop",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations tabletDark",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Readers exposes a native profile destination without enclosing Follow",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Review author avatar is a named link",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "review copy and catalog destinations preserve the book query",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "unavailable review has a link back to the actual Reviews screen",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Reviews trending and empty-library picker expose catalog links",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "social-disabled routes retain the production FeatureGate",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "PostCard destinations and independent comments at /feed",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "PostCard destinations and independent comments at /posts/post-reading",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "PostCard destinations and independent comments at /users/reader-one?tab=posts",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "post club attachment arrives at the actual club",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "ReviewCard destinations and spoiler ownership at /reviews",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "ReviewCard destinations and spoiler ownership at /book/book-one",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "ReviewCard destinations and spoiler ownership at /reviews/review-one",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "club previews do not gain links and membership actions do not navigate",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Readers club tabs retain member and discovery destinations",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations phone",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations compact200",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations tablet200",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations desktop",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations tabletDark",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Readers exposes a native profile destination without enclosing Follow",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Review author avatar is a named link",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "review copy and catalog destinations preserve the book query",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "unavailable review has a link back to the actual Reviews screen",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Reviews trending and empty-library picker expose catalog links",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "social-disabled routes retain the production FeatureGate",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "PostCard destinations and independent comments at /feed",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "PostCard destinations and independent comments at /posts/post-reading",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "PostCard destinations and independent comments at /users/reader-one?tab=posts",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "post club attachment arrives at the actual club",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "ReviewCard destinations and spoiler ownership at /reviews",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "ReviewCard destinations and spoiler ownership at /book/book-one",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "ReviewCard destinations and spoiler ownership at /reviews/review-one",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "club previews do not gain links and membership actions do not navigate",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Readers club tabs retain member and discovery destinations",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations phone",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations compact200",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations tablet200",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations desktop",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Visual destinations tabletDark",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "keyboard traversal reaches the profile destination",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Enter and Ctrl-click preserve browser destination behavior",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "middle-click opens the actual profile in another page",
+      "project": "chromium",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "keyboard traversal reaches the profile destination",
+      "project": "webkit",
+      "status": "skipped",
+      "result": "skipped",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Windows WebKit 26.6 skips even plain HTML anchors with Tab/Alt+Tab; reproduced in cr06-webkit-capability.json. Real Safari keyboard acceptance remains open.",
+          "location": {
+            "file": "C:\\Users\\Samuel\\MyProjects\\brack-app\\tests\\e2e\\social-destinations.spec.ts",
+            "line": 83,
+            "column": 8
+          }
+        }
+      ]
+    },
+    {
+      "title": "Enter and Ctrl-click preserve browser destination behavior",
+      "project": "webkit",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "middle-click opens the actual profile in another page",
+      "project": "webkit",
+      "status": "skipped",
+      "result": "skipped",
+      "annotations": [
+        {
+          "type": "skip",
+          "description": "Windows WebKit 26.6 ignores middle-click on plain HTML anchors; reproduced in cr06-webkit-capability-2.json. Ctrl-click is checked separately.",
+          "location": {
+            "file": "C:\\Users\\Samuel\\MyProjects\\brack-app\\tests\\e2e\\social-destinations.spec.ts",
+            "line": 120,
+            "column": 8
+          }
+        }
+      ]
+    },
+    {
+      "title": "keyboard traversal reaches the profile destination",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "Enter and Ctrl-click preserve browser destination behavior",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    },
+    {
+      "title": "middle-click opens the actual profile in another page",
+      "project": "firefox",
+      "status": "expected",
+      "result": "passed",
+      "annotations": []
+    }
+  ],
+  "captures": [
+    {
+      "name": "compact200-clubs.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-compact200-chromium/compact200-clubs.png",
+      "sha256": "ef9e198997e5d266643b668b717f8da29e1b4522bfb96900430fe9219ce75473",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "compact200-feed-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-compact200-chromium/compact200-feed-author.png",
+      "sha256": "a44edfe365f96e308e0e06a4f0d283c09099d262521fad8d16ab6dd2f70a6570",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "compact200-feed.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-compact200-chromium/compact200-feed.png",
+      "sha256": "4eb4c79798fb54afdf7519fb894ca3378f36d61156ceabf55ba26136d4857415",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "compact200-readers-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-compact200-chromium/compact200-readers-author.png",
+      "sha256": "05fe802f24860f321255f09e1b1132e124988dbecc77ce7db4aa0cf107724509",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "compact200-readers.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-compact200-chromium/compact200-readers.png",
+      "sha256": "05fe802f24860f321255f09e1b1132e124988dbecc77ce7db4aa0cf107724509",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "compact200-reviews-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-compact200-chromium/compact200-reviews-author.png",
+      "sha256": "381c5e5fde1cffa67e9f691027e7b7e3df4d15afeb4230559d3b1dc8d7873141",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "compact200-reviews.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-compact200-chromium/compact200-reviews.png",
+      "sha256": "aa5591b7887dc8f71b14c07a94b93c097dda3ce00e717244edf54db58dad3072",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "desktop-clubs.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-desktop-chromium/desktop-clubs.png",
+      "sha256": "7c809612277fd689ad8706a66a2e17b68b5ef6b404f5d25bc8304e658f231934",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "desktop-feed-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-desktop-chromium/desktop-feed-author.png",
+      "sha256": "b6ae844979cf22b9e85398b99c7ab4b87568cfbba411419c5e150cd35495c766",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "desktop-feed.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-desktop-chromium/desktop-feed.png",
+      "sha256": "478fcde9184b28174964cf6f5a045887c6f0eba37aeaa72858ec5c5aa577ac06",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "desktop-readers-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-desktop-chromium/desktop-readers-author.png",
+      "sha256": "dfd9a95fd0429bc17d1d8e0d96ea7e5082ee935302ce032e8d2ec6d8611d3955",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "desktop-readers.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-desktop-chromium/desktop-readers.png",
+      "sha256": "dfd9a95fd0429bc17d1d8e0d96ea7e5082ee935302ce032e8d2ec6d8611d3955",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "desktop-reviews-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-desktop-chromium/desktop-reviews-author.png",
+      "sha256": "53ce606268bb7f130e26e9333dcee64182cb453f497b52aac3592b0fee92bf6b",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "desktop-reviews.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-desktop-chromium/desktop-reviews.png",
+      "sha256": "e779a5ef2abae1ed5f832a528e89d2174fc8b1503a2ce80af0610c8367c96973",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "phone-clubs.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-phone-chromium/phone-clubs.png",
+      "sha256": "73ac8559c45a46db5d82ccba6711391ffe76ca5295f142aceda25ec7dbc9cc73",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "phone-feed-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-phone-chromium/phone-feed-author.png",
+      "sha256": "6d5262476bcda064b18286c821d4bc85d8aadeaf8c87a966950018ac1c07c097",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "phone-feed.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-phone-chromium/phone-feed.png",
+      "sha256": "6d5262476bcda064b18286c821d4bc85d8aadeaf8c87a966950018ac1c07c097",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "phone-readers-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-phone-chromium/phone-readers-author.png",
+      "sha256": "b4059247b22a29fe5c8d5d6c2aa254e97ac23b6390361a0adcdf6ada7f8ed2a0",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "phone-readers.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-phone-chromium/phone-readers.png",
+      "sha256": "b4059247b22a29fe5c8d5d6c2aa254e97ac23b6390361a0adcdf6ada7f8ed2a0",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "phone-reviews-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-phone-chromium/phone-reviews-author.png",
+      "sha256": "74dd2acec7c9a8fda42f23d65d7d0a82792b46d0406d192878486d125e4e5907",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "phone-reviews.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-phone-chromium/phone-reviews.png",
+      "sha256": "74dd2acec7c9a8fda42f23d65d7d0a82792b46d0406d192878486d125e4e5907",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "tablet200-clubs.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-tablet200-chromium/tablet200-clubs.png",
+      "sha256": "be201d606320decdb06199d328771cf163e7444284f3adfcae7c816f268fcf5d",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "tablet200-feed-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-tablet200-chromium/tablet200-feed-author.png",
+      "sha256": "3aef08908efaf32d75560164d5577b15321b31f1277694433891b6c2d34f1dd2",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "tablet200-feed.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-tablet200-chromium/tablet200-feed.png",
+      "sha256": "3aef08908efaf32d75560164d5577b15321b31f1277694433891b6c2d34f1dd2",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "tablet200-readers-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-tablet200-chromium/tablet200-readers-author.png",
+      "sha256": "71b62eb10542978908ed085b4e323876adf6cb5562e2f17bffa4a45ce155e547",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "tablet200-readers.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-tablet200-chromium/tablet200-readers.png",
+      "sha256": "fc6c1c74bff25bbeb3db184f8c0a3930d192fec474c9b9138bf794cff66ac3ac",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "tablet200-reviews-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-tablet200-chromium/tablet200-reviews-author.png",
+      "sha256": "56e9ae32ca86812f4ee4cf05f8cb1f9e200c114ff0d2853dfab1e9727f100d7f",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "tablet200-reviews.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-tablet200-chromium/tablet200-reviews.png",
+      "sha256": "275df660b135d55d043fe53199a9097f344f888fae67dc9a475141c805293417",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "tabletDark-clubs.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-tabletDark-chromium/tabletDark-clubs.png",
+      "sha256": "13668bd81c77a85bb60ed8c18dff38d527458247df0adc49d3fd9f54060700dc",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "tabletDark-feed-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-tabletDark-chromium/tabletDark-feed-author.png",
+      "sha256": "fd7042d8ecc0d5f678dc27b4a0a746facace0a81676b9c2216f9f8b82c5aa12c",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "tabletDark-feed.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-tabletDark-chromium/tabletDark-feed.png",
+      "sha256": "671892432baea6221989d70f608b262bddc24488146f43abfc628ca3a5d5d3ab",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "tabletDark-readers-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-tabletDark-chromium/tabletDark-readers-author.png",
+      "sha256": "3599a58b3e08d4cd6266e97b80bf5b5a16227721dfd4ba8cc31ffbfd14be5263",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "tabletDark-readers.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-tabletDark-chromium/tabletDark-readers.png",
+      "sha256": "3599a58b3e08d4cd6266e97b80bf5b5a16227721dfd4ba8cc31ffbfd14be5263",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "tabletDark-reviews-author.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-tabletDark-chromium/tabletDark-reviews-author.png",
+      "sha256": "ee38e9041ff8709cf465ffa3b9539d3efd2fbfa18c77b644570795a5b671a582",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "tabletDark-reviews.png",
+      "source": "test-results/cr06-final/social-destinations-Visual-destinations-tabletDark-chromium/tabletDark-reviews.png",
+      "sha256": "ee38e9041ff8709cf465ffa3b9539d3efd2fbfa18c77b644570795a5b671a582",
+      "classification": "final Chromium actual-font capture"
+    },
+    {
+      "name": "diagnostic-club-compact200.png",
+      "source": "test-results/cr06-chromium-1/social-destinations-Visual-destinations-compact200-chromium/test-failed-1.png",
+      "sha256": "c2d88c618ec05ae6e2ea7451d46907cd9a2650195f1b6ec0b95652853c82fa3e",
+      "classification": "diagnostic before reflow correction; club predates fixture font correction"
+    },
+    {
+      "name": "diagnostic-reader-compact200.png",
+      "source": "test-results/cr06-matrix-1/social-destinations-Visual-destinations-compact200-chromium/compact200-readers.png",
+      "sha256": "bbbfd47687c2cc8391e96ea13e73f323374a8ea61b4a365e386ed81d81bdf435",
+      "classification": "diagnostic before reflow correction; club predates fixture font correction"
+    }
+  ],
+  "fonts": [
+    {
+      "project": "chromium",
+      "case": "Visual destinations phone",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations phone",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations phone",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations phone",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations compact200",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations compact200",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations compact200",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations compact200",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations tablet200",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations tablet200",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations tablet200",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations tablet200",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations desktop",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations desktop",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations desktop",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations desktop",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations tabletDark",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations tabletDark",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations tabletDark",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "chromium",
+      "case": "Visual destinations tabletDark",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations phone",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations phone",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations phone",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations phone",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations compact200",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations compact200",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations compact200",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations compact200",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations tablet200",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations tablet200",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations tablet200",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations tablet200",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations desktop",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations desktop",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations desktop",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations desktop",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations tabletDark",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations tabletDark",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations tabletDark",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "webkit",
+      "case": "Visual destinations tabletDark",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations phone",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations phone",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations phone",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations phone",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations compact200",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations compact200",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations compact200",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations compact200",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations tablet200",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations tablet200",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations tablet200",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations tablet200",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations desktop",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations desktop",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations desktop",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations desktop",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations tabletDark",
+      "screen": "fonts-readers",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations tabletDark",
+      "screen": "fonts-clubs",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations tabletDark",
+      "screen": "fonts-reviews",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "project": "firefox",
+      "case": "Visual destinations tabletDark",
+      "screen": "fonts-feed",
+      "faces": [
+        {
+          "family": "Inter",
+          "loaded": true
+        },
+        {
+          "family": "Merriweather",
+          "loaded": true
+        },
+        {
+          "family": "Playfair Display",
+          "loaded": true
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "path": "apps/client/src/screens/Readers.tsx",
+      "sha256": "56c0398ccdd6af814bdf31af5a32542737fd188060d8c96184c2a599f7cc9727"
+    },
+    {
+      "path": "apps/client/src/screens/Reviews.tsx",
+      "sha256": "a0fc2a3c7d6045d2256a6e3e4bd4ddeeecebad63fff1ac9880ec39be17996b52"
+    },
+    {
+      "path": "apps/client/src/screens/ReviewDetail.tsx",
+      "sha256": "f3eb823b8b79d845d3344f64739949b23b7cd7da6265142032d92188dd4a4a9c"
+    },
+    {
+      "path": "apps/client/src/components/social/PostCard.tsx",
+      "sha256": "cac93f4d6ed72c8f1781daea2624dfed0b8e9d752909a124abc370197966a588"
+    },
+    {
+      "path": "apps/client/src/components/social/ReviewCard.tsx",
+      "sha256": "de6d57f196f8d43ff04ba1cbf815e7edb0be90824fe5ee31af788042210737c0"
+    },
+    {
+      "path": "apps/client/src/components/clubs/BookClubCard.tsx",
+      "sha256": "08a0d6802be413f6b28ee8734618249275760fcf0006e30fc52964db5c20dd89"
+    },
+    {
+      "path": "tests/e2e/social-destinations.spec.ts",
+      "sha256": "0c6c6c1d2a653a2113afedb17c95e691aa7dcc4da348e202a11437dd448d9e9e"
+    },
+    {
+      "path": "tests/playwright/social-destinations.config.ts",
+      "sha256": "344e36ed32c4b8cd4e987b07a97de9cf816d0d80820952530a3bdf64ed5a8bf4"
+    },
+    {
+      "path": "tests/playwright/tsconfig.social-destinations.json",
+      "sha256": "e3af0354ce1e12af93a80969998fac6d475e99ea463780f516d345c4037d7dab"
+    },
+    {
+      "path": "tests/fixtures/social-destinations/api.ts",
+      "sha256": "614c350b690bd86cfea1d7df8f1f125f0ece2afbddf1887be55fa48f1f828cc0"
+    },
+    {
+      "path": "tests/fixtures/social-destinations/data.ts",
+      "sha256": "4a17f285a15fdec897cdd611d395831be2a642c7a2aa926c9189aaeb0dfe9555"
+    },
+    {
+      "path": "tests/fixtures/social-destinations/index.html",
+      "sha256": "de871b826a225a93eba9a2c8a72fe27498d746af5fa9e685a573b3bed6f509c9"
+    },
+    {
+      "path": "tests/fixtures/social-destinations/main.tsx",
+      "sha256": "3a8ac099051617355d45cda2276766be6106d91319a5287fef4bb8b48a6e7f9c"
+    },
+    {
+      "path": "tests/fixtures/social-destinations/README.md",
+      "sha256": "9ce84e05fb26a61c1b26aefc4a486ce50686defd2b9650f60b3c5eba09d80573"
+    },
+    {
+      "path": "tests/fixtures/social-destinations/vite.config.ts",
+      "sha256": "f6176f698f8460507a61b40b2828a219653200654b363a4a6076e0c645b44284"
+    }
+  ],
+  "staticChecks": {
+    "fixtureTypes": 0,
+    "clientTypes": 0,
+    "lint": 0
+  },
+  "fixtureCloseChecks": {
+    "fixtureTypes": 0,
+    "lint": 0
+  },
+  "unitAndBuild": {
+    "units": 0,
+    "build": 0
+  },
+  "units": {
+    "passed": 32,
+    "failed": 0,
+    "report": "test-results/cr06-unit-final-summary.json",
+    "sha256": "908b341d3c664bbd0f2c51bc070c0f24a18a8c93ae3c243ee5bc028997a30e55"
+  },
+  "webkitCapability": {
+    "platform": "win32",
+    "version": "26.6",
+    "sequences": {
+      "Tab": [
+        "before",
+        "after",
+        "BODY",
+        "before",
+        "after",
+        "BODY"
+      ],
+      "Alt+Tab": [
+        "before",
+        "after",
+        "BODY",
+        "before",
+        "after",
+        "BODY"
+      ]
+    },
+    "focusedEnterURL": "about:blank#destination",
+    "popups": [
+      {
+        "input": {
+          "modifiers": [
+            "Control"
+          ]
+        },
+        "opened": true
+      },
+      {
+        "input": {
+          "button": "middle"
+        },
+        "opened": false
+      }
+    ]
+  },
+  "limits": [
+    "Synthetic services/auth/local/native boundaries; no live writes",
+    "Catalog and Dashboard are href/redirect receipts, not actual UI acceptance",
+    "Windows WebKit Tab/Alt+Tab and middle-click independently fail on plain HTML; real Safari acceptance open",
+    "Native devices/AT/legal conformance/performance and whole-screen composition remain unverified"
+  ]
+}

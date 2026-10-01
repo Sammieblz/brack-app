@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Search } from "iconoir-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,6 @@ const ratingFilters: RatingFilter[] = ["all", "5", "4", "3", "2", "1"];
 const Reviews = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
   const [scope, setScope] = useState<ReviewScope>("for_you");
   const [rating, setRating] = useState<RatingFilter>("all");
   const [query, setQuery] = useState("");
@@ -305,7 +304,6 @@ const TrendingBooksCard = ({
     average_rating: number | null;
   }>;
 }) => {
-  const navigate = useNavigate();
 
   return (
     <Card>
@@ -321,11 +319,11 @@ const TrendingBooksCard = ({
         ) : (
           <div className="space-y-3">
             {books.map((book) => (
-              <button
+              <Link
                 key={book.id}
-                type="button"
-                onClick={() => navigate(`/add-book?query=${encodeURIComponent(`${book.title} ${book.author || ""}`)}`)}
-                className="flex w-full gap-3 rounded-md border border-border/70 p-2 text-left transition-colors hover:bg-muted/40"
+                to={`/add-book?query=${encodeURIComponent(`${book.title} ${book.author || ""}`)}`}
+                aria-label={`Find ${book.title}`}
+                className="flex w-full gap-3 rounded-md border border-border/70 p-2 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <div className="h-14 w-10 shrink-0 overflow-hidden rounded bg-muted">
                   {book.cover_url && <img src={book.cover_url} alt="" className="h-full w-full object-cover" />}
@@ -337,7 +335,7 @@ const TrendingBooksCard = ({
                     {book.average_rating ? ` · ${book.average_rating} avg` : ""}
                   </p>
                 </div>
-              </button>
+              </Link>
             ))}
           </div>
         )}
@@ -399,7 +397,6 @@ const ReviewBookPickerDialog = ({
   onPick: (bookId: string) => void;
 }) => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const { books, loading, refreshing, error, hasLoaded, refetchBooks } = useBooks(user?.id, open);
   const [query, setQuery] = useState("");
 
@@ -460,13 +457,10 @@ const ReviewBookPickerDialog = ({
                 description="Search the catalog or add a book first, then come back to write the review."
                 size="compact"
                 action={
-                  <Button
-                    onClick={() => {
-                      onOpenChange(false);
-                      navigate(`/add-book?query=${encodeURIComponent(query)}`);
-                    }}
-                  >
-                    Find or add book
+                  <Button asChild>
+                    <Link to={`/add-book?query=${encodeURIComponent(query)}`}>
+                      Find or add book
+                    </Link>
                   </Button>
                 }
               />

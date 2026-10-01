@@ -2,11 +2,11 @@
 
 ## Current checkpoint
 
-**Review stop:** CR04 is committed in `ef5b2f9`; [checkpoint25](25-messages-layout-gestures.md) records completed, uncommitted CR05 Messages and its source/unit/browser evidence. Next is CR06 after user continuation. CR06-CR10 and remaining main-ticket acceptance stay open and overlap. Preserve scoped evidence without treating it as full visual/device/AT/performance acceptance.
+**Review stop:** CR05 is committed in `a610871`. [Checkpoint26](26-social-destinations.md) records implemented, uncommitted CR06a social destinations (RC-03),67 distinct browser passes/two documented Windows WebKit skips and 32 regressions. Next authorized child is CR06b RS05/06/07 recovery/name branches. Remaining CR06,CR07–CR10 and main-ticket acceptance stay open and overlap. Preserve scoped evidence without treating it as full visual/device/AT/performance acceptance.
 
-**The user's coverage objection is substantiated.** F01–F09 committed useful repairs, but the accumulated fixture results do not close their cross-application requirements. This review supersedes the “proceed to F10” handoff. Current source baseline is **`db076cf`**, which already commits F09; the previous uncommitted status was stale. The worktree was clean when this review began.
+**The user's coverage objection is substantiated.** F01–F09 committed useful repairs, but the accumulated fixture results do not close their cross-application requirements. This review supersedes the “proceed to F10” handoff. The original reconciliation baseline was **`db076cf`**, which already committed F09; the previous uncommitted status was stale. The worktree was clean when that review began. Later implementation checkpoints above supersede its baseline defect status only within their named scope.
 
-This pass changes the plan, audit artifacts and delivery instructions, not application behavior. It does not claim newly passing Playwright, native, accessibility or performance checks. No commit was made. The next implementation must close an explicitly listed missed consumer group, stop for real-screen Playwright/visual review, update its coverage and wait for the user's checkpoint instruction.
+The original reconciliation changed the plan, audit artifacts and delivery instructions, not application behavior, and claimed no new passing checks. Each implementation must close an explicitly listed missed consumer group, stop for real-screen Playwright/visual review, update its coverage and wait for the user's checkpoint instruction.
 
 ## What went wrong
 
@@ -53,7 +53,7 @@ Committed code and recorded passes remain historical facts. “Coverage open” 
 
 ## Corrective batches before routine F10 progression
 
-The IDs below consolidate overlapping RC/RS/OF/RM findings. **CR01 is committed in `93b63bc`, with bounded evidence in [checkpoint21](21-live-composers.md). CR02 is committed in `4dadc37`, with bounded evidence in [checkpoint22](22-responsive-composers.md). CR03 is committed in `74ed7d7`, with scoped evidence in [checkpoint23](23-settings-continuity.md). CR04 is committed in `ef5b2f9`, with evidence in [checkpoint24](24-library-list-tasks.md). CR05 is implemented/verified within [checkpoint25](25-messages-layout-gestures.md), uncommitted and stopped for review; CR06-CR10 remain open.** Main F10 visual work remains open. Later batches can be reordered for a concrete blocker, with the reason recorded. Two units may be combined only if every consumer/state and checkpoint can be completed. Do not broaden one unit into an unfinished whole-screen redesign.
+The IDs below consolidate overlapping RC/RS/OF/RM findings. **CR01 is committed in `93b63bc`,CR02 in `4dadc37`,CR03 in `74ed7d7`,CR04 in `ef5b2f9` and CR05 in `a610871`; checkpoints21–25 preserve their bounded evidence. CR06a is implemented/verified within [checkpoint26](26-social-destinations.md), uncommitted and stopped for review. Other CR06 children and CR07–CR10 remain open.** Main F10 visual work remains open. Later batches can be reordered for a concrete blocker, with the reason recorded. Two units may be combined only if every consumer/state and checkpoint can be completed. Do not broaden one unit into an unfinished whole-screen redesign.
 
 | Batch | Complete unit and owners | Exit evidence |
 | --- | --- | --- |

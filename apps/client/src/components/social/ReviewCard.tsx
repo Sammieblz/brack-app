@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { ChatBubble, Eye, EyeClosed, Heart, MoreHoriz, ShareIos, Star, Trash } from "iconoir-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -52,7 +52,6 @@ export const ReviewCard = ({
   compact = false,
 }: ReviewCardProps) => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const confirm = useConfirmDialog();
   const { likeReview, unlikeReview, checkUserLiked, deleteReview } = useReviews();
   const [showSpoiler, setShowSpoiler] = useState(false);
@@ -140,12 +139,12 @@ export const ReviewCard = ({
     <Card className="overflow-hidden">
       <CardContent className={cn("p-0", compact && "text-sm")}>
         {showBookInfo && book && (
-          <button
-            type="button"
-            onClick={() => navigate(reviewPath)}
-            className="flex w-full gap-3 border-b border-border/70 p-4 text-left transition-colors hover:bg-muted/40"
+          <Link
+            to={reviewPath}
+            aria-label={`Read review of ${book.title}`}
+            className="flex w-full flex-wrap gap-3 border-b border-border/70 p-4 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
           >
-            <div className="h-24 w-16 shrink-0 overflow-hidden rounded-md border border-border/70 bg-muted">
+            <div className="h-[96px] w-[64px] shrink-0 overflow-hidden rounded-md border border-border/70 bg-muted">
               {book.cover_url ? (
                 <img
                   src={book.cover_url}
@@ -159,7 +158,7 @@ export const ReviewCard = ({
                 </div>
               )}
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-[1_1_10rem]">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary" className="w-fit">
                   {review.feed_reason || "Review"}
@@ -183,30 +182,29 @@ export const ReviewCard = ({
                 {book.pages ? <span>{book.pages} pages</span> : null}
               </div>
             </div>
-          </button>
+          </Link>
         )}
 
         <div className="space-y-4 p-4">
           <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <Avatar
-                className="h-10 w-10 cursor-pointer"
-                onClick={() => navigate(`/users/${review.user_id}`)}
-              >
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+              <Link to={`/users/${review.user_id}`} aria-label={`Open ${reviewer?.display_name || "Anonymous reader"} profile`}
+                className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <Avatar className="h-[36px] w-[36px]">
                 <AvatarImage
                   src={reviewer?.avatar_url || undefined}
                   alt={reviewer?.display_name || "Reader"}
                 />
                 <AvatarFallback>{getInitials(reviewer?.display_name)}</AvatarFallback>
               </Avatar>
-              <div className="min-w-0">
-                <button
-                  type="button"
-                  className="block max-w-full truncate text-left font-sans font-semibold hover:underline"
-                  onClick={() => navigate(`/users/${review.user_id}`)}
+              </Link>
+              <div className="min-w-0 flex-[1_1_8rem]">
+                <Link
+                  className="flex min-h-[44px] max-w-full items-center rounded-sm text-left font-sans font-semibold [overflow-wrap:anywhere] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  to={`/users/${review.user_id}`}
                 >
                   {reviewer?.display_name || "Anonymous reader"}
-                </button>
+                </Link>
                 <div className="mt-1 flex flex-wrap items-center gap-2">
                   <div className="flex items-center" aria-label={`${review.rating} star rating`}>
                     {Array.from({ length: 5 }).map((_, index) => (
@@ -244,16 +242,12 @@ export const ReviewCard = ({
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={() => navigate(reviewPath)}
-            className="block w-full text-left"
-          >
-            {review.title && (
-              <h4 className="font-display text-lg font-semibold leading-tight">
-                {sanitizeText(review.title)}
-              </h4>
-            )}
+          <div className="text-left">
+            <h4 className="font-display text-lg font-semibold leading-tight">
+              <Link to={reviewPath} className="inline-flex min-h-[44px] items-center rounded-sm [overflow-wrap:anywhere] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                {review.title ? sanitizeText(review.title) : "Read review"}
+              </Link>
+            </h4>
 
             {review.is_spoiler && !showSpoiler ? (
               <div className="mt-3 rounded-md border border-border/70 bg-muted/50 p-4 text-center">
@@ -268,7 +262,7 @@ export const ReviewCard = ({
                 className="mt-2 font-serif text-foreground"
               />
             )}
-          </button>
+          </div>
 
           {review.is_spoiler && (
             <Button
@@ -292,9 +286,11 @@ export const ReviewCard = ({
               <Heart className={cn("mr-2 h-4 w-4", isLiked && "fill-primary")} />
               {review.likes_count ?? 0}
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate(reviewPath)}>
+            <Button asChild variant="ghost" size="sm">
+              <Link to={reviewPath} aria-label={`Read ${review.comments_count ?? 0} comments on ${review.title || "this review"}`}>
               <ChatBubble className="mr-2 h-4 w-4" />
               {review.comments_count ?? 0}
+              </Link>
             </Button>
             <Button variant="ghost" size="sm" onClick={handleShare}>
               <ShareIos className="mr-2 h-4 w-4" />
@@ -302,12 +298,14 @@ export const ReviewCard = ({
             </Button>
             {book && (
               <Button
+                asChild
                 variant="ghost"
                 size="sm"
                 className="ml-auto"
-                onClick={() => navigate(review.viewer_book_id ? `/book/${review.viewer_book_id}` : bookSearchPath)}
               >
+                <Link to={review.viewer_book_id ? `/book/${review.viewer_book_id}` : bookSearchPath}>
                 {review.viewer_book_id ? "Open my copy" : "Find this book"}
+                </Link>
               </Button>
             )}
           </div>

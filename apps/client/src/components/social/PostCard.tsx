@@ -1,5 +1,5 @@
 import { useId, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -59,12 +59,9 @@ export const PostCard = ({ post, onLike, onDelete, onBlocked, compact, active = 
   const actionsTriggerRef = useRef<HTMLButtonElement>(null);
   const [shareCount, setShareCount] = useState(post.share_count || 0);
   const { user } = useAuth();
-  const navigate = useNavigate();
   const isOwner = user?.id === post.user_id;
   const postType = post.post_type || "text";
   const visibility = post.visibility || "public";
-
-  const openProfile = () => navigate(`/users/${post.user_id}`);
 
   const handleDeletePost = async () => {
     try {
@@ -151,25 +148,25 @@ export const PostCard = ({ post, onLike, onDelete, onBlocked, compact, active = 
     <>
       <Card className="overflow-hidden border-border/70 bg-card/95 transition-colors hover:border-primary/35">
         <article className={cn("space-y-4 p-4 sm:p-5", compact && "p-4")}>
-          <header className="flex items-start justify-between gap-3">
-            <button
-              type="button"
-              onClick={openProfile}
-              className="flex min-w-0 items-center gap-3 text-left"
+          <header className="flex flex-wrap items-start justify-between gap-3">
+            <Link
+              to={`/users/${post.user_id}`}
+              aria-label={`Open ${post.user?.display_name || "Unknown reader"} profile`}
+              className="flex min-h-[44px] min-w-0 flex-[1_1_12rem] flex-wrap items-center gap-3 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <Avatar className="h-11 w-11 shrink-0 border border-border/70">
+              <Avatar className="h-[44px] w-[44px] shrink-0 border border-border/70">
                 <AvatarImage src={post.user?.avatar_url || undefined} />
                 <AvatarFallback>{initials(post.user?.display_name)}</AvatarFallback>
               </Avatar>
-              <span className="min-w-0">
-                <span className="block truncate font-sans text-sm font-semibold">
+              <span className="min-w-0 flex-[1_1_8rem]">
+                <span className="block font-sans text-sm font-semibold [overflow-wrap:anywhere]">
                   {post.user?.display_name || "Unknown reader"}
                 </span>
                 <span className="block font-sans text-xs text-muted-foreground">
                   {formatDate(post.created_at)}
                 </span>
               </span>
-            </button>
+            </Link>
 
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="hidden sm:inline-flex">
@@ -197,7 +194,9 @@ export const PostCard = ({ post, onLike, onDelete, onBlocked, compact, active = 
           <div className="space-y-3">
             <div className="space-y-2">
               <h2 className="font-display text-xl font-semibold leading-tight">
-                {sanitizeText(post.title)}
+                <Link to={`/posts/${post.id}`} className="inline-flex min-h-[44px] items-center rounded-sm [overflow-wrap:anywhere] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  {sanitizeText(post.title)}
+                </Link>
               </h2>
               <div className="flex flex-wrap gap-2">
                 {post.genre && <Badge variant="secondary">{post.genre}</Badge>}
@@ -312,13 +311,12 @@ const PostMediaGrid = ({ post }: { post: Post }) => {
 };
 
 const PostAttachment = ({ post }: { post: Post }) => {
-  const navigate = useNavigate();
   if (post.book) {
     return (
-      <button
-        type="button"
-        onClick={() => navigate(`/book/${post.book_id}`)}
-        className="flex w-full items-center gap-3 rounded-md border border-border/70 bg-muted/25 p-3 text-left transition-colors hover:border-primary/40"
+      <Link
+        to={`/book/${post.book_id || post.book.id}`}
+        aria-label={`Open ${post.book.title}`}
+        className="flex w-full items-center gap-3 rounded-md border border-border/70 bg-muted/25 p-3 text-left transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {post.book.cover_url ? (
           <img
@@ -341,16 +339,16 @@ const PostAttachment = ({ post }: { post: Post }) => {
             </span>
           )}
         </span>
-      </button>
+      </Link>
     );
   }
 
   if (post.club) {
     return (
-      <button
-        type="button"
-        onClick={() => navigate(`/clubs/${post.club_id}`)}
-        className="flex w-full items-center gap-3 rounded-md border border-border/70 bg-muted/25 p-3 text-left transition-colors hover:border-primary/40"
+      <Link
+        to={`/clubs/${post.club_id || post.club.id}`}
+        aria-label={`Open ${post.club.name}`}
+        className="flex w-full items-center gap-3 rounded-md border border-border/70 bg-muted/25 p-3 text-left transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <AppIcon icon={APP_ICONS.nav.clubs} variant="inline" size="md" className="shrink-0 text-muted-foreground" />
         <span className="min-w-0">
@@ -363,7 +361,7 @@ const PostAttachment = ({ post }: { post: Post }) => {
             </span>
           )}
         </span>
-      </button>
+      </Link>
     );
   }
 
