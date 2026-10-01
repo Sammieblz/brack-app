@@ -1,5 +1,7 @@
 # F11a — Book Detail reading hierarchy
 
+Historical checkpoint: this work is now committed in `ee0081e`. The old review-stop statements below describe that earlier delivery. Current continuation is [checkpoint32](32-reading-capture.md).
+
 Status: **implemented and verified within scope; stopped for user review**, 2026-10-01. Baseline HEAD `b97119d`; the verified F10c working tree is inherited, uncommitted and preserved. No staging/commit. Next implementation is F11b, after review.
 
 ## Scope and evidence

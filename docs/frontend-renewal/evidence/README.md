@@ -33,3 +33,7 @@ No OS status bar, browser address/toolbar, real keyboard, native WebView, live a
 Use the same deterministic content and viewports to compare hierarchy; separately capture realistic varied covers, actual fonts, every theme, large text and localized long labels. Add native iPhone/Android, iPad/tablet split window, installed PWA and browser-toolbar recordings. Compare visible book content, number of competing action groups, primary-task findability and tap errors—not just screenshot attractiveness.
 
 The intended compact Library has a title/context action, a search field, one status selector with counts, an active-filter summary and explicit Controls trigger, then book content. Each book has a primary action and accessible More menu; details remain available without requiring a swipe. These targets are specified in 04/05 and are not shown in these screenshots.
+
+## F11b reading capture (2026-10-01)
+
+[Reading capture evidence](f11b/README.md) contains46 before/after and responsive images with actual brand fonts, exact verification results and fixture/device limits. [Checkpoint32](../32-reading-capture.md) owns the current review stop and next step. The original Library baseline above retains its historical limitations.

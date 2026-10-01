@@ -1,0 +1,67 @@
+.progress-route { container: progress-route / inline-size; display: grid; gap: 2rem; min-width: 0; }
+.progress-route-heading { display: grid; justify-items: start; gap: 1rem; }
+.progress-route-heading h1 { font-family: 'Playfair Display', serif; font-size: 1.75rem; line-height: 1.3; font-weight: 700; }
+.progress-route-reader { min-width: 0; padding-bottom: 1.5rem; border-bottom: 1px solid hsl(var(--border)); }
+.progress-route-book { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); align-items: start; gap: 1rem; }
+.progress-route-cover { aspect-ratio: 2 / 3; display: grid; place-items: center; overflow: hidden; color: hsl(var(--muted-foreground)); background: hsl(var(--muted)); border-radius: .15rem .4rem .4rem .15rem; box-shadow: .15rem .25rem .5rem hsl(var(--foreground) / .1); }
+.progress-route-cover img { width: 100%; height: 100%; object-fit: cover; }
+.progress-route-identity { min-width: 0; overflow-wrap: anywhere; }
+.progress-route-identity h2 { font-family: 'Playfair Display', serif; font-size: 1.375rem; line-height: 1.3; font-weight: 700; }
+.progress-route-identity p { font-family: 'Merriweather', serif; font-size: .8125rem; color: hsl(var(--muted-foreground)); line-height: 1.7; margin-top: .375rem; }
+.progress-route-place { margin-block: 1.25rem; }
+.progress-route-place-label { display: flex; align-items: end; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem; }
+.progress-route-place-label p { display: grid; gap: .25rem; }
+.progress-route-place-label p > span { font-size: .75rem; color: hsl(var(--muted-foreground)); }
+.progress-route-place-label strong { font-size: 1.25rem; line-height: 1.4; font-weight: 600; }
+.progress-route-place-label small { font-size: .875rem; font-weight: 400; color: hsl(var(--muted-foreground)); }
+.progress-route-place-label > span { font-size: .875rem; color: hsl(var(--muted-foreground)); }
+.progress-route-place progress { display: block; width: 100%; height: .375rem; margin-top: .625rem; border: 0; border-radius: 1rem; overflow: hidden; appearance: none; background: hsl(var(--muted)); }
+.progress-route-place progress::-webkit-progress-bar { background: hsl(var(--muted)); }
+.progress-route-place progress::-webkit-progress-value { background: hsl(var(--primary)); }
+.progress-route-place progress::-moz-progress-bar { background: hsl(var(--primary)); }
+.progress-route-action { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 44px; min-width: 44px; padding: .7rem 1rem; border-radius: .625rem; font-size: .875rem; line-height: 1.4; font-weight: 600; overflow-wrap: anywhere; text-align: center; }
+.progress-route-action svg { flex-shrink: 0; }
+.progress-route-action:focus-visible, .progress-route-insights > summary:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+.progress-route-primary { width: 100%; background: hsl(var(--foreground)); color: hsl(var(--background)); box-shadow: inset 0 -.2rem hsl(var(--primary)); }
+.progress-route-secondary { background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); }
+.progress-route-activity { min-width: 0; }
+.progress-route-activity > header { margin-bottom: 1rem; }
+.progress-route-activity h2 { font-family: 'Playfair Display', serif; font-size: 1.25rem; line-height: 1.4; font-weight: 700; }
+.progress-route-note { margin-top: .375rem; font-size: .8125rem; line-height: 1.6; color: hsl(var(--muted-foreground)); overflow-wrap: anywhere; }
+.progress-route-notice { margin-block: 1rem; padding: .75rem 1rem; border-inline-start: 3px solid hsl(var(--primary)); background: hsl(var(--muted) / .45); font-size: .875rem; line-height: 1.6; overflow-wrap: anywhere; }
+.progress-route-timeline { margin-block: 1rem; padding-inline-start: 1rem; border-inline-start: 1px solid hsl(var(--border)); }
+.progress-route-day { position: relative; min-width: 0; padding-block: .25rem 1.25rem; }
+.progress-route-day::before { content: ''; position: absolute; width: .45rem; height: .45rem; inset-inline-start: -1.25rem; top: .6rem; border-radius: 50%; background: hsl(var(--primary)); }
+.progress-route-day time { font-size: .75rem; line-height: 1.5; color: hsl(var(--muted-foreground)); }
+.progress-route-day > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem 1rem; margin-top: .25rem; }
+.progress-route-day strong { font-size: 1rem; font-weight: 600; }
+.progress-route-day span { font-size: .8125rem; color: hsl(var(--muted-foreground)); }
+.progress-route-empty { padding-block: 1rem; }
+.progress-route-empty svg { color: hsl(var(--muted-foreground)); margin-bottom: .75rem; }
+.progress-route-empty h3 { font-weight: 600; line-height: 1.5; }
+.progress-route-empty p { margin-top: .375rem; color: hsl(var(--muted-foreground)); font-size: .875rem; line-height: 1.6; }
+.progress-route-insights { margin-top: 1.5rem; border-block: 1px solid hsl(var(--border)); }
+.progress-route-insights > summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 44px; padding-block: .8rem; font-size: .875rem; font-weight: 600; cursor: pointer; list-style: none; }
+.progress-route-insights > summary::-webkit-details-marker { display: none; }
+.progress-route-insights > summary svg { flex-shrink: 0; }
+.progress-route-insights[open] > summary svg { transform: rotate(180deg); }
+.progress-route-insights-content { display: grid; gap: 1.25rem; min-width: 0; padding-bottom: 1.25rem; }
+.progress-route-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: 1rem 1.5rem; }
+.progress-route-metrics > div { border-bottom: 1px solid hsl(var(--border)); padding-bottom: .75rem; }
+.progress-route-metrics dt { font-size: .75rem; color: hsl(var(--muted-foreground)); line-height: 1.5; }
+.progress-route-metrics dd { font-size: 1.125rem; line-height: 1.5; font-weight: 600; margin-top: .25rem; }
+.progress-route-metrics dd span { font-size: .75rem; font-weight: 400; }
+@container progress-route (min-width: 38rem) {
+  .progress-route-book { grid-template-columns: 4.5rem minmax(0, 1fr); gap: 1.25rem; }
+  .progress-route-identity h2 { font-size: 1.75rem; }
+  .progress-route-primary { width: auto; min-width: 12rem; }
+}
+@container progress-route (max-width: 18rem) {
+  .progress-route-book { grid-template-columns: minmax(0, 1fr); gap: .75rem; }
+  .progress-route-cover { width: 2.5rem; }
+}
+@media (forced-colors: active) {
+  .progress-route-action, .progress-route-cover { border: 1px solid ButtonText; }
+  .progress-route-place progress { appearance: auto; }
+  .progress-route-day::before { background: CanvasText; }
+}

@@ -79,10 +79,22 @@ const Dashboard = () => {
     refetch,
   } = useDashboardHomeData(user?.id, gamificationEnabled);
   const [progressBook, setProgressBook] = useState<BookType | null>(null);
+  const progressTriggerRef = useRef<HTMLElement | null>(null);
   const [goalsOpen, setGoalsOpen] = useState(false);
   const goalsTriggerRef = useRef<HTMLButtonElement>(null);
   const [usingFreeze, setUsingFreeze] = useState(false);
   const [streakClock, setStreakClock] = useState(Date.now);
+
+  useEffect(() => {
+    setProgressBook(null);
+    progressTriggerRef.current = null;
+  }, [authLoading, user?.id]);
+
+  const openProgressLogger = (book: BookType, invoker?: HTMLElement) => {
+    if (authLoading || !user || book.user_id !== user.id) return;
+    progressTriggerRef.current = invoker ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+    setProgressBook(book);
+  };
 
   useEffect(() => {
     const timer = window.setInterval(() => setStreakClock(Date.now()), 60_000);
@@ -144,7 +156,7 @@ const Dashboard = () => {
   });
 
   const telemetryFreshness = toTelemetryFreshness(journeyFreshness, provisional);
-  const handleFocusAction = (action: DailyFocusAction, quest: QuestAssignment) => {
+  const handleFocusAction = (action: DailyFocusAction, quest: QuestAssignment, invoker?: HTMLElement) => {
     const telemetryMetric = toTelemetryQuestMetric(quest.metric);
     if (telemetryMetric) {
       trackCoreEvent("daily_focus_started", {
@@ -160,7 +172,7 @@ const Dashboard = () => {
       return;
     }
     if (action === "progress" && primaryBook) {
-      setProgressBook(primaryBook.book);
+      openProgressLogger(primaryBook.book, invoker);
       return;
     }
     navigate("/my-books");
@@ -285,7 +297,7 @@ const Dashboard = () => {
             hasAnyBooks={hasAnyBooks}
             onAddBook={() => navigate("/add-book")}
             onScanBook={() => navigate("/scan-barcode")}
-            onLogProgress={(book) => setProgressBook(book)}
+            onLogProgress={openProgressLogger}
             onViewLibrary={() => navigate("/my-books")}
           />
 
@@ -371,16 +383,18 @@ const Dashboard = () => {
         </NativeScrollView>
       </PullToRefresh>
 
-      {progressBook && (
+      {!authLoading && user && progressBook?.user_id === user.id && (
         <ProgressLogger
           bookId={progressBook.id}
           bookTitle={progressBook.title}
           currentPage={progressBook.current_page || 0}
+          totalPages={progressBook.pages}
           open
           onOpenChange={(open) => {
             if (!open) setProgressBook(null);
           }}
           onSuccess={handleProgressSuccess}
+          returnFocusRef={progressTriggerRef}
         />
       )}
 
@@ -431,7 +445,7 @@ interface ContinueReadingSectionProps {
   hasAnyBooks: boolean;
   onAddBook: () => void;
   onScanBook: () => void;
-  onLogProgress: (book: BookType) => void;
+  onLogProgress: (book: BookType, invoker?: HTMLElement) => void;
   onViewLibrary: () => void;
 }
 
@@ -515,7 +529,7 @@ export const PrimaryContinueCard = ({
   onLogProgress,
 }: {
   candidate: DashboardBookCandidate;
-  onLogProgress: (book: BookType) => void;
+  onLogProgress: (book: BookType, invoker?: HTMLElement) => void;
 }) => {
   const { book } = candidate;
   return (
@@ -555,7 +569,7 @@ export const PrimaryContinueCard = ({
               <Button asChild>
                 <Link to={`/book/${book.id}`}>{candidate.ctaLabel}<NavArrowRight className="h-4 w-4" /></Link>
               </Button>
-              <Button variant="outline" onClick={() => onLogProgress(book)}>Log progress</Button>
+              <Button variant="outline" onClick={event => onLogProgress(book, event.currentTarget)}>Log progress</Button>
             </div>
           </div>
         </div>

@@ -187,8 +187,9 @@ describe("DailyFocusCard", () => {
     expect(progressbar).toHaveAttribute("aria-valuemax", "20");
     expect(progressbar).toHaveAttribute("data-variant", "dimensional");
 
-    await user.click(screen.getByRole("button", { name: "Start reading" }));
-    expect(onAction).toHaveBeenCalledWith("timer", quest);
+    const trigger = screen.getByRole("button", { name: "Start reading" });
+    await user.click(trigger);
+    expect(onAction).toHaveBeenCalledWith("timer", quest, trigger);
   });
 
   it("disables quest starts for an expired cached period", () => {

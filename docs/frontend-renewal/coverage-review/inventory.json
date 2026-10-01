@@ -1,12 +1,12 @@
 {
-  "baseline": "b97119dbbd422683d29850c7a1c2895bbedd70ad",
+  "baseline": "ee0081eaa799bcd3e40e9a46a230e47973777624",
   "method": "TypeScript AST static local import/literal dynamic-import reachability, JSX Route declarations, git commit file lists. No runtime, branches, feature-gate, tree-shaking, fixture alias/mock or per-export analysis. Declaration-level type-only imports are excluded; inline named type imports can still contribute edges. Import references and changed files do not establish review, runtime execution or passing tests. Unreachable means no source import path from main.tsx; verify before deletion. routeImportReachability follows route JSX owners, not their App-owned global ancestors: an empty route list does not exclude global rendering (e.g. Toaster, JournalPromptHandler, JourneyLevelUpObserver).",
   "counts": {
     "routes": 39,
-    "modules": 522,
-    "presentation": 319,
+    "modules": 526,
+    "presentation": 322,
     "screens": 33,
-    "components": 282,
+    "components": 285,
     "presentationWithoutSourcePath": 48
   },
   "commits": {
@@ -2599,7 +2599,6 @@
         "apps/client/src/screens/Feed.tsx",
         "apps/client/src/screens/Messages.tsx",
         "apps/client/src/screens/MyBooks.tsx",
-        "apps/client/src/screens/ProgressTracking.tsx",
         "apps/client/src/screens/Readers.tsx",
         "apps/client/src/screens/ReadingHistory.tsx",
         "apps/client/src/screens/ReviewDetail.tsx",
@@ -3118,6 +3117,7 @@
       "sourceReachable": true,
       "routeImportReachability": [
         "/book/:id",
+        "/book/:id/progress",
         "/dashboard",
         "/edit-book/:id",
         "/profile",
@@ -5718,15 +5718,13 @@
       "role": "component",
       "imports": [
         "apps/client/src/components/ImagePickerDialog.tsx",
-        "apps/client/src/components/ui/button.tsx",
+        "apps/client/src/components/reading-progress/progress-capture.css",
+        "apps/client/src/components/ui/adaptive-dialog.tsx",
         "apps/client/src/components/ui/dialog.tsx",
-        "apps/client/src/components/ui/input.tsx",
-        "apps/client/src/components/ui/label.tsx",
-        "apps/client/src/components/ui/textarea.tsx",
+        "apps/client/src/components/ui/mobile-dialog.tsx",
         "apps/client/src/hooks/use-toast.ts",
         "apps/client/src/hooks/useAuth.ts",
-        "apps/client/src/hooks/useImagePicker.ts",
-        "apps/client/src/lib/dateOnly.ts",
+        "apps/client/src/lib/progressCapture.ts",
         "apps/client/src/services/api/index.ts",
         "apps/client/src/services/connectivity.ts",
         "apps/client/src/services/local/index.ts",
@@ -5734,31 +5732,39 @@
       ],
       "importedBy": [
         "apps/client/src/screens/BookDetail.tsx",
-        "apps/client/src/screens/Dashboard.tsx"
+        "apps/client/src/screens/Dashboard.tsx",
+        "apps/client/src/screens/ProgressTracking.tsx"
       ],
       "jsx": [
-        "Button",
-        "Camera",
+        "AdaptiveDialogBody",
+        "AdaptiveDialogContent",
+        "AdaptiveDialogDescription",
+        "AdaptiveDialogFooter",
+        "AdaptiveDialogHeader",
+        "AdaptiveDialogTitle",
         "Dialog",
-        "DialogContent",
-        "DialogDescription",
-        "DialogHeader",
-        "DialogTitle",
         "ImagePickerDialog",
-        "Input",
-        "Label",
-        "Refresh",
-        "Textarea",
-        "Xmark",
+        "MobileAlertDialog",
+        "ProgressCaptureTask",
+        "button",
+        "details",
         "div",
+        "fieldset",
         "form",
-        "img"
+        "img",
+        "input",
+        "label",
+        "p",
+        "span",
+        "summary",
+        "textarea"
       ],
       "directTestImporters": [],
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
         "/book/:id",
+        "/book/:id/progress",
         "/dashboard"
       ]
     },
@@ -5892,28 +5898,28 @@
       "path": "apps/client/src/components/QuickProgressWidget.tsx",
       "role": "component",
       "imports": [
-        "apps/client/src/components/ui/button.tsx",
-        "apps/client/src/components/ui/card.tsx",
-        "apps/client/src/components/ui/input.tsx",
-        "apps/client/src/components/ui/label.tsx",
-        "apps/client/src/hooks/use-toast.ts",
+        "apps/client/src/components/reading-progress/correction.css",
+        "apps/client/src/hooks/useAuth.ts",
         "apps/client/src/services/api/index.ts"
       ],
       "importedBy": [
         "apps/client/src/screens/BookDetail.tsx"
       ],
       "jsx": [
-        "Button",
-        "Card",
-        "CardContent",
-        "CardHeader",
-        "CardTitle",
-        "Input",
-        "Label",
+        "PageCorrection",
+        "button",
         "div",
-        "p"
+        "form",
+        "h2",
+        "header",
+        "input",
+        "label",
+        "p",
+        "section"
       ],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "apps/client/src/components/QuickProgressWidget.test.tsx"
+      ],
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
@@ -6024,6 +6030,53 @@
       "sourceReachable": true,
       "routeImportReachability": [
         "/dashboard"
+      ]
+    },
+    {
+      "path": "apps/client/src/components/reading-progress/correction.css",
+      "role": "component",
+      "imports": [],
+      "importedBy": [
+        "apps/client/src/components/QuickProgressWidget.tsx"
+      ],
+      "jsx": [],
+      "directTestImporters": [],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/book/:id"
+      ]
+    },
+    {
+      "path": "apps/client/src/components/reading-progress/progress-capture.css",
+      "role": "component",
+      "imports": [],
+      "importedBy": [
+        "apps/client/src/components/ProgressLogger.tsx"
+      ],
+      "jsx": [],
+      "directTestImporters": [],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/book/:id",
+        "/book/:id/progress",
+        "/dashboard"
+      ]
+    },
+    {
+      "path": "apps/client/src/components/reading-progress/progress-route.css",
+      "role": "component",
+      "imports": [],
+      "importedBy": [
+        "apps/client/src/screens/ProgressTracking.tsx"
+      ],
+      "jsx": [],
+      "directTestImporters": [],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/book/:id/progress"
       ]
     },
     {
@@ -6909,6 +6962,7 @@
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
+        "tests/fixtures/reading-progress/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
@@ -7092,8 +7146,7 @@
       ],
       "importedBy": [
         "apps/client/src/components/skeletons/AnalyticsSkeleton.tsx",
-        "apps/client/src/screens/Analytics.tsx",
-        "apps/client/src/screens/ProgressTracking.tsx"
+        "apps/client/src/screens/Analytics.tsx"
       ],
       "jsx": [
         "ApexChartCard",
@@ -7107,8 +7160,7 @@
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
-        "/analytics",
-        "/book/:id/progress"
+        "/analytics"
       ]
     },
     {
@@ -7338,7 +7390,6 @@
         "apps/client/src/components/GoalManager.tsx",
         "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/GoalsManagement.tsx",
-        "apps/client/src/screens/ProgressTracking.tsx",
         "apps/client/src/screens/ReadingHistory.tsx"
       ],
       "jsx": [
@@ -7358,7 +7409,6 @@
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
-        "/book/:id/progress",
         "/dashboard",
         "/edit-book/:id",
         "/goals-management",
@@ -8651,6 +8701,7 @@
         "apps/client/src/components/GoalsSheet.tsx",
         "apps/client/src/components/JournalEntryDialog.tsx",
         "apps/client/src/components/ProfileDrawer.tsx",
+        "apps/client/src/components/ProgressLogger.tsx",
         "apps/client/src/components/QuickJournalEntryDialog.tsx",
         "apps/client/src/components/clubs/CreateClubDialog.tsx",
         "apps/client/src/components/library/LibraryBookshelfSelection.tsx",
@@ -9147,9 +9198,7 @@
         "apps/client/src/components/Navbar.tsx",
         "apps/client/src/components/OfflineIndicator.tsx",
         "apps/client/src/components/ProfileDrawer.tsx",
-        "apps/client/src/components/ProgressLogger.tsx",
         "apps/client/src/components/QuickJournalEntryDialog.tsx",
-        "apps/client/src/components/QuickProgressWidget.tsx",
         "apps/client/src/components/QuoteCollection.tsx",
         "apps/client/src/components/ReadingHabitsSection.tsx",
         "apps/client/src/components/ReadingStatsWidget.tsx",
@@ -9226,7 +9275,6 @@
         "apps/client/src/screens/PostDetail.tsx",
         "apps/client/src/screens/PostSignupPermissions.tsx",
         "apps/client/src/screens/Profile.tsx",
-        "apps/client/src/screens/ProgressTracking.tsx",
         "apps/client/src/screens/Readers.tsx",
         "apps/client/src/screens/ResetPassword.tsx",
         "apps/client/src/screens/ReviewDetail.tsx",
@@ -9324,7 +9372,6 @@
         "apps/client/src/components/JournalEntriesList.tsx",
         "apps/client/src/components/JournalEntryCard.tsx",
         "apps/client/src/components/ProgressLogItem.tsx",
-        "apps/client/src/components/QuickProgressWidget.tsx",
         "apps/client/src/components/QuoteCollection.tsx",
         "apps/client/src/components/ReadingHabitsSection.tsx",
         "apps/client/src/components/ReadingStatsWidget.tsx",
@@ -9374,7 +9421,6 @@
         "apps/client/src/screens/PostDetail.tsx",
         "apps/client/src/screens/PostSignupPermissions.tsx",
         "apps/client/src/screens/Profile.tsx",
-        "apps/client/src/screens/ProgressTracking.tsx",
         "apps/client/src/screens/Readers.tsx",
         "apps/client/src/screens/ReadingHistory.tsx",
         "apps/client/src/screens/ResetPassword.tsx",
@@ -10040,9 +10086,7 @@
         "apps/client/src/components/JournalEntriesList.tsx",
         "apps/client/src/components/JournalEntryDialog.tsx",
         "apps/client/src/components/NativeHeader.tsx",
-        "apps/client/src/components/ProgressLogger.tsx",
         "apps/client/src/components/QuickJournalEntryDialog.tsx",
-        "apps/client/src/components/QuickProgressWidget.tsx",
         "apps/client/src/components/QuoteCollection.tsx",
         "apps/client/src/components/ReadingHabitsSection.tsx",
         "apps/client/src/components/TagManager.tsx",
@@ -10134,9 +10178,7 @@
         "apps/client/src/components/BookListManager.tsx",
         "apps/client/src/components/GoalManager.tsx",
         "apps/client/src/components/JournalEntryDialog.tsx",
-        "apps/client/src/components/ProgressLogger.tsx",
         "apps/client/src/components/QuickJournalEntryDialog.tsx",
-        "apps/client/src/components/QuickProgressWidget.tsx",
         "apps/client/src/components/ReadingHabitsSection.tsx",
         "apps/client/src/components/clubs/CreateClubDialog.tsx",
         "apps/client/src/components/mobile/MobileDatePicker.tsx",
@@ -10293,6 +10335,7 @@
         "apps/client/src/components/AddBooksToListDialog.tsx",
         "apps/client/src/components/BookListManager.tsx",
         "apps/client/src/components/ImagePickerDialog.tsx",
+        "apps/client/src/components/ProgressLogger.tsx",
         "apps/client/src/components/clubs/CreateClubDialog.tsx",
         "apps/client/src/components/library/LibraryRemoveDialog.tsx",
         "apps/client/src/components/messaging/MessageThread.tsx",
@@ -10986,6 +11029,7 @@
         "apps/client/src/components/ui/sidebar.tsx",
         "apps/client/src/screens/Analytics.tsx",
         "apps/client/src/screens/BookClubs.tsx",
+        "apps/client/src/screens/BookDetail.tsx",
         "apps/client/src/screens/ProgressTracking.tsx",
         "apps/client/src/screens/ReviewDetail.tsx",
         "apps/client/src/screens/Reviews.tsx",
@@ -11063,6 +11107,7 @@
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
+        "tests/fixtures/reading-progress/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
@@ -11176,7 +11221,6 @@
       ],
       "importedBy": [
         "apps/client/src/components/BookListManager.tsx",
-        "apps/client/src/components/ProgressLogger.tsx",
         "apps/client/src/components/clubs/BookClubCard.tsx",
         "apps/client/src/components/clubs/ClubChatThread.tsx",
         "apps/client/src/components/clubs/CreateClubDialog.tsx",
@@ -11200,10 +11244,8 @@
       "sourceReachable": true,
       "routeImportReachability": [
         "/book-lists",
-        "/book/:id",
         "/clubs",
         "/clubs/:clubId",
-        "/dashboard",
         "/edit-book/:id",
         "/feed",
         "/lists",
@@ -11295,6 +11337,7 @@
         "tests/fixtures/frontend-semantics/main.tsx",
         "tests/fixtures/journal-save/main.tsx",
         "tests/fixtures/library-tasks/main.tsx",
+        "tests/fixtures/reading-progress/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx"
       ],
@@ -11369,6 +11412,7 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/loading/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
+        "tests/fixtures/reading-progress/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
@@ -11903,6 +11947,7 @@
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
+        "tests/fixtures/reading-progress/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
@@ -11967,6 +12012,7 @@
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
+        "tests/fixtures/reading-progress/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
@@ -12386,7 +12432,6 @@
         "apps/client/src/components/GoalManager.tsx",
         "apps/client/src/components/OfflineIndicator.tsx",
         "apps/client/src/components/ProgressLogger.tsx",
-        "apps/client/src/components/QuickProgressWidget.tsx",
         "apps/client/src/components/QuoteCollection.tsx",
         "apps/client/src/components/ReadingHabitsSection.tsx",
         "apps/client/src/components/ReadingStatsWidget.tsx",
@@ -12607,6 +12652,7 @@
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
+        "tests/fixtures/reading-progress/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
@@ -12645,6 +12691,7 @@
         "apps/client/src/components/ProfileDrawer.tsx",
         "apps/client/src/components/ProgressLogger.tsx",
         "apps/client/src/components/QuickJournalEntryDialog.tsx",
+        "apps/client/src/components/QuickProgressWidget.tsx",
         "apps/client/src/components/ReadingSyncIndicator.tsx",
         "apps/client/src/components/SwipeableBookListsCarousel.tsx",
         "apps/client/src/components/clubs/CreateClubDialog.tsx",
@@ -12666,6 +12713,7 @@
         "apps/client/src/hooks/usePostComments.ts",
         "apps/client/src/hooks/usePosts.ts",
         "apps/client/src/hooks/usePresenceHeartbeat.ts",
+        "apps/client/src/hooks/useProgressLogs.ts",
         "apps/client/src/hooks/useReviewsFeed.ts",
         "apps/client/src/hooks/useSocialFeed.ts",
         "apps/client/src/hooks/useUserNotifications.ts",
@@ -12941,16 +12989,14 @@
         "apps/client/src/services/api/index.ts"
       ],
       "importedBy": [
-        "apps/client/src/screens/BookDetail.tsx",
-        "apps/client/src/screens/ProgressTracking.tsx"
+        "apps/client/src/screens/BookDetail.tsx"
       ],
       "jsx": [],
       "directTestImporters": [],
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
-        "/book/:id",
-        "/book/:id/progress"
+        "/book/:id"
       ]
     },
     {
@@ -13524,7 +13570,6 @@
       ],
       "importedBy": [
         "apps/client/src/components/ImagePickerDialog.tsx",
-        "apps/client/src/components/ProgressLogger.tsx",
         "apps/client/src/hooks/useJournalEditor.ts",
         "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/Profile.tsx"
@@ -13532,12 +13577,14 @@
       "jsx": [],
       "directTestImporters": [
         "apps/client/src/components/settings/settings-task-forms.test.tsx",
-        "apps/client/src/hooks/useImagePicker.test.ts"
+        "apps/client/src/hooks/useImagePicker.test.ts",
+        "tests/fixtures/reading-progress/image-picker.ts"
       ],
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
         "/book/:id",
+        "/book/:id/progress",
         "/dashboard",
         "/edit-book/:id",
         "/profile",
@@ -13920,6 +13967,8 @@
       "path": "apps/client/src/hooks/useProgressLogs.ts",
       "role": "hook",
       "imports": [
+        "apps/client/src/hooks/useAuth.ts",
+        "apps/client/src/services/api/client.ts",
         "apps/client/src/services/api/index.ts",
         "apps/client/src/services/connectivity.ts",
         "apps/client/src/services/local/index.ts"
@@ -13928,7 +13977,9 @@
         "apps/client/src/screens/BookDetail.tsx"
       ],
       "jsx": [],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "apps/client/src/hooks/useProgressLogs.test.tsx"
+      ],
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
@@ -14594,6 +14645,7 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/loading/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
+        "tests/fixtures/reading-progress/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
@@ -14987,14 +15039,15 @@
       "imports": [],
       "importedBy": [
         "apps/client/src/components/GoalManager.tsx",
-        "apps/client/src/components/ProgressLogger.tsx",
         "apps/client/src/components/library/libraryBookUtils.ts",
         "apps/client/src/components/settings/PersonalInfo.tsx",
         "apps/client/src/components/ui/date-picker-calendar.tsx",
         "apps/client/src/components/ui/date-picker.tsx",
         "apps/client/src/contexts/TimerContext.tsx",
+        "apps/client/src/lib/progressCapture.ts",
         "apps/client/src/screens/BookDetail.tsx",
         "apps/client/src/screens/EditBook.tsx",
+        "apps/client/src/screens/ProgressTracking.tsx",
         "apps/client/src/services/api/books.ts",
         "apps/client/src/services/api/progress.ts",
         "apps/client/src/services/dataPortability.ts",
@@ -15005,7 +15058,8 @@
         "apps/client/src/components/dateFieldContexts.test.tsx",
         "apps/client/src/lib/dateOnly.test.ts",
         "tests/fixtures/ionic-fit/experience.tsx",
-        "tests/fixtures/ionic-fit/reading-form.tsx"
+        "tests/fixtures/ionic-fit/reading-form.tsx",
+        "tests/fixtures/reading-progress/api.ts"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -15248,6 +15302,28 @@
       ],
       "sourceReachable": false,
       "routeImportReachability": []
+    },
+    {
+      "path": "apps/client/src/lib/progressCapture.ts",
+      "role": "support",
+      "imports": [
+        "apps/client/src/lib/dateOnly.ts",
+        "apps/client/src/services/local/index.ts"
+      ],
+      "importedBy": [
+        "apps/client/src/components/ProgressLogger.tsx"
+      ],
+      "jsx": [],
+      "directTestImporters": [
+        "apps/client/src/lib/progressCapture.test.ts"
+      ],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/book/:id",
+        "/book/:id/progress",
+        "/dashboard"
+      ]
     },
     {
       "path": "apps/client/src/lib/richText.ts",
@@ -16165,6 +16241,7 @@
         "apps/client/src/components/ui/badge.tsx",
         "apps/client/src/components/ui/button.tsx",
         "apps/client/src/components/ui/collapsible.tsx",
+        "apps/client/src/components/ui/skeleton.tsx",
         "apps/client/src/config/iconography.ts",
         "apps/client/src/contexts/ConfirmDialogContext.tsx",
         "apps/client/src/contexts/TimerContext.tsx",
@@ -16210,6 +16287,7 @@
         "QuickProgressWidget",
         "ReviewCard",
         "ReviewForm",
+        "Skeleton",
         "Star",
         "Tabs",
         "TabsContent",
@@ -16230,6 +16308,7 @@
       ],
       "directTestImporters": [
         "tests/fixtures/library-tasks/main.tsx",
+        "tests/fixtures/reading-progress/main.tsx",
         "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [],
@@ -16298,7 +16377,8 @@
       ],
       "directTestImporters": [
         "apps/client/src/screens/BookListDetail.tasks.test.tsx",
-        "tests/fixtures/library-tasks/main.tsx"
+        "tests/fixtures/library-tasks/main.tsx",
+        "tests/fixtures/reading-progress/main.tsx"
       ],
       "changedIn": [
         "F09"
@@ -16336,6 +16416,7 @@
       ],
       "directTestImporters": [
         "tests/fixtures/library-tasks/main.tsx",
+        "tests/fixtures/reading-progress/main.tsx",
         "tests/fixtures/route-recovery/main.tsx"
       ],
       "changedIn": [
@@ -16450,7 +16531,8 @@
         "span"
       ],
       "directTestImporters": [
-        "apps/client/src/screens/Dashboard.goals.test.tsx"
+        "apps/client/src/screens/Dashboard.goals.test.tsx",
+        "tests/fixtures/reading-progress/main.tsx"
       ],
       "changedIn": [
         "F08"
@@ -16859,6 +16941,7 @@
       "directTestImporters": [
         "tests/fixtures/adaptive-shell/main.tsx",
         "tests/fixtures/library-tasks/main.tsx",
+        "tests/fixtures/reading-progress/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx"
       ],
@@ -17173,55 +17256,68 @@
         "apps/client/src/components/AppBackButton.tsx",
         "apps/client/src/components/MobileHeader.tsx",
         "apps/client/src/components/MobileLayout.tsx",
+        "apps/client/src/components/ProgressLogger.tsx",
         "apps/client/src/components/charts/CompletionForecastChart.tsx",
         "apps/client/src/components/charts/DailyPagesChart.tsx",
         "apps/client/src/components/charts/ReadingVelocityChart.tsx",
-        "apps/client/src/components/empty/PremiumEmptyState.tsx",
         "apps/client/src/components/loading/LoadingRegion.tsx",
-        "apps/client/src/components/skeletons/ChartSkeleton.tsx",
-        "apps/client/src/components/skeletons/ReadingRouteSkeletons.tsx",
-        "apps/client/src/components/ui/button.tsx",
-        "apps/client/src/components/ui/card.tsx",
+        "apps/client/src/components/reading-progress/progress-route.css",
         "apps/client/src/components/ui/skeleton.tsx",
         "apps/client/src/config/iconography.ts",
         "apps/client/src/hooks/useAuth.ts",
-        "apps/client/src/hooks/useBookProgress.ts",
         "apps/client/src/hooks/useProgressTracking.ts",
         "apps/client/src/hooks/useRetainedReaderResource.ts",
         "apps/client/src/hooks/useUIEnvironment.ts",
-        "apps/client/src/services/api/index.ts"
+        "apps/client/src/lib/dateOnly.ts",
+        "apps/client/src/services/api/index.ts",
+        "apps/client/src/services/connectivity.ts",
+        "apps/client/src/services/local/index.ts",
+        "apps/client/src/utils/index.ts"
       ],
       "importedBy": [
         "apps/client/src/App.tsx"
       ],
       "jsx": [
-        "APP_ICONS.analytics.completed",
-        "APP_ICONS.bookDetail.progressDate",
-        "APP_ICONS.stats.pace",
-        "APP_ICONS.stats.readingTime",
+        "APP_ICONS.bookDetail.logProgress",
+        "APP_ICONS.common.collapse",
+        "APP_ICONS.stats.library",
         "AppBackButton",
-        "Button",
-        "Card",
-        "CardContent",
-        "CardHeader",
-        "CardTitle",
-        "ChartSkeleton",
         "CompletionForecastChart",
         "DailyPagesChart",
         "LoadingError",
         "LoadingRegion",
         "MobileHeader",
         "MobileLayout",
-        "PremiumEmptyState",
-        "ProgressStatsSkeleton",
+        "ProgressLogger",
+        "ProgressTrackingContent",
         "ReadingVelocityChart",
         "Skeleton",
+        "button",
+        "dd",
+        "details",
         "div",
+        "dl",
+        "dt",
         "h1",
+        "h2",
+        "h3",
+        "header",
+        "img",
+        "li",
+        "ol",
         "p",
-        "span"
+        "progress",
+        "section",
+        "small",
+        "span",
+        "strong",
+        "summary",
+        "time"
       ],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "apps/client/src/screens/ProgressTracking.test.tsx",
+        "tests/fixtures/reading-progress/main.tsx"
+      ],
       "changedIn": [
         "F09"
       ],
@@ -18284,6 +18380,7 @@
         "apps/client/src/hooks/useMessages.ts",
         "apps/client/src/hooks/usePostComments.ts",
         "apps/client/src/hooks/usePosts.ts",
+        "apps/client/src/hooks/useProgressLogs.ts",
         "apps/client/src/hooks/useRetainedReaderResource.ts",
         "apps/client/src/hooks/useReviewsFeed.ts",
         "apps/client/src/hooks/useSocialFeed.ts",
@@ -18441,7 +18538,8 @@
       ],
       "jsx": [],
       "directTestImporters": [
-        "apps/client/src/services/api/dashboard.test.ts"
+        "apps/client/src/services/api/dashboard.test.ts",
+        "tests/fixtures/reading-progress/dashboard.ts"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -18791,6 +18889,7 @@
         "apps/client/src/components/social/CommentThread.test.tsx",
         "apps/client/src/hooks/useJournalEntries.mutations.test.tsx",
         "apps/client/src/hooks/usePostComments.test.tsx",
+        "apps/client/src/hooks/useProgressLogs.test.tsx",
         "apps/client/src/screens/Analytics.loading.test.tsx",
         "tests/fixtures/loading/main.tsx"
       ],
@@ -19155,7 +19254,8 @@
       ],
       "jsx": [],
       "directTestImporters": [
-        "apps/client/src/services/api/progress.test.ts"
+        "apps/client/src/services/api/progress.test.ts",
+        "tests/fixtures/reading-progress/api.ts"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -19905,6 +20005,7 @@
         "apps/client/src/hooks/useProgressLogs.ts",
         "apps/client/src/screens/BookDetail.tsx",
         "apps/client/src/screens/MyBooks.tsx",
+        "apps/client/src/screens/ProgressTracking.tsx",
         "apps/client/src/services/api/bookLists.ts",
         "apps/client/src/services/api/books.ts",
         "apps/client/src/services/api/client.ts",
@@ -20261,7 +20362,9 @@
         "apps/client/src/hooks/useBooks.ts",
         "apps/client/src/hooks/useJournalEntries.ts",
         "apps/client/src/hooks/useProgressLogs.ts",
+        "apps/client/src/lib/progressCapture.ts",
         "apps/client/src/screens/BookDetail.tsx",
+        "apps/client/src/screens/ProgressTracking.tsx",
         "apps/client/src/services/api/bookLists.ts",
         "apps/client/src/services/api/books.ts",
         "apps/client/src/services/api/gamification.ts",
@@ -20277,6 +20380,7 @@
       "jsx": [],
       "directTestImporters": [
         "apps/client/src/contexts/TimerContext.test.tsx",
+        "apps/client/src/hooks/useProgressLogs.test.tsx",
         "apps/client/src/services/dataPortability.test.ts",
         "apps/client/src/services/sync/engine.test.ts"
       ],
@@ -20880,7 +20984,9 @@
         "apps/client/src/services/local/driver.native-hydration.test.ts",
         "apps/client/src/services/sync/bookConflict.test.ts",
         "apps/client/src/services/sync/conflicts.test.ts",
-        "apps/client/src/services/sync/failurePresentation.test.ts"
+        "apps/client/src/services/sync/failurePresentation.test.ts",
+        "tests/fixtures/library-tasks/api.ts",
+        "tests/fixtures/reading-progress/api.ts"
       ],
       "changedIn": [],
       "sourceReachable": false,
@@ -21148,6 +21254,7 @@
         "apps/client/src/components/BookListManager.tasks.test.tsx",
         "apps/client/src/components/FrontendFormAccessibility.test.tsx",
         "apps/client/src/components/PullToRefresh.test.tsx",
+        "apps/client/src/components/QuickProgressWidget.test.tsx",
         "apps/client/src/components/SwipeableBookCard.test.tsx",
         "apps/client/src/components/dateFieldContexts.test.tsx",
         "apps/client/src/components/library/LibraryBookPrimaryAction.test.tsx",
@@ -21159,6 +21266,7 @@
         "apps/client/src/hooks/useBookLists.mutations.test.tsx",
         "apps/client/src/lib/badgeImages.test.ts",
         "apps/client/src/lib/dashboardGamification.test.ts",
+        "apps/client/src/lib/progressCapture.test.ts",
         "apps/client/src/screens/AddBook.feedback.test.tsx",
         "apps/client/src/screens/BookListDetail.tasks.test.tsx",
         "apps/client/src/screens/EditBook.back.test.tsx",
@@ -21181,6 +21289,8 @@
         "tests/fixtures/library-tasks/api.ts",
         "tests/fixtures/loading/library-cases.tsx",
         "tests/fixtures/loading/main.tsx",
+        "tests/fixtures/reading-progress/api.ts",
+        "tests/fixtures/reading-progress/dashboard.ts",
         "tests/fixtures/route-recovery/api.ts",
         "tests/fixtures/settings-continuity/api.ts",
         "tests/fixtures/settings-continuity/portability.ts",
@@ -21483,7 +21593,8 @@
       "importedBy": [
         "apps/client/src/components/FloatingTimerWidget.tsx",
         "apps/client/src/components/ProgressLogItem.tsx",
-        "apps/client/src/screens/BookDetail.tsx"
+        "apps/client/src/screens/BookDetail.tsx",
+        "apps/client/src/screens/ProgressTracking.tsx"
       ],
       "jsx": [],
       "directTestImporters": [],

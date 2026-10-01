@@ -1,0 +1,5 @@
+{
+  "extends": "../../apps/client/tsconfig.app.json",
+  "compilerOptions": { "noEmit": true, "types": ["node", "vite/client"] },
+  "include": ["reading-progress.config.ts", "../e2e/reading-progress.spec.ts", "../fixtures/reading-progress/**/*.ts", "../fixtures/reading-progress/**/*.tsx", "../../apps/client/src/vite-env.d.ts"]
+}

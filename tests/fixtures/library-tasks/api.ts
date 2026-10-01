@@ -1,4 +1,5 @@
 import type { Book, BookList } from '../../../apps/client/src/types';
+import type { LocalRecord, ProgressLogPayload } from '../../../apps/client/src/services/sync/types';
 import { controls, readAccount, request } from './state';
 const initialCatalog = new URLSearchParams(location.search).get('catalogRead');
 if (initialCatalog === 'defer' || initialCatalog === 'reject') controls.configure('catalog', initialCatalog);
@@ -97,10 +98,48 @@ export async function reorderBookListItems(listId: string, items: { book_id: str
 export const booksRepo = {
   list: async (userId: string) => [...store(userId).books],
   get: async (id: string) => store().books.find(book => book.id === id) ?? null,
+  listRecords: async (userId: string, options?: { includeDeleted?: boolean }) => store(userId).books
+    .filter(book => options?.includeDeleted || !book.deleted_at).map(book => localRecord(userId, book)),
   upsertRemoteMany: async () => undefined, upsertRemote: async () => undefined,
+  upsertRemoteManyPreservingLocal: async (userId: string, books: Book[]) => books.map(book => {
+    const data = store(userId);
+    const index = data.books.findIndex(current => current.id === book.id);
+    if (index >= 0 && data.books[index].deleted_at) return data.books[index];
+    if (book.user_id !== userId) return book;
+    if (index >= 0) data.books[index] = structuredClone(book);
+    else data.books.push(structuredClone(book));
+    return structuredClone(book);
+  }),
 };
 export const sessionsRepo = { list: async () => [] };
-export const progressRepo = { listRecords: async () => [], upsertRemoteMany: async () => undefined };
+type StoredProgress = ProgressLogPayload & { id: string };
+const localRecord = <T extends { id: string; updated_at?: string | null; created_at?: string | null; deleted_at?: string | null }>(userId: string, data: T): LocalRecord<T> => ({
+  id: data.id, user_id: userId, data: structuredClone(data), status: data.deleted_at ? 'deleted' : 'synced',
+  updated_at: data.updated_at || data.created_at || stamp, deleted_at: data.deleted_at ?? null, last_synced_at: stamp,
+});
+const progressRecords = new Map<string, Map<string, LocalRecord<StoredProgress>>>();
+const progressStore = (userId: string) => {
+  let records = progressRecords.get(userId);
+  if (!records) { records = new Map(); progressRecords.set(userId, records); }
+  return records;
+};
+const hydrateProgress = (userId: string, logs: StoredProgress[], preserve = false) => {
+  const records = progressStore(userId);
+  for (const log of logs) {
+    const current = records.get(log.id);
+    if (preserve && current && (current.user_id !== userId || current.status !== 'synced')) continue;
+    if (log.user_id && log.user_id !== userId) continue;
+    records.set(log.id, localRecord(userId, log));
+  }
+  return logs.map(log => structuredClone(records.get(log.id)?.data ?? log));
+};
+export const progressRepo = {
+  get: async (id: string) => structuredClone(progressStore(readAccount() ?? 'signed-out').get(id)?.data ?? null),
+  listRecords: async (userId: string, options?: { includeDeleted?: boolean }) => [...progressStore(userId).values()]
+    .filter(record => options?.includeDeleted || (!record.deleted_at && record.status !== 'deleted')).map(record => structuredClone(record)),
+  upsertRemoteMany: async (userId: string, logs: StoredProgress[]) => { hydrateProgress(userId, logs); },
+  upsertRemoteManyPreservingLocal: async (userId: string, logs: StoredProgress[]) => hydrateProgress(userId, logs, true),
+};
 export const readingCoreSync = { syncUser: async (userId: string) => { await request('books', { userId }); },
   getStatus: async () => ({ pending: 0, failed: 0, syncing: 0 }), syncCurrentUser: async () => undefined, listFailedCurrentUser: async () => [] };
 export const SYNC_STATUS_EVENT = 'fixture:sync-status';

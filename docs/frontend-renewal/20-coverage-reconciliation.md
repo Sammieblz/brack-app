@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-Current checkpoint: **[F11a - Book Detail reconstruction](31-book-detail.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `b97119d`; inherited F10c and this slice remain unstaged. 81 distinct Playwright cases and 19 unit tests pass; type/lint/build checks and local Graphify/Obsidian refresh completed. Next: **F11b progress capture and correction**, then F11c timer/session and S08 editing. Global scroll restoration and the corrective/native/AT gates remain open; full F11 is not complete.
+Current checkpoint: **[F11b - Progress capture, correction and history](32-reading-capture.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `ee0081e` includes F10c/F11a. Three coordinated units completed; 132 distinct new Playwright cases plus 27 existing regressions and 121 unit tests pass. Types/lint/build, source census and local Graphify/Obsidian refresh completed. Next: **F11c timer/session**, then S08 EditBook. Full F11 and corrective/native/AT gates remain open.
 
 **The user's coverage objection is substantiated.** F01–F09 committed useful repairs, but the accumulated fixture results do not close their cross-application requirements. This review supersedes the “proceed to F10” handoff. The original reconciliation baseline was **`db076cf`**, which already committed F09; the previous uncommitted status was stale. The worktree was clean when that review began. Later implementation checkpoints above supersede its baseline defect status only within their named scope.
 

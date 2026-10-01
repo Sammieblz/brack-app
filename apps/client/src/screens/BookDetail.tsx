@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useTimer } from "@/contexts/TimerContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Root as Tabs, Content as TabsContent, List as TabsList, Trigger as TabsTrigger } from "@radix-ui/react-tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { BookReadingHeader } from "@/components/book-detail/BookReadingHeader";
@@ -72,27 +73,32 @@ const DetailRow = ({
 
 const BookDetailContent = () => {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const userId = user?.id;
   const [book, setBook] = useState<Book | null>(null);
   const [sessions, setSessions] = useState<ReadingSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const requestId = useRef(0);
   const [showProgressLogger, setShowProgressLogger] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("overview");
+  const [progressVisited, setProgressVisited] = useState(false);
   const navigate = useNavigate();
   const timer = useTimer();
   const confirm = useConfirmDialog();
   const statusLock = useRef(false);
   const ownerEpoch = useRef(0);
+  const mounted = useRef(false);
   const deleteTrigger = useRef<HTMLButtonElement>(null);
   const logTrigger = useRef<HTMLButtonElement>(null);
   const [savingStatus, setSavingStatus] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   useLayoutEffect(() => {
+    mounted.current = true;
     ownerEpoch.current += 1;
-    return () => { ownerEpoch.current += 1; };
+    return () => { mounted.current = false; ownerEpoch.current += 1; };
   }, []);
-  const { logs, refetchLogs } = useProgressLogs(id);
+  const { logs, loading: logsLoading, refreshing: logsRefreshing, hasLoaded: logsLoaded, error: logsError, refetchLogs } = useProgressLogs(id);
   const { progress, refetchProgress } = useBookProgress(id, user?.id);
   const { reviews, averageRating, userHasReviewed, refetch: refetchReviews } = useReviews(id);
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -100,19 +106,24 @@ const BookDetailContent = () => {
   const isMobile = useIsMobile();
 
   const loadBookData = useCallback(async () => {
-    if (!id) return;
+    if (!mounted.current) return;
+    if (!id || authLoading || !userId) {
+      setLoading(authLoading);
+      if (!authLoading) setLoadError("Sign in to see this book.");
+      return;
+    }
     const request = ++requestId.current;
-    const isCurrent = () => request === requestId.current;
+    const isCurrent = () => mounted.current && request === requestId.current;
     setLoading(true);
     setLoadError(null);
     
     try {
       const localBook = await booksRepo.get(id);
       if (!isCurrent()) return;
-      const usableLocalBook = localBook && !localBook.deleted_at && localBook.user_id === user?.id ? localBook : null;
+      const usableLocalBook = localBook && !localBook.deleted_at && localBook.user_id === userId ? localBook : null;
       if (usableLocalBook) {
-        setBook(localBook);
-        const localSessions = (await sessionsRepo.list(user?.id || ""))
+        setBook(usableLocalBook);
+        const localSessions = (await sessionsRepo.list(userId))
           .filter((session) => session.book_id === id);
         if (!isCurrent()) return;
         setSessions(localSessions);
@@ -127,13 +138,21 @@ const BookDetailContent = () => {
 
       const bookData = await fetchActiveBookById(id);
       if (!isCurrent()) return;
-      if (!bookData) {
+      if (!bookData || bookData.id !== id || bookData.user_id !== userId || bookData.deleted_at) {
         setLoadError("This book could not be found. Return to your library or try again.");
         return;
       }
 
-      setBook(bookData);
-      if (bookData.user_id) await booksRepo.upsertRemote(bookData.user_id, bookData);
+      // A just-saved capture/correction owns the local book until sync accepts
+      // it. Hydrate conditionally and render the authoritative returned record.
+      const [resolvedBook] = await booksRepo.upsertRemoteManyPreservingLocal(userId, [bookData]);
+      if (!isCurrent()) return;
+      if (!resolvedBook || resolvedBook.id !== id || resolvedBook.user_id !== userId || resolvedBook.deleted_at) {
+        setBook(null);
+        setLoadError("This book could not be found. Return to your library or try again.");
+        return;
+      }
+      setBook(resolvedBook);
 
       const nextSessions = await fetchBookReadingSessions(id);
       if (isCurrent()) setSessions(nextSessions);
@@ -142,7 +161,7 @@ const BookDetailContent = () => {
     } finally {
       if (isCurrent()) setLoading(false);
     }
-  }, [id, user?.id]);
+  }, [authLoading, id, userId]);
 
   useEffect(() => {
     void loadBookData();
@@ -150,7 +169,7 @@ const BookDetailContent = () => {
   }, [loadBookData]);
 
   const handleFinishBook = async () => {
-    if (!book || statusLock.current) return;
+    if (!book || authLoading || book.user_id !== user?.id || !mounted.current || statusLock.current) return;
     statusLock.current = true;
     const owner = ownerEpoch.current;
     try {
@@ -176,7 +195,7 @@ const BookDetailContent = () => {
   };
 
   const handleDeleteBook = async () => {
-    if (!book) return;
+    if (!book || authLoading || book.user_id !== user?.id || !mounted.current) return;
     const owner = ownerEpoch.current;
     try { await bookOperations.delete(book.id); }
     catch { throw new Error("Couldn't delete this book. Please try again."); }
@@ -185,11 +204,7 @@ const BookDetailContent = () => {
     navigate("/my-books");
   };
 
-  const handleProgressLogged = () => {
-    refetchLogs();
-    refetchProgress();
-    loadBookData();
-  };
+  const handleProgressLogged = () => Promise.all([refetchLogs(), refetchProgress(), loadBookData()]);
 
   if (!book) {
     return (
@@ -280,7 +295,10 @@ const BookDetailContent = () => {
             {statusMessage && <p role="status" className="book-detail-session-note">{statusMessage}</p>}
           </BookReadingHeader>
           <div className="book-detail-content">
-            <Tabs defaultValue="overview" className="w-full">
+            <Tabs value={selectedTab} onValueChange={value => {
+              setSelectedTab(value);
+              if (value === "progress") setProgressVisited(true);
+            }} className="w-full">
               <TabsList className="book-detail-tabs" aria-label="Book content">
                 {[["overview", "Overview"], ["progress", "Progress"], ["reviews", "Reviews"], ["journal", "Journal"], ["logs", "Logs"]].map(([value, label]) =>
                   <TabsTrigger key={value} value={value}>{label}</TabsTrigger>)}
@@ -359,8 +377,9 @@ const BookDetailContent = () => {
                 </section>
               </TabsContent>
 
-              <TabsContent value="progress" className="mt-4 space-y-4">
-                {book.status === "reading" && (
+              <TabsContent value="progress" forceMount={progressVisited ? true : undefined}
+                hidden={selectedTab !== "progress"} className="mt-4 space-y-4">
+                {(book.status === "reading" || book.status === "completed") && (
                   <QuickProgressWidget book={book} onUpdate={loadBookData} />
                 )}
 
@@ -530,22 +549,30 @@ const BookDetailContent = () => {
 
               <TabsContent value="logs" className="mt-4">
                 <section className="book-detail-section">
+                  <header>
+                    <h2>Reading logs</h2>
+                    <p className="font-sans text-sm text-muted-foreground">Includes logs saved on this device. Changes sync when connected.</p>
+                  </header>
                   <div className="p-4 sm:p-6">
-                    {logs.length > 0 ? (
-                      <div className="space-y-3">
-                        {logs.map((log) => (
-                          <ProgressLogItem key={log.id} log={log} />
-                        ))}
-                      </div>
-                    ) : (
-                      <PremiumEmptyState
+                    <LoadingRegion loading={logsLoading} refreshing={logsRefreshing}
+                      label={logsLoading ? "Loading reading history" : "Reading history"} className="space-y-3">
+                      {logsError && <LoadingError message={logsError} onRetry={() => void refetchLogs()} />}
+                      {logsLoading && <div aria-hidden="true" className="space-y-3">
+                        {[0, 1].map(item => <div key={item} className="space-y-3 rounded-lg border border-border p-4">
+                          <Skeleton className="h-5 w-36" /><Skeleton className="h-5 w-24" /><Skeleton className="h-10 w-full" />
+                        </div>)}
+                      </div>}
+                      {logs.length > 0 && <div className="space-y-3">
+                        {logs.map(log => <ProgressLogItem key={log.id} log={log} />)}
+                      </div>}
+                      {logsLoaded && !logsLoading && !logsError && logs.length === 0 && <PremiumEmptyState
                         asset="emptyProgress"
-                        title="No progress logs yet"
-                        description="Log your reading progress to track your journey."
+                        title="No reading logs saved here"
+                        description="Log your reading progress, or reconnect to load history from your other devices."
                         size="compact"
                         variant="plain"
-                      />
-                    )}
+                      />}
+                    </LoadingRegion>
                   </div>
                 </section>
               </TabsContent>
@@ -559,6 +586,7 @@ const BookDetailContent = () => {
           bookId={book.id}
           bookTitle={book.title}
           currentPage={book.current_page || 0}
+          totalPages={book.pages}
           open={showProgressLogger}
           onOpenChange={setShowProgressLogger}
           onSuccess={handleProgressLogged}
@@ -588,8 +616,8 @@ const BookDetailContent = () => {
 
 const BookDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
-  return <BookDetailContent key={`${user?.id ?? ""}:${id ?? ""}`} />;
+  const { user, loading } = useAuth();
+  return <BookDetailContent key={`${loading ? "loading" : user?.id ?? "signed-out"}:${id ?? ""}`} />;
 };
 
 export default BookDetail;

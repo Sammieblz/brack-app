@@ -1,0 +1,3238 @@
+{
+  "date": "2026-10-01",
+  "baseline": "ee0081eaa799bcd3e40e9a46a230e47973777624",
+  "status": "implemented_verified_review_stop_uncommitted",
+  "distinct_new_browser_cases": 132,
+  "existing_regressions": 27,
+  "units": {
+    "passed": 121,
+    "files": 10
+  },
+  "build": {
+    "passed": true,
+    "modules": 4314
+  },
+  "captures": [
+    "baseline-ready-baseline-correction-390-baseline.png",
+    "baseline-ready-baseline-correction-834-baseline.png",
+    "baseline-ready-baseline-dashboard-390-baseline.png",
+    "baseline-ready-baseline-dashboard-834-baseline.png",
+    "baseline-ready-baseline-log-390-baseline.png",
+    "baseline-ready-baseline-log-834-baseline.png",
+    "baseline-ready-baseline-route-390-baseline.png",
+    "baseline-ready-baseline-route-834-baseline.png",
+    "chromium-touch-tablet-capture.png",
+    "composition-android-capture.png",
+    "composition-android-optional-fields.png",
+    "composition-android-route.png",
+    "composition-compact200-capture.png",
+    "composition-compact200-optional-fields.png",
+    "composition-compact200-route.png",
+    "composition-dark-capture.png",
+    "composition-dark-optional-fields.png",
+    "composition-dark-route.png",
+    "composition-desktop-capture.png",
+    "composition-desktop-optional-fields.png",
+    "composition-desktop-route.png",
+    "composition-ios-capture.png",
+    "composition-ios-optional-fields.png",
+    "composition-ios-route.png",
+    "composition-landscape-capture.png",
+    "composition-landscape-optional-fields.png",
+    "composition-landscape-route.png",
+    "composition-paper-capture.png",
+    "composition-paper-optional-fields.png",
+    "composition-paper-route.png",
+    "composition-phone-capture.png",
+    "composition-phone-optional-fields.png",
+    "composition-phone-route.png",
+    "composition-tablet-capture.png",
+    "composition-tablet-optional-fields.png",
+    "composition-tablet-route.png",
+    "composition-tablet200-capture.png",
+    "composition-tablet200-optional-fields.png",
+    "composition-tablet200-route.png",
+    "correction-composition-compact200-correction.png",
+    "correction-composition-dark-correction.png",
+    "correction-composition-paper-correction.png",
+    "correction-composition-tablet-correction.png",
+    "correction-retains-draft-across-tabs,-validates-bounds,-saves-zero-without-activity-correction.png",
+    "firefox-touch-tablet-capture.png",
+    "webkit-touch-tablet-capture.png"
+  ],
+  "reports": [
+    {
+      "report": "test-results/f11b-baseline-ready.json",
+      "stats": {
+        "startTime": "2026-10-01T21:30:27.071Z",
+        "duration": 17685.435999999998,
+        "expected": 8,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "baseline route 390",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3920,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "baseline log 390",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1477,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "baseline correction 390",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1222,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "baseline dashboard 390",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1236,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "baseline route 834",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1278,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "baseline log 834",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1485,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "baseline correction 834",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1490,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "baseline dashboard 834",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1277,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f11b-integration-1.json",
+      "stats": {
+        "startTime": "2026-10-01T21:51:05.290Z",
+        "duration": 82278.866,
+        "expected": 29,
+        "skipped": 1,
+        "unexpected": 3,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition phone",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 6298,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition tablet",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2028,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition desktop",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2158,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition compact200",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1914,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition tablet200",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2070,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition landscape",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1984,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition dark",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1903,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition paper",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1869,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition android",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1883,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition ios",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2002,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from book retains local page through stale refresh and reopens fresh",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1535,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from dashboard retains local page through stale refresh and reopens fresh",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1437,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from route retains local page through stale refresh and reopens fresh",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1391,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "strict validation associates errors, focuses fields, and creates no writes",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2191,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "dirty Back guards, retained task across resize, discard clears and restores invoker",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1887,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "pending capture vetoes Escape Back and repeated submission",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1272,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "failed initial capture keeps editable draft and retries once",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1331,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "partial book failure retries frozen submitted log without duplicating activity",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1515,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "ambiguous committed capture response is recognized without repeating log creation",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1223,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "account change during capture cannot update the next reader or retain draft",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1321,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "offline progress route captures locally without inventing synced history",
+          "project": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "duration": 1219,
+              "errors": [
+                "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('status').filter({ hasText: 'You\\'re offline' })\nExpected: visible\nError: strict mode violation: getByRole('status').filter({ hasText: 'You\\'re offline' }) resolved to 2 elements:\n    1) <p role=\"status\" class=\"progress-route-notice\">You're offline. Reconnect to load activity and in\u2026</p> aka getByText('You\\'re offline. Reconnect to')\n    2) <div role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" class=\"relative w-full border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground rounded-none border-x-0 border-b-0 border-t bg-background px-4 py-2 text-foreground shadow-none border-primary/35\">\u2026</div> aka getByRole('status').filter({ hasText: 'You\\'re offline. Reading' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('status').filter({ hasText: 'You\\'re offline' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('status').filter({ hasText: 'You\\'re offline' })\u001b[22m\n\n\n  161 |   await logger(page).getByRole('button', { name: 'Save progress', exact: true }).click(); await expect(logger(page)).toHaveCount(0);\n  162 |   await expect(page.getByRole('region', { name: 'Your place in this book' })).toContainText('Page 83');\n> 163 |   await expect(page.getByRole('status').filter({ hasText: \"You're offline\" })).toBeVisible();\n      |                                                                                ^\n  164 |   await expect(page.getByRole('list', { name: 'Daily reading activity' })).toHaveCount(0);\n  165 |   const state = await snapshot(page); expect(state.outboxCounts).toEqual({ books: 1, logs: 1 }); expect(state.syncRequests).toHaveLength(0);\n  166 |   expect(state.calls.filter(call => ['history', 'metrics'].includes(call.operation))).toHaveLength(0);\n    at C:\\Users\\Samuel\\MyProjects\\brack-app\\tests\\e2e\\reading-progress.spec.ts:163:80"
+              ]
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "lower-page log preserves saved place and finishing page has an explicit consequence",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1522,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "unknown total supports capture without a fabricated maximum or percentage",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1106,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "captured local log remains in Book Detail after older history refresh",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1381,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "attachment rejection retains selection, retry succeeds, pending cannot dismiss",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1550,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "cancelled picker and rejected replacement preserve existing photo",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1736,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "late photo upload after account replacement has no new owner effect",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1620,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction retains draft across tabs, validates bounds, saves zero without activity",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2088,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction failure keeps draft and pending duplicate submit is suppressed",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2063,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "completion through correction leaves success and controls available",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1591,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "route history and insights disclose deliberately and survive offline reconnect",
+          "project": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "duration": 6339,
+              "errors": [
+                "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.recharts-wrapper')\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" locator('.recharts-wrapper') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('.recharts-wrapper')\u001b[22m\n\u001b[2m    13 \u00d7 locator resolved to 0 elements\u001b[22m\n\u001b[2m       - unexpected value \"0\"\u001b[22m\n\n\n  251 |   await open(page, 'route'); const list = page.getByRole('list', { name: 'Daily reading activity' }); await expect(list.getByRole('listitem')).toHaveCount(2);\n  252 |   await page.getByText('Pace and insights', { exact: true }).click(); await expect(page.getByText('Days with activity', { exact: true })).toBeVisible();\n> 253 |   await expect(page.locator('.recharts-wrapper')).toHaveCount(2); await page.getByText('Pace and insights', { exact: true }).click(); await expect(page.locator('.recharts-wrapper')).toHaveCount(0);\n      |                                                   ^\n  254 |   await page.evaluate(() => window.readingCapture.setNetwork(false)); await expect(list).toBeVisible(); await expect(page.getByText(/Showing activity already loaded/)).toBeVisible();\n  255 |   await configure(page, 'history', 'reject'); await page.evaluate(() => window.readingCapture.setNetwork(true)); await expect(page.getByText(/Couldn't refresh reading activity/)).toBeVisible(); await expect(list).toBeVisible();\n  256 |   await configure(page, 'history', 'resolve'); await page.getByRole('button', { name: /retry/i }).first().click(); await expect(page.getByText(/Couldn't refresh reading activity/)).toHaveCount(0);\n    at C:\\Users\\Samuel\\MyProjects\\brack-app\\tests\\e2e\\reading-progress.spec.ts:253:51"
+              ]
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "failed history remains retryable while capture is available; empty has truthful copy",
+          "project": "chromium",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "duration": 13335,
+              "errors": [
+                "TimeoutError: locator.click: Timeout 12000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /retry/i }).first()\u001b[22m\n\n\n  259 |   await open(page, 'route', 'history=reject&metrics=reject'); await expect(page.getByText(/Reading activity couldn't be loaded/)).toBeVisible();\n  260 |   await page.getByRole('button', { name: 'Log progress', exact: true }).click(); await expect(logger(page)).toBeVisible(); await logger(page).getByRole('button', { name: 'Cancel', exact: true }).click();\n> 261 |   await configure(page, 'history', 'resolve'); await page.getByRole('button', { name: /retry/i }).first().click(); await expect(page.getByRole('list', { name: 'Daily reading activity' })).toBeVisible();\n      |                                                                                                           ^\n  262 |   await open(page, 'route', 'emptyHistory'); await expect(page.getByRole('heading', { name: 'No synced activity yet' })).toBeVisible();\n  263 | });\n  264 | test('reading route has explicit Back to its book', async ({ page }) => {\n    at C:\\Users\\Samuel\\MyProjects\\brack-app\\tests\\e2e\\reading-progress.spec.ts:261:107"
+              ]
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "reading route has explicit Back to its book",
+          "project": "chromium",
+          "status": "skipped",
+          "results": []
+        }
+      ]
+    },
+    {
+      "report": "test-results/f11b-integration-2.json",
+      "stats": {
+        "startTime": "2026-10-01T21:53:28.422Z",
+        "duration": 19161.737999999998,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "offline progress route captures locally without inventing synced history",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 6242,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "route history and insights disclose deliberately and survive offline reconnect",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2689,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "failed history remains retryable while capture is available; empty has truthful copy",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3040,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "reading route has explicit Back to its book",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2545,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f11b-matrix-1.json",
+      "stats": {
+        "startTime": "2026-10-01T21:54:53.849Z",
+        "duration": 357920.414,
+        "expected": 120,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition phone",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4911,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition tablet",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2008,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition desktop",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2061,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition compact200",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1908,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition tablet200",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2021,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition landscape",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1926,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition dark",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1968,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition paper",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1843,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition android",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2132,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition ios",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1937,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from book retains local page through stale refresh and reopens fresh",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1686,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from dashboard retains local page through stale refresh and reopens fresh",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1625,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from route retains local page through stale refresh and reopens fresh",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1649,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "strict validation associates errors, focuses fields, and creates no writes",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2112,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "dirty Back guards, retained task across resize, discard clears and restores invoker",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1995,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "pending capture vetoes Escape Back and repeated submission",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1362,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "failed initial capture keeps editable draft and retries once",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1465,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "partial book failure retries frozen submitted log without duplicating activity",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1554,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "ambiguous committed capture response is recognized without repeating log creation",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1346,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "account change during capture cannot update the next reader or retain draft",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1503,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "offline progress route captures locally without inventing synced history",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1213,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "lower-page log preserves saved place and finishing page has an explicit consequence",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1501,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "unknown total supports capture without a fabricated maximum or percentage",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1222,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "captured local log remains in Book Detail after older history refresh",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1462,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "attachment rejection retains selection, retry succeeds, pending cannot dismiss",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1757,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "cancelled picker and rejected replacement preserve existing photo",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1857,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "late photo upload after account replacement has no new owner effect",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1568,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction retains draft across tabs, validates bounds, saves zero without activity",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1823,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction failure keeps draft and pending duplicate submit is suppressed",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1283,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "completion through correction leaves success and controls available",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1320,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "route history and insights disclose deliberately and survive offline reconnect",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1404,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "failed history remains retryable while capture is available; empty has truthful copy",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1903,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "reading route has explicit Back to its book",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1179,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "Dashboard Daily Focus capture restores its own invoker",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1413,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "keyboard stays inside capture and focused text survives a shorter viewport",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1520,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction composition tablet",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1422,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction composition compact200",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1281,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction composition dark",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1519,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction composition paper",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1734,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "account change during correction cannot carry its draft or confirmation to replacement",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1470,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition phone",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 5490,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition tablet",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4983,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition desktop",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 5564,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition compact200",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4347,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition tablet200",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4765,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition landscape",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4583,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition dark",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4669,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition paper",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4322,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition android",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4325,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition ios",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4624,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from book retains local page through stale refresh and reopens fresh",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2756,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from dashboard retains local page through stale refresh and reopens fresh",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3038,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from route retains local page through stale refresh and reopens fresh",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2658,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "strict validation associates errors, focuses fields, and creates no writes",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3504,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "dirty Back guards, retained task across resize, discard clears and restores invoker",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3578,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "pending capture vetoes Escape Back and repeated submission",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2153,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "failed initial capture keeps editable draft and retries once",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2225,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "partial book failure retries frozen submitted log without duplicating activity",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2521,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "ambiguous committed capture response is recognized without repeating log creation",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2066,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "account change during capture cannot update the next reader or retain draft",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2491,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "offline progress route captures locally without inventing synced history",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2021,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "lower-page log preserves saved place and finishing page has an explicit consequence",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2585,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "unknown total supports capture without a fabricated maximum or percentage",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1999,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "captured local log remains in Book Detail after older history refresh",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2394,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "attachment rejection retains selection, retry succeeds, pending cannot dismiss",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3087,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "cancelled picker and rejected replacement preserve existing photo",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3579,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "late photo upload after account replacement has no new owner effect",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3002,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction retains draft across tabs, validates bounds, saves zero without activity",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3406,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction failure keeps draft and pending duplicate submit is suppressed",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2150,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "completion through correction leaves success and controls available",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2229,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "route history and insights disclose deliberately and survive offline reconnect",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2577,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "failed history remains retryable while capture is available; empty has truthful copy",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2920,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "reading route has explicit Back to its book",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1798,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "Dashboard Daily Focus capture restores its own invoker",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2461,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "keyboard stays inside capture and focused text survives a shorter viewport",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3401,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction composition tablet",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3787,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction composition compact200",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2523,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction composition dark",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2885,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction composition paper",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2558,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "account change during correction cannot carry its draft or confirmation to replacement",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2285,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition phone",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 5108,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition tablet",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3647,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition desktop",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3948,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition compact200",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3681,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition tablet200",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3881,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition landscape",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3815,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition dark",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3879,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition paper",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3902,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition android",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3790,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "composition ios",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 7925,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from book retains local page through stale refresh and reopens fresh",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3995,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from dashboard retains local page through stale refresh and reopens fresh",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3276,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from route retains local page through stale refresh and reopens fresh",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3453,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "strict validation associates errors, focuses fields, and creates no writes",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3976,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "dirty Back guards, retained task across resize, discard clears and restores invoker",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 5972,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "pending capture vetoes Escape Back and repeated submission",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2820,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "failed initial capture keeps editable draft and retries once",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3104,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "partial book failure retries frozen submitted log without duplicating activity",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2923,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "ambiguous committed capture response is recognized without repeating log creation",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2725,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "account change during capture cannot update the next reader or retain draft",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4518,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "offline progress route captures locally without inventing synced history",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2970,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "lower-page log preserves saved place and finishing page has an explicit consequence",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3122,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "unknown total supports capture without a fabricated maximum or percentage",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3041,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "captured local log remains in Book Detail after older history refresh",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3080,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "attachment rejection retains selection, retry succeeds, pending cannot dismiss",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3105,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "cancelled picker and rejected replacement preserve existing photo",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3627,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "late photo upload after account replacement has no new owner effect",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3552,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction retains draft across tabs, validates bounds, saves zero without activity",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3486,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction failure keeps draft and pending duplicate submit is suppressed",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2780,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "completion through correction leaves success and controls available",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4819,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "route history and insights disclose deliberately and survive offline reconnect",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3357,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "failed history remains retryable while capture is available; empty has truthful copy",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4007,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "reading route has explicit Back to its book",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2941,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "Dashboard Daily Focus capture restores its own invoker",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2947,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "keyboard stays inside capture and focused text survives a shorter viewport",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4039,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction composition tablet",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2866,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction composition compact200",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2988,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction composition dark",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3198,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "correction composition paper",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2818,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "account change during correction cannot carry its draft or confirmation to replacement",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4647,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f11b-final-followup.json",
+      "stats": {
+        "startTime": "2026-10-01T22:01:52.973Z",
+        "duration": 117320.186,
+        "expected": 39,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from book retains local page through stale refresh and reopens fresh",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4206,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from dashboard retains local page through stale refresh and reopens fresh",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1472,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from route retains local page through stale refresh and reopens fresh",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1429,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "pending capture vetoes Escape Back and repeated submission",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1305,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "account change during capture cannot update the next reader or retain draft",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1321,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "offline progress route captures locally without inventing synced history",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1153,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "captured local log remains in Book Detail after older history refresh",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1338,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "route history and insights disclose deliberately and survive offline reconnect",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1319,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "failed history remains retryable while capture is available; empty has truthful copy",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1724,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "Dashboard Daily Focus capture restores its own invoker",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1330,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "Book Detail logs retain content on refresh failure and expose retry",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1072,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "Book Detail initial history loading and failure are never represented as empty",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1216,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "capture and route primary text keep contrast in available palettes",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2281,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from book retains local page through stale refresh and reopens fresh",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2767,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from dashboard retains local page through stale refresh and reopens fresh",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2968,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from route retains local page through stale refresh and reopens fresh",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2684,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "pending capture vetoes Escape Back and repeated submission",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2181,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "account change during capture cannot update the next reader or retain draft",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2571,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "offline progress route captures locally without inventing synced history",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2429,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "captured local log remains in Book Detail after older history refresh",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2477,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "route history and insights disclose deliberately and survive offline reconnect",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2583,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "failed history remains retryable while capture is available; empty has truthful copy",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2907,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "Dashboard Daily Focus capture restores its own invoker",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2430,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "Book Detail logs retain content on refresh failure and expose retry",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2095,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "Book Detail initial history loading and failure are never represented as empty",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2294,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "capture and route primary text keep contrast in available palettes",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4889,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from book retains local page through stale refresh and reopens fresh",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 6036,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from dashboard retains local page through stale refresh and reopens fresh",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3805,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "save from route retains local page through stale refresh and reopens fresh",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3726,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "pending capture vetoes Escape Back and repeated submission",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3534,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "account change during capture cannot update the next reader or retain draft",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3348,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "offline progress route captures locally without inventing synced history",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3177,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "captured local log remains in Book Detail after older history refresh",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3595,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "route history and insights disclose deliberately and survive offline reconnect",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3344,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "failed history remains retryable while capture is available; empty has truthful copy",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4363,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "Dashboard Daily Focus capture restores its own invoker",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 5369,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "Book Detail logs retain content on refresh failure and expose retry",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3038,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "Book Detail initial history loading and failure are never represented as empty",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2571,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "capture and route primary text keep contrast in available palettes",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 5992,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f11b-touch.json",
+      "stats": {
+        "startTime": "2026-10-01T22:04:25.597Z",
+        "duration": 21640.451,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "capture uses a sheet and retains its draft when the window expands",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4312,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "capture uses a sheet and retains its draft when the window expands",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3163,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "reading-progress.spec.ts",
+          "title": "capture uses a sheet and retains its draft when the window expands",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 6502,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f11a-f11b-regressions.json",
+      "stats": {
+        "startTime": "2026-10-01T22:05:35.313Z",
+        "duration": 59316.37,
+        "expected": 21,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "book-detail.spec.ts",
+          "title": "tabs preserve keyboard access and selected panel through pane changes",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4152,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "log entry stays mounted across resize and native Back protects its draft",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1446,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "More preserves membership task and returns focus across resize",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1115,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "delete waits, preserves failure and retries once",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1343,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "mark finished explains consequences and retains failure for retry",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1204,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "unknown totals do not invent percent; completed state remains readable",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1337,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "populated metadata, reading statistics and logs stay discoverable",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1174,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "tabs preserve keyboard access and selected panel through pane changes",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2900,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "log entry stays mounted across resize and native Back protects its draft",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2574,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "More preserves membership task and returns focus across resize",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2107,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "delete waits, preserves failure and retries once",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2598,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "mark finished explains consequences and retains failure for retry",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2605,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "unknown totals do not invent percent; completed state remains readable",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2173,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "populated metadata, reading statistics and logs stay discoverable",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1968,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "tabs preserve keyboard access and selected panel through pane changes",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4749,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "log entry stays mounted across resize and native Back protects its draft",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3029,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "More preserves membership task and returns focus across resize",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2541,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "delete waits, preserves failure and retries once",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2758,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "mark finished explains consequences and retains failure for retry",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2814,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "unknown totals do not invent percent; completed state remains readable",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3312,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "book-detail.spec.ts",
+          "title": "populated metadata, reading statistics and logs stay discoverable",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2485,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "test-results/f11b-membership.json",
+      "stats": {
+        "startTime": "2026-10-01T22:08:14.791Z",
+        "duration": 28253.212,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "file": "library-tasks.spec.ts",
+          "title": "BookDetail: membership lookup and failed writes stay truthful and retry once",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 4545,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "library-tasks.spec.ts",
+          "title": "BookDetail: same membership node and parent selection survive every breakpoint and nested Back",
+          "project": "chromium",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 1517,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "library-tasks.spec.ts",
+          "title": "BookDetail: membership lookup and failed writes stay truthful and retry once",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3615,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "library-tasks.spec.ts",
+          "title": "BookDetail: same membership node and parent selection survive every breakpoint and nested Back",
+          "project": "webkit",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 2962,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "library-tasks.spec.ts",
+          "title": "BookDetail: membership lookup and failed writes stay truthful and retry once",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 5096,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "file": "library-tasks.spec.ts",
+          "title": "BookDetail: same membership node and parent selection survive every breakpoint and nested Back",
+          "project": "firefox",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration": 3292,
+              "errors": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "source_sha256": {
+    "apps/client/src/components/ProgressLogger.tsx": "0aa3eecdd7b1414db1650fe0cf807e8fdbcb44690ea0d80ec34a606129163eeb",
+    "apps/client/src/lib/progressCapture.ts": "e0810c749eeab1bdfc797ed43dc33bf0cfaccff0dbf9cf6bbd20ed20e8f1f968",
+    "apps/client/src/components/QuickProgressWidget.tsx": "4506e707c5c3218ced826a8a24cd9b27180a9b0b624cc0a0ab19991028cf4c20",
+    "apps/client/src/screens/ProgressTracking.tsx": "4896e87fdf07cb856c26eb797082d61f9fa308c7305b58bb176241427361479a",
+    "apps/client/src/screens/BookDetail.tsx": "7987aea55b3438f4d5ea056f0afec40ad5bd33d4f37034174c388d22a76be711",
+    "apps/client/src/screens/Dashboard.tsx": "7035a97b85ec175f3dcbf875cce0f9869e622b3c33e7001b4f45191449589336",
+    "apps/client/src/hooks/useProgressLogs.ts": "1b9b0cda769292a1d25855f9cd996272350dca3657d1bf8cf5623a00498d178b",
+    "apps/client/src/hooks/useProgressTracking.ts": "3ff0c9b86b25ed394e49e56f436818858e75394736080ed435995e41e11b17d6",
+    "apps/client/src/components/DailyFocusCard.tsx": "b9d4ad8fe73738952c4089d148049438056c6ce0647485b485700fed7883afae"
+  },
+  "graphify": {
+    "nodes": 10582,
+    "edges": 23368,
+    "communities": 709,
+    "obsidian_notes": 11283,
+    "local_only": true,
+    "source_index_matches": true,
+    "gradle_warnings": 3,
+    "preserved_conflicting_notes": 8
+  },
+  "limits": [
+    "Controlled browser service, repository, sync, media and device boundaries; no live backend or native execution.",
+    "Replay protection for retained capture attempt; no persistent crash/reload recovery session.",
+    "Physical native keyboards/safe areas/system gestures and assistive technology remain unverified.",
+    "No measured production navigation latency or legal conformance claim."
+  ]
+}

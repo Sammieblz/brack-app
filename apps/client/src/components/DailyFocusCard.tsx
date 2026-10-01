@@ -26,7 +26,7 @@ interface DailyFocusCardProps {
   freshness?: JourneyFreshness;
   provisional?: boolean;
   hasCurrentBook?: boolean;
-  onAction: (action: DailyFocusAction, quest: QuestAssignment) => void;
+  onAction: (action: DailyFocusAction, quest: QuestAssignment, invoker?: HTMLElement) => void;
   className?: string;
 }
 
@@ -169,7 +169,7 @@ export const DailyFocusCard = ({
           {!isComplete && (
             <Button
               type="button"
-              onClick={() => onAction(action, quest)}
+              onClick={event => onAction(action, quest, event.currentTarget)}
               disabled={isExpiredSnapshot}
               className="flex-1"
             >

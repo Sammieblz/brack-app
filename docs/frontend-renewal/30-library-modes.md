@@ -1,5 +1,7 @@
 # F10c - Bookshelf and carousel reconstruction
 
+Historical checkpoint: this work is now committed in `ee0081e`. The old review-stop statements below describe that earlier delivery. Current continuation is [checkpoint32](32-reading-capture.md).
+
 Status: implemented and verified within the scope below; review stop, 2026-10-01. Baseline is committed F10b `b97119d`. No staging or commit authorized in this pass. The old checkpoint29 review stop is historical.
 
 ## Complete slice

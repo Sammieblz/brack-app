@@ -1,0 +1,24 @@
+.reading-correction { container: reading-correction / inline-size; min-width: 0; padding-block: 1rem 1.5rem; border-bottom: 1px solid hsl(var(--border)); font-family: 'Inter', sans-serif; }
+.reading-correction h2 { margin-bottom: .5rem; font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; line-height: 1.4; }
+.reading-correction header p { max-width: 55ch; color: hsl(var(--muted-foreground)); font-size: .8125rem; line-height: 1.6; }
+.reading-correction form { margin-top: 1.125rem; }
+.reading-correction-saved { margin-bottom: .75rem; font-size: .875rem; font-weight: 500; }
+.reading-correction-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: .625rem; align-items: end; }
+.reading-correction-field { min-width: 0; }
+.reading-correction label { display: block; margin-bottom: .375rem; font-size: .8125rem; font-weight: 600; }
+.reading-correction input { width: 100%; min-width: 0; min-height: 44px; border: 1px solid hsl(var(--input)); border-radius: .5rem; background: hsl(var(--background)); color: hsl(var(--foreground)); padding: .5rem .75rem; font: inherit; font-size: 1rem; line-height: 1.5; }
+.reading-correction button { min-height: 44px; min-width: 44px; border: 1px solid hsl(var(--border)); border-radius: .5rem; background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); padding: .625rem 1rem; font-size: .875rem; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+.reading-correction button:hover:enabled { background: hsl(var(--muted)); }
+.reading-correction input:focus-visible, .reading-correction button:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+.reading-correction :disabled { cursor: not-allowed; opacity: .6; }
+.reading-correction input[aria-invalid=true] { border-color: hsl(var(--destructive)); }
+.reading-correction-error, .reading-correction-note, .reading-correction-status { margin-top: .75rem; font-size: .8125rem; line-height: 1.6; overflow-wrap: anywhere; }
+.reading-correction-error { color: hsl(var(--foreground)); border-left: 3px solid hsl(var(--destructive)); padding-left: .625rem; }
+.reading-correction-note, .reading-correction-status { color: hsl(var(--muted-foreground)); }
+.reading-correction-status:empty { margin: 0; }
+@container reading-correction (min-width: 24rem) {
+  .reading-correction-row { grid-template-columns: minmax(0, 1fr) auto; max-width: 32rem; }
+}
+@media (forced-colors: active) {
+  .reading-correction button, .reading-correction input { border-color: ButtonText; }
+}

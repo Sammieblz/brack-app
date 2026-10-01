@@ -85,9 +85,9 @@ An interrupted session should be resumable from this checkpoint without asking t
 
 ## Active implementation checkpoint
 
-Current checkpoint: **[F11a - Book Detail reconstruction](31-book-detail.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `b97119d`; inherited F10c and this slice remain unstaged. 81 distinct Playwright cases and 19 unit tests pass; type/lint/build checks and local Graphify/Obsidian refresh completed. Next: **F11b progress capture and correction**, then F11c timer/session and S08 editing. Global scroll restoration and the corrective/native/AT gates remain open; full F11 is not complete.
+Current checkpoint: **[F11b - Progress capture, correction and history](32-reading-capture.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `ee0081e` includes F10c/F11a. Three coordinated units completed; 132 distinct new Playwright cases plus 27 existing regressions and 121 unit tests pass. Types/lint/build, source census and local Graphify/Obsidian refresh completed. Next: **F11c timer/session**, then S08 EditBook. Full F11 and corrective/native/AT gates remain open.
 
-Preserve checkpoint23's failure history: the complete Settings matrix passed83/87, followed by17/18 continuity,18/18 after correction and3/3 repeated WebKit checks. These overlap;95 units across12 files and shared shell21/21/overlay15/15 are historical evidence. CR03 is committed in 74ed7d7,CR04 in ef5b2f9 and CR05 in a610871. Preserve their verified contracts; resume from checkpoint26, not their old review stops or historical Graphify counts.
+Preserve checkpoint23's failure history: the complete Settings matrix passed83/87, followed by17/18 continuity,18/18 after correction and3/3 repeated WebKit checks. These overlap;95 units across12 files and shared shell21/21/overlay15/15 are historical evidence. CR03 is committed in 74ed7d7,CR04 in ef5b2f9 and CR05 in a610871. Preserve their verified contracts; their review stops are historical. Checkpoint32 now owns the next bounded step and current Graphify evidence.
 
 Earlier F02/F03 results and their review stop are historical in [14](14-next-implementation-batch.md). Actual native/AT/live-service checks remain release evidence gaps. The original audit above is historical; do not restart completed tickets from its defect list.
 

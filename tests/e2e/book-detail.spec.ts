@@ -102,18 +102,21 @@ test('tabs preserve keyboard access and selected panel through pane changes', as
   await page.getByRole('tab', { name: 'Journal', exact: true }).click(); await expect(page.getByRole('tabpanel', { name: 'Journal' })).toBeVisible();
   await page.getByRole('tab', { name: 'Reviews', exact: true }).click(); await expect(page.getByRole('heading', { name: 'Community Reviews' })).toBeVisible();
 });
-test('log entry stays mounted across resize and native Back dismisses it', async ({ page }) => {
+test('log entry stays mounted across resize and native Back protects its draft', async ({ page }) => {
   await open(page, 'runtime=android');
   await page.getByRole('button', { name: 'Log progress', exact: true }).click();
-  const dialog = page.getByRole('dialog'); await expect(dialog).toBeVisible();
+  const dialog = page.getByRole('dialog', { name: 'Log reading progress', exact: true }); await expect(dialog).toBeVisible();
+  await dialog.locator('summary').click();
   const notes = dialog.locator('textarea'); await notes.fill('A passage to remember'); const original = await notes.elementHandle();
   for (const width of [834, 1440, 390]) {
     await page.setViewportSize({ width, height: 1000 }); await expect(notes).toHaveValue('A passage to remember');
     expect(await notes.evaluate((node, before) => node === before, original)).toBe(true);
   }
-  await page.evaluate(() => window.libraryTasks!.back()); await expect(dialog).toHaveCount(0);
+  await page.evaluate(() => window.libraryTasks!.back());
+  await page.getByRole('dialog', { name: 'Discard this progress draft?' }).getByRole('button', { name: 'Discard draft' }).click();
+  await expect(dialog).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Log progress', exact: true })).toBeFocused();
-  // Dismissal retention/pending writes belong to F11b; this checks the actual opener and one mounted owner.
+  // F11b adds the guard; this regression retains the actual F11a opener and owner check.
 });
 test('More preserves membership task and returns focus across resize', async ({ page }) => {
   await open(page, 'runtime=android');
