@@ -213,8 +213,7 @@ test('List duplicate: pending serializes and failed copy is explicit before succ
 async function listEntry(page: Page, empty: boolean, query = '', viewport?: { width: number; height: number }) {
   await open(page, empty ? '/lists/list-3' : '/lists/list-1', query, viewport);
   await expect(page.getByRole('heading', { name: empty ? 'Empty collection' : 'Weekend reading', exact: true }).first()).toBeVisible();
-  const triggers = page.getByRole('button', { name: 'Add Books', exact: true });
-  const trigger = empty ? triggers.last() : triggers.first();
+  const trigger = page.getByRole('button', { name: empty ? 'Add Books to List' : 'Add Books', exact: true });
   return trigger;
 }
 for (const empty of [false, true]) {
@@ -447,9 +446,9 @@ for (const profile of profiles) {
     await listEntry(page, false, query, viewport);
     const remove = page.getByRole('button', { name: `Remove ${title} from list`, exact: true });
     await reveal(remove);
-    await remove.locator('..').getByRole('button', { name: 'Details', exact: true }).focus();
+    const row = page.locator('.collection-book').filter({ has: remove });
+    await row.getByRole('link', { name: `Open ${title}`, exact: true }).focus();
     await page.keyboard.press('Tab'); await expect(remove).toBeFocused(); await usable(remove);
-    const row = remove.locator('xpath=ancestor::div[contains(@class,"group") and contains(@class,"h-full")][1]');
     const rowOverflow = await row.evaluate(element => ({ overflow: element.scrollWidth - element.clientWidth, bounds: element.getBoundingClientRect().toJSON() }));
     await info.attach(`${profile.name}-list-row-geometry`, { body: JSON.stringify(rowOverflow, null, 2), contentType: 'application/json' });
     expect(rowOverflow.overflow, 'Actual list card must not clip its actions').toBeLessThanOrEqual(1);

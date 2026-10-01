@@ -30,7 +30,7 @@ const BookLists = () => {
     <MobileLayout>
       {compactNavigation && <MobileHeader title="Book Lists" />}
       <main className="app-page">
-        {user ? <BookListManager key={user.id} userId={user.id} /> : <ReaderSignInPrompt
+        {user ? <BookListManager key={user.id} userId={user.id} showTitle={!compactNavigation} /> : <ReaderSignInPrompt
           destination={pathname} title="Sign in to your book lists"
           description="Keep your collections together. Sign in to open your lists, or return home to explore Brack." />}
       </main>

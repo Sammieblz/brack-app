@@ -12,4 +12,4 @@ Every `LibraryBookActions` consumer has a native Log progress link and labelled 
 
 Custom CSS uses existing theme colors, Inter/Merriweather/Playfair roles and Iconoir. Focus indicators, wrapping and 44px minimum action targets apply across viewports. Text and pressed state convey selection without relying only on color. No animation or gesture recognizer is added. Large-text wrapping takes priority over single-line geometry.
 
-Ionic was considered per component, as recorded in checkpoint28. This code does not adopt Ionic in production or substitute CSS imitation for tested native integration. Native hardware, OS assistive technology, large-library performance, tablet detail panes and Lists composition remain separate acceptance work.
+Ionic was considered per component, as recorded in checkpoint28. This code does not adopt Ionic in production or substitute CSS imitation for tested native integration. Native hardware, OS assistive technology, large-library performance, tablet detail panes remain separate acceptance work. Lists composition is covered by the [F10b contract](ui-list-presentation.md).

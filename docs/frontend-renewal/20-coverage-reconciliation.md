@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-Current checkpoint: **[F10a - Library reconstruction](28-library-reconstruction.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `d944fef` commits CR06b. Actual Library controls/flat rows/shared actions are rebuilt; exact checks and original failures are in28. No staging/commit. Next on authorized continuation: F10b Lists manager/detail composition. Remaining F10 acceptance, CR06c/remaining CR06, CR07-CR10 and other main screen tickets stay open.
+Current checkpoint: **[F10b - Lists reconstruction](29-lists-reconstruction.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `8c01615` commits F10a. Manager/detail composition, accessible reorder and exact evidence belong to29. No staging/commit. Next on authorized continuation: F10c bookshelf/carousel presentation and return context, then F11. Remaining F10/native/AT/performance acceptance, CR06c/remaining CR06, CR07-CR10 and other main tickets stay open.
 
 **The user's coverage objection is substantiated.** F01–F09 committed useful repairs, but the accumulated fixture results do not close their cross-application requirements. This review supersedes the “proceed to F10” handoff. The original reconciliation baseline was **`db076cf`**, which already committed F09; the previous uncommitted status was stale. The worktree was clean when that review began. Later implementation checkpoints above supersede its baseline defect status only within their named scope.
 

@@ -1,5 +1,7 @@
 # Ionic integration decision
 
+F10b evaluates List/Reorder group/Item sliding separately in [checkpoint29](frontend-renewal/29-lists-reconstruction.md#component-specific-ionic-decision). It retains custom rows and the installed dnd-kit owner with visible move alternatives; this is not production Ionic adoption or a new incompatibility finding.
+
 F10a re-evaluates Segment/Searchbar/Action Sheet/Item Sliding per component in [checkpoint28](frontend-renewal/28-library-reconstruction.md). Its custom Library composition retains native inputs and the existing overlay/swipe owners. This is not production Ionic adoption; the gate below applies to the tested router/modal integration, not every Ionic component or all future shell work.
 
 **Decision: defer production adoption of the tested Ionic 9.0.5 route shell and modal.** Continue frontend renewal with BRACK's existing React Router 6 and accessible Radix primitives, composed into the planned custom phone/tablet/browser surfaces. This is a completed feasibility decision, not permission to stop the UI renewal or replace branding.

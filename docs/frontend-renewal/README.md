@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Current checkpoint: **[F10a - Library reconstruction](28-library-reconstruction.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `d944fef` commits CR06b. Actual Library controls/flat rows/shared actions are rebuilt; exact checks and original failures are in28. No staging/commit. Next on authorized continuation: F10b Lists manager/detail composition. Remaining F10 acceptance, CR06c/remaining CR06, CR07-CR10 and other main screen tickets stay open.
+Current checkpoint: **[F10b - Lists reconstruction](29-lists-reconstruction.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `8c01615` commits F10a. Manager/detail composition, accessible reorder and exact evidence belong to29. No staging/commit. Next on authorized continuation: F10c bookshelf/carousel presentation and return context, then F11. Remaining F10/native/AT/performance acceptance, CR06c/remaining CR06, CR07-CR10 and other main tickets stay open.
 
 ## Outcome
 
@@ -51,7 +51,8 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [25 - CR05 Messages layout and gestures](25-messages-layout-gestures.md) | Historical committed CR05: measured panes, retained task ownership, visible actions and guarded local gestures |
 | [26 - CR06a Social destinations](26-social-destinations.md) | Committed historical child: actual social links/actions, readable large-text card intros, verified callers and explicit browser limitations |
 | [27 - CR06b Route recovery](27-route-recovery.md) | Committed `d944fef`: Lists/Goals sign-in return, club Back, named Library links; exact evidence and remaining shell child |
-| [28 - F10a Library reconstruction](28-library-reconstruction.md) | Current review stop: actual Library hierarchy, flat book rows, shared action disclosure, evidence and bounded continuation |
+| [28 - F10a Library reconstruction](28-library-reconstruction.md) | Committed `8c01615`: actual Library hierarchy, flat book rows, shared action disclosure, evidence and bounded continuation |
+| [29 - F10b Lists reconstruction](29-lists-reconstruction.md) | Current review stop: collection/detail rows, filter context, accessible reorder, actual task regressions and continuation |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability

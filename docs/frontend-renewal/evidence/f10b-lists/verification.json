@@ -1,0 +1,195 @@
+{
+  "checkpoint": "F10b",
+  "baseline": "8c01615",
+  "date": "2026-10-01",
+  "state": "implemented and verified within scope; review stop; uncommitted",
+  "browserCoverage": {
+    "newDistinctPassed": 81,
+    "existingTaskPassed": 54,
+    "baselineCaptures": 4,
+    "note": "Reruns overlap. Initial failures and interrupted run retained below; no device or AT claim."
+  },
+  "runs": [
+    {
+      "name": "f10b-baseline",
+      "report": "test-results/f10b-baseline-summary.json",
+      "stats": {
+        "startTime": "2026-10-01T18:20:08.151Z",
+        "duration": 11983.779999999999,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "nonPassing": []
+    },
+    {
+      "name": "f10b-first",
+      "report": "test-results/f10b-first-summary.json",
+      "stats": {
+        "startTime": "2026-10-01T18:29:54.749Z",
+        "duration": 63652.294,
+        "expected": 19,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "nonPassing": [
+        {
+          "title": "composition /lists/list-1 compact200",
+          "project": "chromium",
+          "status": "unexpected"
+        },
+        {
+          "title": "visible reorder serializes, rolls back rejection, retains focus and persists one retry",
+          "project": "chromium",
+          "status": "unexpected"
+        }
+      ]
+    },
+    {
+      "name": "f10b-matrix",
+      "report": "test-results/f10b-matrix-summary.json",
+      "stats": {
+        "startTime": "2026-10-01T18:32:06.165Z",
+        "duration": 190714.592,
+        "expected": 72,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "nonPassing": []
+    },
+    {
+      "name": "f10b-states",
+      "report": "test-results/f10b-states-summary.json",
+      "stats": {
+        "startTime": "2026-10-01T18:36:30.263Z",
+        "duration": 59355.541000000005,
+        "expected": 7,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "nonPassing": [
+        {
+          "title": "collection links support a separate tab without replacing the current route",
+          "project": "chromium",
+          "status": "unexpected"
+        },
+        {
+          "title": "collection links support a separate tab without replacing the current route",
+          "project": "webkit",
+          "status": "unexpected"
+        }
+      ]
+    },
+    {
+      "name": "f10b-final-corrections",
+      "report": "test-results/f10b-final-corrections-summary.json",
+      "stats": {
+        "startTime": "2026-10-01T18:38:34.463Z",
+        "duration": 33706.274000000005,
+        "expected": 8,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "nonPassing": [
+        {
+          "title": "composition /lists compact200",
+          "project": "chromium",
+          "status": "unexpected"
+        }
+      ]
+    },
+    {
+      "name": "f10b-title-width",
+      "report": "test-results/f10b-title-width-summary.json",
+      "stats": {
+        "startTime": "2026-10-01T18:39:38.777Z",
+        "duration": 18918.170000000002,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "nonPassing": []
+    },
+    {
+      "name": "f10b-drag-announcements",
+      "report": "test-results/f10b-drag-announcements-summary.json",
+      "stats": {
+        "startTime": "2026-10-01T18:48:13.011Z",
+        "duration": 25095.073999999997,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "nonPassing": []
+    },
+    {
+      "name": "f10b-library-tasks",
+      "interrupted": true,
+      "artifactDirectory": "test-results/f10b-library-tasks",
+      "note": "Stopped after repeated obsolete Details/Card selectors; final54-case rerun supersedes this incomplete run."
+    },
+    {
+      "name": "f10b-library-tasks-final",
+      "artifactDirectory": "test-results/f10b-library-tasks-final",
+      "lastRun": "test-results/f10b-library-tasks-final/.last-run.json",
+      "result": {
+        "passed": 54,
+        "failed": 0,
+        "skipped": 0
+      },
+      "evidence": "Completed runner output: 54 passed (3.8m); .last-run.json status passed with no failedTests. The CLI reporter override did not persist the requested summary file; do not treat it as an available artifact."
+    }
+  ],
+  "otherChecks": {
+    "unit": "64 passed across6 files; initial43 subset",
+    "clientTypes": "passed app and node configs",
+    "fixtureTypes": "passed tests/playwright/tsconfig.lists-renewal.json",
+    "scopedLint": "passed --max-warnings=0",
+    "productionBuild": "passed, final log test-results/f10b-build-final.log",
+    "diffWhitespace": "passed"
+  },
+  "graph": {
+    "nodes": 10348,
+    "edges": 22992,
+    "mode": "local AST; no model labeling or cloud extraction",
+    "log": "test-results/f10b-final-graphify.log",
+    "exports": [
+      "graphify-out/obsidian",
+      "graphify-out/graph.html"
+    ],
+    "communities": 689,
+    "exportedObsidianNotes": 11034,
+    "protectedNotesSkipped": [
+      "Native_2.md",
+      "Dashboard.md",
+      "dashboard_1.md"
+    ]
+  },
+  "census": {
+    "routes": 39,
+    "screenModules": 33,
+    "componentModules": 277,
+    "totalModulesAndStyles": 517
+  },
+  "screenshots": {
+    "before": 4,
+    "after": 32,
+    "enginesChecked": "Chromium, WebKit, Firefox; checked-in screenshots are Chromium",
+    "fonts": "Inter, Merriweather, Playfair Display loaded and asserted in new composition tests"
+  },
+  "limitations": [
+    "Physical iOS/Android and native shell",
+    "VoiceOver/TalkBack and manual usability",
+    "Live service synchronization",
+    "Measured large-library/navigation performance",
+    "Tablet detail panes and scroll restoration",
+    "Remaining F10 and main/corrective tickets"
+  ]
+}

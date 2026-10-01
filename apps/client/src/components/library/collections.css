@@ -1,0 +1,38 @@
+@import "./library-reading-room.css";
+
+/* Collection composition shares BRACK tokens and controls with the reading room. */
+.collection-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.collection-heading > :first-child { flex: 1 1 13rem; }
+.collection-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); column-gap: 2rem; }
+.collection-row { display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: start; border-bottom: 1px solid hsl(var(--border)); padding: 1.25rem 0; }
+.collection-destination { display: grid; grid-template-columns: 2.75rem minmax(0, 1fr); align-items: start; gap: .75rem; min-height: 44px; padding-block: .25rem; border-radius: .25rem; }
+.collection-mark { display: grid; place-items: center; width: 2.75rem; height: 3.75rem; color: hsl(var(--foreground)); border-inline-start: 3px solid hsl(var(--primary)); background: hsl(var(--muted) / .65); border-radius: .125rem .5rem .5rem .125rem; }
+.collection-title { font-family: Merriweather, serif; font-weight: 700; font-size: 1.125rem; line-height: 1.5; overflow-wrap: anywhere; margin-block: .25rem .5rem; }
+.collection-meta { font-family: Inter, sans-serif; font-size: .75rem; line-height: 1.5; color: hsl(var(--muted-foreground)); overflow-wrap: anywhere; }
+.collection-description { font-family: Inter, sans-serif; font-size: .875rem; line-height: 1.6; overflow-wrap: anywhere; }
+.collection-date { margin-top: .75rem; font-family: Inter, sans-serif; font-size: .75rem; line-height: 1.5; color: hsl(var(--muted-foreground)); }
+.collection-destination:focus-visible, .collection-book-destination:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+.collection-destination:hover .collection-title, .collection-book-destination:hover h2 { text-decoration: underline; text-underline-offset: .2em; }
+.collection-filter-options { display: flex; flex-wrap: wrap; gap: .5rem; }
+.collection-filter-options button { border: 1px solid hsl(var(--border)); }
+.collection-filter-options button[aria-pressed="true"] { border-color: hsl(var(--foreground)); background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); text-decoration: underline; text-underline-offset: .2em; }
+.collection-select { min-height: 48px; width: 100%; min-width: 0; padding: .5rem; border: 1px solid hsl(var(--border)); border-radius: .5rem; background: hsl(var(--background)); color: hsl(var(--foreground)); font: inherit; font-weight: 400; }
+.collection-select:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.collection-book { position: relative; min-width: 0; padding-block: 1.25rem; background: hsl(var(--background)); border-bottom: 1px solid hsl(var(--border)); }
+.collection-book-destination { display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: 1rem; border-radius: .25rem; }
+.collection-book-cover { width: 4rem; height: 6rem; object-fit: cover; border-radius: .125rem .375rem .375rem .125rem; box-shadow: 0 2px 4px hsl(var(--foreground) / .12); }
+.collection-book-actions { margin-top: .75rem; display: flex; flex-wrap: wrap; justify-content: flex-end; }
+.collection-order-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .75rem; border-bottom: 1px solid hsl(var(--border)); padding-bottom: .75rem; }
+.collection-order-toolbar > div { flex: 1 1 15rem; }
+.collection-reorder-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .25rem; }
+.collection-drag-handle { touch-action: none; cursor: grab; }
+.collection-drag-handle:active { cursor: grabbing; }
+.collection-book[data-dragging="true"] { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.collection-reorder-controls [aria-disabled="true"], .collection-actions:disabled { opacity: .5; cursor: not-allowed; }
+.collection-row, .collection-book { container-type: inline-size; }
+/* Large type in a narrow pane needs the full reading width, not a cover-sized text column. */
+@container (max-width: 14rem) {
+  .collection-destination, .collection-book-destination { grid-template-columns: minmax(0, 1fr); }
+  .collection-mark { display: none; }
+}
+@media (forced-colors: active) { .collection-mark { border-color: CanvasText; } .collection-filter-options button[aria-pressed="true"] { border-color: Highlight; } }

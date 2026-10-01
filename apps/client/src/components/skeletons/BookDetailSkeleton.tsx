@@ -34,9 +34,9 @@ export const BookListDetailSkeleton = ({ count }: { count?: number }) => (
   <div aria-hidden="true" data-skeleton="book-list-detail" className="space-y-6">
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div className="min-w-0 flex-1"><Skeleton className="mb-2 h-9 w-3/5" /><Skeleton className="h-6 w-4/5" /><Skeleton className="mt-2 h-5 w-16" /></div><Skeleton className="h-10 w-full rounded-full sm:w-28" /></div>
     {count !== 0 && <>
-      <div className="rounded-xl border border-border/60 bg-card/60 p-3"><Skeleton className="h-5 w-28" /><Skeleton className="mt-1 h-5 w-full max-w-md" /></div>
-      <div className="grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: Math.max(0, count ?? 6) }, (_, index) => <div key={index} className={count === undefined ? index >= 4 ? "hidden xl:block" : index >= 2 ? "hidden sm:block" : undefined : undefined}><BookCardSkeleton variant="list-detail" /></div>)}
+      <div className="collection-order-toolbar"><Skeleton className="h-5 w-28" /><Skeleton className="h-11 w-20" /></div>
+      <div className="collection-grid">
+        {Array.from({ length: Math.max(0, count ?? 6) }, (_, index) => <BookCardSkeleton key={index} variant="list-detail" />)}
       </div>
     </>}
   </div>

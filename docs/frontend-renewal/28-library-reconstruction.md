@@ -1,5 +1,7 @@
 # F10a — Library reconstruction
 
+Historical checkpoint: F10a is now committed in `8c01615`. Its review stop below was satisfied before the user authorized [F10b](29-lists-reconstruction.md). Retain the original results as historical evidence.
+
 Status: **Implemented and verified within scope. Stopped for user review, uncommitted.** Baseline `d944fef` commits CR06b; clean worktree at startup. User explicitly redirected work toward visible mobile/tablet reconstruction after correctness work displaced the original design goal. No stage/commit requested; stop for review after a complete, tested screen slice.
 
 Scope: actual MyBooks (`/my-books`, `/books`) search/status/controls composition and flat book presentation; shared book actions in flat/carousel and bookshelf/carousel previews; matching loading placeholders. One counted status control, search, one adaptive controls task, content, and visible Add. Preserve all view modes, list membership, selection/reorder, progress, removal/pending/reader boundaries, theme/font/Iconoir identity, and primary-action/gesture contracts. Lists composition and tablet detail-pane routing remain separately owned F10 children. No backend or global router migration.

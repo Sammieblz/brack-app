@@ -1,5 +1,7 @@
 import type { Book, BookList } from '../../../apps/client/src/types';
-import { readAccount, request } from './state';
+import { controls, readAccount, request } from './state';
+const initialCatalog = new URLSearchParams(location.search).get('catalogRead');
+if (initialCatalog === 'defer' || initialCatalog === 'reject') controls.configure('catalog', initialCatalog);
 export * from '../live-composers/api';
 export { getCurrentAuthUser } from './data';
 export const BOOK_LISTS_CHANGED_EVENT = 'brack:book-lists-changed';
@@ -25,7 +27,14 @@ function store(id = readAccount() ?? 'signed-out') {
     if (new URLSearchParams(location.search).has('pagedCatalog')) {
       lists.splice(2, 0, ...Array.from({ length: 14 }, (_, index) => ({ ...lists[1], id: `extra-list-${index}`, name: `Reading collection ${index + 1}` })));
     }
-    value = { books, lists, membership: { 'list-1': ['book-1'], 'list-2': [], 'list-3': [] } }; owners.set(id, value);
+    if (new URLSearchParams(location.search).has('noCollections')) lists.splice(0);
+    const renewal = new URLSearchParams(location.search).has('listRenewal') && lists.length > 0;
+    if (renewal) lists[1].is_public = true;
+    if (renewal && new URLSearchParams(location.search).has('long')) {
+      lists[0].name = 'Weekend reading and the many stories we return to across seasons';
+      books[0].title = 'The Left Hand of Darkness and the stories we return to across generations';
+    }
+    value = { books, lists, membership: { 'list-1': renewal ? books.map(book => book.id) : ['book-1'], 'list-2': [], 'list-3': [] } }; owners.set(id, value);
   }
   return value;
 }
@@ -77,7 +86,11 @@ export async function removeBookFromList(listId: string, bookId: string) {
   const data = store(owner); data.membership[listId] = (data.membership[listId] ?? []).filter(id => id !== bookId); changed(owner);
 }
 export async function addBooksToList(listId: string, bookIds: string[]) { for (const id of bookIds) await addBookToList(listId, id); }
-export async function reorderBookListItems(listId: string, items: unknown) { await request('list-reorder', { listId, items }, listId); }
+export async function reorderBookListItems(listId: string, items: { book_id: string; position: number }[]) {
+  const owner = readAccount()!;
+  await request('list-reorder', { listId, items }, listId);
+  store(owner).membership[listId] = [...items].sort((a, b) => a.position - b.position).map(item => item.book_id);
+}
 export const booksRepo = {
   list: async (userId: string) => [...store(userId).books],
   get: async (id: string) => store().books.find(book => book.id === id) ?? null,

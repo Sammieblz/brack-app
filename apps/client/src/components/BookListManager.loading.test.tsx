@@ -37,12 +37,12 @@ beforeEach(() => {
 describe("Book List manager loading presentation", () => {
   it("preserves the card and search input during refresh", () => {
     const { rerender, container } = render(view());
-    fireEvent.change(screen.getByPlaceholderText("Search lists by name or description"), { target: { value: "Cached" } });
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search lists" }), { target: { value: "Cached" } });
     fireEvent.click(screen.getByRole("button", { name: "Refresh lists" }));
     expect(state.refetch).toHaveBeenCalledOnce();
     state.refreshing = true;
     rerender(view());
-    expect(screen.getByPlaceholderText("Search lists by name or description")).toHaveValue("Cached");
+    expect(screen.getByRole("searchbox", { name: "Search lists" })).toHaveValue("Cached");
     expect(screen.getByRole("heading", { name: "Cached list" })).toBeVisible();
     expect(container.querySelector('[data-skeleton="book-list-card"]')).toBeNull();
     expect(screen.getByRole("status")).toHaveTextContent("Updating");
