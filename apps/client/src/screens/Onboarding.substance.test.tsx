@@ -1,9 +1,13 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { clearAuthReturnIntent, rememberAuthReturnIntent } from "@/services/authReturnIntent";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { OnboardingFormData } from "@/types";
 
 const mocks = vi.hoisted(() => ({
+  user: null as { id: string } | null,
+  status: null as { onboarding_status: string } | null,
+  native: false,
   loadDraft: vi.fn(),
   saveDraft: vi.fn(),
   markReady: vi.fn(),
@@ -43,9 +47,9 @@ vi.mock("@/services/onboardingDraft", () => ({
   markOnboardingDraftReady: mocks.markReady,
   clearOnboardingDraft: mocks.clearDraft,
 }));
-vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: null, loading: false }) }));
+vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: mocks.user, loading: false }) }));
 vi.mock("@/hooks/useOnboardingStatus", () => ({
-  useOnboardingStatus: () => ({ status: null, loading: false, refetch: mocks.refetch }),
+  useOnboardingStatus: () => ({ status: mocks.status, loading: false, refetch: mocks.refetch }),
 }));
 vi.mock("@/hooks/useReadingProfile", () => ({
   useReadingProfile: () => ({ habits: null, loading: false, refetch: mocks.refetch }),
@@ -60,7 +64,7 @@ vi.mock("@/contexts/ThemeContext", () => ({
   }),
 }));
 vi.mock("@/services/postSignupPermissions", () => ({ markPostSignupPermissionsPending: mocks.permissionPending }));
-vi.mock("@/services/platform", () => ({ isMobileNativeRuntime: () => false }));
+vi.mock("@/services/platform", () => ({ isMobileNativeRuntime: () => mocks.native }));
 vi.mock("@/components/ThemeAwareLogo", () => ({ ThemeAwareLogo: () => <span>Brack</span> }));
 vi.mock("@/components/ThemePaletteCarousel", () => ({
   ThemePaletteCarousel: () => <div aria-label="Onboarding theme palette options">Palette preview</div>,
@@ -108,6 +112,8 @@ const renderOnboarding = async () => {
 const originalScrollIntoView = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollIntoView");
 
 beforeEach(() => {
+  clearAuthReturnIntent();
+  mocks.user = null; mocks.status = null; mocks.native = false;
   vi.clearAllMocks();
   mocks.dateValidity.clear();
   Object.defineProperty(HTMLElement.prototype, "scrollIntoView", { configurable: true, value: vi.fn() });
@@ -116,6 +122,7 @@ beforeEach(() => {
   mocks.normalize.mockImplementation((formData: OnboardingFormData) => ({ normalized: { ...formData } }));
 });
 afterEach(() => {
+  clearAuthReturnIntent();
   cleanup();
   vi.restoreAllMocks();
   if (originalScrollIntoView) Object.defineProperty(HTMLElement.prototype, "scrollIntoView", originalScrollIntoView);
@@ -123,6 +130,31 @@ afterEach(() => {
 });
 
 describe("Onboarding substance and safe handoff", () => {
+  it.each([false, true])("keeps the requested route behind setup (native=%s)", async native => {
+    mocks.user = { id: "reader-1" }; mocks.native = native;
+    rememberAuthReturnIntent("/goals-management");
+    render(<MemoryRouter initialEntries={["/onboarding"]}><Routes>
+      <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/goals-management" element={<p>Returned to goals</p>} />
+      <Route path="/app-permissions" element={<p>Device setup first</p>} />
+    </Routes></MemoryRouter>);
+    fireEvent.click(await screen.findByRole("button", { name: /Skip/ }));
+    expect(await screen.findByText(native ? "Device setup first" : "Returned to goals")).toBeInTheDocument();
+    expect(mocks.skip).toHaveBeenCalledWith("reader-1", expect.any(String));
+    expect(mocks.permissionPending).toHaveBeenCalledTimes(native ? 1 : 0);
+  });
+
+  it("keeps completed settings edits returning to settings", async () => {
+    mocks.user = { id: "reader-1" }; mocks.status = { onboarding_status: "completed" };
+    rememberAuthReturnIntent("/lists");
+    render(<MemoryRouter initialEntries={["/onboarding?from=settings"]}><Routes>
+      <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/settings" element={<p>Returned to settings</p>} />
+    </Routes></MemoryRouter>);
+    fireEvent.click(await screen.findByRole("button", { name: /^Close/ }));
+    expect(await screen.findByText("Returned to settings")).toBeInTheDocument();
+    expect(mocks.skip).not.toHaveBeenCalled();
+  });
   it("keeps taste validation inline and caps the genre selection at twelve", async () => {
     await renderOnboarding();
     goToChapter("Taste");

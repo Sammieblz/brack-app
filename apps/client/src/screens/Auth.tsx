@@ -44,6 +44,7 @@ import {
   type AuthFailurePresentation,
 } from "@/services/authFailure";
 import { useAuth } from "@/hooks/useAuth";
+import { clearAuthReturnIntent, rememberAuthReturnIntent } from "@/services/authReturnIntent";
 import {
   isValidTurnstileToken,
   type TurnstileAction,
@@ -86,6 +87,10 @@ const EMAIL_EXISTS_FAILURE: AuthFailurePresentation = {
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
+  useLayoutEffect(() => {
+    if (returnTo !== null) rememberAuthReturnIntent(returnTo);
+  }, [returnTo]);
   const [isSignUp, setIsSignUp] = useState(false);
   const [isPasswordResetRequest, setIsPasswordResetRequest] = useState(false);
   const [email, setEmail] = useState("");
@@ -146,7 +151,7 @@ const Auth = () => {
             ? "Setting up your Brack profile..."
             : path === "/app-permissions"
               ? "Preparing Brack for this device..."
-              : "Opening your reading dashboard...",
+              : path === "/dashboard" ? "Opening your reading dashboard..." : "Returning to your reading space...",
         }))
         .catch((error) => {
           postAuthResolutionRef.current = null;
@@ -727,6 +732,7 @@ const Auth = () => {
             aria-label="Back to Brack home"
             onClick={() => {
               abandonOnboardingSignup();
+              clearAuthReturnIntent();
               navigate("/");
             }}
             className="px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4"

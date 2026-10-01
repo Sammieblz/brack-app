@@ -196,6 +196,7 @@ const BookClubDetail = () => {
           />
         )}
         <main className="app-page-narrow">
+          {!compactNavigation && <AppBackButton label="Back" ariaLabel="Go back" fallbackPath="/clubs" showLabel variant="outline" className="mb-4" />}
           {error ? <LoadingError message="This club could not load. It may be unavailable, or your connection was interrupted." onRetry={() => void loadClub()} /> : <p className="text-center font-sans text-muted-foreground">Club not found</p>}
         </main>
       </MobileLayout>

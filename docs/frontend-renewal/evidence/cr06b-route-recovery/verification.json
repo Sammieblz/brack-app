@@ -1,0 +1,1332 @@
+{
+  "baselineCommit": "182230f",
+  "reports": [
+    {
+      "path": "test-results/cr06b-baseline.json",
+      "sha256": "6e97f352951b0760c7fb6922d2a98fa5ee5ebf60f2d30e79e1165d996f92d20e",
+      "stats": {
+        "startTime": "2026-10-01T16:27:40.936Z",
+        "duration": 43026.361,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 5,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "signed-out recovery /lists",
+          "project": "chromium",
+          "status": "failed",
+          "errors": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /Sign in to/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('heading', { name: /Sign in to/ }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /Sign in to/ })\u001b[22m\n\n\n   8 |   test(`signed-out recovery ${path}`, async ({ page }) => {\n   9 |     await open(page, `${path}?anonymous`);\n> 10 |     await expect(page.getByRole('heading', { name: /Sign in to/ })).toBeVisible();\n     |                                                                     ^\n  11 |     await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toHaveAttribute('href', `/auth?mode=signin&returnTo=${encodeURIComponent(path)}`);\n  12 |   });\n  13 | }\n    at C:\\Users\\Samuel\\MyProjects\\brack-app\\tests\\e2e\\route-recovery.spec.ts:10:69"
+          ]
+        },
+        {
+          "name": "signed-out recovery /book-lists",
+          "project": "chromium",
+          "status": "failed",
+          "errors": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /Sign in to/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('heading', { name: /Sign in to/ }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /Sign in to/ })\u001b[22m\n\n\n   8 |   test(`signed-out recovery ${path}`, async ({ page }) => {\n   9 |     await open(page, `${path}?anonymous`);\n> 10 |     await expect(page.getByRole('heading', { name: /Sign in to/ })).toBeVisible();\n     |                                                                     ^\n  11 |     await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toHaveAttribute('href', `/auth?mode=signin&returnTo=${encodeURIComponent(path)}`);\n  12 |   });\n  13 | }\n    at C:\\Users\\Samuel\\MyProjects\\brack-app\\tests\\e2e\\route-recovery.spec.ts:10:69"
+          ]
+        },
+        {
+          "name": "signed-out recovery /goals-management",
+          "project": "chromium",
+          "status": "failed",
+          "errors": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: /Sign in to/ })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('heading', { name: /Sign in to/ }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: /Sign in to/ })\u001b[22m\n\n\n   8 |   test(`signed-out recovery ${path}`, async ({ page }) => {\n   9 |     await open(page, `${path}?anonymous`);\n> 10 |     await expect(page.getByRole('heading', { name: /Sign in to/ })).toBeVisible();\n     |                                                                     ^\n  11 |     await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toHaveAttribute('href', `/auth?mode=signin&returnTo=${encodeURIComponent(path)}`);\n  12 |   });\n  13 | }\n    at C:\\Users\\Samuel\\MyProjects\\brack-app\\tests\\e2e\\route-recovery.spec.ts:10:69"
+          ]
+        },
+        {
+          "name": "unavailable club expanded Back",
+          "project": "chromium",
+          "status": "failed",
+          "errors": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('button', { name: 'Go back', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('button', { name: 'Go back', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('button', { name: 'Go back', exact: true })\u001b[22m\n\n\n  15 |   await open(page, '/clubs/club-one?club=404', 1280);\n  16 |   await expect(page.getByText('This club could not load.', { exact: false })).toBeVisible();\n> 17 |   await expect(page.getByRole('button', { name: 'Go back', exact: true })).toBeVisible();\n     |                                                                            ^\n  18 | });\n  19 | test('tablet Library action names', async ({ page }) => {\n  20 |   await open(page, '/my-books');\n    at C:\\Users\\Samuel\\MyProjects\\brack-app\\tests\\e2e\\route-recovery.spec.ts:17:76"
+          ]
+        },
+        {
+          "name": "tablet Library action names",
+          "project": "chromium",
+          "status": "failed",
+          "errors": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('link', { name: 'Book Lists', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('link', { name: 'Book Lists', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('link', { name: 'Book Lists', exact: true })\u001b[22m\n\n\n  20 |   await open(page, '/my-books');\n  21 |   for (const name of ['Book Lists', 'Analytics', 'Add Book']) {\n> 22 |     await expect(page.getByRole('link', { name, exact: true })).toBeVisible();\n     |                                                                 ^\n  23 |   }\n  24 | });\n  25 |\n    at C:\\Users\\Samuel\\MyProjects\\brack-app\\tests\\e2e\\route-recovery.spec.ts:22:65"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "test-results/cr06b-iteration1.json",
+      "sha256": "bf85b7be180222a900d812c0c227854745010b91e46d1003834a7a4b1b9ffe1c",
+      "stats": {
+        "startTime": "2026-10-01T16:31:45.029Z",
+        "duration": 12125.985,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "signed-out recovery /lists",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "signed-out recovery /book-lists",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "signed-out recovery /goals-management",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "unavailable club expanded Back",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "tablet Library action names",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "path": "test-results/cr06b-iteration2.json",
+      "sha256": "c38ce2331577c484a504152ab12029544e3100cc0b9630af4cca0b218af155ea",
+      "stats": {
+        "startTime": "2026-10-01T16:35:47.635Z",
+        "duration": 57185.96000000001,
+        "expected": 20,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "signed-out recovery /lists",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "signed-out recovery /book-lists",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "signed-out recovery /goals-management",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "unavailable club expanded Back",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "actual sign-in returns to /lists and consumes the intent",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "session loss and resolving old account tear down /lists",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "actual sign-in returns to /book-lists and consumes the intent",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "session loss and resolving old account tear down /book-lists",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "actual sign-in returns to /goals-management and consumes the intent",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "session loss and resolving old account tear down /goals-management",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "explicit auth cancellation clears the destination",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club recovery and retry 390",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club recovery and retry 834",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club recovery and retry 1280",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club Back follows verified internal ancestry",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library phone",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library compact200",
+          "project": "chromium",
+          "status": "failed",
+          "errors": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate\n\n  100 |     return box.left >= left - 1 && box.right <= right + 1 && box.top >= top - 1 && box.bottom <= bottom + 1 &&\n  101 |       [0.1, 0.5, 0.9].every(ratio => { const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height * ratio); return hit === node || node.contains(hit); });\n> 102 |   })).toBe(true);\n      |       ^\n  103 | }\n  104 |\n  105 | for (const profile of [{ name: 'phone', width: 390, text: 100 }, { name: 'compact200', width: 320, text: 200 },\n    at usable (C:\\Users\\Samuel\\MyProjects\\brack-app\\tests\\e2e\\route-recovery.spec.ts:102:7)\n    at C:\\Users\\Samuel\\MyProjects\\brack-app\\tests\\e2e\\route-recovery.spec.ts:118:95"
+          ]
+        },
+        {
+          "name": "visual recovery and Library tablet200",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library desktop",
+          "project": "chromium",
+          "status": "failed",
+          "errors": [
+            "Error: locator.scrollIntoViewIfNeeded: Error: strict mode violation: getByRole('link', { name: 'Analytics', exact: true }) resolved to 2 elements:\n    1) <a href=\"/analytics\" data-size=\"default\" data-active=\"false\" data-state=\"closed\" data-sidebar=\"menu-button\" class=\"peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left outline-none ring-sidebar-ring transition-[color,background-color,box-shadow,width,height,padding] duration-200 ease-out focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu\u2026>\u2026</a> aka getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'Analytics' })\n    2) <a href=\"/analytics\" class=\"font-sans inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 touch-manipulation border border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-ring hover:shadow-sm hover:-tran\u2026>\u2026</a> aka locator('header').getByRole('link', { name: 'Analytics' })\n\nCall log:\n\u001b[2m  - waiting for getByRole('link', { name: 'Analytics', exact: true })\u001b[22m\n\n\n  89 |\n  90 | async function usable(control: Locator) {\n> 91 |   await control.scrollIntoViewIfNeeded();\n     |                 ^\n  92 |   await expect.poll(() => control.evaluate(node => {\n  93 |     const box = node.getBoundingClientRect();\n  94 |     let top = 0, left = 0, right = innerWidth, bottom = innerHeight;\n    at usable (C:\\Users\\Samuel\\MyProjects\\brack-app\\tests\\e2e\\route-recovery.spec.ts:91:17)\n    at C:\\Users\\Samuel\\MyProjects\\brack-app\\tests\\e2e\\route-recovery.spec.ts:118:101"
+          ]
+        },
+        {
+          "name": "visual recovery and Library tabletDark",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "Library link keyboard activation reaches actual Lists",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "tablet Library action names",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "path": "test-results/cr06b-iteration3.json",
+      "sha256": "c279365c2e339bde0a01489343c2158ae3c9662a448943a6d3a59e7f40d5ba01",
+      "stats": {
+        "startTime": "2026-10-01T16:38:06.344Z",
+        "duration": 23638.205,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "visual recovery and Library phone",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library compact200",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library tablet200",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library desktop",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library tabletDark",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "path": "test-results/cr06b-matrix1.json",
+      "sha256": "bcf49a31313cfb4a91d31044d64a8f808447fb33089e68c12030d4a7dda7b3a2",
+      "stats": {
+        "startTime": "2026-10-01T16:39:47.085Z",
+        "duration": 289850.793,
+        "expected": 77,
+        "skipped": 1,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "name": "signed-out recovery /lists",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "signed-out recovery /book-lists",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "signed-out recovery /goals-management",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "unavailable club expanded Back",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "actual sign-in returns to /lists and consumes the intent",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "session loss and resolving old account tear down /lists",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "actual sign-in returns to /book-lists and consumes the intent",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "session loss and resolving old account tear down /book-lists",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "actual sign-in returns to /goals-management and consumes the intent",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "session loss and resolving old account tear down /goals-management",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "explicit auth cancellation clears the destination",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club recovery and retry 390",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club recovery and retry 834",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club recovery and retry 1280",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club Back follows verified internal ancestry",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library phone",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library compact200",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library tablet200",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library desktop",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library tabletDark",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "Library link keyboard activation reaches actual Lists",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club loading and ready keep one reachable Back",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "tablet touch activates the Lists destination",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "tablet Library preserves native modified-click navigation",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "keyboard traversal reaches the Library header destinations",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "tablet Library action names",
+          "project": "chromium",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "signed-out recovery /lists",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "signed-out recovery /book-lists",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "signed-out recovery /goals-management",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "unavailable club expanded Back",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "actual sign-in returns to /lists and consumes the intent",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "session loss and resolving old account tear down /lists",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "actual sign-in returns to /book-lists and consumes the intent",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "session loss and resolving old account tear down /book-lists",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "actual sign-in returns to /goals-management and consumes the intent",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "session loss and resolving old account tear down /goals-management",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "explicit auth cancellation clears the destination",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club recovery and retry 390",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club recovery and retry 834",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club recovery and retry 1280",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club Back follows verified internal ancestry",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library phone",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library compact200",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library tablet200",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library desktop",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library tabletDark",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "Library link keyboard activation reaches actual Lists",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club loading and ready keep one reachable Back",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "tablet touch activates the Lists destination",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "tablet Library preserves native modified-click navigation",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "keyboard traversal reaches the Library header destinations",
+          "project": "webkit",
+          "status": "skipped",
+          "errors": []
+        },
+        {
+          "name": "tablet Library action names",
+          "project": "webkit",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "signed-out recovery /lists",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "signed-out recovery /book-lists",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "signed-out recovery /goals-management",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "unavailable club expanded Back",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "actual sign-in returns to /lists and consumes the intent",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "session loss and resolving old account tear down /lists",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "actual sign-in returns to /book-lists and consumes the intent",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "session loss and resolving old account tear down /book-lists",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "actual sign-in returns to /goals-management and consumes the intent",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "session loss and resolving old account tear down /goals-management",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "explicit auth cancellation clears the destination",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club recovery and retry 390",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club recovery and retry 834",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club recovery and retry 1280",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club Back follows verified internal ancestry",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library phone",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library compact200",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library tablet200",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library desktop",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "visual recovery and Library tabletDark",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "Library link keyboard activation reaches actual Lists",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "club loading and ready keep one reachable Back",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "tablet touch activates the Lists destination",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "tablet Library preserves native modified-click navigation",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "keyboard traversal reaches the Library header destinations",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "name": "tablet Library action names",
+          "project": "firefox",
+          "status": "passed",
+          "errors": []
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/baseline-chromium-signed-out-recovery-lists-screenshot.png",
+      "sha256": "1b2e315b338e7d6627e4b2fea1a33242e37d813c8d04454be4ce811362a5f3a5",
+      "attempt": "baseline",
+      "case": "signed-out recovery /lists",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/baseline-chromium-signed-out-recovery-book-lists-screenshot.png",
+      "sha256": "1b2e315b338e7d6627e4b2fea1a33242e37d813c8d04454be4ce811362a5f3a5",
+      "attempt": "baseline",
+      "case": "signed-out recovery /book-lists",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/baseline-chromium-signed-out-recovery-goals-management-screenshot.png",
+      "sha256": "1b2e315b338e7d6627e4b2fea1a33242e37d813c8d04454be4ce811362a5f3a5",
+      "attempt": "baseline",
+      "case": "signed-out recovery /goals-management",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/baseline-chromium-unavailable-club-expanded-back-screenshot.png",
+      "sha256": "90c30b14bb381c4658903e0cf9e846d01e4f55ee7b1482bc4a2f025b0cf2f9b2",
+      "attempt": "baseline",
+      "case": "unavailable club expanded Back",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/baseline-chromium-tablet-library-action-names-screenshot.png",
+      "sha256": "17eb0357ad0e5e40cf4b434ce967f867603e24990be425a4f3eb5a6c97accd5c",
+      "attempt": "baseline",
+      "case": "tablet Library action names",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/iteration2-chromium-visual-recovery-and-library-compact200-screenshot.png",
+      "sha256": "cafb383660e4263d671e6ac25f0dd0ae32455b04ce986b0cad896e437f0e0295",
+      "attempt": "iteration2",
+      "case": "visual recovery and Library compact200",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/iteration2-chromium-visual-recovery-and-library-desktop-screen--lists.png",
+      "sha256": "730d678904fb3704297ec871af0706e14c6cc81711f039b64a990fd8bad0a916",
+      "attempt": "iteration2",
+      "case": "visual recovery and Library desktop",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/iteration2-chromium-visual-recovery-and-library-desktop-screen--goals-management.png",
+      "sha256": "0cf48e1279fa8e662817252d79c7b47656b4f7479356e2795e4b8d0ea8700c6b",
+      "attempt": "iteration2",
+      "case": "visual recovery and Library desktop",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/iteration2-chromium-visual-recovery-and-library-desktop-screen--clubs-club-one.png",
+      "sha256": "0aa5af93346f59a1f9a82292b5be3fb6e874c42c263d01435922993ab427b5eb",
+      "attempt": "iteration2",
+      "case": "visual recovery and Library desktop",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/iteration2-chromium-visual-recovery-and-library-desktop-screenshot.png",
+      "sha256": "249cdef042e7b5344bc86934c5ef91992eab22cf9a215879518aa54c23d53777",
+      "attempt": "iteration2",
+      "case": "visual recovery and Library desktop",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-phone-screen--lists.png",
+      "sha256": "c7c43240b4cfe3bb09b9504477264f43f50e5cb83d0ec3014b119adb74d1aa72",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library phone",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-phone-screen--goals-management.png",
+      "sha256": "abb07c02acd665d873bbba603b71626c8517c13a3314932f1969848bcc91b769",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library phone",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-phone-screen--clubs-club-one.png",
+      "sha256": "c58f523a8a0923025a2d5344cc328dcf29ee5294be33763183d2a085bf8c4bc1",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library phone",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-phone-screen--my-books.png",
+      "sha256": "8829383f29e04a1ea8329c0e7fd0bb61c92d3809fe9367a1a8081bfca79a28f7",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library phone",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-compact200-screen--lists.png",
+      "sha256": "2f0ec587419522f7167b27a4b83eda08f2cf5a34f06d67e16fe4b0fd07acc238",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library compact200",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-compact200-screen--goals-management.png",
+      "sha256": "8867a89ac636a7949db2981cf2d50396ca9737b7d89e9e314186ea187fc8f520",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library compact200",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-compact200-screen--clubs-club-one.png",
+      "sha256": "d064742176e44ef8ca1c1ce1a9559d5081ae878749e8a6cb0061d27c5a168e39",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library compact200",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-compact200-screen--my-books.png",
+      "sha256": "0a3dba38d07945929cc35f144b179a6e0eaa6591c2a9b27937e0d7b98a033ed3",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library compact200",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-tablet200-screen--lists.png",
+      "sha256": "440c28d8b04ab20bfe5de26a95aad36ceaa9b78c8de725cf67c672cb197da756",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tablet200",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-tablet200-screen--goals-management.png",
+      "sha256": "fa852563bcf735da92d2b2e39080486987dc570fe250b15ef77185b6c4439878",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tablet200",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-tablet200-screen--clubs-club-one.png",
+      "sha256": "fd1240c5da1314c52581df26704370aca98a6a171ce059d5e66b53179623a356",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tablet200",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-tablet200-screen--my-books.png",
+      "sha256": "686426a21892e2b91e17503c461c4cb6e5165bfc1cbc1dff7aa4b41011cb142d",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tablet200",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-desktop-screen--lists.png",
+      "sha256": "730d678904fb3704297ec871af0706e14c6cc81711f039b64a990fd8bad0a916",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library desktop",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-desktop-screen--goals-management.png",
+      "sha256": "31b3e620a8559e9d2e2d31e85b92bfacdadf4a4d5b4d886effab8055a1d52c7f",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library desktop",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-desktop-screen--clubs-club-one.png",
+      "sha256": "0aa5af93346f59a1f9a82292b5be3fb6e874c42c263d01435922993ab427b5eb",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library desktop",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-desktop-screen--my-books.png",
+      "sha256": "661095bdf6c797978061e4eb1832846569ef3be99ee9ad64b5368a0fdd76add3",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library desktop",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-tabletdark-screen--lists.png",
+      "sha256": "4c7534da13660a660b335849747b9cf932d9ef3206c20ec2cbb293382d768e10",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tabletDark",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-tabletdark-screen--goals-management.png",
+      "sha256": "ed11ea99d01c90db31fcaf461e20806e96353b2c8cc91aa9b4330353b0211849",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tabletDark",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-tabletdark-screen--clubs-club-one.png",
+      "sha256": "d71dea189f54efe78e352c764a6359fac8b682db188b0efb531823562a5d3732",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tabletDark",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-chromium-visual-recovery-and-library-tabletdark-screen--my-books.png",
+      "sha256": "c4898ff36b7e3f0f9e9053b521ea42cb3be35fbc27cb201f02178132723a2717",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tabletDark",
+      "project": "chromium"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-phone-screen--lists.png",
+      "sha256": "12fb123f93e9cff6459dca7c76ae4ed15e5cb3b23c40e69d4b73393f73b70dec",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library phone",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-phone-screen--goals-management.png",
+      "sha256": "1612f4ca9c36a1d83b5b6321215639321151e5f73581224126a5d33e832921d6",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library phone",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-phone-screen--clubs-club-one.png",
+      "sha256": "f886e6661699549e86611137236033a05271e6df746e8916c1725e7753ca17b8",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library phone",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-phone-screen--my-books.png",
+      "sha256": "8effe130ec9b0b3c65b497638dcbda85e6a0ec3e520af75c9504e965a033718f",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library phone",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-compact200-screen--lists.png",
+      "sha256": "8b4fe43c5f8e6cdceb9b37ae1c4a6b68ecd17d9093adb2bf5716b9f349af1062",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library compact200",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-compact200-screen--goals-management.png",
+      "sha256": "420e0ba88688e61080051ab086a52f60421230212446be554f07422ef5b04f01",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library compact200",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-compact200-screen--clubs-club-one.png",
+      "sha256": "9fa882ffeaac5752b6926c36fc41a65c996f52a5e176edf02b962c25b4f4c4fd",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library compact200",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-compact200-screen--my-books.png",
+      "sha256": "8e619610b3914e3c749940a0d968e6ed3141ebad62539ea27f4b260ada16f93c",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library compact200",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-tablet200-screen--lists.png",
+      "sha256": "1743c52c7b3db8195e5a5a6a75656ca0fa0bfdc897ebbceaf4d6e519de846f41",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tablet200",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-tablet200-screen--goals-management.png",
+      "sha256": "f70a0b7850134871f58e956d6bcab136765b879126d2dd1d3e2b32392bbea557",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tablet200",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-tablet200-screen--clubs-club-one.png",
+      "sha256": "ffbf4dcf5716bc7bdde57eac9656fa1dd7d7a1a7564ba737341f08bcdaae3c0b",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tablet200",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-tablet200-screen--my-books.png",
+      "sha256": "302835e8444619c72add24c0049fc04dfa31ab00165bdd44cb0cc986d8065c6d",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tablet200",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-desktop-screen--lists.png",
+      "sha256": "60a6c2e23efc010c7c48c7f20a12182b8575a728086a5a92187607cb72642293",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library desktop",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-desktop-screen--goals-management.png",
+      "sha256": "05ad39ec11e731d396a7348f242b16413309a67eba1efca24bbdb2b1f23df3cc",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library desktop",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-desktop-screen--clubs-club-one.png",
+      "sha256": "f547227cc979a7ccbe14f0cd334145c452c1e488e80598cec392eb4ff034ff0a",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library desktop",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-desktop-screen--my-books.png",
+      "sha256": "e1c0650fd843da7eaea503dde18f4e2a9be63ecb034df478186a21c106ce6dc7",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library desktop",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-tabletdark-screen--lists.png",
+      "sha256": "0d1403258ca6266efc50dfc1ed8b5aead826614ac88c9d9ef6acee0a928c4980",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tabletDark",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-tabletdark-screen--goals-management.png",
+      "sha256": "2f154d9e1fe7a56fba0165412801f208e0ec50c38f440aa7fa5b73881e590f50",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tabletDark",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-tabletdark-screen--clubs-club-one.png",
+      "sha256": "2392e5d2864b8ab8760d7a836334e2713d8b3d4a48ae7370f25161884927533c",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tabletDark",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-webkit-visual-recovery-and-library-tabletdark-screen--my-books.png",
+      "sha256": "3990bb0b9d43c956800edcc52e67cbf57e8b14e3b4eb65fa0cdbf170c9166c87",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tabletDark",
+      "project": "webkit"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-phone-screen--lists.png",
+      "sha256": "f805a3d551dd698424b3a74ba253e0e8b9e4e01a3998ba18487abfeaba94f4f0",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library phone",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-phone-screen--goals-management.png",
+      "sha256": "a327324561a1c988ebd3a01485f84e0036b4c28c5dea579692b4c0bf436798a0",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library phone",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-phone-screen--clubs-club-one.png",
+      "sha256": "75e91bc137cbb803704197035a678b7182e6f52996ace9114f31e63f80b0d712",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library phone",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-phone-screen--my-books.png",
+      "sha256": "03d8a814800a86e899015ce3f33d96ab192945e62f75a3d72d83f8451616ebc5",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library phone",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-compact200-screen--lists.png",
+      "sha256": "25a939e6e9304190cbacaf6ef9a7906742c62900b81b2e175f3a9eec36597961",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library compact200",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-compact200-screen--goals-management.png",
+      "sha256": "15c266aaeaaa3ca31a31911a2d075b365b9538725964f14d430731cb99b4c284",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library compact200",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-compact200-screen--clubs-club-one.png",
+      "sha256": "0731b3e39cb1ca75c487bfbf51fe3eaf37d98a92ad13e334c26a8caa7a173c4a",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library compact200",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-compact200-screen--my-books.png",
+      "sha256": "409d398e9eb900317ce7a81cc6343decf250b2845b4108b0dca279aea27def15",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library compact200",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-tablet200-screen--lists.png",
+      "sha256": "41c9beba68142931d634cad6b049d008289ca0956a11612bcc3f0634ef227083",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tablet200",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-tablet200-screen--goals-management.png",
+      "sha256": "105c69cc6aba2f2a28855d24d3c563869eaa5ff9eda7684aacc8e8106d43fcda",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tablet200",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-tablet200-screen--clubs-club-one.png",
+      "sha256": "cc756f1fb160ee95a6c2ec913e40e101fcbf515bc2418a60cef633e937a1e0c9",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tablet200",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-tablet200-screen--my-books.png",
+      "sha256": "f059e629d59fe4038f6e2d6681f3d532473de15c8869b05b28d30431ec2a1c91",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tablet200",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-desktop-screen--lists.png",
+      "sha256": "cf6858b3633e11010291fe929b3987d3f73bb7c5f8a69270f9d02662e484166e",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library desktop",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-desktop-screen--goals-management.png",
+      "sha256": "c42abb449696569d53c01b63f3aa9d0b20b0c94a94e27f0ef8caa33e3ef128ab",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library desktop",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-desktop-screen--clubs-club-one.png",
+      "sha256": "d79af4c5cdd7740ddd17308e7241fabf76383d537141d469ca0013354d72b466",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library desktop",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-desktop-screen--my-books.png",
+      "sha256": "336901cdbe247885dfc56187fccef5db3b204dd2730cba48769ad2ea718a2bb4",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library desktop",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-tabletdark-screen--lists.png",
+      "sha256": "fa124a26e94f273ec22a4ae12c71d1e56c17314cbdf2c4906fb1a880d31f29d9",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tabletDark",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-tabletdark-screen--goals-management.png",
+      "sha256": "476810d155c64d6b9750648a4f444df63b1f4eff24483164916f50fde72cbbf5",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tabletDark",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-tabletdark-screen--clubs-club-one.png",
+      "sha256": "50906e0772544860ef84655c0fe7273055b8dfcd1e03954888ee927a3fd9baf4",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tabletDark",
+      "project": "firefox"
+    },
+    {
+      "path": "docs/frontend-renewal/evidence/cr06b-route-recovery/matrix1-firefox-visual-recovery-and-library-tabletdark-screen--my-books.png",
+      "sha256": "7ad69f5b82b923f363631846a42721142ae03edd6d202826b7d6fbf3a9d3e89a",
+      "attempt": "matrix1",
+      "case": "visual recovery and Library tabletDark",
+      "project": "firefox"
+    }
+  ],
+  "sourceHashes": {
+    "tests/fixtures/route-recovery/api.ts": "929e579dad8079ee9174e7090d2ff1e9d1537df296aeefb48fb26bc79bd89560",
+    "tests/fixtures/route-recovery/data.ts": "7fcfb813f4e206a5fc936f46ec6da034998cb94fa1ee648aa88b0b18abbeae48",
+    "tests/fixtures/route-recovery/vite.config.ts": "77552a0d3f31b051a039321848159bb439f7af07e50d0ba4e03cc400b8a54495",
+    "tests/fixtures/route-recovery/captcha.tsx": "28761b495c7c7b6d7b1a21637d89efbe78128f7f1e897b7bd9260ae61132536e",
+    "tests/fixtures/route-recovery/main.tsx": "b826ea43cc71cb31d0f14ffce342ad2b3d1653cc487b949c9fff075dc62ef157",
+    "tests/fixtures/route-recovery/index.html": "3baa0b0ecb4574438c423f533f934c196096376049b490dffb0f3a867a5aedf1",
+    "tests/e2e/route-recovery.spec.ts": "2e92afaeddd3ee4d1725cb4c2903526543067b9c5a6028ed8643dfb090d61cc9",
+    "tests/playwright/route-recovery.config.ts": "18ab9100db7d358248982ffa51ae435062ea1af2a37f0d321bc69a25a808c549",
+    "apps/client/src/services/authReturnIntent.ts": "879b3f0f3ba8d27d76491dacd036f3eebf4c56bb6d8c1583595566c2d1446f10",
+    "apps/client/src/services/authReturnIntent.test.ts": "0ceb82272d5aca4bce3fadb57d5d48610d05d41a247599b7d524588ef355f247",
+    "apps/client/src/services/authRedirect.ts": "fe60174864930a23c9ded53239f9fb2232f30c9c400f49c373891cc4efc365a9",
+    "apps/client/src/services/authRedirect.test.ts": "99c997ecb792edc7b4313d327165d91a6251a0e8a36edd579f56be46f032ae01",
+    "apps/client/src/components/auth/ReaderSignInPrompt.tsx": "f79484c548a14b9294510d0029f95b43055f19866458d13f5f9a68dbaca094a7",
+    "apps/client/src/hooks/useAuthReturnArrival.ts": "9d621e64c4a9a30bda8290a183dacc7259c481a97de30ceb9a0086a792a63aa5",
+    "apps/client/src/screens/Auth.tsx": "98cc666caaf49deeb7623abe06b1c0aeb8dcd8ba1e3bc65fd34dd6473c5b8526",
+    "apps/client/src/screens/BookLists.tsx": "532ac38bdf4564382191e7449a7cbe0376f2227a68d316498909cc7bf00e7fba",
+    "apps/client/src/screens/GoalsManagement.tsx": "cc943be7260c777f58afc95f18b94173c57e2a8a92bde6d468535524a8fec7ae",
+    "apps/client/src/screens/BookClubDetail.tsx": "441445a4f1af4beaacc1cad382e9678f929fd0dbf0d10d82ee0c4224428412c4",
+    "apps/client/src/screens/MyBooks.tsx": "4c3ba8abd51b0fa87c6a5b341cf5ea95a6677289f6c0f06a4a11f5dd1a79d357",
+    "apps/client/src/screens/Onboarding.tsx": "39090006dbb927d812fe7eccfea36a9aa1d0151b4bed47e85a83a1487ca17c55",
+    "apps/client/src/screens/Onboarding.substance.test.tsx": "c1560bf2724b78ef577ec8ca90a08b3c69d636b9f96e79dc88198a93c4700c90",
+    "apps/client/src/screens/PostSignupPermissions.tsx": "6e8e6d2d5258ec072cfe50d8992acc9ff36af41ee536e0b3965a0e4364f0b56d",
+    "apps/client/src/screens/PostSignupPermissions.test.tsx": "fe063c4893f01bbe9f809a8f3d784211127e33513e06e7fd3d08432fa918c04e"
+  },
+  "limits": [
+    "Controlled services/captcha/devices; no live auth or persistence",
+    "Windows WebKit anchor Tab traversal skipped; see CR06a capability evidence",
+    "No real native, assistive technology or performance acceptance",
+    "AddBook/Analytics/Home destinations outside this fixture",
+    "Setup completion covered by component/unit tests, not whole-screen browser acceptance"
+  ],
+  "libraryRegressions": {
+    "path": "test-results/cr06b-library-regressions.json",
+    "sha256": "99c04523d947470947ded15e49bc45bc261a9b62ded6b2f1621bbbd47c7e132c",
+    "stats": {
+      "startTime": "2026-10-01T16:45:02.292Z",
+      "duration": 35531.603,
+      "expected": 8,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "checks": {
+    "units": "81 passed / 8 files; test-results/cr06b-units-final.log",
+    "clientTypes": "passed; test-results/cr06b-client-types.log",
+    "fixtureTypes": "passed",
+    "eslint": "changed production/tests, zero warnings",
+    "build": "passed; test-results/cr06b-build.log",
+    "graph": "10262 nodes / 22903 edges / 694 communities",
+    "obsidian": "10943 notes; 6 pre-existing conflicts preserved",
+    "census": "39 routes / 514 modules / 311 presentation / 33 screens / 274 components"
+  },
+  "visuallyInspected": [
+    "phone Lists prompt",
+    "320px / 200% Lists and Goals prompt controls",
+    "834px / 200% Library header",
+    "834px dark Library",
+    "1280px unavailable club"
+  ]
+}

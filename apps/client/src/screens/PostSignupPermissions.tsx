@@ -15,6 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { completePostSignupPermissions } from "@/services/postSignupPermissions";
+import { getPostAuthDestination } from "@/services/authReturnIntent";
 import { isMobileNativeRuntime } from "@/services/platform";
 import {
   pushNotificationsService,
@@ -50,7 +51,7 @@ const PostSignupPermissions = () => {
       return;
     }
     if (!isMobileNativeRuntime()) {
-      navigate("/dashboard", { replace: true });
+      navigate(getPostAuthDestination(), { replace: true });
       return;
     }
 
@@ -76,7 +77,7 @@ const PostSignupPermissions = () => {
   const finish = () => {
     if (!user) return;
     completePostSignupPermissions(user.id);
-    navigate("/dashboard", { replace: true });
+    navigate(getPostAuthDestination(), { replace: true });
   };
 
   const enableNotifications = async () => {

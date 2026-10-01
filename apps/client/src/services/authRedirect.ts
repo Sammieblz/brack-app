@@ -18,6 +18,7 @@ import {
   markPostSignupPermissionsPending,
 } from "@/services/postSignupPermissions";
 import { isMobileNativeRuntime, isPasswordResetUrl } from "@/services/platform";
+import { getPostAuthDestination } from "@/services/authReturnIntent";
 
 const CALLBACK_REPLAY_TTL_MS = 5 * 60 * 1000;
 const MAX_CALLBACK_REPLAYS = 32;
@@ -279,7 +280,7 @@ const finalizeOnboardingDraft = async (
   const completion = (async () => {
     if (!shouldEnterFirstRunOnboarding(user, status)) {
       clearOnboardingDraft();
-      return "/dashboard";
+      return getPostAuthDestination();
     }
 
     if (!isDraftForNewlyCreatedUser(draft, user)) {
@@ -302,7 +303,7 @@ const finalizeOnboardingDraft = async (
         markPostSignupPermissionsPending(user.id);
       }
       clearOnboardingDraft();
-      return isMobileNativeRuntime() ? "/app-permissions" : "/dashboard";
+      return isMobileNativeRuntime() ? "/app-permissions" : getPostAuthDestination();
     } catch (error) {
       console.error("Unable to apply the pre-auth onboarding profile:", error);
       // Keep the validated draft so authenticated onboarding can retry without
@@ -336,7 +337,7 @@ export const resolvePostAuthPath = async () => {
     clearOnboardingDraft();
   }
 
-  return shouldEnterFirstRunOnboarding(user, status) ? "/onboarding" : "/dashboard";
+  return shouldEnterFirstRunOnboarding(user, status) ? "/onboarding" : getPostAuthDestination();
 };
 
 const processAuthCallback = async (callbackUrl: string) => {

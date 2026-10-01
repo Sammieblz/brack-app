@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { clearAuthReturnIntent, rememberAuthReturnIntent } from "@/services/authReturnIntent";
 
 const mocks = vi.hoisted(() => ({
   user: { id: "reader-1" } as { id: string } | null,
@@ -44,6 +45,7 @@ const renderScreen = () =>
       <Routes>
         <Route path="/app-permissions" element={<PostSignupPermissions />} />
         <Route path="/dashboard" element={<div>Dashboard</div>} />
+        <Route path="/lists" element={<div>Returned to lists</div>} />
         <Route path="/auth" element={<div>Sign in</div>} />
       </Routes>
     </MemoryRouter>,
@@ -51,6 +53,7 @@ const renderScreen = () =>
 
 describe("PostSignupPermissions", () => {
   beforeEach(() => {
+    clearAuthReturnIntent();
     vi.clearAllMocks();
     mocks.user = { id: "reader-1" };
     mocks.authLoading = false;
@@ -123,5 +126,23 @@ describe("PostSignupPermissions", () => {
 
     expect(await screen.findByText("Dashboard")).toBeInTheDocument();
     expect(mocks.getPermissionState).not.toHaveBeenCalled();
+  });
+
+  it("returns to the requested screen after the native choice", async () => {
+    rememberAuthReturnIntent("/lists");
+    renderScreen();
+    fireEvent.click(await screen.findByRole("button", { name: "Continue without notifications" }));
+    expect(mocks.complete).toHaveBeenCalledWith("reader-1");
+    expect(await screen.findByText("Returned to lists")).toBeInTheDocument();
+    expect(mocks.registerWithResult).not.toHaveBeenCalled();
+    clearAuthReturnIntent();
+  });
+
+  it("returns to the requested screen when no native choice is required", async () => {
+    rememberAuthReturnIntent("/lists");
+    mocks.isNative = false;
+    renderScreen();
+    expect(await screen.findByText("Returned to lists")).toBeInTheDocument();
+    clearAuthReturnIntent();
   });
 });

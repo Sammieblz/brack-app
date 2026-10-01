@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { NavArrowDown } from "iconoir-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -1083,8 +1083,8 @@ const MyBooksContent = () => {
           <MobileHeader
             title="Library"
             action={
-              <Button variant="ghost" size="sm" onClick={() => navigate("/analytics")}>
-                <APP_ICONS.library.analytics className="h-4 w-4" />
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/analytics" aria-label="Analytics" title="Analytics"><APP_ICONS.library.analytics aria-hidden="true" className="h-4 w-4" /></Link>
               </Button>
             }
           />
@@ -1095,17 +1095,14 @@ const MyBooksContent = () => {
             showUtilityActions
             action={
               <div className="flex flex-wrap justify-end gap-2">
-                <Button onClick={() => navigate("/book-lists")} variant="outline" size="sm">
-                  <APP_ICONS.library.bookLists className="h-4 w-4 lg:mr-2" />
-                  <span className="hidden lg:inline">Book Lists</span>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/book-lists"><APP_ICONS.library.bookLists aria-hidden="true" className="mr-2 h-4 w-4 shrink-0" />Book Lists</Link>
                 </Button>
-                <Button onClick={() => navigate("/analytics")} variant="outline" size="sm">
-                  <APP_ICONS.library.analytics className="h-4 w-4 lg:mr-2" />
-                  <span className="hidden lg:inline">Analytics</span>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/analytics"><APP_ICONS.library.analytics aria-hidden="true" className="mr-2 h-4 w-4 shrink-0" />Analytics</Link>
                 </Button>
-                <Button onClick={() => navigate("/add-book")} size="sm">
-                  <APP_ICONS.library.addBook className="h-4 w-4 lg:mr-2" />
-                  <span className="hidden lg:inline">Add Book</span>
+                <Button asChild size="sm">
+                  <Link to="/add-book"><APP_ICONS.library.addBook aria-hidden="true" className="mr-2 h-4 w-4 shrink-0" />Add Book</Link>
                 </Button>
               </div>
             }

@@ -18,6 +18,12 @@ F07 supersedes the original positive-index recovery heuristic with the [app Back
 
 `NotFound` offers a router link to My Library for a signed-in reader or public Home otherwise. Go back is present only when verified app ancestry exists, with an activation-time recovery fallback. Route gates remain owned by `App`/`FeatureGate`; these fixes do not add an alternate club URL or bypass social/gamification gates. Native callback policy and local gesture cancellation are implemented in F07; physical device acceptance, independent tab stacks and broader shell scroll/focus restoration remain outstanding.
 
+## Reader route recovery
+
+CR06b adds explicit signed-out recovery to both Lists aliases and Reading Goals. Keep auth-loading ahead of reader-owned content, including when an old user value remains during resolution. The prompt offers Sign in and public Home; it does not redirect automatically or replace backend access checks. Medium/expanded Library header destinations are native links with visible labels; the phone Analytics icon has an accessible name and title. Club loading, ready and unavailable branches each expose one contextual Back control, with `/clubs` as the coordinator fallback.
+
+The bounded Lists/Goals sign-in return contract is documented in [authentication](authentication.md#reader-screen-return-intent). The CR06b fixture mounts these actual screens; it does not close F10/F13/F14 composition, native Back or global focus-restoration acceptance.
+
 ## Notification ownership and states
 
 `UserNotificationsPopover` renders the list and manages opening/dismissal. `useUserNotifications` owns query and read-mutation feedback. `services/api/userNotifications.ts` owns SDK requests and expected-reader checks; components do not query Supabase directly.

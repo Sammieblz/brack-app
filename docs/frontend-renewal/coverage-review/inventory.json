@@ -1,12 +1,12 @@
 {
-  "baseline": "a61087173b436a4bf0c4e517a5dc31024564d57f",
+  "baseline": "182230ffb4f95d10b48f9335f7c074c87089692f",
   "method": "TypeScript AST static local import/literal dynamic-import reachability, JSX Route declarations, git commit file lists. No runtime, branches, feature-gate, tree-shaking, fixture alias/mock or per-export analysis. Declaration-level type-only imports are excluded; inline named type imports can still contribute edges. Import references and changed files do not establish review, runtime execution or passing tests. Unreachable means no source import path from main.tsx; verify before deletion. routeImportReachability follows route JSX owners, not their App-owned global ancestors: an empty route list does not exclude global rendering (e.g. Toaster, JournalPromptHandler, JourneyLevelUpObserver).",
   "counts": {
     "routes": 39,
-    "modules": 511,
-    "presentation": 310,
+    "modules": 514,
+    "presentation": 311,
     "screens": 33,
-    "components": 273,
+    "components": 274,
     "presentationWithoutSourcePath": 47
   },
   "commits": {
@@ -1150,6 +1150,34 @@
         "/auth",
         "/settings",
         "/support"
+      ]
+    },
+    {
+      "path": "apps/client/src/components/auth/ReaderSignInPrompt.tsx",
+      "role": "component",
+      "imports": [
+        "apps/client/src/components/ui/button.tsx",
+        "apps/client/src/services/authReturnIntent.ts"
+      ],
+      "importedBy": [
+        "apps/client/src/screens/BookLists.tsx",
+        "apps/client/src/screens/GoalsManagement.tsx"
+      ],
+      "jsx": [
+        "Button",
+        "Link",
+        "div",
+        "h1",
+        "p",
+        "section"
+      ],
+      "directTestImporters": [],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/book-lists",
+        "/goals-management",
+        "/lists"
       ]
     },
     {
@@ -5376,7 +5404,8 @@
       ],
       "jsx": [],
       "directTestImporters": [
-        "apps/client/src/components/OnboardingRouteGuard.test.tsx"
+        "apps/client/src/components/OnboardingRouteGuard.test.tsx",
+        "tests/fixtures/route-recovery/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -6707,6 +6736,7 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/social-destinations/main.tsx"
       ],
@@ -8967,6 +8997,7 @@
         "apps/client/src/components/TagManager.tsx",
         "apps/client/src/components/ThemeToggle.tsx",
         "apps/client/src/components/UserNotificationsPopover.tsx",
+        "apps/client/src/components/auth/ReaderSignInPrompt.tsx",
         "apps/client/src/components/clubs/BookClubCard.tsx",
         "apps/client/src/components/clubs/ClubChatThread.tsx",
         "apps/client/src/components/clubs/CreateClubDialog.tsx",
@@ -10883,6 +10914,7 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/social-destinations/main.tsx"
       ],
@@ -11115,6 +11147,7 @@
         "tests/fixtures/frontend-semantics/main.tsx",
         "tests/fixtures/journal-save/main.tsx",
         "tests/fixtures/library-tasks/main.tsx",
+        "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx"
       ],
       "changedIn": [],
@@ -11192,6 +11225,7 @@
         "tests/fixtures/loading/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx",
         "tests/fixtures/social-destinations/main.tsx"
@@ -11725,6 +11759,7 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/social-destinations/main.tsx"
       ],
@@ -11786,6 +11821,7 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx",
         "tests/fixtures/social-destinations/main.tsx"
@@ -12425,6 +12461,7 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx",
         "tests/fixtures/social-destinations/main.tsx",
@@ -12553,6 +12590,26 @@
         "/settings",
         "/support",
         "/users/:userId"
+      ]
+    },
+    {
+      "path": "apps/client/src/hooks/useAuthReturnArrival.ts",
+      "role": "hook",
+      "imports": [
+        "apps/client/src/services/authReturnIntent.ts"
+      ],
+      "importedBy": [
+        "apps/client/src/screens/BookLists.tsx",
+        "apps/client/src/screens/GoalsManagement.tsx"
+      ],
+      "jsx": [],
+      "directTestImporters": [],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/book-lists",
+        "/goals-management",
+        "/lists"
       ]
     },
     {
@@ -14394,6 +14451,7 @@
         "tests/fixtures/loading/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx",
         "tests/fixtures/social-destinations/main.tsx",
@@ -15684,6 +15742,7 @@
         "apps/client/src/services/authFailure.ts",
         "apps/client/src/services/authFlowBridge.ts",
         "apps/client/src/services/authRedirect.ts",
+        "apps/client/src/services/authReturnIntent.ts",
         "apps/client/src/services/onboardingDraft.ts",
         "apps/client/src/services/platform.ts",
         "apps/client/src/utils/authValidation.ts",
@@ -15724,7 +15783,8 @@
         "video"
       ],
       "directTestImporters": [
-        "apps/client/src/screens/Auth.test.tsx"
+        "apps/client/src/screens/Auth.test.tsx",
+        "tests/fixtures/route-recovery/main.tsx"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -15861,6 +15921,7 @@
       ],
       "directTestImporters": [
         "tests/fixtures/live-composers/main.tsx",
+        "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [
@@ -15930,6 +15991,7 @@
       ],
       "directTestImporters": [
         "tests/fixtures/responsive-composers/main.tsx",
+        "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [
@@ -16128,9 +16190,11 @@
         "apps/client/src/components/BookListManager.tsx",
         "apps/client/src/components/MobileHeader.tsx",
         "apps/client/src/components/MobileLayout.tsx",
+        "apps/client/src/components/auth/ReaderSignInPrompt.tsx",
         "apps/client/src/components/loading/LoadingRegion.tsx",
         "apps/client/src/components/skeletons/BookListCardSkeleton.tsx",
         "apps/client/src/hooks/useAuth.ts",
+        "apps/client/src/hooks/useAuthReturnArrival.ts",
         "apps/client/src/hooks/useUIEnvironment.ts"
       ],
       "importedBy": [
@@ -16142,10 +16206,12 @@
         "LoadingRegion",
         "MobileHeader",
         "MobileLayout",
+        "ReaderSignInPrompt",
         "main"
       ],
       "directTestImporters": [
-        "tests/fixtures/library-tasks/main.tsx"
+        "tests/fixtures/library-tasks/main.tsx",
+        "tests/fixtures/route-recovery/main.tsx"
       ],
       "changedIn": [
         "F09"
@@ -16429,9 +16495,11 @@
         "apps/client/src/components/GoalManager.tsx",
         "apps/client/src/components/MobileHeader.tsx",
         "apps/client/src/components/MobileLayout.tsx",
+        "apps/client/src/components/auth/ReaderSignInPrompt.tsx",
         "apps/client/src/components/loading/LoadingRegion.tsx",
         "apps/client/src/components/skeletons/ReadingRouteSkeletons.tsx",
         "apps/client/src/hooks/useAuth.ts",
+        "apps/client/src/hooks/useAuthReturnArrival.ts",
         "apps/client/src/hooks/useUIEnvironment.ts"
       ],
       "importedBy": [
@@ -16443,9 +16511,12 @@
         "LoadingRegion",
         "MobileHeader",
         "MobileLayout",
+        "ReaderSignInPrompt",
         "main"
       ],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "tests/fixtures/route-recovery/main.tsx"
+      ],
       "changedIn": [
         "F09"
       ],
@@ -16641,6 +16712,7 @@
         "LibraryCarouselView",
         "LibraryRemoveDialog",
         "LibraryViewSkeleton",
+        "Link",
         "LoadingError",
         "LoadingRegion",
         "MobileHeader",
@@ -16670,6 +16742,7 @@
       "directTestImporters": [
         "tests/fixtures/adaptive-shell/main.tsx",
         "tests/fixtures/library-tasks/main.tsx",
+        "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx"
       ],
       "changedIn": [
@@ -16747,6 +16820,7 @@
         "apps/client/src/hooks/useReadingProfile.ts",
         "apps/client/src/hooks/useReducedMotion.ts",
         "apps/client/src/lib/themes.ts",
+        "apps/client/src/services/authReturnIntent.ts",
         "apps/client/src/services/onboarding.ts",
         "apps/client/src/services/onboardingDraft.ts",
         "apps/client/src/services/platform.ts",
@@ -16871,6 +16945,7 @@
         "apps/client/src/components/ui/card.tsx",
         "apps/client/src/hooks/useAuth.ts",
         "apps/client/src/lib/utils.ts",
+        "apps/client/src/services/authReturnIntent.ts",
         "apps/client/src/services/platform.ts",
         "apps/client/src/services/postSignupPermissions.ts",
         "apps/client/src/services/pushNotifications.ts"
@@ -19631,6 +19706,7 @@
       "role": "support",
       "imports": [
         "apps/client/src/services/api/auth.ts",
+        "apps/client/src/services/authReturnIntent.ts",
         "apps/client/src/services/onboarding.ts",
         "apps/client/src/services/onboardingDraft.ts",
         "apps/client/src/services/platform.ts",
@@ -19657,6 +19733,42 @@
         "/auth/callback",
         "/auth/reset-password",
         "/goals",
+        "/questionnaire",
+        "/welcome"
+      ]
+    },
+    {
+      "path": "apps/client/src/services/authReturnIntent.ts",
+      "role": "support",
+      "imports": [],
+      "importedBy": [
+        "apps/client/src/components/auth/ReaderSignInPrompt.tsx",
+        "apps/client/src/hooks/useAuthReturnArrival.ts",
+        "apps/client/src/screens/Auth.tsx",
+        "apps/client/src/screens/Onboarding.tsx",
+        "apps/client/src/screens/PostSignupPermissions.tsx",
+        "apps/client/src/services/authRedirect.ts"
+      ],
+      "jsx": [],
+      "directTestImporters": [
+        "apps/client/src/screens/Onboarding.substance.test.tsx",
+        "apps/client/src/screens/PostSignupPermissions.test.tsx",
+        "apps/client/src/services/authRedirect.test.ts",
+        "apps/client/src/services/authReturnIntent.test.ts"
+      ],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/",
+        "/app-permissions",
+        "/auth",
+        "/auth/callback",
+        "/auth/reset-password",
+        "/book-lists",
+        "/goals",
+        "/goals-management",
+        "/lists",
+        "/onboarding",
         "/questionnaire",
         "/welcome"
       ]
@@ -20948,6 +21060,7 @@
         "tests/fixtures/library-tasks/api.ts",
         "tests/fixtures/loading/library-cases.tsx",
         "tests/fixtures/loading/main.tsx",
+        "tests/fixtures/route-recovery/api.ts",
         "tests/fixtures/settings-continuity/api.ts",
         "tests/fixtures/settings-continuity/portability.ts",
         "tests/fixtures/shell-scroll/data.ts"

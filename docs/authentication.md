@@ -13,6 +13,18 @@ Brack uses Supabase Auth for user authentication and Row Level Security (RLS) fo
 - Session persistence
 - Row Level Security (RLS)
 
+## Reader-screen return intent
+
+Lists (`/lists`, `/book-lists`) and Reading Goals (`/goals-management`) show a recovery prompt when auth resolves anonymously. Their Sign in link supplies `returnTo` to Auth. `services/authReturnIntent.ts` accepts exactly those three path strings; it rejects arbitrary destinations, query strings, fragments, encodings and external URLs. This is presentation state, never authorization or an OAuth callback allowlist.
+
+Auth captures that intent before its signed-in redirect effect. It lives in per-tab sessionStorage for at most15 minutes, with memory fallback if storage is denied. Only the path and creation time are stored. Invalid, malformed, expired or future-dated state is cleared. No intent defaults to Dashboard. Refresh/callback in the same tab can retain it; a fresh tab/device or an expired flow can use the normal Dashboard destination. Cross-device handoff is not promised.
+
+`resolvePostAuthPath` retains mandatory onboarding and post-signup native permission precedence. Draft finalization, authenticated Onboarding's skip/finish and PostSignupPermissions' exit share the normal destination helper; completed settings edits still return to Settings. Password-recovery callbacks still go to Reset Password. Existing bootstrap-error fallbacks are unchanged. Explicit Home cancellation in Auth/Onboarding clears the intent.
+
+The resolver does not consume the intent because OnboardingRouteGuard also reads it. The resolved authenticated Lists/Goals screen clears the matching intent on arrival. Auth loading takes precedence over an old user value so the old reader's manager unmounts during resolution. Services and backend access checks remain authoritative.
+
+CR06b checked the official [Supabase redirect URL guidance](https://supabase.com/docs/guides/auth/redirect-urls) and [changelog](https://supabase.com/changelog) on2026-10-01. This change does not alter SDK signatures, provider callback URLs or configured redirect allowlists. See [checkpoint27](frontend-renewal/27-route-recovery.md) for actual browser versus controlled auth/setup evidence.
+
 ## Authentication Flow
 
 Brack separates acquisition from authentication. A new reader can experience

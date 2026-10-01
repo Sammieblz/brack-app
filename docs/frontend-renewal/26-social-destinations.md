@@ -1,5 +1,7 @@
 # CR06a - Social destination semantics
 
+Historical checkpoint: this batch is now committed in `182230f`. Authorized continuation is tracked in [checkpoint27](27-route-recovery.md). Results below describe the original review stop.
+
 Status: Implemented and browser-verified within the scope below; stopped for user review, uncommitted. Baseline `a610871` commits CR05 and the worktree was clean at startup. No staging/commit requested or performed. Remaining CR06 children and main-ticket acceptance stay open.
 
 Scope: RC-03 under F02/F14. Actual Readers profile entries; PostCard author/book/club destinations in Feed/PostDetail/UserProfile; ReviewCard destinations in Reviews/BookDetail/ReviewDetail; ReviewDetail author/book/recovery controls; BookClubCard public/member/private-preview states in BookClubs/Readers. Preserve independent follow, reaction, comment, spoiler, menu and membership controls. Do not nest interactive rich-text links inside a card link.

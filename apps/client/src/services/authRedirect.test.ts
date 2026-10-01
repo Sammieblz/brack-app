@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { clearAuthReturnIntent, getPostAuthDestination, rememberAuthReturnIntent } from "./authReturnIntent";
 
 const {
   ensureUserProfileMock,
@@ -70,6 +71,7 @@ const callbackData = (userId = "user-1") => ({
 
 describe("completeAuthCallback", () => {
   beforeEach(() => {
+    clearAuthReturnIntent();
     vi.useRealTimers();
     consumePasswordRecoveryAuthorization("user-1");
     consumePasswordRecoveryAuthorization("recovery-user");
@@ -99,6 +101,7 @@ describe("completeAuthCallback", () => {
   });
 
   afterEach(() => {
+    clearAuthReturnIntent();
     vi.useRealTimers();
   });
 
@@ -112,6 +115,32 @@ describe("completeAuthCallback", () => {
     expect(consumePasswordRecoveryAuthorization("verified-recovery-user")).toBe(
       true,
     );
+  });
+
+  it("returns established readers without letting setup guard reads consume the destination", async () => {
+    rememberAuthReturnIntent("/book-lists");
+    expect(await resolvePostAuthPath()).toBe("/book-lists");
+    expect(await resolvePostAuthPath()).toBe("/book-lists");
+    const result = await completeAuthCallback("https://brack-app.com/auth/callback?code=reader-return");
+    expect(result).toBe("/book-lists");
+  });
+
+  it("keeps onboarding and native setup ahead of the return destination", async () => {
+    rememberAuthReturnIntent("/goals-management");
+    shouldEnterFirstRunOnboardingMock.mockReturnValue(true);
+    expect(await resolvePostAuthPath()).toBe("/onboarding");
+    arePostSignupPermissionsPendingMock.mockReturnValue(true);
+    expect(await resolvePostAuthPath()).toBe("/app-permissions");
+    expect(getPostAuthDestination()).toBe("/goals-management");
+    shouldEnterFirstRunOnboardingMock.mockReturnValue(false);
+    arePostSignupPermissionsPendingMock.mockReturnValue(false);
+    expect(await resolvePostAuthPath()).toBe("/goals-management");
+  });
+
+  it("preserves password recovery precedence over a reader return", async () => {
+    rememberAuthReturnIntent("/lists");
+    const result = await completeAuthCallback("https://brack-app.com/auth/reset-password?code=return-recovery");
+    expect(result).toBe("/auth/reset-password");
   });
 
   it("refuses to authorize recovery without a verified user id", () => {

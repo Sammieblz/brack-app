@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Current checkpoint: **[CR06a - Social destination semantics](26-social-destinations.md), implemented and browser-verified within scope; stopped for review, uncommitted.** CR05 is committed in `a610871`. Actual Readers/Post/Review/Club destinations and independent actions have 67 distinct browser passes/two documented Windows WebKit skips,32 regression passes, passing types/lint/build and retained visual evidence. Next: CR06b recovery/name branches (RS05/06/07). Other CR06 consumers and CR07–CR10/main-ticket acceptance remain open. No commit made.
+Current checkpoint: **[CR06b - Route recovery and Library action names](27-route-recovery.md), implemented and verified within scope; stopped for user review, uncommitted.** CR06a is committed in `182230f`. RS05/RS06/RS07 have 77 browser passes/one documented Windows WebKit skip, 8 Library regressions, 81 auth/setup units, passing types/lint/build and retained evidence. Next: CR06c shell utility/loading consumers. Remaining CR06, CR07-CR10 and main screen acceptance stay open. No stage/commit made.
 
 ## Outcome
 
@@ -49,7 +49,8 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [23 - CR03 Settings continuity](23-settings-continuity.md) | Historical committed CR03: category navigation, stable editors and protected Settings tasks |
 | [24 - CR04 Library/list tasks](24-library-list-tasks.md) | Historical committed CR04: stable tasks, truthful outcomes and large-text/focus corrections |
 | [25 - CR05 Messages layout and gestures](25-messages-layout-gestures.md) | Historical committed CR05: measured panes, retained task ownership, visible actions and guarded local gestures |
-| [26 - CR06a Social destinations](26-social-destinations.md) | Current review stop: actual social links/actions, readable large-text card intros, verified callers and explicit browser limitations |
+| [26 - CR06a Social destinations](26-social-destinations.md) | Committed historical child: actual social links/actions, readable large-text card intros, verified callers and explicit browser limitations |
+| [27 - CR06b Route recovery](27-route-recovery.md) | Current review stop: Lists/Goals sign-in return, club Back, named Library links; exact evidence and next shell child |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability

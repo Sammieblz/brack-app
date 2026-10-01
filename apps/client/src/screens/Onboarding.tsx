@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ElementType, ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { clearAuthReturnIntent, getPostAuthDestination } from "@/services/authReturnIntent";
 import { motion } from "framer-motion";
 import { Check, Clock, Palette, Refresh } from "iconoir-react";
 import { Badge } from "@/components/ui/badge";
@@ -210,7 +211,7 @@ const Onboarding = () => {
   const isGuestOnboarding = !authLoading && !user;
   const entrySource = searchParams.get("from");
   const shouldResumeDraft = searchParams.get("resume") === "draft";
-  const returnPath = entrySource === "settings" ? "/settings" : "/dashboard";
+  const returnPath = entrySource === "settings" ? "/settings" : getPostAuthDestination();
   const isCompletedEdit =
     status?.onboarding_status === "completed" &&
     (searchParams.get("edit") === "1" || entrySource === "settings" || entrySource === "dashboard");
@@ -408,6 +409,7 @@ const Onboarding = () => {
       clearOnboardingDraft();
       resetToDefaultTheme();
     }
+    clearAuthReturnIntent();
     navigate("/", { replace: false });
   };
 

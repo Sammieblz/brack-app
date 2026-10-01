@@ -64,7 +64,7 @@ Do not duplicate the entire source file, graph report or transcript. Prefer a us
 
 ## Progress checkpoint template
 
-The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). Checkpoints13–19 preserve committed batches;20 owns coverage reconciliation;21–25 preserve CR01–CR05 evidence; [26](26-social-destinations.md) owns CR06a delivery. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate detailed active status across competing records.
+The summary work ledger is the table under **Work ledger template** in [09-execution-plan.md](09-execution-plan.md). Checkpoints13–19 preserve committed batches;20 owns coverage reconciliation;21–25 preserve CR01–CR05 evidence; [26](26-social-destinations.md) preserves committed CR06a; [27](27-route-recovery.md) owns the current CR06b review stop. Keep one authoritative checkpoint per batch, with older records clearly marked historical; do not duplicate detailed active status across competing records.
 
 Update the relevant ticket and append a concise checkpoint when handing off:
 
@@ -85,7 +85,7 @@ An interrupted session should be resumable from this checkpoint without asking t
 
 ## Active implementation checkpoint
 
-Current checkpoint: **[CR06a - Social destination semantics](26-social-destinations.md), implemented and browser-verified within scope; stopped for user review, uncommitted.** CR05 is committed in `a610871`. Checkpoint26 and its verification manifest own the67 distinct browser passes/two reproduced Windows WebKit skips,32 regressions,types/lint/build and 37 retained captures. The next authorized child is CR06b RS05/06/07: anonymous list/goals recovery, unavailable club Back and medium Library action names. Other CR06 utility/Back/focus consumers, CR07–CR10 and main-ticket acceptance remain open. No stage/commit made.
+Current checkpoint: **[CR06b - Route recovery and Library action names](27-route-recovery.md), implemented and verified within scope; stopped for user review, uncommitted.** CR06a is committed in `182230f`. RS05/RS06/RS07 have 77 browser passes/one documented Windows WebKit skip, 8 Library regressions, 81 auth/setup units, passing types/lint/build and retained evidence. Next: CR06c shell utility/loading consumers. Remaining CR06, CR07-CR10 and main screen acceptance stay open. No stage/commit made.
 
 Preserve checkpoint23's failure history: the complete Settings matrix passed83/87, followed by17/18 continuity,18/18 after correction and3/3 repeated WebKit checks. These overlap;95 units across12 files and shared shell21/21/overlay15/15 are historical evidence. CR03 is committed in 74ed7d7,CR04 in ef5b2f9 and CR05 in a610871. Preserve their verified contracts; resume from checkpoint26, not their old review stops or historical Graphify counts.
 
