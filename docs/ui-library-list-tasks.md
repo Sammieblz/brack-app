@@ -1,5 +1,7 @@
 # Library selection and list task ownership
 
+F10a changes presentation through [Library controls and rows](ui-library-presentation.md), retaining these service/task contracts. Access Library Select/Reorder from the controls sheet and shared book membership/removal actions from More.
+
 [CR04 / checkpoint24](frontend-renewal/24-library-list-tasks.md) owns implementation status, executed checks, retained failures and acceptance evidence. This document describes current source contracts; it does not establish that every browser, native-device or assistive-technology check has passed. CR04 precedes main F10 visual simplification.
 
 ## Service outcomes and collection reads

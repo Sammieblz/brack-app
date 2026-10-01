@@ -114,8 +114,12 @@ for (const profile of [{ name: 'phone', width: 390, text: 100 }, { name: 'compac
       });
       for (const font of fonts) expect(font.loaded, font.family).toBe(true);
       await info.attach(`fonts-${path.replace(/\//g, '-')}`, { body: JSON.stringify(fonts), contentType: 'application/json' });
-      const names = path === '/my-books' ? (profile.width < 768 ? ['Analytics'] : ['Book Lists', 'Analytics', 'Add Book']) : path.includes('club') ? [] : ['Sign in', 'Back to Brack home'];
-      for (const name of names) { const link = path === '/my-books' && profile.width >= 768 ? page.locator('header').getByRole('link', { name, exact: true }) : page.getByRole('link', { name, exact: true }); await usable(link); await link.focus(); await expect(link).toBeFocused(); }
+      if (path === '/my-books') {
+        await usable(page.getByRole('link', { name: 'Add Book', exact: true }));
+        await page.getByRole('button', { name: 'Library controls', exact: true }).click();
+      }
+      const names = path === '/my-books' ? ['Book Lists', 'Analytics'] : path.includes('club') ? [] : ['Sign in', 'Back to Brack home'];
+      for (const name of names) { const link = page.getByRole('link', { name, exact: true }); await usable(link); await link.focus(); await expect(link).toBeFocused(); }
       if (path.includes('club')) await usable(page.getByRole('button', { name: 'Go back', exact: true }));
       await info.attach(`screen-${path.replace(/\//g, '-')}`, { body: await page.screenshot(), contentType: 'image/png' });
     }
@@ -124,6 +128,7 @@ for (const profile of [{ name: 'phone', width: 390, text: 100 }, { name: 'compac
 
 test('Library link keyboard activation reaches actual Lists', async ({ page }) => {
   await open(page, '/my-books');
+  await page.getByRole('button', { name: 'Library controls', exact: true }).click();
   const link = page.getByRole('link', { name: 'Book Lists', exact: true });
   await link.focus(); await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'Weekend reading', exact: true })).toBeVisible();
@@ -145,14 +150,16 @@ test('tablet touch activates the Lists destination', async ({ browser, baseURL }
   const context = await browser.newContext({ baseURL, hasTouch: true, viewport: { width: 834, height: 1112 }, reducedMotion: 'reduce' });
   const page = await context.newPage();
   await open(page, '/my-books');
-  await page.locator('header').getByRole('link', { name: 'Book Lists', exact: true }).tap();
+  await page.getByRole('button', { name: 'Library controls', exact: true }).tap();
+  await page.getByRole('link', { name: 'Book Lists', exact: true }).tap();
   await expect(page.getByRole('heading', { name: 'Weekend reading', exact: true })).toBeVisible();
   await context.close();
 });
 
 test('tablet Library preserves native modified-click navigation', async ({ page, context }) => {
   await open(page, '/my-books');
-  const link = page.locator('header').getByRole('link', { name: 'Book Lists', exact: true });
+  await page.getByRole('button', { name: 'Library controls', exact: true }).click();
+  const link = page.getByRole('link', { name: 'Book Lists', exact: true });
   const opened = context.waitForEvent('page');
   await link.click({ modifiers: ['ControlOrMeta'] });
   const popup = await opened;
@@ -162,10 +169,12 @@ test('tablet Library preserves native modified-click navigation', async ({ page,
   await popup.close();
 });
 
-test('keyboard traversal reaches the Library header destinations', async ({ page, browserName }) => {
+test('keyboard traversal reaches the Library controls destinations', async ({ page, browserName }) => {
   test.skip(browserName === 'webkit' && process.platform === 'win32', 'Windows WebKit skips plain anchors with Tab/Alt+Tab; independent capability evidence is retained by CR06a. Native Safari keyboard review remains open.');
   await open(page, '/my-books');
-  const link = page.locator('header').getByRole('link', { name: 'Book Lists', exact: true });
+  const trigger = page.getByRole('button', { name: 'Library controls', exact: true });
+  await trigger.focus(); await page.keyboard.press('Enter');
+  const link = page.getByRole('link', { name: 'Book Lists', exact: true });
   const key = browserName === 'webkit' && process.platform === 'darwin' ? 'Alt+Tab' : 'Tab';
   for (let i = 0; i < 50 && !(await link.evaluate(node => node === document.activeElement)); i++) await page.keyboard.press(key);
   await expect(link).toBeFocused();
@@ -174,7 +183,9 @@ test('keyboard traversal reaches the Library header destinations', async ({ page
 });
 test('tablet Library action names', async ({ page }) => {
   await open(page, '/my-books');
-  for (const name of ['Book Lists', 'Analytics', 'Add Book']) {
+  await expect(page.getByRole('link', { name: 'Add Book', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Library controls', exact: true }).click();
+  for (const name of ['Book Lists', 'Analytics']) {
     await expect(page.getByRole('link', { name, exact: true })).toBeVisible();
   }
 });

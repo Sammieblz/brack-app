@@ -1,5 +1,7 @@
 # Library book interaction contract
 
+F10a reconstructs flat rows and shared action disclosure; see [Library presentation](ui-library-presentation.md). Primary/selection/gesture ownership below remains authoritative. Log progress is a native link; More reveals secondary actions. Detailed metadata now lives in Book Details rather than a flat-card accordion.
+
 Implements [issue #69](https://github.com/Sammieblz/brack-app/issues/69). Keep the current Library layouts, detail destinations and book data operations; this is a hit-target and input-behavior fix, not a redesign.
 
 ## Primary action and modes

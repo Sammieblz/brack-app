@@ -31,8 +31,8 @@ function FixtureRoutes() {
     return () => { delete window.libraryTasks; delete document.documentElement.dataset.fixtureReady; };
   }, [location, navigate]);
   return <><Routes>
-    <Route path="/my-books" element={<MyBooks />} /><Route path="/book/:id" element={<BookDetail />} />
-    <Route path="/lists" element={<BookLists />} /><Route path="/lists/:listId" element={<BookListDetail />} />
+    <Route path="/my-books" element={<MyBooks />} /><Route path="/books" element={<MyBooks />} /><Route path="/book/:id" element={<BookDetail />} />
+    <Route path="/lists" element={<BookLists />} /><Route path="/book-lists" element={<BookLists />} /><Route path="/lists/:listId" element={<BookListDetail />} />
     <Route path="*" element={<main><h1>Outside the Library fixture</h1></main>} />
   </Routes><Toaster /><Sonner /></>;
 }

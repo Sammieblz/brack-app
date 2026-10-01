@@ -218,8 +218,8 @@ export const LibraryCarouselView = ({
         onEdit={onEdit}
         onDelete={onDelete}
         onCloseAutoFocus={() => {
-          if (returnFocus.current?.isConnected) returnFocus.current.focus({ preventScroll: true });
-          if (focusFallbackRef?.current?.isConnected) focusFallbackRef.current.focus({ preventScroll: true });
+          const destination = returnFocus.current?.isConnected ? returnFocus.current : focusFallbackRef?.current;
+          if (destination?.isConnected) destination.focus({ preventScroll: true });
         }}
       />
     </>

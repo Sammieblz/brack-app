@@ -50,8 +50,10 @@ export const LibraryViewSkeleton = ({ viewMode = "flat", count, selectMode = fal
                     <Skeleton className="mt-3 h-[1.55rem] w-4/5" />
                     <Skeleton className="mt-1 h-5 w-3/5" />
                   </div>
-                  {!selectMode && <div className="mt-4 flex flex-wrap justify-center gap-2 border-t border-border/60 pt-3">
-                    {Array.from({ length: showListAction ? 5 : 4 }, (_, action) => <Skeleton key={action} className="h-11 w-11 shrink-0 rounded-full" />)}
+                  {!selectMode && <div className="mt-4 flex flex-wrap justify-between gap-1 border-t border-border/60 pt-3">
+                    {/* Reserve the real action-label widths so wrapping matches the loaded card. */}
+                    <Skeleton className="library-text-control"><span className="invisible inline-flex items-center gap-2"><span className="size-4" />Log progress</span></Skeleton>
+                    <Skeleton className="library-text-control"><span className="invisible inline-flex items-center gap-2">More<span className="size-4" /></span></Skeleton>
                   </div>}
                 </div>
               </div>

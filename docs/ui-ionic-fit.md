@@ -1,5 +1,7 @@
 # Ionic integration decision
 
+F10a re-evaluates Segment/Searchbar/Action Sheet/Item Sliding per component in [checkpoint28](frontend-renewal/28-library-reconstruction.md). Its custom Library composition retains native inputs and the existing overlay/swipe owners. This is not production Ionic adoption; the gate below applies to the tested router/modal integration, not every Ionic component or all future shell work.
+
 **Decision: defer production adoption of the tested Ionic 9.0.5 route shell and modal.** Continue frontend renewal with BRACK's existing React Router 6 and accessible Radix primitives, composed into the planned custom phone/tablet/browser surfaces. This is a completed feasibility decision, not permission to stop the UI renewal or replace branding.
 
 The isolated F06 experiment follows committed baseline `2ddc1c25c3b453a5b3f923c99f4d3e58b45b7754`. [Checkpoint 16](frontend-renewal/16-ionic-fit-experiment.md) owns current validation and the review stop. No Ionic package or stylesheet has been added to the application dependency graph or production renderer. The fixture and its exact lockfile live in `tests/fixtures/ionic-fit/`.

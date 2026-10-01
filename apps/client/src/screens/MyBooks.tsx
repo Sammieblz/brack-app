@@ -1,10 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { NavArrowDown } from "iconoir-react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { LibraryViewSkeleton } from "@/components/skeletons/LibraryViewSkeleton";
@@ -24,7 +20,6 @@ import { SwipeableBookCard } from "@/components/SwipeableBookCard";
 import { LibraryRemoveDialog } from "@/components/library/LibraryRemoveDialog";
 import { AppIcon } from "@/components/ui/app-icon";
 import { useAuth } from "@/hooks/useAuth";
-import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { useBooks } from "@/hooks/useBooks";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -41,7 +36,7 @@ import { getCuratedGenres, normalizeGenre } from "@/utils/genres";
 import type { Book, LibraryViewMode } from "@/types";
 import { isConnectivityAvailable } from "@/services/connectivity";
 
-type StatusFilter = "all" | "reading" | "completed" | "to_read";
+import { LibraryToolbar, type LibraryStatusFilter as StatusFilter } from "@/components/library/LibraryToolbar";
 type SortKey =
   | "shelf_order"
   | "created_desc"
@@ -50,13 +45,6 @@ type SortKey =
   | "author_asc"
   | "progress_desc"
   | "pages_desc";
-
-const STATUS_OPTIONS: Array<{ value: StatusFilter; label: string }> = [
-  { value: "all", label: "All" },
-  { value: "reading", label: "Reading" },
-  { value: "completed", label: "Done" },
-  { value: "to_read", label: "To Read" },
-];
 
 const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   { value: "updated_desc", label: "Recently updated" },
@@ -112,7 +100,6 @@ const sortBooks = (books: Book[], sortKey: SortKey) => {
 const MyBooksContent = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const { width } = useBreakpoint();
   const {
     books,
     loading,
@@ -130,12 +117,24 @@ const MyBooksContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const highlightBookId = (location.state as { highlightBookId?: string } | null)?.highlightBookId;
-  const initialSearchQuery = useMemo(() => new URLSearchParams(location.search).get("q") || "", [location.search]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [genreFilters, setGenreFilters] = useState<string[]>([]);
-  const [sortKey, setSortKey] = useState<SortKey>("updated_desc");
   const [viewMode, setViewMode] = useState<LibraryViewMode>("flat");
+  const defaultSortKey: SortKey = viewMode === "bookshelf" ? "shelf_order" : "updated_desc";
+  const [filterParams, setFilterParams] = useSearchParams();
+  const searchQuery = filterParams.get("q") ?? "";
+  const rawStatus = filterParams.get("status");
+  const statusFilter: StatusFilter = rawStatus === "reading" || rawStatus === "completed" || rawStatus === "to_read" ? rawStatus : "all";
+  const genreFilters = useMemo(() => [...new Set(filterParams.getAll("genre").map(normalizeGenre).filter((genre): genre is string => Boolean(genre)))], [filterParams]);
+  const requestedSort = filterParams.get("sort");
+  const sortKey: SortKey = requestedSort === "shelf_order" ? defaultSortKey
+    : SORT_OPTIONS.some(option => option.value === requestedSort) ? requestedSort as SortKey : defaultSortKey;
+  const setFilter = (key: string, values: string[]) => setFilterParams(current => {
+    const next = new URLSearchParams(current); next.delete(key);
+    values.forEach(value => next.append(key, value)); return next;
+  }, { replace: true, state: location.state });
+  const setSearchQuery = (value: string) => setFilter("q", value ? [value] : []);
+  const setStatusFilter = (value: StatusFilter) => setFilter("status", value === "all" ? [] : [value]);
+  const setGenreFilters = (value: string[] | ((previous: string[]) => string[])) => setFilter("genre", typeof value === "function" ? value(genreFilters) : value);
+  const setSortKey = (value: SortKey) => setFilter("sort", value === defaultSortKey ? [] : [value]);
   const [reorderMode, setReorderMode] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedBookIds, setSelectedBookIds] = useState<string[]>([]);
@@ -165,12 +164,6 @@ const MyBooksContent = () => {
   });
 
   useEffect(() => {
-    if (initialSearchQuery) {
-      setSearchQuery(initialSearchQuery);
-    }
-  }, [initialSearchQuery]);
-
-  useEffect(() => {
     let cancelled = false;
 
     if (!user?.id) {
@@ -194,13 +187,7 @@ const MyBooksContent = () => {
   }, [user?.id]);
 
   useEffect(() => {
-    if (viewMode === "bookshelf") {
-      setSortKey((current) => (current === "updated_desc" ? "shelf_order" : current));
-      return;
-    }
-
-    setReorderMode(false);
-    setSortKey((current) => (current === "shelf_order" ? "updated_desc" : current));
+    if (viewMode !== "bookshelf") setReorderMode(false);
   }, [viewMode]);
 
   const libraryGenres = useMemo(
@@ -250,11 +237,9 @@ const MyBooksContent = () => {
   }, [books, genreFilters, searchQuery, sortKey, statusFilter]);
 
   const selectedBookIdSet = useMemo(() => new Set(selectedBookIds), [selectedBookIds]);
-  const compactToolbar = width < 1280;
   const allVisibleSelected =
     filteredBooks.length > 0 && filteredBooks.every((book) => selectedBookIdSet.has(book.id));
 
-  const defaultSortKey: SortKey = viewMode === "bookshelf" ? "shelf_order" : "updated_desc";
   const hasContentFilters =
     Boolean(searchQuery.trim()) ||
     statusFilter !== "all" ||
@@ -393,10 +378,11 @@ const MyBooksContent = () => {
 
   const clearFilters = () => {
     clearSelectionForContextChange();
-    setSearchQuery("");
-    setStatusFilter("all");
-    setGenreFilters([]);
-    setSortKey(defaultSortKey);
+    setFilterParams(current => {
+      const next = new URLSearchParams(current);
+      ["q", "status", "genre", "sort"].forEach(key => next.delete(key));
+      return next;
+    }, { replace: true, state: location.state });
   };
 
   const toggleGenre = (genre: string) => {
@@ -484,6 +470,7 @@ const MyBooksContent = () => {
               onClick={() => {
                 if (!reorderMode) exitSelectMode();
                 setReorderMode((current) => !current);
+                setAdvancedFiltersOpen(false);
               }}
               className="rounded-full"
             >
@@ -509,7 +496,7 @@ const MyBooksContent = () => {
               size="sm"
               variant={selectMode ? "default" : "outline"}
               disabled={disabled}
-              onClick={handleSelectModeToggle}
+              onClick={() => { handleSelectModeToggle(); setAdvancedFiltersOpen(false); }}
               className="rounded-full"
             >
               <AppIcon icon={APP_ICONS.common.select} variant="inline" size="sm" className="mr-2" />
@@ -546,6 +533,7 @@ const MyBooksContent = () => {
                   "h-9 w-9 rounded-full",
                   active ? "shadow-sm" : "text-muted-foreground hover:text-foreground"
                 )}
+                aria-pressed={active}
                 onClick={() => handleViewModeChange(option.value)}
               >
                 <Icon className="h-4 w-4" />
@@ -558,28 +546,8 @@ const MyBooksContent = () => {
     </div>
   );
 
-  const renderStatusControls = (compact = false) => (
-    <div className={cn("flex gap-2 overflow-x-auto pb-1", compact ? "-mx-1 px-1" : "flex-wrap")}>
-      {STATUS_OPTIONS.map((option) => (
-        <Button
-          key={option.value}
-          type="button"
-          size="sm"
-          variant={statusFilter === option.value ? "default" : "outline"}
-          onClick={() => {
-            clearSelectionForContextChange();
-            setStatusFilter(option.value);
-          }}
-          className="shrink-0 rounded-full"
-        >
-          {option.label}
-        </Button>
-      ))}
-    </div>
-  );
-
   const renderGenreFilters = () => (
-    <div className="flex max-h-36 flex-wrap gap-2 overflow-y-auto pr-1">
+    <div className="flex flex-wrap gap-2">
       {libraryGenres.map((genre) => (
         <Button
           key={genre}
@@ -587,7 +555,8 @@ const MyBooksContent = () => {
           size="sm"
           variant={genreFilters.includes(genre) ? "default" : "outline"}
           onClick={() => toggleGenre(genre)}
-          className="rounded-full text-xs"
+          aria-pressed={genreFilters.includes(genre)}
+          className="h-auto whitespace-normal rounded-full text-sm"
         >
           {genre}
         </Button>
@@ -603,7 +572,7 @@ const MyBooksContent = () => {
         setSortKey(value as SortKey);
       }}
     >
-      <SelectTrigger className={className}>
+      <SelectTrigger aria-label="Sort books" className={className}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -616,296 +585,27 @@ const MyBooksContent = () => {
     </Select>
   );
 
-  const renderCompactControls = () => {
-    const activeCount =
-      (viewMode !== "flat" ? 1 : 0) +
-      (reorderMode ? 1 : 0) +
-      (selectMode ? 1 : 0) +
-      (sortKey !== defaultSortKey ? 1 : 0) +
-      genreFilters.length;
-
-    return (
-      <Collapsible open={advancedFiltersOpen} onOpenChange={setAdvancedFiltersOpen}>
-        <CollapsibleTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            className="h-auto min-h-[46px] w-full flex-wrap justify-between whitespace-normal rounded-xl px-3 py-2 text-left"
-          >
-            <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-              <APP_ICONS.library.filter className="h-4 w-4 shrink-0" />
-              <span className="min-w-0 flex-[1_1_7rem]">
-                <span className="block break-words font-sans text-sm font-semibold">Library controls</span>
-                <span className="block break-words font-sans text-xs text-muted-foreground">
-                  {VIEW_OPTIONS.find((option) => option.value === viewMode)?.label.replace(" view", "")} ·{" "}
-                  {sortOptions.find((option) => option.value === sortKey)?.label}
-                </span>
-              </span>
-            </span>
-            <span className="flex shrink-0 items-center gap-2">
-              {activeCount > 0 && (
-                <span className="rounded-full bg-primary px-2 py-0.5 font-sans text-[11px] font-semibold text-primary-foreground">
-                  {activeCount}
-                </span>
-              )}
-              <NavArrowDown
-                className={cn(
-                  "h-4 w-4 text-muted-foreground transition-transform",
-                  advancedFiltersOpen && "rotate-180"
-                )}
-              />
-            </span>
-          </Button>
-        </CollapsibleTrigger>
-
-        <CollapsibleContent className="pt-3 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-          <div className="grid gap-4 rounded-xl border border-border/55 bg-background/45 p-3">
-            <section className="space-y-2">
-              <h3 className="font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                View
-              </h3>
-              {renderViewSwitcher()}
-            </section>
-
-            <section className="space-y-2">
-              <h3 className="font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Actions
-              </h3>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                {renderReorderControl()}
-                {renderSelectControl()}
-              </div>
-            </section>
-
-            <section className="space-y-2">
-              <h3 className="font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Sort
-              </h3>
-              {renderSortSelect()}
-            </section>
-
-            <section className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="font-sans text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Genres
-                </h3>
-                {genreFilters.length > 0 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setGenreFilters([])}
-                    className="h-7 px-2 text-xs"
-                  >
-                    Clear genres
-                  </Button>
-                )}
-              </div>
-              {renderGenreFilters()}
-            </section>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={clearFilters}
-              disabled={!hasActiveFilters}
-              className="rounded-full"
-            >
-              Clear filters
-            </Button>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-    );
-  };
-
-  const renderSummaryChips = () => {
-    const chips = [
-      {
-        label: "All",
-        detail: "Books",
-        value: bookStats.total,
-        status: "all" as StatusFilter,
-        className: "text-primary",
-      },
-      {
-        label: "Reading",
-        detail: "In progress",
-        value: bookStats.reading,
-        status: "reading" as StatusFilter,
-        className: "text-blue-500",
-      },
-      {
-        label: "Finished",
-        detail: "Completed",
-        value: bookStats.completed,
-        status: "completed" as StatusFilter,
-        className: "text-green-500",
-      },
-      {
-        label: "Queued",
-        detail: "To read",
-        value: bookStats.toRead,
-        status: "to_read" as StatusFilter,
-        className: "text-orange-500",
-      },
-    ];
-
-    return (
-      <div
-        className="flex gap-2 overflow-x-auto rounded-xl border border-border/60 bg-card/55 p-2"
-        aria-label="Library snapshot"
-      >
-        {chips.map((chip) => (
-          <button
-            key={chip.label}
-            type="button"
-            onClick={() => {
-              clearSelectionForContextChange();
-              setStatusFilter(chip.status);
-            }}
-            className={cn(
-              "flex min-w-[8.75rem] flex-1 items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition-colors",
-              statusFilter === chip.status
-                ? "border-primary/50 bg-primary/10"
-                : "border-border/45 bg-background/45 hover:border-primary/35 hover:bg-primary/5"
-            )}
-            aria-pressed={statusFilter === chip.status}
-          >
-            <span className="min-w-0 flex-1">
-              <span className="block truncate font-sans text-sm font-semibold text-foreground">
-                {chip.label}
-              </span>
-              <span className="block truncate font-sans text-xs text-muted-foreground">
-                {chip.detail}
-              </span>
-            </span>
-            <span className={cn("font-sans text-lg font-bold tabular-nums", chip.className)}>
-              {chip.value}
-            </span>
-          </button>
-        ))}
-      </div>
-    );
-  };
-
   const renderToolbar = () => (
-    <div className="space-y-3 rounded-xl border border-border/60 bg-card/60 p-3">
-      <div className={cn("flex flex-col gap-3", !compactToolbar && "xl:flex-row xl:items-center")}>
-        <div className="relative flex-1">
-          <AppIcon
-            icon={APP_ICONS.common.search}
-            variant="inline"
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          />
-          <Input
-            aria-label="Search your library"
-            type="search"
-            placeholder="Search title, author, ISBN, genre, tags..."
-            value={searchQuery}
-            onChange={(event) => {
-              clearSelectionForContextChange();
-              setSearchQuery(event.target.value);
-            }}
-            className="min-h-[44px] rounded-full pl-10 pr-10"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => {
-                clearSelectionForContextChange();
-                setSearchQuery("");
-              }}
-              className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              aria-label="Clear search"
-            >
-              <AppIcon icon={APP_ICONS.common.close} variant="action" size="xs" />
-            </button>
-          )}
-        </div>
-
-        {!compactToolbar && (
-          <div className="flex items-center gap-2">
-            {renderViewSwitcher()}
-            {renderReorderControl()}
-            {renderSelectControl()}
-            {renderSortSelect("h-11 w-[180px] rounded-full")}
-            <Button variant="outline" size="sm" onClick={clearFilters} disabled={!hasActiveFilters}>
-              Clear
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {renderStatusControls(compactToolbar || isMobile)}
-
-      {compactToolbar && renderCompactControls()}
-
-      {!compactToolbar && (
-        <Collapsible open={advancedFiltersOpen} onOpenChange={setAdvancedFiltersOpen}>
-          <div className="flex flex-wrap items-center gap-2">
-            <CollapsibleTrigger asChild>
-              <Button type="button" variant="outline" size="sm" className="rounded-full">
-                <APP_ICONS.library.filter className="mr-2 h-4 w-4" />
-                Genres
-                {genreFilters.length > 0 && (
-                  <span className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] text-primary-foreground">
-                    {genreFilters.length}
-                  </span>
-                )}
-                <NavArrowDown
-                  className={cn(
-                    "ml-1 h-4 w-4 transition-transform",
-                    advancedFiltersOpen && "rotate-180"
-                  )}
-                />
-              </Button>
-            </CollapsibleTrigger>
-
-            {genreFilters.length > 0 && !advancedFiltersOpen && (
-              <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
-                {genreFilters.slice(0, 3).map((genre) => (
-                  <span
-                    key={genre}
-                    className="truncate rounded-full bg-primary/10 px-2.5 py-1 font-sans text-xs text-primary"
-                  >
-                    {genre}
-                  </span>
-                ))}
-                {genreFilters.length > 3 && (
-                  <span className="font-sans text-xs text-muted-foreground">
-                    +{genreFilters.length - 3} more
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-
-          <CollapsibleContent className="pt-3 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
-            <div className="rounded-lg border border-border/50 bg-background/45 p-3">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="font-sans text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Genre filters
-                </span>
-                {genreFilters.length > 0 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setGenreFilters([])}
-                    className="h-7 px-2 text-xs"
-                  >
-                    Clear genres
-                  </Button>
-                )}
-              </div>
-              {renderGenreFilters()}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-      )}
-    </div>
+    <LibraryToolbar search={searchQuery} onSearch={value => { clearSelectionForContextChange(); setSearchQuery(value); }}
+      status={statusFilter} onStatus={value => { clearSelectionForContextChange(); setStatusFilter(value); }}
+      counts={{ all: bookStats.total, reading: bookStats.reading, completed: bookStats.completed, to_read: bookStats.toRead }}
+      loading={loading} controlsOpen={advancedFiltersOpen} onControlsOpen={setAdvancedFiltersOpen}
+      summary={`${loading ? "Loading your books" : `${filteredBooks.length} ${filteredBooks.length === 1 ? "book" : "books"}${hasMore ? " loaded" : ""}`}${genreFilters.length ? ` - ${genreFilters.join(", ")}` : ""}${sortKey !== defaultSortKey ? ` - ${sortOptions.find(option => option.value === sortKey)?.label}` : ""}`}
+      activeFilters={hasActiveFilters} onClear={clearFilters} shortcuts={<FloatingActionButton placement="inline" />}>
+      <section><h3>View</h3>{renderViewSwitcher()}</section>
+      <section><h3>Sort</h3>{renderSortSelect("h-auto min-h-11 w-full whitespace-normal")}</section>
+      <section><div className="flex flex-wrap items-center justify-between gap-2"><h3>Genres</h3>
+        {genreFilters.length > 0 && <button type="button" className="library-text-control" onClick={() => { clearSelectionForContextChange(); setGenreFilters([]); }}>Clear genres</button>}
+      </div>{renderGenreFilters()}</section>
+      <section><h3>Manage books</h3><div className="flex flex-wrap gap-2">{renderSelectControl()}{renderReorderControl()}</div>
+        {viewMode === "bookshelf" && !canReorderShelf && <p className="font-sans text-sm text-muted-foreground">{reorderUnavailableReason}</p>}
+      </section>
+      <section><h3>Your reading space</h3><div className="flex flex-wrap gap-2">
+        <Link to="/book-lists" className="library-text-control"><APP_ICONS.library.bookLists className="size-5" aria-hidden="true" />Book Lists</Link>
+        <Link to="/analytics" className="library-text-control"><APP_ICONS.library.analytics className="size-5" aria-hidden="true" />Analytics</Link>
+      </div></section>
+      <button type="button" className="library-text-control" disabled={!hasActiveFilters} onClick={clearFilters}>Clear filters</button>
+    </LibraryToolbar>
   );
 
   const renderBulkSelectionBar = () => {
@@ -923,6 +623,7 @@ const MyBooksContent = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button type="button" className="library-text-control" onClick={handleSelectModeToggle}>Done</button>
           <Button
             type="button"
             variant="outline"
@@ -1081,10 +782,11 @@ const MyBooksContent = () => {
       <PullToRefresh onRefresh={async () => await refetchBooks()}>
         {isMobile ? (
           <MobileHeader
+            className="library-mobile-header"
             title="Library"
             action={
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/analytics" aria-label="Analytics" title="Analytics"><APP_ICONS.library.analytics aria-hidden="true" className="h-4 w-4" /></Link>
+              <Button asChild size="sm" className="h-auto whitespace-normal">
+                <Link to="/add-book" aria-label="Add Book"><APP_ICONS.library.addBook aria-hidden="true" className="size-4 shrink-0" />Add</Link>
               </Button>
             }
           />
@@ -1094,25 +796,17 @@ const MyBooksContent = () => {
             subtitle="Manage your personal collection"
             showUtilityActions
             action={
-              <div className="flex flex-wrap justify-end gap-2">
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/book-lists"><APP_ICONS.library.bookLists aria-hidden="true" className="mr-2 h-4 w-4 shrink-0" />Book Lists</Link>
-                </Button>
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/analytics"><APP_ICONS.library.analytics aria-hidden="true" className="mr-2 h-4 w-4 shrink-0" />Analytics</Link>
-                </Button>
-                <Button asChild size="sm">
-                  <Link to="/add-book"><APP_ICONS.library.addBook aria-hidden="true" className="mr-2 h-4 w-4 shrink-0" />Add Book</Link>
-                </Button>
-              </div>
+              <Button asChild size="sm" className="h-auto whitespace-normal">
+                <Link to="/add-book"><APP_ICONS.library.addBook aria-hidden="true" className="size-4 shrink-0" />Add Book</Link>
+              </Button>
             }
           />
         )}
 
         <main ref={libraryContent} tabIndex={-1} aria-label="Library books" id="library-scroll" className="app-page space-y-4 md:space-y-6">
-          {renderSummaryChips()}
           {renderToolbar()}
           {renderBulkSelectionBar()}
+          {reorderMode && <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3"><p className="font-sans text-sm">Reorder your shelf using the handles or keyboard.</p>{renderReorderControl()}</div>}
           <LoadingRegion loading={loading} refreshing={refreshing} label={loading ? "Loading your library" : "Refreshing your library"}>
             {error && <LoadingError message={error} onRetry={() => void refetchBooks()} className="mb-4" />}
             {renderBooksList()}
@@ -1131,7 +825,6 @@ const MyBooksContent = () => {
         onConfirm={handleBulkDeleteBooks}
       />
 
-      <FloatingActionButton />
     </MobileLayout>
   );
 };

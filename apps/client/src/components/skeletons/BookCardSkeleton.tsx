@@ -1,14 +1,22 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import "@/components/library/library-reading-room.css";
 
-export const BookCardSkeleton = ({ variant = "default", selectMode = false, showListAction = true }: {
+export const BookCardSkeleton = ({ variant = "default", selectMode = false }: {
   variant?: "default" | "library" | "list-detail";
   selectMode?: boolean;
   showListAction?: boolean;
 }) => {
   const isList = variant === "list-detail";
   const isLibrary = variant === "library";
+  if (isLibrary) return <div aria-hidden="true" data-skeleton="book-card" className="library-reading-row">
+    <div className="library-reading-row__body"><Skeleton className="h-24 w-16" /><div className="space-y-2">
+      <Skeleton className="h-6 w-4/5" /><Skeleton className="h-5 w-3/5" /><Skeleton className="h-4 w-1/2" />
+      <Skeleton className="mt-3 h-1 w-full" /><Skeleton className="h-4 w-3/5" />
+    </div></div>
+    {!selectMode && <div className="mt-3 flex justify-between gap-2"><Skeleton className="h-11 w-28" /><Skeleton className="h-11 w-20" /></div>}
+  </div>;
   return (
     <Card aria-hidden="true" data-skeleton="book-card" className="overflow-hidden border-border/70 bg-card/85 shadow-sm">
       <CardContent className="p-0">
@@ -30,11 +38,6 @@ export const BookCardSkeleton = ({ variant = "default", selectMode = false, show
             <div className="mt-3 h-5" />
           </div>
         </div>
-        {isLibrary && !selectMode && (
-          <div className="flex flex-wrap gap-2 border-t border-border/60 px-3 pb-3 pt-3 sm:px-4 sm:pb-4">
-            {Array.from({ length: showListAction ? 5 : 4 }, (_, index) => <Skeleton key={index} className="h-11 w-11 shrink-0 rounded-full" />)}
-          </div>
-        )}
         {isList && <div className="border-t border-border/55 bg-background/35 px-3 py-2 sm:px-4"><Skeleton className="h-11 w-full rounded-full" /></div>}
       </CardContent>
     </Card>

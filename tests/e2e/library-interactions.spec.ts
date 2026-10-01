@@ -46,6 +46,7 @@ async function expectOpenedOnce(page: Page, view: View) {
     const dialog = page.getByRole('dialog', { name: title, exact: true });
     await expect(dialog).toHaveCount(1);
     expect(await events(page)).toEqual([]);
+    await dialog.getByRole('button', { name: `More actions for ${title}`, exact: true }).click();
     await dialog.getByRole('button', { name: 'View details', exact: true }).click();
     await expect.poll(() => events(page)).toEqual([{ action: 'view', id: bookId }]);
     await dialog.getByRole('button', { name: 'Close', exact: true }).click();
@@ -67,7 +68,7 @@ for (const view of views) {
       surface.locator('.library-shelf-status'), surface.locator('.library-shelf-progress'),
     ] : [
       surface.locator('.library-physical-book'), surface.getByRole('heading', { name: title, exact: true }),
-      surface.getByText('by Caleb Azumah Nelson', { exact: true }),
+      surface.getByText(view === 'flat' ? 'Caleb Azumah Nelson' : 'by Caleb Azumah Nelson', { exact: true }),
       surface.getByText('Fiction', { exact: true }), surface.getByRole('progressbar'),
     ];
     for (const region of regions) {
@@ -188,19 +189,17 @@ for (const view of views) {
   });
 }
 
-test('nested actions, accordion and portalled deletion never activate their card', async ({ page }) => {
+test('nested actions, disclosure and portalled deletion never activate their card', async ({ page }) => {
   for (const view of ['flat', 'carousel'] as const) {
     await load(page, `view=${view}`);
     const surface = page.locator(surfaceSelector(view)).first();
-    if (view === 'flat') {
-      await surface.getByRole('button', { name: `Expand ${title}` }).click();
-      await expect(surface.getByText('A note worth coming back to.')).toBeVisible();
-      expect(await events(page)).toEqual([]);
-    }
+    await surface.getByRole('button', { name: `More actions for ${title}` }).click();
+    await expect(surface.getByRole('group', { name: `Actions for ${title}` })).toBeVisible();
+    expect(await events(page)).toEqual([]);
     await surface.getByRole('button', { name: 'Edit book', exact: true }).click();
     expect(await events(page)).toEqual([{ action: 'edit', id: bookId }]);
     await reset(page);
-    await surface.getByRole('button', { name: 'Log progress', exact: true }).click();
+    await surface.getByRole('link', { name: 'Log progress', exact: true }).click();
     await expect(page.getByTestId('path')).toHaveText(`/book/${bookId}/progress`);
     expect(await events(page)).toEqual([]);
     await reset(page);

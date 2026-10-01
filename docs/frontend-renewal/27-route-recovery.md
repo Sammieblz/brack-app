@@ -1,6 +1,6 @@
 # CR06b — route recovery and Library action names
 
-Status: **Implemented and verified within the scope below. Stopped for user review; uncommitted.** Baseline `182230f` commits CR06a; worktree was clean at startup. No staging, commit, deployment or live account mutation performed. This completes three findings under CR06, not all of CR06 or the main screen tickets.
+Status: **Historical: implemented and verified within the scope below; committed in `d944fef`.** Baseline `182230f` commits CR06a; worktree was clean at startup. No staging, commit, deployment or live account mutation performed. This completes three findings under CR06, not all of CR06 or the main screen tickets.
 
 ## Scope and verified baseline
 
@@ -55,6 +55,8 @@ After code freeze, local AST `graphify update .` succeeded: **10,262 nodes, 22,9
 
 Census refreshed: 39 route declarations, 514 modules, 311 presentation modules, 33 screens, 274 components. Counts are inventory, not accepted-screen totals. README, ledger, handoff, coverage and living auth/navigation docs point here. Official Supabase redirect guidance/changelog checked on 2026-10-01; Markdown changelog request failed on content type, HTML fallback read. No provider configuration change needed.
 
-## Next checkpoint
+## Historical next checkpoint
 
 Stop for user review, with no stage/commit. After approval/continuation, begin **CR06c: RS03/RS09/RS11 and remaining HeaderUtilityActions callers** — Support/404 utility occupancy and Dashboard auth-loading navigation. Start from the census and route-state owners; complete that shell-policy child with actual screens and timer/sync/loading/error/large-text branches. Do not reopen RS05/06/07 without new evidence. Onboarding chapter Back (RS08), route focus/scroll restoration, remaining CR06 consumers, CR07–CR10 and main F10–F19 screen work stay open. Revalidate the exact next-child consumer set before edits; do not expand into an unfinished redesign.
+
+Current continuation: user redirected the next pass to visible Library reconstruction in [F10a/checkpoint28](28-library-reconstruction.md). CR06c remains open; the earlier next-step recommendation below is historical, not the active checkpoint.

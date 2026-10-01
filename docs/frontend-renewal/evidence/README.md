@@ -1,5 +1,7 @@
 # Current-state fixture observations
 
+Current F10a evidence is in [Library reconstruction](f10-library/README.md) and [checkpoint28](../28-library-reconstruction.md): actual before/after screen captures, shared-action regression outcomes, retained failures, component-specific Ionic choices and explicit remaining acceptance.
+
 CR03 Settings evidence is in [Settings continuity](cr03-settings-continuity/README.md) and [checkpoint23](../23-settings-continuity.md): all eight actual categories, failure/pending/resize and shell-escape checks, retained original failures, 16 selected screenshots and explicit native/AT/CAPTCHA limits. CR02 is recorded in [responsive composers](cr02-responsive-composers/README.md). These scoped corrections do not close the remaining whole-frontend visual program.
 
 Current CR01 evidence is in [live composers](cr01-composers/README.md) and [checkpoint21](../21-live-composers.md): actual Feed/PostDetail/UserProfile/Messages/BookClubDetail tasks, retained diagnostic outcomes, source-font screenshots and explicit fixture/device limits. Earlier evidence below is historical and does not supersede the coverage reconciliation.

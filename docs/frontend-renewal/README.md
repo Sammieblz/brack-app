@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Current checkpoint: **[CR06b - Route recovery and Library action names](27-route-recovery.md), implemented and verified within scope; stopped for user review, uncommitted.** CR06a is committed in `182230f`. RS05/RS06/RS07 have 77 browser passes/one documented Windows WebKit skip, 8 Library regressions, 81 auth/setup units, passing types/lint/build and retained evidence. Next: CR06c shell utility/loading consumers. Remaining CR06, CR07-CR10 and main screen acceptance stay open. No stage/commit made.
+Current checkpoint: **[F10a - Library reconstruction](28-library-reconstruction.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `d944fef` commits CR06b. Actual Library controls/flat rows/shared actions are rebuilt; exact checks and original failures are in28. No staging/commit. Next on authorized continuation: F10b Lists manager/detail composition. Remaining F10 acceptance, CR06c/remaining CR06, CR07-CR10 and other main screen tickets stay open.
 
 ## Outcome
 
@@ -50,7 +50,8 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [24 - CR04 Library/list tasks](24-library-list-tasks.md) | Historical committed CR04: stable tasks, truthful outcomes and large-text/focus corrections |
 | [25 - CR05 Messages layout and gestures](25-messages-layout-gestures.md) | Historical committed CR05: measured panes, retained task ownership, visible actions and guarded local gestures |
 | [26 - CR06a Social destinations](26-social-destinations.md) | Committed historical child: actual social links/actions, readable large-text card intros, verified callers and explicit browser limitations |
-| [27 - CR06b Route recovery](27-route-recovery.md) | Current review stop: Lists/Goals sign-in return, club Back, named Library links; exact evidence and next shell child |
+| [27 - CR06b Route recovery](27-route-recovery.md) | Committed `d944fef`: Lists/Goals sign-in return, club Back, named Library links; exact evidence and remaining shell child |
+| [28 - F10a Library reconstruction](28-library-reconstruction.md) | Current review stop: actual Library hierarchy, flat book rows, shared action disclosure, evidence and bounded continuation |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability

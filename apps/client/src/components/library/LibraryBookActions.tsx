@@ -1,113 +1,50 @@
-import { type ReactNode, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { AddToListDialog } from "@/components/AddToListDialog";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { LibraryRemoveDialog } from "./LibraryRemoveDialog";
 import { APP_ICONS } from "@/config/iconography";
 import { AppIcon } from "@/components/ui/app-icon";
 import { cn } from "@/lib/utils";
 import type { Book } from "@/types";
 import { formatBookDate, formatBookStatus, statusStyles } from "./libraryBookUtils";
-
-interface IconActionProps {
-  label: string;
-  className?: string;
-  onClick?: () => void;
-  children: ReactNode;
-}
-
-const IconAction = ({ label, className, onClick, children }: IconActionProps) => (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        aria-label={label}
-        title={label}
-        onClick={onClick}
-        className={cn("h-11 w-11 rounded-full transition-[background-color,border-color,color,box-shadow] hover:translate-y-0", className)}
-      >
-        {children}
-      </Button>
-    </TooltipTrigger>
-    <TooltipContent>{label}</TooltipContent>
-  </Tooltip>
-);
+import "./library-reading-room.css";
 
 interface LibraryBookActionsProps {
-  book: Book;
-  userId?: string;
-  onView: (bookId: string) => void;
-  onEdit: (bookId: string) => void;
-  onDelete: (bookId: string) => Promise<void> | void;
-  className?: string;
+  book: Book; userId?: string;
+  onView: (bookId: string) => void; onEdit: (bookId: string) => void;
+  onDelete: (bookId: string) => Promise<void> | void; className?: string;
 }
 
-const LibraryBookActionsContent = ({
-  book,
-  userId,
-  onView,
-  onEdit,
-  onDelete,
-  className,
-}: LibraryBookActionsProps) => {
-  const navigate = useNavigate();
+const LibraryBookActionsContent = ({ book, userId, onView, onEdit, onDelete, className }: LibraryBookActionsProps) => {
   const [deleteOpen, setDeleteOpen] = useState(false);
-
   const deleteTrigger = useRef<HTMLButtonElement>(null);
-
-  return (
-    <div className={cn("flex flex-wrap items-center gap-2", className)}>
-      <IconAction label="View details" onClick={() => onView(book.id)}>
-        <AppIcon icon={APP_ICONS.common.forward} variant="action" />
-      </IconAction>
-      <IconAction
-        label="Log progress"
-        onClick={() => navigate(`/book/${book.id}/progress`)}
-      >
-        <AppIcon icon={APP_ICONS.bookDetail.logProgress} variant="action" />
-      </IconAction>
-      <IconAction label="Edit book" onClick={() => onEdit(book.id)}>
-        <AppIcon icon={APP_ICONS.common.edit} variant="action" />
-      </IconAction>
-      {userId && (
-        <AddToListDialog
-          bookId={book.id}
-          userId={userId}
-          triggerTooltip="Add to list"
-          trigger={
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Add to list"
-              title="Add to list"
-              className="h-11 w-11 rounded-full transition-[background-color,border-color,color,box-shadow] hover:translate-y-0"
-            >
-              <AppIcon icon={APP_ICONS.library.bookLists} variant="action" />
-            </Button>
-          }
-        />
-      )}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button ref={deleteTrigger} type="button" variant="outline" size="icon"
-            aria-label="Delete book" title="Delete book" aria-haspopup="dialog" aria-expanded={deleteOpen}
-            onClick={() => setDeleteOpen(true)}
-            className="h-11 w-11 rounded-full border-destructive/50 text-destructive hover:bg-destructive/10">
-            <AppIcon icon={APP_ICONS.common.delete} variant="action" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Delete book</TooltipContent>
-      </Tooltip>
-      <LibraryRemoveDialog open={deleteOpen} onOpenChange={setDeleteOpen} returnFocusRef={deleteTrigger}
-        title="Delete this book?" description={`This removes "${book.title}" from your library. You can re-add it later.`}
-        onConfirm={() => onDelete(book.id)} />
+  return <Collapsible className={cn("library-book-action-disclosure", className)} data-library-book-control>
+    <div className="flex flex-wrap items-center justify-between gap-1">
+      <Link to={`/book/${book.id}/progress`} className="library-text-control">
+        <AppIcon icon={APP_ICONS.bookDetail.logProgress} variant="action" />Log progress
+      </Link>
+      <CollapsibleTrigger asChild>
+        <button type="button" className="library-text-control" aria-label={`More actions for ${book.title}`}>
+          More<APP_ICONS.common.forward className="size-4 rotate-90" aria-hidden="true" />
+        </button>
+      </CollapsibleTrigger>
     </div>
-  );
+    <CollapsibleContent>
+      <div className="library-book-action-menu" role="group" aria-label={`Actions for ${book.title}`}>
+        <button type="button" className="library-text-control" onClick={() => onView(book.id)}>View details</button>
+        <button type="button" className="library-text-control" onClick={() => onEdit(book.id)}>Edit book</button>
+        {userId && <AddToListDialog bookId={book.id} userId={userId}
+          trigger={<button type="button" className="library-text-control"><AppIcon icon={APP_ICONS.library.bookLists} variant="action" />Add to list</button>} />}
+        <button ref={deleteTrigger} type="button" className="library-text-control library-destructive-control" aria-haspopup="dialog"
+          aria-expanded={deleteOpen} onClick={() => setDeleteOpen(true)}>Delete book</button>
+      </div>
+    </CollapsibleContent>
+    <LibraryRemoveDialog open={deleteOpen} onOpenChange={setDeleteOpen} returnFocusRef={deleteTrigger}
+      title="Delete this book?" description={`This removes "${book.title}" from your library. You can re-add it later.`}
+      onConfirm={() => onDelete(book.id)} />
+  </Collapsible>;
 };
 
 export const LibraryBookActions = (props: LibraryBookActionsProps) =>

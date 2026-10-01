@@ -1,13 +1,13 @@
 {
-  "baseline": "182230ffb4f95d10b48f9335f7c074c87089692f",
+  "baseline": "d944fef8a998052f4214f27dee9882f178c9244a",
   "method": "TypeScript AST static local import/literal dynamic-import reachability, JSX Route declarations, git commit file lists. No runtime, branches, feature-gate, tree-shaking, fixture alias/mock or per-export analysis. Declaration-level type-only imports are excluded; inline named type imports can still contribute edges. Import references and changed files do not establish review, runtime execution or passing tests. Unreachable means no source import path from main.tsx; verify before deletion. routeImportReachability follows route JSX owners, not their App-owned global ancestors: an empty route list does not exclude global rendering (e.g. Toaster, JournalPromptHandler, JourneyLevelUpObserver).",
   "counts": {
     "routes": 39,
-    "modules": 514,
-    "presentation": 311,
+    "modules": 516,
+    "presentation": 313,
     "screens": 33,
-    "components": 274,
-    "presentationWithoutSourcePath": 47
+    "components": 276,
+    "presentationWithoutSourcePath": 48
   },
   "commits": {
     "F01": "229dd67",
@@ -3678,16 +3678,38 @@
       ]
     },
     {
+      "path": "apps/client/src/components/library/library-reading-room.css",
+      "role": "component",
+      "imports": [],
+      "importedBy": [
+        "apps/client/src/components/LibraryBookCard.tsx",
+        "apps/client/src/components/library/LibraryBookActions.tsx",
+        "apps/client/src/components/library/LibraryToolbar.tsx",
+        "apps/client/src/components/library/libraryLayout.ts",
+        "apps/client/src/components/skeletons/BookCardSkeleton.tsx"
+      ],
+      "jsx": [],
+      "directTestImporters": [],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/book/:id",
+        "/books",
+        "/lists/:listId",
+        "/my-books"
+      ]
+    },
+    {
       "path": "apps/client/src/components/library/LibraryBookActions.tsx",
       "role": "component",
       "imports": [
         "apps/client/src/components/AddToListDialog.tsx",
         "apps/client/src/components/library/LibraryRemoveDialog.tsx",
+        "apps/client/src/components/library/library-reading-room.css",
         "apps/client/src/components/library/libraryBookUtils.ts",
         "apps/client/src/components/ui/app-icon.tsx",
         "apps/client/src/components/ui/badge.tsx",
-        "apps/client/src/components/ui/button.tsx",
-        "apps/client/src/components/ui/tooltip.tsx",
+        "apps/client/src/components/ui/collapsible.tsx",
         "apps/client/src/config/iconography.ts",
         "apps/client/src/lib/utils.ts"
       ],
@@ -3699,16 +3721,17 @@
         "apps/client/src/components/library/LibraryCarouselView.tsx"
       ],
       "jsx": [
+        "APP_ICONS.common.forward",
         "AddToListDialog",
         "AppIcon",
         "Badge",
-        "Button",
-        "IconAction",
+        "Collapsible",
+        "CollapsibleContent",
+        "CollapsibleTrigger",
         "LibraryBookActionsContent",
         "LibraryRemoveDialog",
-        "Tooltip",
-        "TooltipContent",
-        "TooltipTrigger",
+        "Link",
+        "button",
         "div",
         "span"
       ],
@@ -3873,6 +3896,7 @@
         "apps/client/src/lib/dateOnly.ts"
       ],
       "importedBy": [
+        "apps/client/src/components/LibraryBookCard.tsx",
         "apps/client/src/components/library/LibraryBookActions.tsx"
       ],
       "jsx": [],
@@ -3942,7 +3966,9 @@
     {
       "path": "apps/client/src/components/library/libraryLayout.ts",
       "role": "component",
-      "imports": [],
+      "imports": [
+        "apps/client/src/components/library/library-reading-room.css"
+      ],
       "importedBy": [
         "apps/client/src/components/library/LibraryBookshelfView.tsx",
         "apps/client/src/components/library/LibraryCarouselView.tsx",
@@ -4017,6 +4043,46 @@
       ]
     },
     {
+      "path": "apps/client/src/components/library/LibraryToolbar.tsx",
+      "role": "component",
+      "imports": [
+        "apps/client/src/components/library/library-reading-room.css",
+        "apps/client/src/components/ui/adaptive-dialog.tsx",
+        "apps/client/src/components/ui/dialog.tsx",
+        "apps/client/src/config/iconography.ts"
+      ],
+      "importedBy": [
+        "apps/client/src/screens/MyBooks.tsx"
+      ],
+      "jsx": [
+        "APP_ICONS.common.close",
+        "APP_ICONS.common.search",
+        "APP_ICONS.library.filter",
+        "AdaptiveDialogBody",
+        "AdaptiveDialogContent",
+        "AdaptiveDialogDescription",
+        "AdaptiveDialogFooter",
+        "AdaptiveDialogHeader",
+        "AdaptiveDialogTitle",
+        "Dialog",
+        "DialogClose",
+        "DialogTrigger",
+        "button",
+        "div",
+        "input",
+        "p",
+        "section",
+        "span"
+      ],
+      "directTestImporters": [],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/books",
+        "/my-books"
+      ]
+    },
+    {
       "path": "apps/client/src/components/LibraryBookCard.tsx",
       "role": "component",
       "imports": [
@@ -4024,9 +4090,9 @@
         "apps/client/src/components/library/LibraryBookPrimaryAction.tsx",
         "apps/client/src/components/library/LibraryPhysicalBookCover.tsx",
         "apps/client/src/components/library/activateLibraryBookSurface.ts",
-        "apps/client/src/components/ui/accordion.tsx",
+        "apps/client/src/components/library/library-reading-room.css",
+        "apps/client/src/components/library/libraryBookUtils.ts",
         "apps/client/src/components/ui/app-icon.tsx",
-        "apps/client/src/components/ui/card.tsx",
         "apps/client/src/components/ui/progress.tsx",
         "apps/client/src/config/iconography.ts",
         "apps/client/src/lib/utils.ts",
@@ -4036,19 +4102,12 @@
         "apps/client/src/screens/MyBooks.tsx"
       ],
       "jsx": [
-        "Accordion",
-        "AccordionContent",
-        "AccordionItem",
-        "AccordionTrigger",
         "AppIcon",
-        "Card",
-        "CardContent",
         "LibraryBookActions",
-        "LibraryBookDateLine",
         "LibraryBookPrimaryAction",
         "LibraryPhysicalBookCover",
-        "LibraryStatusBadge",
         "Progress",
+        "article",
         "div",
         "h3",
         "p",
@@ -6831,6 +6890,7 @@
       "path": "apps/client/src/components/skeletons/BookCardSkeleton.tsx",
       "role": "component",
       "imports": [
+        "apps/client/src/components/library/library-reading-room.css",
         "apps/client/src/components/ui/card.tsx",
         "apps/client/src/components/ui/skeleton.tsx",
         "apps/client/src/lib/utils.ts"
@@ -8355,9 +8415,7 @@
       "imports": [
         "apps/client/src/lib/utils.ts"
       ],
-      "importedBy": [
-        "apps/client/src/components/LibraryBookCard.tsx"
-      ],
+      "importedBy": [],
       "jsx": [
         "AccordionPrimitive.Content",
         "AccordionPrimitive.Header",
@@ -8368,11 +8426,8 @@
       ],
       "directTestImporters": [],
       "changedIn": [],
-      "sourceReachable": true,
-      "routeImportReachability": [
-        "/books",
-        "/my-books"
-      ]
+      "sourceReachable": false,
+      "routeImportReachability": []
     },
     {
       "path": "apps/client/src/components/ui/action-sheet.tsx",
@@ -8489,6 +8544,7 @@
         "apps/client/src/components/QuickJournalEntryDialog.tsx",
         "apps/client/src/components/clubs/CreateClubDialog.tsx",
         "apps/client/src/components/library/LibraryBookshelfSelection.tsx",
+        "apps/client/src/components/library/LibraryToolbar.tsx",
         "apps/client/src/components/social/CreatePostDialog.tsx",
         "apps/client/src/components/ui/action-sheet.tsx",
         "apps/client/src/components/ui/date-picker.tsx",
@@ -9010,7 +9066,6 @@
         "apps/client/src/components/journey/JourneyOverview.tsx",
         "apps/client/src/components/journey/JourneyQuests.tsx",
         "apps/client/src/components/journey/JourneyShop.tsx",
-        "apps/client/src/components/library/LibraryBookActions.tsx",
         "apps/client/src/components/library/LibraryRemoveDialog.tsx",
         "apps/client/src/components/loading/LoadingRegion.tsx",
         "apps/client/src/components/messaging/ConversationsList.tsx",
@@ -9160,7 +9215,6 @@
         "apps/client/src/components/GoalManager.tsx",
         "apps/client/src/components/JournalEntriesList.tsx",
         "apps/client/src/components/JournalEntryCard.tsx",
-        "apps/client/src/components/LibraryBookCard.tsx",
         "apps/client/src/components/ProgressLogItem.tsx",
         "apps/client/src/components/QuickProgressWidget.tsx",
         "apps/client/src/components/QuoteCollection.tsx",
@@ -9213,7 +9267,6 @@
         "apps/client/src/screens/Dashboard.tsx",
         "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/Feed.tsx",
-        "apps/client/src/screens/MyBooks.tsx",
         "apps/client/src/screens/PostDetail.tsx",
         "apps/client/src/screens/PostSignupPermissions.tsx",
         "apps/client/src/screens/Profile.tsx",
@@ -9338,7 +9391,7 @@
       "imports": [],
       "importedBy": [
         "apps/client/src/components/journey/JourneyQuests.tsx",
-        "apps/client/src/screens/MyBooks.tsx"
+        "apps/client/src/components/library/LibraryBookActions.tsx"
       ],
       "jsx": [],
       "directTestImporters": [],
@@ -9629,6 +9682,7 @@
         "apps/client/src/components/clubs/CreateClubDialog.tsx",
         "apps/client/src/components/journey/JourneyQuests.tsx",
         "apps/client/src/components/library/LibraryBookshelfSelection.tsx",
+        "apps/client/src/components/library/LibraryToolbar.tsx",
         "apps/client/src/components/messaging/MessageThread.tsx",
         "apps/client/src/components/social/CreatePostDialog.tsx",
         "apps/client/src/components/social/ReviewForm.tsx",
@@ -9911,7 +9965,6 @@
         "apps/client/src/screens/BookClubDetail.tsx",
         "apps/client/src/screens/BookClubs.tsx",
         "apps/client/src/screens/EditBook.tsx",
-        "apps/client/src/screens/MyBooks.tsx",
         "apps/client/src/screens/Onboarding.tsx",
         "apps/client/src/screens/Profile.tsx",
         "apps/client/src/screens/Readers.tsx",
@@ -11200,7 +11253,6 @@
         "apps/client/src/App.tsx",
         "apps/client/src/components/AddToListDialog.tsx",
         "apps/client/src/components/DarkModeToggle.tsx",
-        "apps/client/src/components/library/LibraryBookActions.tsx",
         "apps/client/src/components/rich-text/RichTextToolbar.tsx",
         "apps/client/src/components/ui/sidebar.tsx",
         "apps/client/src/screens/BookDetail.tsx",
@@ -11508,6 +11560,7 @@
         "apps/client/src/components/library/LibraryBookshelfView.tsx",
         "apps/client/src/components/library/LibraryCarouselView.tsx",
         "apps/client/src/components/library/LibraryPhysicalBookCover.tsx",
+        "apps/client/src/components/library/LibraryToolbar.tsx",
         "apps/client/src/components/settings/DataBackupSettings.tsx",
         "apps/client/src/components/settings/ProfileSettings.tsx",
         "apps/client/src/components/settings/SupportContact.tsx",
@@ -12863,8 +12916,7 @@
         "apps/client/src/components/library/LibraryBookshelfView.tsx",
         "apps/client/src/components/skeletons/LibraryViewSkeleton.tsx",
         "apps/client/src/components/ui/container-scroll-animation.tsx",
-        "apps/client/src/hooks/use-mobile.tsx",
-        "apps/client/src/screens/MyBooks.tsx"
+        "apps/client/src/hooks/use-mobile.tsx"
       ],
       "jsx": [],
       "directTestImporters": [
@@ -16664,14 +16716,12 @@
         "apps/client/src/components/library/LibraryBookshelfView.tsx",
         "apps/client/src/components/library/LibraryCarouselView.tsx",
         "apps/client/src/components/library/LibraryRemoveDialog.tsx",
+        "apps/client/src/components/library/LibraryToolbar.tsx",
         "apps/client/src/components/library/libraryLayout.ts",
         "apps/client/src/components/loading/LoadingRegion.tsx",
         "apps/client/src/components/skeletons/LibraryViewSkeleton.tsx",
         "apps/client/src/components/ui/app-icon.tsx",
         "apps/client/src/components/ui/button.tsx",
-        "apps/client/src/components/ui/card.tsx",
-        "apps/client/src/components/ui/collapsible.tsx",
-        "apps/client/src/components/ui/input.tsx",
         "apps/client/src/components/ui/select.tsx",
         "apps/client/src/components/ui/tooltip.tsx",
         "apps/client/src/config/iconography.ts",
@@ -16679,7 +16729,6 @@
         "apps/client/src/hooks/useAppBackGuard.ts",
         "apps/client/src/hooks/useAuth.ts",
         "apps/client/src/hooks/useBooks.ts",
-        "apps/client/src/hooks/useBreakpoint.ts",
         "apps/client/src/hooks/useInfiniteScroll.ts",
         "apps/client/src/hooks/useReadingProfile.ts",
         "apps/client/src/lib/utils.ts",
@@ -16697,20 +16746,16 @@
         "APP_ICONS.library.addBook",
         "APP_ICONS.library.analytics",
         "APP_ICONS.library.bookLists",
-        "APP_ICONS.library.filter",
         "AppIcon",
         "Button",
-        "Collapsible",
-        "CollapsibleContent",
-        "CollapsibleTrigger",
         "EmptyBooks",
         "FloatingActionButton",
         "Icon",
-        "Input",
         "LibraryBookCard",
         "LibraryBookshelfView",
         "LibraryCarouselView",
         "LibraryRemoveDialog",
+        "LibraryToolbar",
         "LibraryViewSkeleton",
         "Link",
         "LoadingError",
@@ -16719,7 +16764,6 @@
         "MobileLayout",
         "MyBooksContent",
         "NativeHeader",
-        "NavArrowDown",
         "PremiumEmptyState",
         "PullToRefresh",
         "Select",
@@ -21057,6 +21101,7 @@
         "apps/client/src/utils/bookProgress.test.ts",
         "tests/fixtures/action-feedback/state.ts",
         "tests/fixtures/library-interactions/main.tsx",
+        "tests/fixtures/library-renewal/api.ts",
         "tests/fixtures/library-tasks/api.ts",
         "tests/fixtures/loading/library-cases.tsx",
         "tests/fixtures/loading/main.tsx",

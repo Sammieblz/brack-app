@@ -49,10 +49,10 @@ for (const width of widths) {
       // conversation frames have a strict geometry contract; text cards allow
       // one short text line per visible row of first-load content.
       const tolerance = surface === 'chart' || surface === 'messages' ? 2 : 48;
-      expect(Math.abs(after!.y - before!.y)).toBeLessThanOrEqual(tolerance);
       const metrics = await page.evaluate(() => window.loadingMetrics);
-      if (browserName === 'chromium') expect(metrics.cls).toBeLessThanOrEqual(0.1);
       await testInfo.attach('loading-layout-metrics', { body: JSON.stringify({ width, surface, delta: after!.y - before!.y, ...metrics }), contentType: 'application/json' });
+      expect(Math.abs(after!.y - before!.y)).toBeLessThanOrEqual(tolerance);
+      if (browserName === 'chromium') expect(metrics.cls).toBeLessThanOrEqual(0.1);
 
       const input = surface === 'messages' ? page.getByPlaceholder('Search messages') : page.getByTestId('filter');
       const filterValue = surface === 'messages' ? 'Reader' : 'Poetry';

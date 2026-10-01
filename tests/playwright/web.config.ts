@@ -6,7 +6,7 @@ const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
 export default defineConfig({
   testDir: "../e2e",
   // Deterministic component suites have their own data-isolated Vite servers.
-  testIgnore: ["shell-scroll*.spec.ts", "date-picker.spec.ts", "loading-layout.spec.ts", "library-interactions.spec.ts"],
+  testIgnore: ["shell-scroll*.spec.ts", "date-picker.spec.ts", "loading-layout.spec.ts", "library-interactions.spec.ts", "library-renewal.spec.ts"],
   timeout: 60_000,
   use: {
     baseURL: "http://127.0.0.1:4173",

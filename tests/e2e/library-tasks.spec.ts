@@ -72,6 +72,10 @@ async function entry(page: Page, name: Entry, query = '', viewport?: { width: nu
     await expect(scope).toBeVisible();
   } else if (name === 'flat') scope = page.locator('.library-book-surface').first();
   else if (name === 'carousel') scope = page.locator('.library-carousel-card').first();
+  if (name !== 'BookDetail') {
+    const more = scope.getByRole('button', { name: `More actions for ${title}`, exact: true });
+    await more.click();
+  }
   return scope;
 }
 async function membershipEntry(page: Page, name: Entry) {
@@ -128,13 +132,14 @@ for (const name of entries) {
       const parent = page.getByRole('dialog', { name: title, exact: true });
       await expect(parent).toBeVisible(); await expect(parent.getByRole('button', { name: 'Add to list', exact: true })).toBeFocused();
       await expect.poll(() => dialogNode!.evaluate(node => node.isConnected), { message: 'The nested exit must finish before a second app Back' }).toBe(false);
-      // Restoring focus opens the real trigger tooltip, which owns Escape first.
-      const tooltip = page.getByRole('tooltip', { name: 'Add to list', exact: true });
-      await expect(tooltip).toBeVisible(); const tooltipNode = await tooltip.elementHandle();
-      await back(page); await expect(parent).toBeVisible(); await expect(tooltip).toHaveCount(0);
-      await expect.poll(() => tooltipNode!.evaluate(node => node.isConnected)).toBe(false);
+      // The labelled action no longer needs an icon tooltip; the next Back closes the preview.
+      await expect(page.getByRole('tooltip', { name: 'Add to list', exact: true })).toHaveCount(0);
       await back(page); await expect(parent).toHaveCount(0);
-      await expect(page.getByRole('button', { name: `Open ${title}`, exact: true })).toBeFocused();
+      await expect(page.getByRole('button', { name: `Open ${title}`, exact: true })).toBeFocused().catch(async error => {
+        await test.info().attach('preview-return-focus', { body: JSON.stringify(await page.evaluate(() => ({ active: document.activeElement?.outerHTML.slice(0, 500),
+          remainingTasks: [...document.querySelectorAll('[role="dialog"]')].map(node => node.outerHTML.slice(0, 300)) }))), contentType: 'application/json' });
+        throw error;
+      });
       if (name === 'carousel-preview') {
         await page.getByRole('button', { name: `Open ${title}`, exact: true }).press('Enter');
         await expect(parent).toBeVisible();
@@ -330,6 +335,7 @@ test('Account replacement drops the obsolete pending membership UI and cannot af
   await page.evaluate(() => window.libraryTasks!.setAccount('another-reader'));
   await expect(dialog).toHaveCount(0); await settle(page, 'membership-add', 'resolve');
   await expect(page.getByText('Added to list', { exact: true })).toHaveCount(0);
+  await page.locator('.library-book-surface').first().getByRole('button', { name: `More actions for ${title}`, exact: true }).click();
   await page.locator('.library-book-surface').first().getByRole('button', { name: 'Add to list', exact: true }).click();
   await expect(dialog.getByRole('checkbox', { name: 'Thoughtful journeys', exact: true })).not.toBeChecked();
 });

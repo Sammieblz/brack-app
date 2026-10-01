@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { createPortal } from "react-dom";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { LibraryBookCard } from "@/components/LibraryBookCard";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import type { Book } from "@/types";
@@ -31,11 +31,13 @@ function renderBook(view: "flat" | "carousel" = "flat", selectMode = false) {
   const actions = { onView: vi.fn(), onEdit: vi.fn(), onDelete: vi.fn(), onToggleSelect: vi.fn() };
   function Example() {
     const [selected, setSelected] = useState(false);
+    const fallback = useRef<HTMLDivElement>(null);
     const toggle = (id: string) => { actions.onToggleSelect(id); setSelected((value) => !value); };
     return <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <TooltipProvider>
         {view === "flat" ? <LibraryBookCard book={book} {...actions} selectMode={selectMode} selected={selected} onToggleSelect={toggle} /> :
-          <LibraryCarouselView books={[book]} {...actions} selectMode={selectMode} selectedBookIds={selected ? [book.id] : []} onToggleSelect={toggle} />}
+          <LibraryCarouselView books={[book]} {...actions} focusFallbackRef={fallback} selectMode={selectMode} selectedBookIds={selected ? [book.id] : []} onToggleSelect={toggle} />}
+        <div ref={fallback} tabIndex={-1}>Library focus fallback</div>
         <Route />
       </TooltipProvider>
     </MemoryRouter>;
@@ -48,7 +50,7 @@ describe("Library primary card surface", () => {
   it("opens exactly once from cover, title, author, metadata, progress and surrounding space", () => {
     const { surface, onView } = renderBook();
     const targets = [surface, surface.querySelector(".library-physical-book")!, screen.getByRole("heading", { name: book.title }),
-      screen.getByText(`by ${book.author}`), screen.getByText("Essays"), screen.getByText("reading"), screen.getByRole("progressbar")];
+      screen.getByText(book.author!), screen.getByText("Essays"), screen.getByText("reading"), screen.getByRole("progressbar")];
     targets.forEach((target, index) => {
       fireEvent.click(target);
       expect(onView).toHaveBeenCalledTimes(index + 1);
@@ -70,7 +72,7 @@ describe("Library primary card surface", () => {
     await user.keyboard(" ");
     expect(onView).toHaveBeenCalledTimes(2);
     await user.tab();
-    expect(screen.getByRole("button", { name: `Expand ${book.title}` })).toHaveFocus();
+    expect(screen.getByRole("link", { name: "Log progress" })).toHaveFocus();
   });
 
   it("does not open when copying metadata or clicking independent controls and portalled confirmation", async () => {
@@ -84,19 +86,19 @@ describe("Library primary card surface", () => {
     fireEvent.click(screen.getByRole("heading", { name: book.title }));
     expect(onView).not.toHaveBeenCalled();
     selection.removeAllRanges();
-    await user.click(screen.getByRole("button", { name: `Expand ${book.title}` }));
-    expect(screen.getByText(book.notes!)).toBeVisible();
+    await user.click(screen.getByRole("button", { name: `More actions for ${book.title}` }));
+    expect(screen.getByRole("group", { name: `Actions for ${book.title}` })).toBeVisible();
     expect(onView).not.toHaveBeenCalled();
     await user.click(screen.getByRole("button", { name: "Edit book" }));
     expect(onEdit).toHaveBeenCalledExactlyOnceWith(book.id);
-    await user.click(screen.getByRole("button", { name: "Log progress" }));
+    await user.click(screen.getByRole("link", { name: "Log progress" }));
     expect(screen.getByTestId("route")).toHaveTextContent(`/book/${book.id}/progress`);
     await user.click(screen.getByRole("button", { name: "Delete book" }));
     fireEvent.click(screen.getByText("Delete this book?"));
     await user.click(screen.getByRole("button", { name: "Keep book" }));
     expect(onDelete).not.toHaveBeenCalled();
     await user.click(screen.getByRole("button", { name: "Delete book" }));
-    await user.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "Delete" }));
+    await user.click(within(screen.getByRole("dialog", { name: "Delete this book?" })).getByRole("button", { name: "Delete" }));
     expect(onDelete).toHaveBeenCalledExactlyOnceWith(book.id);
     expect(onView).not.toHaveBeenCalled();
   });
@@ -122,9 +124,8 @@ describe("Library primary card surface", () => {
     fireEvent.click(surface);
     expect(screen.getByRole("dialog")).toBeVisible();
     expect(onView).not.toHaveBeenCalled();
-    await waitFor(() => expect(within(screen.getByRole("dialog")).getByRole("button", { name: "View details" })).toHaveFocus());
-    // Leave the action tooltip before Escape, which otherwise dismisses the
-    // innermost (tooltip) layer first, as intended by Radix.
+    // Radix skips anchors during automatic focus; the first button is More.
+    await waitFor(() => expect(within(screen.getByRole("dialog")).getByRole("button", { name: `More actions for ${book.title}` })).toHaveFocus());
     act(() => screen.getByRole("button", { name: "Close" }).focus());
     await userEvent.setup().keyboard("{Escape}");
     await waitFor(() => expect(primary).toHaveFocus());

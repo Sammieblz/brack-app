@@ -18,7 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { APP_ICONS } from "@/config/iconography";
 import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
 
-export const FloatingActionButton = () => {
+export const FloatingActionButton = ({ placement = "floating" }: { placement?: "floating" | "inline" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showTimerSheet, setShowTimerSheet] = useState(false);
   const [showQuickStats, setShowQuickStats] = useState(false);
@@ -35,7 +35,7 @@ export const FloatingActionButton = () => {
     fallbackFocusRef.current = fallback;
     return () => { fallbackFocusRef.current = null; };
   }, [compactNavigation]);
-  const returnFocusRef = compactNavigation ? triggerRef : fallbackFocusRef;
+  const returnFocusRef = placement === "inline" || compactNavigation ? triggerRef : fallbackFocusRef;
   const navigate = useNavigate();
   const { startTimer } = useTimer();
   const { user } = useAuth();
@@ -52,9 +52,9 @@ export const FloatingActionButton = () => {
   ];
 
   return <>
-    <div className="fixed right-4 z-40 max-w-[calc(100%-2rem)]" data-shell-float="action" hidden={!compactNavigation}>
+    <div className={placement === "floating" ? "fixed right-4 z-40 max-w-[calc(100%-2rem)]" : "shrink-0"} data-shell-float={placement === "floating" ? "action" : undefined} hidden={placement === "floating" && !compactNavigation}>
       <Button ref={triggerRef} type="button" variant="outline"
-        className="h-auto min-h-11 gap-2 whitespace-normal rounded-full bg-background px-4 py-2 shadow-sm hover:translate-y-0"
+        className={placement === "floating" ? "h-auto min-h-11 gap-2 whitespace-normal rounded-full bg-background px-4 py-2 shadow-sm hover:translate-y-0" : "h-auto min-h-11 gap-2 whitespace-normal border-0 bg-transparent px-2 py-2 shadow-none hover:translate-y-0"}
         aria-haspopup="dialog" aria-expanded={isOpen} onClick={() => setIsOpen(true)}>
         <Plus aria-hidden="true" /><span>Quick actions</span>
       </Button>

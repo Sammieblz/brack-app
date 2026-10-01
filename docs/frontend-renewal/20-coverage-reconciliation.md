@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-**Review stop:** **[CR06b - Route recovery and Library action names](27-route-recovery.md), implemented and verified within scope; stopped for user review, uncommitted.** CR06a is committed in `182230f`. RS05/RS06/RS07 have 77 browser passes/one documented Windows WebKit skip, 8 Library regressions, 81 auth/setup units, passing types/lint/build and retained evidence. Next: CR06c shell utility/loading consumers. Remaining CR06, CR07-CR10 and main screen acceptance stay open. No stage/commit made.
+Current checkpoint: **[F10a - Library reconstruction](28-library-reconstruction.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `d944fef` commits CR06b. Actual Library controls/flat rows/shared actions are rebuilt; exact checks and original failures are in28. No staging/commit. Next on authorized continuation: F10b Lists manager/detail composition. Remaining F10 acceptance, CR06c/remaining CR06, CR07-CR10 and other main screen tickets stay open.
 
 **The user's coverage objection is substantiated.** F01–F09 committed useful repairs, but the accumulated fixture results do not close their cross-application requirements. This review supersedes the “proceed to F10” handoff. The original reconciliation baseline was **`db076cf`**, which already committed F09; the previous uncommitted status was stale. The worktree was clean when that review began. Later implementation checkpoints above supersede its baseline defect status only within their named scope.
 
@@ -51,9 +51,9 @@ Committed code and recorded passes remain historical facts. “Coverage open” 
 | F08 | Adaptive boundary, selected modal/date/journal consumers | **Coverage open:** ordinary dialog/sheet/confirmation consumers retain old geometry; parent replacement, pending/dirty ownership, naming and nested-task obligations remain. |
 | F09 | Browser Menu/native-PWA tabs/expanded sidebar, main-chain retention and selected utility placement | **Coverage open:** actual Settings/Messages/social parents, signed-in Support/404 utility visibility, medium header controls, notifications/other fixed surfaces and app-level cold-route fallback. F09 is committed, not globally accepted by the user. |
 
-## Corrective batches before routine F10 progression
+## Corrective batches alongside the main screen program
 
-The IDs below consolidate overlapping RC/RS/OF/RM findings. **CR01 is committed in `93b63bc`,CR02 in `4dadc37`,CR03 in `74ed7d7`,CR04 in `ef5b2f9` and CR05 in `a610871`; checkpoints21–25 preserve their bounded evidence. CR06a is committed in `182230f`; CR06b RS05/06/07 is implemented/verified within [checkpoint27](27-route-recovery.md), uncommitted and stopped for review. Other CR06 children and CR07–CR10 remain open.** Main F10 visual work remains open. Later batches can be reordered for a concrete blocker, with the reason recorded. Two units may be combined only if every consumer/state and checkpoint can be completed. Do not broaden one unit into an unfinished whole-screen redesign.
+The IDs below consolidate overlapping RC/RS/OF/RM findings. **CR01 is committed in `93b63bc`,CR02 in `4dadc37`,CR03 in `74ed7d7`,CR04 in `ef5b2f9` and CR05 in `a610871`; checkpoints21–25 preserve their bounded evidence. CR06a is committed in `182230f`; CR06b RS05/06/07 is committed in `d944fef`, with evidence in [checkpoint27](27-route-recovery.md). Other CR06 children and CR07–CR10 remain open.** F10a visual reconstruction is implemented/verified within its bounded scope in [checkpoint28](28-library-reconstruction.md) following explicit user correction of sequencing drift; full F10 acceptance remains open. Later batches can be reordered for a concrete blocker, with the reason recorded. Two units may be combined only if every consumer/state and checkpoint can be completed. Do not broaden one unit into an unfinished whole-screen redesign.
 
 | Batch | Complete unit and owners | Exit evidence |
 | --- | --- | --- |
