@@ -1,5 +1,7 @@
 # 11. BRACK feature UX patterns
 
+For implemented session and metadata behavior, use the living [reading-session contract](../../../../docs/ui-reading-sessions.md) and [book-editor contract](../../../../docs/ui-book-editing.md). They own account-scoped timer restore, frozen completion retries, changed-field metadata saves and the actual entry census. Read these focused contracts before loading historical checkpoints.
+
 ## 11.1 Library
 
 The library is a core product surface.

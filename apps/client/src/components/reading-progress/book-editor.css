@@ -1,0 +1,41 @@
+.book-editor { max-width: 48rem; margin-inline: auto; }
+.book-editor-heading { padding-block: .5rem 1.75rem; }
+.book-editor-heading h1 { font-family: "Playfair Display", Georgia, serif; font-size: clamp(1.75rem, 4vw, 2.5rem); line-height: 1.2; overflow-wrap: anywhere; }
+.book-editor-heading p { margin-top: .7rem; max-width: 42rem; font-size: .875rem; line-height: 1.7; color: hsl(var(--muted-foreground)); }
+.book-editor-fields { min-width: 0; padding: 0; border: 0; }
+.book-editor-section { padding-block: 1.5rem; border-top: 1px solid hsl(var(--border)); }
+.book-editor-section h2 { font-size: 1.125rem; font-weight: 650; margin-bottom: .6rem; }
+.book-editor-grid { display: grid; gap: 1.25rem; }
+.book-editor-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1.25rem; }
+.book-editor-field { display: grid; align-content: start; gap: .5rem; min-width: 0; }
+.book-editor-field label, .book-editor-label { font-size: .875rem; font-weight: 600; overflow-wrap: anywhere; }
+.book-editor-field input, .book-editor-field select, .book-editor-field textarea {
+  min-width: 0; width: 100%; min-height: 3rem; padding: .7rem .8rem;
+  border: 1px solid hsl(var(--border)); border-radius: .6rem;
+  background: hsl(var(--background)); color: hsl(var(--foreground)); font-size: 1rem;
+}
+.book-editor-field textarea { font-family: Merriweather, Georgia, serif; line-height: 1.8; resize: vertical; }
+.book-editor-field [aria-invalid="true"] { border-color: hsl(var(--destructive)); }
+.book-editor-field input:focus-visible, .book-editor-field textarea:focus-visible, .book-editor-field select:focus-visible,
+.book-editor-control:focus-visible, .book-editor-details summary:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+.book-editor-details { border-top: 1px solid hsl(var(--border)); }
+.book-editor-details summary { min-height: 3.5rem; padding-block: 1rem; font-weight: 600; cursor: pointer; overflow-wrap: anywhere; }
+.book-editor-details summary span { margin-left: .6rem; font-size: .8125rem; font-weight: 400; color: hsl(var(--muted-foreground)); }
+.book-editor-details > .book-editor-grid { padding-block: .35rem 1.5rem; }
+.book-editor-note { font-size: .8125rem; line-height: 1.65; color: hsl(var(--muted-foreground)); overflow-wrap: anywhere; }
+.book-editor-section > .book-editor-note { margin-bottom: 1.25rem; }
+.book-editor-error { border-left: 3px solid hsl(var(--destructive)); padding: .5rem .75rem; font-size: .875rem; line-height: 1.65; color: hsl(var(--foreground)); overflow-wrap: anywhere; }
+.book-editor-actions { display: flex; flex-wrap: wrap; gap: .75rem; padding-top: 1.5rem; border-top: 1px solid hsl(var(--border)); }
+.book-editor-control { min-height: 2.75rem; min-width: 2.75rem; border: 1px solid hsl(var(--border)); border-radius: .6rem; padding: .7rem 1rem; background: hsl(var(--background)); color: hsl(var(--foreground)); font-size: .875rem; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+.book-editor-save { background: hsl(var(--foreground)); color: hsl(var(--background)); box-shadow: inset 0 -3px hsl(var(--primary)); }
+.book-editor-actions .book-editor-note { flex-basis: 100%; }
+.book-editor-cover { display: flex; align-items: start; flex-wrap: wrap; gap: 1rem; }
+.book-editor-cover img { width: 6rem; max-height: 9rem; object-fit: contain; border-radius: .3rem; }
+.book-editor-cover-controls { display: flex; align-items: start; flex-wrap: wrap; gap: .6rem; }
+.book-editor-tags { display: flex; flex-wrap: wrap; gap: .5rem; }
+.book-editor-tag { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem .35rem; max-width: 100%; border: 1px solid hsl(var(--border)); border-radius: .6rem; padding: .2rem .35rem .2rem .75rem; font-size: .875rem; overflow-wrap: anywhere; }
+.book-editor-tag > span { flex: 1 1 10ch; min-width: 0; }
+.book-editor-tag button { border: 0; min-width: 2.75rem; max-width: 100%; flex-shrink: 0; }
+.book-editor-fields:disabled input, .book-editor-fields:disabled textarea, .book-editor-fields:disabled select,
+.book-editor-control:disabled, .book-editor-control[aria-disabled="true"] { opacity: .65; }
+@media (forced-colors: active) { .book-editor-control, .book-editor-field input, .book-editor-field select, .book-editor-field textarea, .book-editor-tag { border-color: CanvasText; } }

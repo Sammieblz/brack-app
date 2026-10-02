@@ -34,9 +34,25 @@ export const QuickJournalEntryDialog = (props: QuickJournalEntryDialogProps) => 
       <DialogContent
         onOpenAutoFocus={() => { returnFocus.current = document.activeElement as HTMLElement | null; }}
         onCloseAutoFocus={(event) => {
-          if (returnFocus.current?.isConnected) {
+          const activeDialog = document.activeElement?.closest('[role="dialog"], [role="alertdialog"]');
+          if (activeDialog && activeDialog !== event.target && activeDialog.getAttribute("data-state") !== "closed") {
+            event.preventDefault();
+            return;
+          }
+          if (returnFocus.current?.isConnected && returnFocus.current !== document.body &&
+              returnFocus.current !== document.documentElement && returnFocus.current.getClientRects().length > 0) {
             event.preventDefault();
             returnFocus.current.focus();
+          } else {
+            // A completed timer removes its Save control before this prompt
+            // opens. Return to a visible reading control or current page title.
+            const target = [...document.querySelectorAll<HTMLElement>('[data-start-reading-timer], [data-app-scroll-container] h1')]
+              .find(element => element.getClientRects().length > 0);
+            if (target) {
+              event.preventDefault();
+              if (!target.hasAttribute("tabindex")) target.tabIndex = -1;
+              target.focus();
+            }
           }
         }}>
         <DialogHeader>

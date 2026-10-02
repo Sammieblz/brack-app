@@ -1,13 +1,13 @@
 {
-  "baseline": "ee0081eaa799bcd3e40e9a46a230e47973777624",
+  "baseline": "6e68b570e6ab50b75c6ac702f7e32795b8b2adf5",
   "method": "TypeScript AST static local import/literal dynamic-import reachability, JSX Route declarations, git commit file lists. No runtime, branches, feature-gate, tree-shaking, fixture alias/mock or per-export analysis. Declaration-level type-only imports are excluded; inline named type imports can still contribute edges. Import references and changed files do not establish review, runtime execution or passing tests. Unreachable means no source import path from main.tsx; verify before deletion. routeImportReachability follows route JSX owners, not their App-owned global ancestors: an empty route list does not exclude global rendering (e.g. Toaster, JournalPromptHandler, JourneyLevelUpObserver).",
   "counts": {
     "routes": 39,
-    "modules": 526,
-    "presentation": 322,
+    "modules": 533,
+    "presentation": 327,
     "screens": 33,
-    "components": 285,
-    "presentationWithoutSourcePath": 48
+    "components": 290,
+    "presentationWithoutSourcePath": 50
   },
   "commits": {
     "F01": "229dd67",
@@ -2570,9 +2570,7 @@
       ],
       "importedBy": [
         "apps/client/src/components/BookListManager.tsx",
-        "apps/client/src/components/FloatingActionButton.tsx",
         "apps/client/src/components/GoalManager.tsx",
-        "apps/client/src/components/HeaderTimerWidget.tsx",
         "apps/client/src/components/JournalEntriesList.tsx",
         "apps/client/src/components/NativeHeader.tsx",
         "apps/client/src/components/QuoteCollection.tsx",
@@ -2699,17 +2697,10 @@
       "role": "component",
       "imports": [
         "apps/client/src/components/FloatingQuickStatsWidget.tsx",
-        "apps/client/src/components/empty/PremiumEmptyState.tsx",
-        "apps/client/src/components/loading/LoadingRegion.tsx",
+        "apps/client/src/components/reading-session/ReadingSessionTasks.tsx",
         "apps/client/src/components/ui/action-sheet.tsx",
-        "apps/client/src/components/ui/adaptive-dialog.tsx",
         "apps/client/src/components/ui/button.tsx",
-        "apps/client/src/components/ui/dialog.tsx",
-        "apps/client/src/components/ui/skeleton.tsx",
         "apps/client/src/config/iconography.ts",
-        "apps/client/src/contexts/TimerContext.tsx",
-        "apps/client/src/hooks/useAuth.ts",
-        "apps/client/src/hooks/useBooks.ts",
         "apps/client/src/hooks/useUIEnvironment.ts"
       ],
       "importedBy": [
@@ -2717,7 +2708,6 @@
       ],
       "jsx": [
         "APP_ICONS.floatingAction.addBook",
-        "APP_ICONS.floatingAction.bookFallback",
         "APP_ICONS.floatingAction.history",
         "APP_ICONS.floatingAction.quickStats",
         "APP_ICONS.floatingAction.scanBarcode",
@@ -2725,21 +2715,10 @@
         "APP_ICONS.floatingAction.search",
         "APP_ICONS.floatingAction.timer",
         "ActionSheet",
-        "AdaptiveDialogBody",
-        "AdaptiveDialogContent",
-        "AdaptiveDialogDescription",
-        "AdaptiveDialogHeader",
-        "AdaptiveDialogTitle",
         "Button",
-        "Dialog",
         "FloatingQuickStatsWidget",
-        "LoadingError",
-        "LoadingRegion",
         "Plus",
-        "PremiumEmptyState",
-        "Skeleton",
         "div",
-        "img",
         "span"
       ],
       "directTestImporters": [
@@ -2800,8 +2779,8 @@
       "path": "apps/client/src/components/FloatingTimerWidget.tsx",
       "role": "component",
       "imports": [
+        "apps/client/src/components/reading-session/reading-session.css",
         "apps/client/src/components/ui/adaptive-dialog.tsx",
-        "apps/client/src/components/ui/button.tsx",
         "apps/client/src/components/ui/dialog.tsx",
         "apps/client/src/contexts/TimerContext.tsx",
         "apps/client/src/utils/index.ts"
@@ -2816,17 +2795,16 @@
         "AdaptiveDialogFooter",
         "AdaptiveDialogHeader",
         "AdaptiveDialogTitle",
-        "Button",
         "Dialog",
         "DialogTrigger",
         "Pause",
         "Play",
-        "Square",
-        "Timer",
+        "button",
         "div",
         "p",
         "section",
-        "span"
+        "span",
+        "strong"
       ],
       "directTestImporters": [
         "apps/client/src/components/FloatingTimerWidget.test.tsx"
@@ -3030,38 +3008,15 @@
       "path": "apps/client/src/components/HeaderTimerWidget.tsx",
       "role": "component",
       "imports": [
-        "apps/client/src/components/empty/PremiumEmptyState.tsx",
-        "apps/client/src/components/loading/LoadingRegion.tsx",
-        "apps/client/src/components/ui/app-icon.tsx",
-        "apps/client/src/components/ui/button.tsx",
-        "apps/client/src/components/ui/popover.tsx",
-        "apps/client/src/components/ui/scroll-area.tsx",
-        "apps/client/src/components/ui/skeleton.tsx",
-        "apps/client/src/config/iconography.ts",
-        "apps/client/src/contexts/TimerContext.tsx",
-        "apps/client/src/hooks/useAuth.ts",
-        "apps/client/src/hooks/useBooks.ts"
+        "apps/client/src/components/reading-session/ReadingSessionTasks.tsx",
+        "apps/client/src/contexts/TimerContext.tsx"
       ],
       "importedBy": [
         "apps/client/src/components/NativeHeader.tsx"
       ],
       "jsx": [
-        "AppIcon",
-        "Button",
-        "LoadingError",
-        "LoadingRegion",
-        "Popover",
-        "PopoverContent",
-        "PopoverTrigger",
-        "PremiumEmptyState",
-        "ScrollArea",
-        "Skeleton",
-        "TimerPickerContent",
+        "Timer",
         "button",
-        "div",
-        "h3",
-        "img",
-        "p",
         "span"
       ],
       "directTestImporters": [
@@ -3312,7 +3267,8 @@
       ],
       "directTestImporters": [
         "apps/client/src/components/JournalPromptHandler.test.tsx",
-        "tests/fixtures/adaptive-shell/main.tsx"
+        "tests/fixtures/adaptive-shell/main.tsx",
+        "tests/fixtures/reading-session/main.tsx"
       ],
       "changedIn": [
         "F01"
@@ -4251,10 +4207,8 @@
       ],
       "importedBy": [
         "apps/client/src/components/BookListManager.tsx",
-        "apps/client/src/components/FloatingActionButton.tsx",
         "apps/client/src/components/FloatingQuickStatsWidget.tsx",
         "apps/client/src/components/GoalManager.tsx",
-        "apps/client/src/components/HeaderTimerWidget.tsx",
         "apps/client/src/components/JournalEntriesList.tsx",
         "apps/client/src/components/NativeHeader.tsx",
         "apps/client/src/components/ProfileDrawer.tsx",
@@ -4269,6 +4223,7 @@
         "apps/client/src/components/journey/JourneyBadges.tsx",
         "apps/client/src/components/journey/JourneyLeague.tsx",
         "apps/client/src/components/journey/JourneyShop.tsx",
+        "apps/client/src/components/reading-session/ReadingSessionTasks.tsx",
         "apps/client/src/components/settings/AccountSettings.tsx",
         "apps/client/src/components/settings/NotificationSettings.tsx",
         "apps/client/src/components/settings/PersonalInfo.tsx",
@@ -4841,8 +4796,7 @@
         "apps/client/src/lib/utils.ts"
       ],
       "importedBy": [
-        "apps/client/src/screens/AddBook.tsx",
-        "apps/client/src/screens/EditBook.tsx"
+        "apps/client/src/screens/AddBook.tsx"
       ],
       "jsx": [
         "Input",
@@ -4854,8 +4808,7 @@
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
-        "/add-book",
-        "/edit-book/:id"
+        "/add-book"
       ]
     },
     {
@@ -4890,9 +4843,7 @@
         "apps/client/src/components/ui/textarea.tsx",
         "apps/client/src/lib/utils.ts"
       ],
-      "importedBy": [
-        "apps/client/src/screens/EditBook.tsx"
-      ],
+      "importedBy": [],
       "jsx": [
         "Label",
         "Textarea",
@@ -4901,10 +4852,8 @@
       ],
       "directTestImporters": [],
       "changedIn": [],
-      "sourceReachable": true,
-      "routeImportReachability": [
-        "/edit-book/:id"
-      ]
+      "sourceReachable": false,
+      "routeImportReachability": []
     },
     {
       "path": "apps/client/src/components/MobileBottomNav.tsx",
@@ -6033,6 +5982,21 @@
       ]
     },
     {
+      "path": "apps/client/src/components/reading-progress/book-editor.css",
+      "role": "component",
+      "imports": [],
+      "importedBy": [
+        "apps/client/src/screens/EditBook.tsx"
+      ],
+      "jsx": [],
+      "directTestImporters": [],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/edit-book/:id"
+      ]
+    },
+    {
       "path": "apps/client/src/components/reading-progress/correction.css",
       "role": "component",
       "imports": [],
@@ -6077,6 +6041,230 @@
       "sourceReachable": true,
       "routeImportReachability": [
         "/book/:id/progress"
+      ]
+    },
+    {
+      "path": "apps/client/src/components/reading-session/reading-session.css",
+      "role": "component",
+      "imports": [],
+      "importedBy": [
+        "apps/client/src/components/FloatingTimerWidget.tsx",
+        "apps/client/src/components/reading-session/ReadingSessionTasks.tsx"
+      ],
+      "jsx": [],
+      "directTestImporters": [],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/achievements",
+        "/add-book",
+        "/analytics",
+        "/book-lists",
+        "/book/:id",
+        "/book/:id/progress",
+        "/books",
+        "/clubs",
+        "/clubs/:clubId",
+        "/dashboard",
+        "/edit-book/:id",
+        "/feed",
+        "/goals-management",
+        "/history",
+        "/lists",
+        "/lists/:listId",
+        "/messages",
+        "/my-books",
+        "/posts/:postId",
+        "/profile",
+        "/readers",
+        "/reviews",
+        "/reviews/:reviewId",
+        "/scan",
+        "/scan-barcode",
+        "/scan-cover",
+        "/settings",
+        "/users/:userId"
+      ]
+    },
+    {
+      "path": "apps/client/src/components/reading-session/ReadingSessionTasks.tsx",
+      "role": "component",
+      "imports": [
+        "apps/client/src/components/loading/LoadingRegion.tsx",
+        "apps/client/src/components/reading-session/reading-session.css",
+        "apps/client/src/components/ui/adaptive-dialog.tsx",
+        "apps/client/src/components/ui/dialog.tsx",
+        "apps/client/src/components/ui/skeleton.tsx",
+        "apps/client/src/contexts/TimerContext.tsx",
+        "apps/client/src/hooks/useAuth.ts",
+        "apps/client/src/hooks/useBooks.ts"
+      ],
+      "importedBy": [
+        "apps/client/src/components/FloatingActionButton.tsx",
+        "apps/client/src/components/HeaderTimerWidget.tsx",
+        "apps/client/src/components/ShellUtilities.tsx"
+      ],
+      "jsx": [
+        "AdaptiveDialogBody",
+        "AdaptiveDialogContent",
+        "AdaptiveDialogDescription",
+        "AdaptiveDialogHeader",
+        "AdaptiveDialogTitle",
+        "Book",
+        "ConnectedPicker",
+        "Dialog",
+        "LoadingError",
+        "LoadingRegion",
+        "Play",
+        "ReadingSessionTasks.Provider",
+        "Skeleton",
+        "TimerPickerContent",
+        "button",
+        "div",
+        "h3",
+        "img",
+        "li",
+        "p",
+        "span",
+        "ul"
+      ],
+      "directTestImporters": [
+        "apps/client/src/components/FloatingTimerWidget.test.tsx"
+      ],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/achievements",
+        "/add-book",
+        "/analytics",
+        "/book-lists",
+        "/book/:id",
+        "/book/:id/progress",
+        "/books",
+        "/clubs",
+        "/clubs/:clubId",
+        "/dashboard",
+        "/edit-book/:id",
+        "/feed",
+        "/goals-management",
+        "/history",
+        "/lists",
+        "/lists/:listId",
+        "/messages",
+        "/my-books",
+        "/posts/:postId",
+        "/profile",
+        "/readers",
+        "/reviews",
+        "/reviews/:reviewId",
+        "/scan",
+        "/scan-barcode",
+        "/scan-cover",
+        "/settings",
+        "/users/:userId"
+      ]
+    },
+    {
+      "path": "apps/client/src/components/reading-session/timer-recovery.css",
+      "role": "component",
+      "imports": [],
+      "importedBy": [
+        "apps/client/src/components/reading-session/TimerRecoveryDialog.tsx"
+      ],
+      "jsx": [],
+      "directTestImporters": [],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/achievements",
+        "/add-book",
+        "/analytics",
+        "/book-lists",
+        "/book/:id",
+        "/book/:id/progress",
+        "/books",
+        "/clubs",
+        "/clubs/:clubId",
+        "/dashboard",
+        "/edit-book/:id",
+        "/feed",
+        "/goals-management",
+        "/history",
+        "/lists",
+        "/lists/:listId",
+        "/messages",
+        "/my-books",
+        "/posts/:postId",
+        "/profile",
+        "/readers",
+        "/reviews",
+        "/reviews/:reviewId",
+        "/scan",
+        "/scan-barcode",
+        "/scan-cover",
+        "/settings",
+        "/users/:userId"
+      ]
+    },
+    {
+      "path": "apps/client/src/components/reading-session/TimerRecoveryDialog.tsx",
+      "role": "component",
+      "imports": [
+        "apps/client/src/components/reading-session/timer-recovery.css",
+        "apps/client/src/components/ui/adaptive-dialog.tsx",
+        "apps/client/src/components/ui/dialog.tsx",
+        "apps/client/src/components/ui/mobile-dialog.tsx"
+      ],
+      "importedBy": [
+        "apps/client/src/contexts/TimerContext.tsx"
+      ],
+      "jsx": [
+        "AdaptiveDialogBody",
+        "AdaptiveDialogContent",
+        "AdaptiveDialogDescription",
+        "AdaptiveDialogFooter",
+        "AdaptiveDialogHeader",
+        "AdaptiveDialogTitle",
+        "Dialog",
+        "MobileAlertDialog",
+        "button",
+        "form",
+        "input",
+        "label",
+        "p"
+      ],
+      "directTestImporters": [],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/achievements",
+        "/add-book",
+        "/analytics",
+        "/book-lists",
+        "/book/:id",
+        "/book/:id/progress",
+        "/books",
+        "/clubs",
+        "/clubs/:clubId",
+        "/dashboard",
+        "/edit-book/:id",
+        "/feed",
+        "/goals-management",
+        "/history",
+        "/lists",
+        "/lists/:listId",
+        "/messages",
+        "/my-books",
+        "/posts/:postId",
+        "/profile",
+        "/readers",
+        "/reviews",
+        "/reviews/:reviewId",
+        "/scan",
+        "/scan-barcode",
+        "/scan-cover",
+        "/settings",
+        "/users/:userId"
       ]
     },
     {
@@ -6944,7 +7132,8 @@
       "role": "component",
       "imports": [
         "apps/client/src/components/FloatingTimerWidget.tsx",
-        "apps/client/src/components/ReadingSyncIndicator.tsx"
+        "apps/client/src/components/ReadingSyncIndicator.tsx",
+        "apps/client/src/components/reading-session/ReadingSessionTasks.tsx"
       ],
       "importedBy": [
         "apps/client/src/App.tsx",
@@ -6952,6 +7141,7 @@
       ],
       "jsx": [
         "FloatingTimerWidget",
+        "ReadingSessionTasksProvider",
         "ReadingSyncIndicator",
         "ShellUtilitiesContext.Provider",
         "div"
@@ -6963,6 +7153,7 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/reading-progress/main.tsx",
+        "tests/fixtures/reading-session/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
@@ -8319,9 +8510,7 @@
         "apps/client/src/components/ui/button.tsx",
         "apps/client/src/components/ui/input.tsx"
       ],
-      "importedBy": [
-        "apps/client/src/screens/EditBook.tsx"
-      ],
+      "importedBy": [],
       "jsx": [
         "Badge",
         "Button",
@@ -8335,10 +8524,8 @@
       "changedIn": [
         "F02/F03"
       ],
-      "sourceReachable": true,
-      "routeImportReachability": [
-        "/edit-book/:id"
-      ]
+      "sourceReachable": false,
+      "routeImportReachability": []
     },
     {
       "path": "apps/client/src/components/theme-aware-logo.css",
@@ -8694,7 +8881,6 @@
         "apps/client/src/components/AddBooksToListDialog.tsx",
         "apps/client/src/components/AddToListDialog.tsx",
         "apps/client/src/components/BookListManager.tsx",
-        "apps/client/src/components/FloatingActionButton.tsx",
         "apps/client/src/components/FloatingQuickStatsWidget.tsx",
         "apps/client/src/components/FloatingTimerWidget.tsx",
         "apps/client/src/components/GoalManager.tsx",
@@ -8706,6 +8892,8 @@
         "apps/client/src/components/clubs/CreateClubDialog.tsx",
         "apps/client/src/components/library/LibraryBookshelfSelection.tsx",
         "apps/client/src/components/library/LibraryToolbar.tsx",
+        "apps/client/src/components/reading-session/ReadingSessionTasks.tsx",
+        "apps/client/src/components/reading-session/TimerRecoveryDialog.tsx",
         "apps/client/src/components/social/CreatePostDialog.tsx",
         "apps/client/src/components/ui/action-sheet.tsx",
         "apps/client/src/components/ui/date-picker.tsx",
@@ -8882,7 +9070,6 @@
         "apps/client/src/components/AppSidebar.tsx",
         "apps/client/src/components/BookListManager.tsx",
         "apps/client/src/components/GoalManager.tsx",
-        "apps/client/src/components/HeaderTimerWidget.tsx",
         "apps/client/src/components/LibraryBookCard.tsx",
         "apps/client/src/components/NativeHeader.tsx",
         "apps/client/src/components/ReaderHud.tsx",
@@ -9184,10 +9371,8 @@
         "apps/client/src/components/DailyFocusCard.tsx",
         "apps/client/src/components/DarkModeToggle.tsx",
         "apps/client/src/components/FloatingActionButton.tsx",
-        "apps/client/src/components/FloatingTimerWidget.tsx",
         "apps/client/src/components/GoalManager.tsx",
         "apps/client/src/components/GoalsSheet.tsx",
-        "apps/client/src/components/HeaderTimerWidget.tsx",
         "apps/client/src/components/ImagePickerDialog.tsx",
         "apps/client/src/components/JournalEntriesList.tsx",
         "apps/client/src/components/JournalEntryCard.tsx",
@@ -9255,7 +9440,6 @@
         "apps/client/src/components/ui/pagination.tsx",
         "apps/client/src/components/ui/sidebar.tsx",
         "apps/client/src/components/ui/time-picker.tsx",
-        "apps/client/src/contexts/TimerContext.tsx",
         "apps/client/src/screens/Achievements.tsx",
         "apps/client/src/screens/AddBook.tsx",
         "apps/client/src/screens/Auth.tsx",
@@ -9265,7 +9449,6 @@
         "apps/client/src/screens/BookDetail.tsx",
         "apps/client/src/screens/BookListDetail.tsx",
         "apps/client/src/screens/Dashboard.tsx",
-        "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/Feed.tsx",
         "apps/client/src/screens/Index.tsx",
         "apps/client/src/screens/Messages.tsx",
@@ -9416,7 +9599,6 @@
         "apps/client/src/screens/BookClubDetail.tsx",
         "apps/client/src/screens/BookClubs.tsx",
         "apps/client/src/screens/Dashboard.tsx",
-        "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/Feed.tsx",
         "apps/client/src/screens/PostDetail.tsx",
         "apps/client/src/screens/PostSignupPermissions.tsx",
@@ -9818,7 +10000,6 @@
         "apps/client/src/components/BadgeCelebrationOverlay.tsx",
         "apps/client/src/components/BadgeDetailsDialog.tsx",
         "apps/client/src/components/BookListManager.tsx",
-        "apps/client/src/components/FloatingActionButton.tsx",
         "apps/client/src/components/FloatingQuickStatsWidget.tsx",
         "apps/client/src/components/FloatingTimerWidget.tsx",
         "apps/client/src/components/GoalManager.tsx",
@@ -9835,6 +10016,8 @@
         "apps/client/src/components/library/LibraryBookshelfSelection.tsx",
         "apps/client/src/components/library/LibraryToolbar.tsx",
         "apps/client/src/components/messaging/MessageThread.tsx",
+        "apps/client/src/components/reading-session/ReadingSessionTasks.tsx",
+        "apps/client/src/components/reading-session/TimerRecoveryDialog.tsx",
         "apps/client/src/components/social/CreatePostDialog.tsx",
         "apps/client/src/components/social/ReviewForm.tsx",
         "apps/client/src/components/ui/action-sheet.tsx",
@@ -10108,12 +10291,10 @@
         "apps/client/src/components/social/CreatePostDialog.tsx",
         "apps/client/src/components/social/ReviewForm.tsx",
         "apps/client/src/components/ui/sidebar.tsx",
-        "apps/client/src/contexts/TimerContext.tsx",
         "apps/client/src/screens/AddBook.tsx",
         "apps/client/src/screens/Auth.tsx",
         "apps/client/src/screens/BookClubDetail.tsx",
         "apps/client/src/screens/BookClubs.tsx",
-        "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/Onboarding.tsx",
         "apps/client/src/screens/Profile.tsx",
         "apps/client/src/screens/Readers.tsx",
@@ -10202,11 +10383,9 @@
         "apps/client/src/components/ui/date-picker.tsx",
         "apps/client/src/components/ui/form.tsx",
         "apps/client/src/components/ui/time-picker.tsx",
-        "apps/client/src/contexts/TimerContext.tsx",
         "apps/client/src/screens/AddBook.tsx",
         "apps/client/src/screens/Auth.tsx",
         "apps/client/src/screens/BookClubDetail.tsx",
-        "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/Onboarding.tsx",
         "apps/client/src/screens/Profile.tsx",
         "apps/client/src/screens/ResetPassword.tsx",
@@ -10221,34 +10400,23 @@
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
-        "/achievements",
         "/add-book",
-        "/analytics",
         "/auth",
         "/auth/reset-password",
         "/book-lists",
         "/book/:id",
-        "/book/:id/progress",
-        "/books",
         "/clubs",
         "/clubs/:clubId",
         "/dashboard",
         "/edit-book/:id",
         "/feed",
         "/goals-management",
-        "/history",
         "/lists",
-        "/lists/:listId",
-        "/messages",
-        "/my-books",
         "/onboarding",
         "/posts/:postId",
         "/profile",
         "/readers",
         "/reviews",
-        "/reviews/:reviewId",
-        "/scan",
-        "/scan-barcode",
         "/scan-cover",
         "/settings",
         "/support",
@@ -10339,10 +10507,10 @@
         "apps/client/src/components/clubs/CreateClubDialog.tsx",
         "apps/client/src/components/library/LibraryRemoveDialog.tsx",
         "apps/client/src/components/messaging/MessageThread.tsx",
+        "apps/client/src/components/reading-session/TimerRecoveryDialog.tsx",
         "apps/client/src/components/social/CreatePostDialog.tsx",
         "apps/client/src/contexts/ConfirmDialogContext.tsx",
         "apps/client/src/contexts/SettingsTaskProvider.tsx",
-        "apps/client/src/contexts/TimerContext.tsx",
         "apps/client/src/screens/Settings.tsx"
       ],
       "jsx": [
@@ -10477,7 +10645,6 @@
         "apps/client/src/lib/utils.ts"
       ],
       "importedBy": [
-        "apps/client/src/components/HeaderTimerWidget.tsx",
         "apps/client/src/components/NativeHeader.tsx",
         "apps/client/src/components/UserNotificationsPopover.tsx",
         "apps/client/src/components/clubs/ClubChatThread.tsx",
@@ -10644,7 +10811,6 @@
         "apps/client/src/lib/utils.ts"
       ],
       "importedBy": [
-        "apps/client/src/components/HeaderTimerWidget.tsx",
         "apps/client/src/components/SyncReviewDialog.tsx"
       ],
       "jsx": [
@@ -10707,7 +10873,6 @@
         "apps/client/src/components/social/CreatePostDialog.tsx",
         "apps/client/src/screens/AddBook.tsx",
         "apps/client/src/screens/BookClubDetail.tsx",
-        "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/MyBooks.tsx",
         "apps/client/src/screens/Onboarding.tsx"
       ],
@@ -10745,7 +10910,6 @@
         "/books",
         "/clubs/:clubId",
         "/dashboard",
-        "/edit-book/:id",
         "/feed",
         "/goals-management",
         "/my-books",
@@ -10988,10 +11152,8 @@
         "apps/client/src/lib/utils.ts"
       ],
       "importedBy": [
-        "apps/client/src/components/FloatingActionButton.tsx",
         "apps/client/src/components/FloatingQuickStatsWidget.tsx",
         "apps/client/src/components/GoalManager.tsx",
-        "apps/client/src/components/HeaderTimerWidget.tsx",
         "apps/client/src/components/JournalEntriesList.tsx",
         "apps/client/src/components/NativeHeader.tsx",
         "apps/client/src/components/OptimizedImage.tsx",
@@ -11004,6 +11166,7 @@
         "apps/client/src/components/charts/ApexChartCard.tsx",
         "apps/client/src/components/clubs/ClubChatThread.tsx",
         "apps/client/src/components/journey/JourneyBadges.tsx",
+        "apps/client/src/components/reading-session/ReadingSessionTasks.tsx",
         "apps/client/src/components/settings/AccountSettings.tsx",
         "apps/client/src/components/settings/NotificationSettings.tsx",
         "apps/client/src/components/settings/PrivacySettings.tsx",
@@ -11108,6 +11271,7 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/reading-progress/main.tsx",
+        "tests/fixtures/reading-session/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
@@ -11232,7 +11396,6 @@
         "apps/client/src/components/social/CommentThread.tsx",
         "apps/client/src/components/social/ReviewComments.tsx",
         "apps/client/src/screens/BookClubDetail.tsx",
-        "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/Profile.tsx",
         "apps/client/src/screens/ReviewDetail.tsx"
       ],
@@ -11246,7 +11409,6 @@
         "/book-lists",
         "/clubs",
         "/clubs/:clubId",
-        "/edit-book/:id",
         "/feed",
         "/lists",
         "/messages",
@@ -11338,6 +11500,7 @@
         "tests/fixtures/journal-save/main.tsx",
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/reading-progress/main.tsx",
+        "tests/fixtures/reading-session/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx"
       ],
@@ -11413,6 +11576,7 @@
         "tests/fixtures/loading/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/reading-progress/main.tsx",
+        "tests/fixtures/reading-session/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
@@ -11663,7 +11827,6 @@
         "apps/client/src/components/FloatingActionButton.tsx",
         "apps/client/src/components/GoalManager.tsx",
         "apps/client/src/components/GoalsSheet.tsx",
-        "apps/client/src/components/HeaderTimerWidget.tsx",
         "apps/client/src/components/LibraryBookCard.tsx",
         "apps/client/src/components/NativeHeader.tsx",
         "apps/client/src/components/Navbar.tsx",
@@ -11948,6 +12111,7 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/reading-progress/main.tsx",
+        "tests/fixtures/reading-session/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
@@ -12013,6 +12177,7 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/reading-progress/main.tsx",
+        "tests/fixtures/reading-session/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
@@ -12290,12 +12455,11 @@
       "path": "apps/client/src/contexts/TimerContext.tsx",
       "role": "context",
       "imports": [
-        "apps/client/src/components/ui/button.tsx",
-        "apps/client/src/components/ui/input.tsx",
-        "apps/client/src/components/ui/label.tsx",
-        "apps/client/src/components/ui/mobile-dialog.tsx",
+        "apps/client/src/components/reading-session/TimerRecoveryDialog.tsx",
         "apps/client/src/contexts/ConfirmDialogContext.tsx",
+        "apps/client/src/hooks/useAuth.ts",
         "apps/client/src/lib/dateOnly.ts",
+        "apps/client/src/lib/sessionCapture.ts",
         "apps/client/src/services/api/index.ts",
         "apps/client/src/services/connectivity.ts",
         "apps/client/src/services/local/index.ts",
@@ -12305,24 +12469,20 @@
       ],
       "importedBy": [
         "apps/client/src/App.tsx",
-        "apps/client/src/components/FloatingActionButton.tsx",
         "apps/client/src/components/FloatingTimerWidget.tsx",
         "apps/client/src/components/HeaderTimerWidget.tsx",
+        "apps/client/src/components/reading-session/ReadingSessionTasks.tsx",
         "apps/client/src/screens/Achievements.tsx",
         "apps/client/src/screens/BookDetail.tsx",
         "apps/client/src/screens/Dashboard.tsx"
       ],
       "jsx": [
-        "Button",
-        "Input",
-        "Label",
-        "MobileDialog",
         "TimerContext.Provider",
-        "div",
-        "p"
+        "TimerRecoveryDialog"
       ],
       "directTestImporters": [
-        "apps/client/src/contexts/TimerContext.test.tsx"
+        "apps/client/src/contexts/TimerContext.test.tsx",
+        "tests/fixtures/reading-session/main.tsx"
       ],
       "changedIn": [
         "F08"
@@ -12374,7 +12534,6 @@
         "apps/client/src/screens/BookClubs.tsx",
         "apps/client/src/screens/BookDetail.tsx",
         "apps/client/src/screens/Dashboard.tsx",
-        "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/Feed.tsx",
         "apps/client/src/screens/MyBooks.tsx",
         "apps/client/src/screens/PostDetail.tsx",
@@ -12653,6 +12812,7 @@
         "tests/fixtures/live-composers/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/reading-progress/main.tsx",
+        "tests/fixtures/reading-session/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
@@ -12678,10 +12838,8 @@
         "apps/client/src/components/AddBooksToListDialog.tsx",
         "apps/client/src/components/AddToListDialog.tsx",
         "apps/client/src/components/AppSidebar.tsx",
-        "apps/client/src/components/FloatingActionButton.tsx",
         "apps/client/src/components/FloatingQuickStatsWidget.tsx",
         "apps/client/src/components/GoalsSheet.tsx",
-        "apps/client/src/components/HeaderTimerWidget.tsx",
         "apps/client/src/components/JournalEntriesList.tsx",
         "apps/client/src/components/JournalPromptHandler.tsx",
         "apps/client/src/components/JourneyLevelUpObserver.tsx",
@@ -12695,6 +12853,7 @@
         "apps/client/src/components/ReadingSyncIndicator.tsx",
         "apps/client/src/components/SwipeableBookListsCarousel.tsx",
         "apps/client/src/components/clubs/CreateClubDialog.tsx",
+        "apps/client/src/components/reading-session/ReadingSessionTasks.tsx",
         "apps/client/src/components/settings/SupportContact.tsx",
         "apps/client/src/components/social/CommentThread.tsx",
         "apps/client/src/components/social/CreatePostDialog.tsx",
@@ -12705,6 +12864,7 @@
         "apps/client/src/contexts/ProfileContext.tsx",
         "apps/client/src/contexts/RewardFeedbackContext.tsx",
         "apps/client/src/contexts/ThemeContext.tsx",
+        "apps/client/src/contexts/TimerContext.tsx",
         "apps/client/src/hooks/useBookClubs.ts",
         "apps/client/src/hooks/useConversations.ts",
         "apps/client/src/hooks/useFollowing.ts",
@@ -13010,10 +13170,9 @@
       ],
       "importedBy": [
         "apps/client/src/components/AddBooksToListDialog.tsx",
-        "apps/client/src/components/FloatingActionButton.tsx",
         "apps/client/src/components/FloatingQuickStatsWidget.tsx",
-        "apps/client/src/components/HeaderTimerWidget.tsx",
         "apps/client/src/components/NativeHeader.tsx",
+        "apps/client/src/components/reading-session/ReadingSessionTasks.tsx",
         "apps/client/src/components/social/CreatePostDialog.tsx",
         "apps/client/src/screens/Achievements.tsx",
         "apps/client/src/screens/AddBook.tsx",
@@ -13031,18 +13190,31 @@
         "/achievements",
         "/add-book",
         "/analytics",
+        "/book-lists",
         "/book/:id",
+        "/book/:id/progress",
         "/books",
         "/clubs",
+        "/clubs/:clubId",
         "/dashboard",
+        "/edit-book/:id",
         "/feed",
+        "/goals-management",
+        "/history",
+        "/lists",
         "/lists/:listId",
         "/messages",
         "/my-books",
         "/posts/:postId",
+        "/profile",
         "/readers",
         "/reviews",
-        "/reviews/:reviewId"
+        "/reviews/:reviewId",
+        "/scan",
+        "/scan-barcode",
+        "/scan-cover",
+        "/settings",
+        "/users/:userId"
       ]
     },
     {
@@ -13571,7 +13743,6 @@
       "importedBy": [
         "apps/client/src/components/ImagePickerDialog.tsx",
         "apps/client/src/hooks/useJournalEditor.ts",
-        "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/Profile.tsx"
       ],
       "jsx": [],
@@ -14646,6 +14817,7 @@
         "tests/fixtures/loading/main.tsx",
         "tests/fixtures/messages-layout/main.tsx",
         "tests/fixtures/reading-progress/main.tsx",
+        "tests/fixtures/reading-session/main.tsx",
         "tests/fixtures/responsive-composers/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/settings-continuity/main.tsx",
@@ -14948,6 +15120,33 @@
       ]
     },
     {
+      "path": "apps/client/src/lib/bookEditor.ts",
+      "role": "support",
+      "imports": [
+        "apps/client/src/lib/dateOnly.ts",
+        "apps/client/src/utils/formValidation.ts"
+      ],
+      "importedBy": [
+        "apps/client/src/screens/EditBook.tsx",
+        "apps/client/src/utils/offlineOperation.ts"
+      ],
+      "jsx": [],
+      "directTestImporters": [
+        "apps/client/src/lib/bookEditor.test.ts",
+        "apps/client/src/utils/offlineOperation.book.test.ts",
+        "tests/fixtures/reading-session/api.ts"
+      ],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/add-book",
+        "/book/:id",
+        "/books",
+        "/edit-book/:id",
+        "/my-books"
+      ]
+    },
+    {
       "path": "apps/client/src/lib/dashboardGamification.ts",
       "role": "support",
       "imports": [
@@ -15044,7 +15243,9 @@
         "apps/client/src/components/ui/date-picker-calendar.tsx",
         "apps/client/src/components/ui/date-picker.tsx",
         "apps/client/src/contexts/TimerContext.tsx",
+        "apps/client/src/lib/bookEditor.ts",
         "apps/client/src/lib/progressCapture.ts",
+        "apps/client/src/lib/sessionCapture.ts",
         "apps/client/src/screens/BookDetail.tsx",
         "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/ProgressTracking.tsx",
@@ -15369,6 +15570,55 @@
       "routeImportReachability": []
     },
     {
+      "path": "apps/client/src/lib/sessionCapture.ts",
+      "role": "support",
+      "imports": [
+        "apps/client/src/lib/dateOnly.ts",
+        "apps/client/src/services/local/index.ts",
+        "apps/client/src/services/timerSession.ts"
+      ],
+      "importedBy": [
+        "apps/client/src/contexts/TimerContext.tsx"
+      ],
+      "jsx": [],
+      "directTestImporters": [
+        "apps/client/src/contexts/TimerContext.test.tsx",
+        "apps/client/src/lib/sessionCapture.test.ts"
+      ],
+      "changedIn": [],
+      "sourceReachable": true,
+      "routeImportReachability": [
+        "/achievements",
+        "/add-book",
+        "/analytics",
+        "/book-lists",
+        "/book/:id",
+        "/book/:id/progress",
+        "/books",
+        "/clubs",
+        "/clubs/:clubId",
+        "/dashboard",
+        "/edit-book/:id",
+        "/feed",
+        "/goals-management",
+        "/history",
+        "/lists",
+        "/lists/:listId",
+        "/messages",
+        "/my-books",
+        "/posts/:postId",
+        "/profile",
+        "/readers",
+        "/reviews",
+        "/reviews/:reviewId",
+        "/scan",
+        "/scan-barcode",
+        "/scan-cover",
+        "/settings",
+        "/users/:userId"
+      ]
+    },
+    {
       "path": "apps/client/src/lib/shellPresentation.ts",
       "role": "support",
       "imports": [],
@@ -15629,7 +15879,6 @@
         "apps/client/src/screens/BookClubDetail.tsx",
         "apps/client/src/screens/BookClubs.tsx",
         "apps/client/src/screens/BookDetail.tsx",
-        "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/MyBooks.tsx",
         "apps/client/src/screens/PostSignupPermissions.tsx",
         "apps/client/src/screens/Readers.tsx",
@@ -15759,6 +16008,7 @@
         "div"
       ],
       "directTestImporters": [
+        "tests/fixtures/reading-session/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx"
       ],
       "changedIn": [],
@@ -16309,6 +16559,7 @@
       "directTestImporters": [
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/reading-progress/main.tsx",
+        "tests/fixtures/reading-session/main.tsx",
         "tests/fixtures/social-destinations/main.tsx"
       ],
       "changedIn": [],
@@ -16378,7 +16629,8 @@
       "directTestImporters": [
         "apps/client/src/screens/BookListDetail.tasks.test.tsx",
         "tests/fixtures/library-tasks/main.tsx",
-        "tests/fixtures/reading-progress/main.tsx"
+        "tests/fixtures/reading-progress/main.tsx",
+        "tests/fixtures/reading-session/main.tsx"
       ],
       "changedIn": [
         "F09"
@@ -16417,6 +16669,7 @@
       "directTestImporters": [
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/reading-progress/main.tsx",
+        "tests/fixtures/reading-session/main.tsx",
         "tests/fixtures/route-recovery/main.tsx"
       ],
       "changedIn": [
@@ -16532,7 +16785,8 @@
       ],
       "directTestImporters": [
         "apps/client/src/screens/Dashboard.goals.test.tsx",
-        "tests/fixtures/reading-progress/main.tsx"
+        "tests/fixtures/reading-progress/main.tsx",
+        "tests/fixtures/reading-session/main.tsx"
       ],
       "changedIn": [
         "F08"
@@ -16550,30 +16804,21 @@
         "apps/client/src/components/ImagePickerDialog.tsx",
         "apps/client/src/components/MobileHeader.tsx",
         "apps/client/src/components/MobileLayout.tsx",
-        "apps/client/src/components/TagManager.tsx",
         "apps/client/src/components/loading/LoadingRegion.tsx",
-        "apps/client/src/components/mobile/MobileInput.tsx",
-        "apps/client/src/components/mobile/MobileTextarea.tsx",
+        "apps/client/src/components/reading-progress/book-editor.css",
         "apps/client/src/components/skeletons/ReadingRouteSkeletons.tsx",
-        "apps/client/src/components/ui/button.tsx",
-        "apps/client/src/components/ui/card.tsx",
         "apps/client/src/components/ui/date-picker.tsx",
-        "apps/client/src/components/ui/input.tsx",
-        "apps/client/src/components/ui/label.tsx",
-        "apps/client/src/components/ui/select.tsx",
-        "apps/client/src/components/ui/textarea.tsx",
-        "apps/client/src/hooks/use-mobile.tsx",
         "apps/client/src/hooks/use-toast.ts",
         "apps/client/src/hooks/useAppBack.ts",
         "apps/client/src/hooks/useAuth.ts",
-        "apps/client/src/hooks/useImagePicker.ts",
         "apps/client/src/hooks/useRetainedReaderResource.ts",
         "apps/client/src/hooks/useUIEnvironment.ts",
         "apps/client/src/hooks/useUnsavedAppBack.ts",
+        "apps/client/src/lib/bookEditor.ts",
         "apps/client/src/lib/dateOnly.ts",
-        "apps/client/src/lib/utils.ts",
         "apps/client/src/services/api/index.ts",
-        "apps/client/src/utils/formValidation.ts",
+        "apps/client/src/services/connectivity.ts",
+        "apps/client/src/services/local/index.ts",
         "apps/client/src/utils/offlineOperation.ts"
       ],
       "importedBy": [
@@ -16581,40 +16826,42 @@
       ],
       "jsx": [
         "AppBackButton",
-        "Button",
-        "Camera",
-        "Card",
-        "CardContent",
-        "CardHeader",
-        "CardTitle",
+        "BookEditorForm",
         "DatePicker",
         "EditBookSkeleton",
-        "FloppyDisk",
+        "EditorFrame",
         "ImagePickerDialog",
-        "Input",
-        "Label",
         "LoadingError",
         "LoadingRegion",
         "MobileHeader",
-        "MobileInput",
         "MobileLayout",
-        "MobileTextarea",
-        "Select",
-        "SelectContent",
-        "SelectItem",
-        "SelectTrigger",
-        "SelectValue",
-        "TagManager",
-        "Textarea",
-        "Upload",
+        "OwnedBookEditor",
+        "button",
+        "details",
         "div",
+        "fieldset",
         "form",
-        "img"
+        "h1",
+        "h2",
+        "header",
+        "img",
+        "input",
+        "label",
+        "li",
+        "option",
+        "p",
+        "section",
+        "select",
+        "span",
+        "summary",
+        "textarea",
+        "ul"
       ],
       "directTestImporters": [
         "apps/client/src/components/dateFieldContexts.test.tsx",
         "apps/client/src/screens/EditBook.back.test.tsx",
-        "tests/fixtures/adaptive-shell/main.tsx"
+        "tests/fixtures/adaptive-shell/main.tsx",
+        "tests/fixtures/reading-session/main.tsx"
       ],
       "changedIn": [
         "F02/F03",
@@ -16942,6 +17189,7 @@
         "tests/fixtures/adaptive-shell/main.tsx",
         "tests/fixtures/library-tasks/main.tsx",
         "tests/fixtures/reading-progress/main.tsx",
+        "tests/fixtures/reading-session/main.tsx",
         "tests/fixtures/route-recovery/main.tsx",
         "tests/fixtures/shell-scroll/main.tsx"
       ],
@@ -17316,7 +17564,8 @@
       ],
       "directTestImporters": [
         "apps/client/src/screens/ProgressTracking.test.tsx",
-        "tests/fixtures/reading-progress/main.tsx"
+        "tests/fixtures/reading-progress/main.tsx",
+        "tests/fixtures/reading-session/main.tsx"
       ],
       "changedIn": [
         "F09"
@@ -18539,7 +18788,8 @@
       "jsx": [],
       "directTestImporters": [
         "apps/client/src/services/api/dashboard.test.ts",
-        "tests/fixtures/reading-progress/dashboard.ts"
+        "tests/fixtures/reading-progress/dashboard.ts",
+        "tests/fixtures/reading-session/journey.ts"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -18666,6 +18916,7 @@
         "apps/client/src/lib/gamification.test.ts",
         "apps/client/src/lib/journey.test.ts",
         "apps/client/src/services/api/gamification.test.ts",
+        "tests/fixtures/reading-session/journey.ts",
         "tests/fixtures/shell-scroll/data.ts"
       ],
       "changedIn": [],
@@ -18950,7 +19201,8 @@
       "directTestImporters": [
         "apps/client/src/services/local/repositories.test.ts",
         "apps/client/src/utils/offlineOperation.journal.test.ts",
-        "tests/fixtures/journal-save/state.ts"
+        "tests/fixtures/journal-save/state.ts",
+        "tests/fixtures/reading-session/api.ts"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -20004,6 +20256,7 @@
         "apps/client/src/hooks/useNetworkStatus.ts",
         "apps/client/src/hooks/useProgressLogs.ts",
         "apps/client/src/screens/BookDetail.tsx",
+        "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/MyBooks.tsx",
         "apps/client/src/screens/ProgressTracking.tsx",
         "apps/client/src/services/api/bookLists.ts",
@@ -20363,7 +20616,9 @@
         "apps/client/src/hooks/useJournalEntries.ts",
         "apps/client/src/hooks/useProgressLogs.ts",
         "apps/client/src/lib/progressCapture.ts",
+        "apps/client/src/lib/sessionCapture.ts",
         "apps/client/src/screens/BookDetail.tsx",
+        "apps/client/src/screens/EditBook.tsx",
         "apps/client/src/screens/ProgressTracking.tsx",
         "apps/client/src/services/api/bookLists.ts",
         "apps/client/src/services/api/books.ts",
@@ -20986,7 +21241,8 @@
         "apps/client/src/services/sync/conflicts.test.ts",
         "apps/client/src/services/sync/failurePresentation.test.ts",
         "tests/fixtures/library-tasks/api.ts",
-        "tests/fixtures/reading-progress/api.ts"
+        "tests/fixtures/reading-progress/api.ts",
+        "tests/fixtures/reading-session/api.ts"
       ],
       "changedIn": [],
       "sourceReachable": false,
@@ -21081,7 +21337,9 @@
         "apps/client/src/contexts/TimerContext.tsx"
       ],
       "jsx": [],
-      "directTestImporters": [],
+      "directTestImporters": [
+        "tests/fixtures/reading-session/native.ts"
+      ],
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
@@ -21120,12 +21378,14 @@
       "role": "support",
       "imports": [],
       "importedBy": [
-        "apps/client/src/contexts/TimerContext.tsx"
+        "apps/client/src/contexts/TimerContext.tsx",
+        "apps/client/src/lib/sessionCapture.ts"
       ],
       "jsx": [],
       "directTestImporters": [
         "apps/client/src/contexts/TimerContext.test.tsx",
-        "apps/client/src/services/timerSession.test.ts"
+        "apps/client/src/services/timerSession.test.ts",
+        "tests/fixtures/reading-session/seed.ts"
       ],
       "changedIn": [],
       "sourceReachable": true,
@@ -21265,8 +21525,10 @@
         "apps/client/src/hooks/libraryLoading.test.tsx",
         "apps/client/src/hooks/useBookLists.mutations.test.tsx",
         "apps/client/src/lib/badgeImages.test.ts",
+        "apps/client/src/lib/bookEditor.test.ts",
         "apps/client/src/lib/dashboardGamification.test.ts",
         "apps/client/src/lib/progressCapture.test.ts",
+        "apps/client/src/lib/sessionCapture.test.ts",
         "apps/client/src/screens/AddBook.feedback.test.tsx",
         "apps/client/src/screens/BookListDetail.tasks.test.tsx",
         "apps/client/src/screens/EditBook.back.test.tsx",
@@ -21282,6 +21544,7 @@
         "apps/client/src/services/sync/engine.test.ts",
         "apps/client/src/utils/bookIdentity.test.ts",
         "apps/client/src/utils/bookProgress.test.ts",
+        "apps/client/src/utils/offlineOperation.book.test.ts",
         "tests/fixtures/action-feedback/state.ts",
         "tests/fixtures/book-detail/api.ts",
         "tests/fixtures/library-interactions/main.tsx",
@@ -21291,6 +21554,7 @@
         "tests/fixtures/loading/main.tsx",
         "tests/fixtures/reading-progress/api.ts",
         "tests/fixtures/reading-progress/dashboard.ts",
+        "tests/fixtures/reading-session/api.ts",
         "tests/fixtures/route-recovery/api.ts",
         "tests/fixtures/settings-continuity/api.ts",
         "tests/fixtures/settings-continuity/portability.ts",
@@ -21532,14 +21796,18 @@
       "role": "support",
       "imports": [],
       "importedBy": [
-        "apps/client/src/screens/EditBook.tsx"
+        "apps/client/src/lib/bookEditor.ts"
       ],
       "jsx": [],
       "directTestImporters": [],
       "changedIn": [],
       "sourceReachable": true,
       "routeImportReachability": [
-        "/edit-book/:id"
+        "/add-book",
+        "/book/:id",
+        "/books",
+        "/edit-book/:id",
+        "/my-books"
       ]
     },
     {
@@ -21769,6 +22037,7 @@
       "path": "apps/client/src/utils/offlineOperation.ts",
       "role": "support",
       "imports": [
+        "apps/client/src/lib/bookEditor.ts",
         "apps/client/src/services/api/index.ts",
         "apps/client/src/services/connectivity.ts",
         "apps/client/src/services/local/index.ts",
@@ -21785,6 +22054,7 @@
       ],
       "jsx": [],
       "directTestImporters": [
+        "apps/client/src/utils/offlineOperation.book.test.ts",
         "apps/client/src/utils/offlineOperation.journal.test.ts"
       ],
       "changedIn": [

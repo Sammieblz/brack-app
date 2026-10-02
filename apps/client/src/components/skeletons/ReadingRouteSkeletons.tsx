@@ -63,15 +63,13 @@ export const ReadingHistorySkeleton = () => (
 );
 
 export const EditBookSkeleton = () => (
-  <Card
-    className="mx-auto max-w-4xl"
+  <div
+    className="mx-auto max-w-3xl space-y-8"
     data-loading-contract="edit-book"
     aria-hidden="true"
   >
-    <CardHeader>
+    <div className="space-y-4 border-t border-border pt-6">
       <Skeleton className="h-6 w-32" />
-    </CardHeader>
-    <CardContent className="space-y-4">
       {[0, 1].map((index) => (
         <div key={index} className="space-y-2">
           <Skeleton className="h-4 w-20" />
@@ -91,8 +89,8 @@ export const EditBookSkeleton = () => (
           ))}
         </div>
       ))}
-    </CardContent>
-  </Card>
+    </div>
+  </div>
 );
 
 export const GoalsSkeleton = () => (

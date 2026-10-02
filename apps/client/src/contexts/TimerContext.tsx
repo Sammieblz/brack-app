@@ -1,44 +1,21 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+﻿import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { MobileDialog } from "@/components/ui/mobile-dialog";
+import { TimerRecoveryDialog } from "@/components/reading-session/TimerRecoveryDialog";
 import { useConfirmDialog } from "@/contexts/ConfirmDialogContext";
-import { emitBooksChanged, getCurrentAuthUser } from "@/services/api";
-import { booksRepo, sessionsRepo } from "@/services/local";
+import { useAuth } from "@/hooks/useAuth";
+import { emitBooksChanged } from "@/services/api";
+import { booksRepo, createLocalId } from "@/services/local";
 import { timerNativeService } from "@/services/timerNative";
 import { readingCoreSync } from "@/services/sync/engine";
 import { isConnectivityAvailable } from "@/services/connectivity";
 import { todayDateOnly } from "@/lib/dateOnly";
-import {
-  MAX_READING_SESSION_MINUTES,
-  MAX_READING_SESSION_SECONDS,
-  TIMER_PERSIST_INTERVAL_MS,
-  TIMER_RECOVERY_STORAGE_KEY,
-  TIMER_STORAGE_KEY,
-  clampSessionMinutes,
-  createStaleTimerSnapshot,
-  emptyTimerState,
-  getSessionEndFromDuration,
-  isTimerBeyondSessionLimit,
-  normalizePersistedTimerRecovery,
-  normalizePersistedTimerState,
-  refreshTimerState,
-  type NormalizedTimerState,
-  type StaleTimerSnapshot,
-} from "@/services/timerSession";
+import { createSessionCapture, DeletedSessionCapture, ObsoleteSessionCapture, persistSessionCapture, restoreSessionCapture, type SessionCaptureAttempt } from "@/lib/sessionCapture";
+import { MAX_READING_SESSION_MINUTES, TIMER_PERSIST_INTERVAL_MS, TIMER_RECOVERY_STORAGE_KEY, TIMER_STORAGE_KEY,
+  clampSessionMinutes, createStaleTimerSnapshot, emptyTimerState, getSessionEndFromDuration,
+  isTimerBeyondSessionLimit, normalizePersistedTimerRecovery, normalizePersistedTimerState,
+  refreshTimerState, type NormalizedTimerState, type StaleTimerSnapshot } from "@/services/timerSession";
 
 type TimerState = NormalizedTimerState;
-
 interface TimerContextType extends TimerState {
   startTimer: (bookId: string, bookTitle: string) => void;
   pauseTimer: () => void;
@@ -47,546 +24,316 @@ interface TimerContextType extends TimerState {
   cancelTimer: () => void;
   toggleMinimized: () => void;
   hideWidget: () => void;
+  isSaving: boolean;
+  isStarting: boolean;
+  saveError: string | null;
+  storageWarning: string | null;
+  saveFrozen: boolean;
 }
-
 const TimerContext = createContext<TimerContextType | undefined>(undefined);
-
-const createClientSessionId = (bookId: string) => {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-
-  return `${bookId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+const pausedState = (state: TimerState): TimerState => {
+  const refreshed = refreshTimerState(state);
+  return { ...refreshed, isRunning: false, runningSince: null, accumulatedSeconds: refreshed.time };
 };
-
-const formatDurationSummary = (durationMinutes: number) => {
-  const hours = Math.floor(durationMinutes / 60);
-  const minutes = durationMinutes % 60;
-  if (hours > 0 && minutes > 0) return `${hours}h ${minutes}m`;
-  if (hours > 0) return `${hours}h`;
-  return `${minutes}m`;
-};
+const routeIdentity = () => `${window.location.pathname}${window.location.search}`;
+const durationSummary = (minutes: number) => minutes >= 60 ? `${Math.floor(minutes / 60)}h${minutes % 60 ? ` ${minutes % 60}m` : ""}` : `${minutes}m`;
 
 export const TimerProvider = ({ children }: { children: ReactNode }) => {
+  const { user, loading: authLoading } = useAuth();
+  const userId = user?.id ?? null;
+  const authScope = authLoading ? undefined : userId;
   const confirmDialog = useConfirmDialog();
-  const [state, setState] = useState<TimerState>(() => emptyTimerState());
+  const [state, setState] = useState<TimerState>(emptyTimerState);
   const [recovery, setRecovery] = useState<StaleTimerSnapshot | null>(null);
   const [recoveryMinutes, setRecoveryMinutes] = useState("30");
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const stateRef = useRef<TimerState>(state);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
+  const [restoring, setRestoring] = useState(true);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [storageWarning, setStorageWarning] = useState<string | null>(null);
+  const stateRef = useRef(state);
+  const recoveryRef = useRef(recovery);
+  const ownerRef = useRef<string | null>(null);
+  const scopeRef = useRef(authScope);
+  const generationRef = useRef(0);
+  const readyRef = useRef(false);
+  const operationRef = useRef<"start" | "cancel" | "save" | null>(null);
+  const attemptRef = useRef<SessionCaptureAttempt | null>(null);
   const lastPersistedAtRef = useRef(0);
-  const persistedRunningRef = useRef<boolean | null>(null);
-  const persistedSessionIdRef = useRef<string | null>(null);
+  if (scopeRef.current !== authScope) { scopeRef.current = authScope; generationRef.current += 1; readyRef.current = false; }
 
-  const notificationMinute = Math.floor(state.time / 60);
-
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
-
-  const persistTimerState = useCallback((nextState: TimerState) => {
-    if (typeof localStorage === "undefined") return;
-
-    if (!nextState.isVisible) {
-      localStorage.removeItem(TIMER_STORAGE_KEY);
-      lastPersistedAtRef.current = 0;
-      persistedRunningRef.current = null;
-      persistedSessionIdRef.current = null;
-      return;
-    }
-
-    localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(nextState));
-    lastPersistedAtRef.current = Date.now();
-    persistedRunningRef.current = nextState.isRunning;
-    persistedSessionIdRef.current = nextState.clientSessionId;
-  }, []);
-
-  const persistRecovery = useCallback((snapshot: StaleTimerSnapshot | null) => {
-    if (typeof localStorage === "undefined") return;
-    if (!snapshot) {
-      localStorage.removeItem(TIMER_RECOVERY_STORAGE_KEY);
-      return;
-    }
-
-    localStorage.setItem(TIMER_RECOVERY_STORAGE_KEY, JSON.stringify(snapshot));
-  }, []);
-
-  const clearTimerState = useCallback(() => {
-    const empty = emptyTimerState();
-    setState(empty);
-    persistTimerState(empty);
-  }, [persistTimerState]);
-
-  const clearRecoveryState = useCallback(() => {
-    setRecovery(null);
-    persistRecovery(null);
-  }, [persistRecovery]);
-
-  const openRecovery = useCallback(
-    (snapshot: StaleTimerSnapshot) => {
-      setRecovery(snapshot);
-      setRecoveryMinutes(String(snapshot.suggestedMinutes));
-      persistRecovery(snapshot);
-      clearTimerState();
-      toast.warning("Reading timer paused for review", {
-        description: "That session ran longer than Brack can safely save automatically.",
-      });
-    },
-    [clearTimerState, persistRecovery],
-  );
-
-  const saveReadingSession = useCallback(
-    async ({
-      bookId,
-      bookTitle,
-      startTime,
-      endTime,
-      durationMinutes,
-      clientSessionId,
-      showJournalPrompt,
-    }: {
-      bookId: string;
-      bookTitle: string | null;
-      startTime: Date;
-      endTime: Date;
-      durationMinutes: number;
-      clientSessionId: string;
-      showJournalPrompt: boolean;
-    }) => {
-      const user = await getCurrentAuthUser();
-      if (!user) throw new Error("Not authenticated");
-
-      // A persisted timer can outlive a local book identity remap. Resolve its
-      // saved ID before writing anything so every follow-up record and event
-      // consistently targets the canonical book.
-      const resolvedBookId = await booksRepo.resolveIdentity(user.id, bookId);
-
-      const session = {
-        id: clientSessionId,
-        user_id: user.id,
-        book_id: resolvedBookId,
-        start_time: startTime.toISOString(),
-        end_time: endTime.toISOString(),
-        duration: durationMinutes,
-        client_session_id: clientSessionId,
-        created_at: new Date().toISOString(),
-      };
-
-      await sessionsRepo.createPending(user.id, session);
-
-      const localBook = await booksRepo.get(resolvedBookId);
-      if (localBook) {
-        const updatedBook = {
-          ...localBook,
-          status: localBook.status === "to_read" ? "reading" : localBook.status,
-          date_started: localBook.date_started || todayDateOnly(startTime),
-          updated_at: new Date().toISOString(),
-        };
-        await booksRepo.upsertLocal(user.id, updatedBook, "update");
-        emitBooksChanged({ type: "upsert", userId: user.id, book: updatedBook });
-      }
-
-      if (isConnectivityAvailable()) {
-        void readingCoreSync.syncUser(user.id).catch(console.error);
-      }
-
-      toast.success(
-        isConnectivityAvailable()
-          ? `Reading session saved: ${formatDurationSummary(durationMinutes)}`
-          : "Reading session saved offline",
-      );
-
-      window.dispatchEvent(
-        new CustomEvent("readingSessionSaved", {
-          detail: {
-            userId: user.id,
-            bookId: resolvedBookId,
-            sessionId: session.id,
-            durationMinutes,
-            activityDate: todayDateOnly(startTime),
-            pendingSync: true,
-          },
-        }),
-      );
-
-      if (showJournalPrompt && durationMinutes >= 5) {
-        window.dispatchEvent(
-          new CustomEvent("showJournalPrompt", {
-            detail: {
-              bookId: resolvedBookId,
-              bookTitle,
-              durationMinutes,
-            },
-          }),
-        );
-      }
-    },
-    [],
-  );
-
-  useEffect(() => {
-    const storedRecovery = localStorage.getItem(TIMER_RECOVERY_STORAGE_KEY);
-    if (storedRecovery) {
-      try {
-        const recoverySnapshot = normalizePersistedTimerRecovery(JSON.parse(storedRecovery));
-        if (recoverySnapshot) {
-          openRecovery(recoverySnapshot);
-          return;
-        }
-      } catch (error) {
-        console.error("Error loading timer recovery state:", error);
-      }
-      localStorage.removeItem(TIMER_RECOVERY_STORAGE_KEY);
-    }
-
-    const stored = localStorage.getItem(TIMER_STORAGE_KEY);
-    if (!stored) return;
-
+  const publishState = useCallback((next: TimerState) => { stateRef.current = next; setState(next); }, []);
+  const publishRecovery = useCallback((next: StaleTimerSnapshot | null) => { recoveryRef.current = next; setRecovery(next); }, []);
+  const writeStorage = useCallback((key: string, value: unknown | null): boolean => {
     try {
-      const restore = normalizePersistedTimerState(JSON.parse(stored), new Date());
-      if (restore.kind === "active") {
-        setState(restore.state);
-        persistTimerState(restore.state);
-      } else if (restore.kind === "stale") {
-        openRecovery(restore.recovery);
-      } else {
-        localStorage.removeItem(TIMER_STORAGE_KEY);
-      }
-    } catch (error) {
-      console.error("Error loading timer state:", error);
-      localStorage.removeItem(TIMER_STORAGE_KEY);
+      if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch {
+      setStorageWarning("This timer cannot be restored after closing the app because device storage is unavailable. Keep Brack open until you save the session.");
+      return false;
     }
-  }, [openRecovery, persistTimerState]);
-
-  useEffect(() => {
-    return timerNativeService.onAppStateChange(() => {
-      setState((previous) => (previous.isVisible ? refreshTimerState(previous) : previous));
-    });
   }, []);
+  const persistState = useCallback((next: TimerState, owner = ownerRef.current) => {
+    if (!owner) return false;
+    const completion = attemptRef.current?.userId === owner ? attemptRef.current : undefined;
+    const result = writeStorage(`${TIMER_STORAGE_KEY}:${owner}`, next.isVisible ? { ...next, userId: owner, completion } : null);
+    lastPersistedAtRef.current = Date.now();
+    return result;
+  }, [writeStorage]);
+  const persistRecovery = useCallback((next: StaleTimerSnapshot | null, owner = ownerRef.current) => {
+    if (!owner) return false;
+    const completion = attemptRef.current?.userId === owner ? attemptRef.current : undefined;
+    return writeStorage(`${TIMER_RECOVERY_STORAGE_KEY}:${owner}`, next ? { ...next, userId: owner, completion } : null);
+  }, [writeStorage]);
+  const clearActive = useCallback(() => { const empty = emptyTimerState(); publishState(empty); persistState(empty); }, [persistState, publishState]);
+  const clearRecovery = useCallback(() => { publishRecovery(null); persistRecovery(null); }, [persistRecovery, publishRecovery]);
+  const openRecovery = useCallback((snapshot: StaleTimerSnapshot) => {
+    publishRecovery(snapshot); setRecoveryMinutes(String(snapshot.suggestedMinutes)); persistRecovery(snapshot); clearActive();
+    toast.warning("Reading timer paused for review", { description: "Review the time you actually read before saving this session." });
+  }, [clearActive, persistRecovery, publishRecovery]);
 
-  useEffect(() => {
-    const now = Date.now();
-    const modeChanged = persistedRunningRef.current !== state.isRunning;
-    const sessionChanged = persistedSessionIdRef.current !== state.clientSessionId;
-    const due = now - lastPersistedAtRef.current >= TIMER_PERSIST_INTERVAL_MS;
-
-    if (!state.isVisible || !state.isRunning || modeChanged || sessionChanged || due) {
-      persistTimerState(state);
+  useLayoutEffect(() => {
+    const generation = generationRef.current;
+    const departingOwner = ownerRef.current;
+    if (departingOwner) {
+      if (stateRef.current.isVisible) persistState(pausedState(stateRef.current), departingOwner);
+      if (recoveryRef.current) persistRecovery(recoveryRef.current, departingOwner);
     }
-  }, [persistTimerState, state]);
-
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      persistTimerState(stateRef.current);
-    };
-    const handleVisibility = () => {
-      if (document.visibilityState === "hidden") {
-        setState((previous) => {
-          const refreshed = previous.isVisible ? refreshTimerState(previous) : previous;
-          persistTimerState(refreshed);
-          return refreshed;
-        });
+    ownerRef.current = null; readyRef.current = false; operationRef.current = null; attemptRef.current = null;
+    publishState(emptyTimerState()); publishRecovery(null); setSaveError(null); setStorageWarning(null);
+    setIsSaving(false); setIsStarting(false); setRestoring(Boolean(authScope));
+    if (!authScope) return;
+    const current = () => generationRef.current === generation && scopeRef.current === authScope;
+    const restore = async () => {
+      // Account-scoped records take precedence. Legacy records are adopted only
+      // after resolving their book identity and validating local ownership.
+      const candidates = [
+        { key: `${TIMER_RECOVERY_STORAGE_KEY}:${authScope}`, recovery: true, scoped: true },
+        { key: `${TIMER_STORAGE_KEY}:${authScope}`, recovery: false, scoped: true },
+        { key: TIMER_RECOVERY_STORAGE_KEY, recovery: true, scoped: false },
+        { key: TIMER_STORAGE_KEY, recovery: false, scoped: false },
+      ];
+      for (const candidate of candidates) {
+        let raw: string | null;
+        try { raw = localStorage.getItem(candidate.key); } catch {
+          if (current()) setStorageWarning("Device storage is unavailable. Keep Brack open until your reading session is saved.");
+          break;
+        }
+        if (!raw) continue;
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed.userId && parsed.userId !== authScope) continue;
+          const review = candidate.recovery ? normalizePersistedTimerRecovery(parsed) : null;
+          const active = candidate.recovery ? null : normalizePersistedTimerState(parsed);
+          const snapshot = review || (active?.kind === "stale" ? active.recovery : active?.kind === "active" ? active.state : null);
+          if (!snapshot?.bookId) continue;
+          const resolvedId = await booksRepo.resolveIdentity(authScope, snapshot.bookId);
+          if (!current()) return;
+          const localBook = await booksRepo.get(resolvedId);
+          if (!current()) return;
+          if (!localBook || localBook.user_id !== authScope || localBook.deleted_at) continue;
+          ownerRef.current = authScope;
+          const clientSessionId = snapshot.clientSessionId || createLocalId();
+          const completion = restoreSessionCapture(parsed.completion, authScope);
+          attemptRef.current = completion?.session.id === snapshot.clientSessionId ? completion : null;
+          if (attemptRef.current) setSaveError("This session was interrupted while saving. Retry to verify and finish the same save.");
+          let persisted = false;
+          if (review || active?.kind === "stale") {
+            const restored = { ...(review || (active as { kind: "stale"; recovery: StaleTimerSnapshot }).recovery), bookId: resolvedId, clientSessionId };
+            publishRecovery(restored); setRecoveryMinutes(String(attemptRef.current?.session.duration ?? restored.suggestedMinutes));
+            persisted = persistRecovery(restored, authScope);
+            persistState(emptyTimerState(), authScope);
+          } else if (active?.kind === "active") {
+            const restored = { ...(attemptRef.current ? pausedState(active.state) : active.state), bookId: resolvedId, clientSessionId };
+            publishState(restored); persisted = persistState(restored, authScope);
+          }
+          if (!candidate.scoped && persisted) writeStorage(candidate.key, null);
+          break;
+        } catch (error) {
+          if (!current()) return;
+          console.error("Unable to restore reading timer:", error);
+          setStorageWarning("A saved timer could not be restored. Its stored record has been kept on this device.");
+          // Preserve an unreadable owner record; do not silently adopt legacy data over it.
+          if (candidate.scoped) break;
+        }
       }
+      if (!current()) return;
+      ownerRef.current = authScope; readyRef.current = true; setRestoring(false);
     };
+    void restore();
+    return () => { generationRef.current += 1; readyRef.current = false; };
+  }, [authScope, persistRecovery, persistState, publishRecovery, publishState, writeStorage]);
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, [persistTimerState]);
-
+  const ownsTask = useCallback(() => Boolean(readyRef.current && ownerRef.current && scopeRef.current === ownerRef.current), []);
   useEffect(() => {
-    if (state.isRunning) {
-      intervalRef.current = setInterval(() => {
-        setState((previous) => (previous.isVisible ? refreshTimerState(previous) : previous));
-      }, 1000);
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
+    const refresh = () => {
+      if (!ownsTask() || !stateRef.current.isVisible) return;
+      const next = refreshTimerState(stateRef.current); publishState(next); persistState(next);
     };
-  }, [state.isRunning]);
-
+    const cleanupNative = timerNativeService.onAppStateChange(refresh);
+    const beforeUnload = () => { if (ownsTask()) { persistState(refreshTimerState(stateRef.current)); persistRecovery(recoveryRef.current); } };
+    window.addEventListener("beforeunload", beforeUnload);
+    document.addEventListener("visibilitychange", refresh);
+    return () => { cleanupNative(); window.removeEventListener("beforeunload", beforeUnload); document.removeEventListener("visibilitychange", refresh); };
+  }, [ownsTask, persistRecovery, persistState, publishState]);
   useEffect(() => {
-    if (!state.isVisible || recovery || !isTimerBeyondSessionLimit(state.time)) return;
+    if (!state.isRunning || !state.isVisible) return;
+    const interval = setInterval(() => {
+      if (!ownsTask()) return;
+      const next = refreshTimerState(stateRef.current); publishState(next);
+      if (Date.now() - lastPersistedAtRef.current >= TIMER_PERSIST_INTERVAL_MS) persistState(next);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [state.isRunning, state.isVisible, ownsTask, persistState, publishState]);
+  useEffect(() => {
+    if (!ownsTask() || !state.isVisible || recovery || attemptRef.current || operationRef.current === "save" || !isTimerBeyondSessionLimit(state.time)) return;
     const snapshot = createStaleTimerSnapshot(state);
-    if (snapshot) {
-      openRecovery(snapshot);
-    } else {
-      clearTimerState();
-      toast.error("Timer stopped because its saved state was invalid.");
-    }
-  }, [clearTimerState, openRecovery, recovery, state]);
+    if (snapshot) openRecovery(snapshot);
+  }, [state, recovery, openRecovery, ownsTask]);
 
+  const exposed = !authLoading && ownerRef.current === userId && !restoring ? state : emptyTimerState();
+  const notificationMinute = Math.floor(exposed.time / 60);
   useEffect(() => {
-    timerNativeService
-      .syncTimerNotification({
-        isRunning: state.isRunning,
-        isVisible: state.isVisible,
-        elapsedSeconds: notificationMinute * 60,
-        bookId: state.bookId,
-        bookTitle: state.bookTitle,
-      })
-      .catch((error) => {
-        console.error("Error syncing timer notification:", error);
-      });
-  }, [state.isRunning, state.isVisible, notificationMinute, state.bookTitle, state.bookId]);
-
-  const startTimer = (bookId: string, bookTitle: string) => {
-    const handleStart = async () => {
-      if (stateRef.current.isVisible && stateRef.current.bookId) {
-        const confirmed = await confirmDialog({
-          title: "Replace running timer?",
-          description: "A timer is already running. Cancel it and start a new one?",
-          confirmText: "Start new",
-          cancelText: "Keep current",
-        });
-        if (!confirmed) return;
-      }
-
-      // A timer start is a deliberate feature action. Readers who skipped the
-      // post-signup notification step are prompted here, never at app launch.
-      await timerNativeService.requestNotificationPermissions().catch((error) => {
-        console.error("Unable to request timer notification permission:", error);
-      });
-
-      const now = new Date();
-      const nextState: TimerState = {
-        time: 0,
-        accumulatedSeconds: 0,
-        isRunning: true,
-        startTime: now,
-        runningSince: now,
-        bookId,
-        bookTitle,
-        clientSessionId: createClientSessionId(bookId),
-        isVisible: true,
-        isMinimized: true,
-      };
-      clearRecoveryState();
-      setState(nextState);
-      persistTimerState(nextState);
-      toast.success(`Timer started for "${bookTitle}"`);
-    };
-
-    void handleStart();
-  };
+    void timerNativeService.syncTimerNotification({ isRunning: exposed.isRunning, isVisible: exposed.isVisible,
+      elapsedSeconds: notificationMinute * 60, bookId: exposed.bookId, bookTitle: exposed.bookTitle,
+      userId: !authLoading ? userId : null, clientSessionId: exposed.clientSessionId }).catch(error => console.error("Unable to update timer notification:", error));
+  }, [exposed.isRunning, exposed.isVisible, exposed.bookId, exposed.bookTitle, exposed.clientSessionId, notificationMinute, authLoading, userId]);
 
   const pauseTimer = () => {
-    setState((previous) => {
-      const refreshed = refreshTimerState(previous);
-      return {
-        ...refreshed,
-        isRunning: false,
-        runningSince: null,
-        accumulatedSeconds: refreshed.time,
-      };
-    });
+    if (!ownsTask() || operationRef.current || attemptRef.current || !stateRef.current.isVisible) return;
+    const next = pausedState(stateRef.current); publishState(next); persistState(next);
   };
-
   const resumeTimer = () => {
-    setState((previous) => {
-      if (!previous.isVisible || !previous.bookId) return previous;
-      const refreshed = refreshTimerState(previous);
-      if (isTimerBeyondSessionLimit(refreshed.time)) return refreshed;
-      return {
-        ...refreshed,
-        isRunning: true,
-        runningSince: new Date(),
-        accumulatedSeconds: refreshed.time,
-      };
-    });
+    if (!ownsTask() || operationRef.current || attemptRef.current || !stateRef.current.isVisible || stateRef.current.isRunning) return;
+    const current = refreshTimerState(stateRef.current);
+    if (isTimerBeyondSessionLimit(current.time)) { const snapshot = createStaleTimerSnapshot(current); if (snapshot) openRecovery(snapshot); return; }
+    const next = { ...current, isRunning: true, runningSince: new Date(), accumulatedSeconds: current.time };
+    publishState(next); persistState(next);
+  };
+  const startTimer = (bookId: string, bookTitle: string) => {
+    if (!ownsTask() || operationRef.current || attemptRef.current) return;
+    if (recoveryRef.current) { toast.info("Review or discard the old timer before starting another."); return; }
+    if (stateRef.current.isVisible && stateRef.current.bookId === bookId) { if (!stateRef.current.isRunning) resumeTimer(); return; }
+    const owner = ownerRef.current!; const generation = generationRef.current; const route = routeIdentity();
+    const previousSession = stateRef.current.clientSessionId;
+    const current = () => generation === generationRef.current && ownsTask() && ownerRef.current === owner && routeIdentity() === route && stateRef.current.clientSessionId === previousSession;
+    operationRef.current = "start"; setIsStarting(true);
+    void (async () => {
+      try {
+        const resolvedId = await booksRepo.resolveIdentity(owner, bookId);
+        if (!current()) return;
+        const localBook = await booksRepo.get(resolvedId);
+        if (!current()) return;
+        if (!localBook || localBook.user_id !== owner || localBook.deleted_at) { toast.error("Open this book from your library before starting its timer."); return; }
+        if (stateRef.current.isVisible) {
+          const confirmed = await confirmDialog({ title: "Replace this reading timer?", description: "Starting another timer discards the current unsaved reading time.", confirmText: "Start new timer", cancelText: "Keep current", variant: "destructive" });
+          if (!current() || !confirmed) return;
+        }
+        await timerNativeService.requestNotificationPermissions().catch(error => console.error("Unable to request timer notifications:", error));
+        if (!current()) return;
+        const now = new Date();
+        const next: TimerState = { ...emptyTimerState(), isVisible: true, isRunning: true, startTime: now,
+          runningSince: now, bookId: resolvedId, bookTitle: localBook.title || bookTitle, clientSessionId: createLocalId() };
+        setSaveError(null); publishState(next); persistState(next);
+        toast.success(`Timer started for "${next.bookTitle}"`);
+      } catch (error) {
+        if (current()) toast.error(error instanceof Error ? error.message : "The timer could not be started. Try again.");
+      } finally {
+        if (generation === generationRef.current) { operationRef.current = null; setIsStarting(false); }
+      }
+    })();
   };
 
-  const finishTimer = useCallback(
-    async (showJournalPrompt: boolean = true) => {
-      const current = refreshTimerState(stateRef.current);
-      if (current.time === 0) {
-        toast.error("No time recorded");
-        return;
-      }
+  const runSave = useCallback(async (attempt: SessionCaptureAttempt, kind: "active" | "recovery") => {
+    if (!ownsTask() || operationRef.current) return;
+    const generation = generationRef.current;
+    const current = () => generationRef.current === generation && ownsTask() && ownerRef.current === attempt.userId && attemptRef.current === attempt;
+    operationRef.current = "save"; setIsSaving(true); setSaveError(null);
+    if (kind === "active") persistState(stateRef.current); else persistRecovery(recoveryRef.current);
+    try {
+      const updatedBook = await persistSessionCapture(attempt, current);
+      if (!current()) return;
+      attemptRef.current = null;
+      if (kind === "active") clearActive(); else clearRecovery();
+      // Presentation/event failures must never turn a committed session into a create retry.
+      try { emitBooksChanged({ type: "upsert", userId: attempt.userId, book: updatedBook }); } catch (error) { console.error(error); }
+      if (isConnectivityAvailable()) void readingCoreSync.syncUser(attempt.userId).catch(console.error);
+      toast.success(`Reading session saved on this device: ${durationSummary(attempt.session.duration!)}`);
+      window.dispatchEvent(new CustomEvent("readingSessionSaved", { detail: { userId: attempt.userId, bookId: attempt.bookId,
+        sessionId: attempt.savedSessionId || attempt.session.id, durationMinutes: attempt.session.duration, activityDate: todayDateOnly(new Date(attempt.session.start_time!)), pendingSync: true } }));
+      if (attempt.showJournalPrompt && attempt.session.duration! >= 5) window.dispatchEvent(new CustomEvent("showJournalPrompt", { detail: {
+        userId: attempt.userId, bookId: attempt.bookId, bookTitle: attempt.bookTitle, durationMinutes: attempt.session.duration } }));
+    } catch (error) {
+      if (!current() || error instanceof ObsoleteSessionCapture) return;
+      if (kind === "active") persistState(stateRef.current); else persistRecovery(recoveryRef.current);
+      setSaveError(error instanceof DeletedSessionCapture ? error.message : attempt.sessionCommitted ? "Your reading time is saved on this device. The book update failed. Retry to finish this same session without adding another."
+        : attempt.sessionAttempted ? "This save could not be confirmed. Retry to check this same session before creating anything else."
+          : error instanceof Error ? error.message : "The session could not be saved. Your paused timer is retained; try again.");
+    } finally {
+      if (generation === generationRef.current) { operationRef.current = null; setIsSaving(false); }
+    }
+  }, [clearActive, clearRecovery, ownsTask, persistRecovery, persistState]);
 
-      if (!current.bookId || !current.startTime) {
-        toast.error("Missing required data to save session");
-        return;
-      }
-
-      if (isTimerBeyondSessionLimit(current.time)) {
-        const snapshot = createStaleTimerSnapshot(current);
-        if (snapshot) openRecovery(snapshot);
-        return;
-      }
-
-      try {
-        const endTime = new Date();
-        const durationMinutes = clampSessionMinutes(current.time / 60);
-        const clientSessionId = current.clientSessionId || createClientSessionId(current.bookId);
-
-        await saveReadingSession({
-          bookId: current.bookId,
-          bookTitle: current.bookTitle,
-          startTime: current.startTime,
-          endTime,
-          durationMinutes,
-          clientSessionId,
-          showJournalPrompt,
-        });
-
-        clearTimerState();
-      } catch (error: unknown) {
-        console.error("Error saving session:", error);
-        toast.error("Failed to save reading session");
-      }
-    },
-    [clearTimerState, openRecovery, saveReadingSession],
-  );
-
-  useEffect(() => {
-    return timerNativeService.onTimerAction((action) => {
-      if (action === "stop") {
-        void finishTimer(false);
-      }
-    });
-  }, [finishTimer]);
+  const finishTimer = useCallback(async (showJournalPrompt = true) => {
+    if (!ownsTask() || operationRef.current || recoveryRef.current) return;
+    if (attemptRef.current) { await runSave(attemptRef.current, "active"); return; }
+    const current = refreshTimerState(stateRef.current);
+    if (!current.isVisible || !current.bookId || !current.startTime) return;
+    if (current.time === 0) { setSaveError("Read for a moment before finishing this session."); return; }
+    if (isTimerBeyondSessionLimit(current.time)) { const snapshot = createStaleTimerSnapshot(current); if (snapshot) openRecovery(snapshot); return; }
+    const paused = pausedState(current); publishState(paused);
+    attemptRef.current = createSessionCapture({ userId: ownerRef.current!, bookId: current.bookId, bookTitle: current.bookTitle,
+      startTime: current.startTime, endTime: new Date(), durationMinutes: clampSessionMinutes(current.time / 60),
+      clientSessionId: current.clientSessionId, showJournalPrompt });
+    // Retain the generated identity even for legacy state without clientSessionId.
+    const frozen = { ...paused, clientSessionId: attemptRef.current.session.id }; publishState(frozen);
+    await runSave(attemptRef.current, "active");
+  }, [openRecovery, ownsTask, publishState, runSave]);
+  useEffect(() => timerNativeService.onTimerAction((action, identity) => {
+    if (action === "stop" && identity?.userId === ownerRef.current && identity?.clientSessionId === stateRef.current.clientSessionId) void finishTimer(false);
+  }), [finishTimer]);
 
   const cancelTimer = () => {
-    const handleCancel = async () => {
-      const current = refreshTimerState(stateRef.current);
-      if (current.isRunning || current.time > 0) {
-        const confirmed = await confirmDialog({
-          title: "Cancel this session?",
-          description: "All progress for this timer will be lost.",
-          confirmText: "Cancel session",
-          cancelText: "Keep timer",
-        });
-        if (!confirmed) return;
-      }
-
-      clearTimerState();
-      toast.info("Timer cancelled");
-    };
-
-    void handleCancel();
+    if (!ownsTask() || operationRef.current || !stateRef.current.isVisible) return;
+    const generation = generationRef.current; const session = stateRef.current.clientSessionId; const route = routeIdentity();
+    operationRef.current = "cancel";
+    void (async () => {
+      try {
+        const confirmed = await confirmDialog({ title: attemptRef.current ? "Close this session save?" : "Discard this reading session?",
+          description: attemptRef.current ? "Some reading time may already be saved. Closing does not delete it. Keep the timer to retry this same save." : "The time recorded by this timer has not been saved and will be discarded.",
+          confirmText: attemptRef.current ? "Close timer" : "Discard session", cancelText: "Keep timer", variant: "destructive" });
+        if (!confirmed || generation !== generationRef.current || !ownsTask() || stateRef.current.clientSessionId !== session || routeIdentity() !== route) return;
+        attemptRef.current = null; setSaveError(null); clearActive(); toast.info("Timer closed");
+      } finally { if (generation === generationRef.current) operationRef.current = null; }
+    })();
   };
-
-  const toggleMinimized = () => {
-    setState((previous) => ({ ...previous, isMinimized: !previous.isMinimized }));
+  const saveRecovery = () => {
+    if (!ownsTask() || operationRef.current || !recoveryRef.current) return;
+    if (attemptRef.current) { void runSave(attemptRef.current, "recovery"); return; }
+    const minutes = Number(recoveryMinutes);
+    if (!/^\d+$/.test(recoveryMinutes.trim()) || !Number.isSafeInteger(minutes) || minutes < 1 || minutes > MAX_READING_SESSION_MINUTES) { setSaveError("Enter a whole number of minutes from 1 to 720."); return; }
+    const snapshot = recoveryRef.current;
+    attemptRef.current = createSessionCapture({ userId: ownerRef.current!, bookId: snapshot.bookId, bookTitle: snapshot.bookTitle,
+      startTime: snapshot.startTime, endTime: getSessionEndFromDuration(snapshot.startTime, minutes), durationMinutes: minutes,
+      clientSessionId: snapshot.clientSessionId, showJournalPrompt: minutes >= 5 });
+    publishRecovery({ ...snapshot, clientSessionId: attemptRef.current.session.id });
+    void runSave(attemptRef.current, "recovery");
   };
-
-  const hideWidget = () => {
-    setState((previous) => {
-      const refreshed = refreshTimerState(previous);
-      return {
-        ...refreshed,
-        isRunning: false,
-        runningSince: null,
-        accumulatedSeconds: refreshed.time,
-        isVisible: false,
-      };
-    });
+  const discardRecovery = () => {
+    if (!ownsTask() || operationRef.current) return;
+    attemptRef.current = null; setSaveError(null); clearRecovery(); toast.info("Old timer closed");
   };
-
-  const handleSaveRecovery = async () => {
-    if (!recovery) return;
-    const durationMinutes = clampSessionMinutes(Number(recoveryMinutes));
-    try {
-      await saveReadingSession({
-        bookId: recovery.bookId,
-        bookTitle: recovery.bookTitle,
-        startTime: recovery.startTime,
-        endTime: getSessionEndFromDuration(recovery.startTime, durationMinutes),
-        durationMinutes,
-        clientSessionId: recovery.clientSessionId || createClientSessionId(recovery.bookId),
-        showJournalPrompt: durationMinutes >= 5,
-      });
-      clearRecoveryState();
-    } catch (error) {
-      console.error("Error saving recovered timer:", error);
-      toast.error("Failed to save recovered timer");
-    }
-  };
-
-  const handleDiscardRecovery = () => {
-    clearRecoveryState();
-    clearTimerState();
-    toast.info("Stale timer discarded");
-  };
-
-  return (
-    <TimerContext.Provider
-      value={{
-        ...state,
-        startTimer,
-        pauseTimer,
-        resumeTimer,
-        finishTimer,
-        cancelTimer,
-        toggleMinimized,
-        hideWidget,
-      }}
-    >
-      {children}
-      <MobileDialog
-        open={Boolean(recovery)}
-        onOpenChange={() => undefined}
-        showClose={false}
-        title="Review old timer"
-        description={`This timer ran past Brack's ${MAX_READING_SESSION_MINUTES / 60}-hour safety limit. Save the time you actually read, or discard it.`}
-        footer={
-          <>
-            <Button type="button" variant="outline" onClick={handleDiscardRecovery}>
-              Discard timer
-            </Button>
-            <Button type="button" onClick={handleSaveRecovery}>
-              Save reviewed time
-            </Button>
-          </>
-        }
-      >
-        {recovery && (
-          <div className="space-y-4">
-            <div className="rounded-lg border border-border/70 bg-muted/30 p-3">
-              <p className="font-sans text-sm font-medium text-foreground">
-                {recovery.bookTitle || "Reading timer"}
-              </p>
-              <p className="mt-1 font-sans text-xs text-muted-foreground">
-                Recorded elapsed time was about{" "}
-                {Math.round(recovery.elapsedSeconds / 3600).toLocaleString()} hours.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="timer-recovery-minutes">Minutes actually read</Label>
-              <Input
-                id="timer-recovery-minutes"
-                type="number"
-                min={1}
-                max={MAX_READING_SESSION_MINUTES}
-                value={recoveryMinutes}
-                onChange={(event) => setRecoveryMinutes(event.target.value)}
-              />
-              <p className="font-sans text-xs text-muted-foreground">
-                Maximum per timer session: {MAX_READING_SESSION_SECONDS / 3600} hours.
-              </p>
-            </div>
-          </div>
-        )}
-      </MobileDialog>
-    </TimerContext.Provider>
-  );
+  return <TimerContext.Provider value={{ ...exposed, startTimer, pauseTimer, resumeTimer, finishTimer, cancelTimer,
+    toggleMinimized: () => { if (ownsTask() && !operationRef.current) { const next = { ...stateRef.current, isMinimized: !stateRef.current.isMinimized }; publishState(next); persistState(next); } },
+    // A hidden widget used to silently discard restoration. Retain the session and minimize it instead.
+    hideWidget: () => { if (ownsTask() && !operationRef.current) { const next = { ...pausedState(stateRef.current), isMinimized: true }; publishState(next); persistState(next); } },
+    isSaving: Boolean(!authLoading && ownerRef.current === userId && isSaving), isStarting: isStarting || restoring,
+    saveError: !authLoading && ownerRef.current === userId ? saveError : null,
+    storageWarning: !authLoading && ownerRef.current === userId ? storageWarning : null, saveFrozen: Boolean(!authLoading && ownerRef.current === userId && attemptRef.current) }}>
+    {children}
+    {!authLoading && ownerRef.current === userId && !restoring && recovery && <TimerRecoveryDialog key={`${userId}:${recovery.clientSessionId || recovery.bookId}`}
+      recovery={recovery} minutes={recoveryMinutes} onMinutesChange={setRecoveryMinutes} onSave={saveRecovery} onDiscard={discardRecovery}
+      isSaving={isSaving} saveFrozen={Boolean(attemptRef.current)} saveError={saveError} storageWarning={storageWarning} />}
+  </TimerContext.Provider>;
 };
-
-export const useTimer = () => {
-  const context = useContext(TimerContext);
-  if (!context) {
-    throw new Error("useTimer must be used within TimerProvider");
-  }
-  return context;
-};
+export const useTimer = () => { const context = useContext(TimerContext); if (!context) throw new Error("useTimer must be used within TimerProvider"); return context; };

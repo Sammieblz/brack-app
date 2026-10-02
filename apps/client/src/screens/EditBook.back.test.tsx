@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("@/utils/offlineOperation", () => ({ bookOperations: { update: mocks.update } }));
 vi.mock("@/services/api", () => ({ fetchBookById: vi.fn(), uploadPublicStorageFile: vi.fn() }));
+vi.mock("@/services/local", () => ({ booksRepo: {}, createLocalId: () => "cover-id" }));
 vi.mock("@/hooks/useRetainedReaderResource", () => ({ useRetainedReaderResource: () => ({ data: mocks.book, loading: false, error: null, refetch: vi.fn() }) }));
 vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: { id: "reader" }, loading: false }) }));
 vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast: mocks.toast }) }));
@@ -85,7 +86,7 @@ describe("EditBook app Back draft ownership", () => {
     fireEvent.change(screen.getByLabelText("Title *"), { target: { value: "Draft after failure" } });
     fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
     await waitFor(() => expect(mocks.update).toHaveBeenCalledTimes(1));
-    expect(mocks.update).toHaveBeenCalledWith("book-one", expect.objectContaining({ title: "Draft after failure", rating: null }));
+    expect(mocks.update).toHaveBeenCalledWith("book-one", { title: "Draft after failure" }, expect.objectContaining({ expectedUserId: "reader", isCurrent: expect.any(Function) }));
     fireEvent.click(screen.getByRole("button", { name: "Back to book" }));
     await act(async () => { await Promise.resolve(); });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();

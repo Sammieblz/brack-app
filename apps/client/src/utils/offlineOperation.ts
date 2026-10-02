@@ -11,6 +11,12 @@ import { readingCoreSync } from "@/services/sync/engine";
 import { isConnectivityAvailable } from "@/services/connectivity";
 import { findExistingLibraryBook } from "@/utils/bookIdentity";
 import { trackCoreEvent } from "@/services/telemetry";
+import { BookEditorValidationError, validateEditedBook } from "@/lib/bookEditor";
+
+interface BookUpdateOptions {
+  expectedUserId?: string;
+  isCurrent?: () => boolean;
+}
 
 /**
  * Legacy compatibility wrapper for simple network-only operations.
@@ -111,22 +117,49 @@ export const bookOperations = {
     return localBook;
   },
 
-  async update(bookId: string, updates: Record<string, unknown>) {
+  async update(bookId: string, updates: Record<string, unknown>, options: BookUpdateOptions = {}) {
+    const assertCurrent = () => {
+      if (options.isCurrent && !options.isCurrent()) throw new Error("This book editor is no longer active");
+    };
+    assertCurrent();
     const user = await getCurrentAuthUser();
+    assertCurrent();
     if (!user) throw new Error("Not authenticated");
+    if (options.expectedUserId && user.id !== options.expectedUserId) throw new Error("This book belongs to another reader");
 
     const existing = await booksRepo.get(bookId);
+    assertCurrent();
     if (!existing) throw new Error("This book is not available locally yet");
+    if (existing.user_id !== user.id || (updates.user_id !== undefined && updates.user_id !== user.id)) {
+      throw new Error("This book belongs to another reader");
+    }
+    if (existing.deleted_at) throw new Error("This book has been removed from your library");
+    if ((updates.id !== undefined && updates.id !== bookId) || existing.id !== bookId) throw new Error("This book could not be verified");
     const updatedBook = {
       ...existing,
       ...updates,
+      id: existing.id,
+      user_id: user.id,
       updated_at: new Date().toISOString(),
     } as Book;
+    // The editor sends a changed-field patch; validate it against the latest
+    // local reading place and dates, not only its opening snapshot.
+    if (options.expectedUserId) {
+      const fields = validateEditedBook(updatedBook);
+      if (Object.keys(fields).length) throw new BookEditorValidationError(fields, existing);
+    }
+    assertCurrent();
     await booksRepo.upsertLocal(user.id, updatedBook, "update");
-    invalidateBooksCache(user.id);
-    emitBooksChanged({ type: "upsert", userId: user.id, book: updatedBook });
-    syncInBackground(user.id);
-    if (!isConnectivityAvailable()) toast.info("Book update saved offline.");
+    // Durability is already confirmed. Ancillary notification/sync failures
+    // cannot invite a second metadata write by making this save reject.
+    for (const afterCommit of [
+      () => invalidateBooksCache(user.id),
+      () => emitBooksChanged({ type: "upsert", userId: user.id, book: updatedBook }),
+      () => syncInBackground(user.id),
+      () => { if (!options.expectedUserId && !isConnectivityAvailable()) toast.info("Book update saved offline."); },
+    ]) {
+      try { afterCommit(); } catch (error) { console.error(error); }
+    }
   },
 
   async delete(bookId: string) {

@@ -13,7 +13,7 @@ const dataModules = ['hooks/useAuth', 'hooks/useBooks', 'hooks/useReadingProfile
   'hooks/useBarcodeScanner', 'hooks/useImagePicker', 'hooks/useJournalEntries',
   'contexts/ProfileContext', 'contexts/TimerContext', 'contexts/ThemeContext',
   'services/api/books', 'services/api/profiles', 'services/api/gamification', 'services/api/client',
-  'services/api', 'services/telemetry', 'utils/offlineOperation', 'services/connectivity', 'services/sync/engine', 'services/imageCache', 'services/scannerBookFlow'];
+  'services/api', 'services/local', 'services/telemetry', 'utils/offlineOperation', 'services/connectivity', 'services/sync/engine', 'services/imageCache', 'services/scannerBookFlow'];
 export default defineConfig({
   cacheDir: path.resolve(__dirname, '../../../node_modules/.vite/adaptive-shell'),
   root: __dirname, publicDir: path.join(client, 'public'), plugins: [react()],

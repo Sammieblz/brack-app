@@ -1,96 +1,98 @@
-import { useEffect, useRef, useState } from "react";
-import { Pause, Play, Square, Timer } from "iconoir-react";
+import { useLayoutEffect, useRef, useState } from "react";
+import { Pause, Play } from "iconoir-react";
 import { useTimer } from "@/contexts/TimerContext";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import {
-  AdaptiveDialogBody,
-  AdaptiveDialogContent,
-  AdaptiveDialogDescription,
-  AdaptiveDialogFooter,
-  AdaptiveDialogHeader,
-  AdaptiveDialogTitle,
-} from "@/components/ui/adaptive-dialog";
+import { AdaptiveDialogBody, AdaptiveDialogContent, AdaptiveDialogDescription, AdaptiveDialogFooter, AdaptiveDialogHeader, AdaptiveDialogTitle } from "@/components/ui/adaptive-dialog";
 import { formatTime } from "@/utils";
+import "./reading-session/reading-session.css";
 
-/** The historical export now renders inside the shell's measured utility area. */
+/** Historical name: this now lives in the measured shell utility slot. */
 export const FloatingTimerWidget = () => {
-  const { time, isRunning, isVisible, bookTitle, pauseTimer, resumeTimer, finishTimer, cancelTimer } = useTimer();
+  const { time, isRunning, isVisible, bookTitle, clientSessionId, pauseTimer, resumeTimer, finishTimer, cancelTimer,
+    isSaving = false, saveFrozen = false, saveError, storageWarning } = useTimer();
   const [open, setOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [review, setReview] = useState(false);
+  const [localSaving, setLocalSaving] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
   const finishing = useRef(false);
-  useEffect(() => {
-    if (!isVisible) {
-      setOpen(false);
-      setError(null);
-    }
-  }, [isVisible]);
+  const operation = useRef(0);
+  const currentSession = useRef(clientSessionId);
+  currentSession.current = clientSessionId;
+  const saving = isSaving || localSaving;
+  const reviewing = review || saveFrozen;
+  useLayoutEffect(() => {
+    operation.current += 1; finishing.current = false;
+    setOpen(false); setReview(false); setLocalError(null); setLocalSaving(false);
+    return () => { operation.current += 1; finishing.current = false; };
+  }, [isVisible, clientSessionId]);
 
   const handleFinish = async () => {
-    if (finishing.current) return;
-    finishing.current = true;
-    setSaving(true);
-    setError(null);
-    try {
-      // The provider owns local persistence, recovery, error feedback and the
-      // journal prompt. A resolved promise is not proof that saving succeeded:
-      // retain these controls until the provider clears the active session.
-      await finishTimer();
-    } catch {
-      setError("The session could not be saved. Your timer is still available; try again.");
-    } finally {
-      finishing.current = false;
-      setSaving(false);
-    }
+    if (finishing.current || isSaving) return;
+    const session = clientSessionId;
+    const token = ++operation.current;
+    finishing.current = true; setLocalSaving(true); setLocalError(null);
+    try { await finishTimer(); }
+    catch { if (operation.current === token && currentSession.current === session) setLocalError("The session could not be saved. Your timer is still available; try again."); }
+    finally { if (operation.current === token) { finishing.current = false; setLocalSaving(false); } }
   };
-
   if (!isVisible) return null;
-
-  return (
-    <Dialog open={open} onOpenChange={(nextOpen) => { if (!finishing.current) setOpen(nextOpen); }}>
-      <section aria-label="Active reading session" className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2">
-        <Timer className="size-5 shrink-0 text-primary" aria-hidden="true" />
-        <div className="min-w-0 flex-[1_1_8rem]">
-          <p className="truncate font-serif text-sm font-semibold">{bookTitle || "Reading session"}</p>
-          <p className="font-sans text-xs text-muted-foreground">{isRunning ? "Reading" : "Paused"}</p>
+  const error = saveError || localError;
+  const state = saving ? "Saving session" : saveFrozen ? "Finish saving" : isRunning ? "Reading" : "Paused";
+  return <Dialog open={open} onOpenChange={next => { if (!finishing.current && !isSaving) setOpen(next); }}>
+    <section aria-label="Active reading session" className="reading-session-strip">
+      <div className="reading-session-strip__book">
+        <p>{bookTitle || "Reading session"}</p><span className="reading-session-strip__state">{state}</span>
+      </div>
+      <span className="reading-session-strip__time" aria-label={`Elapsed time ${formatTime(time)}`}>{formatTime(time)}</span>
+      <div className="reading-session-strip__controls">
+        {!saveFrozen && <button type="button" className="reading-session__button reading-session__quiet reading-session__icon" disabled={saving}
+          onClick={isRunning ? pauseTimer : resumeTimer} aria-label={isRunning ? "Pause timer" : "Resume timer"}>
+          {isRunning ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
+        </button>}
+        <DialogTrigger asChild><button type="button" className="reading-session__button reading-session__quiet" aria-label="Open timer details">
+          {saveFrozen ? "Review" : "Details"}
+        </button></DialogTrigger>
+      </div>
+    </section>
+    <AdaptiveDialogContent size="compact" className="reading-session" showClose={!saving} aria-busy={saving}
+      onCloseAutoFocus={event => {
+        if (document.querySelector('[aria-label="Open timer details"]')) return;
+        event.preventDefault();
+        const active = document.activeElement?.closest('[role="dialog"], [role="alertdialog"]');
+        if (active && active !== event.target && active.getAttribute("data-state") !== "closed") return;
+        const target = document.querySelector<HTMLElement>('[data-start-reading-timer], [data-app-scroll-container] h1');
+        if (target) { if (!target.hasAttribute("tabindex")) target.tabIndex = -1; target.focus(); }
+      }}>
+      <AdaptiveDialogHeader>
+        <AdaptiveDialogTitle>{reviewing ? "Finish reading" : "Reading session"}</AdaptiveDialogTitle>
+        <AdaptiveDialogDescription className="break-words">{bookTitle || "Your current reading session"}</AdaptiveDialogDescription>
+      </AdaptiveDialogHeader>
+      <AdaptiveDialogBody>
+        {reviewing ? <div className="reading-session__summary">
+          <p className="reading-session__hint">Reading time to save</p>
+          <strong>{Math.max(1, Math.round(time / 60))} {Math.max(1, Math.round(time / 60)) === 1 ? "minute" : "minutes"}</strong>
+          <p className="reading-session__hint">Measured {formatTime(time)}, rounded to the nearest minute. Your saved page stays unchanged.</p>
+        </div> : <div className="reading-session__clock">
+          <p className="reading-session__time" aria-label={`Elapsed time ${formatTime(time)}`}>{formatTime(time)}</p>
+          <p className="reading-session__hint">{isRunning ? "Reading in progress" : "Paused — take your time"}</p>
+        </div>}
+        <p role="status" className="reading-session__hint">{saving ? "Saving reading session..." : reviewing ? "Saved on this device first, then synced when you are online." : "Keep reading at your own pace. You can leave this screen while the timer runs."}</p>
+        {error && <p role="alert" className="reading-session__error">{error}</p>}
+        {storageWarning && <p role="status" className="reading-session__error">{storageWarning}</p>}
+      </AdaptiveDialogBody>
+      <AdaptiveDialogFooter className="reading-session__footer">
+        <div className="reading-session__actions">
+          {reviewing ? <>
+            {!saveFrozen && <button type="button" className="reading-session__button" disabled={saving} onClick={() => setReview(false)}>Back to session</button>}
+            <button type="button" className="reading-session__button reading-session__primary" disabled={saving || time === 0} onClick={() => void handleFinish()}>{saving ? "Saving..." : error ? "Retry save" : "Save session"}</button>
+          </> : <>
+            <button type="button" className="reading-session__button" disabled={saving} onClick={isRunning ? pauseTimer : resumeTimer}>{isRunning ? "Pause" : "Resume"}</button>
+            <button type="button" className="reading-session__button reading-session__primary" disabled={saving || time === 0}
+              onClick={() => { if (isRunning) pauseTimer(); setReview(true); }}>Finish session</button>
+          </>}
         </div>
-        <span className="font-mono text-sm font-semibold tabular-nums" aria-label={`Elapsed time ${formatTime(time)}`}>
-          {formatTime(time)}
-        </span>
-        <div className="ml-auto flex shrink-0 items-center gap-1">
-          <Button type="button" variant="ghost" size="icon" disabled={saving}
-            onClick={isRunning ? pauseTimer : resumeTimer} aria-label={isRunning ? "Pause timer" : "Resume timer"}>
-            {isRunning ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}
-          </Button>
-          <DialogTrigger asChild>
-            <Button type="button" variant="ghost" disableHaptic className="h-auto whitespace-normal" aria-label="Open timer details">Details</Button>
-          </DialogTrigger>
-        </div>
-      </section>
-      <AdaptiveDialogContent size="compact" showClose={!saving} aria-busy={saving}>
-        <AdaptiveDialogHeader>
-          <AdaptiveDialogTitle>Reading session</AdaptiveDialogTitle>
-          <AdaptiveDialogDescription className="break-words">{bookTitle || "Your current reading session"}</AdaptiveDialogDescription>
-        </AdaptiveDialogHeader>
-        <AdaptiveDialogBody>
-          <p className="font-mono text-4xl font-semibold tabular-nums">{formatTime(time)}</p>
-          <p className="mt-2 font-sans text-sm text-muted-foreground">{isRunning ? "Reading in progress" : "Paused"}</p>
-          <p role="status" className="mt-3 font-sans text-sm">{saving ? "Saving reading session…" : ""}</p>
-          {error && <p role="alert" className="mt-3 font-sans text-sm">{error}</p>}
-        </AdaptiveDialogBody>
-        <AdaptiveDialogFooter>
-          <Button type="button" variant="outline" disabled={saving} onClick={isRunning ? pauseTimer : resumeTimer}>
-            {isRunning ? <Pause aria-hidden="true" /> : <Play aria-hidden="true" />}{isRunning ? "Pause" : "Resume"}
-          </Button>
-          <Button type="button" disabled={saving || time === 0} onClick={() => void handleFinish()}>
-            <Square aria-hidden="true" />{saving ? "Saving…" : "Finish session"}
-          </Button>
-          <Button type="button" variant="ghost" disabled={saving} onClick={cancelTimer}>
-            Cancel session
-          </Button>
-        </AdaptiveDialogFooter>
-      </AdaptiveDialogContent>
-    </Dialog>
-  );
+        <button type="button" className="reading-session__button reading-session__quiet" disabled={saving} onClick={cancelTimer}>{saveFrozen ? "Close timer" : "Cancel session"}</button>
+      </AdaptiveDialogFooter>
+    </AdaptiveDialogContent>
+  </Dialog>;
 };

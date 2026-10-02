@@ -1,8 +1,8 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const reader = vi.hoisted(() => ({ id: "reader-a" as string | null }));
-vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: reader.id ? { id: reader.id } : null }) }));
+const reader = vi.hoisted(() => ({ id: "reader-a" as string | null, loading: false }));
+vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: reader.id ? { id: reader.id } : null, loading: reader.loading }) }));
 
 vi.mock("./QuickJournalEntryDialog", () => ({
   QuickJournalEntryDialog: ({ bookTitle, onOpenChange }: {
@@ -16,15 +16,26 @@ vi.mock("./QuickJournalEntryDialog", () => ({
 import { JournalPromptHandler } from "./JournalPromptHandler";
 
 afterEach(cleanup);
-beforeEach(() => { reader.id = "reader-a"; });
+beforeEach(() => { reader.id = "reader-a"; reader.loading = false; });
 
-const prompt = (bookTitle: string) => act(() => {
+const prompt = (bookTitle: string, userId = reader.id) => act(() => {
   window.dispatchEvent(new CustomEvent("showJournalPrompt", {
-    detail: { bookId: bookTitle, bookTitle, durationMinutes: 15 },
+    detail: { userId, bookId: bookTitle, bookTitle, durationMinutes: 15 },
   }));
 });
 
 describe("journal prompts", () => {
+  it("rejects another reader's late session event and clears drafts during auth loading", () => {
+    const view = render(<JournalPromptHandler />);
+    prompt("Private book", "reader-b");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    prompt("Own book");
+    reader.loading = true; view.rerender(<JournalPromptHandler />);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    prompt("Loading event");
+    reader.loading = false; view.rerender(<JournalPromptHandler />);
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
   it("queues new prompts without replacing the current draft, then opens them in order", () => {
     render(<JournalPromptHandler />);
     prompt("First book");

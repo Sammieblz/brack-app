@@ -47,6 +47,8 @@ vi.mock("@/services/api", () => ({
   uploadPublicStorageFile: vi.fn(),
 }));
 vi.mock("@/utils/offlineOperation", () => ({ bookOperations: { update: mocks.updateBook } }));
+vi.mock("@/services/local", () => ({ booksRepo: { get: async () => null, upsertRemoteManyPreservingLocal: async (_userId: string, books: Book[]) => books }, createLocalId: () => "cover-id" }));
+vi.mock("@/services/connectivity", () => ({ isConnectivityAvailable: () => true }));
 vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast: mocks.toast }) }));
 vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: { id: "reader" } }) }));
 vi.mock("@/hooks/use-mobile", () => ({ useIsMobile: () => false }));
@@ -190,7 +192,7 @@ describe("date-field context contracts", () => {
     fireEvent.change(screen.getByLabelText("Date Finished"), { target: { value: "" } });
     expect(mocks.dateFields.get("date_started")?.maxDate).toBe(todayDateOnly());
     fireEvent.click(save);
-    await waitFor(() => expect(mocks.updateBook).toHaveBeenCalledWith("book", expect.objectContaining({ date_started: null, date_finished: null })));
+    await waitFor(() => expect(mocks.updateBook).toHaveBeenCalledWith("book", expect.objectContaining({ date_started: null, date_finished: null }), expect.objectContaining({ expectedUserId: "reader", isCurrent: expect.any(Function) })));
   });
 });
 

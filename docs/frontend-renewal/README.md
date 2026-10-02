@@ -2,7 +2,7 @@
 
 Date: 2026-09-27. Baseline commit: `8d3b35ecd778f30d52e40498509dc4beab056e42`.
 
-Current checkpoint: **[F11b - Progress capture, correction and history](32-reading-capture.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `ee0081e` includes F10c/F11a. Three coordinated units completed; 132 distinct new Playwright cases plus 27 existing regressions and 121 unit tests pass. Types/lint/build, source census and local Graphify/Obsidian refresh completed. Next: **F11c timer/session**, then S08 EditBook. Full F11 and corrective/native/AT gates remain open.
+Current checkpoint: **[F11c reading sessions and F11d book editing](33-timer-and-book-editing.md): frontend implementation complete; final verification pending.** F11b is committed in baseline `6e68b57`; this session/editing batch remains uncommitted. Final Playwright, regression and visual results, refreshed Graphify/Obsidian evidence and the user review stop must be recorded before this checkpoint is accepted. **Final verification: PENDING — see checkpoint33.** Full F11 physical native/AT acceptance and the remaining corrective gates stay open. After this checkpoint's review, the next main implementation is **F12 add/search/scan/import**.
 
 ## Outcome
 
@@ -55,7 +55,8 @@ The user's later instructions supersede this plan. The plan's proposed behavior 
 | [29 - F10b Lists reconstruction](29-lists-reconstruction.md) | Committed `b97119d`: collection/detail rows, filter context, accessible reorder, actual task regressions and continuation |
 | [30 - F10c Bookshelf and carousel](30-library-modes.md) | Committed in `ee0081e`: shelf/carousel/previews and retained book context |
 | [31 - F11a Book Detail](31-book-detail.md) | Committed in `ee0081e`: early reading controls, custom composition, stable tasks and bounded evidence |
-| [32 - F11b Reading capture](32-reading-capture.md) | Current review checkpoint: custom capture/correction/history, every live entry, persistence guards and verified evidence |
+| [32 - F11b Reading capture](32-reading-capture.md) | Committed in `6e68b57`: custom capture/correction/history, every live entry, persistence guards and verified evidence |
+| [33 - F11c/F11d Sessions and editing](33-timer-and-book-editing.md) | Current uncommitted batch: session controls/shared picker, owned completion/recovery and grouped EditBook implemented; final verification and review pending |
 | [Fixture evidence](evidence/README.md) | Limited current-state visual inspection with screenshots and explicit limitations |
 
 ## User requirement traceability

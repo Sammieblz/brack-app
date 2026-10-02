@@ -61,7 +61,7 @@ describe("nested reader loading", () => {
     expect(screen.getByText("No journal entries yet")).toBeInTheDocument();
   });
 
-  it("reserves the timer picker's actual fixed viewport and four cover rows", () => {
+  it("reserves inert timer rows before revealing real reading choices", () => {
     const props = {
       onStartTimer: vi.fn(),
       onGoToLibrary: vi.fn(),
@@ -73,10 +73,8 @@ describe("nested reader loading", () => {
     const placeholder = view.container.querySelector(
       '[data-loading-contract="timer-picker"]',
     );
-    expect(placeholder).toHaveClass(
-      "h-[min(22rem,calc(var(--app-viewport-height,100dvh)-13rem))]",
-    );
-    expect(placeholder?.children).toHaveLength(4);
+    expect(placeholder).toHaveAttribute("aria-hidden", "true");
+    expect(placeholder?.children).toHaveLength(3);
     expect(placeholder?.querySelectorAll("button")).toHaveLength(0);
     view.rerender(
       <TimerPickerContent

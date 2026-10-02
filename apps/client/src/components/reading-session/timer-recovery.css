@@ -1,0 +1,11 @@
+.timer-recovery { max-width: 34rem; }
+.timer-recovery__book { margin: 0 0 .5rem; overflow-wrap: anywhere; font-family: Merriweather, serif; font-size: 1.2rem; line-height: 1.5; }
+.timer-recovery label { display: block; margin-top: 1.5rem; font-family: Inter, sans-serif; font-size: .875rem; font-weight: 600; }
+.timer-recovery input { display: block; width: 100%; min-height: 3.25rem; margin-top: .5rem; padding: .65rem .8rem; border: 1px solid hsl(var(--border)); border-radius: .55rem; background: hsl(var(--background)); color: hsl(var(--foreground)); font-family: Inter, sans-serif; font-size: 1.5rem; }
+.timer-recovery input:focus-visible, .timer-recovery__button:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+.timer-recovery__hint { margin-top: .65rem; color: hsl(var(--muted-foreground)); font-family: Inter, sans-serif; font-size: .875rem; line-height: 1.5; overflow-wrap: anywhere; }
+.timer-recovery__error { margin-top: 1rem; padding-left: .8rem; border-left: 3px solid hsl(var(--destructive)); font-family: Inter, sans-serif; font-size: .875rem; line-height: 1.5; }
+.timer-recovery__button { min-height: 2.75rem; padding: .6rem 1rem; border: 1px solid hsl(var(--border)); border-radius: .55rem; font-family: Inter, sans-serif; font-size: .875rem; font-weight: 600; white-space: normal; overflow-wrap: anywhere; }
+.timer-recovery__save { background: hsl(var(--foreground)); color: hsl(var(--background)); }
+.timer-recovery button:disabled, .timer-recovery input:disabled { opacity: .65; cursor: default; }
+@media (forced-colors: active) { .timer-recovery__save { border: 2px solid ButtonText; } }

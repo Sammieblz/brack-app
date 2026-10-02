@@ -24,6 +24,7 @@ vi.mock("@/components/ReadingSyncIndicator", () => ({ ReadingSyncIndicator: () =
   return <p>Sync subscription active</p>;
 } }));
 
+vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: { id: "reader" } }) }));
 let navigate: NavigateFunction;
 function FirstScreen() { return <section aria-label="First shell"><ShellUtilitiesSlot /></section>; }
 function SecondScreen() { return <main aria-label="Second shell"><ShellUtilitiesSlot /></main>; }
@@ -67,16 +68,18 @@ describe("App-owned shell utilities", () => {
     fireEvent.click(screen.getByRole("button", { name: "Open timer details" }));
     const dialog = screen.getByRole("dialog", { name: "Reading session" });
     fireEvent.click(screen.getByRole("button", { name: "Finish session" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save session" }));
+    expect(screen.getByRole("dialog", { name: "Finish reading" })).toBe(dialog);
     expect(dialog).toHaveAttribute("aria-busy", "true");
     act(() => navigate("/second"));
-    expect(screen.getByRole("dialog", { name: "Reading session" })).toBe(dialog);
-    expect(screen.getByRole("button", { name: "Saving…" })).toBeDisabled();
+    expect(screen.getByRole("dialog", { name: "Finish reading" })).toBe(dialog);
+    expect(screen.getByRole("button", { name: "Saving..." })).toBeDisabled();
     expect(state.finish).toHaveBeenCalledTimes(1);
     expect(state.subscribe).toHaveBeenCalledTimes(1);
     await act(async () => { finish(); });
     // The controller decides whether a resolved save actually cleared the timer.
-    expect(screen.getByRole("dialog", { name: "Reading session" })).toBe(dialog);
-    expect(screen.getByRole("button", { name: "Finish session" })).toBeEnabled();
+    expect(screen.getByRole("dialog", { name: "Finish reading" })).toBe(dialog);
+    expect(screen.getByRole("button", { name: "Save session" })).toBeEnabled();
     fireEvent.click(screen.getByRole("button", { name: "Close" }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Open timer details" })).toHaveFocus());
   });

@@ -6,6 +6,8 @@ This contract describes the F11b source at the `ee0081e` baseline plus the curre
 
 Reading capture records an activity; page correction repairs the book's saved position. Keep those actions visibly distinct. Use the existing theme tokens, Inter/Merriweather/Playfair roles and Iconoir library. The new composition removes the equal-card statistics wall and keeps optional information behind labelled disclosures.
 
+[Book metadata editing](ui-book-editing.md) documents the separate `/edit-book/:id` task. Its changed-field updates can correct saved page, status and dates without creating activity; they do not inherit capture's automatic completion or quick correction's status consequences.
+
 | Live entry | Owner and behavior |
 | --- | --- |
 | Book Detail's early **Log progress** button | One `ProgressLogger` outside its tabs and responsive header branches. The stable button ref supplies return focus. The caller provides current page and total pages and refreshes book/history after confirmed capture. |

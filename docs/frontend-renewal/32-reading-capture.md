@@ -1,6 +1,6 @@
 # F11b — Progress capture, correction and history
 
-Status: **implemented and verified within scope; stopped for user review, uncommitted**, 2026-10-01. Baseline HEAD `ee0081e` commits the previous F10c/F11a work; working tree was clean. User authorized continuation and batching complete related work. No commit was made for this pass.
+Status: **historical, implemented and verified within scope; subsequently committed in `6e68b57`**. The original pass on2026-10-01 started at `ee0081e` with a clean worktree and stopped uncommitted for review. The active continuation is [F11c/F11d](33-timer-and-book-editing.md); evidence below retains this pass's original baseline and limitations.
 
 ## Bounded batch
 

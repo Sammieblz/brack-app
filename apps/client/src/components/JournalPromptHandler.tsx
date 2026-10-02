@@ -3,14 +3,15 @@ import { QuickJournalEntryDialog } from "./QuickJournalEntryDialog";
 import { useAuth } from "@/hooks/useAuth";
 
 interface JournalPrompt {
+  userId: string;
   bookId: string;
   bookTitle: string | null;
   durationMinutes: number;
 }
 
 export const JournalPromptHandler = () => {
-  const { user } = useAuth();
-  const userId = user?.id ?? null;
+  const { user, loading } = useAuth();
+  const userId = loading ? null : user?.id ?? null;
   const [queue, setQueue] = useState<{
     userId: string | null;
     prompts: (JournalPrompt & { promptId: number })[];
@@ -20,7 +21,7 @@ export const JournalPromptHandler = () => {
   useEffect(() => {
     setQueue((previous) => previous.userId === userId ? previous : { userId, prompts: [] });
     const handleJournalPrompt = (event: CustomEvent<JournalPrompt>) => {
-      if (!userId) return;
+      if (!userId || event.detail.userId !== userId) return;
       // A second completed reading session must not replace an open draft.
       const prompt = { ...event.detail, promptId: nextPromptId.current++ };
       setQueue((previous) => ({

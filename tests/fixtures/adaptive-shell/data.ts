@@ -17,6 +17,9 @@ export const getCurrentAuthUser = async () => user;
 export const isBookAlreadyExistsError = () => false;
 export const searchBooks = async () => ({ books: [] });
 export const fetchBookById = async () => ({ ...readFixtureCollection().books[0] });
+export const booksRepo = { get: async (id: string) => readFixtureCollection().books.find(book => book.id === id) ?? null,
+  upsertRemoteManyPreservingLocal: async (_userId: string, books: unknown[]) => books };
+export const createLocalId = () => `fixture-cover-${Date.now()}`;
 export const uploadPublicStorageFile = rejectWrite;
 export const useJournalEntries = () => ({ entries: [], addEntry: rejectWrite });
 export const useImagePicker = () => ({ picking: false, pickImage: rejectWrite, pickFromCamera: rejectWrite,
@@ -88,7 +91,7 @@ export function useTimer() {
       // timer when the awaited save resolves. No record is persisted here.
       if (params.has('journalPrompt')) {
         window.dispatchEvent(new CustomEvent('showJournalPrompt', { detail: {
-          bookId: 'fixture-book-0', bookTitle: timer.bookTitle, durationMinutes: timer.time / 60,
+          userId: user.id, bookId: 'fixture-book-0', bookTitle: timer.bookTitle, durationMinutes: timer.time / 60,
         } }));
         await Promise.resolve();
       }

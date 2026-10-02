@@ -2,7 +2,17 @@
 
 ## Current checkpoint
 
-Current checkpoint: **[F11b - Progress capture, correction and history](32-reading-capture.md), implemented and verified within scope; stopped for user review, uncommitted.** Baseline `ee0081e` includes F10c/F11a. Three coordinated units completed; 132 distinct new Playwright cases plus 27 existing regressions and 121 unit tests pass. Types/lint/build, source census and local Graphify/Obsidian refresh completed. Next: **F11c timer/session**, then S08 EditBook. Full F11 and corrective/native/AT gates remain open.
+Current checkpoint: **[F11c reading sessions and F11d book editing](33-timer-and-book-editing.md): frontend implementation complete; final verification pending.** F11b is committed in baseline `6e68b57`; this session/editing batch remains uncommitted. **Final verification: PENDING — see checkpoint33 for the actual final reports, visual review and Graphify/Obsidian record.** Full F11 physical native/AT acceptance and the remaining corrective gates stay open. Finish this verification and user review stop before the next main implementation, F12 add/search/scan/import.
+
+Current reading-family dispositions supplement the historical reconciliation below:
+
+| Child | Implemented consumer scope | Evidence disposition |
+| --- | --- | --- |
+| F11b, committed `6e68b57` | ProgressLogger's three owners and two Dashboard invokers, quick page correction, ProgressTracking/history | Bounded verified evidence remains in [checkpoint32](32-reading-capture.md); this is no longer the current uncommitted review stop. Other CR07 forms remain separately owned. |
+| F11c, uncommitted | Application timer/provider, shared Header/Quick actions picker, shell strip/details/finish, Book Detail, both Dashboard timer paths, Journey quests, recovery, native adapter and real post-session journal handoff | Implementation complete; final actual-entry/loading/error/retry/ownership/visual verification pending in checkpoint33. Controlled device callbacks are not physical notification/lifecycle/AT proof. See the [session contract](../ui-reading-sessions.md). |
+| F11d / S08 EditBook, uncommitted | Actual editor reached from Book Detail and Library action owners; grouped metadata, local loading/save, concurrent progress preservation, media drafts and guarded Back | Implementation complete; final actual-entry/form/media/large-text verification pending in checkpoint33. AddBook/discovery remains F12; device camera/IME/AT and live synchronization are unverified. See the [book-editing contract](../ui-book-editing.md). |
+
+These scoped changes do not close F13 Home/history, F14 Journey/social composition, F19 motion/performance or the remaining CR queues merely because their timer entry components were exercised.
 
 **The user's coverage objection is substantiated.** F01–F09 committed useful repairs, but the accumulated fixture results do not close their cross-application requirements. This review supersedes the “proceed to F10” handoff. The original reconciliation baseline was **`db076cf`**, which already committed F09; the previous uncommitted status was stale. The worktree was clean when that review began. Later implementation checkpoints above supersede its baseline defect status only within their named scope.
 

@@ -220,6 +220,7 @@ test('active timer and offline status occupy normal flow without covering final 
   await expect(details).toBeFocused();
   await details.click();
   await dialog.getByRole('button', { name: 'Finish session' }).click();
+  await page.getByRole('dialog', { name: 'Finish reading' }).getByRole('button', { name: 'Save session' }).click();
   await expect(dialog).toHaveCount(0);
   await expect(page.getByRole('region', { name: 'Active reading session' })).toHaveCount(0);
   expect((await snapshot(page)).finished).toBe(1);
@@ -330,6 +331,7 @@ test('timer controls keep their DOM across routes and a finished session gives f
   expect((await snapshot(page)).timer.time).toBe(1325);
   await page.getByRole('button', { name: 'Open timer details' }).click();
   await page.getByRole('dialog', { name: 'Reading session' }).getByRole('button', { name: 'Finish session' }).click();
+  await page.getByRole('dialog', { name: 'Finish reading' }).getByRole('button', { name: 'Save session' }).click();
   const journal = page.getByRole('dialog', { name: 'Add Journal Entry' });
   await expect(journal).toBeVisible();
   await expect(page.getByRole('dialog')).toHaveCount(1);

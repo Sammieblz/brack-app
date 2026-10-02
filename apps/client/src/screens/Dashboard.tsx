@@ -60,7 +60,7 @@ const Dashboard = () => {
   const { profile } = useProfileContext();
   const { status: onboardingStatus } = useOnboardingStatus(user?.id);
   const { gamificationEnabled } = useFeatureFlags();
-  const { startTimer } = useTimer();
+  const { startTimer, isSaving: timerSaving, isStarting: timerStarting, saveFrozen: timerSaveFrozen } = useTimer();
   const {
     dashboardHome,
     journey,
@@ -167,8 +167,11 @@ const Dashboard = () => {
     }
 
     if (action === "timer" && primaryBook) {
+      if (timerSaving || timerStarting || timerSaveFrozen) {
+        toast.info(timerSaving ? "Your reading session is being saved." : timerStarting ? "Your timer is starting." : "Open Session details to finish saving your paused reading session.");
+        return;
+      }
       startTimer(primaryBook.book.id, primaryBook.book.title);
-      toast.success("Reading timer started", { description: primaryBook.book.title });
       return;
     }
     if (action === "progress" && primaryBook) {
@@ -207,13 +210,16 @@ const Dashboard = () => {
   };
 
   const handleStreakRead = () => {
+    if (timerSaving || timerStarting || timerSaveFrozen) {
+      toast.info(timerSaving ? "Your reading session is being saved." : timerStarting ? "Your timer is starting." : "Open Session details to finish saving your paused reading session.");
+      return;
+    }
     if (!primaryBook) {
       navigate("/my-books");
       return;
     }
 
     startTimer(primaryBook.book.id, primaryBook.book.title);
-    toast.success("Reading timer started", { description: primaryBook.book.title });
   };
 
   const handleRefresh = async () => {

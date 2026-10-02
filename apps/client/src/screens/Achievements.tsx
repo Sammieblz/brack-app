@@ -82,7 +82,7 @@ const Achievements = () => {
     shouldLoadBadges,
   );
   const { books, loading: booksLoading } = useBooks(user?.id, shouldLoadBooks);
-  const { startTimer } = useTimer();
+  const { startTimer, isSaving: timerSaving, isStarting: timerStarting, saveFrozen: timerSaveFrozen } = useTimer();
   const {
     data,
     isLoading,
@@ -235,8 +235,11 @@ const Achievements = () => {
 
   const completeQuestAction = (mode: "timer" | "progress", book: Book) => {
     if (mode === "timer") {
+      if (timerSaving || timerStarting || timerSaveFrozen) {
+        toast.info(timerSaving ? "Your reading session is being saved." : timerStarting ? "Your timer is starting." : "Open Session details to finish saving your paused reading session.");
+        return;
+      }
       startTimer(book.id, book.title);
-      toast.success(`Reading timer started for ${book.title}`);
     } else {
       navigate(`/book/${book.id}/progress`);
     }

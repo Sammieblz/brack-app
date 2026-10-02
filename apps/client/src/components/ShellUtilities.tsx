@@ -2,6 +2,7 @@ import { createContext, useContext, useLayoutEffect, useRef, useState, type Prop
 import { createPortal } from "react-dom";
 import { FloatingTimerWidget } from "@/components/FloatingTimerWidget";
 import { ReadingSyncIndicator } from "@/components/ReadingSyncIndicator";
+import { ReadingSessionTasksProvider } from "@/components/reading-session/ReadingSessionTasks";
 
 const ShellUtilitiesContext = createContext<HTMLDivElement | null>(null);
 
@@ -15,10 +16,10 @@ export const ShellUtilitiesProvider = ({ children }: PropsWithChildren) => {
     return element;
   });
 
-  return <ShellUtilitiesContext.Provider value={host}>
+  return <ShellUtilitiesContext.Provider value={host}><ReadingSessionTasksProvider>
     {children}
     {host && createPortal(<><FloatingTimerWidget /><ReadingSyncIndicator /></>, host)}
-  </ShellUtilitiesContext.Provider>;
+  </ReadingSessionTasksProvider></ShellUtilitiesContext.Provider>;
 };
 
 /** The current route supplies geometry, never a new timer/sync lifecycle. */

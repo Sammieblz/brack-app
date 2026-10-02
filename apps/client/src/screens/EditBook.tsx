@@ -1,605 +1,243 @@
-import { useCallback, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  LoadingError,
-  LoadingRegion,
-} from "@/components/loading/LoadingRegion";
-import { EditBookSkeleton } from "@/components/skeletons/ReadingRouteSkeletons";
-import { useRetainedReaderResource } from "@/hooks/useRetainedReaderResource";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
-import { TagManager } from "@/components/TagManager";
-import { FloppyDisk, Upload, Camera } from "iconoir-react";
-import { MobileLayout } from "@/components/MobileLayout";
-import { MobileHeader } from "@/components/MobileHeader";
+import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { AppBackButton } from "@/components/AppBackButton";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
-import { MobileInput } from "@/components/mobile/MobileInput";
-import { MobileTextarea } from "@/components/mobile/MobileTextarea";
-import { cn } from "@/lib/utils";
+import { MobileHeader } from "@/components/MobileHeader";
+import { MobileLayout } from "@/components/MobileLayout";
+import { LoadingError, LoadingRegion } from "@/components/loading/LoadingRegion";
+import { EditBookSkeleton } from "@/components/skeletons/ReadingRouteSkeletons";
 import { ImagePickerDialog } from "@/components/ImagePickerDialog";
-import { useImagePicker } from "@/hooks/useImagePicker";
-import { bookOperations } from "@/utils/offlineOperation";
-import { validateBookForm, type ValidationError } from "@/utils/formValidation";
-import type { Book } from "@/types";
-import { fetchBookById, uploadPublicStorageFile } from "@/services/api";
 import { DatePicker } from "@/components/ui/date-picker";
-import { useUnsavedAppBack } from "@/hooks/useUnsavedAppBack";
+import { useAuth } from "@/hooks/useAuth";
 import { useAppBack } from "@/hooks/useAppBack";
-import {
-  normalizeDateOnly,
-  todayDateOnly,
-  validateDateOnly,
-} from "@/lib/dateOnly";
+import { useUnsavedAppBack } from "@/hooks/useUnsavedAppBack";
+import { useRetainedReaderResource } from "@/hooks/useRetainedReaderResource";
+import { useUIEnvironmentValue } from "@/hooks/useUIEnvironment";
+import { useToast } from "@/hooks/use-toast";
+import { fetchBookById, uploadPublicStorageFile } from "@/services/api";
+import { booksRepo, createLocalId } from "@/services/local";
+import { isConnectivityAvailable } from "@/services/connectivity";
+import { bookOperations } from "@/utils/offlineOperation";
+import { BookEditorValidationError, buildBookEditorPatch, createBookEditorDraft, reconcileBookEditorDraft, type BookEditorDraft } from "@/lib/bookEditor";
+import { normalizeDateOnly, todayDateOnly } from "@/lib/dateOnly";
+import type { Book } from "@/types";
+import "@/components/reading-progress/book-editor.css";
+
+type CoverSelection = { dataUrl: string; format: string; base64?: string };
+
+function EditorFrame({ id, children }: { id?: string; children: ReactNode }) {
+  const compact = useUIEnvironmentValue(environment => environment.windowClass !== "expanded");
+  const to = id ? `/book/${id}` : "/my-books";
+  return <MobileLayout>
+    {compact && <MobileHeader title="Edit book" back={{ label: "Book", ariaLabel: "Back to book", to }} />}
+    <div className="app-page-form book-editor pb-12">
+      {!compact && <AppBackButton label="Book" ariaLabel="Back to book" to={to} showLabel variant="outline" className="mb-4" />}
+      <header className="book-editor-heading">{!compact && <h1>Edit book</h1>}<p>Keep your book details and saved place accurate. These changes do not add reading activity.</p></header>
+      {children}
+    </div>
+  </MobileLayout>;
+}
 
 export default function EditBook() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const resourceId = id ? `${user?.id ?? ""}:${id}` : undefined;
-  const readBook = useCallback(() => fetchBookById(id!), [id]);
-  const {
-    data: loadedBook,
-    loading,
-    error: loadError,
-    refetch: loadBook,
-  } = useRetainedReaderResource(resourceId, readBook);
+  const { user, loading } = useAuth();
+  if (loading || !user || !id) return <EditorFrame id={id}><LoadingRegion loading={Boolean(loading)} label="Loading book editor">
+    {loading ? <EditBookSkeleton /> : <p role="status">{user ? "This book is unavailable." : "Sign in to edit this book."}</p>}
+  </LoadingRegion></EditorFrame>;
+  return <OwnedBookEditor key={`${user.id}:${id}`} id={id} userId={user.id} />;
+}
+
+function OwnedBookEditor({ id, userId }: { id: string; userId: string }) {
+  const epoch = useRef(0);
+  useLayoutEffect(() => { const current = ++epoch.current; return () => { epoch.current = current + 1; }; }, []);
+  const readBook = useCallback(async () => {
+    const current = epoch.current;
+    const assertCurrent = () => { if (current !== epoch.current) throw new Error("This editor is no longer active"); };
+    const local = await booksRepo.get(id);
+    assertCurrent();
+    if (local) {
+      if (local.id !== id || local.user_id !== userId || local.deleted_at) throw new Error("This book is unavailable for this account.");
+      return local;
+    }
+    if (!isConnectivityAvailable()) throw new Error("This book is not on this device yet. Reconnect and try again.");
+    const remote = await fetchBookById(id);
+    assertCurrent();
+    if (!remote || remote.id !== id || remote.user_id !== userId || remote.deleted_at) throw new Error("This book is unavailable for this account.");
+    const [book] = await booksRepo.upsertRemoteManyPreservingLocal(userId, [remote]);
+    assertCurrent();
+    if (!book || book.id !== id || book.user_id !== userId || book.deleted_at) throw new Error("This book is unavailable for this account.");
+    return book;
+  }, [id, userId]);
+  const { data: book, loading, error, refetch } = useRetainedReaderResource(`${userId}:${id}`, readBook);
+  return <EditorFrame id={id}>{book ? <BookEditorForm initialBook={book} userId={userId} /> :
+    <LoadingRegion loading={loading} label="Loading book editor">{loading ? <EditBookSkeleton /> :
+      <LoadingError message={error?.message ?? "This book is unavailable."} onRetry={() => void refetch()} />}</LoadingRegion>}
+  </EditorFrame>;
+}
+
+function BookEditorForm({ initialBook, userId }: { initialBook: Book; userId: string }) {
+  const [baseline, setBaseline] = useState(initialBook);
+  const initial = createBookEditorDraft(baseline);
+  const [draft, setDraft] = useState(() => createBookEditorDraft(initialBook));
+  const [newTag, setNewTag] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [draft, setDraft] = useState<{
-    id: string | undefined;
-    book: Book;
-  } | null>(null);
-  const book = draft?.id === resourceId ? draft.book : (loadedBook ?? null);
-  const setBook = (nextBook: Book) =>
-    setDraft({ id: resourceId, book: nextBook });
-  const [showImagePicker, setShowImagePicker] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [startDateValid, setStartDateValid] = useState(true);
-  const [finishDateValid, setFinishDateValid] = useState(true);
-  const { pickWithPrompt } = useImagePicker();
-  const { goBack: cancelEdit } = useAppBack({ to: id ? `/book/${id}` : "/my-books" });
-  useUnsavedAppBack({
-    dirty: !startDateValid || !finishDateValid || (draft?.id === resourceId && JSON.stringify(draft.book) !== JSON.stringify(loadedBook)),
-    pending: saving || uploading,
-  });
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!book) return;
-    if (!startDateValid || !finishDateValid) return;
-
-    // Validate form
-    const validationErrors: ValidationError[] = validateBookForm(book);
-    const startDate = normalizeDateOnly(book.date_started);
-    const finishDate = normalizeDateOnly(book.date_finished);
-    const today = todayDateOnly();
-    if (
-      validateDateOnly(book.date_started, { max: today }) ||
-      validateDateOnly(book.date_finished, { max: today }) ||
-      (startDate && finishDate && startDate > finishDate)
-    ) {
-      return;
-    }
-    if (validationErrors.length > 0) {
-      const errorMap: Record<string, string> = {};
-      validationErrors.forEach((err: ValidationError) => {
-        errorMap[err.field] = err.message;
-      });
-      setErrors(errorMap);
-      toast({
-        variant: "destructive",
-        title: "Validation Error",
-        description: "Please fix the errors in the form",
-      });
-      return;
-    }
-
-    setErrors({});
-    setSaving(true);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [selection, setSelection] = useState<CoverSelection | null>(null);
+  const [coverError, setCoverError] = useState<string | null>(null);
+  const [startValid, setStartValid] = useState(true);
+  const [finishValid, setFinishValid] = useState(true);
+  const [editionOpen, setEditionOpen] = useState(false);
+  const [coverOpen, setCoverOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const lock = useRef(false);
+  const uploadLock = useRef(false);
+  const epoch = useRef(0);
+  const form = useRef<HTMLFormElement>(null);
+  const coverTrigger = useRef<HTMLButtonElement>(null);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { goBack } = useAppBack({ to: `/book/${initialBook.id}` });
+  useLayoutEffect(() => { const current = ++epoch.current; return () => { epoch.current = current + 1; }; }, []);
+  const dirty = JSON.stringify(draft) !== JSON.stringify(initial) || Boolean(newTag.trim() || selection) || !startValid || !finishValid;
+  useUnsavedAppBack({ dirty, pending: saving || uploading });
+  const change = <K extends keyof BookEditorDraft>(field: K, value: BookEditorDraft[K]) => {
+    setDraft(previous => ({ ...previous, [field]: value }));
+    setErrors(previous => ({ ...previous, [field]: "", ...(field === "pages" ? { current_page: "" } : {}) }));
+    setSaveError(null);
+  };
+  const showErrors = (next: Record<string, string>) => {
+    setErrors(next);
+    if (["pages", "chapters", "series_position", "series_total"].some(field => next[field])) setEditionOpen(true);
+    const current = epoch.current;
+    requestAnimationFrame(() => {
+      if (current === epoch.current) form.current?.querySelector<HTMLElement>("[aria-invalid='true']")?.focus();
+    });
+  };
+  const uploadCover = async (image: CoverSelection) => {
+    if (uploadLock.current || lock.current) return;
+    uploadLock.current = true;
+    const current = epoch.current;
+    setSelection(image); setUploading(true); setCoverError(null);
     try {
-      await bookOperations.update(id, {
-        title: book.title,
-        author: book.author,
-        genre: book.genre,
-        isbn: book.isbn,
-        pages: book.pages,
-        chapters: book.chapters,
-        current_page: book.current_page,
-        status: book.status,
-        rating: book.rating,
-        notes: book.notes,
-        cover_url: book.cover_url,
-        tags: book.tags,
-        date_started: startDate,
-        date_finished: finishDate,
-        series_name: book.series_name || null,
-        series_position: book.series_position || null,
-        series_total: book.series_total || null,
-      });
-
-      toast({
-        title: "Success",
-        description: "Book updated successfully",
-      });
-      navigate(`/book/${id}`);
-    } catch (error: unknown) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to load book",
-        variant: "destructive",
-      });
+      if (!image.base64) throw new Error("This image could not be read. Choose it again.");
+      const bytes = Uint8Array.from(atob(image.base64), character => character.charCodeAt(0));
+      const type = `image/${image.format}`;
+      const url = await uploadPublicStorageFile("book-covers", `${userId}/${createLocalId()}.${image.format}`, new Blob([bytes], { type }), { contentType: type });
+      if (current !== epoch.current) return;
+      setDraft(previous => ({ ...previous, cover_url: url }));
+      setSelection(null);
+    } catch (error) {
+      if (current === epoch.current) setCoverError(error instanceof Error ? error.message : "The cover could not be uploaded. Retry or remove this selection.");
     } finally {
-      setSaving(false);
+      if (current === epoch.current) { uploadLock.current = false; setUploading(false); }
     }
   };
-
-  const uploadImageToStorage = async (imageData: {
-    dataUrl: string;
-    format: string;
-    base64?: string;
-  }) => {
-    if (!user || !imageData.base64) return;
-
-    setUploading(true);
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (lock.current || uploadLock.current || selection || !startValid || !finishValid) return;
+    const validated = buildBookEditorPatch(baseline, draft, newTag);
+    if (Object.keys(validated.errors).length) { showErrors(validated.errors); return; }
+    setErrors({}); setSaveError(null);
+    if (!Object.keys(validated.patch).length) { navigate(`/book/${initialBook.id}`); return; }
+    lock.current = true; setSaving(true);
+    const current = epoch.current;
+    const isCurrent = () => current === epoch.current;
     try {
-      // Convert base64 to blob
-      const byteCharacters = atob(imageData.base64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      await bookOperations.update(initialBook.id, validated.patch, { expectedUserId: userId, isCurrent });
+    } catch (error) {
+      if (isCurrent()) {
+        if (error instanceof BookEditorValidationError) {
+          if (error.latestBook) {
+            const latest = error.latestBook;
+            setDraft(previous => reconcileBookEditorDraft(baseline, latest, previous));
+            setBaseline(latest);
+          }
+          showErrors(error.fields);
+        }
+        const message = error instanceof Error ? error.message : "Your changes could not be saved. Your draft is still here.";
+        setSaveError(message);
+        toast({ title: "Changes not saved", description: message, variant: "destructive" });
       }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: `image/${imageData.format}` });
-
-      // Upload to storage
-      const fileName = `${user.id}/${Date.now()}.${imageData.format}`;
-      const publicUrl = await uploadPublicStorageFile(
-        "book-covers",
-        fileName,
-        blob,
-        { contentType: `image/${imageData.format}` },
-      );
-
-      setBook({ ...book!, cover_url: publicUrl });
-
-      toast({
-        title: "Success",
-        description: "Cover image uploaded successfully",
-      });
-    } catch (error: unknown) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to upload image",
-        variant: "destructive",
-      });
+      return;
     } finally {
-      setUploading(false);
+      if (isCurrent()) { lock.current = false; setSaving(false); }
     }
+    if (!isCurrent()) return;
+    toast({ title: "Book changes saved on this device", description: "They will sync when a connection is available." });
+    navigate(`/book/${initialBook.id}`);
   };
-
-  const handleImagePicked = async (image: {
-    dataUrl: string;
-    format: string;
-    base64?: string;
-  }) => {
-    await uploadImageToStorage(image);
-  };
-
-  const handleNativeImagePick = async () => {
-    const image = await pickWithPrompt();
-    if (image) {
-      await uploadImageToStorage(image);
-    }
-  };
-
-  const isMobile = useIsMobile();
-  const compactNavigation = useUIEnvironmentValue((environment) => environment.windowClass !== "expanded");
-
-  if (loading || !book) {
-    return (
-      <MobileLayout>
-        {compactNavigation && (
-          <MobileHeader
-            title="Edit Book"
-            back={{
-              label: "Book",
-              ariaLabel: "Back to book",
-              to: id ? `/book/${id}` : "/my-books",
-            }}
-          />
-        )}
-        <div className="app-page-form pb-24 md:pb-8">
-          {!compactNavigation && (
-            <AppBackButton
-              label="Book"
-              ariaLabel="Back to book"
-              to={id ? `/book/${id}` : "/my-books"}
-              showLabel
-              variant="outline"
-              className="mb-4 border-border/70 bg-card/45 shadow-none hover:bg-accent"
-            />
-          )}
-          <LoadingRegion loading={loading} label="Loading book editor">
-            {loading ? (
-              <EditBookSkeleton />
-            ) : (
-              <LoadingError
-                message={
-                  loadError
-                    ? "The book could not be loaded. Try again when connected."
-                    : "This book is unavailable."
-                }
-                onRetry={() => void loadBook()}
-              />
-            )}
-          </LoadingRegion>
-        </div>
-      </MobileLayout>
-    );
-  }
-
+  const field = (name: keyof BookEditorDraft, label: string, numeric = false) => <div className="book-editor-field">
+    <label htmlFor={name}>{label}</label><input id={name} value={String(draft[name] ?? "")} required={name === "title"}
+      inputMode={name === "series_position" ? "decimal" : numeric ? "numeric" : undefined}
+      aria-invalid={Boolean(errors[name])} aria-describedby={[name === "current_page" ? "book-page-limit" : "", errors[name] ? `${name}-error` : ""].filter(Boolean).join(" ") || undefined}
+      onChange={event => change(name, event.target.value)} />
+    {name === "current_page" && <p id="book-page-limit" className="book-editor-note">Total pages: {draft.pages || "not set"}. Change this in Edition and series.</p>}
+    {errors[name] && <p className="book-editor-error" id={`${name}-error`} role="alert">{errors[name]}</p>}
+  </div>;
   const today = todayDateOnly();
-  const finishedDate = normalizeDateOnly(book.date_finished);
-
-  return (
-    <MobileLayout>
-      {compactNavigation && (
-        <MobileHeader
-          title="Edit Book"
-          back={{ label: "Book", ariaLabel: "Back to book", to: `/book/${id}` }}
-        />
-      )}
-      <div className="app-page-form pb-24 md:pb-8">
-        {!compactNavigation && (
-          <AppBackButton
-            label="Book"
-            ariaLabel="Back to book"
-            to={`/book/${id}`}
-            showLabel
-            variant="outline"
-            className="mb-4 border-border/70 bg-card/45 shadow-none hover:bg-accent"
-          />
-        )}
-
-        <Card className="max-w-4xl mx-auto">
-          {!compactNavigation && <CardHeader>
-            <CardTitle className="font-display">Edit Book</CardTitle>
-          </CardHeader>}
-          <CardContent className={compactNavigation ? "pt-6" : undefined}>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <MobileInput
-                id="title"
-                label="Title *"
-                value={book.title}
-                onChange={(e) => {
-                  setBook({ ...book, title: e.target.value });
-                  if (errors.title)
-                    setErrors((prev) => ({ ...prev, title: "" }));
-                }}
-                error={errors.title}
-                required
-              />
-
-              <MobileInput
-                id="author"
-                label="Author"
-                value={book.author || ""}
-                onChange={(e) => setBook({ ...book, author: e.target.value })}
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="genre">Genre</Label>
-                  <Input
-                    id="genre"
-                    value={book.genre || ""}
-                    onChange={(e) =>
-                      setBook({ ...book, genre: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="isbn">ISBN</Label>
-                  <Input
-                    id="isbn"
-                    value={book.isbn || ""}
-                    onChange={(e) => setBook({ ...book, isbn: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <MobileInput
-                  id="pages"
-                  label="Total Pages"
-                  type="number"
-                  inputMode="numeric"
-                  value={book.pages || ""}
-                  onChange={(e) => {
-                    setBook({
-                      ...book,
-                      pages: parseInt(e.target.value) || null,
-                    });
-                    if (errors.pages)
-                      setErrors((prev) => ({ ...prev, pages: "" }));
-                  }}
-                  error={errors.pages}
-                />
-
-                <MobileInput
-                  id="chapters"
-                  label="Total Chapters"
-                  type="number"
-                  inputMode="numeric"
-                  value={book.chapters || ""}
-                  onChange={(e) =>
-                    setBook({
-                      ...book,
-                      chapters: parseInt(e.target.value) || null,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_8rem_8rem]">
-                <MobileInput
-                  id="series_name"
-                  label="Series"
-                  value={book.series_name || ""}
-                  onChange={(e) =>
-                    setBook({ ...book, series_name: e.target.value || null })
-                  }
-                  placeholder="Optional series name"
-                />
-                <MobileInput
-                  id="series_position"
-                  label="Book #"
-                  type="number"
-                  inputMode="decimal"
-                  value={book.series_position || ""}
-                  onChange={(e) =>
-                    setBook({
-                      ...book,
-                      series_position: e.target.value
-                        ? Number(e.target.value)
-                        : null,
-                    })
-                  }
-                  min="0"
-                  step="0.5"
-                />
-                <MobileInput
-                  id="series_total"
-                  label="Series total"
-                  type="number"
-                  inputMode="numeric"
-                  value={book.series_total || ""}
-                  onChange={(e) =>
-                    setBook({
-                      ...book,
-                      series_total: e.target.value
-                        ? parseInt(e.target.value)
-                        : null,
-                    })
-                  }
-                  min="1"
-                />
-              </div>
-
-              <MobileInput
-                id="current_page"
-                label="Current Page"
-                type="number"
-                inputMode="numeric"
-                value={book.current_page || 0}
-                onChange={(e) => {
-                  setBook({
-                    ...book,
-                    current_page: parseInt(e.target.value) || 0,
-                  });
-                  if (errors.current_page)
-                    setErrors((prev) => ({ ...prev, current_page: "" }));
-                }}
-                error={errors.current_page}
-              />
-
-              <div>
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={book.status}
-                  onValueChange={(value) => setBook({ ...book, status: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="reading">Currently Reading</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="to_read">Want to Read</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="rating">Rating (1-5)</Label>
-                <Select
-                  value={book.rating?.toString() ?? "none"}
-                  onValueChange={(value) =>
-                    setBook({ ...book, rating: value === "none" ? null : parseInt(value, 10) })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="No rating" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No rating</SelectItem>
-                    <SelectItem value="1">★ 1 Star</SelectItem>
-                    <SelectItem value="2">★★ 2 Stars</SelectItem>
-                    <SelectItem value="3">★★★ 3 Stars</SelectItem>
-                    <SelectItem value="4">★★★★ 4 Stars</SelectItem>
-                    <SelectItem value="5">★★★★★ 5 Stars</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <DatePicker
-                  id="date_started"
-                  label="Date Started"
-                  value={book.date_started}
-                  onChange={(value) =>
-                    setBook({ ...book, date_started: value })
-                  }
-                  maxDate={
-                    finishedDate && finishedDate < today ? finishedDate : today
-                  }
-                  showToday
-                  onValidityChange={setStartDateValid}
-                />
-                <DatePicker
-                  id="date_finished"
-                  label="Date Finished"
-                  value={book.date_finished}
-                  onChange={(value) =>
-                    setBook({ ...book, date_finished: value })
-                  }
-                  minDate={book.date_started}
-                  maxDate={today}
-                  showToday
-                  onValidityChange={setFinishDateValid}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="cover_url">Cover Image</Label>
-                <div className="space-y-3">
-                  {book.cover_url && (
-                    <img
-                      src={book.cover_url}
-                      alt="Book cover"
-                      className="w-32 h-40 object-cover rounded border"
-                    />
-                  )}
-                  <div className="flex gap-2">
-                    <Input
-                      id="cover_url"
-                      value={book.cover_url || ""}
-                      onChange={(e) =>
-                        setBook({ ...book, cover_url: e.target.value })
-                      }
-                      placeholder="Or paste image URL..."
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowImagePicker(true)}
-                      disabled={uploading}
-                    >
-                      {uploading ? (
-                        <>
-                          <Upload className="mr-2 h-4 w-4 animate-pulse" />
-                          Uploading...
-                        </>
-                      ) : (
-                        <>
-                          <Camera className="mr-2 h-4 w-4" />
-                          Choose Image
-                        </>
-                      )}
-                    </Button>
-                    <ImagePickerDialog
-                      open={showImagePicker}
-                      onOpenChange={setShowImagePicker}
-                      onImagePicked={handleImagePicked}
-                      title="Choose Cover Image"
-                      description="Take a photo or select from your library"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="tags">Tags</Label>
-                <TagManager
-                  tags={book.tags || []}
-                  onChange={(newTags) => setBook({ ...book, tags: newTags })}
-                />
-              </div>
-
-              {isMobile ? (
-                <MobileTextarea
-                  id="notes"
-                  label="Notes"
-                  value={book.notes || ""}
-                  onChange={(e) => setBook({ ...book, notes: e.target.value })}
-                  rows={6}
-                  placeholder="Add your thoughts, quotes, or annotations..."
-                />
-              ) : (
-                <div>
-                  <Label htmlFor="notes">Notes</Label>
-                  <Textarea
-                    id="notes"
-                    value={book.notes || ""}
-                    onChange={(e) =>
-                      setBook({ ...book, notes: e.target.value })
-                    }
-                    rows={6}
-                    placeholder="Add your thoughts, quotes, or annotations..."
-                    className="mt-2"
-                  />
-                </div>
-              )}
-
-              {/* Sticky save button for mobile */}
-              <div
-                className={cn(
-                  "flex gap-2 pt-4",
-                  isMobile &&
-                    "sticky bottom-0 py-4 bg-background border-t z-40",
-                )}
-              >
-                <Button
-                  type="submit"
-                  disabled={saving || !startDateValid || !finishDateValid}
-                  className="flex-1 min-h-[44px]"
-                >
-                  <FloppyDisk className="mr-2 h-4 w-4" />
-                  {saving ? "Saving..." : "Save Changes"}
-                </Button>
-                {!isMobile && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={cancelEdit}
-                  >
-                    Cancel
-                  </Button>
-                )}
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </MobileLayout>
-  );
+  const finished = normalizeDateOnly(draft.date_finished);
+  const addTag = () => { const tag = newTag.trim(); if (tag && !draft.tags.includes(tag)) change("tags", [...draft.tags, tag]); setNewTag(""); };
+  return <form ref={form} onSubmit={event => void submit(event)} noValidate aria-label="Book details">
+    <fieldset className="book-editor-fields" disabled={saving}>
+      <section className="book-editor-section" aria-labelledby="book-identity-heading"><h2 id="book-identity-heading">Book essentials</h2>
+        <div className="book-editor-grid">{field("title", "Title *")}{field("author", "Author")}</div>
+      </section>
+      <section className="book-editor-section" aria-labelledby="book-reading-heading"><h2 id="book-reading-heading">Reading details</h2>
+        <p className="book-editor-note" id="metadata-correction">Correct your saved place, status and dates. This does not log reading time, add activity or award points.</p>
+        <div className="book-editor-grid"><div className="book-editor-row">
+          {field("current_page", "Current Page", true)}
+          <div className="book-editor-field"><label htmlFor="status">Status</label><select id="status" value={draft.status} onChange={event => change("status", event.target.value)}>
+            <option value="reading">Currently Reading</option><option value="completed">Completed</option><option value="to_read">Want to Read</option>
+            {!["reading", "completed", "to_read"].includes(draft.status) && <option value={draft.status}>{draft.status}</option>}
+          </select></div>
+          <div className="book-editor-field"><label htmlFor="rating">Rating</label><select id="rating" value={draft.rating} aria-invalid={Boolean(errors.rating)} aria-describedby={errors.rating ? "rating-error" : undefined} onChange={event => change("rating", event.target.value)}>
+            <option value="">No rating</option>{[1, 2, 3, 4, 5].map(number => <option key={number} value={number}>{number} {number === 1 ? "star" : "stars"}</option>)}
+            {draft.rating && !["1", "2", "3", "4", "5"].includes(draft.rating) && <option value={draft.rating}>Stored rating: {draft.rating}</option>}
+          </select>{errors.rating && <p id="rating-error" role="alert" className="book-editor-error">{errors.rating}</p>}</div>
+        </div><div className="book-editor-row">
+          <DatePicker id="date_started" label="Date Started" value={draft.date_started} onChange={value => change("date_started", value)} maxDate={finished && finished < today ? finished : today} showToday disabled={saving} onValidityChange={setStartValid} />
+          <DatePicker id="date_finished" label="Date Finished" value={draft.date_finished} onChange={value => change("date_finished", value)} minDate={draft.date_started} maxDate={today} showToday disabled={saving} onValidityChange={setFinishValid} />
+        </div></div>
+      </section>
+      <details className="book-editor-details" open={editionOpen} onToggle={event => setEditionOpen(event.currentTarget.open)}><summary>Edition and series <span>Pages, ISBN and more</span></summary>
+        <div className="book-editor-grid"><div className="book-editor-row">{field("pages", "Total Pages", true)}{field("chapters", "Total Chapters", true)}</div>
+          <div className="book-editor-row">{field("genre", "Genre")}{field("isbn", "ISBN")}</div>{field("series_name", "Series")}
+          <div className="book-editor-row">{field("series_position", "Book #", true)}{field("series_total", "Series total", true)}</div>
+        </div>
+      </details>
+      <details className="book-editor-details" open={coverOpen} onToggle={event => setCoverOpen(event.currentTarget.open)}><summary>Cover image <span>Photo or image URL</span></summary>
+        <div className="book-editor-grid"><div className="book-editor-cover">
+          {draft.cover_url && <img src={draft.cover_url} alt={`Cover of ${draft.title || "this book"}`} />}
+          <div className="book-editor-cover-controls"><button ref={coverTrigger} type="button" className="book-editor-control" aria-disabled={uploading} onClick={() => { if (!uploadLock.current) setPickerOpen(true); }}>Choose Image</button>
+            {draft.cover_url && <button type="button" className="book-editor-control" disabled={uploading} onClick={() => change("cover_url", "")}>Remove cover</button>}
+          </div>
+        </div>
+          <div className="book-editor-field"><label htmlFor="cover_url">Cover image URL</label><input id="cover_url" value={draft.cover_url} disabled={uploading} onChange={event => change("cover_url", event.target.value)} inputMode="url" /></div>
+          {uploading && <p className="book-editor-note" role="status">Uploading cover...</p>}
+          {selection && !uploading && <div className="book-editor-grid"><img src={selection.dataUrl} alt="Selected cover awaiting upload" className="max-h-36 max-w-full object-contain" />
+            <div className="book-editor-cover-controls"><button type="button" className="book-editor-control" onClick={() => void uploadCover(selection)}>Retry cover upload</button>
+              <button type="button" className="book-editor-control" onClick={() => { setSelection(null); setCoverError(null); }}>Remove selection</button></div>
+          </div>}
+          {coverError && <p role="alert" className="book-editor-error">{coverError}</p>}
+          <p className="book-editor-note">Uploading needs a connection. Your existing cover stays until its replacement is ready. Save Changes applies the cover to this book.</p>
+        </div>
+      </details>
+      <details className="book-editor-details" open={notesOpen} onToggle={event => setNotesOpen(event.currentTarget.open)}><summary>Notes and tags <span>Your own organization</span></summary>
+        <div className="book-editor-grid"><div className="book-editor-field"><label htmlFor="notes">Notes</label><textarea id="notes" rows={6} value={draft.notes} onChange={event => change("notes", event.target.value)} /></div>
+          <div className="book-editor-field"><label htmlFor="new-tag">Add a tag</label><input id="new-tag" value={newTag} aria-describedby="tag-hint" onChange={event => setNewTag(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing && event.keyCode !== 229) { event.preventDefault(); addTag(); } }} />
+            <p id="tag-hint" className="book-editor-note">Use Add tag or Enter. Save Changes also includes a tag you are still typing.</p>
+            <button type="button" className="book-editor-control justify-self-start" disabled={!newTag.trim()} onClick={addTag}>Add tag</button></div>
+          {draft.tags.length > 0 && <ul className="book-editor-tags" aria-label="Book tags">{draft.tags.map(tag => <li className="book-editor-tag" key={tag}><span>{tag}</span><button type="button" className="book-editor-control" aria-label={`Remove tag ${tag}`} onClick={() => change("tags", draft.tags.filter(value => value !== tag))}>Remove</button></li>)}</ul>}
+        </div>
+      </details>
+    </fieldset>
+    {saveError && <p role="alert" id="book-save-error" className="book-editor-error mt-4">{saveError}</p>}
+    <div className="book-editor-actions"><button type="submit" className="book-editor-control book-editor-save" disabled={saving || uploading || Boolean(selection) || !startValid || !finishValid} aria-describedby={saveError ? "book-save-error" : undefined}>{saving ? "Saving..." : "Save Changes"}</button>
+      <button type="button" className="book-editor-control" disabled={saving || uploading} onClick={() => void goBack()}>Cancel</button>
+      <p className="book-editor-note">Book details save on this device first, including when you are offline.</p>
+    </div>
+    <ImagePickerDialog open={pickerOpen} onOpenChange={setPickerOpen} onImagePicked={image => void uploadCover(image)} title="Choose Cover Image" description="Take a photo or select from your library" returnFocusRef={coverTrigger} />
+  </form>;
 }

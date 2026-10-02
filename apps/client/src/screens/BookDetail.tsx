@@ -224,7 +224,8 @@ const BookDetailContent = () => {
   const finishedDate = formatDate(book.date_finished);
   const statusLabel = formatStatus(book.status);
   const sameSession = timer.isVisible && timer.bookId === book.id;
-  const readingLabel = sameSession ? (timer.isRunning ? "Pause reading" : "Resume reading") : "Start reading";
+  const timerUnavailable = timer.isSaving || timer.isStarting || timer.saveFrozen;
+  const readingLabel = timer.isSaving ? "Saving session..." : timer.isStarting ? "Starting timer..." : timer.saveFrozen ? "Finish saving your session" : sameSession ? (timer.isRunning ? "Pause reading" : "Resume reading") : "Start reading";
 
   const handleShareBook = async () => {
     try {
@@ -262,7 +263,7 @@ const BookDetailContent = () => {
         <div className="book-detail-layout">
           <BookReadingHeader book={book}>
             <div className="book-reading-actions">
-              <button type="button" className="book-detail-control book-detail-primary"
+              <button type="button" className="book-detail-control book-detail-primary" disabled={timerUnavailable}
                 onClick={() => sameSession ? (timer.isRunning ? timer.pauseTimer() : timer.resumeTimer()) : timer.startTimer(book.id, book.title)}>
                 <AppIcon icon={APP_ICONS.bookDetail.startTimer} variant="action" />{readingLabel}
               </button>
@@ -271,7 +272,7 @@ const BookDetailContent = () => {
               </button>
             </div>
             {timer.isVisible && <p className="book-detail-session-note">
-              {sameSession ? (timer.isRunning ? "Your reading session is running." : "Your reading session is paused.") : `Another session is open: ${timer.bookTitle}. Starting here will ask before replacing it.`}
+              {timer.isSaving ? "Your reading session is being saved on this device." : timer.saveFrozen ? "Open Session details below to retry the saved session. Your reading time is retained." : sameSession ? (timer.isRunning ? "Your reading session is running." : "Your reading session is paused.") : `Another session is open: ${timer.bookTitle}. Starting here will ask before replacing it.`}
             </p>}
             <Collapsible className="book-detail-management">
               <div className="book-detail-management-row">
